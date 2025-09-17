@@ -9,6 +9,12 @@
 - **ALWAYS** use the centralized `LoggingModule` from `src/modules/logging/`
 - **CHECK** existing logging functionality before creating new logging code
 
+#### API Calls
+- **NEVER** use different HTTP client patterns across modules
+- **ALWAYS** use the centralized `apiService` from `frontend/src/services/api.ts`
+- **CHECK** existing API call patterns before creating new ones
+- **AVOID** using `fetch` or direct `axios` calls in hooks/components
+
 #### Database Entities
 - **NEVER** create duplicate entities for the same data
 - **ALWAYS** use shared entities or proper relationships
@@ -140,22 +146,28 @@
 - Use the centralized LoggingModule
 - Check existing logging patterns before creating new ones
 
-### 2. Database Entity Duplication
+### 2. API Call Inconsistency
+- Don't mix different HTTP client patterns (fetch, axios, apiService)
+- Always use the centralized apiService for all API calls
+- Check existing API call patterns before creating new ones
+- Avoid manual error handling and authentication token management
+
+### 3. Database Entity Duplication
 - Don't create duplicate entities
 - Use proper relationships between entities
 - Consider if data should be in separate tables
 
-### 3. Service Layer Duplication
+### 4. Service Layer Duplication
 - Don't recreate business logic
 - Extract common functionality to shared services
 - Use proper dependency injection
 
-### 4. Configuration Duplication
+### 5. Configuration Duplication
 - Don't duplicate configuration across modules
 - Use centralized configuration management
 - Follow environment-specific configuration patterns
 
-### 5. Testing Duplication
+### 6. Testing Duplication
 - Don't duplicate test setup code
 - Use shared test utilities
 - Follow consistent testing patterns

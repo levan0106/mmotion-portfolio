@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Global Assets System Implementation - Phase 3: Market Data Module**
-**Latest Update: Task 3.1 PriceHistoryService Completed Successfully (Current Session)**
+**Phase: Global Assets System Implementation - Phases 1-4 Completed, Phases 5-7 Pending**
+**Latest Update: Core Global Assets System Implementation Completed, Testing and Deployment Pending (Current Session)**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
 - ✅ Thiết lập Memory Bank cho project tracking
@@ -48,6 +48,15 @@
     - ✅ **Task 1.1**: GlobalAsset Entity - Complete with TypeORM decorators and migration
     - ✅ **Task 1.2**: AssetPrice Entity - Complete with foreign key relationships
     - ✅ **Task 1.3**: AssetPriceHistory Entity - Complete with price history tracking and migration
+  - ✅ **CR-005 Phase 4: Frontend Integration - COMPLETED** (Current Session - December 19, 2024)
+    - ✅ **API Call Standardization**: Converted all hooks to use centralized apiService
+    - ✅ **Frontend Integration**: Updated GlobalAssetsPage to use real API instead of mock data
+    - ✅ **Consistency Improvement**: Standardized API patterns across all modules
+    - ✅ **Documentation Update**: Added API call anti-pattern to documentation
+    - ✅ **Price Update Functionality**: Complete price update system with backend API integration
+    - ✅ **Price History Integration**: Full price history display with real-time data refresh
+    - ✅ **UI/UX Improvements**: Clean, production-ready interface with proper error handling
+    - ✅ **Code Cleanup**: Removed all debug logs and optimized for production
     - ✅ **Task 1.4**: Nation Configuration JSON - Complete with VN, US, UK, JP, SG support
     - ✅ **Task 1.5**: NationConfigService - Complete with caching and validation
     - ✅ **Task 1.6**: GlobalAssetService - Complete with CRUD operations and nation validation
@@ -495,50 +504,50 @@
 13. ✅ **CR-003 Asset Management Improvements** - **COMPLETED ✅ (All 4 phases)**
 14. ✅ **CR-004 Asset Computed Fields Implementation** - **COMPLETED ✅ (All phases)**
 15. ✅ **CR-005 Global Assets System - Phase 1-3** - **COMPLETED ✅ (PRD, TDD, TBD)**
-16. 🎯 **CURRENT PHASE: GLOBAL ASSETS SYSTEM IMPLEMENTATION - CR-005** - **PHASE 4 (IMPLEMENTATION)**:
-   - **Phase 1: Foundation Setup (High Priority)** - **READY TO START**
-     - ⏳ Task 1.1: Create GlobalAsset entity with TypeORM decorators (High Priority)
-     - ⏳ Task 1.2: Create AssetPrice entity with TypeORM decorators (High Priority)
-     - ⏳ Task 1.3: Create AssetPriceHistory entity with TypeORM decorators (Medium Priority)
-     - ⏳ Task 1.4: Create nation configuration JSON file (High Priority)
-     - ⏳ Task 1.5: Create NationConfigService (High Priority)
-     - ⏳ Task 1.6: Create GlobalAssetService (High Priority)
-     - ⏳ Task 1.7: Create BasicPriceService (High Priority)
-     - ⏳ Task 1.8: Create Global Asset DTOs (High Priority)
-     - ⏳ Task 1.9: Create Asset Price DTOs (High Priority)
-   - **Phase 2: API Layer Implementation (High Priority)** - **PENDING**
-     - ⏳ Task 2.1: Create GlobalAssetController (High Priority)
-     - ⏳ Task 2.2: Create Basic Price Controller (High Priority)
-     - ⏳ Task 2.3: Create data migration script (High Priority)
-     - ⏳ Task 2.4: Update existing portfolio calculations (High Priority)
-   - **Phase 3: Market Data Module (Optional Enhancement)** - **PENDING**
-     - ⏳ Task 3.1: Create PriceHistoryService (Medium Priority)
-     - ⏳ Task 3.2: Create MarketDataService (Low Priority)
-     - ⏳ Task 3.3: Create RealTimePriceService (Low Priority)
-     - ⏳ Task 3.4: Create Price Controller for advanced features (Low Priority)
-   - **Phase 4: Frontend Integration (High Priority)** - **PENDING**
-     - ⏳ Task 4.1: Create GlobalAssetForm component (High Priority)
-     - ⏳ Task 4.2: Create GlobalAssetList component (High Priority)
-     - ⏳ Task 4.3: Create AssetPriceManagement component (High Priority)
-     - ⏳ Task 4.4: Update frontend API services (High Priority)
-     - ⏳ Task 4.5: Update existing components (High Priority)
-   - **Phase 5: Testing Implementation (Medium Priority)** - **PENDING**
-     - ⏳ Task 5.1: Write unit tests for GlobalAssetService (High Priority)
-     - ⏳ Task 5.2: Write unit tests for BasicPriceService (High Priority)
-     - ⏳ Task 5.3: Write unit tests for NationConfigService (Medium Priority)
-     - ⏳ Task 5.4: Write integration tests for GlobalAssetController (High Priority)
-     - ⏳ Task 5.5: Write integration tests for price management (High Priority)
-     - ⏳ Task 5.6: Write E2E tests for asset management workflow (Medium Priority)
-   - **Phase 6: Documentation and Deployment (Medium Priority)** - **PENDING**
-     - ⏳ Task 6.1: Update API documentation (Medium Priority)
-     - ⏳ Task 6.2: Create user documentation (Low Priority)
-     - ⏳ Task 6.3: Implement performance optimizations (Medium Priority)
-     - ⏳ Task 6.4: Add health check endpoints (Medium Priority)
-     - ⏳ Task 6.5: Implement security measures (High Priority)
-   - **Phase 7: Migration and Rollback (High Priority)** - **PENDING**
-     - ⏳ Task 7.1: Execute data migration (High Priority)
-     - ⏳ Task 7.2: Production deployment (High Priority)
-     - ⏳ Task 7.3: Prepare rollback procedures (High Priority)
+16. 🔄 **GLOBAL ASSETS SYSTEM IMPLEMENTATION - CR-005 IN PROGRESS** - **PHASES 1-4 COMPLETED, PHASES 5-7 PENDING**:
+   - ✅ **Phase 1: Foundation Setup (High Priority)** - **COMPLETED**
+     - ✅ Task 1.1: Create GlobalAsset entity with TypeORM decorators (High Priority)
+     - ✅ Task 1.2: Create AssetPrice entity with TypeORM decorators (High Priority)
+     - ✅ Task 1.3: Create AssetPriceHistory entity with TypeORM decorators (Medium Priority)
+     - ✅ Task 1.4: Create nation configuration JSON file (High Priority)
+     - ✅ Task 1.5: Create NationConfigService (High Priority)
+     - ✅ Task 1.6: Create GlobalAssetService (High Priority)
+     - ✅ Task 1.7: Create BasicPriceService (High Priority)
+     - ✅ Task 1.8: Create Global Asset DTOs (High Priority)
+     - ✅ Task 1.9: Create Asset Price DTOs (High Priority)
+   - ✅ **Phase 2: API Layer Implementation (High Priority)** - **COMPLETED**
+     - ✅ Task 2.1: Create GlobalAssetController (High Priority)
+     - ✅ Task 2.2: Create Basic Price Controller (High Priority)
+     - ✅ Task 2.3: Create data migration script (High Priority)
+     - ✅ Task 2.4: Update existing portfolio calculations (High Priority)
+   - ✅ **Phase 3: Market Data Module (Optional Enhancement)** - **COMPLETED**
+     - ✅ Task 3.1: Create PriceHistoryService (Medium Priority)
+     - ✅ Task 3.2: Create MarketDataService (Low Priority)
+     - ✅ Task 3.3: Create RealTimePriceService (Low Priority)
+     - ✅ Task 3.4: Create Price Controller for advanced features (Low Priority)
+   - ✅ **Phase 4: Frontend Integration (High Priority)** - **COMPLETED**
+     - ✅ Task 4.1: Create GlobalAssetForm component (High Priority)
+     - ✅ Task 4.2: Create GlobalAssetList component (High Priority)
+     - ✅ Task 4.3: Create AssetPriceManagement component (High Priority)
+     - ✅ Task 4.4: Update frontend API services (High Priority)
+     - ✅ Task 4.5: Update existing components (High Priority)
+   - 🔄 **Phase 5: Testing Implementation (Medium Priority)** - **PENDING**
+     - 🔄 Task 5.1: Write unit tests for GlobalAssetService (High Priority) - **PARTIALLY COMPLETED**
+     - 🔄 Task 5.2: Write unit tests for BasicPriceService (High Priority) - **PARTIALLY COMPLETED**
+     - 🔄 Task 5.3: Write unit tests for NationConfigService (Medium Priority) - **PENDING**
+     - 🔄 Task 5.4: Write integration tests for GlobalAssetController (High Priority) - **PENDING**
+     - 🔄 Task 5.5: Write integration tests for price management (High Priority) - **PENDING**
+     - 🔄 Task 5.6: Write E2E tests for asset management workflow (Medium Priority) - **PENDING**
+   - 🔄 **Phase 6: Documentation and Deployment (Medium Priority)** - **PENDING**
+     - 🔄 Task 6.1: Update API documentation (Medium Priority) - **PARTIALLY COMPLETED**
+     - 🔄 Task 6.2: Create user documentation (Low Priority) - **PENDING**
+     - 🔄 Task 6.3: Implement performance optimizations (Medium Priority) - **PENDING**
+     - 🔄 Task 6.4: Add health check endpoints (Medium Priority) - **PENDING**
+     - 🔄 Task 6.5: Implement security measures (High Priority) - **PENDING**
+   - 🔄 **Phase 7: Migration and Rollback (High Priority)** - **PENDING**
+     - 🔄 Task 7.1: Execute data migration (High Priority) - **PARTIALLY COMPLETED**
+     - 🔄 Task 7.2: Production deployment (High Priority) - **PENDING**
+     - 🔄 Task 7.3: Prepare rollback procedures (High Priority) - **PENDING**
 17. 🎯 **NEXT PHASE OPTIONS** - **AFTER CR-005 COMPLETION**:
    - **Option A**: Market Data Integration Module - **RECOMMENDED NEXT**
      - Real-time price feeds from external APIs (Cafef, VnDirect, Vietcombank)

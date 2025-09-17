@@ -16,6 +16,7 @@ import Portfolios from './pages/Portfolios';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Trading from './pages/Trading';
 import AssetManagement from './pages/AssetManagement';
+import GlobalAssetsPage from './pages/GlobalAssetsPage';
 
 // Create a custom theme
 const theme = createTheme({
@@ -79,6 +80,7 @@ const App: React.FC = () => {
                 <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
                 <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
                 <Route path="/assets" element={<AssetManagement />} />
+                <Route path="/global-assets" element={<GlobalAssetsPage />} />
                 <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
                 <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
                 <Route path="/settings" element={<div>Settings Page - Coming Soon</div>} />
