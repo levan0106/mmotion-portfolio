@@ -1,0 +1,83 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run npm audit (Backend)
+      run: npm audit --audit-level moderate
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run npm audit (Frontend)
+      working-directory: ./frontend
+      run: npm audit --audit-level moderate
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+      continue-on-error: true
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript, typescript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for potential hardcoded secrets..."
+        if grep -r -i "password\|secret\|key\|token" src/ --exclude-dir=node_modules --exclude="*.test.ts" --exclude="*.spec.ts" | grep -v "process.env\|import\|export"; then
+          echo "⚠️ Potential hardcoded secrets found. Please review."
+          exit 1
+        else
+          echo "✅ No hardcoded secrets found."
+        fi
+
+    - name: Check for SQL injection vulnerabilities
+      run: |
+        echo "Checking for potential SQL injection vulnerabilities..."
+        if grep -r "query.*\+.*\$\{" src/ --exclude-dir=node_modules; then
+          echo "⚠️ Potential SQL injection vulnerabilities found. Please use parameterized queries."
+          exit 1
+        else
+          echo "✅ No SQL injection vulnerabilities found."
+        fi
+
+    - name: Generate security report
+      run: |
+        echo "## Security Scan Report" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ npm audit passed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ CodeQL analysis completed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ No hardcoded secrets found" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ No SQL injection vulnerabilities found" >> $GITHUB_STEP_SUMMARY

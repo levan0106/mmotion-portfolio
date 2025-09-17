@@ -1,0 +1,709 @@
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+import { UpdatePortfolioDto } from './update-portfolio.dto';
+import { testUtils } from '../../../../test/utils/test-helpers';
+
+describe('UpdatePortfolioDto', () => {
+  let dto: UpdatePortfolioDto;
+
+  beforeEach(() => {
+    dto = new UpdatePortfolioDto();
+  });
+
+  describe('Valid DTO', () => {
+    it('should pass validation with all fields provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Tech Portfolio',
+        base_currency: 'EUR',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'Updated portfolio description',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Updated Tech Portfolio');
+      expect(dto.base_currency).toBe('EUR');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('Updated portfolio description');
+    });
+
+    it('should pass validation with only name field', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio Name',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Updated Portfolio Name');
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should pass validation with only base_currency field', async () => {
+      // Arrange
+      const validData = {
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+      expect(dto.base_currency).toBe('USD');
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should pass validation with only description field', async () => {
+      // Arrange
+      const validData = {
+        description: 'Updated description only',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBe('Updated description only');
+    });
+
+    it('should pass validation with empty object (all fields optional)', async () => {
+      // Arrange
+      const validData = {};
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should transform and validate currency codes correctly', async () => {
+      // Arrange
+      const validData = {
+        base_currency: 'usd', // lowercase
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBe('USD'); // Should be transformed to uppercase
+    });
+
+    it('should trim whitespace from name and description', async () => {
+      // Arrange
+      const validData = {
+        name: '  Updated Portfolio  ',
+        description: '  Updated description  ',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Updated Portfolio');
+      expect(dto.description).toBe('Updated description');
+    });
+  });
+
+  describe('Name Validation', () => {
+    it('should pass validation when name is not provided', async () => {
+      // Arrange
+      const validData = {
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+    });
+
+    it('should pass validation when name is empty string (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: '',
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('');
+    });
+
+    it('should pass validation when name is only whitespace (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: '   ',
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe(''); // Transform function trims whitespace
+    });
+
+    it('should fail validation when name is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 123,
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should pass validation when name is null (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: null,
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeNull();
+    });
+
+    it('should pass validation when name is undefined (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: undefined,
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+    });
+  });
+
+  describe('Base Currency Validation', () => {
+    it('should pass validation when base_currency is not provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBeUndefined();
+    });
+
+    it('should fail validation when base_currency is empty string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        base_currency: '',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is too short', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        base_currency: 'US',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is too long', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        base_currency: 'USDD',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        base_currency: 123,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should pass validation when base_currency is null (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        base_currency: null,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBeNull();
+    });
+
+    it('should pass validation with valid currency codes', async () => {
+      // Arrange
+      const validCurrencies = ['VND', 'USD', 'EUR', 'GBP', 'JPY'];
+
+      for (const currency of validCurrencies) {
+        const validData = {
+          name: 'Updated Portfolio',
+          base_currency: currency,
+        };
+
+        // Act
+        const dto = plainToClass(UpdatePortfolioDto, validData);
+        const errors = await validate(dto);
+
+        // Assert
+        expect(errors).toHaveLength(0);
+        expect(dto.base_currency).toBe(currency);
+      }
+    });
+  });
+
+  describe('Account ID Validation', () => {
+    it('should pass validation when account_id is not provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.account_id).toBeUndefined();
+    });
+
+    it('should fail validation when account_id is empty string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        account_id: '',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is not a valid UUID', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        account_id: 'invalid-uuid',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        account_id: 123,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should pass validation when account_id is null (optional field)', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        account_id: null,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.account_id).toBeNull();
+    });
+
+    it('should pass validation with valid UUID format', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        account_id: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.account_id).toBe('86c2ae61-8f69-4608-a5fd-8fecb44ed2c5');
+    });
+  });
+
+  describe('Description Validation', () => {
+    it('should pass validation when description is not provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should pass validation when description is provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        description: 'Updated portfolio description',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('Updated portfolio description');
+    });
+
+    it('should pass validation when description is empty string', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        description: '',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('');
+    });
+
+    it('should fail validation when description is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        description: 123,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('description');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should trim whitespace from description', async () => {
+      // Arrange
+      const validData = {
+        name: 'Updated Portfolio',
+        description: '  Updated description  ',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('Updated description');
+    });
+  });
+
+  describe('Multiple Field Validation', () => {
+    it('should fail validation with multiple invalid fields', async () => {
+      // Arrange
+      const invalidData = {
+        name: '',
+        base_currency: 'INVALID',
+        account_id: 'not-a-uuid',
+        description: 123,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(3); // name is optional, so empty string passes
+      
+      const errorProperties = errors.map(error => error.property);
+      expect(errorProperties).toContain('base_currency');
+      expect(errorProperties).toContain('account_id');
+      expect(errorProperties).toContain('description');
+    });
+
+    it('should pass validation with all fields valid', async () => {
+      // Arrange
+      const validData = {
+        name: 'Complete Updated Portfolio',
+        base_currency: 'EUR',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'A complete updated portfolio with all fields',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Complete Updated Portfolio');
+      expect(dto.base_currency).toBe('EUR');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('A complete updated portfolio with all fields');
+    });
+
+    it('should pass validation with partial updates', async () => {
+      // Arrange
+      const validData = {
+        name: 'Partial Update',
+        description: 'Only name and description updated',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Partial Update');
+      expect(dto.description).toBe('Only name and description updated');
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+    });
+  });
+
+  describe('Edge Cases and Data Transformation', () => {
+    it('should handle null values gracefully (all optional fields)', async () => {
+      // Arrange
+      const validData = {
+        name: null,
+        base_currency: null,
+        account_id: null,
+        description: null,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0); // All fields are optional
+      expect(dto.name).toBeNull();
+      expect(dto.base_currency).toBeNull();
+      expect(dto.account_id).toBeNull();
+      expect(dto.description).toBeNull();
+    });
+
+    it('should handle undefined values gracefully (all optional fields)', async () => {
+      // Arrange
+      const validData = {
+        name: undefined,
+        base_currency: undefined,
+        account_id: undefined,
+        description: undefined,
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0); // All fields are optional
+      expect(dto.name).toBeUndefined();
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should handle mixed valid and invalid data', async () => {
+      // Arrange
+      const mixedData = {
+        name: 'Valid Name',
+        base_currency: 'INVALID',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'Valid description',
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, mixedData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(dto.name).toBe('Valid Name');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('Valid description');
+    });
+
+    it('should transform currency to uppercase even when invalid', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Updated Portfolio',
+        base_currency: 'usd', // lowercase but valid length
+      };
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBe('USD');
+    });
+
+    it('should handle empty object (no fields provided)', async () => {
+      // Arrange
+      const emptyData = {};
+
+      // Act
+      const dto = plainToClass(UpdatePortfolioDto, emptyData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBeUndefined();
+      expect(dto.base_currency).toBeUndefined();
+      expect(dto.account_id).toBeUndefined();
+      expect(dto.description).toBeUndefined();
+    });
+  });
+});

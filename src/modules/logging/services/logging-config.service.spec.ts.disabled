@@ -1,0 +1,329 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
+import { LoggingConfigService } from './logging-config.service';
+import { LoggingConfig } from '../interfaces/logging-config.interface';
+
+describe('LoggingConfigService', () => {
+  let service: LoggingConfigService;
+  let configService: jest.Mocked<ConfigService>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LoggingConfigService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<LoggingConfigService>(LoggingConfigService);
+    configService = module.get(ConfigService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getConfig', () => {
+    it('should return configuration object', () => {
+      const config = service.getConfig();
+      
+      expect(config).toBeDefined();
+      expect(config.global).toBeDefined();
+      expect(config.transports).toBeDefined();
+      expect(config.retention).toBeDefined();
+      expect(config.performance).toBeDefined();
+      expect(config.security).toBeDefined();
+      expect(config.businessEvents).toBeDefined();
+      expect(config.http).toBeDefined();
+      expect(config.errors).toBeDefined();
+      expect(config.integrations).toBeDefined();
+    });
+
+    it('should return a copy of the configuration', () => {
+      const config1 = service.getConfig();
+      const config2 = service.getConfig();
+      
+      expect(config1).not.toBe(config2);
+      expect(config1).toEqual(config2);
+    });
+  });
+
+  describe('getSection', () => {
+    it('should return specific configuration section', () => {
+      // Mock config values
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'APP_NAME': 'test-app',
+          'APP_VERSION': '1.0.0',
+          'NODE_ENV': 'development',
+        };
+        return mockValues[key] || defaultValue;
+      });
+
+      service.reloadConfig();
+      const globalConfig = service.getSection('global');
+      
+      expect(globalConfig).toBeDefined();
+      expect(globalConfig.enabled).toBeDefined();
+      expect(globalConfig.level).toBeDefined();
+      expect(globalConfig.appName).toBeDefined();
+      expect(globalConfig.appVersion).toBeDefined();
+      expect(globalConfig.environment).toBeDefined();
+    });
+
+    it('should return a copy of the section', () => {
+      const section1 = service.getSection('global');
+      const section2 = service.getSection('global');
+      
+      expect(section1).not.toBe(section2);
+      expect(section1).toEqual(section2);
+    });
+  });
+
+  describe('isFeatureEnabled', () => {
+    it('should return true for enabled features', () => {
+      // Mock config to have logging enabled
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'LOGGING_ENABLED') return true;
+        if (key === 'LOGGING_CONSOLE_ENABLED') return true;
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+
+      expect(service.isFeatureEnabled('logging')).toBe(true);
+      expect(service.isFeatureEnabled('console')).toBe(true);
+    });
+
+    it('should return false for disabled features', () => {
+      // Mock config to have logging disabled
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'LOGGING_ENABLED') return false;
+        if (key === 'LOGGING_CONSOLE_ENABLED') return false;
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+
+      expect(service.isFeatureEnabled('logging')).toBe(false);
+      expect(service.isFeatureEnabled('console')).toBe(false);
+    });
+
+    it('should return false for unknown features', () => {
+      expect(service.isFeatureEnabled('unknown-feature')).toBe(false);
+    });
+  });
+
+  describe('getEnvironmentConfig', () => {
+    it('should return development config for development environment', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'NODE_ENV') return 'development';
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const envConfig = service.getEnvironmentConfig();
+
+      expect(envConfig.global?.level).toBe('debug');
+      expect(envConfig.transports?.console?.format).toBe('pretty');
+      expect(envConfig.transports?.console?.colorize).toBe(true);
+    });
+
+    it('should return staging config for staging environment', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'NODE_ENV') return 'staging';
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const envConfig = service.getEnvironmentConfig();
+
+      expect(envConfig.global?.level).toBe('info');
+      expect(envConfig.transports?.console?.format).toBe('json');
+      expect(envConfig.transports?.file?.enabled).toBe(true);
+    });
+
+    it('should return production config for production environment', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'NODE_ENV') return 'production';
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const envConfig = service.getEnvironmentConfig();
+
+      expect(envConfig.global?.level).toBe('warn');
+      expect(envConfig.transports?.console?.enabled).toBe(false);
+      expect(envConfig.transports?.file?.enabled).toBe(true);
+    });
+
+    it('should return default config for unknown environment', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'NODE_ENV') return 'unknown';
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const envConfig = service.getEnvironmentConfig();
+
+      expect(envConfig.global?.level).toBe('info');
+      expect(envConfig.transports?.console?.enabled).toBe(true);
+    });
+  });
+
+  describe('validateConfig', () => {
+    it('should return valid for correct configuration', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'APP_NAME': 'test-app',
+          'APP_VERSION': '1.0.0',
+          'NODE_ENV': 'development',
+        };
+        return mockValues[key] || defaultValue;
+      });
+
+      service.reloadConfig();
+      const validation = service.validateConfig();
+
+      expect(validation.isValid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
+    });
+
+    it('should return invalid for missing required fields', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'APP_NAME': '',
+          'APP_VERSION': '',
+          'NODE_ENV': 'invalid',
+        };
+        return mockValues[key] || defaultValue;
+      });
+
+      service.reloadConfig();
+      const validation = service.validateConfig();
+
+      expect(validation.isValid).toBe(false);
+      expect(validation.errors.length).toBeGreaterThan(0);
+      expect(validation.errors).toContain('Global environment must be one of: development, staging, production');
+    });
+
+    it('should validate file transport configuration', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'APP_NAME': 'test-app',
+          'APP_VERSION': '1.0.0',
+          'NODE_ENV': 'development',
+          'LOGGING_FILE_ENABLED': true,
+          'LOGGING_FILE_FILENAME': '',
+        };
+        return mockValues[key] !== undefined ? mockValues[key] : defaultValue;
+      });
+
+      service.reloadConfig();
+      const validation = service.validateConfig();
+
+      expect(validation.isValid).toBe(false);
+      expect(validation.errors).toContain('File transport filename is required when file transport is enabled');
+    });
+
+    it('should validate integration configurations', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'APP_NAME': 'test-app',
+          'APP_VERSION': '1.0.0',
+          'NODE_ENV': 'development',
+          'LOGGING_ELK_ENABLED': true,
+          'LOGGING_ELK_ELASTICSEARCH_URL': '',
+          'LOGGING_SENTRY_ENABLED': true,
+          'LOGGING_SENTRY_DSN': '',
+          'LOGGING_DATADOG_ENABLED': true,
+          'LOGGING_DATADOG_API_KEY': '',
+        };
+        return mockValues[key] || defaultValue;
+      });
+
+      service.reloadConfig();
+      const validation = service.validateConfig();
+
+      expect(validation.isValid).toBe(false);
+      expect(validation.errors).toContain('ELK elasticsearchUrl is required when ELK integration is enabled');
+      expect(validation.errors).toContain('Sentry DSN is required when Sentry integration is enabled');
+      expect(validation.errors).toContain('Datadog API key is required when Datadog integration is enabled');
+    });
+  });
+
+  describe('reloadConfig', () => {
+    it('should reload configuration from environment variables', () => {
+      const originalConfig = service.getConfig();
+      
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'LOGGING_LEVEL') return 'debug';
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const newConfig = service.getConfig();
+
+      expect(newConfig.global.level).toBe('debug');
+      expect(newConfig).not.toEqual(originalConfig);
+    });
+  });
+
+  describe('configuration loading', () => {
+    it('should load default values when environment variables are not set', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        return defaultValue;
+      });
+
+      service.reloadConfig();
+      const config = service.getConfig();
+
+      expect(config.global.enabled).toBe(true);
+      expect(config.global.level).toBe('info');
+      expect(config.global.appName).toBe('portfolio-management-system');
+      expect(config.global.appVersion).toBe('1.0.0');
+      expect(config.global.environment).toBe('development');
+    });
+
+    it('should load custom values from environment variables', () => {
+      configService.get.mockImplementation((key: string, defaultValue?: any) => {
+        const mockValues: Record<string, any> = {
+          'LOGGING_ENABLED': false,
+          'LOGGING_LEVEL': 'error',
+          'APP_NAME': 'custom-app',
+          'APP_VERSION': '2.0.0',
+          'NODE_ENV': 'production',
+          'LOGGING_CONSOLE_ENABLED': false,
+          'LOGGING_FILE_ENABLED': true,
+          'LOGGING_FILE_FILENAME': 'custom-logs/app.log',
+          'LOGGING_PERFORMANCE_ENABLED': false,
+          'LOGGING_BUSINESS_EVENTS_ENABLED': false,
+          'LOGGING_HTTP_ENABLED': false,
+          'LOGGING_ERRORS_ENABLED': false,
+        };
+        return mockValues[key] !== undefined ? mockValues[key] : defaultValue;
+      });
+
+      service.reloadConfig();
+      const config = service.getConfig();
+
+      expect(config.global.enabled).toBe(false);
+      expect(config.global.level).toBe('error');
+      expect(config.global.appName).toBe('custom-app');
+      expect(config.global.appVersion).toBe('2.0.0');
+      expect(config.global.environment).toBe('production');
+      expect(config.transports.console.enabled).toBe(false);
+      expect(config.transports.file.enabled).toBe(true);
+      expect(config.transports.file.filename).toBe('custom-logs/app.log');
+      expect(config.performance.enabled).toBe(false);
+      expect(config.businessEvents.enabled).toBe(false);
+      expect(config.http.enabled).toBe(false);
+      expect(config.errors.enabled).toBe(false);
+    });
+  });
+});

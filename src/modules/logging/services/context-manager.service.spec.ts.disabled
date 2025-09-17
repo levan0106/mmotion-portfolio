@@ -1,0 +1,396 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { ContextManager, LogContext } from './context-manager.service';
+
+describe('ContextManager', () => {
+  let service: ContextManager;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [ContextManager],
+    }).compile();
+
+    service = module.get<ContextManager>(ContextManager);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Context Management', () => {
+    it('should run function with context', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+        serviceName: 'test-service',
+      };
+
+      const result = await service.run(context, async () => {
+        const currentContext = service.getCurrentContext();
+        return currentContext.requestId;
+      });
+
+      expect(result).toBe('req-123');
+    });
+
+    it('should run synchronous function with context', () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+      };
+
+      const result = service.runSync(context, () => {
+        const currentContext = service.getCurrentContext();
+        return currentContext.userId;
+      });
+
+      expect(result).toBe('user-456');
+    });
+
+    it('should return empty context when no context is set', () => {
+      const context = service.getCurrentContext();
+      expect(context).toEqual({});
+    });
+
+    it('should get current context after setting', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        serviceName: 'test-service',
+      };
+
+      await service.run(context, async () => {
+        const currentContext = service.getCurrentContext();
+        expect(currentContext.requestId).toBe('req-123');
+        expect(currentContext.serviceName).toBe('test-service');
+      });
+    });
+  });
+
+  describe('Context Value Access', () => {
+    it('should get specific context value', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+        moduleName: 'portfolio',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getContextValue('requestId')).toBe('req-123');
+        expect(service.getContextValue('userId')).toBe('user-456');
+        expect(service.getContextValue('moduleName')).toBe('portfolio');
+        expect(service.getContextValue('nonExistent')).toBeUndefined();
+      });
+    });
+
+    it('should check if context has specific key', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+      };
+
+      await service.run(context, async () => {
+        expect(service.hasContextKey('requestId')).toBe(true);
+        expect(service.hasContextKey('userId')).toBe(true);
+        expect(service.hasContextKey('nonExistent')).toBe(false);
+      });
+    });
+  });
+
+  describe('Specific Context Getters', () => {
+    it('should get request ID', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getRequestId()).toBe('req-123');
+      });
+    });
+
+    it('should get user ID', async () => {
+      const context: LogContext = {
+        userId: 'user-456',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getUserId()).toBe('user-456');
+      });
+    });
+
+    it('should get service name', async () => {
+      const context: LogContext = {
+        serviceName: 'portfolio-service',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getServiceName()).toBe('portfolio-service');
+      });
+    });
+
+    it('should get module name', async () => {
+      const context: LogContext = {
+        moduleName: 'portfolio',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getModuleName()).toBe('portfolio');
+      });
+    });
+
+    it('should get function name', async () => {
+      const context: LogContext = {
+        functionName: 'createPortfolio',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getFunctionName()).toBe('createPortfolio');
+      });
+    });
+
+    it('should get correlation ID', async () => {
+      const context: LogContext = {
+        correlationId: 'corr-789',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getCorrelationId()).toBe('corr-789');
+      });
+    });
+
+    it('should get session ID', async () => {
+      const context: LogContext = {
+        sessionId: 'session-123',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getSessionId()).toBe('session-123');
+      });
+    });
+
+    it('should get IP address', async () => {
+      const context: LogContext = {
+        ipAddress: '192.168.1.1',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getIpAddress()).toBe('192.168.1.1');
+      });
+    });
+
+    it('should get user agent', async () => {
+      const context: LogContext = {
+        userAgent: 'Mozilla/5.0',
+      };
+
+      await service.run(context, async () => {
+        expect(service.getUserAgent()).toBe('Mozilla/5.0');
+      });
+    });
+  });
+
+  describe('Context Creation', () => {
+    it('should create context with additional data', async () => {
+      const baseContext: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+      };
+
+      await service.run(baseContext, async () => {
+        const newContext = service.createContext({
+          moduleName: 'portfolio',
+          functionName: 'createPortfolio',
+        });
+
+        expect(newContext.requestId).toBe('req-123');
+        expect(newContext.userId).toBe('user-456');
+        expect(newContext.moduleName).toBe('portfolio');
+        expect(newContext.functionName).toBe('createPortfolio');
+      });
+    });
+
+    it('should create empty context', () => {
+      const context = service.clearContext();
+      expect(context).toEqual({});
+    });
+
+    it('should check if context is active', async () => {
+      expect(service.isContextActive()).toBe(false);
+
+      const context: LogContext = { requestId: 'req-123' };
+      await service.run(context, async () => {
+        expect(service.isContextActive()).toBe(true);
+      });
+
+      expect(service.isContextActive()).toBe(false);
+    });
+  });
+
+  describe('Context Summary', () => {
+    it('should get context summary when no context', () => {
+      const summary = service.getContextSummary();
+      expect(summary).toBe('No context');
+    });
+
+    it('should get context summary with data', async () => {
+      const context: LogContext = {
+        requestId: 'req-123',
+        userId: 'user-456',
+        serviceName: 'test-service',
+      };
+
+      await service.run(context, async () => {
+        const summary = service.getContextSummary();
+        expect(summary).toContain('requestId=req-123');
+        expect(summary).toContain('userId=user-456');
+        expect(summary).toContain('serviceName=test-service');
+        expect(summary).toContain('Context:');
+      });
+    });
+  });
+
+  describe('Context from Request', () => {
+    it('should create context from HTTP request data', () => {
+      const request = {
+        headers: {
+          'x-request-id': 'req-123',
+          'x-correlation-id': 'corr-456',
+          'user-agent': 'Mozilla/5.0',
+        },
+        ip: '192.168.1.1',
+        user: { id: 'user-789' },
+        session: { id: 'session-123' },
+      };
+
+      const context = service.createContextFromRequest(request);
+
+      expect(context.requestId).toBe('req-123');
+      expect(context.correlationId).toBe('corr-456');
+      expect(context.userAgent).toBe('Mozilla/5.0');
+      expect(context.ipAddress).toBe('192.168.1.1');
+      expect(context.userId).toBe('user-789');
+      expect(context.sessionId).toBe('session-123');
+    });
+
+    it('should create context from request with correlation ID', () => {
+      const request = {
+        correlationId: 'corr-789',
+        ip: '10.0.0.1',
+      };
+
+      const context = service.createContextFromRequest(request);
+
+      expect(context.correlationId).toBe('corr-789');
+      expect(context.ipAddress).toBe('10.0.0.1');
+    });
+
+    it('should create context from minimal request data', () => {
+      const request = {};
+
+      const context = service.createContextFromRequest(request);
+
+      expect(context).toEqual({});
+    });
+  });
+
+  describe('Context from Service', () => {
+    it('should create context from service data', () => {
+      const context = service.createContextFromService(
+        'portfolio-service',
+        'portfolio',
+        'createPortfolio',
+        { userId: 'user-123' },
+      );
+
+      expect(context.serviceName).toBe('portfolio-service');
+      expect(context.moduleName).toBe('portfolio');
+      expect(context.functionName).toBe('createPortfolio');
+      expect(context.userId).toBe('user-123');
+    });
+
+    it('should create context with minimal service data', () => {
+      const context = service.createContextFromService('test-service');
+
+      expect(context.serviceName).toBe('test-service');
+      expect(context.moduleName).toBeUndefined();
+      expect(context.functionName).toBeUndefined();
+    });
+  });
+
+  describe('Context Isolation', () => {
+    it('should maintain context isolation between different runs', async () => {
+      const context1: LogContext = { requestId: 'req-1', userId: 'user-1' };
+      const context2: LogContext = { requestId: 'req-2', userId: 'user-2' };
+
+      let result1: string | undefined;
+      let result2: string | undefined;
+
+      await service.run(context1, async () => {
+        result1 = service.getRequestId();
+      });
+
+      await service.run(context2, async () => {
+        result2 = service.getRequestId();
+      });
+
+      expect(result1).toBe('req-1');
+      expect(result2).toBe('req-2');
+    });
+
+    it('should not leak context between nested runs', async () => {
+      const outerContext: LogContext = { requestId: 'outer-req' };
+      const innerContext: LogContext = { requestId: 'inner-req' };
+
+      let outerResult: string | undefined;
+      let innerResult: string | undefined;
+
+      await service.run(outerContext, async () => {
+        outerResult = service.getRequestId();
+
+        await service.run(innerContext, async () => {
+          innerResult = service.getRequestId();
+        });
+      });
+
+      expect(outerResult).toBe('outer-req');
+      expect(innerResult).toBe('inner-req');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle errors in context execution', async () => {
+      const context: LogContext = { requestId: 'req-123' };
+
+      await expect(
+        service.run(context, async () => {
+          throw new Error('Test error');
+        }),
+      ).rejects.toThrow('Test error');
+    });
+
+    it('should maintain context during error handling', async () => {
+      const context: LogContext = { requestId: 'req-123' };
+
+      try {
+        await service.run(context, async () => {
+          const currentContext = service.getCurrentContext();
+          expect(currentContext.requestId).toBe('req-123');
+          throw new Error('Test error');
+        });
+      } catch (error) {
+        // Context should be cleared after error
+        expect(service.getCurrentContext()).toEqual({});
+      }
+    });
+  });
+
+  describe('Set Context Warning', () => {
+    it('should warn when setContext is called', () => {
+      const loggerSpy = jest.spyOn(service['logger'], 'warn');
+      
+      service.setContext({ requestId: 'req-123' });
+      
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'setContext() called but AsyncLocalStorage context cannot be updated directly. Use run() method instead.'
+      );
+    });
+  });
+});

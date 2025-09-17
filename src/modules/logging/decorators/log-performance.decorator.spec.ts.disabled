@@ -1,0 +1,58 @@
+import { LogPerformance, LOG_PERFORMANCE_KEY, PerformanceMetadata } from './log-performance.decorator';
+
+describe('LogPerformance Decorator', () => {
+  it('should set metadata with correct key', () => {
+    const metadata: PerformanceMetadata = {
+      operationName: 'user_authentication',
+      operationType: 'AUTHENTICATION',
+      includeMemoryUsage: true,
+      includeDatabaseMetrics: true,
+      thresholdMs: 1000,
+      logOnlyIfSlow: true,
+    };
+
+    const decorator = LogPerformance(metadata);
+    
+    // The decorator should be a function that sets metadata
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should work with no metadata (default)', () => {
+    const decorator = LogPerformance();
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should work with minimal metadata', () => {
+    const metadata: PerformanceMetadata = {
+      operationName: 'simple_operation',
+    };
+
+    const decorator = LogPerformance(metadata);
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should work with all metadata options', () => {
+    const metadata: PerformanceMetadata = {
+      operationName: 'complex_operation',
+      operationType: 'COMPLEX_OPERATION',
+      includeMemoryUsage: true,
+      includeCpuUsage: true,
+      includeDatabaseMetrics: true,
+      includeCacheMetrics: true,
+      includeExternalApiMetrics: true,
+      customMetrics: {
+        customMetric1: 'value1',
+        customMetric2: 123,
+      },
+      thresholdMs: 2000,
+      logOnlyIfSlow: true,
+    };
+
+    const decorator = LogPerformance(metadata);
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should export correct metadata key', () => {
+    expect(LOG_PERFORMANCE_KEY).toBe('log_performance');
+  });
+});

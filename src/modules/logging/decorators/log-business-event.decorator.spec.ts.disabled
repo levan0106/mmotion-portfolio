@@ -1,0 +1,51 @@
+import { LogBusinessEvent, LOG_BUSINESS_EVENT_KEY, BusinessEventMetadata } from './log-business-event.decorator';
+
+describe('LogBusinessEvent Decorator', () => {
+  it('should set metadata with correct key', () => {
+    const metadata: BusinessEventMetadata = {
+      eventName: 'user_registration',
+      description: 'User registered successfully',
+      category: 'authentication',
+      severity: 'medium',
+      includeRequestData: true,
+      includeUserContext: true,
+    };
+
+    const decorator = LogBusinessEvent(metadata);
+    
+    // The decorator should be a function that sets metadata
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should work with minimal metadata', () => {
+    const metadata: BusinessEventMetadata = {
+      eventName: 'simple_event',
+    };
+
+    const decorator = LogBusinessEvent(metadata);
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should work with all metadata options', () => {
+    const metadata: BusinessEventMetadata = {
+      eventName: 'complex_event',
+      description: 'Complex business event',
+      category: 'business',
+      severity: 'high',
+      includeRequestData: true,
+      includeResponseData: true,
+      includeUserContext: true,
+      customFields: {
+        customField1: 'value1',
+        customField2: 123,
+      },
+    };
+
+    const decorator = LogBusinessEvent(metadata);
+    expect(typeof decorator).toBe('function');
+  });
+
+  it('should export correct metadata key', () => {
+    expect(LOG_BUSINESS_EVENT_KEY).toBe('log_business_event');
+  });
+});

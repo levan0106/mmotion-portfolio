@@ -1,0 +1,47 @@
+/**
+ * Asset type enumeration for portfolio management.
+ * Defines the different types of financial assets that can be held in a portfolio.
+ */
+export enum AssetType {
+  /** Stock securities */
+  STOCK = 'STOCK',
+  
+  /** Bond securities */
+  BOND = 'BOND',
+  
+  /** Gold and precious metals */
+  GOLD = 'GOLD',
+  
+  /** Commodities */
+  COMMODITY = 'COMMODITY',
+  
+  /** Bank deposits and fixed income */
+  DEPOSIT = 'DEPOSIT',
+  
+  /** Cash and cash equivalents */
+  CASH = 'CASH'
+}
+
+/**
+ * Asset type display labels for UI.
+ */
+export const AssetTypeLabels: Record<AssetType, string> = {
+  [AssetType.STOCK]: 'Cổ phiếu',
+  [AssetType.BOND]: 'Trái phiếu',
+  [AssetType.GOLD]: 'Vàng',
+  [AssetType.COMMODITY]: 'Hàng hóa',
+  [AssetType.DEPOSIT]: 'Tiền gửi',
+  [AssetType.CASH]: 'Tiền mặt'
+};
+
+/**
+ * Asset type descriptions for UI.
+ */
+export const AssetTypeDescriptions: Record<AssetType, string> = {
+  [AssetType.STOCK]: 'Cổ phiếu của các công ty niêm yết',
+  [AssetType.BOND]: 'Trái phiếu chính phủ và doanh nghiệp',
+  [AssetType.GOLD]: 'Vàng và kim loại quý',
+  [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
+  [AssetType.DEPOSIT]: 'Tiền gửi ngân hàng và sản phẩm tiết kiệm',
+  [AssetType.CASH]: 'Tiền mặt và các khoản tương đương tiền'
+};

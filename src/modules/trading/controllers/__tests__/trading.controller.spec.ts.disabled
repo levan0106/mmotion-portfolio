@@ -1,0 +1,631 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { TradingController, TradeQueryDto, TradeAnalysisQueryDto } from '../trading.controller';
+import { TradingService } from '../../services/trading.service';
+import { CreateTradeDto, UpdateTradeDto } from '../../dto/trade.dto';
+import { Trade, TradeSide, TradeType, TradeSource } from '../../entities/trade.entity';
+import { Portfolio } from '../../../portfolio/entities/portfolio.entity';
+import { Asset } from '../../../asset/entities/asset.entity';
+import { Account } from '../../../shared/entities/account.entity';
+
+describe('TradingController', () => {
+  let controller: TradingController;
+  let tradingService: TradingService;
+
+  const mockTradingService = {
+    createTrade: jest.fn(),
+    updateTrade: jest.fn(),
+    deleteTrade: jest.fn(),
+    getTrades: jest.fn(),
+    getTradeDetails: jest.fn(),
+    processTradeMatching: jest.fn(),
+    processTradeMatchingLIFO: jest.fn(),
+    getTradeAnalysis: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [TradingController],
+      providers: [
+        {
+          provide: TradingService,
+          useValue: mockTradingService,
+        },
+        {
+          provide: getRepositoryToken(Portfolio),
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Asset),
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Account),
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<TradingController>(TradingController);
+    tradingService = module.get<TradingService>(TradingService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('createTrade', () => {
+    const createTradeDto: CreateTradeDto = {
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: '2024-01-01',
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+    };
+
+    const mockTrade: Trade = {
+      trade_id: 'trade-1',
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      total_amount: 5000,
+      total_cost: 5007.5,
+      notes: undefined,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      buy_details: [],
+    };
+
+    it('should create a trade successfully', async () => {
+      mockTradingService.createTrade.mockResolvedValue(mockTrade);
+
+      const result = await controller.createTrade(createTradeDto);
+
+      expect(result).toEqual(mockTrade);
+      expect(mockTradingService.createTrade).toHaveBeenCalledWith(createTradeDto);
+    });
+
+    it('should handle service errors', async () => {
+      const error = new BadRequestException('Invalid trade data');
+      mockTradingService.createTrade.mockRejectedValue(error);
+
+      await expect(controller.createTrade(createTradeDto)).rejects.toThrow(BadRequestException);
+      expect(mockTradingService.createTrade).toHaveBeenCalledWith(createTradeDto);
+    });
+  });
+
+  describe('getTrades', () => {
+    const portfolioId = 'portfolio-1';
+    const queryDto: TradeQueryDto = {
+      portfolioId,
+      assetId: 'asset-1',
+      side: TradeSide.BUY,
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+      page: 1,
+      limit: 10,
+    };
+
+    const mockTrades: Trade[] = [
+      {
+        trade_id: 'trade-1',
+        portfolioId: portfolioId,
+        assetId: 'asset-1',
+        trade_date: new Date('2024-01-01'),
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: 5.0,
+        tax: 2.5,
+        trade_type: TradeType.NORMAL,
+        source: TradeSource.MANUAL,
+        total_amount: 5000,
+        total_cost: 5007.5,
+        notes: undefined,
+        created_at: new Date(),
+        updated_at: new Date(),
+        asset: null,
+        portfolio: null,
+        sell_details: [],
+        buy_details: [],
+      },
+    ];
+
+    it('should get trades with all query parameters', async () => {
+      mockTradingService.getTrades.mockResolvedValue(mockTrades);
+
+      const result = await controller.getTrades(queryDto);
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradingService.getTrades).toHaveBeenCalledWith(
+        portfolioId,
+        'asset-1',
+        TradeSide.BUY,
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+      );
+    });
+
+    it('should get trades with minimal query parameters', async () => {
+      const minimalQuery: TradeQueryDto = { portfolioId };
+      mockTradingService.getTrades.mockResolvedValue(mockTrades);
+
+      const result = await controller.getTrades(minimalQuery);
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradingService.getTrades).toHaveBeenCalledWith(
+        portfolioId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockTradingService.getTrades.mockRejectedValue(error);
+
+      await expect(controller.getTrades(queryDto)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getTradeDetails', () => {
+    const tradeId = 'trade-1';
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      total_amount: 5000,
+      total_cost: 5007.5,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      buy_details: [],
+    };
+
+    it('should get trade by ID successfully', async () => {
+      mockTradingService.getTradeDetails.mockResolvedValue(mockTrade);
+
+      const result = await controller.getTradeDetails(tradeId);
+
+      expect(result).toEqual(mockTrade);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+    });
+
+    it('should handle trade not found', async () => {
+      const error = new NotFoundException('Trade not found');
+      mockTradingService.getTradeDetails.mockRejectedValue(error);
+
+      await expect(controller.getTradeDetails(tradeId)).rejects.toThrow(NotFoundException);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+    });
+  });
+
+  describe('updateTrade', () => {
+    const tradeId = 'trade-1';
+    const updateTradeDto: UpdateTradeDto = {
+      quantity: 150,
+      price: 55.0,
+      fee: 7.5,
+    };
+
+    const mockUpdatedTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 150,
+      price: 55.0,
+      fee: 7.5,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      total_amount: 8250,
+      total_cost: 8259.5,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      buy_details: [],
+    };
+
+    it('should update trade successfully', async () => {
+      mockTradingService.updateTrade.mockResolvedValue(mockUpdatedTrade);
+
+      const result = await controller.updateTrade(tradeId, updateTradeDto);
+
+      expect(result).toEqual(mockUpdatedTrade);
+      expect(mockTradingService.updateTrade).toHaveBeenCalledWith(tradeId, updateTradeDto);
+    });
+
+    it('should handle trade not found', async () => {
+      const error = new NotFoundException('Trade not found');
+      mockTradingService.updateTrade.mockRejectedValue(error);
+
+      await expect(controller.updateTrade(tradeId, updateTradeDto)).rejects.toThrow(NotFoundException);
+      expect(mockTradingService.updateTrade).toHaveBeenCalledWith(tradeId, updateTradeDto);
+    });
+
+    it('should handle validation errors', async () => {
+      const error = new BadRequestException('Invalid trade data');
+      mockTradingService.updateTrade.mockRejectedValue(error);
+
+      await expect(controller.updateTrade(tradeId, updateTradeDto)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('deleteTrade', () => {
+    const tradeId = 'trade-1';
+
+    it('should delete trade successfully', async () => {
+      mockTradingService.deleteTrade.mockResolvedValue(undefined);
+
+      const result = await controller.deleteTrade(tradeId);
+
+      expect(result).toBeUndefined();
+      expect(mockTradingService.deleteTrade).toHaveBeenCalledWith(tradeId);
+    });
+
+    it('should handle trade not found', async () => {
+      const error = new NotFoundException('Trade not found');
+      mockTradingService.deleteTrade.mockRejectedValue(error);
+
+      await expect(controller.deleteTrade(tradeId)).rejects.toThrow(NotFoundException);
+      expect(mockTradingService.deleteTrade).toHaveBeenCalledWith(tradeId);
+    });
+  });
+
+  describe('processTradeMatching', () => {
+    const tradeId = 'trade-1';
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.SELL,
+      quantity: 50,
+      price: 60.0,
+      fee: 3.0,
+      tax: 1.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      total_amount: 3000,
+      total_cost: 3004.5,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      buy_details: [],
+    };
+
+    const mockMatchingResult = {
+      trade: mockTrade,
+      matchedDetails: [],
+      remainingQuantity: 0,
+      totalPnl: 500,
+    };
+
+    it('should process trade matching successfully', async () => {
+      mockTradingService.getTradeDetails.mockResolvedValue(mockTrade);
+      mockTradingService.processTradeMatching.mockResolvedValue(mockMatchingResult);
+
+      const result = await controller.processTradeMatching(tradeId);
+
+      expect(result).toEqual(mockMatchingResult);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+      expect(mockTradingService.processTradeMatching).toHaveBeenCalledWith(mockTrade);
+    });
+
+    it('should handle trade not found', async () => {
+      const error = new NotFoundException('Trade not found');
+      mockTradingService.getTradeDetails.mockRejectedValue(error);
+
+      await expect(controller.processTradeMatching(tradeId)).rejects.toThrow(NotFoundException);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+    });
+
+    it('should handle non-sell trade', async () => {
+      const buyTrade = { ...mockTrade, side: TradeSide.BUY };
+      const mockResult = {
+        trade: buyTrade,
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 0,
+      };
+      mockTradingService.getTradeDetails.mockResolvedValue(buyTrade);
+      mockTradingService.processTradeMatching.mockResolvedValue(mockResult);
+
+      const result = await controller.processTradeMatching(tradeId);
+      
+      expect(result).toEqual(mockResult);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+      expect(mockTradingService.processTradeMatching).toHaveBeenCalledWith(buyTrade);
+    });
+  });
+
+  describe('processTradeMatchingLIFO', () => {
+    const tradeId = 'trade-1';
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.SELL,
+      quantity: 50,
+      price: 60.0,
+      fee: 3.0,
+      tax: 1.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      total_amount: 3000,
+      total_cost: 3004.5,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      buy_details: [],
+    };
+
+    const mockMatchingResult = {
+      trade: mockTrade,
+      matchedDetails: [],
+      remainingQuantity: 0,
+      totalPnl: 500,
+    };
+
+    it('should process LIFO trade matching successfully', async () => {
+      mockTradingService.getTradeDetails.mockResolvedValue(mockTrade);
+      mockTradingService.processTradeMatchingLIFO.mockResolvedValue(mockMatchingResult);
+
+      const result = await controller.processTradeMatchingLIFO(tradeId);
+
+      expect(result).toEqual(mockMatchingResult);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+      expect(mockTradingService.processTradeMatchingLIFO).toHaveBeenCalledWith(mockTrade);
+    });
+
+    it('should handle trade not found', async () => {
+      const error = new NotFoundException('Trade not found');
+      mockTradingService.getTradeDetails.mockRejectedValue(error);
+
+      await expect(controller.processTradeMatchingLIFO(tradeId)).rejects.toThrow(NotFoundException);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+    });
+
+    it('should handle non-sell trade', async () => {
+      const buyTrade = { ...mockTrade, side: TradeSide.BUY };
+      const mockResult = {
+        trade: buyTrade,
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 0,
+      };
+      mockTradingService.getTradeDetails.mockResolvedValue(buyTrade);
+      mockTradingService.processTradeMatchingLIFO.mockResolvedValue(mockResult);
+
+      const result = await controller.processTradeMatchingLIFO(tradeId);
+      
+      expect(result).toEqual(mockResult);
+      expect(mockTradingService.getTradeDetails).toHaveBeenCalledWith(tradeId);
+      expect(mockTradingService.processTradeMatchingLIFO).toHaveBeenCalledWith(buyTrade);
+    });
+  });
+
+  describe('getTradeAnalysis', () => {
+    const analysisQuery: TradeAnalysisQueryDto = {
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+    };
+
+    const mockAnalysis = {
+      statistics: {
+        totalTrades: 10,
+        totalVolume: 1000,
+        totalPnl: 500,
+      },
+      pnlSummary: {
+        totalRealizedPnl: 500,
+        totalUnrealizedPnl: 200,
+      },
+      topTrades: [],
+      worstTrades: [],
+    };
+
+    it('should get trade analysis successfully', async () => {
+      mockTradingService.getTradeAnalysis.mockResolvedValue(mockAnalysis);
+
+      const result = await controller.getTradeAnalysis(analysisQuery);
+
+      expect(result).toEqual(mockAnalysis);
+      expect(mockTradingService.getTradeAnalysis).toHaveBeenCalledWith(
+        'portfolio-1',
+        'asset-1',
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+      );
+    });
+
+    it('should get trade analysis with minimal parameters', async () => {
+      const minimalQuery: TradeAnalysisQueryDto = { portfolioId: 'portfolio-1' };
+      mockTradingService.getTradeAnalysis.mockResolvedValue(mockAnalysis);
+
+      const result = await controller.getTradeAnalysis(minimalQuery);
+
+      expect(result).toEqual(mockAnalysis);
+      expect(mockTradingService.getTradeAnalysis).toHaveBeenCalledWith(
+        'portfolio-1',
+        undefined,
+        undefined,
+        undefined,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockTradingService.getTradeAnalysis.mockRejectedValue(error);
+
+      await expect(controller.getTradeAnalysis(analysisQuery)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getTradingPerformance', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const startDate = '2024-01-01';
+    const endDate = '2024-01-31';
+
+    const mockPerformance = {
+      totalTrades: 10,
+      winRate: 0,
+      totalPnl: 0,
+      averagePnl: 0,
+      bestTrade: null,
+      worstTrade: null,
+      monthlyPerformance: [
+        { month: '2024-01', pnl: 1000, trades: 5 },
+        { month: '2024-02', pnl: -500, trades: 3 },
+        { month: '2024-03', pnl: 2000, trades: 8 },
+      ],
+    };
+
+    it('should get trade performance successfully', async () => {
+      mockTradingService.getTradeAnalysis.mockResolvedValue({
+        statistics: mockPerformance,
+        pnlSummary: { totalRealizedPnl: 500, totalUnrealizedPnl: 200 },
+        topTrades: [],
+        worstTrades: [],
+      });
+
+      const result = await controller.getTradingPerformance({
+        portfolioId,
+        assetId,
+        startDate,
+        endDate,
+      });
+
+      expect(result).toEqual(mockPerformance);
+      expect(mockTradingService.getTradeAnalysis).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        new Date(startDate),
+        new Date(endDate),
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockTradingService.getTradeAnalysis.mockRejectedValue(error);
+
+      await expect(controller.getTradingPerformance({
+        portfolioId,
+        assetId,
+        startDate,
+        endDate,
+      })).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getTradeStatistics', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const startDate = '2024-01-01';
+    const endDate = '2024-01-31';
+
+    const mockStatistics = {
+      totalTrades: 10,
+      totalVolume: 1000,
+      totalPnl: 500,
+      winRate: 60,
+      averageWin: 100,
+      averageLoss: -50,
+      profitFactor: 2.0,
+      sharpeRatio: 1.5,
+      maxDrawdown: -200,
+      recoveryFactor: 2.5,
+    };
+
+    it('should get trade statistics successfully', async () => {
+      mockTradingService.getTradeAnalysis.mockResolvedValue({
+        statistics: mockStatistics,
+        pnlSummary: { totalRealizedPnl: 500, totalUnrealizedPnl: 200 },
+        topTrades: [],
+        worstTrades: [],
+      });
+
+      const result = await controller.getTradeStatistics(portfolioId, {
+        assetId,
+        startDate,
+        endDate,
+      });
+
+      expect(result).toEqual(mockStatistics);
+      expect(mockTradingService.getTradeAnalysis).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        new Date(startDate),
+        new Date(endDate),
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockTradingService.getTradeAnalysis.mockRejectedValue(error);
+
+      await expect(controller.getTradeStatistics(portfolioId, {
+        assetId,
+        startDate,
+        endDate,
+      })).rejects.toThrow(NotFoundException);
+    });
+  });
+
+});

@@ -1,0 +1,227 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Trade } from '../../trading/entities/trade.entity';
+import { TradeDetail } from '../../trading/entities/trade-detail.entity';
+import { Asset } from '../../asset/entities/asset.entity';
+import { MarketDataService } from '../../market-data/services/market-data.service';
+
+export interface PortfolioCalculationResult {
+  totalValue: number;
+  unrealizedPl: number;
+  realizedPl: number;
+  cashBalance: number;
+  assetPositions: Array<{
+    assetId: string;
+    symbol: string;
+    quantity: number;
+    avgCost: number;
+    currentValue: number;
+    unrealizedPl: number;
+  }>;
+}
+
+/**
+ * Service for calculating portfolio values from trades
+ */
+@Injectable()
+export class PortfolioCalculationService {
+  constructor(
+    @InjectRepository(Trade)
+    private readonly tradeRepository: Repository<Trade>,
+    @InjectRepository(TradeDetail)
+    private readonly tradeDetailRepository: Repository<TradeDetail>,
+    @InjectRepository(Asset)
+    private readonly assetRepository: Repository<Asset>,
+    private readonly marketDataService: MarketDataService,
+  ) {}
+
+  /**
+   * Calculate portfolio values from trades
+   * @param portfolioId - Portfolio ID
+   * @param currentCashBalance - Current cash balance
+   * @returns Promise<PortfolioCalculationResult>
+   */
+  async calculatePortfolioValues(
+    portfolioId: string,
+    currentCashBalance: number = 0,
+  ): Promise<PortfolioCalculationResult> {
+    // Get all trades for this portfolio
+    const trades = await this.tradeRepository.find({
+      where: { portfolioId },
+      relations: ['asset'],
+      order: { tradeDate: 'ASC' },
+    });
+
+    if (trades.length === 0) {
+      return {
+        totalValue: currentCashBalance,
+        unrealizedPl: 0,
+        realizedPl: 0,
+        cashBalance: currentCashBalance,
+        assetPositions: [],
+      };
+    }
+
+    // Calculate realized P&L from trade details
+    const realizedPl = await this.calculateRealizedPl(portfolioId);
+
+    // Calculate current positions and unrealized P&L
+    const positions = await this.calculateCurrentPositions(portfolioId, trades);
+
+    // Calculate total value
+    const totalValue = currentCashBalance + positions.reduce((sum, pos) => sum + pos.currentValue, 0);
+
+    // Calculate total unrealized P&L
+    const unrealizedPl = positions.reduce((sum, pos) => sum + pos.unrealizedPl, 0);
+
+    return {
+      totalValue,
+      unrealizedPl,
+      realizedPl,
+      cashBalance: currentCashBalance,
+      assetPositions: positions,
+    };
+  }
+
+  /**
+   * Calculate realized P&L from trade details
+   * @param portfolioId - Portfolio ID
+   * @returns Promise<number>
+   */
+  private async calculateRealizedPl(portfolioId: string): Promise<number> {
+    const result = await this.tradeDetailRepository
+      .createQueryBuilder('td')
+      .innerJoin('trades', 't', 'td.sellTradeId = t.tradeId')
+      .where('t.portfolio_id = :portfolioId', { portfolioId })
+      .select('COALESCE(SUM(td.pnl), 0)', 'totalRealizedPl')
+      .getRawOne();
+
+    return parseFloat(result.totalRealizedPl) || 0;
+  }
+
+  /**
+   * Calculate current positions from trades
+   * @param portfolioId - Portfolio ID
+   * @param trades - All trades for the portfolio
+   * @returns Promise<Array<AssetPosition>>
+   */
+  private async calculateCurrentPositions(
+    portfolioId: string,
+    trades: Trade[],
+  ): Promise<Array<{
+    assetId: string;
+    symbol: string;
+    quantity: number;
+    avgCost: number;
+    currentValue: number;
+    unrealizedPl: number;
+  }>> {
+    // Group trades by asset
+    const assetTrades = new Map<string, Trade[]>();
+    for (const trade of trades) {
+      if (!assetTrades.has(trade.assetId)) {
+        assetTrades.set(trade.assetId, []);
+      }
+      assetTrades.get(trade.assetId)!.push(trade);
+    }
+
+    const positions = [];
+
+    for (const [assetId, assetTradesList] of assetTrades) {
+      const position = await this.calculateAssetPosition(assetId, assetTradesList);
+      if (position.quantity > 0) {
+        positions.push(position);
+      }
+    }
+
+    return positions;
+  }
+
+  /**
+   * Calculate position for a specific asset
+   * @param assetId - Asset ID
+   * @param trades - Trades for this asset
+   * @returns AssetPosition
+   */
+  private async calculateAssetPosition(
+    assetId: string,
+    trades: Trade[],
+  ): Promise<{
+    assetId: string;
+    symbol: string;
+    quantity: number;
+    avgCost: number;
+    currentValue: number;
+    unrealizedPl: number;
+  }> {
+    let totalQuantity = 0;
+    let totalCost = 0;
+    let symbol = '';
+
+    // Process trades in chronological order
+    for (const trade of trades) {
+      symbol = trade.asset?.symbol || '';
+      
+      if (trade.side === 'BUY') {
+        totalQuantity += parseFloat(trade.quantity.toString());
+        totalCost += parseFloat(trade.quantity.toString()) * parseFloat(trade.price.toString());
+      } else if (trade.side === 'SELL') {
+        totalQuantity -= parseFloat(trade.quantity.toString());
+        // For sells, we don't adjust cost basis (FIFO/LIFO would be handled differently)
+      }
+    }
+
+    if (totalQuantity <= 0) {
+      return {
+        assetId,
+        symbol,
+        quantity: 0,
+        avgCost: 0,
+        currentValue: 0,
+        unrealizedPl: 0,
+      };
+    }
+
+    const avgCost = totalCost / totalQuantity;
+    
+    // Get current price per unit from Market Data Service (real-time)
+    // Fallback to latest trade price if market data is not available
+    let currentPrice: number;
+    try {
+      currentPrice = await this.marketDataService.getCurrentPrice(symbol);
+      if (currentPrice === 0) {
+        // Fallback to latest trade price if market data returns 0
+        const latestTrade = trades[trades.length - 1];
+        currentPrice = parseFloat(latestTrade.price.toString());
+      }
+    } catch (error) {
+      // Fallback to latest trade price if market data service fails
+      const latestTrade = trades[trades.length - 1];
+      currentPrice = parseFloat(latestTrade.price.toString());
+    }
+    
+    const currentValue = totalQuantity * currentPrice;
+    const unrealizedPl = currentValue - (totalQuantity * avgCost);
+
+    return {
+      assetId,
+      symbol,
+      quantity: totalQuantity,
+      avgCost,
+      currentValue,
+      unrealizedPl,
+    };
+  }
+
+  /**
+   * Calculate NAV for a portfolio
+   * @param portfolioId - Portfolio ID
+   * @param currentCashBalance - Current cash balance
+   * @returns Promise<number>
+   */
+  async calculateNAV(portfolioId: string, currentCashBalance: number = 0): Promise<number> {
+    const result = await this.calculatePortfolioValues(portfolioId, currentCashBalance);
+    return result.totalValue;
+  }
+}

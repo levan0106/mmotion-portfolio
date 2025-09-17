@@ -1,0 +1,371 @@
+import { validate } from 'class-validator';
+import { SetRiskTargetsDto } from '../risk-target.dto';
+import { UpdateRiskTargetsDto } from '../risk-target.dto';
+
+describe('Risk Target DTOs', () => {
+  describe('SetRiskTargetsDto', () => {
+    const validSetRiskTargetsDto = {
+      assetId: '550e8400-e29b-41d4-a716-446655440000',
+      stopLoss: 45.0,
+      takeProfit: 65.0,
+      currentPrice: 55.0,
+    };
+
+    it('should validate with all fields', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, validSetRiskTargetsDto);
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with stop loss only', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, {
+        assetId: '550e8400-e29b-41d4-a716-446655440000',
+        stopLoss: 45.0,
+        currentPrice: 55.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with take profit only', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, {
+        assetId: '550e8400-e29b-41d4-a716-446655440000',
+        takeProfit: 65.0,
+        currentPrice: 55.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when assetId is missing', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, assetId: undefined });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('assetId');
+    });
+
+    it('should fail validation when assetId is empty', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, assetId: '' });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('assetId');
+    });
+
+    it('should fail validation when currentPrice is missing', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, currentPrice: undefined });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('currentPrice');
+    });
+
+    it('should fail validation when currentPrice is zero', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, currentPrice: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('currentPrice');
+    });
+
+    it('should fail validation when currentPrice is negative', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, currentPrice: -55.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('currentPrice');
+    });
+
+    it('should validate with positive currentPrice', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, currentPrice: 55.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal currentPrice', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, currentPrice: 55.75 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when stopLoss is zero', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, stopLoss: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('stopLoss');
+    });
+
+    it('should fail validation when stopLoss is negative', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, stopLoss: -45.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('stopLoss');
+    });
+
+    it('should validate with positive stopLoss', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, stopLoss: 45.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal stopLoss', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, stopLoss: 45.25 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when takeProfit is zero', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, takeProfit: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('takeProfit');
+    });
+
+    it('should fail validation when takeProfit is negative', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, takeProfit: -65.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('takeProfit');
+    });
+
+    it('should validate with positive takeProfit', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, takeProfit: 65.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal takeProfit', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, { ...validSetRiskTargetsDto, takeProfit: 65.75 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when both stopLoss and takeProfit are missing', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, {
+        assetId: '550e8400-e29b-41d4-a716-446655440000',
+        currentPrice: 55.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(2);
+      expect(errors[0].property).toBe('stopLoss');
+      expect(errors[1].property).toBe('takeProfit');
+    });
+
+    it('should validate with multiple validation errors', async () => {
+      const dto = new SetRiskTargetsDto();
+      Object.assign(dto, {
+        assetId: '',
+        stopLoss: -45.0,
+        takeProfit: -65.0,
+        currentPrice: -55.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(3);
+    });
+  });
+
+  describe('UpdateRiskTargetsDto', () => {
+    const validUpdateRiskTargetsDto = {
+      stopLoss: 50.0,
+      takeProfit: 70.0,
+      currentPrice: 60.0,
+    };
+
+    it('should validate with all fields', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, validUpdateRiskTargetsDto);
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with empty object (all fields optional)', async () => {
+      const dto = new UpdateRiskTargetsDto();
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with partial fields', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, {
+        stopLoss: 50.0,
+        currentPrice: 60.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with stop loss only', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, {
+        stopLoss: 50.0,
+        currentPrice: 60.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with take profit only', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, {
+        takeProfit: 70.0,
+        currentPrice: 60.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when currentPrice is zero', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, currentPrice: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('currentPrice');
+    });
+
+    it('should fail validation when currentPrice is negative', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, currentPrice: -60.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('currentPrice');
+    });
+
+    it('should validate with positive currentPrice', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, currentPrice: 60.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal currentPrice', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, currentPrice: 60.75 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when stopLoss is zero', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, stopLoss: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('stopLoss');
+    });
+
+    it('should fail validation when stopLoss is negative', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, stopLoss: -50.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('stopLoss');
+    });
+
+    it('should validate with positive stopLoss', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, stopLoss: 50.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal stopLoss', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, stopLoss: 50.25 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when takeProfit is zero', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, takeProfit: 0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('takeProfit');
+    });
+
+    it('should fail validation when takeProfit is negative', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, takeProfit: -70.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('takeProfit');
+    });
+
+    it('should validate with positive takeProfit', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, takeProfit: 70.0 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with decimal takeProfit', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, { ...validUpdateRiskTargetsDto, takeProfit: 70.75 });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should validate with multiple validation errors', async () => {
+      const dto = new UpdateRiskTargetsDto();
+      Object.assign(dto, {
+        stopLoss: -50.0,
+        takeProfit: -70.0,
+        currentPrice: -60.0,
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(2);
+    });
+  });
+});

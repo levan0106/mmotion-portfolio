@@ -1,0 +1,280 @@
+/**
+ * Asset Analytics Styles
+ */
+
+.asset-analytics {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.asset-analytics__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.asset-analytics__header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.asset-analytics__content {
+  padding: 1.5rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.analytics-section {
+  margin-bottom: 2rem;
+}
+
+.analytics-section:last-child {
+  margin-bottom: 0;
+}
+
+.analytics-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.metric-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 0.25rem;
+}
+
+.metric-card__label {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Distribution Chart */
+.distribution-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.distribution-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.distribution-item__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 120px;
+  font-size: 0.875rem;
+}
+
+.distribution-item__type {
+  font-weight: 500;
+  color: #333;
+}
+
+.distribution-item__count {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.distribution-item__bar {
+  flex: 1;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.distribution-item__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.distribution-item__percentage {
+  min-width: 40px;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
+}
+
+/* Performers List */
+.performers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.performer-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.performer-item:hover {
+  background: #e9ecef;
+}
+
+.performer-item__rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.performer-item__info {
+  flex: 1;
+}
+
+.performer-item__name {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.875rem;
+}
+
+.performer-item__code {
+  color: #666;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.performer-item__performance {
+  text-align: right;
+}
+
+.performer-item__return {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.performer-item__return.positive {
+  color: #059669;
+}
+
+.performer-item__return.negative {
+  color: #dc2626;
+}
+
+.performer-item__value {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.btn--secondary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #d0d0d0;
+}
+
+.btn--secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn--icon {
+  padding: 0.5rem;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .asset-analytics__content {
+    padding: 1rem;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .metric-card {
+    padding: 0.75rem;
+  }
+  
+  .metric-card__value {
+    font-size: 1.25rem;
+  }
+  
+  .distribution-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .distribution-item__label {
+    min-width: auto;
+    justify-content: space-between;
+  }
+  
+  .performer-item {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .performer-item__performance {
+    text-align: center;
+  }
+}

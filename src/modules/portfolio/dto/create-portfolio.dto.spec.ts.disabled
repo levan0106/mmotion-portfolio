@@ -1,0 +1,681 @@
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+import { CreatePortfolioDto } from './create-portfolio.dto';
+import { testUtils } from '../../../../test/utils/test-helpers';
+
+describe('CreatePortfolioDto', () => {
+  let dto: CreatePortfolioDto;
+
+  beforeEach(() => {
+    dto = new CreatePortfolioDto();
+  });
+
+  describe('Valid DTO', () => {
+    it('should pass validation with all required fields', async () => {
+      // Arrange
+      const validData = {
+        name: 'Tech Growth Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'Portfolio focused on technology stocks',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Tech Growth Portfolio');
+      expect(dto.base_currency).toBe('USD');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('Portfolio focused on technology stocks');
+    });
+
+    it('should pass validation with minimal required fields', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'VND',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Test Portfolio');
+      expect(dto.base_currency).toBe('VND');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should transform and validate currency codes correctly', async () => {
+      // Arrange
+      const validData = {
+        name: 'Multi Currency Portfolio',
+        base_currency: 'eur', // lowercase
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBe('EUR'); // Should be transformed to uppercase
+    });
+
+    it('should trim whitespace from name and description', async () => {
+      // Arrange
+      const validData = {
+        name: '  Tech Portfolio  ',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: '  Technology focused portfolio  ',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Tech Portfolio');
+      expect(dto.description).toBe('Technology focused portfolio');
+    });
+  });
+
+  describe('Name Validation', () => {
+    it('should fail validation when name is missing', async () => {
+      // Arrange
+      const invalidData = {
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    });
+
+    it('should fail validation when name is empty string', async () => {
+      // Arrange
+      const invalidData = {
+        name: '',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    });
+
+    it('should fail validation when name is only whitespace', async () => {
+      // Arrange
+      const invalidData = {
+        name: '   ',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    });
+
+    it('should fail validation when name is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 123,
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should fail validation when name is null', async () => {
+      // Arrange
+      const invalidData = {
+        name: null,
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    });
+
+    it('should fail validation when name is undefined', async () => {
+      // Arrange
+      const invalidData = {
+        name: undefined,
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('name');
+      expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    });
+  });
+
+  describe('Base Currency Validation', () => {
+    it('should fail validation when base_currency is missing', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should fail validation when base_currency is empty string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: '',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is too short', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'US',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is too long', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USDD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isLength');
+    });
+
+    it('should fail validation when base_currency is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 123,
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should fail validation when base_currency is null', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: null,
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should pass validation with valid currency codes', async () => {
+      // Arrange
+      const validCurrencies = ['VND', 'USD', 'EUR', 'GBP', 'JPY'];
+
+      for (const currency of validCurrencies) {
+        const validData = {
+          name: 'Test Portfolio',
+          base_currency: currency,
+          account_id: testUtils.fixtures.uuids.account1,
+        };
+
+        // Act
+        const dto = plainToClass(CreatePortfolioDto, validData);
+        const errors = await validate(dto);
+
+        // Assert
+        expect(errors).toHaveLength(0);
+        expect(dto.base_currency).toBe(currency);
+      }
+    });
+  });
+
+  describe('Account ID Validation', () => {
+    it('should fail validation when account_id is missing', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is empty string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: '',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is not a valid UUID', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: 'invalid-uuid',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: 123,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should fail validation when account_id is null', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: null,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('account_id');
+      expect(errors[0].constraints).toHaveProperty('isUuid');
+    });
+
+    it('should pass validation with valid UUID format', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.account_id).toBe('86c2ae61-8f69-4608-a5fd-8fecb44ed2c5');
+    });
+  });
+
+  describe('Description Validation', () => {
+    it('should pass validation when description is provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'A test portfolio for validation testing',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('A test portfolio for validation testing');
+    });
+
+    it('should pass validation when description is not provided', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('should pass validation when description is empty string', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: '',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('');
+    });
+
+    it('should fail validation when description is not a string', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 123,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('description');
+      expect(errors[0].constraints).toHaveProperty('isString');
+    });
+
+    it('should trim whitespace from description', async () => {
+      // Arrange
+      const validData = {
+        name: 'Test Portfolio',
+        base_currency: 'USD',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: '  Test description  ',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.description).toBe('Test description');
+    });
+  });
+
+  describe('Multiple Field Validation', () => {
+    it('should fail validation with multiple invalid fields', async () => {
+      // Arrange
+      const invalidData = {
+        name: '',
+        base_currency: 'INVALID',
+        account_id: 'not-a-uuid',
+        description: 123,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData, { 
+        enableImplicitConversion: false 
+      });
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(4);
+      
+      const errorProperties = errors.map(error => error.property);
+      expect(errorProperties).toContain('name');
+      expect(errorProperties).toContain('base_currency');
+      expect(errorProperties).toContain('account_id');
+      expect(errorProperties).toContain('description');
+    });
+
+    it('should fail validation with all required fields missing', async () => {
+      // Arrange
+      const invalidData = {};
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(3);
+      
+      const errorProperties = errors.map(error => error.property);
+      expect(errorProperties).toContain('name');
+      expect(errorProperties).toContain('base_currency');
+      expect(errorProperties).toContain('account_id');
+    });
+
+    it('should pass validation with all fields valid including optional description', async () => {
+      // Arrange
+      const validData = {
+        name: 'Complete Portfolio',
+        base_currency: 'EUR',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'A complete portfolio with all fields',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, validData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.name).toBe('Complete Portfolio');
+      expect(dto.base_currency).toBe('EUR');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('A complete portfolio with all fields');
+    });
+  });
+
+  describe('Edge Cases and Data Transformation', () => {
+    it('should handle null values gracefully', async () => {
+      // Arrange
+      const invalidData = {
+        name: null,
+        base_currency: null,
+        account_id: null,
+        description: null,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(3); // description is optional
+      expect(errors[0].property).toBe('name');
+      expect(errors[1].property).toBe('base_currency');
+      expect(errors[2].property).toBe('account_id');
+    });
+
+    it('should handle undefined values gracefully', async () => {
+      // Arrange
+      const invalidData = {
+        name: undefined,
+        base_currency: undefined,
+        account_id: undefined,
+        description: undefined,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(3); // description is optional
+      expect(errors[0].property).toBe('name');
+      expect(errors[1].property).toBe('base_currency');
+      expect(errors[2].property).toBe('account_id');
+    });
+
+    it('should handle mixed valid and invalid data', async () => {
+      // Arrange
+      const mixedData = {
+        name: 'Valid Name',
+        base_currency: 'INVALID',
+        account_id: testUtils.fixtures.uuids.account1,
+        description: 'Valid description',
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, mixedData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('base_currency');
+      expect(dto.name).toBe('Valid Name');
+      expect(dto.account_id).toBe(testUtils.fixtures.uuids.account1);
+      expect(dto.description).toBe('Valid description');
+    });
+
+    it('should transform currency to uppercase even when invalid', async () => {
+      // Arrange
+      const invalidData = {
+        name: 'Test Portfolio',
+        base_currency: 'usd', // lowercase but valid length
+        account_id: testUtils.fixtures.uuids.account1,
+      };
+
+      // Act
+      const dto = plainToClass(CreatePortfolioDto, invalidData);
+      const errors = await validate(dto);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+      expect(dto.base_currency).toBe('USD');
+    });
+  });
+});
