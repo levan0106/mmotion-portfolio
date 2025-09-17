@@ -8,10 +8,15 @@ import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
 import { GlobalAssetController } from './controllers/global-asset.controller';
 import { BasicPriceController } from './controllers/basic-price.controller';
+import { PriceHistoryController } from './controllers/price-history.controller';
+import { MarketDataController } from './controllers/market-data.controller';
 import { AssetController } from './controllers/asset.controller';
 import { GlobalAssetService } from './services/global-asset.service';
 import { BasicPriceService } from './services/basic-price.service';
 import { NationConfigService } from './services/nation-config.service';
+import { PriceHistoryService } from './services/price-history.service';
+import { MarketDataService } from './services/market-data.service';
+import { ScheduledPriceUpdateService } from './services/scheduled-price-update.service';
 import { AssetService } from './services/asset.service';
 import { AssetValidationService } from './services/asset-validation.service';
 import { AssetAnalyticsService } from './services/asset-analytics.service';
@@ -56,6 +61,8 @@ import { LoggingModule } from '../logging/logging.module';
   controllers: [
     GlobalAssetController,
     BasicPriceController,
+    PriceHistoryController,
+    MarketDataController,
     AssetController,
   ],
   providers: [
@@ -63,6 +70,9 @@ import { LoggingModule } from '../logging/logging.module';
     GlobalAssetService,
     BasicPriceService,
     NationConfigService,
+    PriceHistoryService,
+    MarketDataService,
+    ScheduledPriceUpdateService,
     
     // Legacy Asset System services (for backward compatibility)
     AssetService,
@@ -80,6 +90,9 @@ import { LoggingModule } from '../logging/logging.module';
     GlobalAssetService,
     BasicPriceService,
     NationConfigService,
+    PriceHistoryService,
+    MarketDataService,
+    ScheduledPriceUpdateService,
     
     // Legacy Asset System exports (for backward compatibility)
     AssetService,
