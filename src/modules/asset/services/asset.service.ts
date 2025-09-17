@@ -4,13 +4,7 @@ import { IAssetRepository, AssetStatistics } from '../repositories/asset.reposit
 import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
 import { AssetCacheService } from './asset-cache.service';
-import { AssetMigrationService } from './asset-migration.service';
 import { MarketDataService } from '../../market-data/services/market-data.service';
-import { 
-  MigrationDataAnalysisDto, 
-  MigrationResultDto, 
-  RollbackResultDto 
-} from '../dto/migration-data-analysis.dto';
 
 /**
  * Create Asset DTO
@@ -57,7 +51,6 @@ export class AssetService {
     @Inject('IAssetRepository')
     private readonly assetRepository: IAssetRepository,
     private readonly cacheService: AssetCacheService,
-    private readonly migrationService: AssetMigrationService,
     private readonly marketDataService: MarketDataService,
   ) {}
 
@@ -721,37 +714,4 @@ export class AssetService {
     return updatedAsset;
   }
 
-  // ==================== MIGRATION METHODS ====================
-
-  /**
-   * Analyze current data distribution for migration
-   * @returns Data analysis result
-   */
-  async analyzeMigrationData(): Promise<MigrationDataAnalysisDto> {
-    return this.migrationService.analyzeDataDistribution();
-  }
-
-  /**
-   * Migrate code field to symbol field
-   * @returns Migration result
-   */
-  async migrateCodeToSymbol(): Promise<MigrationResultDto> {
-    return this.migrationService.migrateCodeToSymbol();
-  }
-
-  /**
-   * Validate migration success
-   * @returns Validation result
-   */
-  async validateMigration(): Promise<{ isValid: boolean; issues: string[] }> {
-    return this.migrationService.validateMigration();
-  }
-
-  /**
-   * Rollback migration (restore code field from symbol)
-   * @returns Rollback result
-   */
-  async rollbackMigration(): Promise<RollbackResultDto> {
-    return this.migrationService.rollbackMigration();
-  }
 }

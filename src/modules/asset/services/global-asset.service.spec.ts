@@ -8,7 +8,7 @@ import { NationConfigService } from './nation-config.service';
 import { CreateGlobalAssetDto } from '../dto/create-global-asset.dto';
 import { UpdateGlobalAssetDto } from '../dto/update-global-asset.dto';
 import { GlobalAssetQueryDto } from '../dto/global-asset-query.dto';
-import { AssetType } from '../../config/nation-config.interface';
+import { AssetType } from '../enums/asset-type.enum';
 
 describe('GlobalAssetService', () => {
   let service: GlobalAssetService;
@@ -42,6 +42,20 @@ describe('GlobalAssetService', () => {
       timezone: 'Asia/Ho_Chi_Minh',
     }),
     canModify: jest.fn().mockReturnValue(true),
+    toJSON: jest.fn().mockReturnValue({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      symbol: 'HPG',
+      name: 'Hoa Phat Group',
+      type: 'STOCK',
+      nation: 'VN',
+      marketCode: 'HOSE',
+      currency: 'VND',
+      timezone: 'Asia/Ho_Chi_Minh',
+      isActive: true,
+      description: 'Leading steel manufacturer in Vietnam',
+      createdAt: '2024-01-15T10:30:00.000Z',
+      updatedAt: '2024-01-15T10:30:00.000Z'
+    }),
   };
 
   const mockRepository = {

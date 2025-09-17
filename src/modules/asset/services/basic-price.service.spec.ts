@@ -34,6 +34,17 @@ describe('BasicPriceService', () => {
     getFormattedPrice: jest.fn().mockReturnValue('150.000 ₫'),
     getPriceSourceDisplayName: jest.fn().mockReturnValue('Dịch vụ dữ liệu thị trường'),
     getPriceTypeDisplayName: jest.fn().mockReturnValue('Dữ liệu thị trường'),
+    toJSON: jest.fn().mockReturnValue({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      assetId: '550e8400-e29b-41d4-a716-446655440001',
+      currentPrice: 150000,
+      priceType: 'MARKET_DATA',
+      priceSource: 'MARKET_DATA_SERVICE',
+      lastPriceUpdate: '2024-01-15T10:30:00.000Z',
+      metadata: { api_provider: 'yahoo_finance', response_time: '150ms' },
+      createdAt: '2024-01-15T10:30:00.000Z',
+      updatedAt: '2024-01-15T10:30:00.000Z'
+    }),
   };
 
   const mockRepository = {

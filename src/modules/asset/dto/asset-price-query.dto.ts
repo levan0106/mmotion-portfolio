@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsEnum, IsBoolean, IsString, IsNumber, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { PriceType, PriceSource } from '../entities/asset-price.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
 /**
  * DTO for querying asset prices with filtering, pagination, and sorting.

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NationConfigService } from './nation-config.service';
-import { NationCode, AssetType } from '../../config/nation-config.interface';
+import { NationCode } from '../../../config/nation-config.interface';
+import { AssetType } from '../enums/asset-type.enum';
 
 describe('NationConfigService', () => {
   let service: NationConfigService;
@@ -101,7 +102,7 @@ describe('NationConfigService', () => {
   describe('getAssetTypeConfig', () => {
     it('should return asset type configuration for a nation', () => {
       const nationCode: NationCode = 'VN';
-      const assetType: AssetType = 'STOCK';
+      const assetType: AssetType = AssetType.STOCK;
       const config = service.getAssetTypeConfig(nationCode, assetType);
       
       expect(config).toBeDefined();
@@ -114,7 +115,7 @@ describe('NationConfigService', () => {
   describe('isAssetTypeEnabled', () => {
     it('should return true for enabled asset type', () => {
       const nationCode: NationCode = 'VN';
-      const assetType: AssetType = 'STOCK';
+      const assetType: AssetType = AssetType.STOCK;
       const isEnabled = service.isAssetTypeEnabled(nationCode, assetType);
       
       expect(isEnabled).toBe(true);
@@ -132,7 +133,7 @@ describe('NationConfigService', () => {
   describe('validateSymbolFormat', () => {
     it('should return true for valid symbol format', () => {
       const nationCode: NationCode = 'VN';
-      const assetType: AssetType = 'STOCK';
+      const assetType: AssetType = AssetType.STOCK;
       const symbol = 'HPG';
       const isValid = service.validateSymbolFormat(nationCode, assetType, symbol);
       
@@ -141,7 +142,7 @@ describe('NationConfigService', () => {
 
     it('should return false for invalid symbol format', () => {
       const nationCode: NationCode = 'VN';
-      const assetType: AssetType = 'STOCK';
+      const assetType: AssetType = AssetType.STOCK;
       const symbol = 'invalid-symbol!';
       const isValid = service.validateSymbolFormat(nationCode, assetType, symbol);
       
@@ -173,8 +174,8 @@ describe('NationConfigService', () => {
   describe('getDefaultMarketCode', () => {
     it('should return default market code for asset type', () => {
       const nationCode: NationCode = 'VN';
-      const assetType: AssetType = 'STOCK';
-      const marketCode = service.getDefaultMarketCode(nationCode, assetType);
+      const assetType: AssetType = AssetType.STOCK;
+      const marketCode = service.getDefaultMarketCode(nationCode);
       
       expect(marketCode).toBe('HOSE');
     });

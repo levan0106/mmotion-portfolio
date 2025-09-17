@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsEnum, IsOptional, IsNumber, IsObject, Min } from 'class-validator';
-import { PriceType, PriceSource } from '../entities/asset-price.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
 /**
  * DTO for updating an existing asset price.

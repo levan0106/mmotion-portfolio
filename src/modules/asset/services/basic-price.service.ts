@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindManyOptions, In } from 'typeorm';
-import { AssetPrice, PriceType, PriceSource } from '../entities/asset-price.entity';
+import { AssetPrice } from '../entities/asset-price.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { GlobalAssetService } from './global-asset.service';
 import { CreateAssetPriceDto } from '../dto/create-asset-price.dto';
 import { UpdateAssetPriceDto } from '../dto/update-asset-price.dto';

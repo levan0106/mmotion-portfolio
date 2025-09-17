@@ -37,7 +37,7 @@ import { AssetPriceHistory } from './asset-price-history.entity';
 @Unique('UQ_GLOBAL_ASSET_SYMBOL_NATION', ['symbol', 'nation'])
 @Check('CHK_GLOBAL_ASSET_SYMBOL_FORMAT', "symbol ~ '^[A-Z0-9-]+$'")
 @Check('CHK_GLOBAL_ASSET_NATION_FORMAT', "nation ~ '^[A-Z]{2}$'")
-@Check('CHK_GLOBAL_ASSET_MARKET_CODE_FORMAT', "marketCode ~ '^[A-Z0-9-]+$'")
+@Check('CHK_GLOBAL_ASSET_MARKET_CODE_FORMAT', "market_code ~ '^[A-Z0-9-]+$'")
 @Check('CHK_GLOBAL_ASSET_CURRENCY_FORMAT', "currency ~ '^[A-Z]{3}$'")
 @Check('CHK_GLOBAL_ASSET_TIMEZONE_FORMAT', "timezone ~ '^[A-Za-z_/]+$'")
 export class GlobalAsset {

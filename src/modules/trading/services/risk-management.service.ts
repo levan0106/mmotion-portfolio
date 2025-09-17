@@ -249,7 +249,7 @@ export class RiskManagementService {
 
         riskMetrics.push({
           assetId: target.assetId,
-          assetSymbol: target.asset?.symbol || target.asset?.code || 'Unknown',
+          assetSymbol: target.asset?.symbol || 'Unknown',
           currentPrice,
           stopLoss: target.stopLoss,
           takeProfit: target.takeProfit,
@@ -373,7 +373,7 @@ export class RiskManagementService {
       if (assetTarget) {
         alerts.push({
           assetId: assetTarget.assetId,
-          assetSymbol: assetTarget.asset?.symbol || assetTarget.asset?.code || 'Unknown',
+          assetSymbol: assetTarget.asset?.symbol || 'Unknown',
           alertType: 'STOP_LOSS',
           message: 'Stop loss triggered',
           timestamp: new Date(),

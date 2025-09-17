@@ -12,40 +12,10 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GlobalAsset } from './global-asset.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
-/**
- * Price type enumeration for asset pricing.
- */
-export enum PriceType {
-  /** Manual price set by user */
-  MANUAL = 'MANUAL',
-  
-  /** Price from market data API */
-  MARKET_DATA = 'MARKET_DATA',
-  
-  /** Price from external data source */
-  EXTERNAL = 'EXTERNAL',
-  
-  /** Price calculated from other sources */
-  CALCULATED = 'CALCULATED'
-}
-
-/**
- * Price source enumeration for asset pricing.
- */
-export enum PriceSource {
-  /** User manually entered price */
-  USER = 'USER',
-  
-  /** Market data service */
-  MARKET_DATA_SERVICE = 'MARKET_DATA_SERVICE',
-  
-  /** External API (e.g., Yahoo Finance, Alpha Vantage) */
-  EXTERNAL_API = 'EXTERNAL_API',
-  
-  /** Calculated from other prices */
-  CALCULATED = 'CALCULATED'
-}
+// Re-export for external use
+export { PriceType, PriceSource };
 
 /**
  * Asset Price entity representing current price data for a global asset.
@@ -65,9 +35,9 @@ export enum PriceSource {
 @Index('IDX_ASSET_PRICE_SOURCE', ['priceSource'])
 @Index('IDX_ASSET_PRICE_UPDATE', ['lastPriceUpdate'])
 @Unique('UQ_ASSET_PRICE_ASSET_ID', ['assetId'])
-@Check('CHK_ASSET_PRICE_POSITIVE', 'currentPrice > 0')
-@Check('CHK_ASSET_PRICE_TYPE_VALID', "priceType IN ('MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED')")
-@Check('CHK_ASSET_PRICE_SOURCE_VALID', "priceSource IN ('USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED')")
+@Check('CHK_ASSET_PRICE_POSITIVE', 'current_price > 0')
+@Check('CHK_ASSET_PRICE_TYPE_VALID', "price_type IN ('MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED')")
+@Check('CHK_ASSET_PRICE_SOURCE_VALID', "price_source IN ('USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED')")
 export class AssetPrice {
   /**
    * Unique identifier for the asset price record.
@@ -121,13 +91,13 @@ export class AssetPrice {
     example: PriceType.MARKET_DATA,
   })
   @Column({ 
-    type: 'enum', 
-    enum: PriceType,
-    default: PriceType.MANUAL,
+    type: 'varchar', 
+    length: 20,
+    default: 'MANUAL',
     name: 'price_type',
     comment: 'Type of the price'
   })
-  priceType: PriceType;
+  priceType: string;
 
   /**
    * Source of the price (USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED).
@@ -138,13 +108,13 @@ export class AssetPrice {
     example: PriceSource.MARKET_DATA_SERVICE,
   })
   @Column({ 
-    type: 'enum', 
-    enum: PriceSource,
-    default: PriceSource.USER,
+    type: 'varchar', 
+    length: 30,
+    default: 'USER',
     name: 'price_source',
     comment: 'Source of the price'
   })
-  priceSource: PriceSource;
+  priceSource: string;
 
   /**
    * Timestamp when the price was last updated.
@@ -226,8 +196,8 @@ export class AssetPrice {
    * @returns True if price is from market data, false otherwise
    */
   isFromMarketData(): boolean {
-    return this.priceType === PriceType.MARKET_DATA && 
-           this.priceSource === PriceSource.MARKET_DATA_SERVICE;
+    return this.priceType === 'MARKET_DATA' && 
+           this.priceSource === 'MARKET_DATA_SERVICE';
   }
 
   /**
@@ -235,8 +205,8 @@ export class AssetPrice {
    * @returns True if price is manual, false otherwise
    */
   isManual(): boolean {
-    return this.priceType === PriceType.MANUAL && 
-           this.priceSource === PriceSource.USER;
+    return this.priceType === 'MANUAL' && 
+           this.priceSource === 'USER';
   }
 
   /**
@@ -287,11 +257,11 @@ export class AssetPrice {
    * @returns Human-readable price source name
    */
   getPriceSourceDisplayName(): string {
-    const sourceNames: Record<PriceSource, string> = {
-      [PriceSource.USER]: 'Người dùng',
-      [PriceSource.MARKET_DATA_SERVICE]: 'Dịch vụ dữ liệu thị trường',
-      [PriceSource.EXTERNAL_API]: 'API bên ngoài',
-      [PriceSource.CALCULATED]: 'Tính toán',
+    const sourceNames: Record<string, string> = {
+      'USER': 'Người dùng',
+      'MARKET_DATA_SERVICE': 'Dịch vụ dữ liệu thị trường',
+      'EXTERNAL_API': 'API bên ngoài',
+      'CALCULATED': 'Tính toán',
     };
     return sourceNames[this.priceSource] || this.priceSource;
   }
@@ -301,11 +271,11 @@ export class AssetPrice {
    * @returns Human-readable price type name
    */
   getPriceTypeDisplayName(): string {
-    const typeNames: Record<PriceType, string> = {
-      [PriceType.MANUAL]: 'Thủ công',
-      [PriceType.MARKET_DATA]: 'Dữ liệu thị trường',
-      [PriceType.EXTERNAL]: 'Bên ngoài',
-      [PriceType.CALCULATED]: 'Tính toán',
+    const typeNames: Record<string, string> = {
+      'MANUAL': 'Thủ công',
+      'MARKET_DATA': 'Dữ liệu thị trường',
+      'EXTERNAL': 'Bên ngoài',
+      'CALCULATED': 'Tính toán',
     };
     return typeNames[this.priceType] || this.priceType;
   }

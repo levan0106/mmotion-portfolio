@@ -486,7 +486,7 @@ export class PortfolioService {
 
     if (searchTerm) {
       query = query.andWhere(
-        '(asset.name ILIKE :searchTerm OR asset.code ILIKE :searchTerm)',
+        '(asset.name ILIKE :searchTerm OR asset.symbol ILIKE :searchTerm)',
         { searchTerm: `%${searchTerm}%` }
       );
     }

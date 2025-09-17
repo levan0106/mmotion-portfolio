@@ -1,6 +1,5 @@
 import { Asset } from '../../../../src/modules/asset/entities/asset.entity';
 import { AssetType } from '../../../../src/modules/asset/enums/asset-type.enum';
-import { Portfolio } from '../../../../src/modules/portfolio/entities/portfolio.entity';
 import { Trade } from '../../../../src/modules/trading/entities/trade.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 
@@ -13,7 +12,6 @@ describe('Asset Entity', () => {
     // portfolioId property has been removed - Asset no longer directly belongs to portfolio
     asset.name = 'Test Asset';
     asset.symbol = 'TEST'; // Updated to use symbol field instead of code
-    asset.code = 'TEST'; // Keep for backward compatibility during migration
     asset.type = AssetType.STOCK;
     asset.description = 'Test asset description';
     asset.initialValue = 1000000;
@@ -35,8 +33,7 @@ describe('Asset Entity', () => {
       expect(asset.id).toBe('test-asset-id');
       // portfolioId property has been removed - Asset no longer directly belongs to portfolio
       expect(asset.name).toBe('Test Asset');
-      expect(asset.symbol).toBe('TEST'); // Updated to use symbol field
-      expect(asset.code).toBe('TEST'); // Keep for backward compatibility
+      expect(asset.symbol).toBe('TEST'); // Updated to use symbol field instead of code
       expect(asset.type).toBe(AssetType.STOCK);
       expect(asset.description).toBe('Test asset description');
       expect(asset.initialValue).toBe(1000000);
@@ -49,7 +46,6 @@ describe('Asset Entity', () => {
 
     it('should have optional properties', () => {
       expect(asset.symbol).toBeDefined(); // Symbol is now required
-      expect(asset.code).toBeDefined(); // Code is deprecated but still present
       expect(asset.description).toBeDefined();
       expect(asset.currentValue).toBeDefined();
       expect(asset.currentQuantity).toBeDefined();
@@ -143,8 +139,7 @@ describe('Asset Entity', () => {
       expect(json.id).toBe(asset.id);
       // portfolioId property has been removed - Asset no longer directly belongs to portfolio
       expect(json.name).toBe(asset.name);
-      expect(json.symbol).toBe(asset.symbol); // Updated to use symbol field
-      // code field is excluded from JSON output to avoid confusion
+      expect(json.symbol).toBe(asset.symbol); // Updated to use symbol field instead of code
       expect(json.type).toBe(asset.type);
       expect(json.description).toBe(asset.description);
       expect(json.initialValue).toBe(asset.initialValue);

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GlobalAsset } from './global-asset.entity';
-import { PriceType, PriceSource } from './asset-price.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
 /**
  * AssetPriceHistory entity representing historical price changes for global assets.
@@ -52,12 +52,12 @@ export class AssetPriceHistory {
     example: PriceType.MARKET_DATA,
   })
   @Column({
-    type: 'enum',
-    enum: PriceType,
-    default: PriceType.MANUAL,
+    type: 'varchar',
+    length: 20,
+    default: 'MANUAL',
     name: 'price_type',
   })
-  priceType: PriceType;
+  priceType: string;
 
   @ApiProperty({
     description: 'Source of the price (e.g., USER, MARKET_DATA_SERVICE)',
@@ -65,12 +65,12 @@ export class AssetPriceHistory {
     example: PriceSource.MARKET_DATA_SERVICE,
   })
   @Column({
-    type: 'enum',
-    enum: PriceSource,
-    default: PriceSource.USER,
+    type: 'varchar',
+    length: 30,
+    default: 'USER',
     name: 'price_source',
   })
-  priceSource: PriceSource;
+  priceSource: string;
 
   @ApiPropertyOptional({
     description: 'Reason for the price change',
@@ -109,7 +109,7 @@ export class AssetPriceHistory {
    * @returns True if market data, false otherwise
    */
   isMarketDataChange(): boolean {
-    return this.priceSource === PriceSource.MARKET_DATA_SERVICE || this.priceSource === PriceSource.EXTERNAL_API;
+    return this.priceSource === 'MARKET_DATA_SERVICE' || this.priceSource === 'EXTERNAL_API';
   }
 
   /**
@@ -117,7 +117,7 @@ export class AssetPriceHistory {
    * @returns True if manual, false otherwise
    */
   isManualChange(): boolean {
-    return this.priceSource === PriceSource.USER;
+    return this.priceSource === 'USER';
   }
 
   /**

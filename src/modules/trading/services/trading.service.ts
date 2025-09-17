@@ -474,7 +474,7 @@ export class TradingService {
     // Transform trade details to include asset information
     const topTrades = topTradesRaw.map(trade => ({
       tradeId: trade.detailId,
-      assetSymbol: trade.asset?.symbol || trade.asset?.code || 'N/A',
+      assetSymbol: trade.asset?.symbol || 'N/A',
       assetName: trade.asset?.name || 'N/A',
       side: trade.sellTrade?.side || 'SELL',
       quantity: trade.matchedQty,
@@ -486,7 +486,7 @@ export class TradingService {
 
     const worstTrades = worstTradesRaw.map(trade => ({
       tradeId: trade.detailId,
-      assetSymbol: trade.asset?.symbol || trade.asset?.code || 'N/A',
+      assetSymbol: trade.asset?.symbol || 'N/A',
       assetName: trade.asset?.name || 'N/A',
       side: trade.sellTrade?.side || 'SELL',
       quantity: trade.matchedQty,
@@ -750,7 +750,7 @@ export class TradingService {
         
         const assetData = {
           assetId: assetId,
-          assetSymbol: asset.symbol || asset.code || 'N/A',
+          assetSymbol: asset.symbol || 'N/A',
           assetName: asset.name || 'N/A',
           totalPl: Math.round(totalPl * 100) / 100,
           tradesCount: tradesCount,
@@ -965,7 +965,7 @@ export class TradingService {
           tradeId: trade.tradeId,
           portfolioId: trade.portfolioId,
           assetId: trade.assetId,
-          assetSymbol: trade.asset?.symbol || trade.asset?.code || 'N/A',
+          assetSymbol: trade.asset?.symbol || 'N/A',
           assetName: trade.asset?.name,
           tradeDate: trade.tradeDate,
           side: trade.side,

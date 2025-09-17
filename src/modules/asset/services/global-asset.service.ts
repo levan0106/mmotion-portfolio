@@ -7,7 +7,9 @@ import { CreateGlobalAssetDto } from '../dto/create-global-asset.dto';
 import { UpdateGlobalAssetDto } from '../dto/update-global-asset.dto';
 import { GlobalAssetQueryDto } from '../dto/global-asset-query.dto';
 import { GlobalAssetResponseDto } from '../dto/global-asset-response.dto';
-import { NationCode, AssetType } from '../../config/nation-config.interface';
+import { AssetType } from '../enums/asset-type.enum';
+
+type NationCode = 'VN' | 'US' | 'UK' | 'JP' | 'SG';
 
 /**
  * Service for managing global assets in the Global Assets System.
@@ -251,15 +253,15 @@ export class GlobalAssetService {
       throw new BadRequestException('Asset cannot be modified as it has associated trades');
     }
 
-    // Validate nation configuration if nation is being updated
-    if (updateDto.nation) {
-      this.validateNationConfiguration(updateDto.nation as NationCode, updateDto.type as AssetType || asset.type);
+    // Validate nation configuration if type is being updated
+    if (updateDto.type) {
+      this.validateNationConfiguration(asset.nation as NationCode, updateDto.type as AssetType);
     }
 
     // Validate symbol format if type is being updated
     if (updateDto.type) {
       this.validateSymbolFormat(
-        updateDto.nation as NationCode || asset.nation as NationCode,
+        asset.nation as NationCode,
         updateDto.type as AssetType,
         asset.symbol,
       );

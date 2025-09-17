@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PriceType, PriceSource } from '../entities/asset-price.entity';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
 /**
  * DTO for asset price response data.
@@ -43,20 +43,18 @@ export class AssetPriceResponseDto {
    */
   @ApiProperty({
     description: 'Type of the price',
-    enum: PriceType,
-    example: PriceType.MARKET_DATA,
+    example: 'MARKET_DATA',
   })
-  priceType: PriceType;
+  priceType: string;
 
   /**
    * Source of the price (USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED).
    */
   @ApiProperty({
     description: 'Source of the price',
-    enum: PriceSource,
-    example: PriceSource.MARKET_DATA_SERVICE,
+    example: 'MARKET_DATA_SERVICE',
   })
-  priceSource: PriceSource;
+  priceSource: string;
 
   /**
    * Timestamp when the price was last updated.

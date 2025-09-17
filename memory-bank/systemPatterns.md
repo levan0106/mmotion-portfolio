@@ -126,6 +126,8 @@ erDiagram
 - **Winston Integration**: Complete Winston logger with daily rotation - **COMPLETED**
 - **Database Mapping**: All logging entities use proper snake_case column naming - **COMPLETED**
 - **Naming Convention**: Standardized @Column decorators with explicit name parameters - **COMPLETED**
+- **Centralized Logging**: Single LoggingModule for entire system - **COMPLETED**
+- **No Duplicate Logging**: Avoid creating logging services in individual modules - **COMPLETED**
 
 #### Logging Architecture Components - **COMPLETED ✅**
 - **LoggingService**: Core logging functionality với data sanitization - **COMPLETED**

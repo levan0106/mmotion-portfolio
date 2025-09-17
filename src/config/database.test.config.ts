@@ -17,7 +17,7 @@ export const testDatabaseConfig: TypeOrmModuleOptions = {
   port: parseInt(process.env.TEST_DB_PORT, 10) || 5433,
   username: process.env.TEST_DB_USERNAME || 'postgres',
   password: process.env.TEST_DB_PASSWORD || 'password',
-  database: process.env.TEST_DB_NAME || 'portfolio_test_db',
+  database: process.env.TEST_DB_NAME || 'portfolio_test',
   
   // Test-specific settings
   synchronize: true, // Auto-create tables for tests

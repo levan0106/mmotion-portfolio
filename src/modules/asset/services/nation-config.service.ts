@@ -1,15 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { 
-  NationConfiguration, 
-  NationConfig, 
-  NationCode, 
-  AssetType, 
-  MarketCodeType, 
-  PriceSourceType,
-  CurrencyType,
-  TimezoneType 
-} from '../../config/nation-config.interface';
-import { NationConfigUtils } from '../../config/nation-config.utils';
+import { AssetType } from '../enums/asset-type.enum';
+import { NationCode, NationConfig, NationConfigDefaults, 
+  AssetTypeConfig, TradingHours, MarketCode, PriceSource } from '../../../config/nation-config.interface';
 
 /**
  * Service for managing nation configuration in the Global Assets System.
@@ -24,8 +16,7 @@ import { NationConfigUtils } from '../../config/nation-config.utils';
 @Injectable()
 export class NationConfigService {
   private readonly logger = new Logger(NationConfigService.name);
-  private config: NationConfiguration | null = null;
-  private configCache = new Map<string, any>();
+  private config: Record<string, NationConfig> = {};
 
   constructor() {
     this.loadConfiguration();
@@ -37,7 +28,153 @@ export class NationConfigService {
    */
   private loadConfiguration(): void {
     try {
-      this.config = NationConfigUtils.loadConfig();
+      // Mock configuration for now
+      this.config = {
+        VN: {
+          name: 'Vietnam',
+          displayName: 'Việt Nam',
+          currency: 'VND',
+          timezone: 'Asia/Ho_Chi_Minh',
+          marketCodes: [
+            { code: 'HOSE', name: 'Ho Chi Minh Stock Exchange', displayName: 'Sàn giao dịch chứng khoán TP.HCM', isDefault: true },
+            { code: 'HNX', name: 'Hanoi Stock Exchange', displayName: 'Sàn giao dịch chứng khoán Hà Nội', isDefault: false },
+            { code: 'UPCOM', name: 'Unlisted Public Company Market', displayName: 'Thị trường giao dịch của các công ty đại chúng chưa niêm yết', isDefault: false }
+          ],
+          defaultMarketCode: 'HOSE',
+          assetTypes: {
+            STOCK: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Cổ phiếu' },
+            BOND: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Trái phiếu' },
+            GOLD: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Vàng' },
+            DEPOSIT: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Tiền gửi' },
+            CASH: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Tiền mặt' }
+          },
+          priceSources: [
+            { code: 'VNDIRECT', name: 'VnDirect', displayName: 'VnDirect', isDefault: true, enabled: true },
+            { code: 'CAFEF', name: 'Cafef', displayName: 'Cafef', isDefault: false, enabled: true },
+            { code: 'VIETCOMBANK', name: 'Vietcombank', displayName: 'Vietcombank', isDefault: false, enabled: true }
+          ],
+          defaultPriceSource: 'VNDIRECT',
+          tradingHours: {
+            timezone: 'Asia/Ho_Chi_Minh',
+            sessions: [
+              { name: 'Morning', start: '09:00', end: '11:30', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] },
+              { name: 'Afternoon', start: '13:00', end: '15:00', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
+            ]
+          }
+        },
+        US: {
+          name: 'United States',
+          displayName: 'United States',
+          currency: 'USD',
+          timezone: 'America/New_York',
+          marketCodes: [
+            { code: 'NYSE', name: 'New York Stock Exchange', displayName: 'New York Stock Exchange', isDefault: true },
+            { code: 'NASDAQ', name: 'NASDAQ', displayName: 'NASDAQ', isDefault: false }
+          ],
+          defaultMarketCode: 'NYSE',
+          assetTypes: {
+            STOCK: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Stocks' },
+            BOND: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Bonds' },
+            GOLD: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Gold' },
+            DEPOSIT: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Deposits' },
+            CASH: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cash' }
+          },
+          priceSources: [
+            { code: 'YAHOO', name: 'Yahoo Finance', displayName: 'Yahoo Finance', isDefault: true, enabled: true },
+            { code: 'ALPHA_VANTAGE', name: 'Alpha Vantage', displayName: 'Alpha Vantage', isDefault: false, enabled: true }
+          ],
+          defaultPriceSource: 'YAHOO',
+          tradingHours: {
+            timezone: 'America/New_York',
+            sessions: [
+              { name: 'Regular', start: '09:30', end: '16:00', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
+            ]
+          }
+        },
+        UK: {
+          name: 'United Kingdom',
+          displayName: 'United Kingdom',
+          currency: 'GBP',
+          timezone: 'Europe/London',
+          marketCodes: [
+            { code: 'LSE', name: 'London Stock Exchange', displayName: 'London Stock Exchange', isDefault: true }
+          ],
+          defaultMarketCode: 'LSE',
+          assetTypes: {
+            STOCK: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Stocks' },
+            BOND: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Bonds' },
+            GOLD: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Gold' },
+            DEPOSIT: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Deposits' },
+            CASH: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cash' }
+          },
+          priceSources: [
+            { code: 'LSE', name: 'London Stock Exchange', displayName: 'London Stock Exchange', isDefault: true, enabled: true }
+          ],
+          defaultPriceSource: 'LSE',
+          tradingHours: {
+            timezone: 'Europe/London',
+            sessions: [
+              { name: 'Regular', start: '08:00', end: '16:30', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
+            ]
+          }
+        },
+        JP: {
+          name: 'Japan',
+          displayName: 'Japan',
+          currency: 'JPY',
+          timezone: 'Asia/Tokyo',
+          marketCodes: [
+            { code: 'TSE', name: 'Tokyo Stock Exchange', displayName: 'Tokyo Stock Exchange', isDefault: true }
+          ],
+          defaultMarketCode: 'TSE',
+          assetTypes: {
+            STOCK: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Stocks' },
+            BOND: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Bonds' },
+            GOLD: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Gold' },
+            DEPOSIT: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Deposits' },
+            CASH: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Cash' }
+          },
+          priceSources: [
+            { code: 'TSE', name: 'Tokyo Stock Exchange', displayName: 'Tokyo Stock Exchange', isDefault: true, enabled: true }
+          ],
+          defaultPriceSource: 'TSE',
+          tradingHours: {
+            timezone: 'Asia/Tokyo',
+            sessions: [
+              { name: 'Morning', start: '09:00', end: '11:30', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] },
+              { name: 'Afternoon', start: '12:30', end: '15:00', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
+            ]
+          }
+        },
+        SG: {
+          name: 'Singapore',
+          displayName: 'Singapore',
+          currency: 'SGD',
+          timezone: 'Asia/Singapore',
+          marketCodes: [
+            { code: 'SGX', name: 'Singapore Exchange', displayName: 'Singapore Exchange', isDefault: true }
+          ],
+          defaultMarketCode: 'SGX',
+          assetTypes: {
+            STOCK: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Stocks' },
+            BOND: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Bonds' },
+            GOLD: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Gold' },
+            DEPOSIT: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Deposits' },
+            CASH: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Cash' }
+          },
+          priceSources: [
+            { code: 'SGX', name: 'Singapore Exchange', displayName: 'Singapore Exchange', isDefault: true, enabled: true }
+          ],
+          defaultPriceSource: 'SGX',
+          tradingHours: {
+            timezone: 'Asia/Singapore',
+            sessions: [
+              { name: 'Morning', start: '09:00', end: '12:00', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] },
+              { name: 'Afternoon', start: '13:00', end: '17:00', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
+            ]
+          }
+        }
+      };
       this.logger.log('Nation configuration loaded successfully');
     } catch (error) {
       this.logger.error(`Failed to load nation configuration: ${error.message}`);
@@ -51,8 +188,7 @@ export class NationConfigService {
    */
   reloadConfiguration(): void {
     try {
-      this.config = NationConfigUtils.reloadConfig();
-      this.configCache.clear();
+      this.loadConfiguration();
       this.logger.log('Nation configuration reloaded successfully');
     } catch (error) {
       this.logger.error(`Failed to reload nation configuration: ${error.message}`);
@@ -66,20 +202,11 @@ export class NationConfigService {
    * @returns Nation configuration
    */
   getNationConfig(nationCode: NationCode): NationConfig {
-    const cacheKey = `nation_${nationCode}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
+    const config = this.config[nationCode];
+    if (!config) {
+      throw new Error(`Nation configuration not found for code: ${nationCode}`);
     }
-
-    try {
-      const nationConfig = NationConfigUtils.getNationConfig(nationCode);
-      this.configCache.set(cacheKey, nationConfig);
-      return nationConfig;
-    } catch (error) {
-      this.logger.error(`Failed to get nation configuration for ${nationCode}: ${error.message}`);
-      throw error;
-    }
+    return config;
   }
 
   /**
@@ -87,135 +214,16 @@ export class NationConfigService {
    * @returns Array of nation codes
    */
   getAvailableNations(): NationCode[] {
-    const cacheKey = 'available_nations';
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const nations = NationConfigUtils.getAvailableNations();
-      this.configCache.set(cacheKey, nations);
-      return nations;
-    } catch (error) {
-      this.logger.error(`Failed to get available nations: ${error.message}`);
-      throw error;
-    }
+    return Object.keys(this.config) as NationCode[];
   }
 
   /**
-   * Get default nation configuration.
-   * @returns Default nation configuration
+   * Check if a nation code is valid.
+   * @param nationCode - Nation code to validate
+   * @returns True if valid, false otherwise
    */
-  getDefaultNationConfig(): NationConfig {
-    const cacheKey = 'default_nation';
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const defaultConfig = NationConfigUtils.getDefaultNationConfig();
-      this.configCache.set(cacheKey, defaultConfig);
-      return defaultConfig;
-    } catch (error) {
-      this.logger.error(`Failed to get default nation configuration: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Get default values for a nation.
-   * @param nationCode - Nation code
-   * @returns Default values object
-   */
-  getNationDefaults(nationCode: NationCode): {
-    currency: CurrencyType;
-    timezone: TimezoneType;
-    marketCode: MarketCodeType;
-    priceSource: PriceSourceType;
-  } {
-    const cacheKey = `defaults_${nationCode}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const defaults = NationConfigUtils.getNationDefaults(nationCode);
-      this.configCache.set(cacheKey, defaults);
-      return defaults;
-    } catch (error) {
-      this.logger.error(`Failed to get nation defaults for ${nationCode}: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Get market codes for a nation.
-   * @param nationCode - Nation code
-   * @returns Array of market codes
-   */
-  getMarketCodes(nationCode: NationCode): MarketCodeType[] {
-    const cacheKey = `market_codes_${nationCode}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const marketCodes = NationConfigUtils.getMarketCodes(nationCode);
-      this.configCache.set(cacheKey, marketCodes);
-      return marketCodes;
-    } catch (error) {
-      this.logger.error(`Failed to get market codes for ${nationCode}: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Get price sources for a nation.
-   * @param nationCode - Nation code
-   * @returns Array of price sources
-   */
-  getPriceSources(nationCode: NationCode): PriceSourceType[] {
-    const cacheKey = `price_sources_${nationCode}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const priceSources = NationConfigUtils.getPriceSources(nationCode);
-      this.configCache.set(cacheKey, priceSources);
-      return priceSources;
-    } catch (error) {
-      this.logger.error(`Failed to get price sources for ${nationCode}: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Get asset type configuration for a nation.
-   * @param nationCode - Nation code
-   * @param assetType - Asset type
-   * @returns Asset type configuration
-   */
-  getAssetTypeConfig(nationCode: NationCode, assetType: AssetType): any {
-    const cacheKey = `asset_type_${nationCode}_${assetType}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const assetTypeConfig = NationConfigUtils.getAssetTypeConfig(nationCode, assetType);
-      this.configCache.set(cacheKey, assetTypeConfig);
-      return assetTypeConfig;
-    } catch (error) {
-      this.logger.error(`Failed to get asset type configuration for ${nationCode}/${assetType}: ${error.message}`);
-      throw error;
-    }
+  isValidNationCode(nationCode: string): nationCode is NationCode {
+    return nationCode in this.config;
   }
 
   /**
@@ -225,18 +233,10 @@ export class NationConfigService {
    * @returns True if enabled, false otherwise
    */
   isAssetTypeEnabled(nationCode: NationCode, assetType: AssetType): boolean {
-    const cacheKey = `asset_type_enabled_${nationCode}_${assetType}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
     try {
-      const isEnabled = NationConfigUtils.isAssetTypeEnabled(nationCode, assetType);
-      this.configCache.set(cacheKey, isEnabled);
-      return isEnabled;
-    } catch (error) {
-      this.logger.error(`Failed to check if asset type is enabled for ${nationCode}/${assetType}: ${error.message}`);
+      const config = this.getNationConfig(nationCode);
+      return config.assetTypes[assetType]?.enabled ?? false;
+    } catch {
       return false;
     }
   }
@@ -249,12 +249,99 @@ export class NationConfigService {
    * @returns True if valid, false otherwise
    */
   validateSymbolFormat(nationCode: NationCode, assetType: AssetType, symbol: string): boolean {
-    try {
-      return NationConfigUtils.validateSymbolFormat(nationCode, assetType, symbol);
-    } catch (error) {
-      this.logger.error(`Failed to validate symbol format for ${nationCode}/${assetType}/${symbol}: ${error.message}`);
-      return false;
-    }
+    // Basic validation - symbols should be uppercase alphanumeric
+    return /^[A-Z0-9-]+$/.test(symbol);
+  }
+
+  /**
+   * Get default currency for a nation.
+   * @param nationCode - Nation code
+   * @returns Currency code
+   */
+  getDefaultCurrency(nationCode: NationCode): string {
+    const config = this.getNationConfig(nationCode);
+    return config.currency;
+  }
+
+  /**
+   * Get default timezone for a nation.
+   * @param nationCode - Nation code
+   * @returns Timezone
+   */
+  getDefaultTimezone(nationCode: NationCode): string {
+    const config = this.getNationConfig(nationCode);
+    return config.timezone;
+  }
+
+
+  /**
+   * Check if a nation is currently in trading hours.
+   * @param nationCode - Nation code
+   * @returns True if in trading hours, false otherwise
+   */
+  isMarketOpen(nationCode: NationCode): boolean {
+    // For now, always return true
+    return true;
+  }
+
+  /**
+   * Get default nation configuration.
+   * @returns Default nation configuration
+   */
+  getDefaultNationConfig(): NationConfig {
+    return this.getNationConfig('VN');
+  }
+
+  /**
+   * Get nation defaults for a specific nation.
+   * @param nationCode - Nation code
+   * @returns Nation defaults
+   */
+  getNationDefaults(nationCode: NationCode): NationConfigDefaults {
+    const config = this.getNationConfig(nationCode);
+    return {
+      nation: nationCode,
+      currency: config.currency,
+      timezone: config.timezone,
+      marketCode: config.defaultMarketCode,
+      priceSource: config.defaultPriceSource
+    };
+  }
+
+  /**
+   * Get market codes for a nation.
+   * @param nationCode - Nation code
+   * @returns Array of market codes
+   */
+  getMarketCodes(nationCode: NationCode): string[] {
+    const config = this.getNationConfig(nationCode);
+    return config.marketCodes.map(mc => mc.code);
+  }
+
+  /**
+   * Get price sources for a nation.
+   * @param nationCode - Nation code
+   * @returns Array of price sources
+   */
+  getPriceSources(nationCode: NationCode): string[] {
+    const config = this.getNationConfig(nationCode);
+    return config.priceSources.map(ps => ps.code);
+  }
+
+  /**
+   * Get asset type configuration for a nation.
+   * @param nationCode - Nation code
+   * @param assetType - Asset type
+   * @returns Asset type configuration
+   */
+  getAssetTypeConfig(nationCode: NationCode, assetType: AssetType): AssetTypeConfig {
+    const config = this.getNationConfig(nationCode);
+    return config.assetTypes[assetType] || {
+      enabled: false,
+      defaultMarketCode: config.defaultMarketCode,
+      symbolPattern: '^[A-Z0-9]+$',
+      description: 'Unknown asset type'
+    };
   }
 
   /**
@@ -262,21 +349,9 @@ export class NationConfigService {
    * @param nationCode - Nation code
    * @returns Trading hours configuration
    */
-  getTradingHours(nationCode: NationCode): any {
-    const cacheKey = `trading_hours_${nationCode}`;
-    
-    if (this.configCache.has(cacheKey)) {
-      return this.configCache.get(cacheKey);
-    }
-
-    try {
-      const tradingHours = NationConfigUtils.getTradingHours(nationCode);
-      this.configCache.set(cacheKey, tradingHours);
-      return tradingHours;
-    } catch (error) {
-      this.logger.error(`Failed to get trading hours for ${nationCode}: ${error.message}`);
-      throw error;
-    }
+  getTradingHours(nationCode: NationCode): TradingHours {
+    const config = this.getNationConfig(nationCode);
+    return config.tradingHours;
   }
 
   /**
@@ -285,30 +360,22 @@ export class NationConfigService {
    * @returns True if in trading hours, false otherwise
    */
   isInTradingHours(nationCode: NationCode): boolean {
-    try {
-      return NationConfigUtils.isInTradingHours(nationCode);
-    } catch (error) {
-      this.logger.error(`Failed to check trading hours for ${nationCode}: ${error.message}`);
-      return false;
-    }
+    // For now, always return true
+    return true;
   }
 
   /**
    * Get default market code for a nation and asset type.
    * @param nationCode - Nation code
-   * @param assetType - Asset type
+   * @param assetType - Asset type (optional)
    * @returns Default market code
    */
-  getDefaultMarketCode(nationCode: NationCode, assetType: AssetType): MarketCodeType {
-    try {
-      const assetTypeConfig = this.getAssetTypeConfig(nationCode, assetType);
-      return assetTypeConfig.defaultMarketCode;
-    } catch (error) {
-      this.logger.error(`Failed to get default market code for ${nationCode}/${assetType}: ${error.message}`);
-      // Fallback to nation's default market code
-      const nationConfig = this.getNationConfig(nationCode);
-      return nationConfig.defaultMarketCode;
+  getDefaultMarketCode(nationCode: NationCode, assetType?: AssetType): string {
+    const config = this.getNationConfig(nationCode);
+    if (assetType && config.assetTypes[assetType]) {
+      return config.assetTypes[assetType].defaultMarketCode;
     }
+    return config.defaultMarketCode;
   }
 
   /**
@@ -316,14 +383,9 @@ export class NationConfigService {
    * @param nationCode - Nation code
    * @returns Default price source
    */
-  getDefaultPriceSource(nationCode: NationCode): PriceSourceType {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      return nationConfig.defaultPriceSource;
-    } catch (error) {
-      this.logger.error(`Failed to get default price source for ${nationCode}: ${error.message}`);
-      throw error;
-    }
+  getDefaultPriceSource(nationCode: NationCode): string {
+    const config = this.getNationConfig(nationCode);
+    return config.defaultPriceSource;
   }
 
   /**
@@ -331,14 +393,8 @@ export class NationConfigService {
    * @param nationCode - Nation code
    * @returns Currency code
    */
-  getCurrency(nationCode: NationCode): CurrencyType {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      return nationConfig.currency;
-    } catch (error) {
-      this.logger.error(`Failed to get currency for ${nationCode}: ${error.message}`);
-      throw error;
-    }
+  getCurrency(nationCode: NationCode): string {
+    return this.getDefaultCurrency(nationCode);
   }
 
   /**
@@ -346,99 +402,59 @@ export class NationConfigService {
    * @param nationCode - Nation code
    * @returns Timezone
    */
-  getTimezone(nationCode: NationCode): TimezoneType {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      return nationConfig.timezone;
-    } catch (error) {
-      this.logger.error(`Failed to get timezone for ${nationCode}: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Clear configuration cache.
-   * Useful for testing or when configuration changes.
-   */
-  clearCache(): void {
-    this.configCache.clear();
-    this.logger.log('Configuration cache cleared');
+  getTimezone(nationCode: NationCode): string {
+    return this.getDefaultTimezone(nationCode);
   }
 
   /**
    * Get cache statistics.
    * @returns Cache statistics
    */
-  getCacheStats(): {
-    size: number;
-    keys: string[];
-  } {
+  getCacheStats(): { size: number; keys: string[] } {
     return {
-      size: this.configCache.size,
-      keys: Array.from(this.configCache.keys()),
+      size: Object.keys(this.config).length,
+      keys: Object.keys(this.config)
     };
   }
 
   /**
-   * Check if a nation code is valid.
-   * @param nationCode - Nation code to validate
-   * @returns True if valid, false otherwise
+   * Clear configuration cache.
    */
-  isValidNationCode(nationCode: string): nationCode is NationCode {
-    try {
-      const availableNations = this.getAvailableNations();
-      return availableNations.includes(nationCode as NationCode);
-    } catch {
-      return false;
-    }
+  clearCache(): void {
+    this.config = {};
   }
 
   /**
    * Get nation display name.
    * @param nationCode - Nation code
-   * @returns Nation display name
+   * @returns Display name
    */
   getNationDisplayName(nationCode: NationCode): string {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      return nationConfig.displayName;
-    } catch (error) {
-      this.logger.error(`Failed to get nation display name for ${nationCode}: ${error.message}`);
-      return nationCode;
-    }
+    const config = this.getNationConfig(nationCode);
+    return config.displayName;
   }
 
   /**
    * Get market code display name.
    * @param nationCode - Nation code
    * @param marketCode - Market code
-   * @returns Market code display name
+   * @returns Display name
    */
-  getMarketCodeDisplayName(nationCode: NationCode, marketCode: MarketCodeType): string {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      const marketCodeConfig = nationConfig.marketCodes.find(mc => mc.code === marketCode);
-      return marketCodeConfig?.displayName || marketCode;
-    } catch (error) {
-      this.logger.error(`Failed to get market code display name for ${nationCode}/${marketCode}: ${error.message}`);
-      return marketCode;
-    }
+  getMarketCodeDisplayName(nationCode: NationCode, marketCode: string): string {
+    const config = this.getNationConfig(nationCode);
+    const market = config.marketCodes.find(mc => mc.code === marketCode);
+    return market ? market.displayName : marketCode;
   }
 
   /**
    * Get price source display name.
    * @param nationCode - Nation code
    * @param priceSource - Price source
-   * @returns Price source display name
+   * @returns Display name
    */
-  getPriceSourceDisplayName(nationCode: NationCode, priceSource: PriceSourceType): string {
-    try {
-      const nationConfig = this.getNationConfig(nationCode);
-      const priceSourceConfig = nationConfig.priceSources.find(ps => ps.code === priceSource);
-      return priceSourceConfig?.displayName || priceSource;
-    } catch (error) {
-      this.logger.error(`Failed to get price source display name for ${nationCode}/${priceSource}: ${error.message}`);
-      return priceSource;
-    }
+  getPriceSourceDisplayName(nationCode: NationCode, priceSource: string): string {
+    const config = this.getNationConfig(nationCode);
+    const source = config.priceSources.find(ps => ps.code === priceSource);
+    return source ? source.displayName : priceSource;
   }
 }

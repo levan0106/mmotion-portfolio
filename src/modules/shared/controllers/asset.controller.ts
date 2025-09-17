@@ -25,13 +25,10 @@ export class AssetController {
       order: { symbol: 'ASC' },
     });
     
-    // Map the response to include assetId field and exclude code field
-    return assets.map(asset => {
-      const { code, ...assetWithoutCode } = asset;
-      return {
-        ...assetWithoutCode,
-        assetId: asset.id,
-      };
-    });
+    // Map the response to include assetId field
+    return assets.map(asset => ({
+      ...asset,
+      assetId: asset.id,
+    }));
   }
 }

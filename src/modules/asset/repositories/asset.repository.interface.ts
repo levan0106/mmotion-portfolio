@@ -84,7 +84,7 @@ export interface IAssetRepository {
   findByType(type: AssetType, userId?: string): Promise<Asset[]>;
 
   /**
-   * Search assets by name or code
+   * Search assets by name, symbol, or description
    * @param searchTerm - Search term
    * @param userId - Optional user ID filter
    * @returns Promise<Asset[]> - Array of assets
@@ -110,13 +110,12 @@ export interface IAssetRepository {
   ): Promise<boolean>;
 
   /**
-   * Check if asset code is unique globally
-   * @param code - Asset code
+   * Check if asset symbol is unique globally
+   * @param symbol - Asset symbol
    * @param excludeId - Asset ID to exclude from check
    * @returns Promise<boolean> - True if unique, false otherwise
-   * @deprecated Use isSymbolUniqueForUser instead
    */
-  isCodeUniqueGlobally(code: string, excludeId?: string): Promise<boolean>;
+  isSymbolUniqueGlobally(symbol: string, excludeId?: string): Promise<boolean>;
 
   /**
    * Check if asset symbol is unique for a specific user

@@ -64,18 +64,6 @@ export class Asset {
   @Column({ type: 'varchar', length: 50, name: 'symbol' })
   symbol: string;
 
-  /**
-   * Legacy code field - deprecated after migration.
-   * This field will be removed in future versions.
-   * @deprecated Use symbol field instead
-   */
-  @ApiPropertyOptional({
-    description: 'Legacy asset code - deprecated, use symbol instead',
-    example: 'HPG',
-    deprecated: true,
-  })
-  @Column({ type: 'varchar', length: 50, nullable: true, name: 'code' })
-  code?: string;
 
   /**
    * Type of the asset (STOCK, BOND, GOLD, DEPOSIT, CASH).
@@ -271,12 +259,10 @@ export class Asset {
 
   /**
    * Serialize the entity to JSON with computed properties.
-   * Excludes deprecated code field to avoid confusion.
    */
   toJSON() {
-    const { code, ...entityWithoutCode } = this;
     return {
-      ...entityWithoutCode,
+      ...this,
       totalValue: this.getTotalValue(),
       totalQuantity: this.getTotalQuantity(),
       hasTrades: this.hasTrades(),

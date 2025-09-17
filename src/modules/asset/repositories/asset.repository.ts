@@ -161,7 +161,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
-   * Search assets by name or code
+   * Search assets by name, symbol, or description
    * @param searchTerm - Search term
    * @param userId - Optional user ID filter
    * @returns Array of assets
@@ -170,7 +170,7 @@ export class AssetRepository implements IAssetRepository {
     const queryBuilder = this.assetRepository
       .createQueryBuilder('asset')
       .where(
-        '(asset.name ILIKE :search OR asset.code ILIKE :search OR asset.description ILIKE :search)',
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
         { search: `%${searchTerm}%` }
       );
 
@@ -217,16 +217,15 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
-   * Check if asset code is unique globally
-   * @param code - Asset code
+   * Check if asset symbol is unique globally
+   * @param symbol - Asset symbol
    * @param excludeId - Asset ID to exclude from check
    * @returns True if unique, false otherwise
-   * @deprecated Use isSymbolUniqueForUser instead
    */
-  async isCodeUniqueGlobally(code: string, excludeId?: string): Promise<boolean> {
+  async isSymbolUniqueGlobally(symbol: string, excludeId?: string): Promise<boolean> {
     const queryBuilder = this.assetRepository
       .createQueryBuilder('asset')
-      .where('asset.code = :code', { code });
+      .where('asset.symbol = :symbol', { symbol });
 
     if (excludeId) {
       queryBuilder.andWhere('asset.id != :excludeId', { excludeId });
@@ -374,7 +373,7 @@ export class AssetRepository implements IAssetRepository {
 
     if (filters.search) {
       queryBuilder.andWhere(
-        '(asset.name ILIKE :search OR asset.code ILIKE :search OR asset.description ILIKE :search)',
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
         { search: `%${filters.search}%` }
       );
     }
@@ -433,7 +432,7 @@ export class AssetRepository implements IAssetRepository {
 
     if (filters.search) {
       queryBuilder.andWhere(
-        '(asset.name ILIKE :search OR asset.code ILIKE :search)',
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
         { search: `%${filters.search}%` }
       );
     }
@@ -481,7 +480,7 @@ export class AssetRepository implements IAssetRepository {
 
     if (filters.search) {
       queryBuilder.andWhere(
-        '(asset.name ILIKE :search OR asset.code ILIKE :search)',
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
         { search: `%${filters.search}%` }
       );
     }
