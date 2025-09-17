@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Asset, AssetFilters, UpdateAssetRequest } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
+import { apiService } from '../services/api';
 import { useAccount } from './useAccount';
 import { calculatePerformanceWithMarketData, calculatePerformanceWithTrades } from '../utils/performance.utils';
 
@@ -84,16 +85,13 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         ? `/api/v1/assets/user/${currentFilters.createdBy}`
         : '/api/v1/assets';
       const url = `${baseUrl}?${queryParams.toString()}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       
-      // Map backend data to frontend format
-      const mapAsset = (asset: any): Asset => {
+      try {
+        const response = await apiService.api.get(url);
+        const data = response.data;
+      
+        // Map backend data to frontend format
+        const mapAsset = (asset: any): Asset => {
         // Calculate real performance data
         const performanceData = {
           initialValue: asset.initialValue || 0,
@@ -162,6 +160,10 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           total: data.total || 0,
           totalPages: data.totalPages || 0,
         });
+      }
+      } catch (apiError) {
+        console.error('Error fetching assets from API:', apiError);
+        throw apiError;
       }
     } catch (err) {
       console.error('Error fetching assets:', err);

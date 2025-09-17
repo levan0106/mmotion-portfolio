@@ -22,8 +22,8 @@ export interface PriceHistoryQueryDto {
   priceSource?: string;
   limit?: number;
   offset?: number;
-  orderBy?: 'createdAt' | 'price';
-  orderDirection?: 'ASC' | 'DESC';
+  sortBy?: 'createdAt' | 'price';
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface PriceHistoryStatsDto {
@@ -154,8 +154,8 @@ export class PriceHistoryService {
     }
 
     // Apply ordering
-    const orderBy = query.orderBy || 'createdAt';
-    const orderDirection = query.orderDirection || 'DESC';
+    const orderBy = query.sortBy || 'createdAt';
+    const orderDirection = query.sortOrder || 'DESC';
     queryBuilder.orderBy(`priceHistory.${orderBy}`, orderDirection);
 
     // Apply pagination
@@ -190,8 +190,8 @@ export class PriceHistoryService {
     return this.getPriceHistory(assetId, {
       startDate,
       endDate,
-      orderBy: 'createdAt',
-      orderDirection: 'ASC',
+      sortBy: 'createdAt',
+      sortOrder: 'ASC',
     });
   }
 
@@ -206,8 +206,8 @@ export class PriceHistoryService {
 
     return this.getPriceHistory(assetId, {
       limit,
-      orderBy: 'createdAt',
-      orderDirection: 'DESC',
+      sortBy: 'createdAt',
+      sortOrder: 'DESC',
     });
   }
 
@@ -345,8 +345,8 @@ export class PriceHistoryService {
 
     return this.getPriceHistory(assetId, {
       priceType,
-      orderBy: 'createdAt',
-      orderDirection: 'DESC',
+      sortBy: 'createdAt',
+      sortOrder: 'DESC',
     });
   }
 
@@ -361,8 +361,8 @@ export class PriceHistoryService {
 
     return this.getPriceHistory(assetId, {
       priceSource,
-      orderBy: 'createdAt',
-      orderDirection: 'DESC',
+      sortBy: 'createdAt',
+      sortOrder: 'DESC',
     });
   }
 

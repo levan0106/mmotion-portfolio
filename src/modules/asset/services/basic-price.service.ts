@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, BadRequestException, ConflictExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindManyOptions, In } from 'typeorm';
 import { AssetPrice } from '../entities/asset-price.entity';
+import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { GlobalAssetService } from './global-asset.service';
 import { CreateAssetPriceDto } from '../dto/create-asset-price.dto';
@@ -27,6 +28,8 @@ export class BasicPriceService {
   constructor(
     @InjectRepository(AssetPrice)
     private readonly assetPriceRepository: Repository<AssetPrice>,
+    @InjectRepository(AssetPriceHistory)
+    private readonly priceHistoryRepository: Repository<AssetPriceHistory>,
     private readonly globalAssetService: GlobalAssetService,
   ) {}
 
@@ -255,6 +258,70 @@ export class BasicPriceService {
       return this.mapToResponseDto(savedPrice);
     } catch (error) {
       this.logger.error(`Failed to update asset price ${id}: ${error.message}`);
+      throw new BadRequestException(`Failed to update asset price: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update an asset price by global asset ID.
+   * @param assetId - Global asset ID
+   * @param updateDto - Update data
+   * @returns Updated price
+   */
+  async updateByAssetId(assetId: string, updateDto: UpdateAssetPriceDto): Promise<AssetPriceResponseDto> {
+    this.logger.log(`Updating asset price by asset ID: ${assetId}`);
+
+    // First, find the asset price by asset ID
+    const price = await this.assetPriceRepository.findOne({
+      where: { assetId },
+      relations: ['globalAsset'],
+    });
+
+    if (!price) {
+      throw new NotFoundException(`Asset price for global asset ${assetId} not found`);
+    }
+
+    // Validate price value if provided
+    if (updateDto.currentPrice !== undefined) {
+      this.validatePrice(updateDto.currentPrice);
+    }
+
+    try {
+      // Update lastPriceUpdate if currentPrice is being updated
+      if (updateDto.currentPrice !== undefined) {
+        updateDto.lastPriceUpdate = new Date().toISOString();
+      }
+
+      Object.assign(price, {
+        ...updateDto,
+        lastPriceUpdate: updateDto.lastPriceUpdate ? new Date(updateDto.lastPriceUpdate) : price.lastPriceUpdate,
+      });
+
+      const savedPrice = await this.assetPriceRepository.save(price);
+      
+      // Create price history record for manual updates
+      if (updateDto.currentPrice !== undefined) {
+        const priceHistory = this.priceHistoryRepository.create({
+          assetId: assetId,
+          price: updateDto.currentPrice,
+          priceType: updateDto.priceType || 'MANUAL',
+          priceSource: updateDto.priceSource || 'USER',
+          changeReason: 'Manual price update',
+          metadata: {
+            source: 'manual_update',
+            updateType: 'manual',
+            changeReason: updateDto.metadata?.changeReason || 'Manual price update',
+          },
+        });
+        
+        await this.priceHistoryRepository.save(priceHistory);
+        this.logger.log(`Price history created for manual update: ${assetId}`);
+      }
+      
+      this.logger.log(`Asset price updated successfully by asset ID: ${savedPrice.id}`);
+      return this.mapToResponseDto(savedPrice);
+    } catch (error) {
+      this.logger.error(`Failed to update asset price by asset ID ${assetId}: ${error.message}`);
       throw new BadRequestException(`Failed to update asset price: ${error.message}`);
     }
   }

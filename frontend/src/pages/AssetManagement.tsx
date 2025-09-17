@@ -14,6 +14,7 @@ import { AssetAnalytics } from '../components/Asset/AssetAnalytics';
 import { AssetDialogs } from '../components/Asset/AssetDialogs';
 import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarningDialog';
 import { assetService } from '../services/asset.service';
+import { apiService } from '../services/api';
 import { formatCurrency } from '../utils/format';
 import { useAccount } from '../hooks/useAccount';
 import './AssetManagement.styles.css';
@@ -146,11 +147,13 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
       
       // If not found in current assets, check via API
       // This ensures we catch symbols that might not be loaded in current view
-      const response = await fetch(`/api/v1/assets?symbol=${encodeURIComponent(symbol)}&createdBy=${accountId}`);
-      if (response.ok) {
-        const data = await response.json();
-        const apiAssets = data.data || data; // Handle different response formats
+      try {
+        const response = await apiService.api.get(`/api/v1/assets?symbol=${encodeURIComponent(symbol)}&createdBy=${accountId}`);
+        const apiAssets = response.data.data || response.data; // Handle different response formats
         return Array.isArray(apiAssets) && apiAssets.length > 0;
+      } catch (error) {
+        // If API call fails, assume symbol doesn't exist
+        return false;
       }
       
       return false;

@@ -216,12 +216,12 @@ export const useUpdateAssetPrice = () => {
         const existingPrice = existingPriceResponse.data;
         console.log('useUpdateAssetPrice - found existing price:', existingPrice);
         
-        // Update existing asset price
-        const updateResponse = await apiService.api.put(`/api/v1/asset-prices/${existingPrice.id}`, {
+        // Update existing asset price by asset ID (this will automatically create price history)
+        const updateResponse = await apiService.api.put(`/api/v1/asset-prices/asset/${assetId}`, {
           currentPrice: price,
           priceType,
           priceSource,
-          lastPriceUpdate: new Date().toISOString(),
+          changeReason,
           metadata: {
             changeReason,
             source: 'manual_update',
@@ -236,7 +236,7 @@ export const useUpdateAssetPrice = () => {
             currentPrice: price,
             priceType,
             priceSource,
-            lastPriceUpdate: new Date().toISOString(),
+            changeReason,
             metadata: {
               changeReason,
               source: 'manual_update',

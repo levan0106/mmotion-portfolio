@@ -2,7 +2,25 @@
 
 ## What Works
 ### ✅ Completed
-- **GLOBAL ASSETS SYSTEM IMPLEMENTATION - CR-005 COMPLETED** (Current Session - December 19, 2024)
+- **ASSET PRICE HISTORY UI FIXES & API STANDARDIZATION - COMPLETED** (Current Session - September 17, 2025)
+  - **Price History UI Display Fix**: Fixed critical bug where Asset History UI was not displaying data despite API returning correct data
+  - **API Response Format Mismatch**: Fixed backend to return `{ data: [...], total, page, limit, totalPages }` instead of array directly
+  - **Query Parameters Standardization**: Standardized to use `sortBy`/`sortOrder` instead of `orderBy`/`orderDirection` for consistency
+  - **Price Type Handling**: Fixed frontend to handle both string and number price types from API
+  - **Data Refresh Logic**: Fixed price history data not refreshing when opening modal or clicking refresh button
+  - **Query Invalidation**: Added proper query invalidation and refetch logic for real-time data updates
+  - **API Call Standardization**: Converted all `fetch()` calls to use centralized `apiService.api` for consistency
+  - **Price History Creation Fix**: Fixed missing price history creation by correcting API endpoint calls
+  - **Code Quality**: Clean, production-ready code with proper error handling and user feedback
+  - **Key Features Implemented**:
+    - ✅ **Price History Display**: Asset History UI now correctly displays price history data
+    - ✅ **Real-time Refresh**: Data refreshes automatically when opening tab or clicking refresh
+    - ✅ **API Consistency**: All API calls use centralized apiService for consistency
+    - ✅ **Data Validation**: Proper handling of price types (string/number) from API
+    - ✅ **Query Management**: Proper query invalidation and refetch for data freshness
+    - ✅ **Error Handling**: Comprehensive error handling and user feedback
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+- **GLOBAL ASSETS SYSTEM IMPLEMENTATION - CR-005 COMPLETED** (Previous Session - December 19, 2024)
   - **Complete Global Assets System**: Full implementation with multi-national support (VN, US, UK, JP, SG)
   - **Backend Implementation**: All 7 phases completed with comprehensive API endpoints
   - **Frontend Integration**: Complete React.js integration with real-time price updates
@@ -510,20 +528,20 @@
 - [x] Critical bug fixes - **COMPLETED**
 
 ## Current Status
-**Phase**: Portfolio Analytics & Compact Mode Implementation - COMPLETED ✅
+**Phase**: Asset Price History UI Fixes & API Standardization - COMPLETED ✅
 **Progress**: Implementation 100% complete, Testing 100% complete, Production Ready
-**Latest Update**: Portfolio Analytics with 8 advanced charts and Ultra Compact Mode fully implemented (December 19, 2024)
+**Latest Update**: Fixed Asset History UI display issues and standardized API calls across frontend (September 17, 2025)
 **Next Milestone**: Ready for next phase - Market Data Integration or Advanced Features
 
-## Latest Test Status (December 19, 2024)
-- **Total Tests**: All Portfolio Analytics tests completed and passing
-- **Portfolio Analytics**: 100% functional with 8 advanced charts
-- **Backend API**: All analytics endpoints working correctly with mock data
-- **Frontend UI**: All components displaying analytics charts correctly
-- **Compact Mode**: Ultra compact mode fully functional across all tabs
-- **Database**: Fully operational with asset allocation calculations
+## Latest Test Status (September 17, 2025)
+- **Total Tests**: All Asset Price History and API standardization tests completed and passing
+- **Asset History UI**: 100% functional with proper data display and refresh
+- **Backend API**: All price history endpoints working correctly with proper response format
+- **Frontend UI**: All components displaying price history data correctly
+- **API Consistency**: All frontend API calls standardized to use apiService
+- **Database**: Fully operational with price history tracking
 - **App Startup**: 100% successful startup with health check passing
-- **Charts**: All 8 analytics charts rendering correctly with mock data
+- **Price History**: All price history records displaying correctly with real-time refresh
 - **Code Quality**: Production-ready with clean, maintainable code
 
 ### Current Phase: CI/CD Pipeline Implementation - COMPLETED ✅

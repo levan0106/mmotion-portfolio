@@ -41,6 +41,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useQueryClient } from 'react-query';
+import { usePriceHistory } from '../hooks/useAssetPrices';
 
 // Types
 interface AssetPrice {
@@ -52,16 +54,6 @@ interface AssetPrice {
   lastPriceUpdate: string;
 }
 
-interface PriceHistory {
-  id: string;
-  assetId: string;
-  price: number;
-  priceType: string;
-  priceSource: string;
-  changeReason?: string;
-  metadata?: Record<string, any>;
-  createdAt: string;
-}
 
 interface AssetPriceManagementProps {
   asset: {
@@ -120,36 +112,6 @@ const PRICE_SOURCES = [
   { value: 'CALCULATED', label: 'Calculated', color: '#7b1fa2' },
 ];
 
-// Mock price history data
-const mockPriceHistory: PriceHistory[] = [
-  {
-    id: '1',
-    assetId: 'asset-1',
-    price: 150000,
-    priceType: 'MARKET_DATA',
-    priceSource: 'MARKET_DATA_SERVICE',
-    changeReason: 'Market data update',
-    createdAt: '2024-01-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    assetId: 'asset-1',
-    price: 148500,
-    priceType: 'MARKET_DATA',
-    priceSource: 'MARKET_DATA_SERVICE',
-    changeReason: 'Market data update',
-    createdAt: '2024-01-15T09:30:00Z',
-  },
-  {
-    id: '3',
-    assetId: 'asset-1',
-    price: 152000,
-    priceType: 'MANUAL',
-    priceSource: 'USER',
-    changeReason: 'Manual correction',
-    createdAt: '2024-01-14T16:45:00Z',
-  },
-];
 
 const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   asset,
@@ -159,9 +121,22 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   error,
 }) => {
   const [tabValue, setTabValue] = useState(0);
-  const [priceHistory] = useState<PriceHistory[]>(mockPriceHistory);
-  const [historyLoading, setHistoryLoading] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Use real API hook for price history
+  const { 
+    data: priceHistoryData, 
+    isLoading: historyLoading, 
+    error: historyError,
+    refetch: refetchPriceHistory 
+  } = usePriceHistory(asset.id, {
+    limit: 50,
+    sortBy: 'createdAt',
+    sortOrder: 'DESC'
+  });
+  
+  const priceHistory = priceHistoryData?.data || [];
 
   const {
     control,
@@ -182,18 +157,19 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   // Calculate price change
   const priceChange = useMemo(() => {
     if (priceHistory.length < 2) return 0;
-    const currentPrice = priceHistory[0].price;
-    const previousPrice = priceHistory[1].price;
+    const currentPrice = typeof priceHistory[0].price === 'string' ? parseFloat(priceHistory[0].price) : priceHistory[0].price;
+    const previousPrice = typeof priceHistory[1].price === 'string' ? parseFloat(priceHistory[1].price) : priceHistory[1].price;
     return ((currentPrice - previousPrice) / previousPrice) * 100;
   }, [priceHistory]);
 
-  const formatPrice = (price: number, currency: string) => {
+  const formatPrice = (price: number | string, currency: string) => {
+    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(price);
+    }).format(numericPrice);
   };
 
   const formatDate = (dateString: string) => {
@@ -218,7 +194,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
 
   const handlePriceUpdate = async (data: PriceUpdateFormData) => {
     try {
-      
       await onPriceUpdate(
         asset.id,
         data.price,
@@ -229,27 +204,32 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
       
       setUpdateDialogOpen(false);
       reset();
-      // Refresh price history
-      handlePriceHistoryRefresh();
+      // Invalidate and refetch price history data
+      queryClient.invalidateQueries(['priceHistory', asset.id]);
+      await refetchPriceHistory();
     } catch (error) {
       console.error('Price update error:', error);
     }
   };
 
   const handlePriceHistoryRefresh = async () => {
-    setHistoryLoading(true);
     try {
       await onPriceHistoryRefresh(asset.id);
-      // In real app, this would update the priceHistory state
-      setHistoryLoading(false);
+      // Invalidate and refetch price history data
+      queryClient.invalidateQueries(['priceHistory', asset.id]);
+      await refetchPriceHistory();
     } catch (error) {
       console.error('Price history refresh error:', error);
-      setHistoryLoading(false);
     }
   };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // If switching to Price History tab, refetch data
+    if (newValue === 1) {
+      queryClient.invalidateQueries(['priceHistory', asset.id]);
+      refetchPriceHistory();
+    }
   };
 
   const getPriceAge = (lastUpdate: string) => {
@@ -410,8 +390,18 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                   </Button>
                 </Box>
 
+                {historyError ? (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    Failed to load price history: {historyError instanceof Error ? historyError.message : 'Unknown error'}
+                  </Alert>
+                ) : null}
+
                 {historyLoading ? (
                   <LinearProgress />
+                ) : priceHistory.length === 0 ? (
+                  <Alert severity="info">
+                    No price history available for this asset.
+                  </Alert>
                 ) : (
                   <TableContainer component={Paper}>
                     <Table>

@@ -316,6 +316,65 @@ export class BasicPriceController {
   }
 
   /**
+   * Update asset price by global asset ID.
+   */
+  @Put('asset/:assetId')
+  @ApiOperation({
+    summary: 'Update asset price by global asset ID',
+    description: 'Update asset price for a specific global asset. This will create a new price history record.',
+  })
+  @ApiParam({
+    name: 'assetId',
+    description: 'Global asset ID',
+    type: 'string',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiBody({
+    type: UpdateAssetPriceDto,
+    description: 'Asset price update data',
+    examples: {
+      updatePrice: {
+        summary: 'Update Price',
+        value: {
+          currentPrice: 155.00,
+          changeReason: 'Price correction',
+        },
+      },
+      updateSource: {
+        summary: 'Update Price Source',
+        value: {
+          priceSource: 'EXTERNAL_API',
+          changeReason: 'Switched to external API',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Asset price updated successfully',
+    type: AssetPriceResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Global asset not found or no price record exists',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or validation errors',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async updateAssetPriceByAssetId(
+    @Param('assetId', ParseUUIDPipe) assetId: string,
+    @Body(ValidationPipe) updateAssetPriceDto: UpdateAssetPriceDto,
+  ): Promise<AssetPriceResponseDto> {
+    const price = await this.basicPriceService.updateByAssetId(assetId, updateAssetPriceDto);
+    return price;
+  }
+
+  /**
    * Delete an asset price.
    */
   @Delete(':id')

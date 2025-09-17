@@ -145,36 +145,45 @@ export class PriceHistoryController {
     description: 'Number of records to skip',
   })
   @ApiQuery({
-    name: 'orderBy',
+    name: 'sortBy',
     type: 'string',
     enum: ['createdAt', 'price'],
     required: false,
-    description: 'Field to order by',
+    description: 'Field to sort by',
   })
   @ApiQuery({
-    name: 'orderDirection',
+    name: 'sortOrder',
     type: 'string',
     enum: ['ASC', 'DESC'],
     required: false,
-    description: 'Order direction',
+    description: 'Sort order',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Price history records retrieved successfully',
     schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' },
-          assetId: { type: 'string', format: 'uuid' },
-          price: { type: 'number' },
-          priceType: { type: 'string' },
-          priceSource: { type: 'string' },
-          changeReason: { type: 'string' },
-          metadata: { type: 'object' },
-          createdAt: { type: 'string', format: 'date-time' },
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              assetId: { type: 'string', format: 'uuid' },
+              price: { type: 'number' },
+              priceType: { type: 'string' },
+              priceSource: { type: 'string' },
+              changeReason: { type: 'string' },
+              metadata: { type: 'object' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
+        total: { type: 'number' },
+        page: { type: 'number' },
+        limit: { type: 'number' },
+        totalPages: { type: 'number' },
       },
     },
   })
@@ -185,8 +194,20 @@ export class PriceHistoryController {
   async getPriceHistory(
     @Param('assetId', ParseUUIDPipe) assetId: string,
     @Query(ValidationPipe) query: PriceHistoryQueryDto,
-  ): Promise<AssetPriceHistory[]> {
-    return this.priceHistoryService.getPriceHistory(assetId, query);
+  ): Promise<{ data: AssetPriceHistory[]; total: number; page: number; limit: number; totalPages: number }> {
+    const records = await this.priceHistoryService.getPriceHistory(assetId, query);
+    const total = records.length;
+    const page = Math.floor((query.offset || 0) / (query.limit || 10)) + 1;
+    const limit = query.limit || 10;
+    const totalPages = Math.ceil(total / limit);
+    
+    return {
+      data: records,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   /**

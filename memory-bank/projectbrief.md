@@ -132,7 +132,17 @@
 - **Code Quality**: Clean production-ready code with all test files removed
 
 ## Recent Major Achievements
-- **Asset Management UI Enhancements & Bug Fixes** (September 17, 2025)
+- **Asset Price History UI Fixes & API Standardization** (September 17, 2025)
+  - **Price History UI Display Fix**: Fixed critical bug where Asset History UI was not displaying data despite API returning correct data
+  - **API Response Format Mismatch**: Fixed backend to return `{ data: [...], total, page, limit, totalPages }` instead of array directly
+  - **Query Parameters Standardization**: Standardized to use `sortBy`/`sortOrder` instead of `orderBy`/`orderDirection` for consistency
+  - **Price Type Handling**: Fixed frontend to handle both string and number price types from API
+  - **Data Refresh Logic**: Fixed price history data not refreshing when opening modal or clicking refresh button
+  - **Query Invalidation**: Added proper query invalidation and refetch logic for real-time data updates
+  - **API Call Standardization**: Converted all `fetch()` calls to use centralized `apiService.api` for consistency
+  - **Price History Creation Fix**: Fixed missing price history creation by correcting API endpoint calls
+  - **Code Quality**: Clean, production-ready code with proper error handling and user feedback
+- **Asset Management UI Enhancements & Bug Fixes** (Previous Session - September 17, 2025)
   - **Asset Detail Modal Enhancements**: Added Edit and Delete buttons to asset detail modal for better UX
   - **Button Layout Optimization**: Professional 3-button layout (Edit, Delete, Close) with proper spacing
   - **Edit Functionality**: Fixed button edit being disabled by adding onEditAsset prop to AssetDialogs

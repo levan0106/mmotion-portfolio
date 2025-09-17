@@ -94,7 +94,25 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **PHASE 3: MARKET DATA MODULE - COMPLETED** (Current Session - September 17, 2025)
+- ✅ **ASSET PRICE HISTORY UI FIXES & API STANDARDIZATION - COMPLETED** (Current Session - September 17, 2025)
+  - ✅ **Price History UI Display Fix**: Fixed critical bug where Asset History UI was not displaying data despite API returning correct data
+  - ✅ **API Response Format Mismatch**: Fixed backend to return `{ data: [...], total, page, limit, totalPages }` instead of array directly
+  - ✅ **Query Parameters Standardization**: Standardized to use `sortBy`/`sortOrder` instead of `orderBy`/`orderDirection` for consistency
+  - ✅ **Price Type Handling**: Fixed frontend to handle both string and number price types from API
+  - ✅ **Data Refresh Logic**: Fixed price history data not refreshing when opening modal or clicking refresh button
+  - ✅ **Query Invalidation**: Added proper query invalidation and refetch logic for real-time data updates
+  - ✅ **API Call Standardization**: Converted all `fetch()` calls to use centralized `apiService.api` for consistency
+  - ✅ **Price History Creation Fix**: Fixed missing price history creation by correcting API endpoint calls
+  - ✅ **Code Quality**: Clean, production-ready code with proper error handling and user feedback
+  - ✅ **Key Features Implemented**:
+    - ✅ **Price History Display**: Asset History UI now correctly displays price history data
+    - ✅ **Real-time Refresh**: Data refreshes automatically when opening tab or clicking refresh
+    - ✅ **API Consistency**: All API calls use centralized apiService for consistency
+    - ✅ **Data Validation**: Proper handling of price types (string/number) from API
+    - ✅ **Query Management**: Proper query invalidation and refetch for data freshness
+    - ✅ **Error Handling**: Comprehensive error handling and user feedback
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+- ✅ **PHASE 3: MARKET DATA MODULE - COMPLETED** (Previous Session - September 17, 2025)
   - ✅ **PriceHistoryService**: Complete CRUD operations with 16 unit tests
   - ✅ **PriceHistoryController**: REST API endpoints with Swagger documentation
   - ✅ **MarketDataService**: External API integration with 15 unit tests

@@ -229,8 +229,8 @@ describe('PriceHistoryService', () => {
       expect(service.getPriceHistory).toHaveBeenCalledWith('asset-1', {
         startDate,
         endDate,
-        orderBy: 'createdAt',
-        orderDirection: 'ASC',
+        sortBy: 'createdAt',
+        sortOrder: 'ASC',
       });
       expect(result).toEqual([mockPriceHistory]);
     });
@@ -244,8 +244,8 @@ describe('PriceHistoryService', () => {
 
       expect(service.getPriceHistory).toHaveBeenCalledWith('asset-1', {
         limit: 5,
-        orderBy: 'createdAt',
-        orderDirection: 'DESC',
+        sortBy: 'createdAt',
+        sortOrder: 'DESC',
       });
       expect(result).toEqual([mockPriceHistory]);
     });

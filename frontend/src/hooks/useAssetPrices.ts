@@ -15,7 +15,7 @@ interface AssetPrice {
 interface PriceHistory {
   id: string;
   assetId: string;
-  price: number;
+  price: number | string; // API can return string for numeric values
   priceType: string;
   priceSource: string;
   changeReason?: string;
@@ -79,58 +79,40 @@ interface PriceHistoryStats {
 
 // API functions
 const fetchAssetPrice = async (assetId: string): Promise<AssetPrice | null> => {
-  const response = await fetch(`/api/v1/asset-prices/${assetId}`);
-  
-  if (response.status === 404) {
-    return null;
+  try {
+    const response = await apiService.api.get(`/api/v1/asset-prices/${assetId}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    throw new Error(`Failed to fetch asset price: ${error.message}`);
   }
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch asset price: ${response.statusText}`);
-  }
-  
-  return response.json();
 };
 
 const createAssetPrice = async (data: CreateAssetPriceDto): Promise<AssetPrice> => {
-  const response = await fetch('/api/v1/asset-prices', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to create asset price: ${response.statusText}`);
+  try {
+    const response = await apiService.api.post('/api/v1/asset-prices', data);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(`Failed to create asset price: ${error.message}`);
   }
-  
-  return response.json();
 };
 
 const updateAssetPrice = async (assetId: string, data: UpdateAssetPriceDto): Promise<AssetPrice> => {
-  const response = await fetch(`/api/v1/asset-prices/${assetId}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to update asset price: ${response.statusText}`);
+  try {
+    const response = await apiService.api.put(`/api/v1/asset-prices/asset/${assetId}`, data);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(`Failed to update asset price: ${error.message}`);
   }
-  
-  return response.json();
 };
 
 const deleteAssetPrice = async (assetId: string): Promise<void> => {
-  const response = await fetch(`/api/v1/asset-prices/${assetId}`, {
-    method: 'DELETE',
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to delete asset price: ${response.statusText}`);
+  try {
+    await apiService.api.delete(`/api/v1/asset-prices/${assetId}`);
+  } catch (error: any) {
+    throw new Error(`Failed to delete asset price: ${error.message}`);
   }
 };
 
@@ -179,16 +161,12 @@ const deleteOldPriceHistory = async (assetId: string | undefined, olderThanDays:
   if (assetId) params.append('assetId', assetId);
   params.append('olderThanDays', olderThanDays.toString());
 
-  const response = await fetch(`/api/v1/price-history/cleanup?${params.toString()}`, {
-    method: 'DELETE',
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to delete old price history: ${response.statusText}`);
+  try {
+    const response = await apiService.api.delete(`/api/v1/price-history/cleanup?${params.toString()}`);
+    return response.data.deletedCount;
+  } catch (error: any) {
+    throw new Error(`Failed to delete old price history: ${error.message}`);
   }
-  
-  const result = await response.json();
-  return result.deletedCount;
 };
 
 // Custom hooks
@@ -239,7 +217,8 @@ export const useDeleteAssetPrice = () => {
 export const usePriceHistory = (assetId: string, query: PriceHistoryQueryDto = {}) => {
   return useQuery(['priceHistory', assetId, query], () => fetchPriceHistory(assetId, query), {
     enabled: !!assetId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Always refetch when requested
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 };
 
