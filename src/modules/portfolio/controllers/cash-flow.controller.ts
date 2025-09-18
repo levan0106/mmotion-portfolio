@@ -66,7 +66,19 @@ export class CashFlowController {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
 
-    return await this.cashFlowService.getCashFlowHistory(portfolioId, start, end);
+    const cashFlows = await this.cashFlowService.getCashFlowHistory(portfolioId, start, end);
+    
+    return cashFlows.map((cashFlow) => ({
+      cashflowId: cashFlow.cashFlowId,
+      portfolioId: cashFlow.portfolioId,
+      flowDate: cashFlow.flowDate,
+      amount: cashFlow.amount,
+      currency: cashFlow.currency,
+      type: cashFlow.type,
+      description: cashFlow.description,
+      createdAt: cashFlow.createdAt,
+      updatedAt: cashFlow.updatedAt,
+    }));
   }
 
   /**
@@ -123,6 +135,78 @@ export class CashFlowController {
   }
 
   /**
+   * Create a deposit
+   */
+  @Post('deposit')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a deposit and update portfolio balance' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ status: 201, description: 'Deposit created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async createDeposit(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() createDepositDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+  ) {
+    return await this.cashFlowService.createCashFlow(
+      portfolioId,
+      'DEPOSIT' as any,
+      createDepositDto.amount,
+      createDepositDto.description,
+      createDepositDto.reference,
+      createDepositDto.effectiveDate,
+    );
+  }
+
+  /**
+   * Create a withdrawal
+   */
+  @Post('withdrawal')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a withdrawal and update portfolio balance' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ status: 201, description: 'Withdrawal created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async createWithdrawal(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() createWithdrawalDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+  ) {
+    return await this.cashFlowService.createCashFlow(
+      portfolioId,
+      'WITHDRAWAL' as any,
+      createWithdrawalDto.amount,
+      createWithdrawalDto.description,
+      createWithdrawalDto.reference,
+      createWithdrawalDto.effectiveDate,
+    );
+  }
+
+  /**
+   * Create a dividend
+   */
+  @Post('dividend')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a dividend and update portfolio balance' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ status: 201, description: 'Dividend created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async createDividend(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() createDividendDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+  ) {
+    return await this.cashFlowService.createCashFlow(
+      portfolioId,
+      'DIVIDEND' as any,
+      createDividendDto.amount,
+      createDividendDto.description,
+      createDividendDto.reference,
+      createDividendDto.effectiveDate,
+    );
+  }
+
+  /**
    * Recalculate cash balance from all cash flows.
    */
   @Post('recalculate')
@@ -134,7 +218,7 @@ export class CashFlowController {
   async recalculateCashBalance(
     @Param('id', ParseUUIDPipe) portfolioId: string,
   ): Promise<{ portfolioId: string; recalculatedBalance: number }> {
-    const recalculatedBalance = await this.cashFlowService.recalculateCashBalance(portfolioId);
-    return { portfolioId, recalculatedBalance };
+    const result = await this.cashFlowService.recalculateCashBalanceFromTrades(portfolioId);
+    return { portfolioId, recalculatedBalance: result.newCashBalance };
   }
 }

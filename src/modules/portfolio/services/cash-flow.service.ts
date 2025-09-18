@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Portfolio } from '../entities/portfolio.entity';
-import { CashFlow } from '../entities/cash-flow.entity';
+import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.entity';
 import { Trade, TradeSide } from '../../trading/entities/trade.entity';
 
 export interface CashFlowUpdateResult {
@@ -11,6 +11,13 @@ export interface CashFlowUpdateResult {
   newCashBalance: number;
   cashFlowAmount: number;
   cashFlowType: string;
+}
+
+export interface CashFlowCreateResult {
+  cashFlow: CashFlow;
+  oldCashBalance: number;
+  newCashBalance: number;
+  portfolioUpdated: boolean;
 }
 
 /**
@@ -24,6 +31,9 @@ export class CashFlowService {
     private readonly portfolioRepository: Repository<Portfolio>,
     @InjectRepository(CashFlow)
     private readonly cashFlowRepository: Repository<CashFlow>,
+    @InjectRepository(Trade)
+    private readonly tradeRepository: Repository<Trade>,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -71,7 +81,7 @@ export class CashFlowService {
       flowDate: trade.tradeDate,
       amount: cashFlowAmount,
       currency: 'VND', // Default currency, should be from portfolio
-      type: cashFlowType,
+      type: cashFlowType as any,
       description: `${trade.side} ${trade.quantity} shares of ${trade.asset?.symbol || 'asset'} at ${trade.price}`,
     });
 
@@ -83,6 +93,60 @@ export class CashFlowService {
       newCashBalance,
       cashFlowAmount,
       cashFlowType,
+    };
+  }
+
+  /**
+   * Recalculate cash balance from all trades
+   * @param portfolioId Portfolio ID
+   * @returns Promise<CashFlowUpdateResult>
+   */
+  async recalculateCashBalanceFromTrades(portfolioId: string): Promise<CashFlowUpdateResult> {
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
+
+    // Get all trades for this portfolio
+    const trades = await this.tradeRepository.find({
+      where: { portfolioId },
+      order: { tradeDate: 'ASC' }
+    });
+
+    let calculatedCashBalance = 0; // Start with 0, assuming no initial cash
+
+    // Process each trade to calculate correct cash balance
+    for (const trade of trades) {
+      const tradeAmount = parseFloat(trade.totalAmount.toString());
+      const fee = parseFloat(trade.fee.toString()) || 0;
+      const tax = parseFloat(trade.tax.toString()) || 0;
+      const totalCost = tradeAmount + fee + tax;
+
+      if (trade.side === TradeSide.BUY) {
+        // Buy trade: reduce cash balance
+        calculatedCashBalance -= totalCost;
+      } else {
+        // Sell trade: increase cash balance (after fees and taxes)
+        const netProceeds = tradeAmount - fee - tax;
+        calculatedCashBalance += netProceeds;
+      }
+    }
+
+    // Update portfolio cash balance
+    portfolio.cashBalance = calculatedCashBalance;
+    await this.portfolioRepository.save(portfolio);
+
+    return {
+      portfolioId,
+      oldCashBalance,
+      newCashBalance: calculatedCashBalance,
+      cashFlowAmount: calculatedCashBalance - oldCashBalance,
+      cashFlowType: 'RECALCULATION',
     };
   }
 
@@ -132,7 +196,7 @@ export class CashFlowService {
       flowDate,
       amount,
       currency: 'VND', // Should be from portfolio baseCurrency
-      type,
+      type: type as any,
       description,
     });
 
@@ -218,5 +282,141 @@ export class CashFlowService {
     await this.portfolioRepository.save(portfolio);
 
     return totalCashFlow;
+  }
+
+  /**
+   * Create a new cash flow and automatically update portfolio balance
+   */
+  async createCashFlow(
+    portfolioId: string,
+    type: CashFlowType,
+    amount: number,
+    description: string,
+    reference?: string,
+    effectiveDate?: Date,
+  ): Promise<CashFlowCreateResult> {
+    // Validate portfolio exists
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    // Validate amount
+    if (amount <= 0) {
+      throw new BadRequestException('Amount must be positive');
+    }
+
+    // Use transaction to ensure consistency
+    return await this.dataSource.transaction(async (manager) => {
+      // Get current cash balance
+      const currentCashBalance = parseFloat(portfolio.cashBalance.toString());
+
+      // Create cash flow
+      const cashFlow = manager.create(CashFlow, {
+        portfolioId,
+        type,
+        amount,
+        description,
+        reference,
+        status: CashFlowStatus.COMPLETED,
+        flowDate: new Date(),
+        effectiveDate: effectiveDate || new Date(),
+      });
+
+      const savedCashFlow = await manager.save(cashFlow);
+
+      // Calculate new cash balance
+      const netAmount = savedCashFlow.netAmount;
+      const newCashBalance = currentCashBalance + netAmount;
+
+      // Update portfolio cash balance
+      await manager.update(Portfolio, 
+        { portfolioId }, 
+        { 
+          cashBalance: newCashBalance,
+          updatedAt: new Date()
+        }
+      );
+
+      return {
+        cashFlow: savedCashFlow,
+        oldCashBalance: currentCashBalance,
+        newCashBalance: newCashBalance,
+        portfolioUpdated: true,
+      };
+    });
+  }
+
+  /**
+   * Create cash flow from trade (for trade settlements)
+   */
+  async createCashFlowFromTrade(trade: Trade): Promise<CashFlowCreateResult> {
+    const tradeAmount = parseFloat(trade.totalAmount.toString());
+    const fee = parseFloat(trade.fee.toString()) || 0;
+    const tax = parseFloat(trade.tax.toString()) || 0;
+
+    let type: CashFlowType;
+    let amount: number;
+    let description: string;
+
+    if (trade.side === TradeSide.BUY) {
+      type = CashFlowType.TRADE_SETTLEMENT;
+      amount = tradeAmount + fee + tax;
+      description = `Trade settlement: BUY ${trade.quantity} ${trade.asset?.symbol || 'asset'} @ ${trade.price}`;
+    } else {
+      type = CashFlowType.TRADE_SETTLEMENT;
+      amount = tradeAmount - fee - tax;
+      description = `Trade settlement: SELL ${trade.quantity} ${trade.asset?.symbol || 'asset'} @ ${trade.price}`;
+    }
+
+    return await this.createCashFlow(
+      trade.portfolioId,
+      type,
+      amount,
+      description,
+      trade.tradeId,
+      trade.tradeDate,
+    );
+  }
+
+  /**
+   * Cancel a cash flow and recalculate balance
+   */
+  async cancelCashFlow(cashFlowId: string): Promise<CashFlowCreateResult> {
+    const cashFlow = await this.cashFlowRepository.findOne({
+      where: { cashFlowId }
+    });
+
+    if (!cashFlow) {
+      throw new NotFoundException(`Cash flow with ID ${cashFlowId} not found`);
+    }
+
+    if (cashFlow.status === CashFlowStatus.CANCELLED) {
+      throw new BadRequestException('Cash flow is already cancelled');
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      // Update cash flow status
+      await manager.update(CashFlow, 
+        { cashFlowId }, 
+        { 
+          status: CashFlowStatus.CANCELLED,
+          updatedAt: new Date()
+        }
+      );
+
+      // Recalculate portfolio balance
+      const result = await this.recalculateCashBalanceFromTrades(cashFlow.portfolioId);
+
+      return {
+        cashFlow: { ...cashFlow, status: CashFlowStatus.CANCELLED } as CashFlow,
+        oldCashBalance: result.oldCashBalance,
+        newCashBalance: result.newCashBalance,
+        portfolioUpdated: true,
+      };
+    });
   }
 }

@@ -37,12 +37,12 @@ import AssetPerformanceChart from '../components/Analytics/AssetPerformanceChart
 import RiskMetricsDashboard from '../components/Analytics/RiskMetricsDashboard';
 import DiversificationHeatmap from '../components/Analytics/DiversificationHeatmap';
 import AssetAllocationTimeline from '../components/Analytics/AssetAllocationTimeline';
-import CashFlowAnalysis from '../components/Analytics/CashFlowAnalysis';
 import BenchmarkComparison from '../components/Analytics/BenchmarkComparison';
 import AssetDetailSummary from '../components/Analytics/AssetDetailSummary';
 import { TradeForm } from '../components/Trading/TradeForm';
 import { TradeListContainer } from '../components/Trading/TradeList';
 import { TradeAnalysisContainer } from '../components/Trading/TradeAnalysis';
+import CashFlowLayout from '../components/CashFlow/CashFlowLayout';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import { CreateTradeDto } from '../types';
 import { apiService } from '../services/api';
@@ -94,9 +94,6 @@ const PortfolioDetail: React.FC = () => {
   const [allocationTimelineData, setAllocationTimelineData] = useState<any>(null);
   const [isAllocationTimelineLoading, setIsAllocationTimelineLoading] = useState(false);
   const [allocationTimelineError, setAllocationTimelineError] = useState<string | null>(null);
-  const [cashFlowData, setCashFlowData] = useState<any>(null);
-  const [isCashFlowLoading, setIsCashFlowLoading] = useState(false);
-  const [cashFlowError, setCashFlowError] = useState<string | null>(null);
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
@@ -224,26 +221,6 @@ const PortfolioDetail: React.FC = () => {
     fetchAllocationTimelineData();
   }, [portfolioId]);
 
-  // Fetch cash flow analysis data
-  useEffect(() => {
-    const fetchCashFlowData = async () => {
-      if (!portfolioId) return;
-      
-      try {
-        setIsCashFlowLoading(true);
-        setCashFlowError(null);
-        const response = await apiService.getPortfolioCashFlowAnalysis(portfolioId);
-        setCashFlowData(response);
-      } catch (error) {
-        console.error('Error fetching cash flow data:', error);
-        setCashFlowError('Failed to load cash flow data');
-      } finally {
-        setIsCashFlowLoading(false);
-      }
-    };
-
-    fetchCashFlowData();
-  }, [portfolioId]);
 
   // Fetch benchmark comparison data
   useEffect(() => {
@@ -332,7 +309,6 @@ const PortfolioDetail: React.FC = () => {
       setRiskMetricsData(null);
       setDiversificationData(null);
       setAllocationTimelineData(null);
-      setCashFlowData(null);
       setBenchmarkData(null);
       setAssetDetailData(null);
       
@@ -352,25 +328,25 @@ const PortfolioDetail: React.FC = () => {
 
   const summaryCards = [
     {
-      title: 'Total Trades',
+      title: 'Total Trades (Số giao dịch)',
       value: totalTrades,
       color: 'primary',
       icon: <TrendingUp />,
     },
     {
-      title: 'Total Volume',
+      title: 'Total Volume (Tổng giá trị giao dịch)',
       value: formatCurrency(totalVolume, portfolio?.baseCurrency || 'VND'),
       color: 'info',
       icon: <AccountBalance />,
     },
     {
-      title: 'Fees & Taxes',
+      title: 'Fees & Taxes (Phí và thuế)',
       value: formatCurrency(totalFeesAndTaxes, portfolio?.baseCurrency || 'VND'),
       color: 'warning',
       icon: <TrendingDown />,
     },
     {
-      title: 'Realized P&L',
+      title: 'Realized P&L (Lợi nhuận thực tế)',
       value: formatCurrency(realizedPL, portfolio?.baseCurrency || 'VND'),
       color: realizedPL >= 0 ? 'success' : 'error',
       icon: <TrendingUp />,
@@ -534,7 +510,7 @@ const PortfolioDetail: React.FC = () => {
           <Card sx={{ height: 120, boxShadow: 2 }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography color="text.secondary" gutterBottom variant="body2">
-                Current NAV
+                Current NAV (Giá trị tài sản hiện tại)
               </Typography>
               <Typography variant="h5" component="div">
                 {navData ? formatCurrency(navData.navValue, portfolio.baseCurrency) : 'N/A'}
@@ -546,7 +522,7 @@ const PortfolioDetail: React.FC = () => {
           <Card sx={{ height: 120, boxShadow: 2 }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography color="text.secondary" gutterBottom variant="body2">
-                Total Return
+                Total Return (Tổng lợi nhuận)
               </Typography>
               <Typography variant="h5" component="div" color={(performanceData?.totalReturn || 0) >= 0 ? 'success.main' : 'error.main'}>
                 {performanceData ? formatPercentage(performanceData.totalReturn) : 'N/A'}
@@ -558,7 +534,7 @@ const PortfolioDetail: React.FC = () => {
           <Card sx={{ height: 120, boxShadow: 2 }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography color="text.secondary" gutterBottom variant="body2">
-                Annualized Return
+                Annualized Return (Lợi nhuận hàng năm)
               </Typography>
               <Typography variant="h5" component="div" color={(performanceData?.annualizedReturn || 0) >= 0 ? 'success.main' : 'error.main'}>
                 {performanceData ? formatPercentage(performanceData.annualizedReturn) : 'N/A'}
@@ -570,7 +546,7 @@ const PortfolioDetail: React.FC = () => {
           <Card sx={{ height: 120, boxShadow: 2 }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography color="text.secondary" gutterBottom variant="body2">
-                Base Currency
+                Base Currency (Tiền tệ cơ sở)
               </Typography>
               <Typography variant="h5" component="div">
                 {portfolio.baseCurrency}
@@ -645,6 +621,7 @@ const PortfolioDetail: React.FC = () => {
           >
             <Tab label="Trading Management" />
             <Tab label="Trading Analysis" defaultChecked />
+            <Tab label="Cash Flow" />
             <Tab label="Asset Allocation" />
           </Tabs>
           
@@ -727,6 +704,21 @@ const PortfolioDetail: React.FC = () => {
             backgroundColor: 'background.paper',
             minHeight: '80vh',
           }}>
+            <CashFlowLayout 
+              portfolioId={portfolioId!} 
+              onCashFlowUpdate={() => {
+                // Refresh portfolio data when cash flow is updated
+                refetchPortfolio();
+              }}
+            />
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ 
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
+          }}>
 
             {/* Portfolio Overview Section */}
             <Box sx={{ mb: getUltraSpacing(4, 1) }}>
@@ -752,7 +744,7 @@ const PortfolioDetail: React.FC = () => {
                       {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Total Value
+                      Total Value - NAV (Giá trị tài sản hiện tại)
                     </Typography>
                   </Box>
                 </Grid>
@@ -769,7 +761,7 @@ const PortfolioDetail: React.FC = () => {
                       {formatCurrency(portfolio.unrealizedPl, portfolio.baseCurrency)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Unrealized P&L
+                      Unrealized P&L (Lợi nhuận chưa thực hiện)
                     </Typography>
                   </Box>
                 </Grid>
@@ -786,7 +778,7 @@ const PortfolioDetail: React.FC = () => {
                       {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Cash Balance
+                      Cash Balance (Số dư tiền mặt)
                     </Typography>
                   </Box>
                 </Grid>
@@ -803,7 +795,7 @@ const PortfolioDetail: React.FC = () => {
                       {Object.keys(allocationData?.allocation || {}).length}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Asset Classes
+                      Asset Classes (Loại tài sản)
                   </Typography>
                     </Box>
                 </Grid>
@@ -1109,38 +1101,6 @@ const PortfolioDetail: React.FC = () => {
           </Grid>
             </Box>
 
-            {/* Cash Flow Analysis Section */}
-            <Box sx={{ mb: getUltraSpacing(4, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(3, 1),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Cash Flow Analysis
-              </Typography>
-              <Box sx={{ 
-                p: 3, 
-                backgroundColor: 'white', 
-                borderRadius: 2, 
-                boxShadow: 1,
-                border: '1px solid #e0e0e0'
-              }}>
-                {isCashFlowLoading ? (
-                  <Box display="flex" justifyContent="center" p={4}>
-                    <CircularProgress />
-                  </Box>
-                ) : cashFlowError ? (
-                  <Typography color="error">{cashFlowError}</Typography>
-                ) : (
-                  <CashFlowAnalysis 
-                    data={cashFlowData?.data || []} 
-                    baseCurrency={portfolio.baseCurrency}
-                    title="Cash Flow Analysis"
-                  />
-                )}
-              </Box>
-            </Box>
 
             {/* Benchmark Comparison Section */}
             <Box sx={{ mb: getUltraSpacing(4, 1) }}>

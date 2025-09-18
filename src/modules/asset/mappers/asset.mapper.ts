@@ -16,10 +16,14 @@ export class AssetMapper {
   static toResponseDto(asset: Asset, computedFields?: {
     currentPrice?: number;
     avgCost?: number;
+    currentQuantity?: number;
   }): AssetResponseDto {
+    // Use computed currentQuantity if available, otherwise fall back to asset.currentQuantity
+    const currentQuantity = computedFields?.currentQuantity ?? asset.currentQuantity ?? 0;
+    
     // Calculate currentValue real-time as currentQuantity * currentPrice
-    const currentValue = asset.currentQuantity && computedFields?.currentPrice 
-      ? asset.currentQuantity * computedFields.currentPrice 
+    const currentValue = currentQuantity && computedFields?.currentPrice 
+      ? currentQuantity * computedFields.currentPrice 
       : 0;
 
     return {
@@ -31,7 +35,7 @@ export class AssetMapper {
       initialValue: asset.initialValue,
       initialQuantity: asset.initialQuantity,
       currentValue: currentValue, // Calculated real-time
-      currentQuantity: asset.currentQuantity,
+      currentQuantity: currentQuantity, // Use computed or fallback to asset value
       currentPrice: computedFields?.currentPrice,
       avgCost: computedFields?.avgCost,
       createdAt: asset.createdAt,

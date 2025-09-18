@@ -427,18 +427,19 @@ export class AssetRepository implements IAssetRepository {
     userId: string,
     filters: Omit<AssetFilters, 'createdBy'> = {}
   ): Promise<PaginatedResponse<Asset>> {
-    const queryBuilder = this.assetRepository
+    // First get the asset IDs with pagination
+    const assetQueryBuilder = this.assetRepository
       .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.trades', 'trades')
+      .select('asset.id')
       .where('asset.createdBy = :userId', { userId });
 
     // Apply additional filters
     if (filters.type) {
-      queryBuilder.andWhere('asset.type = :type', { type: filters.type });
+      assetQueryBuilder.andWhere('asset.type = :type', { type: filters.type });
     }
 
     if (filters.search) {
-      queryBuilder.andWhere(
+      assetQueryBuilder.andWhere(
         '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
         { search: `%${filters.search}%` }
       );
@@ -447,14 +448,48 @@ export class AssetRepository implements IAssetRepository {
     // Apply sorting
     const sortBy = filters.sortBy || 'createdAt';
     const sortOrder = filters.sortOrder || 'DESC';
-    queryBuilder.orderBy(`asset.${sortBy}`, sortOrder);
+    assetQueryBuilder.orderBy(`asset.${sortBy}`, sortOrder);
 
     // Apply pagination
     const limit = filters.limit || 25;
     const offset = filters.offset || 0;
-    queryBuilder.limit(limit).offset(offset);
+    assetQueryBuilder.limit(limit).offset(offset);
 
-    const [assets, total] = await queryBuilder.getManyAndCount();
+    const assetIds = await assetQueryBuilder.getMany();
+    const assetIdList = assetIds.map(asset => asset.id);
+
+    let assets: Asset[] = [];
+    let total = 0;
+
+    if (assetIdList.length > 0) {
+      // Now get the full assets with trades
+      const queryBuilder = this.assetRepository
+        .createQueryBuilder('asset')
+        .leftJoinAndSelect('asset.trades', 'trades')
+        .where('asset.id IN (:...assetIds)', { assetIds: assetIdList })
+        .orderBy(`asset.${sortBy}`, sortOrder);
+
+      assets = await queryBuilder.getMany();
+    }
+
+    // Get total count with the same filters
+    const countQueryBuilder = this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.createdBy = :userId', { userId });
+
+    // Apply the same filters for count
+    if (filters.type) {
+      countQueryBuilder.andWhere('asset.type = :type', { type: filters.type });
+    }
+
+    if (filters.search) {
+      countQueryBuilder.andWhere(
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
+        { search: `%${filters.search}%` }
+      );
+    }
+
+    total = await countQueryBuilder.getCount();
 
     return {
       data: assets,
@@ -570,12 +605,15 @@ export class AssetRepository implements IAssetRepository {
    * @returns Promise<Trade[]> - Array of trades
    */
   async getTradesForAsset(assetId: string): Promise<Trade[]> {
-    return await this.tradeRepository
+    console.log(`[DEBUG] getTradesForAsset called with assetId: ${assetId}`);
+    const trades = await this.tradeRepository
       .createQueryBuilder('trade')
       .where('trade.assetId = :assetId', { assetId })
       .orderBy('trade.tradeDate', 'ASC')
       .addOrderBy('trade.createdAt', 'ASC')
       .getMany();
+    console.log(`[DEBUG] getTradesForAsset found ${trades.length} trades for assetId: ${assetId}`);
+    return trades;
   }
 
   /**

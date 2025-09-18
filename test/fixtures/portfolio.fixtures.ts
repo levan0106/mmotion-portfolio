@@ -8,7 +8,7 @@ import { UpdatePortfolioDto } from '../../src/modules/portfolio/dto/update-portf
 import { Portfolio } from '../../src/modules/portfolio/entities/portfolio.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { NavSnapshot } from '../../src/modules/portfolio/entities/nav-snapshot.entity';
-import { CashFlow } from '../../src/modules/portfolio/entities/cash-flow.entity';
+import { CashFlow, CashFlowType, CashFlowStatus } from '../../src/modules/portfolio/entities/cash-flow.entity';
 import { Account } from '../../src/modules/shared/entities/account.entity';
 import { Asset } from '../../src/modules/asset/entities/asset.entity';
 import { AssetType } from '../../src/modules/asset/enums/asset-type.enum';
@@ -172,14 +172,22 @@ export const createMockNavSnapshot = (overrides: Partial<NavSnapshot> = {}): Nav
  * Mock CashFlow fixtures
  */
 export const createMockCashFlow = (overrides: Partial<CashFlow> = {}): CashFlow => ({
-  cashflowId: mockUUIDs.cashFlow1,
+  cashFlowId: mockUUIDs.cashFlow1,
   portfolioId: mockUUIDs.portfolio1,
   flowDate: new Date('2024-01-01T00:00:00Z'),
+  effectiveDate: new Date('2024-01-01T00:00:00Z'),
   amount: 100000000, // 100 million VND
   currency: 'VND',
-  type: 'DEPOSIT',
+  type: CashFlowType.DEPOSIT,
   description: 'Initial deposit',
+  reference: 'INIT-001',
+  status: CashFlowStatus.COMPLETED,
+  tradeId: null,
+  isInflow: true,
+  isOutflow: false,
+  netAmount: 100000000,
   createdAt: new Date('2024-01-01T00:00:00Z'),
+  updatedAt: new Date('2024-01-01T00:00:00Z'),
   portfolio: createMockPortfolio(),
   ...overrides,
 });

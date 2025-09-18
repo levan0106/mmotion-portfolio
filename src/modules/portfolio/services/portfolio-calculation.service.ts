@@ -7,7 +7,7 @@ import { Asset } from '../../asset/entities/asset.entity';
 import { MarketDataService } from '../../market-data/services/market-data.service';
 import { GlobalAsset } from '../../asset/entities/global-asset.entity';
 import { AssetPrice } from '../../asset/entities/asset-price.entity';
-import { AssetValueCalculatorService } from '@/modules/asset/services/asset-value-calculator.service';
+import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
 
 export interface PortfolioCalculationResult {
   totalValue: number;

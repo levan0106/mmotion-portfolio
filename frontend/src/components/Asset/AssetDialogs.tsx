@@ -125,13 +125,13 @@ export const AssetDialogs: React.FC<AssetDialogsProps> = ({
                         <span>{formatNumber(selectedAsset.quantity || selectedAsset.totalQuantity || 0, 2)}</span>
                       </div>
                       <div className="detail-item">
-                        <label>Total Value</label>
+                        <label>Total Value (Giá trị tài sản hiện tại)</label>
                         <span className="detail-value--highlight">
                           {formatCurrency(Number(selectedAsset.totalValue) || 0, baseCurrency)}
                         </span>
                       </div>
                       <div className="detail-item">
-                        <label>Initial Value</label>
+                        <label>Initial Value (Giá trị ban đầu)</label>
                         <span>{formatCurrency(selectedAsset.initialValue || 0, baseCurrency)}</span>
                       </div>
                     </div>
@@ -141,7 +141,7 @@ export const AssetDialogs: React.FC<AssetDialogsProps> = ({
                     <h4>Profit & Loss Analysis</h4>
                     <div className="detail-grid">
                       <div className="detail-item">
-                        <label>Unrealized P&L</label>
+                        <label>Unrealized P&L (Lợi nhuận chưa thực hiện)</label>
                         <span className={`detail-value ${(selectedAsset.currentPrice || 0) >= (selectedAsset.avgCost || 0) ? 'positive' : 'negative'}`}>
                           {formatCurrency(
                             ((selectedAsset.currentPrice || 0) - (selectedAsset.avgCost || 0)) * (selectedAsset.quantity || selectedAsset.totalQuantity || 0),
@@ -150,7 +150,7 @@ export const AssetDialogs: React.FC<AssetDialogsProps> = ({
                         </span>
                       </div>
                       <div className="detail-item">
-                        <label>P&L Percentage</label>
+                        <label>P&L Percentage (Phần trăm lợi nhuận)</label>
                         <span className={`detail-value ${(selectedAsset.currentPrice || 0) >= (selectedAsset.avgCost || 0) ? 'positive' : 'negative'}`}>
                           {selectedAsset.avgCost && selectedAsset.avgCost > 0 
                             ? formatPercentage(((selectedAsset.currentPrice || 0) - selectedAsset.avgCost) / selectedAsset.avgCost * 100, 2)
@@ -159,7 +159,7 @@ export const AssetDialogs: React.FC<AssetDialogsProps> = ({
                         </span>
                       </div>
                       <div className="detail-item">
-                        <label>Cost Basis</label>
+                        <label>Cost Basis (Chi phí ban đầu)</label>
                         <span>{formatCurrency((selectedAsset.avgCost || 0) * (selectedAsset.quantity || selectedAsset.totalQuantity || 0), baseCurrency)}</span>
                       </div>
                     </div>

@@ -2,73 +2,90 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   ManyToOne,
-  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Portfolio } from './portfolio.entity';
 
-/**
- * CashFlow entity representing cash movements in and out of portfolios.
- * Used for tracking deposits, withdrawals, and other cash transactions.
- */
+export enum CashFlowType {
+  DEPOSIT = 'DEPOSIT',
+  WITHDRAWAL = 'WITHDRAWAL',
+  DIVIDEND = 'DIVIDEND',
+  INTEREST = 'INTEREST',
+  FEE = 'FEE',
+  TAX = 'TAX',
+  ADJUSTMENT = 'ADJUSTMENT',
+  TRADE_SETTLEMENT = 'TRADE_SETTLEMENT', // Tự động tạo từ trades
+}
+
+export enum CashFlowStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 @Entity('cash_flows')
 @Index(['portfolioId'])
 @Index(['flowDate'])
+@Index(['type'])
 export class CashFlow {
-  /**
-   * Unique identifier for the cash flow record.
-   */
-  @PrimaryGeneratedColumn('uuid')
-  cashflowId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'cash_flow_id' })
+  cashFlowId: string;
 
-  /**
-   * ID of the portfolio this cash flow belongs to.
-   */
-  @Column({ type: 'uuid' })
+  @Column('uuid', { name: 'portfolio_id' })
   portfolioId: string;
 
-  /**
-   * Date of the cash flow transaction.
-   */
-  @Column({ type: 'timestamp' })
-  flowDate: Date;
+  @Column({ type: 'enum', enum: CashFlowType })
+  type: CashFlowType;
 
-  /**
-   * Amount of the cash flow (positive for inflow, negative for outflow).
-   */
-  @Column({ type: 'decimal', precision: 15, scale: 2 })
+  @Column({ type: 'decimal', precision: 20, scale: 8 })
   amount: number;
 
-  /**
-   * Currency of the cash flow.
-   */
-  @Column({ type: 'varchar', length: 3 })
+  @Column({ type: 'varchar', length: 3, default: 'VND' })
   currency: string;
 
-  /**
-   * Type of cash flow (e.g., 'DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST').
-   */
-  @Column({ type: 'varchar', length: 50 })
-  type: string;
-
-  /**
-   * Description of the cash flow transaction.
-   */
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  /**
-   * Timestamp when this cash flow record was created.
-   */
-  @CreateDateColumn()
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  reference: string; // Bank transfer ref, check number, etc.
+
+  @Column({ type: 'enum', enum: CashFlowStatus, default: CashFlowStatus.COMPLETED })
+  status: CashFlowStatus;
+
+  @Column({ type: 'timestamp', name: 'flow_date' })
+  flowDate: Date;
+
+  @Column({ type: 'timestamp', name: 'effective_date', nullable: true })
+  effectiveDate: Date; // Khi nào thực sự có hiệu lực
+
+  @Column({ type: 'uuid', nullable: true })
+  tradeId: string; // Link to trade if created from trade
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  /**
-   * Portfolio this cash flow belongs to.
-   */
-  @ManyToOne(() => Portfolio, (portfolio) => portfolio.cashFlows)
-  @JoinColumn({ name: 'portfolioId' })
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  // Relations
+  @ManyToOne(() => Portfolio, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'portfolio_id' })
   portfolio: Portfolio;
+
+  // Computed properties
+  get isInflow(): boolean {
+    return [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST].includes(this.type);
+  }
+
+  get isOutflow(): boolean {
+    return [CashFlowType.WITHDRAWAL, CashFlowType.FEE, CashFlowType.TAX].includes(this.type);
+  }
+
+  get netAmount(): number {
+    return this.isInflow ? parseFloat(this.amount.toString()) : -parseFloat(this.amount.toString());
+  }
 }

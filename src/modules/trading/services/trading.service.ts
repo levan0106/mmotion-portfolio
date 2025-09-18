@@ -985,8 +985,8 @@ export class TradingService {
    */
   private async updatePortfolioPosition(trade: Trade): Promise<void> {
     try {
-      // Update cash balance from trade
-      await this.cashFlowService.updateCashBalanceFromTrade(trade);
+      // Create cash flow from trade and update portfolio balance
+      await this.cashFlowService.createCashFlowFromTrade(trade);
       
       // Update asset position (placeholder for future implementation)
       await this.updatePortfolioPositionForAsset(trade.assetId, trade.portfolioId, trade.price);

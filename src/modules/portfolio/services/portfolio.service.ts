@@ -12,6 +12,7 @@ import { Account } from '../../shared/entities/account.entity';
 import { Asset } from '../../asset/entities/asset.entity';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './portfolio-value-calculator.service';
+import { CashFlowService } from './cash-flow.service';
 
 /**
  * Service class for Portfolio business logic.
@@ -33,6 +34,7 @@ export class PortfolioService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly portfolioCalculationService: PortfolioCalculationService,
     private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
+    private readonly cashFlowService: CashFlowService,
   ) {}
 
   /**
@@ -202,16 +204,29 @@ export class PortfolioService {
    */
   async calculatePortfolioValue(portfolio: Portfolio): Promise<void> {
     try {
-      // Calculate portfolio values from trades
+      // First, recalculate cash balance from trades to ensure accuracy
+      await this.cashFlowService.recalculateCashBalanceFromTrades(portfolio.portfolioId);
+      
+      // Get updated portfolio with correct cash balance
+      const updatedPortfolio = await this.portfolioEntityRepository.findOne({
+        where: { portfolioId: portfolio.portfolioId }
+      });
+      
+      if (!updatedPortfolio) {
+        throw new Error('Portfolio not found after cash balance recalculation');
+      }
+
+      // Calculate portfolio values from trades with correct cash balance
       const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
         portfolio.portfolioId,
-        parseFloat(portfolio.cashBalance.toString()),
+        parseFloat(updatedPortfolio.cashBalance.toString()),
       );
 
       // Update portfolio with calculated values
       portfolio.totalValue = calculation.totalValue;
       portfolio.unrealizedPl = calculation.unrealizedPl;
       portfolio.realizedPl = calculation.realizedPl;
+      portfolio.cashBalance = updatedPortfolio.cashBalance; // Update with correct cash balance
 
       // Save updated values to database
       await this.portfolioEntityRepository.save(portfolio);
