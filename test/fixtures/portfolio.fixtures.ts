@@ -55,14 +55,14 @@ export const createMockAsset = (overrides: Partial<Asset> = {}): Asset => ({
   description: 'Leading steel manufacturer in Vietnam',
   initialValue: 25000000,
   initialQuantity: 1000,
-  currentValue: 30000000,
+  // currentValue removed - calculated real-time
   currentQuantity: 1000,
   createdAt: new Date('2024-01-01T00:00:00Z'),
   updatedAt: new Date('2024-01-01T00:00:00Z'),
   createdBy: mockUUIDs.user1,
   updatedBy: mockUUIDs.user1,
   trades: [],
-  getTotalValue: jest.fn().mockReturnValue(30000000),
+  // getTotalValue method removed - currentValue calculated real-time
   getTotalQuantity: jest.fn().mockReturnValue(1000),
   hasTrades: jest.fn().mockReturnValue(false),
   getDisplayName: jest.fn().mockReturnValue('Hoa Phat Group Joint Stock Company (HPG)'),
@@ -81,14 +81,14 @@ export const createMockAssetVCB = (overrides: Partial<Asset> = {}): Asset => ({
   description: 'Leading commercial bank in Vietnam',
   initialValue: 80000000,
   initialQuantity: 500,
-  currentValue: 90000000,
+  // currentValue removed - calculated real-time
   currentQuantity: 500,
   createdAt: new Date('2024-01-01T00:00:00Z'),
   updatedAt: new Date('2024-01-01T00:00:00Z'),
   createdBy: mockUUIDs.user1,
   updatedBy: mockUUIDs.user1,
   trades: [],
-  getTotalValue: jest.fn().mockReturnValue(90000000),
+  // getTotalValue method removed - currentValue calculated real-time
   getTotalQuantity: jest.fn().mockReturnValue(500),
   hasTrades: jest.fn().mockReturnValue(false),
   getDisplayName: jest.fn().mockReturnValue('Joint Stock Commercial Bank for Foreign Trade of Vietnam (VCB)'),

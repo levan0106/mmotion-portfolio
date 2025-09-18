@@ -10,6 +10,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
+import { AssetDetailSummaryResponseDto } from '../dto/asset-detail-summary.dto';
 
 /**
  * Controller for Portfolio analytics and advanced reporting.
@@ -593,68 +594,14 @@ export class PortfolioAnalyticsController {
   @Get('asset-detail-summary')
   @ApiOperation({ summary: 'Get asset detail summary data' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiResponse({ status: 200, description: 'Asset detail data retrieved successfully' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Asset detail data retrieved successfully',
+    type: AssetDetailSummaryResponseDto
+  })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getAssetDetailSummary(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    const portfolio = await this.portfolioService.getPortfolioDetails(id);
-    
-    // Use raw query to get detailed asset positions
-    const query = `
-      SELECT
-        asset.symbol,
-        asset.name,
-        asset.type as "assetType",
-        SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) as "quantity",
-        asset.current_value as "currentPrice",
-        asset.current_value * SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) as "totalValue"
-      FROM portfolios portfolio
-      LEFT JOIN trades trade ON portfolio.portfolio_id = trade.portfolio_id
-      LEFT JOIN assets asset ON trade.asset_id = asset.id
-      WHERE portfolio.portfolio_id = $1
-      GROUP BY asset.symbol, asset.name, asset.type, asset.current_value
-      HAVING SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) > 0
-    `;
-
-    const positions = await this.portfolioRepository.query(query, [id]);
-    
-    // Calculate total portfolio value
-    const totalValue = positions.reduce((sum, position) => {
-      const quantity = parseFloat(position.quantity) || 0;
-      const price = parseFloat(position.currentPrice) || 0;
-      return sum + (quantity * price);
-    }, 0);
-
-    // Transform data and calculate percentages
-    const assetDetails = positions.map(position => {
-      const quantity = parseFloat(position.quantity) || 0;
-      const price = parseFloat(position.currentPrice) || 0;
-      const totalValue = quantity * price;
-      const percentage = totalValue > 0 ? (totalValue / portfolio.totalValue) * 100 : 0;
-      
-      // Mock unrealized P&L calculation (in real app, this would be calculated from cost basis)
-      const costBasis = totalValue * (0.8 + Math.random() * 0.4); // Mock cost basis
-      const unrealizedPl = totalValue - costBasis;
-      const unrealizedPlPercentage = costBasis > 0 ? (unrealizedPl / costBasis) * 100 : 0;
-
-      return {
-        symbol: position.symbol,
-        name: position.name,
-        assetType: position.assetType,
-        quantity: quantity,
-        currentPrice: price,
-        totalValue: totalValue,
-        percentage: percentage,
-        unrealizedPl: unrealizedPl,
-        unrealizedPlPercentage: unrealizedPlPercentage,
-      };
-    });
-
-    return {
-      portfolioId: id,
-      totalValue: portfolio.totalValue,
-      data: assetDetails,
-      calculatedAt: new Date().toISOString(),
-    };
+  async getAssetDetailSummary(@Param('id', ParseUUIDPipe) id: string): Promise<AssetDetailSummaryResponseDto> {
+    return await this.portfolioAnalyticsService.getAssetDetailSummary(id);
   }
 
   /**

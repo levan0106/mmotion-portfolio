@@ -17,6 +17,11 @@ export class AssetMapper {
     currentPrice?: number;
     avgCost?: number;
   }): AssetResponseDto {
+    // Calculate currentValue real-time as currentQuantity * currentPrice
+    const currentValue = asset.currentQuantity && computedFields?.currentPrice 
+      ? asset.currentQuantity * computedFields.currentPrice 
+      : 0;
+
     return {
       id: asset.id,
       name: asset.name,
@@ -25,7 +30,7 @@ export class AssetMapper {
       description: asset.description,
       initialValue: asset.initialValue,
       initialQuantity: asset.initialQuantity,
-      currentValue: asset.currentValue,
+      currentValue: currentValue, // Calculated real-time
       currentQuantity: asset.currentQuantity,
       currentPrice: computedFields?.currentPrice,
       avgCost: computedFields?.avgCost,
@@ -33,7 +38,7 @@ export class AssetMapper {
       updatedAt: asset.updatedAt,
       createdBy: asset.createdBy,
       updatedBy: asset.updatedBy,
-      totalValue: asset.getTotalValue(),
+      totalValue: currentValue, // Use calculated currentValue as totalValue
       totalQuantity: asset.getTotalQuantity(),
       hasTrades: asset.hasTrades(),
       displayName: asset.getDisplayName(),
@@ -71,8 +76,13 @@ export class AssetMapper {
    * @param portfolioWeight - Weight in portfolio (percentage)
    * @returns AssetPerformanceItemDto
    */
-  static toPerformanceItemDto(asset: Asset, portfolioWeight: number = 0): AssetPerformanceItemDto {
-    const absoluteReturn = asset.currentValue - asset.initialValue;
+  static toPerformanceItemDto(asset: Asset, portfolioWeight: number = 0, currentPrice?: number): AssetPerformanceItemDto {
+    // Calculate currentValue real-time as currentQuantity * currentPrice
+    const currentValue = asset.currentQuantity && currentPrice 
+      ? asset.currentQuantity * currentPrice 
+      : 0;
+    
+    const absoluteReturn = currentValue - asset.initialValue;
     const percentageReturn = asset.initialValue > 0 ? (absoluteReturn / asset.initialValue) * 100 : 0;
 
     return {
@@ -80,7 +90,7 @@ export class AssetMapper {
       assetName: asset.name,
       assetSymbol: asset.symbol,
       assetType: asset.type,
-      currentValue: asset.currentValue,
+      currentValue: currentValue, // Calculated real-time
       initialValue: asset.initialValue,
       absoluteReturn,
       percentageReturn,

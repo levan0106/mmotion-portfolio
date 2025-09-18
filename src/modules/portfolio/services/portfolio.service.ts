@@ -11,6 +11,7 @@ import { Account } from '../../shared/entities/account.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { Asset } from '../../asset/entities/asset.entity';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
+import { PortfolioValueCalculatorService } from './portfolio-value-calculator.service';
 
 /**
  * Service class for Portfolio business logic.
@@ -31,6 +32,7 @@ export class PortfolioService {
     private readonly assetRepository: Repository<Asset>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly portfolioCalculationService: PortfolioCalculationService,
+    private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
   ) {}
 
   /**
@@ -100,8 +102,19 @@ export class PortfolioService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    // Calculate current portfolio value and realized P&L
-    await this.calculatePortfolioValue(portfolio);
+    // Calculate values real-time using new calculator
+    try {
+      const calculatedValues = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
+      
+      // Override DB values with real-time calculations
+      portfolio.totalValue = calculatedValues.totalValue;
+      portfolio.realizedPl = calculatedValues.realizedPl;
+      portfolio.unrealizedPl = calculatedValues.unrealizedPl;
+    } catch (error) {
+      console.error(`Error calculating real-time values for portfolio ${portfolioId}:`, error);
+      // Fallback to old calculation method
+      await this.calculatePortfolioValue(portfolio);
+    }
 
     // Cache the result
     await this.cacheManager.set(cacheKey, portfolio, this.CACHE_TTL);
@@ -225,7 +238,7 @@ export class PortfolioService {
       WHERE t.portfolio_id = $1 AND t.side = 'SELL'
     `, [portfolioId]);
 
-    const totalRealizedPL = parseFloat(result[0].totalRealizedPl.toString());
+    const totalRealizedPL = parseFloat((result[0]?.totalRealizedPl || 0).toString());
 
     // Update portfolio realized P&L
     await this.portfolioRepository.manager.query(`

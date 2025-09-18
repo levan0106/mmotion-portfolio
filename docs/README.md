@@ -45,6 +45,13 @@ Complete API reference, examples, and integration guides.
 ### 🛠️ [Development](./development/)
 Development guides, testing, debugging, and utilities.
 
+#### Calculation System
+- [Calculation Rules](./development/calculation-rules.md) - Standardized calculation rules and patterns
+- [Calculation Architecture](./architecture/calculation-architecture.md) - Architecture patterns for calculations
+- [Implementation Guidelines](./development/implementation-guidelines.md) - Guidelines for new features
+- [Coding Standards](./development/coding-standards.md) - Coding standards and best practices
+- [Calculation System Summary](./development/calculation-system-summary.md) - Comprehensive system overview
+
 #### Testing
 - [Testing Guide](./development/testing/TESTING.md) - Comprehensive testing documentation
 - [Unit Test Guide](./development/testing/UNIT_TEST_GUIDE.md) - Unit testing best practices

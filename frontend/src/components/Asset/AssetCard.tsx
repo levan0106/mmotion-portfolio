@@ -101,6 +101,18 @@ export const AssetCard: React.FC<AssetCardProps> = ({
           </div>
 
           <div className="value-item">
+            <label>Current Price</label>
+            <span className="value-item__primary">
+              {formatCurrency(asset.currentPrice || 0, baseCurrency)}
+            </span>
+            {asset.currentPrice && (
+              <span className="value-item__secondary">
+                Market Price
+              </span>
+            )}
+          </div>
+
+          <div className="value-item">
             <label>Quantity</label>
             <span className="value-item__primary">
               {formatNumber(Number(asset.totalQuantity) || 0, 2)}

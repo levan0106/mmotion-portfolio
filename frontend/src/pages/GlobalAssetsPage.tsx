@@ -6,13 +6,16 @@ import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '..
 
 
 const GlobalAssetsPage: React.FC = () => {
-  // Use real API hooks
+  // Use real API hooks with higher limit to show more assets
   const { 
     data: assets = [], 
     isLoading: assetsLoading, 
     error: assetsError,
-    refetch: refetchAssets 
-  } = useGlobalAssets();
+    refetch: refetchAssets,
+    total,
+    page,
+    totalPages
+  } = useGlobalAssets({ limit: 50 }); // Increase limit to 50
 
 
   const { 
@@ -50,9 +53,6 @@ const GlobalAssetsPage: React.FC = () => {
     // This will be handled by the GlobalAssetManagement component
   };
 
-  const handleDeleteAsset = async (_id: string) => {
-    // This will be handled by the GlobalAssetManagement component
-  };
 
   const handlePriceUpdate = async (
     assetId: string, 
@@ -125,7 +125,9 @@ const GlobalAssetsPage: React.FC = () => {
         onRefresh={handleRefresh}
         onCreateAsset={handleCreateAsset}
         onUpdateAsset={handleUpdateAsset}
-        onDeleteAsset={handleDeleteAsset}
+        total={total}
+        page={page}
+        totalPages={totalPages}
         onPriceUpdate={handlePriceUpdate}
         onPriceHistoryRefresh={handlePriceHistoryRefresh}
         marketDataStats={marketDataStats}

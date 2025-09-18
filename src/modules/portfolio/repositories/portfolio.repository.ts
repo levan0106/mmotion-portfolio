@@ -139,14 +139,16 @@ export class PortfolioRepository extends Repository<Portfolio> {
       SELECT 
         asset.type as "assetType",
         SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) as "totalQuantity",
-        asset.current_value as "currentPrice",
+        COALESCE(ap.current_price, 0) as "currentPrice",
         asset.name as "assetName",
         asset.symbol as "assetSymbol"
       FROM portfolios portfolio 
       LEFT JOIN trades trade ON portfolio.portfolio_id = trade.portfolio_id 
       LEFT JOIN assets asset ON trade.asset_id = asset.id 
+      LEFT JOIN global_assets ga ON asset.symbol = ga.symbol
+      LEFT JOIN asset_prices ap ON ga.id = ap.asset_id
       WHERE portfolio.portfolio_id = $1 
-      GROUP BY asset.type, asset.current_value, asset.name, asset.symbol 
+      GROUP BY asset.type, ap.current_price, asset.name, asset.symbol 
       HAVING SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) > 0
     `;
 

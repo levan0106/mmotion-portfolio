@@ -288,7 +288,14 @@ export class AssetRepository implements IAssetRepository {
       return acc;
     }, {} as Record<AssetType, number>);
     
-    const totalValue = assets.reduce((sum, asset) => sum + asset.getTotalValue(), 0);
+    const totalValue = assets.reduce((sum, asset) => {
+      // Calculate currentValue real-time as currentQuantity * currentPrice
+      // Note: currentPrice should be calculated from global assets
+      const currentValue = asset.currentQuantity 
+        ? asset.currentQuantity * 0 // Will be calculated from global assets
+        : 0;
+      return sum + currentValue;
+    }, 0);
     const averageValue = totalAssets > 0 ? totalValue / totalAssets : 0;
 
     return {

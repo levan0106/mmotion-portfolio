@@ -68,14 +68,15 @@ export class CreateAssetPriceDto {
 
   /**
    * Timestamp when the price was last updated.
+   * If not provided, will be set to current timestamp.
    */
-  @ApiProperty({
-    description: 'Timestamp when the price was last updated',
+  @ApiPropertyOptional({
+    description: 'Timestamp when the price was last updated. If not provided, will be set to current timestamp.',
     example: '2024-01-15T10:30:00.000Z',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  lastPriceUpdate: string;
+  lastPriceUpdate?: string;
 
   /**
    * Optional metadata about the price (e.g., API response, calculation details).

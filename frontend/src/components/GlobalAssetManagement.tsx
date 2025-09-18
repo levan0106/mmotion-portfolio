@@ -26,6 +26,9 @@ import GlobalAssetList from './GlobalAssetList';
 import AssetPriceManagement from './AssetPriceManagement';
 import MarketDataDashboard from './MarketDataDashboard';
 
+// Import hooks
+import { useDeleteGlobalAsset } from '../hooks/useGlobalAssets';
+
 // Types
 interface GlobalAsset {
   id: string;
@@ -56,7 +59,11 @@ interface GlobalAssetManagementProps {
   onRefresh: () => void;
   onCreateAsset: (data: any) => Promise<void>;
   onUpdateAsset: (id: string, data: any) => Promise<void>;
-  onDeleteAsset: (id: string) => Promise<void>;
+  
+  // Pagination props
+  total?: number;
+  page?: number;
+  totalPages?: number;
   
   // Props for price management
   onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string) => Promise<void>;
@@ -81,7 +88,9 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   onRefresh,
   onCreateAsset,
   onUpdateAsset,
-  onDeleteAsset,
+  total = 0,
+  page = 1,
+  totalPages = 1,
   onPriceUpdate,
   onPriceHistoryRefresh,
   marketDataStats,
@@ -102,6 +111,9 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [formLoading, setFormLoading] = useState(false);
 
+  // Use the delete hook
+  const deleteGlobalAssetMutation = useDeleteGlobalAsset();
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -121,10 +133,16 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   const handleDeleteAsset = async (asset: GlobalAsset) => {
     if (window.confirm(`Are you sure you want to delete ${asset.symbol}?`)) {
       try {
-        await onDeleteAsset(asset.id);
+        await deleteGlobalAssetMutation.mutateAsync(asset.id);
+        // Show success message
+        alert(`Asset ${asset.symbol} deleted successfully`);
+        // Refresh the data
         onRefresh();
       } catch (error) {
         console.error('Delete error:', error);
+        // Show error message to user
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete asset';
+        alert(`Error deleting asset: ${errorMessage}`);
       }
     }
   };
@@ -207,9 +225,14 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
     <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Global Asset Management
-        </Typography>
+        <Box>
+          <Typography variant="h4" component="h1">
+            Global Asset Management
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Showing {assets.length} of {total} assets (Page {page} of {totalPages})
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"

@@ -18,9 +18,11 @@ import { PriceHistoryService } from './services/price-history.service';
 import { MarketDataService } from './services/market-data.service';
 import { ScheduledPriceUpdateService } from './services/scheduled-price-update.service';
 import { AssetService } from './services/asset.service';
+import { AssetGlobalSyncService } from './services/asset-global-sync.service';
 import { AssetValidationService } from './services/asset-validation.service';
 import { AssetAnalyticsService } from './services/asset-analytics.service';
 import { AssetCacheService } from './services/asset-cache.service';
+import { AssetValueCalculatorService } from './services/asset-value-calculator.service';
 import { AssetRepository } from './repositories/asset.repository';
 import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -76,9 +78,11 @@ import { LoggingModule } from '../logging/logging.module';
     
     // Legacy Asset System services (for backward compatibility)
     AssetService,
+    AssetGlobalSyncService,
     AssetValidationService,
     AssetAnalyticsService,
     AssetCacheService,
+    AssetValueCalculatorService,
     AssetRepository,
     {
       provide: 'IAssetRepository',
@@ -96,9 +100,11 @@ import { LoggingModule } from '../logging/logging.module';
     
     // Legacy Asset System exports (for backward compatibility)
     AssetService,
+    AssetGlobalSyncService,
     AssetValidationService,
     AssetAnalyticsService,
     AssetCacheService,
+    AssetValueCalculatorService,
     TypeOrmModule,
   ],
 })

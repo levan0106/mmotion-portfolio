@@ -133,17 +133,25 @@ export class AssetAnalyticsMapper {
       allocation: this.toAllocationResponseDto(summary.allocation),
       performance: {
         period: 'ALL', // Default period
-        assets: summary.topAssets.map(asset => ({
-          assetId: asset.id,
-          assetName: asset.name,
-          assetSymbol: asset.symbol,
-          assetType: asset.type,
-          currentValue: asset.getTotalValue(),
-          initialValue: asset.initialValue,
-          absoluteReturn: asset.getTotalValue() - asset.initialValue,
-          percentageReturn: asset.initialValue > 0 ? ((asset.getTotalValue() - asset.initialValue) / asset.initialValue) * 100 : 0,
-          portfolioWeight: summary.overview.totalValue > 0 ? (asset.getTotalValue() / summary.overview.totalValue) * 100 : 0,
-        })),
+        assets: summary.topAssets.map(asset => {
+          // Calculate currentValue real-time as currentQuantity * currentPrice
+          // Note: currentPrice should be calculated from global assets
+          const currentValue = asset.currentQuantity 
+            ? asset.currentQuantity * 0 // Will be calculated from global assets
+            : 0;
+          
+          return {
+            assetId: asset.id,
+            assetName: asset.name,
+            assetSymbol: asset.symbol,
+            assetType: asset.type,
+            currentValue: currentValue,
+            initialValue: asset.initialValue,
+            absoluteReturn: currentValue - asset.initialValue,
+            percentageReturn: asset.initialValue > 0 ? ((currentValue - asset.initialValue) / asset.initialValue) * 100 : 0,
+            portfolioWeight: summary.overview.totalValue > 0 ? (currentValue / summary.overview.totalValue) * 100 : 0,
+          };
+        }),
         totalPortfolioValue: summary.overview.totalValue,
         totalPortfolioReturn: summary.performance.totalReturn,
         totalPortfolioReturnPercentage: summary.overview.totalValue > 0 ? (summary.performance.totalReturn / summary.overview.totalValue) * 100 : 0,

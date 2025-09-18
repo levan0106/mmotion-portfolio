@@ -5,6 +5,8 @@ import { Trade } from '../../trading/entities/trade.entity';
 import { TradeDetail } from '../../trading/entities/trade-detail.entity';
 import { Asset } from '../../asset/entities/asset.entity';
 import { MarketDataService } from '../../market-data/services/market-data.service';
+import { GlobalAsset } from '../../asset/entities/global-asset.entity';
+import { AssetPrice } from '../../asset/entities/asset-price.entity';
 
 export interface PortfolioCalculationResult {
   totalValue: number;
@@ -33,6 +35,10 @@ export class PortfolioCalculationService {
     private readonly tradeDetailRepository: Repository<TradeDetail>,
     @InjectRepository(Asset)
     private readonly assetRepository: Repository<Asset>,
+    @InjectRepository(GlobalAsset)
+    private readonly globalAssetRepository: Repository<GlobalAsset>,
+    @InjectRepository(AssetPrice)
+    private readonly assetPriceRepository: Repository<AssetPrice>,
     private readonly marketDataService: MarketDataService,
   ) {}
 
@@ -185,18 +191,25 @@ export class PortfolioCalculationService {
 
     const avgCost = totalCost / totalQuantity;
     
-    // Get current price per unit from Market Data Service (real-time)
-    // Fallback to latest trade price if market data is not available
+    // Get current price from global assets (new logic)
+    // Fallback to latest trade price if global asset price is not available
     let currentPrice: number;
     try {
-      currentPrice = await this.marketDataService.getCurrentPrice(symbol);
-      if (currentPrice === 0) {
-        // Fallback to latest trade price if market data returns 0
-        const latestTrade = trades[trades.length - 1];
-        currentPrice = parseFloat(latestTrade.price.toString());
+      // Try to get price from global assets first
+      const globalAssetPrice = await this.getCurrentPriceFromGlobalAsset(symbol);
+      if (globalAssetPrice && globalAssetPrice > 0) {
+        currentPrice = globalAssetPrice;
+      } else {
+        // Fallback to market data service
+        currentPrice = await this.marketDataService.getCurrentPrice(symbol);
+        if (currentPrice === 0) {
+          // Final fallback to latest trade price
+          const latestTrade = trades[trades.length - 1];
+          currentPrice = parseFloat(latestTrade.price.toString());
+        }
       }
     } catch (error) {
-      // Fallback to latest trade price if market data service fails
+      // Fallback to latest trade price if all services fail
       const latestTrade = trades[trades.length - 1];
       currentPrice = parseFloat(latestTrade.price.toString());
     }
@@ -223,5 +236,28 @@ export class PortfolioCalculationService {
   async calculateNAV(portfolioId: string, currentCashBalance: number = 0): Promise<number> {
     const result = await this.calculatePortfolioValues(portfolioId, currentCashBalance);
     return result.totalValue;
+  }
+
+  /**
+   * Get current price from global assets
+   * @param symbol - Asset symbol
+   * @returns Promise<number | null>
+   */
+  private async getCurrentPriceFromGlobalAsset(symbol: string): Promise<number | null> {
+    try {
+      const globalAsset = await this.globalAssetRepository.findOne({
+        where: { symbol: symbol },
+        relations: ['assetPrice']
+      });
+
+      if (globalAsset && globalAsset.assetPrice && globalAsset.assetPrice.currentPrice) {
+        return parseFloat(globalAsset.assetPrice.currentPrice.toString());
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Error getting price from global asset for ${symbol}:`, error);
+      return null;
+    }
   }
 }

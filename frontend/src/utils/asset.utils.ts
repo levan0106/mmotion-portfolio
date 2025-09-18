@@ -273,12 +273,18 @@ export const generateAssetDisplayName = (name: string, symbol?: string): string 
  * Calculate asset performance metrics
  */
 export const calculateAssetPerformance = (asset: Asset) => {
-  const valueChange = asset.currentValue ? asset.currentValue - (asset.initialValue || 0) : 0;
+  // Calculate currentValue real-time as currentQuantity * currentPrice
+  const currentValue = asset.currentQuantity && asset.currentPrice 
+    ? asset.currentQuantity * asset.currentPrice 
+    : 0;
+  
+  const valueChange = currentValue - (asset.initialValue || 0);
   const quantityChange = asset.currentQuantity ? asset.currentQuantity - (asset.initialQuantity || 0) : 0;
   const valueChangePercentage = (asset.initialValue || 0) > 0 ? (valueChange / (asset.initialValue || 0)) * 100 : 0;
   const quantityChangePercentage = (asset.initialQuantity || 0) > 0 ? (quantityChange / (asset.initialQuantity || 0)) * 100 : 0;
 
   return {
+    currentValue, // Add calculated currentValue
     valueChange,
     quantityChange,
     valueChangePercentage,
@@ -299,7 +305,7 @@ export const formatAssetForDisplay = (asset: Asset, baseCurrency: string = 'VND'
     displayName: generateAssetDisplayName(asset.name, asset.symbol),
     formattedTotalValue: formatCurrency(Number(asset.totalValue) || 0, baseCurrency),
     formattedInitialValue: formatCurrency(asset.initialValue || 0, baseCurrency),
-    formattedCurrentValue: asset.currentValue ? formatCurrency(asset.currentValue, baseCurrency) : 'N/A',
+    formattedCurrentValue: performance.currentValue ? formatCurrency(performance.currentValue, baseCurrency) : 'N/A',
     formattedValueChange: formatCurrency(performance.valueChange, baseCurrency),
     formattedValueChangePercentage: formatPercentage(performance.valueChangePercentage),
     performance,

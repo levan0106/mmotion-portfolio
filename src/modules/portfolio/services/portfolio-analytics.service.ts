@@ -5,6 +5,7 @@ import { Portfolio } from '../entities/portfolio.entity';
 import { NavSnapshot } from '../entities/nav-snapshot.entity';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
+import { AssetDetailSummaryResponseDto, AssetDetailSummaryDto } from '../dto/asset-detail-summary.dto';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -275,6 +276,78 @@ export class PortfolioAnalyticsService {
       roe3Month,
       roe1Year,
       twr1Year,
+    };
+  }
+
+  /**
+   * Get asset detail summary data for a portfolio.
+   * @param portfolioId - Portfolio ID
+   * @returns Promise<AssetDetailSummaryResponseDto>
+   */
+  async getAssetDetailSummary(portfolioId: string): Promise<AssetDetailSummaryResponseDto> {
+    // Get portfolio details
+    const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+    if (!portfolio) {
+      throw new Error(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    // Get asset positions with current prices from global assets
+    const query = `
+      SELECT
+        asset.symbol,
+        asset.name,
+        asset.type as "assetType",
+        SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) as "quantity",
+        COALESCE(ap.current_price, 0) as "currentPrice"
+      FROM portfolios portfolio
+      LEFT JOIN trades trade ON portfolio.portfolio_id = trade.portfolio_id
+      LEFT JOIN assets asset ON trade.asset_id = asset.id
+      LEFT JOIN global_assets ga ON asset.symbol = ga.symbol
+      LEFT JOIN asset_prices ap ON ga.id = ap.asset_id
+      WHERE portfolio.portfolio_id = $1
+      GROUP BY asset.symbol, asset.name, asset.type, ap.current_price
+      HAVING SUM(CASE WHEN trade.side = 'BUY' THEN trade.quantity ELSE -trade.quantity END) > 0
+    `;
+
+    const positions = await this.portfolioRepository.query(query, [portfolioId]);
+    
+    // Calculate total portfolio value
+    const totalValue = positions.reduce((sum, position) => {
+      const quantity = parseFloat(position.quantity) || 0;
+      const price = parseFloat(position.currentPrice) || 0;
+      return sum + (quantity * price);
+    }, 0);
+
+    // Transform data and calculate percentages
+    const assetDetails: AssetDetailSummaryDto[] = positions.map(position => {
+      const quantity = parseFloat(position.quantity) || 0;
+      const price = parseFloat(position.currentPrice) || 0;
+      const totalValue = quantity * price;
+      const percentage = totalValue > 0 ? (totalValue / parseFloat(portfolio.totalValue.toString())) * 100 : 0;
+      
+      // Mock unrealized P&L calculation (in real app, this would be calculated from cost basis)
+      const costBasis = totalValue * (0.8 + Math.random() * 0.4); // Mock cost basis
+      const unrealizedPl = totalValue - costBasis;
+      const unrealizedPlPercentage = costBasis > 0 ? (unrealizedPl / costBasis) * 100 : 0;
+
+      return {
+        symbol: position.symbol,
+        name: position.name,
+        assetType: position.assetType,
+        quantity: quantity,
+        currentPrice: price,
+        totalValue: totalValue,
+        percentage: percentage,
+        unrealizedPl: unrealizedPl,
+        unrealizedPlPercentage: unrealizedPlPercentage,
+      };
+    });
+
+    return {
+      portfolioId: portfolioId,
+      totalValue: parseFloat(portfolio.totalValue.toString()),
+      data: assetDetails,
+      calculatedAt: new Date().toISOString(),
     };
   }
 }

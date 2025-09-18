@@ -115,7 +115,19 @@ export class GlobalAssetController {
   @ApiResponse({
     status: 200,
     description: 'Global assets retrieved successfully',
-    type: [GlobalAssetResponseDto],
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/GlobalAssetResponseDto' },
+        },
+        total: { type: 'number', example: 25 },
+        page: { type: 'number', example: 1 },
+        limit: { type: 'number', example: 10 },
+        totalPages: { type: 'number', example: 3 },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -127,9 +139,15 @@ export class GlobalAssetController {
   })
   async findAllGlobalAssets(
     @Query(ValidationPipe) queryDto: GlobalAssetQueryDto,
-  ): Promise<GlobalAssetResponseDto[]> {
+  ): Promise<{
+    data: GlobalAssetResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const result = await this.globalAssetService.findAll(queryDto);
-    return result.data;
+    return result;
   }
 
   /**

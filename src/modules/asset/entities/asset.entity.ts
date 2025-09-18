@@ -111,16 +111,8 @@ export class Asset {
   @Column({ type: 'decimal', precision: 15, scale: 4, nullable: true, name: 'initial_quantity' })
   initialQuantity?: number;
 
-  /**
-   * Current market value of the asset.
-   * Calculated based on current market price and quantity.
-   */
-  @ApiPropertyOptional({
-    description: 'Current market value of the asset',
-    example: 1200000,
-  })
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true, name: 'current_value' })
-  currentValue?: number;
+  // currentValue is now calculated real-time as currentQuantity * currentPrice
+  // No longer stored in database for accuracy
 
   /**
    * Current quantity of the asset held.
@@ -188,13 +180,8 @@ export class Asset {
   // Note: Assets are linked to Portfolios through Trades only
   // No direct relationship with PortfolioAsset
 
-  /**
-   * Calculate the current total value of this asset.
-   * @returns Current value or initial value if current value is not set
-   */
-  getTotalValue(): number {
-    return this.currentValue ?? this.initialValue;
-  }
+  // getTotalValue() removed - currentValue is now calculated real-time
+  // Use currentQuantity * currentPrice for real-time calculation
 
   /**
    * Calculate the current total quantity of this asset.
@@ -263,7 +250,7 @@ export class Asset {
   toJSON() {
     return {
       ...this,
-      totalValue: this.getTotalValue(),
+      // totalValue removed - calculated real-time as currentQuantity * currentPrice
       totalQuantity: this.getTotalQuantity(),
       hasTrades: this.hasTrades(),
       displayName: this.getDisplayName(),

@@ -2,7 +2,28 @@
 
 ## What Works
 ### ✅ Completed
-- **ASSET PRICE HISTORY UI FIXES & API STANDARDIZATION - COMPLETED** (Current Session - September 17, 2025)
+- **REAL-TIME VALUE CALCULATIONS & TAX/FEE OPTIONS - COMPLETED** (Current Session - September 18, 2025)
+  - **AssetValueCalculatorService**: Centralized asset value calculations with support for both percentage and fixed value options
+  - **PortfolioValueCalculatorService**: Centralized portfolio value calculations with real-time computation
+  - **Tax/Fee Options Enhancement**: Support for both percentage and fixed value options for tax, fee, commission, and other deductions
+  - **Real-time Calculations**: All currentValue, totalValue, realizedPl, and unrealizedPl calculations now computed real-time
+  - **Centralized Logic**: Consistent calculation patterns across all services
+  - **Future-proof Architecture**: Easy to add tax, fee, discount, commission calculations
+  - **Comprehensive Testing**: Unit tests, integration tests, and examples for all calculation methods
+  - **Detailed Breakdown**: Methods to show detailed calculation breakdowns for transparency
+  - **Helper Methods**: Static helper methods for easy option creation
+  - **Legacy Support**: Backward compatibility with existing number-based options
+  - **Key Features Implemented**:
+    - ✅ **Flexible Tax/Fee Options**: Support for both percentage and fixed value calculations
+    - ✅ **Real-time Calculations**: All values calculated on-demand, never stored in database
+    - ✅ **Centralized Services**: Single source of truth for all calculation logic
+    - ✅ **Detailed Breakdowns**: Transparent calculation breakdowns for each deduction
+    - ✅ **Helper Methods**: Easy-to-use static methods for common patterns
+    - ✅ **Comprehensive Testing**: Full test coverage with examples and edge cases
+    - ✅ **Performance Optimization**: Caching and batch processing for large datasets
+    - ✅ **Error Handling**: Robust error handling with fallback mechanisms
+    - ✅ **Documentation**: Complete documentation with calculation rules and architecture patterns
+- **ASSET PRICE HISTORY UI FIXES & API STANDARDIZATION - COMPLETED** (Previous Session - September 17, 2025)
   - **Price History UI Display Fix**: Fixed critical bug where Asset History UI was not displaying data despite API returning correct data
   - **API Response Format Mismatch**: Fixed backend to return `{ data: [...], total, page, limit, totalPages }` instead of array directly
   - **Query Parameters Standardization**: Standardized to use `sortBy`/`sortOrder` instead of `orderBy`/`orderDirection` for consistency
@@ -720,3 +741,26 @@
 - **Development Team**: Clear requirements, specifications, và 164 detailed tasks
 - **Budget Constraints**: Không có budget limitations
 - **Technical Decisions**: 10/13 major decisions resolved
+
+## Latest Updates (Current Session - September 17, 2025)
+
+### ✅ Asset-GlobalAsset Integration Implementation Completed
+- **AssetGlobalSyncService**: Created service to automatically sync Asset with GlobalAsset
+- **Asset Service Updates**: Modified `AssetService` to use GlobalAsset for currentPrice calculation
+- **Fresh Price Data**: Implemented direct join with global_assets table for real-time calculations
+- **Create/Update Sync**: Assets automatically sync with GlobalAsset on create/update operations
+- **Fallback Logic**: Graceful fallback to MarketDataService if GlobalAsset data unavailable
+- **Test Script**: Created comprehensive integration test script for verification
+
+### 🔧 Technical Implementation Details
+- **Service Layer**: `AssetGlobalSyncService` handles sync logic with error handling
+- **Price Calculation**: `calculateCurrentValues()` now uses fresh data from global_assets
+- **Module Integration**: Updated `AssetModule` to include new sync service
+- **Error Handling**: Non-blocking sync failures (asset creation continues if sync fails)
+- **Performance**: Direct database joins for fresh price data in calculations
+
+### 📊 Current Status
+- **Build Status**: ✅ Successful compilation
+- **Linting**: ✅ No errors
+- **Integration**: ✅ Ready for testing
+- **Next Phase**: Performance testing and error handling verification

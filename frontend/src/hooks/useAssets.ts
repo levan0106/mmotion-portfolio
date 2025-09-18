@@ -95,7 +95,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         // Calculate real performance data
         const performanceData = {
           initialValue: asset.initialValue || 0,
-          currentValue: asset.currentValue || 0,
+          currentValue: asset.currentQuantity && asset.currentPrice 
+            ? asset.currentQuantity * asset.currentPrice 
+            : 0,
           createdAt: asset.createdAt,
           updatedAt: asset.updatedAt,
         };
@@ -117,14 +119,19 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           // Preserve computed fields from backend
           initialValue: asset.initialValue,
           initialQuantity: asset.initialQuantity,
-          currentValue: asset.currentValue,
+          // Calculate currentValue real-time as currentQuantity * currentPrice
+          currentValue: asset.currentQuantity && asset.currentPrice 
+            ? asset.currentQuantity * asset.currentPrice 
+            : 0,
           currentQuantity: asset.currentQuantity,
           // Preserve backend computed fields
           hasTrades: asset.hasTrades,
           displayName: asset.displayName,
           // For assets without trades, use initial values as total values
           totalValue: asset.hasTrades 
-            ? (asset.totalValue || asset.currentValue || 0)
+            ? (asset.currentQuantity && asset.currentPrice 
+                ? asset.currentQuantity * asset.currentPrice 
+                : 0)
             : (asset.initialValue || 0),
           totalQuantity: asset.hasTrades 
             ? (asset.totalQuantity || asset.currentQuantity || 0)
@@ -272,7 +279,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       // Calculate performance for updated asset
       const performanceData = {
         initialValue: (updatedAsset as any).initialValue || 0,
-        currentValue: (updatedAsset as any).currentValue || 0,
+        currentValue: (updatedAsset as any).currentQuantity && (updatedAsset as any).currentPrice 
+          ? (updatedAsset as any).currentQuantity * (updatedAsset as any).currentPrice 
+          : 0,
         createdAt: updatedAsset.createdAt,
         updatedAt: updatedAsset.updatedAt,
       };
@@ -289,7 +298,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         ...updatedAsset,
         // For assets without trades, use initial values as total values
         totalValue: (updatedAsset as any).hasTrades 
-          ? ((updatedAsset as any).totalValue || (updatedAsset as any).currentValue || 0)
+          ? ((updatedAsset as any).currentQuantity && (updatedAsset as any).currentPrice 
+              ? (updatedAsset as any).currentQuantity * (updatedAsset as any).currentPrice 
+              : 0)
           : ((updatedAsset as any).initialValue || 0),
         totalQuantity: (updatedAsset as any).hasTrades 
           ? ((updatedAsset as any).totalQuantity || (updatedAsset as any).currentQuantity || 0)
@@ -341,7 +352,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       // Calculate performance for new asset
       const performanceData = {
         initialValue: (newAsset as any).initialValue || 0,
-        currentValue: (newAsset as any).currentValue || 0,
+        currentValue: (newAsset as any).currentQuantity && (newAsset as any).currentPrice 
+          ? (newAsset as any).currentQuantity * (newAsset as any).currentPrice 
+          : 0,
         createdAt: newAsset.createdAt,
         updatedAt: newAsset.updatedAt,
       };
@@ -358,7 +371,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         ...newAsset,
         // For assets without trades, use initial values as total values
         totalValue: (newAsset as any).hasTrades 
-          ? ((newAsset as any).totalValue || (newAsset as any).currentValue || 0)
+          ? ((newAsset as any).currentQuantity && (newAsset as any).currentPrice 
+              ? (newAsset as any).currentQuantity * (newAsset as any).currentPrice 
+              : 0)
           : ((newAsset as any).initialValue || 0),
         totalQuantity: (newAsset as any).hasTrades 
           ? ((newAsset as any).totalQuantity || (newAsset as any).currentQuantity || 0)
@@ -437,7 +452,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         const updatedAssets = assets.map(asset => {
           const performanceData = {
             initialValue: (asset as any).initialValue || 0,
-            currentValue: (asset as any).currentValue || 0,
+            currentValue: (asset as any).currentQuantity && (asset as any).currentPrice 
+              ? (asset as any).currentQuantity * (asset as any).currentPrice 
+              : 0,
             createdAt: asset.createdAt,
             updatedAt: asset.updatedAt,
           };
@@ -453,7 +470,9 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
             ...asset,
             // For assets without trades, use initial values as total values
             totalValue: (asset as any).hasTrades 
-              ? ((asset as any).totalValue || (asset as any).currentValue || 0)
+              ? ((asset as any).currentQuantity && (asset as any).currentPrice 
+                  ? (asset as any).currentQuantity * (asset as any).currentPrice 
+                  : 0)
               : ((asset as any).initialValue || 0),
             totalQuantity: (asset as any).hasTrades 
               ? ((asset as any).totalQuantity || (asset as any).currentQuantity || 0)

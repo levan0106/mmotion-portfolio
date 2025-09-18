@@ -5,6 +5,8 @@ import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
 import { AssetCacheService } from './asset-cache.service';
 import { MarketDataService } from '../../market-data/services/market-data.service';
+import { AssetGlobalSyncService } from './asset-global-sync.service';
+import { AssetValueCalculatorService } from './asset-value-calculator.service';
 
 /**
  * Create Asset DTO
@@ -52,6 +54,8 @@ export class AssetService {
     private readonly assetRepository: IAssetRepository,
     private readonly cacheService: AssetCacheService,
     private readonly marketDataService: MarketDataService,
+    private readonly assetGlobalSyncService: AssetGlobalSyncService,
+    private readonly assetValueCalculator: AssetValueCalculatorService,
   ) {}
 
   /**
@@ -71,6 +75,22 @@ export class AssetService {
 
     // Create asset
     const asset = await this.assetRepository.create(normalizedCreateDto);
+    
+    // Sync with global asset
+    console.log(`[SYNC DEBUG] Starting sync for asset: ${asset.symbol}`);
+    try {
+      const globalAssetId = await this.assetGlobalSyncService.syncAssetOnCreate({
+        symbol: asset.symbol,
+        name: asset.name,
+        type: asset.type,
+        currency: 'VND', // Default currency for now
+        userId: asset.createdBy,
+      });
+      console.log(`[SYNC DEBUG] Sync completed for asset: ${asset.symbol}, globalAssetId: ${globalAssetId}`);
+    } catch (error) {
+      console.error(`[SYNC ERROR] Failed to sync asset with global asset: ${error.message}`, error.stack);
+      // Continue without failing the asset creation
+    }
     
     return asset;
   }
@@ -157,6 +177,18 @@ export class AssetService {
 
     // Update asset
     const updatedAsset = await this.assetRepository.update(id, updateAssetDto);
+    
+    // Sync with global asset
+    try {
+      await this.assetGlobalSyncService.syncAssetOnUpdate(id, {
+        name: updateAssetDto.name,
+        type: updateAssetDto.type,
+        currency: 'VND', // Default currency for now
+      });
+    } catch (error) {
+      console.warn(`Failed to sync asset with global asset: ${error.message}`);
+      // Continue without failing the asset update
+    }
     
     return updatedAsset;
   }
@@ -513,6 +545,7 @@ export class AssetService {
    * @param assetId - Asset ID
    * @param portfolioId - Portfolio ID to filter trades (optional)
    * @returns Object with currentValue and currentQuantity
+   * Note: currentValue is now calculated real-time as currentQuantity * currentPrice
    */
   async calculateCurrentValues(assetId: string, portfolioId?: string): Promise<{
     currentValue: number;
@@ -564,8 +597,17 @@ export class AssetService {
       avgCost: number;
     };
     
-    // Get current market price for this asset
-    const currentMarketPrice = await this.getCurrentMarketPrice(assetId);
+    // Get current market price for this asset - use fresh data from global_assets
+    let currentMarketPrice = 0;
+    const globalAssetPrice = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
+    if (globalAssetPrice !== null && globalAssetPrice > 0) {
+      currentMarketPrice = globalAssetPrice;
+      console.log(`[DEBUG] Using fresh global asset price: ${currentMarketPrice}`);
+    } else {
+      // Fallback to cached method if global asset not available
+      currentMarketPrice = await this.getCurrentMarketPrice(assetId);
+      console.log(`[DEBUG] Using fallback price: ${currentMarketPrice}`);
+    }
 
     if (!trades || trades.length === 0) {
       // If no trades, use initial quantity for current quantity and get market price
@@ -627,6 +669,17 @@ export class AssetService {
   }
 
   /**
+   * Calculate current value real-time (currentQuantity * currentPrice)
+   * @param assetId - Asset ID
+   * @param portfolioId - Portfolio ID to filter trades (optional)
+   * @returns Current value calculated real-time
+   */
+  async calculateCurrentValue(assetId: string, portfolioId?: string): Promise<number> {
+    const computedFields = await this.calculateCurrentValues(assetId, portfolioId);
+    return computedFields.currentValue; // This is already calculated as currentQuantity * currentPrice
+  }
+
+  /**
    * Get current market price for an asset
    * @param assetId - Asset ID
    * @returns Current market price
@@ -638,7 +691,14 @@ export class AssetService {
       return 0;
     }
 
-    // Try to get current market price from market data service
+    // Try to get current price from global asset first
+    const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(asset.symbol);
+    if (globalAssetPrice !== null && globalAssetPrice > 0) {
+      console.log(`[DEBUG] Using global asset price: ${globalAssetPrice}`);
+      return globalAssetPrice;
+    }
+
+    // Fallback to market data service
     const marketPrice = await this.marketDataService.getCurrentPrice(asset.symbol);
     console.log(`[DEBUG] getCurrentMarketPrice for ${asset.symbol}: marketPrice=${marketPrice}`);
     
@@ -660,6 +720,25 @@ export class AssetService {
   }
 
   /**
+   * Get current price directly from global assets table with join
+   * This method is optimized for calculations that need fresh price data
+   * @param symbol - Asset symbol
+   * @returns Current price or null if not found
+   */
+  private async getCurrentPriceFromGlobalAssetJoin(symbol: string): Promise<number | null> {
+    try {
+      const globalAsset = await this.assetGlobalSyncService.getGlobalAssetBySymbol(symbol);
+      if (!globalAsset || !globalAsset.assetPrice) {
+        return null;
+      }
+      return globalAsset.assetPrice.currentPrice;
+    } catch (error) {
+      console.error(`Failed to get current price from global asset join: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
    * Calculate all computed fields for an asset
    * @param assetId - Asset ID
    * @returns Object with all computed values
@@ -667,7 +746,6 @@ export class AssetService {
   async calculateComputedFields(assetId: string, portfolioId?: string): Promise<{
     initialValue: number;
     initialQuantity: number;
-    currentValue: number;
     currentQuantity: number;
     currentPrice: number;
     avgCost: number;
@@ -679,7 +757,10 @@ export class AssetService {
 
     return {
       ...initialValues,
-      ...currentValues,
+      // Exclude currentValue - calculated real-time as currentQuantity * currentPrice
+      currentQuantity: currentValues.currentQuantity,
+      currentPrice: currentValues.currentPrice,
+      avgCost: currentValues.avgCost,
     };
   }
 
@@ -697,11 +778,11 @@ export class AssetService {
       throw new NotFoundException('Asset not found');
     }
     
-    // Update the asset with computed fields
+    // Update the asset with computed fields (excluding currentValue - calculated real-time)
     const updateData = {
       initialValue: Number(computedFields.initialValue),
       initialQuantity: Number(computedFields.initialQuantity),
-      currentValue: Number(computedFields.currentValue),
+      // currentValue removed - calculated real-time as currentQuantity * currentPrice
       currentQuantity: Number(computedFields.currentQuantity),
       updatedBy: asset.createdBy || asset.updatedBy || '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5', // Fallback to test user
     };
@@ -712,6 +793,41 @@ export class AssetService {
     this.cacheService.invalidateAsset(assetId);
     
     return updatedAsset;
+  }
+
+
+  /**
+   * Calculate current value for multiple assets
+   * @param assetIds - Array of asset IDs
+   * @param options - Additional calculation options
+   * @returns Total current value
+   */
+  async calculateTotalCurrentValue(
+    assetIds: string[],
+    options?: {
+      tax?: number;
+      fee?: number;
+      discount?: number;
+      commission?: number;
+      otherDeductions?: number;
+    }
+  ): Promise<number> {
+    const assets = await Promise.all(
+      assetIds.map(async (assetId) => {
+        const asset = await this.assetRepository.findById(assetId);
+        if (!asset) return null;
+        
+        const currentPrice = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
+        return {
+          quantity: asset.currentQuantity || 0,
+          currentPrice: currentPrice || 0,
+          ...options
+        };
+      })
+    );
+
+    const validAssets = assets.filter(asset => asset !== null);
+    return this.assetValueCalculator.calculateTotalCurrentValue(validAssets);
   }
 
 }

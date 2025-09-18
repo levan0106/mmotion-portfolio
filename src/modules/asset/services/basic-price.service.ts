@@ -56,7 +56,7 @@ export class BasicPriceService {
     // Create price entity
     const price = this.assetPriceRepository.create({
       ...createDto,
-      lastPriceUpdate: new Date(createDto.lastPriceUpdate),
+      lastPriceUpdate: createDto.lastPriceUpdate ? new Date(createDto.lastPriceUpdate) : new Date(),
     });
 
     try {

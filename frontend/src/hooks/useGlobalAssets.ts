@@ -57,8 +57,14 @@ interface GlobalAssetQueryDto {
   isActive?: boolean;
 }
 
-// Backend returns array directly, not wrapped in an object
-type GlobalAssetResponse = GlobalAsset[];
+// Backend returns paginated response
+type GlobalAssetResponse = {
+  data: GlobalAsset[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
 
 // API functions
 const fetchGlobalAssets = async (query: GlobalAssetQueryDto = {}): Promise<GlobalAssetResponse> => {
@@ -122,11 +128,11 @@ const validateSymbolFormat = async (symbol: string, nation: string, type: string
 // Custom hooks
 export const useGlobalAssets = (query: GlobalAssetQueryDto = {}) => {
   const result = useQuery(['globalAssets', query], async () => {
-    const assets = await fetchGlobalAssets(query);
+    const response = await fetchGlobalAssets(query);
     
     // Fetch prices for each asset
     const assetsWithPrices = await Promise.all(
-      assets.map(async (asset) => {
+      response.data.map(async (asset) => {
         try {
           const priceResponse = await apiService.api.get(`/api/v1/asset-prices/asset/${asset.id}`);
           return {
@@ -140,19 +146,21 @@ export const useGlobalAssets = (query: GlobalAssetQueryDto = {}) => {
       })
     );
     
-    return assetsWithPrices;
+    return {
+      ...response,
+      data: assetsWithPrices,
+    };
   }, {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-
   return {
     ...result,
-    data: result.data || [],
-    total: result.data?.length || 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
+    data: result.data?.data || [],
+    total: result.data?.total || 0,
+    page: result.data?.page || 1,
+    limit: result.data?.limit || 10,
+    totalPages: result.data?.totalPages || 1,
   };
 };
 

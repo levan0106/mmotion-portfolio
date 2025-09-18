@@ -16,7 +16,7 @@ describe('Asset Entity', () => {
     asset.description = 'Test asset description';
     asset.initialValue = 1000000;
     asset.initialQuantity = 100;
-    asset.currentValue = 1200000;
+    // currentValue removed - calculated real-time
     asset.currentQuantity = 100;
     asset.createdBy = 'test-user-id';
     asset.updatedBy = 'test-user-id';
@@ -38,7 +38,7 @@ describe('Asset Entity', () => {
       expect(asset.description).toBe('Test asset description');
       expect(asset.initialValue).toBe(1000000);
       expect(asset.initialQuantity).toBe(100);
-      expect(asset.currentValue).toBe(1200000);
+      // currentValue removed - calculated real-time
       expect(asset.currentQuantity).toBe(100);
       expect(asset.createdBy).toBe('test-user-id');
       expect(asset.updatedBy).toBe('test-user-id');
@@ -47,29 +47,12 @@ describe('Asset Entity', () => {
     it('should have optional properties', () => {
       expect(asset.symbol).toBeDefined(); // Symbol is now required
       expect(asset.description).toBeDefined();
-      expect(asset.currentValue).toBeDefined();
+      // currentValue removed - calculated real-time
       expect(asset.currentQuantity).toBeDefined();
     });
   });
 
-  describe('getTotalValue', () => {
-    it('should return current value when available', () => {
-      const totalValue = asset.getTotalValue();
-      expect(totalValue).toBe(1200000);
-    });
-
-    it('should return initial value when current value is not set', () => {
-      asset.currentValue = undefined;
-      const totalValue = asset.getTotalValue();
-      expect(totalValue).toBe(1000000);
-    });
-
-    it('should return initial value when current value is null', () => {
-      asset.currentValue = null;
-      const totalValue = asset.getTotalValue();
-      expect(totalValue).toBe(1000000);
-    });
-  });
+  // getTotalValue method removed - currentValue calculated real-time
 
   describe('getTotalQuantity', () => {
     it('should return current quantity when available', () => {
@@ -144,7 +127,7 @@ describe('Asset Entity', () => {
       expect(json.description).toBe(asset.description);
       expect(json.initialValue).toBe(asset.initialValue);
       expect(json.initialQuantity).toBe(asset.initialQuantity);
-      expect(json.currentValue).toBe(asset.currentValue);
+      // currentValue removed - calculated real-time
       expect(json.currentQuantity).toBe(asset.currentQuantity);
       expect(json.createdBy).toBe(asset.createdBy);
       expect(json.updatedBy).toBe(asset.updatedBy);
@@ -155,7 +138,7 @@ describe('Asset Entity', () => {
     it('should include computed properties in JSON output', () => {
       const json = asset.toJSON();
       
-      expect(json.totalValue).toBe(asset.getTotalValue());
+      // totalValue removed - calculated real-time
       expect(json.totalQuantity).toBe(asset.getTotalQuantity());
       expect(json.hasTrades).toBe(asset.hasTrades());
       expect(json.displayName).toBe(asset.getDisplayName());
@@ -164,13 +147,13 @@ describe('Asset Entity', () => {
     });
 
     it('should handle undefined current values in JSON output', () => {
-      asset.currentValue = undefined;
+      // currentValue removed - calculated real-time
       asset.currentQuantity = undefined;
       asset.trades = undefined;
       
       const json = asset.toJSON();
       
-      expect(json.totalValue).toBe(asset.initialValue);
+      // totalValue removed - calculated real-time
       expect(json.totalQuantity).toBe(asset.initialQuantity);
       expect(json.hasTrades).toBe(false);
     });
@@ -197,12 +180,12 @@ describe('Asset Entity', () => {
     it('should handle decimal values correctly', () => {
       asset.initialValue = 1234567.89;
       asset.initialQuantity = 123.4567;
-      asset.currentValue = 9876543.21;
+      // currentValue removed - calculated real-time
       asset.currentQuantity = 987.6543;
 
       expect(asset.initialValue).toBe(1234567.89);
       expect(asset.initialQuantity).toBe(123.4567);
-      expect(asset.currentValue).toBe(9876543.21);
+      // currentValue removed - calculated real-time
       expect(asset.currentQuantity).toBe(987.6543);
     });
   });
@@ -274,20 +257,20 @@ describe('Asset Entity', () => {
     it('should handle zero values', () => {
       asset.initialValue = 0;
       asset.initialQuantity = 0;
-      asset.currentValue = 0;
+      // currentValue removed - calculated real-time
       asset.currentQuantity = 0;
 
-      expect(asset.getTotalValue()).toBe(0);
+      // getTotalValue method removed - currentValue calculated real-time
       expect(asset.getTotalQuantity()).toBe(0);
     });
 
     it('should handle negative values', () => {
       asset.initialValue = -1000;
       asset.initialQuantity = -10;
-      asset.currentValue = -2000;
+      // currentValue removed - calculated real-time
       asset.currentQuantity = -20;
 
-      expect(asset.getTotalValue()).toBe(-2000);
+      // getTotalValue method removed - currentValue calculated real-time
       expect(asset.getTotalQuantity()).toBe(-20);
     });
 
@@ -297,10 +280,10 @@ describe('Asset Entity', () => {
 
       asset.initialValue = largeValue;
       asset.initialQuantity = largeQuantity;
-      asset.currentValue = largeValue;
+      // currentValue removed - calculated real-time
       asset.currentQuantity = largeQuantity;
 
-      expect(asset.getTotalValue()).toBe(largeValue);
+      // getTotalValue method removed - currentValue calculated real-time
       expect(asset.getTotalQuantity()).toBe(largeQuantity);
     });
   });

@@ -77,7 +77,8 @@ async function fixAssetValuesV2() {
     if (assetsToUpdate.length > 0) {
       console.log('\n🔄 Updating asset values...');
       for (const asset of assetsToUpdate) {
-        await dataSource.getRepository(Asset).update(asset.id, { currentValue: asset.realisticPrice });
+        // currentValue removed - calculated real-time
+        // await dataSource.getRepository(Asset).update(asset.id, { currentValue: asset.realisticPrice });
         console.log(`  ✅ Updated ${asset.symbol} from ${asset.currentValue.toLocaleString('vi-VN')} VND to ${asset.realisticPrice.toLocaleString('vi-VN')} VND`);
         console.log(`     Position value changed from ${(asset.quantity * asset.currentValue).toLocaleString('vi-VN')} VND to ${(asset.quantity * asset.realisticPrice).toLocaleString('vi-VN')} VND`);
       }

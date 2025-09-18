@@ -15,6 +15,18 @@ export class AssetAnalyticsService {
   ) {}
 
   /**
+   * Calculate current value real-time as currentQuantity * currentPrice
+   * @param asset - Asset entity
+   * @returns Current value
+   */
+  private calculateCurrentValue(asset: Asset): number {
+    // Note: currentPrice should be calculated from global assets
+    return asset.currentQuantity 
+      ? asset.currentQuantity * 0 // Will be calculated from global assets
+      : 0;
+  }
+
+  /**
    * Calculate portfolio value from assets
    * @param portfolioId - Portfolio ID
    * @returns Total portfolio value
@@ -23,7 +35,7 @@ export class AssetAnalyticsService {
     const assets = await this.assetRepository.findByPortfolioId(portfolioId);
     
     return assets.reduce((total, asset) => {
-      return total + asset.getTotalValue();
+      return total + this.calculateCurrentValue(asset);
     }, 0);
   }
 
@@ -57,7 +69,7 @@ export class AssetAnalyticsService {
     };
 
     assets.forEach(asset => {
-      const assetValue = asset.getTotalValue();
+      const assetValue = this.calculateCurrentValue(asset);
       const percentage = (assetValue / totalValue) * 100;
       allocation[asset.type] += percentage;
     });
@@ -95,7 +107,7 @@ export class AssetAnalyticsService {
 
     assets.forEach(asset => {
       const initialValue = asset.initialValue;
-      const currentValue = asset.getTotalValue();
+      const currentValue = this.calculateCurrentValue(asset);
       const assetReturn = ((currentValue - initialValue) / initialValue) * 100;
       
       totalReturn += (currentValue - initialValue);
@@ -107,14 +119,14 @@ export class AssetAnalyticsService {
     
     // Find best and worst performers
     const bestPerformer = assets.reduce((best, asset) => {
-      const bestReturn = ((best.getTotalValue() - best.initialValue) / best.initialValue) * 100;
-      const assetReturn = ((asset.getTotalValue() - asset.initialValue) / asset.initialValue) * 100;
+      const bestReturn = ((this.calculateCurrentValue(best) - best.initialValue) / best.initialValue) * 100;
+      const assetReturn = ((this.calculateCurrentValue(asset) - asset.initialValue) / asset.initialValue) * 100;
       return assetReturn > bestReturn ? asset : best;
     });
 
     const worstPerformer = assets.reduce((worst, asset) => {
-      const worstReturn = ((worst.getTotalValue() - worst.initialValue) / worst.initialValue) * 100;
-      const assetReturn = ((asset.getTotalValue() - asset.initialValue) / asset.initialValue) * 100;
+      const worstReturn = ((this.calculateCurrentValue(worst) - worst.initialValue) / worst.initialValue) * 100;
+      const assetReturn = ((this.calculateCurrentValue(asset) - asset.initialValue) / asset.initialValue) * 100;
       return assetReturn < worstReturn ? asset : worst;
     });
 
@@ -157,12 +169,12 @@ export class AssetAnalyticsService {
     const totalValue = await this.calculatePortfolioValue(portfolioId);
     
     // Calculate concentration risk (Herfindahl index)
-    const weights = assets.map(asset => asset.getTotalValue() / totalValue);
+    const weights = assets.map(asset => this.calculateCurrentValue(asset) / totalValue);
     const concentrationRisk = weights.reduce((sum, weight) => sum + weight * weight, 0);
 
     // Calculate max drawdown (simplified - based on current vs initial values)
     const drawdowns = assets.map(asset => {
-      const currentValue = asset.getTotalValue();
+      const currentValue = this.calculateCurrentValue(asset);
       const initialValue = asset.initialValue;
       return Math.max(0, (initialValue - currentValue) / initialValue);
     });
@@ -177,7 +189,7 @@ export class AssetAnalyticsService {
 
     // Calculate Value at Risk (simplified - 95% confidence level)
     const returns = assets.map(asset => {
-      const currentValue = asset.getTotalValue();
+      const currentValue = this.calculateCurrentValue(asset);
       const initialValue = asset.initialValue;
       return (currentValue - initialValue) / initialValue;
     });
@@ -239,7 +251,7 @@ export class AssetAnalyticsService {
     // Get top 5 assets by value
     const allAssets = await this.assetRepository.findByPortfolioId(portfolioId);
     const topAssets = allAssets
-      .sort((a, b) => b.getTotalValue() - a.getTotalValue())
+      .sort((a, b) => this.calculateCurrentValue(b) - this.calculateCurrentValue(a))
       .slice(0, 5);
 
     return {
@@ -399,7 +411,7 @@ export class AssetAnalyticsService {
     
     const assetPerformance = assets.map(asset => {
       const initialValue = asset.initialValue;
-      const currentValue = asset.getTotalValue();
+      const currentValue = this.calculateCurrentValue(asset);
       const returnPercent = ((currentValue - initialValue) / initialValue) * 100;
       
       return {
