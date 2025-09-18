@@ -11,7 +11,6 @@ import {
   Typography,
   Tabs,
   Tab,
-  Paper,
   Grid,
   Card,
   CardContent,
@@ -26,8 +25,7 @@ import {
   AccountBalance,
   Add as AddIcon,
   ArrowBack as ArrowBackIcon,
-  ViewModule,
-  ViewList,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
@@ -105,12 +103,13 @@ const PortfolioDetail: React.FC = () => {
   const [isAssetDetailLoading, setIsAssetDetailLoading] = useState(false);
   const [assetDetailError, setAssetDetailError] = useState<string | null>(null);
   const [isCompactMode, setIsCompactMode] = useState(false);
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
 
   // Ultra compact mode - gấp đôi compact
   const getUltraSpacing = (normal: number, ultra: number) => 
     isCompactMode ? ultra : normal;
 
-  const { portfolio, isLoading: isPortfolioLoading, error: portfolioError } = usePortfolio(portfolioId!);
+  const { portfolio, isLoading: isPortfolioLoading, error: portfolioError, refetch: refetchPortfolio } = usePortfolio(portfolioId!);
   const {
     navData,
     performanceData,
@@ -304,6 +303,46 @@ const PortfolioDetail: React.FC = () => {
     }
   };
 
+  const handleRefreshAll = async () => {
+    if (!portfolioId) return;
+    
+    setIsRefreshingAll(true);
+    try {
+      // Refresh all data in parallel
+      await Promise.all([
+        // Portfolio data
+        refetchPortfolio(),
+        // Trades data
+        tradesQuery.refetch(),
+        // Analytics data - call API directly
+        apiService.getPortfolioRiskReturn(portfolioId),
+        apiService.getPortfolioAssetPerformance(portfolioId),
+        apiService.getPortfolioRiskMetrics(portfolioId),
+        apiService.getPortfolioDiversificationHeatmap(portfolioId),
+        apiService.getPortfolioAllocationTimeline(portfolioId),
+        apiService.getPortfolioCashFlowAnalysis(portfolioId),
+        apiService.getPortfolioBenchmarkComparison(portfolioId),
+        apiService.getPortfolioAssetDetailSummary(portfolioId),
+      ]);
+      
+      // Reset all data states to trigger re-fetch
+      setRiskReturnData(null);
+      setAssetPerformanceData(null);
+      setRiskMetricsData(null);
+      setDiversificationData(null);
+      setAllocationTimelineData(null);
+      setCashFlowData(null);
+      setBenchmarkData(null);
+      setAssetDetailData(null);
+      
+      console.log('All data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
   // Calculate trading summary
   const totalTrades = trades.length;
   const totalVolume = trades.reduce((sum, trade) => sum + (Number(trade.quantity) * Number(trade.price) || 0), 0);
@@ -378,11 +417,33 @@ const PortfolioDetail: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl">
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Box>
+    <Container maxWidth="xl" sx={{ scrollBehavior: 'smooth' }}>
+
+      {/* Sticky Header */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 40, // Position below tabs
+          zIndex: 999, // Below tabs
+          backgroundColor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          py: 2,
+          mb: 4,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <Box 
+          display="flex" 
+          alignItems="center" 
+          justifyContent="space-between"
+          sx={{
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 2, sm: 0 },
+          }}
+        >
+          <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
             <Typography variant="h4" gutterBottom>
               {portfolio.name}
             </Typography>
@@ -390,20 +451,74 @@ const PortfolioDetail: React.FC = () => {
               Portfolio Management & Trading
             </Typography>
           </Box>
-          <Box display="flex" gap={2}>
+          <Box 
+            display="flex" 
+            gap={2}
+            sx={{
+              flexDirection: { xs: 'column', sm: 'row' },
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
-              sx={{ borderRadius: 2, textTransform: 'none' }}
+              sx={{ 
+                borderRadius: 2, 
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 3,
+                py: 1,
+                width: { xs: '100%', sm: 'auto' },
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                }
+              }}
             >
               Back to Portfolios
             </Button>
+            <Tooltip title="Refresh all portfolio data">
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefreshAll}
+                disabled={isRefreshingAll}
+                sx={{ 
+                  borderRadius: 2, 
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
+                  width: { xs: '100%', sm: 'auto' },
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  }
+                }}
+              >
+                {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
+              </Button>
+            </Tooltip>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setShowCreateForm(true)}
-              sx={{ borderRadius: 2, textTransform: 'none' }}
+              sx={{ 
+                borderRadius: 2, 
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 3,
+                py: 1,
+                width: { xs: '100%', sm: 'auto' },
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                }
+              }}
             >
               New Trade
             </Button>
@@ -463,6 +578,7 @@ const PortfolioDetail: React.FC = () => {
         </Grid>
       </Grid>
 
+
       {/* Trading Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {summaryCards.map((card, index) => (
@@ -494,43 +610,78 @@ const PortfolioDetail: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Tabs */}
-      <Paper sx={{ width: '100%', mb: 4 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2, py: 1 }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="portfolio tabs">
+
+      {/* Sticky Tabs with Toggle */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 110, // Position at very top
+          zIndex: 1100, // Above header
+          backgroundColor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          py: 1,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2 }}>
+          {/* Tabs */}
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="portfolio tabs"
+            sx={{
+              minHeight: '48px',
+              '& .MuiTab-root': {
+                minHeight: '48px',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '0.95rem',
+              },
+            }}
+          >
             <Tab label="Trading Management" />
-              <Tab label="Trading Analysis" defaultChecked />
+            <Tab label="Trading Analysis" defaultChecked />
             <Tab label="Asset Allocation" />
           </Tabs>
-            
-            {/* Global Compact Mode Toggle */}
-            <Tooltip title={isCompactMode ? "Switch to Normal View" : "Switch to Compact View"}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isCompactMode}
-                    onChange={(e) => setIsCompactMode(e.target.checked)}
-                    color="primary"
-                    size="small"
-                  />
-                }
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {isCompactMode ? <ViewList fontSize="small" /> : <ViewModule fontSize="small" />}
-                    <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                      {isCompactMode ? 'Compact' : 'Normal'}
-                    </Typography>
-                  </Box>
-                }
-                sx={{ m: 0 }}
-              />
-            </Tooltip>
-          </Box>
+          
+          {/* Compact Mode Toggle */}
+          <Tooltip title={isCompactMode ? "Switch to Normal View" : "Switch to Compact View"}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isCompactMode}
+                  onChange={(e) => setIsCompactMode(e.target.checked)}
+                  color="primary"
+                  size="small"
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                    {isCompactMode ? 'Compact' : 'Normal'}
+                  </Typography>
+                </Box>
+              }
+              sx={{ m: 0 }}
+            />
+          </Tooltip>
         </Box>
+      </Box>
 
+      <Box
+        sx={{
+          backgroundColor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          py: 1,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(10px)',
+        }}
+            >
         <TabPanel value={tabValue} index={0}>
-          <Box sx={{ p: getUltraSpacing(3, 1) }}>
+          
             <Grid container spacing={getUltraSpacing(3, 1)}>
             <Grid item xs={12}>
               <TradeListContainer 
@@ -540,11 +691,16 @@ const PortfolioDetail: React.FC = () => {
               />
             </Grid>
           </Grid>
-          </Box>
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
-          <Box sx={{ p: getUltraSpacing(3, 1) }}>
+          <Box sx={{ 
+            p: getUltraSpacing(3, 1),
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1,
+            backgroundColor: 'background.paper',
+          }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
               <Grid item xs={12}>
                 <PerformanceChart 
@@ -564,7 +720,14 @@ const PortfolioDetail: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabValue} index={2}>
-          <Box sx={{ p: getUltraSpacing(3, 1), backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+          <Box sx={{ 
+            p: getUltraSpacing(3, 1), 
+            backgroundColor: '#f8f9fa', 
+            minHeight: '100vh',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1,
+          }}>
 
             {/* Portfolio Overview Section */}
             <Box sx={{ mb: getUltraSpacing(4, 1) }}>
@@ -1016,8 +1179,7 @@ const PortfolioDetail: React.FC = () => {
 
           </Box>
         </TabPanel>
-      </Paper>
-
+      </Box>
       {/* Create Trade Modal */}
       {showCreateForm && (
         <Box

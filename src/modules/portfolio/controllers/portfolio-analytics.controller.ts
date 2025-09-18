@@ -464,44 +464,20 @@ export class PortfolioAnalyticsController {
   @Get('allocation-timeline')
   @ApiOperation({ summary: 'Get asset allocation timeline data' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
   @ApiResponse({ status: 200, description: 'Allocation timeline data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getAllocationTimeline(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    const allocation = await this.portfolioService.getAssetAllocation(id);
-    const portfolio = await this.portfolioService.getPortfolioDetails(id);
-
-    // Generate mock timeline data (last 12 months)
-    const timelineData = [];
-    const assetTypes = allocation.map(item => item.assetType);
-    const now = new Date();
+  async getAllocationTimeline(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months') months?: string,
+  ): Promise<any> {
+    const monthsToLookBack = months ? parseInt(months, 10) : 12;
     
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const dataPoint: any = {
-        date: date.toISOString().split('T')[0],
-      };
-      
-      // Generate allocation percentages that sum to 100
-      let remaining = 100;
-      assetTypes.forEach((assetType, index) => {
-        if (index === assetTypes.length - 1) {
-          dataPoint[assetType] = remaining;
-        } else {
-          const percentage = Math.random() * remaining * 0.8;
-          dataPoint[assetType] = Math.round(percentage * 10) / 10;
-          remaining -= dataPoint[assetType];
-        }
-      });
-      
-      timelineData.push(dataPoint);
+    if (isNaN(monthsToLookBack) || monthsToLookBack < 1 || monthsToLookBack > 60) {
+      throw new Error('Months parameter must be a number between 1 and 60');
     }
 
-    return {
-      portfolioId: id,
-      totalValue: portfolio.totalValue,
-      data: timelineData,
-      calculatedAt: new Date().toISOString(),
-    };
+    return await this.portfolioAnalyticsService.calculateAllocationTimeline(id, monthsToLookBack);
   }
 
   /**

@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Trade, TradeSide, TradeType } from '../entities/trade.entity';
 import { TradeDetail } from '../entities/trade-detail.entity';
 import { TradeRepository } from '../repositories/trade.repository';
@@ -8,6 +10,7 @@ import { TradeDetailRepository } from '../repositories/trade-detail.repository';
 import { FIFOEngine } from '../engines/fifo-engine';
 import { LIFOEngine } from '../engines/lifo-engine';
 import { PositionManager } from '../managers/position-manager';
+import { AssetCacheService } from '../../asset/services/asset-cache.service';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 
@@ -35,7 +38,105 @@ export class TradingService {
     private readonly fifoEngine: FIFOEngine,
     private readonly lifoEngine: LIFOEngine,
     private readonly positionManager: PositionManager,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly assetCacheService: AssetCacheService,
   ) {}
+
+  /**
+   * Comprehensive cache invalidation when trades are modified
+   * This clears ALL caches related to the portfolio and affected assets
+   * @param portfolioId Portfolio ID
+   * @param assetId Asset ID (optional, for asset-specific caches)
+   */
+  private async invalidateAllRelatedCaches(portfolioId: string, assetId?: string): Promise<void> {
+    try {
+      // Get portfolio details to find account ID
+      const trade = await this.tradeRepository.findOne({
+        where: { portfolioId },
+        relations: ['portfolio'],
+      });
+
+      const accountId = trade?.portfolio?.accountId;
+
+      // 1. Portfolio-level caches
+      const portfolioCacheKeys = [
+        `portfolio:${portfolioId}`,
+        `allocation:${portfolioId}`,
+        `metrics:${portfolioId}`,
+        `allocation-timeline:${portfolioId}:6`,
+        `allocation-timeline:${portfolioId}:12`,
+        `allocation-timeline:${portfolioId}:24`,
+        `allocation-timeline:${portfolioId}:36`,
+      ];
+
+      // 2. Account-level caches
+      const accountCacheKeys = accountId ? [
+        `portfolios:account:${accountId}`,
+      ] : [];
+
+      // 3. Asset-level caches (if assetId provided)
+      const assetCacheKeys = assetId ? [
+        `initial:${assetId}`,
+        `current:${assetId}:${portfolioId}`,
+        `current:${assetId}:none`,
+        `asset:${assetId}`,
+        `asset-trades:${assetId}`,
+        `asset-performance:${assetId}`,
+        `asset-analytics:${assetId}`,
+      ] : [];
+
+      // 4. Portfolio analytics caches (specific keys - no wildcards)
+      const analyticsCacheKeys = [
+        `portfolio-analytics:${portfolioId}`,
+        `portfolio-performance:${portfolioId}`,
+        `portfolio-risk:${portfolioId}`,
+        `portfolio-diversification:${portfolioId}`,
+        `portfolio-cashflow:${portfolioId}`,
+        `portfolio-returns:${portfolioId}`,
+        `portfolio-volatility:${portfolioId}`,
+        `portfolio-sharpe:${portfolioId}`,
+      ];
+
+      // Combine all cache keys
+      const allCacheKeys = [
+        ...portfolioCacheKeys,
+        ...accountCacheKeys,
+        ...assetCacheKeys,
+        ...analyticsCacheKeys,
+      ];
+
+      // Clear all caches
+      const clearResults = await Promise.allSettled(
+        allCacheKeys.map(async (key) => {
+          try {
+            await this.cacheManager.del(key);
+            console.log(`Cache clear attempt for key '${key}': success`);
+            return true;
+          } catch (error) {
+            console.log(`Cache clear attempt for key '${key}': failed - ${error.message}`);
+            return false;
+          }
+        })
+      );
+
+      const successCount = clearResults.filter(result => result.status === 'fulfilled' && result.value).length;
+      console.log(`Cache invalidation completed: ${successCount}/${allCacheKeys.length} keys cleared for portfolio ${portfolioId}${assetId ? ` and asset ${assetId}` : ''}`);
+
+      // Also clear asset-specific caches using AssetCacheService
+      if (assetId) {
+        try {
+          this.assetCacheService.invalidateAsset(assetId);
+          console.log(`Asset cache invalidated for asset ${assetId}`);
+        } catch (error) {
+          console.warn(`Failed to invalidate asset cache for ${assetId}:`, error);
+        }
+      }
+      
+    } catch (error) {
+      // Log error but don't throw - cache invalidation failure shouldn't break trade operations
+      console.warn('Failed to invalidate related caches:', error);
+    }
+  }
 
   /**
    * Create a new trade
@@ -71,6 +172,9 @@ export class TradingService {
 
     // Update portfolio position
     await this.updatePortfolioPosition(savedTrade);
+
+    // Invalidate all related caches
+    await this.invalidateAllRelatedCaches(savedTrade.portfolioId, savedTrade.assetId);
 
     return savedTrade;
   }
@@ -155,6 +259,12 @@ export class TradingService {
       await this.updatePortfolioPosition(updatedTrade);
     }
 
+    // Invalidate all related caches (including both old and new asset if changed)
+    await this.invalidateAllRelatedCaches(updatedTrade.portfolioId, updatedTrade.assetId);
+    if (isAssetChanged) {
+      await this.invalidateAllRelatedCaches(updatedTrade.portfolioId, originalAssetId);
+    }
+
     return updatedTrade;
   }
 
@@ -191,6 +301,9 @@ export class TradingService {
 
     // Update portfolio position
     await this.updatePortfolioPosition(trade);
+
+    // Invalidate all related caches
+    await this.invalidateAllRelatedCaches(trade.portfolioId, trade.assetId);
   }
 
   /**

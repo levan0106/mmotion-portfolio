@@ -19,6 +19,7 @@ import { AssetTarget } from './entities/asset-target.entity';
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
 import { Asset } from '../asset/entities/asset.entity';
 import { Account } from '../shared/entities/account.entity';
+import { AssetCacheService } from '../asset/services/asset-cache.service';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -51,6 +52,7 @@ import { Account } from '../shared/entities/account.entity';
     LIFOEngine,
     PositionManager,
     RiskManager,
+    AssetCacheService,
   ],
   exports: [
     TradingService,

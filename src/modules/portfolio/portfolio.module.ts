@@ -19,6 +19,7 @@ import { PortfolioCalculationService } from './services/portfolio-calculation.se
 import { PortfolioValueCalculatorService } from './services/portfolio-value-calculator.service';
 import { PortfolioController } from './controllers/portfolio.controller';
 import { PortfolioAnalyticsController } from './controllers/portfolio-analytics.controller';
+import { TradeRepository } from '../trading/repositories/trade.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 
@@ -57,6 +58,7 @@ import { AssetModule } from '../asset/asset.module';
     PositionManagerService,
     PortfolioCalculationService,
     PortfolioValueCalculatorService,
+    TradeRepository,
   ],
   exports: [
     PortfolioService,

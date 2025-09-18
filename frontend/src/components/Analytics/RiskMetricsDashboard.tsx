@@ -40,6 +40,17 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
   data,
   title = 'Risk Metrics Dashboard',
 }) => {
+  // Add null checks and default values
+  if (!data) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary">
+          No risk metrics data available
+        </Typography>
+      </Box>
+    );
+  }
+
   const getRiskLevel = (value: number, type: 'var' | 'volatility' | 'drawdown' | 'ratio') => {
     switch (type) {
       case 'var':
@@ -90,10 +101,10 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
     }
   };
 
-  const varLevel = getRiskLevel(data.var95, 'var');
-  const volatilityLevel = getRiskLevel(data.volatility, 'volatility');
-  const drawdownLevel = getRiskLevel(data.maxDrawdown, 'drawdown');
-  const sharpeLevel = getRiskLevel(data.sharpeRatio, 'ratio');
+  const varLevel = getRiskLevel(data.var95 || 0, 'var');
+  const volatilityLevel = getRiskLevel(data.volatility || 0, 'volatility');
+  const drawdownLevel = getRiskLevel(data.maxDrawdown || 0, 'drawdown');
+  const sharpeLevel = getRiskLevel(data.sharpeRatio || 0, 'ratio');
 
   return (
     <Box>
@@ -139,7 +150,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                 {getRiskIcon(sharpeLevel)}
               </Box>
               <Typography variant="h4" color="primary" fontWeight="bold">
-                {data.sharpeRatio.toFixed(2)}
+                {(data.sharpeRatio || 0).toFixed(2)}
               </Typography>
               <Chip 
                 label={sharpeLevel.toUpperCase()} 
@@ -221,7 +232,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       Beta
                     </Typography>
                     <Typography variant="h6">
-                      {data.beta.toFixed(2)}
+                      {(data.beta || 0).toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -231,7 +242,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       Calmar Ratio
                     </Typography>
                     <Typography variant="h6">
-                      {data.calmarRatio.toFixed(2)}
+                      {(data.calmarRatio || 0).toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -241,7 +252,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       Sortino Ratio
                     </Typography>
                     <Typography variant="h6">
-                      {data.sortinoRatio.toFixed(2)}
+                      {(data.sortinoRatio || 0).toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>

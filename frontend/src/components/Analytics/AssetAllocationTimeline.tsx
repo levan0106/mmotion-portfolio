@@ -33,8 +33,11 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
 }) => {
   const colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336', '#00bcd4', '#8bc34a'];
 
-  // Get asset types from data (exclude 'date' key)
-  const assetTypes = data.length > 0 ? Object.keys(data[0]).filter(key => key !== 'date') : [];
+  // Get asset types from all data points (exclude 'date' key)
+  const assetTypes = data.length > 0 
+    ? Array.from(new Set(data.flatMap(item => Object.keys(item).filter(key => key !== 'date'))))
+    : [];
+
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -64,6 +67,16 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="h6" color="text.secondary">
           No timeline data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (assetTypes.length === 0) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary">
+          No asset allocation data available
         </Typography>
       </Box>
     );

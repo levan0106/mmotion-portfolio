@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Portfolio } from '../entities/portfolio.entity';
 import { NavSnapshot } from '../entities/nav-snapshot.entity';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { AssetDetailSummaryResponseDto, AssetDetailSummaryDto } from '../dto/asset-detail-summary.dto';
+import { TradeRepository } from '../../trading/repositories/trade.repository';
+import { Trade } from '../../trading/entities/trade.entity';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -18,6 +22,8 @@ export class PortfolioAnalyticsService {
     @InjectRepository(NavSnapshot)
     private readonly navSnapshotRepository: Repository<NavSnapshot>,
     private readonly portfolioCalculationService: PortfolioCalculationService,
+    private readonly tradeRepository: TradeRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   /**
@@ -350,4 +356,198 @@ export class PortfolioAnalyticsService {
       calculatedAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Calculate asset allocation timeline for a portfolio.
+   * @param portfolioId - Portfolio ID
+   * @param months - Number of months to look back (default: 12)
+   * @returns Promise<AllocationTimelineResponse>
+   */
+  async calculateAllocationTimeline(
+    portfolioId: string,
+    months: number = 12,
+  ): Promise<{
+    portfolioId: string;
+    totalValue: number;
+    data: Array<{
+      date: string;
+      [assetType: string]: string | number;
+    }>;
+    calculatedAt: string;
+  }> {
+    try {
+      const cacheKey = `allocation-timeline:${portfolioId}:${months}`;
+      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+      
+      // Try to get from cache first
+      const cachedResult = await this.cacheManager.get(cacheKey);
+      if (cachedResult) {
+        return cachedResult as {
+          portfolioId: string;
+          totalValue: number;
+          data: Array<{
+            date: string;
+            [assetType: string]: string | number;
+          }>;
+          calculatedAt: string;
+        };
+      }
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - months);
+
+    // Get all trades for the portfolio in the date range
+    const trades = await this.tradeRepository.findTradesByDateRange(
+      startDate,
+      endDate,
+      portfolioId,
+    );
+
+    // Get portfolio details
+    const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+    if (!portfolio) {
+      throw new Error(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    // Group trades by month and calculate allocation for each month
+    const timelineData = [];
+    const monthlyData = new Map<string, Map<string, { quantity: number; value: number }>>();
+
+    // Initialize monthly data structure
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyData.set(monthKey, new Map());
+    }
+
+    // Process trades chronologically
+    const sortedTrades = trades.sort((a, b) => new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime());
+
+    for (const trade of sortedTrades) {
+      const tradeDate = new Date(trade.tradeDate);
+      const monthKey = `${tradeDate.getFullYear()}-${String(tradeDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyData.has(monthKey)) {
+        continue; // Skip trades outside our date range
+      }
+
+      const monthData = monthlyData.get(monthKey);
+      const assetType = trade.asset?.type || 'UNKNOWN';
+      const quantity = parseFloat(trade.quantity.toString());
+      const price = parseFloat(trade.price.toString());
+      const value = quantity * price;
+
+      if (!monthData.has(assetType)) {
+        monthData.set(assetType, { quantity: 0, value: 0 });
+      }
+
+      const current = monthData.get(assetType);
+      if (trade.side === 'BUY') {
+        current.quantity += quantity;
+        current.value += value;
+      } else {
+        current.quantity -= quantity;
+        current.value -= value;
+      }
+
+      // Ensure quantity doesn't go negative (shouldn't happen with proper trade validation)
+      if (current.quantity < 0) {
+        current.quantity = 0;
+        current.value = 0;
+      }
+    }
+
+    // Convert monthly data to timeline format with proper cumulative allocation
+    // Calculate cumulative quantities and values for each month
+    const cumulativeData = new Map<string, { quantities: Record<string, number>; values: Record<string, number> }>();
+    
+    // Process months in chronological order (oldest first)
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthData = monthlyData.get(monthKey);
+      
+      // Get previous month's cumulative data
+      const prevMonth = new Date(date);
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      const prevMonthKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+      const prevCumulative = cumulativeData.get(prevMonthKey) || { quantities: {}, values: {} };
+      
+      // Start with previous month's cumulative data
+      const currentQuantities = { ...prevCumulative.quantities };
+      const currentValues = { ...prevCumulative.values };
+      
+      // Apply trades from current month
+      for (const [assetType, data] of monthData) {
+        if (!currentQuantities[assetType]) {
+          currentQuantities[assetType] = 0;
+          currentValues[assetType] = 0;
+        }
+        
+        currentQuantities[assetType] += data.quantity;
+        currentValues[assetType] += data.value;
+        
+        // If quantity becomes 0 or negative, reset to 0
+        if (currentQuantities[assetType] <= 0) {
+          currentQuantities[assetType] = 0;
+          currentValues[assetType] = 0;
+        }
+      }
+      
+      
+      // Store cumulative data for this month
+      cumulativeData.set(monthKey, { quantities: currentQuantities, values: currentValues });
+    }
+    
+    // Generate timeline data points in chronological order
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const cumulative = cumulativeData.get(monthKey);
+
+      const dataPoint: any = {
+        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`,
+      };
+
+      if (cumulative) {
+        // Calculate total cumulative value
+        let totalCumulativeValue = 0;
+        for (const [assetType, value] of Object.entries(cumulative.values)) {
+          totalCumulativeValue += value;
+        }
+
+        // Calculate allocation percentages based on cumulative values
+        if (totalCumulativeValue > 0) {
+          for (const [assetType, value] of Object.entries(cumulative.values)) {
+            if (value > 0) {
+              const percentage = (value / totalCumulativeValue) * 100;
+              dataPoint[assetType] = Math.round(percentage * 10) / 10;
+            }
+          }
+        }
+      }
+
+      timelineData.push(dataPoint);
+    }
+
+    const result = {
+      portfolioId,
+      totalValue: parseFloat(portfolio.totalValue.toString()),
+      data: timelineData,
+      calculatedAt: new Date().toISOString(),
+    };
+
+    // Cache the result
+    await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+
+    return result;
+    } catch (error) {
+      console.error('Error in calculateAllocationTimeline service:', error);
+      throw error;
+    }
+  }
 }
+

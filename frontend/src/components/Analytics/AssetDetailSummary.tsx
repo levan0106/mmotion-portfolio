@@ -45,6 +45,17 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   baseCurrency,
   title = 'Asset Detail Summary',
 }) => {
+  // Add null checks
+  if (!data || data.length === 0) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary">
+          No asset detail data available
+        </Typography>
+      </Box>
+    );
+  }
+
   // Transform data for the chart
   const chartData = data.map((asset, index) => ({
     symbol: asset.symbol,
@@ -72,13 +83,13 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
             {data.symbol} - {data.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Allocation: {formatPercentage(data.percentage)}
+            Allocation: {formatPercentage(data.percentage || 0)}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Value: {formatCurrency(data.totalValue, baseCurrency)}
           </Typography>
-          <Typography variant="body2" color={data.unrealizedPl >= 0 ? "success.main" : "error.main"}>
-            P&L: {formatCurrency(data.unrealizedPl, baseCurrency)} ({formatPercentage(data.unrealizedPlPercentage)})
+          <Typography variant="body2" color={(data.unrealizedPl || 0) >= 0 ? "success.main" : "error.main"}>
+            P&L: {formatCurrency(data.unrealizedPl || 0, baseCurrency)} ({formatPercentage(data.unrealizedPlPercentage || 0)})
           </Typography>
         </Box>
       );
