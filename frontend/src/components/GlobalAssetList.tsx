@@ -27,6 +27,7 @@ import {
   Menu,
   ListItemIcon,
   ListItemText,
+  Tooltip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,6 +39,7 @@ import {
   TrendingDown as TrendingDownIcon,
   Remove as RemoveIcon,
   Refresh as RefreshIcon,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 
 // Types
@@ -420,11 +422,33 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                 </TableRow>
               ) : (
                 paginatedAssets.map((asset) => (
-                  <TableRow key={asset.id} hover>
+                  <Tooltip 
+                    key={asset.id}
+                    title="Click to view asset details"
+                    placement="top"
+                    arrow
+                  >
+                    <TableRow 
+                      hover 
+                      onClick={() => onView(asset)}
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        }
+                      }}
+                    >
                     <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
-                        {asset.symbol}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" fontWeight="medium">
+                          {asset.symbol}
+                        </Typography>
+                        <OpenInNewIcon 
+                          fontSize="small" 
+                          color="action" 
+                          sx={{ opacity: 0.6 }}
+                        />
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
@@ -481,13 +505,17 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     </TableCell>
                     <TableCell align="right">
                       <IconButton
-                        onClick={(e) => handleMenuOpen(e, asset)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMenuOpen(e, asset);
+                        }}
                         size="small"
                       >
                         <MoreVertIcon />
                       </IconButton>
                     </TableCell>
                   </TableRow>
+                  </Tooltip>
                 ))
               )}
             </TableBody>

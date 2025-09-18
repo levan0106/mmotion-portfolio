@@ -1,7 +1,8 @@
 import React from 'react';
-import { Container } from '@mui/material';
+import { Container, Box, Paper, Typography } from '@mui/material';
 import GlobalAssetManagement from '../components/GlobalAssetManagement';
-import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket } from '../hooks/useGlobalAssets';
+import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
+import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
 
 
@@ -39,6 +40,9 @@ const GlobalAssetsPage: React.FC = () => {
   // Price update hooks
   const updateAssetPriceMutation = useUpdateAssetPrice();
   const updateAssetPriceFromMarketMutation = useUpdateAssetPriceFromMarket();
+  
+  // Auto sync hook
+  const { } = useAutoSync();
 
   // API handlers using real hooks
   const handleRefresh = async () => {
@@ -118,6 +122,20 @@ const GlobalAssetsPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Auto Sync Toggle Section */}
+      <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" component="h2">
+            Market Price Auto Sync
+          </Typography>
+        </Box>
+        <AutoSyncToggle
+          onToggle={(enabled) => {
+            console.log(`Auto sync ${enabled ? 'enabled' : 'disabled'}`);
+          }}
+        />
+      </Paper>
+
       <GlobalAssetManagement
         assets={assets}
         loading={isLoading}

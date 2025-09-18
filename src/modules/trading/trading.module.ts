@@ -17,9 +17,11 @@ import { TradeDetail } from './entities/trade-detail.entity';
 import { AssetTarget } from './entities/asset-target.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
+import { CashFlow } from '../portfolio/entities/cash-flow.entity';
 import { Asset } from '../asset/entities/asset.entity';
 import { Account } from '../shared/entities/account.entity';
 import { AssetCacheService } from '../asset/services/asset-cache.service';
+import { CashFlowService } from '../portfolio/services/cash-flow.service';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -33,6 +35,7 @@ import { AssetCacheService } from '../asset/services/asset-cache.service';
       TradeDetail,
       AssetTarget,
       Portfolio,
+      CashFlow,
       Asset,
       Account,
     ]),
@@ -53,6 +56,7 @@ import { AssetCacheService } from '../asset/services/asset-cache.service';
     PositionManager,
     RiskManager,
     AssetCacheService,
+    CashFlowService,
   ],
   exports: [
     TradingService,
@@ -64,6 +68,7 @@ import { AssetCacheService } from '../asset/services/asset-cache.service';
     LIFOEngine,
     PositionManager,
     RiskManager,
+    CashFlowService,
   ],
 })
 export class TradingModule {}

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, Length, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Length, IsUUID, IsNumber, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -59,4 +59,20 @@ export class CreatePortfolioDto {
   @IsString()
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
   description?: string;
+
+  /**
+   * Initial cash balance for the portfolio (optional, defaults to 0).
+   */
+  @ApiProperty({
+    description: 'Initial cash balance for the portfolio (optional, defaults to 0)',
+    example: 1000000,
+    required: false,
+    minimum: 0,
+    maximum: 1000000000,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1000000000)
+  cashBalance?: number;
 }

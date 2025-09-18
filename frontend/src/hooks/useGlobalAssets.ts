@@ -57,6 +57,13 @@ interface GlobalAssetQueryDto {
   isActive?: boolean;
 }
 
+interface AutoSyncStatus {
+  enabled: boolean;
+  lastSync?: string;
+  nextSync?: string;
+  interval?: number; // in minutes
+}
+
 // Backend returns paginated response
 type GlobalAssetResponse = {
   data: GlobalAsset[];
@@ -341,6 +348,56 @@ export const useGlobalAssetManagement = () => {
     handleEditAsset,
     handleViewAsset,
     handleFormClose,
+  };
+};
+
+// Auto Sync Hook
+export const useAutoSync = () => {
+  const queryClient = useQueryClient();
+
+  // Get auto sync status
+  const getAutoSyncStatus = useCallback(async (): Promise<AutoSyncStatus> => {
+    try {
+      const response = await apiService.api.get('/api/v1/global-assets/auto-sync/status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get auto sync status:', error);
+      throw error;
+    }
+  }, []);
+
+  // Toggle auto sync
+  const toggleAutoSync = useCallback(async (enabled: boolean): Promise<void> => {
+    try {
+      await apiService.api.post('/api/v1/global-assets/auto-sync/toggle', { enabled });
+      
+      // Invalidate related queries to refresh data
+      queryClient.invalidateQueries(['globalAssets']);
+      queryClient.invalidateQueries(['assetPrices']);
+    } catch (error) {
+      console.error('Failed to toggle auto sync:', error);
+      throw error;
+    }
+  }, [queryClient]);
+
+  // Manual sync trigger
+  const triggerManualSync = useCallback(async (): Promise<void> => {
+    try {
+      await apiService.api.post('/api/v1/global-assets/auto-sync/trigger');
+      
+      // Invalidate related queries to refresh data
+      queryClient.invalidateQueries(['globalAssets']);
+      queryClient.invalidateQueries(['assetPrices']);
+    } catch (error) {
+      console.error('Failed to trigger manual sync:', error);
+      throw error;
+    }
+  }, [queryClient]);
+
+  return {
+    getAutoSyncStatus,
+    toggleAutoSync,
+    triggerManualSync,
   };
 };
 

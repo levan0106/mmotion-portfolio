@@ -11,6 +11,7 @@ import { FIFOEngine } from '../engines/fifo-engine';
 import { LIFOEngine } from '../engines/lifo-engine';
 import { PositionManager } from '../managers/position-manager';
 import { AssetCacheService } from '../../asset/services/asset-cache.service';
+import { CashFlowService } from '../../portfolio/services/cash-flow.service';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 
@@ -40,6 +41,7 @@ export class TradingService {
     private readonly positionManager: PositionManager,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly assetCacheService: AssetCacheService,
+    private readonly cashFlowService: CashFlowService,
   ) {}
 
   /**
@@ -982,7 +984,16 @@ export class TradingService {
    * @param trade Trade that affects the position
    */
   private async updatePortfolioPosition(trade: Trade): Promise<void> {
-    await this.updatePortfolioPositionForAsset(trade.assetId, trade.portfolioId, trade.price);
+    try {
+      // Update cash balance from trade
+      await this.cashFlowService.updateCashBalanceFromTrade(trade);
+      
+      // Update asset position (placeholder for future implementation)
+      await this.updatePortfolioPositionForAsset(trade.assetId, trade.portfolioId, trade.price);
+    } catch (error) {
+      console.error('Error updating portfolio position:', error);
+      // Don't throw error to avoid breaking trade creation
+    }
   }
 
   /**

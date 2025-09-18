@@ -11,6 +11,7 @@ import { BasicPriceController } from './controllers/basic-price.controller';
 import { PriceHistoryController } from './controllers/price-history.controller';
 import { MarketDataController } from './controllers/market-data.controller';
 import { AssetController } from './controllers/asset.controller';
+import { AutoSyncController } from './controllers/auto-sync.controller';
 import { GlobalAssetService } from './services/global-asset.service';
 import { BasicPriceService } from './services/basic-price.service';
 import { NationConfigService } from './services/nation-config.service';
@@ -23,6 +24,7 @@ import { AssetValidationService } from './services/asset-validation.service';
 import { AssetAnalyticsService } from './services/asset-analytics.service';
 import { AssetCacheService } from './services/asset-cache.service';
 import { AssetValueCalculatorService } from './services/asset-value-calculator.service';
+import { AutoSyncService } from './services/auto-sync.service';
 import { AssetRepository } from './repositories/asset.repository';
 import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -66,6 +68,7 @@ import { LoggingModule } from '../logging/logging.module';
     PriceHistoryController,
     MarketDataController,
     AssetController,
+    AutoSyncController,
   ],
   providers: [
     // New Global Assets System services
@@ -83,6 +86,7 @@ import { LoggingModule } from '../logging/logging.module';
     AssetAnalyticsService,
     AssetCacheService,
     AssetValueCalculatorService,
+    AutoSyncService,
     AssetRepository,
     {
       provide: 'IAssetRepository',
@@ -105,6 +109,7 @@ import { LoggingModule } from '../logging/logging.module';
     AssetAnalyticsService,
     AssetCacheService,
     AssetValueCalculatorService,
+    AutoSyncService,
     TypeOrmModule,
   ],
 })

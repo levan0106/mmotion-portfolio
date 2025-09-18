@@ -17,8 +17,10 @@ import { PortfolioAnalyticsService } from './services/portfolio-analytics.servic
 import { PositionManagerService } from './services/position-manager.service';
 import { PortfolioCalculationService } from './services/portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './services/portfolio-value-calculator.service';
+import { CashFlowService } from './services/cash-flow.service';
 import { PortfolioController } from './controllers/portfolio.controller';
 import { PortfolioAnalyticsController } from './controllers/portfolio-analytics.controller';
+import { CashFlowController } from './controllers/cash-flow.controller';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
@@ -50,6 +52,7 @@ import { AssetModule } from '../asset/asset.module';
   controllers: [
     PortfolioController,
     PortfolioAnalyticsController,
+    CashFlowController,
   ],
   providers: [
     PortfolioRepository,
@@ -58,6 +61,7 @@ import { AssetModule } from '../asset/asset.module';
     PositionManagerService,
     PortfolioCalculationService,
     PortfolioValueCalculatorService,
+    CashFlowService,
     TradeRepository,
   ],
   exports: [
@@ -65,6 +69,7 @@ import { AssetModule } from '../asset/asset.module';
     PortfolioAnalyticsService,
     PositionManagerService,
     PortfolioValueCalculatorService,
+    CashFlowService,
     PortfolioRepository,
   ],
 })

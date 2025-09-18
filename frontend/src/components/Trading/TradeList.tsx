@@ -41,6 +41,7 @@ import { useTrades, useDeleteTrade, useTradeDetails, useUpdateTrade } from '../.
 import { formatCurrency, formatNumber } from '../../utils/format';
 import EditTradeModal from './EditTradeModal';
 import TradeDetailsModal from './TradeDetailsModal';
+import ConfirmModal from '../Common/ConfirmModal';
 
 export interface Trade {
   tradeId: string;
@@ -130,6 +131,7 @@ export const TradeList: React.FC<TradeListProps> = ({
   }, [trades, searchTerm, sideFilter, typeFilter, sourceFilter]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, trade: Trade) => {
+    event.stopPropagation(); // Prevent row click event
     setAnchorEl(event.currentTarget);
     setSelectedTrade(trade);
   };
@@ -513,6 +515,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   
   const { data: trades, isLoading, error } = useTrades(portfolioId, filters);
@@ -534,19 +537,27 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
     setDetailsModalOpen(true);
   };
 
-  const handleDelete = async (trade: Trade) => {
-    if (window.confirm('Are you sure you want to delete this trade?')) {
-      try {
-        await deleteTradeMutation.mutateAsync(trade.tradeId);
-      } catch (error) {
-        console.error('Error deleting trade:', error);
-      }
+  const handleDelete = (trade: Trade) => {
+    setSelectedTrade(trade);
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedTrade) return;
+    
+    try {
+      await deleteTradeMutation.mutateAsync(selectedTrade.tradeId);
+      setConfirmModalOpen(false);
+      setSelectedTrade(null);
+    } catch (error) {
+      console.error('Error deleting trade:', error);
     }
   };
 
   const handleCloseModals = () => {
     setEditModalOpen(false);
     setDetailsModalOpen(false);
+    setConfirmModalOpen(false);
     setSelectedTrade(null);
   };
 
@@ -625,6 +636,20 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
         tradeDetails={tradeDetails?.tradeDetails || []}
         isLoading={detailsLoading}
         error={typeof detailsError === 'object' && detailsError !== null && 'message' in detailsError ? (detailsError as any).message : undefined}
+      />
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        open={confirmModalOpen}
+        onClose={handleCloseModals}
+        onConfirm={handleConfirmDelete}
+        title="Delete Trade"
+        message={`Are you sure you want to delete this trade for ${selectedTrade?.assetSymbol || selectedTrade?.asset?.symbol || 'this asset'}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="delete"
+        isLoading={deleteTradeMutation.isLoading}
+        confirmColor="error"
       />
     </Box>
   );

@@ -41,7 +41,7 @@ export class PortfolioService {
    * @returns Promise<Portfolio>
    */
   async createPortfolio(createPortfolioDto: CreatePortfolioDto): Promise<Portfolio> {
-    const { name, baseCurrency, accountId } = createPortfolioDto;
+    const { name, baseCurrency, accountId, cashBalance = 0 } = createPortfolioDto;
 
     // Validate account exists
     const account = await this.accountRepository.findOne({
@@ -69,8 +69,8 @@ export class PortfolioService {
       name,
       baseCurrency,
       accountId,
-      totalValue: 0,
-      cashBalance: 0,
+      totalValue: cashBalance,
+      cashBalance: cashBalance,
       unrealizedPl: 0,
       realizedPl: 0,
     });

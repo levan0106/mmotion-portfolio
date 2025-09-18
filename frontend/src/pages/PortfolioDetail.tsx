@@ -15,9 +15,8 @@ import {
   Card,
   CardContent,
   Button,
-  Switch,
-  FormControlLabel,
   Tooltip,
+  IconButton,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -26,6 +25,8 @@ import {
   Add as AddIcon,
   ArrowBack as ArrowBackIcon,
   Refresh as RefreshIcon,
+  ViewModule as ViewModuleIcon,
+  ViewList as ViewListIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
@@ -429,6 +430,7 @@ const PortfolioDetail: React.FC = () => {
           borderBottom: '1px solid',
           borderColor: 'divider',
           py: 2,
+          px: 3,
           mb: 4,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           backdropFilter: 'blur(10px)',
@@ -648,28 +650,28 @@ const PortfolioDetail: React.FC = () => {
           
           {/* Compact Mode Toggle */}
           <Tooltip title={isCompactMode ? "Switch to Normal View" : "Switch to Compact View"}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isCompactMode}
-                  onChange={(e) => setIsCompactMode(e.target.checked)}
-                  color="primary"
-                  size="small"
-                />
-              }
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                    {isCompactMode ? 'Compact' : 'Normal'}
-                  </Typography>
-                </Box>
-              }
-              sx={{ m: 0 }}
-            />
+            <IconButton
+              onClick={() => setIsCompactMode(!isCompactMode)}
+              color="primary"
+              size="small"
+              sx={{
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: isCompactMode ? 'primary.main' : 'transparent',
+                color: isCompactMode ? 'primary.contrastText' : 'primary.main',
+                '&:hover': {
+                  backgroundColor: isCompactMode ? 'primary.dark' : 'primary.light',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              {isCompactMode ? <ViewListIcon /> : <ViewModuleIcon />}
+            </IconButton>
           </Tooltip>
         </Box>
       </Box>
 
+      {/* Tab Content Container */}
       <Box
         sx={{
           backgroundColor: 'background.paper',
@@ -679,27 +681,28 @@ const PortfolioDetail: React.FC = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           backdropFilter: 'blur(10px)',
         }}
-            >
+      >
         <TabPanel value={tabValue} index={0}>
-          
+          <Box sx={{ 
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
+          }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
-            <Grid item xs={12}>
-              <TradeListContainer 
-                portfolioId={portfolioId!} 
-                onCreate={() => setShowCreateForm(true)}
+              <Grid item xs={12}>
+                <TradeListContainer 
+                  portfolioId={portfolioId!} 
+                  onCreate={() => setShowCreateForm(true)}
                   isCompactMode={isCompactMode}
-              />
+                />
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
           <Box sx={{ 
-            p: getUltraSpacing(3, 1),
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 1,
             backgroundColor: 'background.paper',
+            minHeight: '80vh',
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
               <Grid item xs={12}>
@@ -709,7 +712,7 @@ const PortfolioDetail: React.FC = () => {
                   title="Portfolio Performance"
                 />
               </Grid>
-            <Grid item xs={12}>
+              <Grid item xs={12}>
                 <TradeAnalysisContainer 
                   portfolioId={portfolioId!} 
                   isCompactMode={isCompactMode}
@@ -721,12 +724,8 @@ const PortfolioDetail: React.FC = () => {
 
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ 
-            p: getUltraSpacing(3, 1), 
-            backgroundColor: '#f8f9fa', 
-            minHeight: '100vh',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 1,
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
           }}>
 
             {/* Portfolio Overview Section */}
