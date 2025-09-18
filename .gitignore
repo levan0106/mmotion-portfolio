@@ -176,3 +176,7 @@ Thumbs.db
 # Custom logs
 custom-logs/
 logs/
+
+# Frontend build folders
+frontend/build/
+frontend/dist/
