@@ -46,6 +46,9 @@ flowchart LR
 - **Frontend Data Mapping**: Proper API data flow to UI components (Frontend Price Display Fix completed)
 - **Asset Update Logic**: Preserve empty strings for description field to allow clearing (Asset Management UI Enhancements completed)
 - **Modal Enhancement Pattern**: Add Edit/Delete buttons to detail modals for better UX (Asset Management UI Enhancements completed)
+- **AssetAutocomplete Pattern**: Advanced searchable dropdown with pagination, currency formatting, and edit modal support (TradeForm AssetAutocomplete Integration completed)
+- **Force Re-render Pattern**: Key-based re-render mechanism for components that need to reset when external data changes (TradeForm AssetAutocomplete Integration completed)
+- **Asset Loading Optimization**: Handle cases where component value is set before data is loaded from API (TradeForm AssetAutocomplete Integration completed)
 
 ## Component Relationships
 ### Core Entities - **UPDATED RELATIONSHIP STRUCTURE**
@@ -205,7 +208,20 @@ erDiagram
 - **Documentation**: Complete PRD, TDD, and TBD with 7 phases and 50+ tasks - **COMPLETED**
 - **Code Quality**: Production-ready with comprehensive error handling - **COMPLETED**
 
-### 14. Portfolio Analytics Pattern - **IMPLEMENTED WITH COMPACT MODE ✅**
+### 14. Portfolio Calculation Consistency Pattern - **IMPLEMENTED WITH HELPER SERVICES ✅**
+- **Centralized Calculation Logic**: All portfolio calculations use consistent helper services - **COMPLETED**
+- **PortfolioCalculationService Integration**: Portfolio analytics service uses same calculation logic as other services - **COMPLETED**
+- **AssetValueCalculatorService Integration**: Consistent asset value calculations across all modules - **COMPLETED**
+- **Real P&L Calculations**: Unrealized P&L calculated from actual cost basis instead of mock values - **COMPLETED**
+- **Interface Consistency**: Updated interfaces to include currentPrice field for compatibility - **COMPLETED**
+- **Helper Service Usage**: Replaced raw SQL queries with centralized calculation services - **COMPLETED**
+- **Single Source of Truth**: All calculation logic centralized in helper services - **COMPLETED**
+- **Error Handling**: Proper fallback mechanisms and error handling throughout - **COMPLETED**
+- **Performance**: Efficient calculations using existing service infrastructure - **COMPLETED**
+- **Maintainability**: Easy to update calculation logic in one place - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with consistent patterns - **COMPLETED**
+
+### 15. Portfolio Analytics Pattern - **IMPLEMENTED WITH COMPACT MODE ✅**
 - **Asset Allocation Calculation**: Real-time portfolio allocation based on trade data - **COMPLETED**
 - **Performance Chart Visualization**: Line chart with clean visualization without dots - **COMPLETED**
 - **Advanced Analytics Charts**: 8 comprehensive charts for portfolio analysis - **COMPLETED**

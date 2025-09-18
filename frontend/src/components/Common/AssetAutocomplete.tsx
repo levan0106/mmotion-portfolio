@@ -141,6 +141,20 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     }
   }, [value, assets]); // Re-add assets but with proper change detection
 
+  // Effect to handle case when assets are loaded and we have a value but no selectedAsset
+  // This handles the edit modal case where value is set before assets are loaded
+  useEffect(() => {
+    if (value && !selectedAsset && assets.length > 0 && !loading) {
+      const asset = assets.find(a => a.id === value);
+      if (asset) {
+        setSelectedAsset(asset);
+        prevSelectedAssetRef.current = asset;
+      }
+    }
+  }, [value, selectedAsset, assets, loading]);
+
+
+
   // Load more assets
   const loadMore = useCallback(async () => {
     if (hasMore && !isLoadingMore) {

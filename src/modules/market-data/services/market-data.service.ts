@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 export interface MarketPrice {
   symbol: string;
@@ -11,13 +10,13 @@ export interface MarketPrice {
 
 export interface MarketDataConfig {
   symbols: string[];
-  updateInterval: number; // in milliseconds
   volatility: number; // 0-1, affects price fluctuation
 }
 
 /**
- * Market Data Service for real-time price updates
- * Currently uses mock data, will be replaced with real market data integration
+ * Market Data Service - Pure Cache
+ * No timers, just manages in-memory market data cache
+ * Updated by AutoSyncService only
  */
 @Injectable()
 export class MarketDataService {
@@ -25,14 +24,13 @@ export class MarketDataService {
   private marketPrices = new Map<string, MarketPrice>();
   private basePrices = new Map<string, number>();
   private config: MarketDataConfig = {
-    symbols: ['VFF', 'VESAF', 'SJC', '9999', 'HPG', 'VCB', 'VIC', 'VHM', 'SSISCA'],
-    updateInterval: 10000, // 10 seconds
+    symbols: ['VFF', 'VESAF', 'DOJI', '9999', 'HPG', 'VCB', 'VIC', 'VHM', 'SSISCA'],
     volatility: 0.02, // 2% volatility
   };
 
   constructor() {
     this.initializeBasePrices();
-    this.logger.log('Market Data Service initialized with mock data');
+    this.logger.log('Market Data Service initialized as pure cache');
   }
 
   /**
@@ -42,13 +40,13 @@ export class MarketDataService {
     const basePriceMap = {
       'VFF': 34000,      // 34K VND
       'VESAF': 38000,     // 38K VND
-      'SJC': 125000000,     // 125M VND
-      '9999': 114000000,     // 114M VND
-      'HPG': 25000,         // 25K VND
-      'VCB': 85000,         // 85K VND
-      'VIC': 45000,         // 45K VND
-      'VHM': 120000,        // 120K VND
-      'SSISCA': 40000,     // 40K VND
+      'DOJI': 130000000,   // 130M VND
+      '9999': 124000000,  // 124M VND
+      'HPG': 25000,       // 25K VND
+      'VCB': 85000,       // 85K VND
+      'VIC': 45000,       // 45K VND
+      'VHM': 120000,      // 120K VND
+      'SSISCA': 40000,    // 40K VND
     };
 
     for (const [symbol, price] of Object.entries(basePriceMap)) {
@@ -64,6 +62,37 @@ export class MarketDataService {
   }
 
   /**
+   * Update all market prices - called by AutoSyncService
+   * This replaces the old timer-based update
+   */
+  updateAllPrices(): void {
+    for (const [symbol, basePrice] of this.basePrices) {
+      const currentData = this.marketPrices.get(symbol);
+      if (!currentData) continue;
+
+      // Generate random price change based on volatility
+      const randomChange = (Math.random() - 0.5) * 2; // -1 to 1
+      const volatilityFactor = this.config.volatility * randomChange;
+      const newPrice = basePrice * (1 + volatilityFactor);
+
+      // Calculate change from previous price
+      const change = newPrice - currentData.price;
+      const changePercent = currentData.price > 0 ? (change / currentData.price) * 100 : 0;
+
+      // Update market data
+      this.marketPrices.set(symbol, {
+        symbol,
+        price: Math.max(newPrice, basePrice * 0.5), // Prevent price from going below 50% of base
+        change,
+        changePercent,
+        lastUpdated: new Date(),
+      });
+    }
+
+    this.logger.debug(`Updated market prices for ${this.marketPrices.size} symbols`);
+  }
+
+  /**
    * Get current market price for a symbol
    */
   async getCurrentPrice(symbol: string): Promise<number> {
@@ -72,7 +101,6 @@ export class MarketDataService {
       this.logger.warn(`Symbol ${symbol} not found in market data`);
       return 0;
     }
-    console.log(`[DEBUG] MarketDataService.getCurrentPrice for ${symbol}: returning ${marketPrice.price}`);
     return marketPrice.price;
   }
 
@@ -102,38 +130,6 @@ export class MarketDataService {
    */
   async getAllMarketData(): Promise<MarketPrice[]> {
     return Array.from(this.marketPrices.values());
-  }
-
-  /**
-   * Update market prices with mock data
-   * This simulates real-time market price updates
-   */
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  private updateMarketPrices(): void {
-    for (const [symbol, basePrice] of this.basePrices) {
-      const currentData = this.marketPrices.get(symbol);
-      if (!currentData) continue;
-
-      // Generate random price change based on volatility
-      const randomChange = (Math.random() - 0.5) * 2; // -1 to 1
-      const volatilityFactor = this.config.volatility * randomChange;
-      const newPrice = basePrice * (1 + volatilityFactor);
-
-      // Calculate change from previous price
-      const change = newPrice - currentData.price;
-      const changePercent = currentData.price > 0 ? (change / currentData.price) * 100 : 0;
-
-      // Update market data
-      this.marketPrices.set(symbol, {
-        symbol,
-        price: Math.max(newPrice, basePrice * 0.5), // Prevent price from going below 50% of base
-        change,
-        changePercent,
-        lastUpdated: new Date(),
-      });
-    }
-
-    this.logger.debug(`Updated market prices for ${this.marketPrices.size} symbols`);
   }
 
   /**

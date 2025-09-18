@@ -14,10 +14,20 @@ import {
   Card,
   CardContent,
   Chip,
+  IconButton,
+  Divider,
+  Stack,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Refresh as RefreshIcon,
+  Delete as DeleteIcon,
+  Warning as WarningIcon,
+  Close as CloseIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 
 // Import our new components
@@ -28,6 +38,9 @@ import MarketDataDashboard from './MarketDataDashboard';
 
 // Import hooks
 import { useDeleteGlobalAsset } from '../hooks/useGlobalAssets';
+
+// Import utilities
+import { formatCurrency, formatDate } from '../utils/format';
 
 // Types
 interface GlobalAsset {
@@ -110,6 +123,18 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   const [priceManagementOpen, setPriceManagementOpen] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<GlobalAsset | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   // Use the delete hook
   const deleteGlobalAssetMutation = useDeleteGlobalAsset();
@@ -130,21 +155,52 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
     setFormOpen(true);
   };
 
-  const handleDeleteAsset = async (asset: GlobalAsset) => {
-    if (window.confirm(`Are you sure you want to delete ${asset.symbol}?`)) {
-      try {
-        await deleteGlobalAssetMutation.mutateAsync(asset.id);
-        // Show success message
-        alert(`Asset ${asset.symbol} deleted successfully`);
-        // Refresh the data
-        onRefresh();
-      } catch (error) {
-        console.error('Delete error:', error);
-        // Show error message to user
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete asset';
-        alert(`Error deleting asset: ${errorMessage}`);
-      }
+  const handleDeleteAsset = (asset: GlobalAsset) => {
+    setAssetToDelete(asset);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!assetToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await deleteGlobalAssetMutation.mutateAsync(assetToDelete.id);
+      
+      // Show success notification
+      setSnackbar({
+        open: true,
+        message: `Asset "${assetToDelete.symbol}" has been deleted successfully`,
+        severity: 'success',
+      });
+      
+      // Refresh the data
+      onRefresh();
+      // Close dialog
+      setDeleteDialogOpen(false);
+      setAssetToDelete(null);
+    } catch (error) {
+      console.error('Delete error:', error);
+      
+      // Show error notification
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete asset';
+      setSnackbar({
+        open: true,
+        message: `Failed to delete asset: ${errorMessage}`,
+        severity: 'error',
+      });
+    } finally {
+      setDeleteLoading(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setAssetToDelete(null);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   const handleViewAsset = (asset: GlobalAsset) => {
@@ -455,6 +511,229 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
           </DialogActions>
         </Dialog>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          pb: 1,
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <WarningIcon color="error" sx={{ fontSize: 28 }} />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Delete Asset
+          </Typography>
+          <IconButton
+            onClick={handleCancelDelete}
+            size="small"
+            sx={{ 
+              color: 'text.secondary',
+              '&:hover': { color: 'text.primary' }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          <Stack spacing={3}>
+            {/* Warning Alert */}
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                borderRadius: 1,
+                '& .MuiAlert-icon': { fontSize: 20 }
+              }}
+            >
+              <Typography variant="body2" fontWeight="medium">
+                This action cannot be undone
+              </Typography>
+            </Alert>
+
+            {/* Asset Information */}
+            {assetToDelete && (
+              <Box>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  You are about to delete the following asset:
+                </Typography>
+                
+                <Card variant="outlined" sx={{ mt: 1, bgcolor: 'grey.50' }}>
+                  <CardContent sx={{ p: 2 }}>
+                    <Stack spacing={2}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 1,
+                            bgcolor: getAssetTypeColor(assetToDelete.type),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {assetToDelete.symbol.charAt(0)}
+                        </Box>
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
+                            {assetToDelete.symbol}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {assetToDelete.name}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={assetToDelete.type}
+                          size="small"
+                          sx={{ 
+                            backgroundColor: getAssetTypeColor(assetToDelete.type), 
+                            color: 'white',
+                            fontWeight: 500
+                          }}
+                        />
+                      </Box>
+
+                      <Divider />
+
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">
+                            Nation
+                          </Typography>
+                          <Typography variant="body2" fontWeight="medium">
+                            {getNationDisplayName(assetToDelete.nation)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">
+                            Market Code
+                          </Typography>
+                          <Typography variant="body2" fontWeight="medium">
+                            {assetToDelete.marketCode}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">
+                            Currency
+                          </Typography>
+                          <Typography variant="body2" fontWeight="medium">
+                            {assetToDelete.currency}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">
+                            Status
+                          </Typography>
+                          <Chip
+                            label={assetToDelete.isActive ? 'Active' : 'Inactive'}
+                            size="small"
+                            color={assetToDelete.isActive ? 'success' : 'default'}
+                            variant="outlined"
+                          />
+                        </Grid>
+                      </Grid>
+
+                      {assetToDelete.assetPrice && (
+                        <>
+                          <Divider />
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Current Price
+                            </Typography>
+                            <Typography variant="h6" color="primary" fontWeight="bold">
+                              {formatCurrency(assetToDelete.assetPrice.currentPrice, assetToDelete.currency)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Last updated: {formatDate(assetToDelete.assetPrice.lastPriceUpdate)}
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Box>
+            )}
+
+            {/* Confirmation Text */}
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+              Are you sure you want to delete this asset? This will permanently remove all associated data including price history and trading records.
+            </Typography>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ 
+          p: 3, 
+          pt: 2,
+          gap: 1,
+          borderTop: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Button
+            onClick={handleCancelDelete}
+            variant="outlined"
+            disabled={deleteLoading}
+            sx={{ minWidth: 100 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+            sx={{ 
+              minWidth: 120,
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: 'error.dark',
+              }
+            }}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete Asset'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+          icon={
+            snackbar.severity === 'success' ? <CheckCircleIcon /> :
+            snackbar.severity === 'error' ? <ErrorIcon /> :
+            snackbar.severity === 'warning' ? <WarningIcon /> : undefined
+          }
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

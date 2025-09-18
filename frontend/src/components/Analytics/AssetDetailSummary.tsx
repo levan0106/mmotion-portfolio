@@ -61,6 +61,8 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     symbol: asset.symbol,
     name: asset.name,
     assetType: asset.assetType,
+    quantity: asset.quantity,
+    currentPrice: asset.currentPrice,
     totalValue: asset.totalValue,
     percentage: asset.percentage,
     unrealizedPl: asset.unrealizedPl,
@@ -143,23 +145,33 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
       </Box>
 
       {/* Asset Detail Cards */}
-      <Grid container spacing={2}>
+      <Grid container spacing={1.5}>
         {chartData.map((asset, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Grid item xs={12} sm={6} md={4} lg={2.4} xl={2} key={index}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: 3,
+                }
+              }}
+            >
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                {/* Header */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Box
                       sx={{
-                        width: 16,
-                        height: 16,
+                        width: 10,
+                        height: 10,
                         backgroundColor: asset.color,
                         borderRadius: '50%',
-                        mr: 1,
+                        mr: 0.75,
                       }}
                     />
-                    <Typography variant="subtitle2" fontWeight="bold">
+                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.75rem' }}>
                       {asset.symbol}
                     </Typography>
                   </Box>
@@ -168,46 +180,126 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                     size="small" 
                     color="primary" 
                     variant="outlined"
+                    sx={{ 
+                      height: 18,
+                      fontSize: '0.65rem',
+                      '& .MuiChip-label': { px: 0.75 }
+                    }}
                   />
                 </Box>
                 
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                {/* Asset Name */}
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: '0.7rem',
+                    display: 'block',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    mb: 1
+                  }}
+                >
                   {asset.name}
                 </Typography>
                 
-                <Typography variant="h6" color="primary" fontWeight="bold" gutterBottom>
-                  {formatPercentage(asset.percentage)}
-                </Typography>
-                
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {formatCurrency(asset.totalValue, baseCurrency)}
-                </Typography>
-                
+                {/* Allocation & Total Value */}
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between',
-                  mt: 1
+                  mb: 1,
+                  p: 0.75,
+                  backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                  borderRadius: 1,
+                  border: '1px solid rgba(25, 118, 210, 0.12)'
                 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    P&L:
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    fontWeight="bold"
-                    color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                  >
-                    {formatCurrency(asset.unrealizedPl, baseCurrency)}
-                  </Typography>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                      Allocation
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color="primary" 
+                      fontWeight="bold" 
+                      sx={{ fontSize: '0.85rem', display: 'block' }}
+                    >
+                      {formatPercentage(asset.percentage)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                      Value
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color="text.primary" 
+                      fontWeight="bold" 
+                      sx={{ fontSize: '0.8rem', display: 'block' }}
+                    >
+                      {formatCurrency(asset.totalValue, baseCurrency)}
+                    </Typography>
+                  </Box>
                 </Box>
                 
-                <Typography 
-                  variant="caption" 
-                  color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                  sx={{ display: 'block', textAlign: 'right' }}
-                >
-                  {formatPercentage(asset.unrealizedPlPercentage)}
-                </Typography>
+                {/* Details Grid */}
+                <Box sx={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 0.5,
+                  fontSize: '0.7rem'
+                }}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                      Qty
+                    </Typography>
+                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.7rem', display: 'block' }}>
+                      {asset.quantity?.toLocaleString() || '0'}
+                    </Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                      Market Price
+                    </Typography>
+                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.7rem', display: 'block' }}>
+                      {formatCurrency(asset.currentPrice, baseCurrency)}
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                {/* P&L */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  mt: 1,
+                  pt: 0.5,
+                  borderTop: '1px solid',
+                  borderColor: 'divider'
+                }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    P&L
+                  </Typography>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography 
+                      variant="caption" 
+                      fontWeight="bold"
+                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
+                      sx={{ fontSize: '0.7rem', display: 'block' }}
+                    >
+                      {formatCurrency(asset.unrealizedPl, baseCurrency)}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
+                      sx={{ fontSize: '0.65rem' }}
+                    >
+                      {formatPercentage(asset.unrealizedPlPercentage)}
+                    </Typography>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </Grid>

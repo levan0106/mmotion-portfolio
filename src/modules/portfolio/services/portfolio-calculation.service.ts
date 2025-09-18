@@ -7,6 +7,7 @@ import { Asset } from '../../asset/entities/asset.entity';
 import { MarketDataService } from '../../market-data/services/market-data.service';
 import { GlobalAsset } from '../../asset/entities/global-asset.entity';
 import { AssetPrice } from '../../asset/entities/asset-price.entity';
+import { AssetValueCalculatorService } from '@/modules/asset/services/asset-value-calculator.service';
 
 export interface PortfolioCalculationResult {
   totalValue: number;
@@ -20,6 +21,7 @@ export interface PortfolioCalculationResult {
     avgCost: number;
     currentValue: number;
     unrealizedPl: number;
+    currentPrice: number;
   }>;
 }
 
@@ -40,6 +42,7 @@ export class PortfolioCalculationService {
     @InjectRepository(AssetPrice)
     private readonly assetPriceRepository: Repository<AssetPrice>,
     private readonly marketDataService: MarketDataService,
+    private readonly assetValueCalculator: AssetValueCalculatorService,
   ) {}
 
   /**
@@ -87,6 +90,7 @@ export class PortfolioCalculationService {
       realizedPl,
       cashBalance: currentCashBalance,
       assetPositions: positions,
+
     };
   }
 
@@ -122,6 +126,7 @@ export class PortfolioCalculationService {
     avgCost: number;
     currentValue: number;
     unrealizedPl: number;
+    currentPrice: number;
   }>> {
     // Group trades by asset
     const assetTrades = new Map<string, Trade[]>();
@@ -160,6 +165,7 @@ export class PortfolioCalculationService {
     avgCost: number;
     currentValue: number;
     unrealizedPl: number;
+    currentPrice: number;
   }> {
     let totalQuantity = 0;
     let totalCost = 0;
@@ -186,6 +192,7 @@ export class PortfolioCalculationService {
         avgCost: 0,
         currentValue: 0,
         unrealizedPl: 0,
+        currentPrice: 0,
       };
     }
 
@@ -214,8 +221,8 @@ export class PortfolioCalculationService {
       currentPrice = parseFloat(latestTrade.price.toString());
     }
     
-    const currentValue = totalQuantity * currentPrice;
-    const unrealizedPl = currentValue - (totalQuantity * avgCost);
+    const currentValue = this.assetValueCalculator.calculateCurrentValue(totalQuantity, currentPrice); // add tax, fee, commission, other deductions, discount
+    const unrealizedPl = this.assetValueCalculator.calculateUnrealizedPL(totalQuantity, currentPrice, avgCost); // add tax, fee, commission, other deductions, discount
 
     return {
       assetId,
@@ -224,6 +231,7 @@ export class PortfolioCalculationService {
       avgCost,
       currentValue,
       unrealizedPl,
+      currentPrice: currentPrice,
     };
   }
 

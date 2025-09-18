@@ -33,6 +33,14 @@
 - **Global Assets System**: CR-005 documentation complete (PRD, TDD, TBD) ✅
 - **Module Separation**: Asset Module (Core) + Market Data Module (Optional) ✅
 - **System Resilience**: Core functionality always available, enhanced features optional ✅
+- **Portfolio Calculation Consistency**: All services use centralized helper services for calculations ✅
+- **Helper Service Integration**: PortfolioCalculationService and AssetValueCalculatorService integration ✅
+- **Real P&L Calculations**: Unrealized P&L from actual cost basis instead of mock values ✅
+- **Interface Consistency**: Updated interfaces with currentPrice field for compatibility ✅
+- **AssetAutocomplete Integration**: Advanced searchable dropdown with pagination and currency formatting ✅
+- **Edit Modal Support**: Proper asset selection when opening trade edit modal ✅
+- **Force Re-render Pattern**: Key-based re-render mechanism for component reset ✅
+- **Asset Loading Optimization**: Handle value setting before data loading ✅
 - **Test Status**: 1,036 tests passing (91% pass rate) ⚠️
 - **Database Status**: Fully operational with computed fields ✅
 - **Compilation Status**: All TypeScript errors fixed ✅

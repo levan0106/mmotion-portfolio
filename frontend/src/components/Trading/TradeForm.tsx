@@ -24,10 +24,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { usePortfolios } from '../../hooks/usePortfolios';
-import { useAssets } from '../../hooks/useAssets';
 import { useAccount } from '../../hooks/useAccount';
 import { TradeSide, TradeType, TradeFormData } from '../../types';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { AssetAutocomplete } from '../Common/AssetAutocomplete';
 
 // Re-export TradeFormData for components that need it
 export type { TradeFormData };
@@ -204,7 +204,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   const { accountId } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
-  const { assets, loading: assetsLoading, error: assetsError } = useAssets();
 
   // Debug logging (can be removed in production)
   // console.log('TradeForm Debug:', { accountId, portfolios: portfolios?.length || 0, assets: assets?.length || 0 });
@@ -245,15 +244,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   const portfolioCurrency = selectedPortfolio?.baseCurrency || 'VND';
 
   // Auto-fill market price when asset is selected
-  useEffect(() => {
-    if (watchedAssetId && assets) {
-      const selectedAsset = assets.find(asset => asset.id === watchedAssetId);
-      if (selectedAsset && selectedAsset.currentPrice && selectedAsset.currentPrice > 0) {
-        // Always update price when asset changes
-        setValue('price', selectedAsset.currentPrice);
-      }
-    }
-  }, [watchedAssetId, assets, setValue]);
+  // Note: AssetAutocomplete will handle asset selection, but we need to get current price
+  // This will be handled by the refreshMarketPrice function when user clicks refresh button
 
   // Calculate total value and cost with memoization for better performance
   const calculatedValues = useMemo(() => {
@@ -285,6 +277,15 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       setValue('notes', initialData.notes || '');
     }
   }, [initialData, mode, setValue]);
+
+  // Force re-render of AssetAutocomplete when assetId changes in edit mode
+  const [assetKey, setAssetKey] = useState(0);
+  useEffect(() => {
+    if (initialData?.assetId && mode === 'edit') {
+      // Force re-render of AssetAutocomplete to ensure it picks up the value
+      setAssetKey(prev => prev + 1);
+    }
+  }, [initialData?.assetId, mode]);
 
   const handleFormSubmit = async (_data: TradeFormData) => {
     try {
@@ -323,16 +324,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   // Function to refresh market price
   const refreshMarketPrice = () => {
-    if (watchedAssetId && assets) {
-      const selectedAsset = assets.find(asset => asset.id === watchedAssetId);
-      if (selectedAsset && selectedAsset.currentPrice && selectedAsset.currentPrice > 0) {
-        setValue('price', selectedAsset.currentPrice);
-      }
-    }
+    // TODO: Implement market price refresh functionality
+    // This would typically call an API to get the latest price for the selected asset
+    console.log('Refresh market price for asset:', watchedAssetId);
   };
 
   // Show loading state
-  if (portfoliosLoading || assetsLoading) {
+  if (portfoliosLoading) {
     return (
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Card>
@@ -365,22 +363,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     );
   }
 
-  if (!assets?.length && !assetsLoading) {
-    return (
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Card>
-          <CardContent>
-            <Alert severity="error" sx={{ mb: 3 }}>
-              No assets available. Please create an asset first.
-            </Alert>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              {assetsError ? `Error: ${assetsError}` : 'No assets found. Please check if the backend is running and try again.'}
-            </Typography>
-          </CardContent>
-        </Card>
-      </LocalizationProvider>
-    );
-  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -452,39 +434,23 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       name="assetId"
                       control={control}
                       render={({ field }) => (
-                        <FormControl fullWidth error={!!errors.assetId}>
-                          <InputLabel>Asset *</InputLabel>
-                          <Select
-                            {...field}
-                            label="Asset *"
-                            disabled={isLoading || assetsLoading}
-                            sx={{ 
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2
-                              }
-                            }}
-                          >
-                            {assetsLoading ? (
-                              <MenuItem disabled>
-                                <CircularProgress size={20} />
-                                <span style={{ marginLeft: 8 }}>Loading assets...</span>
-                              </MenuItem>
-                            ) : assets?.length === 0 ? (
-                              <MenuItem disabled>No assets available</MenuItem>
-                            ) : (
-                              assets?.map((asset) => (
-                                <MenuItem key={asset.id} value={asset.id}>
-                                  {asset.symbol || 'N/A'} - {asset.name}
-                                </MenuItem>
-                              ))
-                            )}
-                          </Select>
-                          {errors.assetId && (
-                            <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                              {errors.assetId.message}
-                            </Typography>
-                          )}
-                        </FormControl>
+                        <AssetAutocomplete
+                          key={assetKey}
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={!!errors.assetId}
+                          helperText={errors.assetId?.message}
+                          disabled={isLoading}
+                          label="Asset"
+                          required={true}
+                          placeholder="Search and select asset..."
+                          currency={portfolioCurrency}
+                          showCreateOption={true}
+                          onCreateAsset={() => {
+                            // TODO: Implement create asset functionality
+                            console.log('Create new asset clicked');
+                          }}
+                        />
                       )}
                     />
                   </Grid>
