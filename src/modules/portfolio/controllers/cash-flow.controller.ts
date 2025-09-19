@@ -117,6 +117,20 @@ export class CashFlowController {
   }
 
   /**
+   * Recalculate cash balance from all cash flows.
+   */
+  @Post('recalculate')
+  @ApiOperation({ summary: 'Recalculate cash balance from all cash flows' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ status: 200, description: 'Cash balance recalculated successfully', type: CashBalanceUpdateResultDto })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async recalculateCashBalance(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+  ): Promise<CashBalanceUpdateResultDto> {
+    return await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolioId);
+  }
+
+  /**
    * Update cash balance directly.
    */
   @Put('balance')
@@ -266,19 +280,4 @@ export class CashFlowController {
     await this.cashFlowService.deleteCashFlow(portfolioId, cashFlowId);
   }
 
-  /**
-   * Recalculate cash balance from all cash flows.
-   */
-  @Post('recalculate')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Recalculate cash balance from all cash flows' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiResponse({ status: 200, description: 'Cash balance recalculated successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async recalculateCashBalance(
-    @Param('id', ParseUUIDPipe) portfolioId: string,
-  ): Promise<{ portfolioId: string; recalculatedBalance: number }> {
-    const result = await this.cashFlowService.recalculateCashBalanceFromTrades(portfolioId);
-    return { portfolioId, recalculatedBalance: result.newCashBalance };
-  }
 }

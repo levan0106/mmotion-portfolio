@@ -19,9 +19,9 @@ export class PortfolioValueCalculatorService {
   ) {}
 
   /**
-   * Calculate total portfolio value real-time
+   * Calculate total portfolio value real-time (cash + assets for NAV)
    * @param portfolioId - Portfolio ID
-   * @returns Total portfolio value
+   * @returns Total portfolio value (NAV)
    */
   async calculateTotalValue(portfolioId: string): Promise<number> {
     const portfolio = await this.portfolioRepository.findOne({
@@ -41,7 +41,18 @@ export class PortfolioValueCalculatorService {
     // Calculate total asset value
     const totalAssetValue = this.assetValueCalculator.calculateTotalCurrentValue(positions);
 
+    // NAV = cash balance + asset positions value
     return cashBalance + totalAssetValue;
+  }
+
+  /**
+   * Calculate total asset value only (excluding cash)
+   * @param portfolioId - Portfolio ID
+   * @returns Total asset value
+   */
+  async calculateAssetValue(portfolioId: string): Promise<number> {
+    const positions = await this.getAssetPositions(portfolioId);
+    return this.assetValueCalculator.calculateTotalCurrentValue(positions);
   }
 
   /**
@@ -107,7 +118,7 @@ export class PortfolioValueCalculatorService {
     const unrealizedPl = this.assetValueCalculator.calculateTotalUnrealizedPL(positions);
 
     return {
-      totalValue: cashBalance + totalAssetValue,
+      totalValue: cashBalance + totalAssetValue, // NAV = cash + assets
       realizedPl: realizedPl,
       unrealizedPl: unrealizedPl,
       cashBalance: cashBalance,

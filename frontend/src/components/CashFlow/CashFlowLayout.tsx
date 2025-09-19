@@ -79,6 +79,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   onCashFlowUpdate,
 }) => {
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
+  const [allCashFlows, setAllCashFlows] = useState<CashFlow[]>([]); // All cash flows for summary calculations
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -117,7 +118,19 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
-  // Load cash flow history
+  // Load all cash flows for summary calculations
+  const loadAllCashFlows = async () => {
+    try {
+      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?limit=100000`);
+      if (!response.ok) throw new Error('Failed to load all cash flows');
+      const result = await response.json();
+      setAllCashFlows(result.data || []);
+    } catch (err) {
+      console.error('Failed to load all cash flows:', err);
+    }
+  };
+
+  // Load cash flow history (paginated)
   const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 10) => {
     try {
       setLoading(true);
@@ -145,6 +158,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   useEffect(() => {
     loadCashFlows();
+    loadAllCashFlows();
   }, [portfolioId]);
 
   // Handle form submission
@@ -204,6 +218,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       setError(null); // Clear error on success
       
       await loadCashFlows();
+      await loadAllCashFlows(); // Reload all cash flows for summary
       onCashFlowUpdate?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${editingCashFlow ? 'update' : 'create'} cash flow`);
@@ -244,16 +259,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
-  // Calculate summary stats
-  const totalDeposits = (cashFlows || [])
+  // Calculate summary stats using all cash flows (not paginated data)
+  const totalDeposits = (allCashFlows || [])
     .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
-  const totalWithdrawals = (cashFlows || [])
+  const totalWithdrawals = (allCashFlows || [])
     .filter(cf => (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
-  const totalDividends = (cashFlows || [])
+  const totalDividends = (allCashFlows || [])
     .filter(cf => cf.type === 'DIVIDEND' && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + cf.amount, 0);
 
@@ -365,6 +380,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       }
 
       await loadCashFlows();
+      await loadAllCashFlows(); // Reload all cash flows for summary
       setDeleteDialogOpen(false);
       setCashFlowToDelete(null);
       setDeleteError(null); // Clear error on success
@@ -421,7 +437,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           </Typography>
           <Box display="flex" gap={1}>
             <Tooltip title="Refresh Data">
-              <IconButton onClick={() => loadCashFlows()} disabled={loading} color="primary">
+              <IconButton onClick={() => { loadCashFlows(); loadAllCashFlows(); }} disabled={loading} color="primary">
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
@@ -513,7 +529,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     Total Transactions
                   </Typography>
                   <Typography variant="h5" color="white" fontWeight="bold">
-                    {cashFlows?.length || 0}
+                    {allCashFlows?.length || 0}
                   </Typography>
                 </Box>
                 <TimelineIcon sx={{ color: 'white', fontSize: 40, opacity: 0.8 }} />
@@ -674,7 +690,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       color={filteredTotal >= 0 ? 'success.main' : 'error.main'}
                       sx={{ fontWeight: 'bold' }}
                     >
-                      {formatCurrency(Math.abs(filteredTotal), 'VND')}
+                      {formatCurrency(filteredTotal, 'VND')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       ({filteredCashFlows.length} items)
@@ -730,7 +746,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                               color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' ? 'success.main' : 'error.main'}
                               fontWeight="bold"
                             >
-                              {formatCurrency(cashFlow.amount)}
+                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' ? cashFlow.amount : -cashFlow.amount)}
                             </Typography>
                           </TableCell>
                           <TableCell>

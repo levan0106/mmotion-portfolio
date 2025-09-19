@@ -193,7 +193,7 @@ export class PortfolioController {
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
     return { 
       navValue: nav,
-      totalValue: portfolio?.totalValue || 0
+      totalValue: nav // Both NAV and Total Value should be the same (cash + assets)
     };
   }
 

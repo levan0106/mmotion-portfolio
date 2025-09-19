@@ -74,25 +74,82 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <Box sx={{ 
-          p: 2, 
-          backgroundColor: 'white', 
-          borderRadius: 1, 
-          boxShadow: 3,
-          border: '1px solid #e0e0e0'
+        <Box sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          p: 2,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          minWidth: 200
         }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#1a1a1a' }}>
             {data.symbol} - {data.name}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Allocation: {formatPercentage(data.percentage || 0)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Value: {formatCurrency(data.totalValue, baseCurrency)}
-          </Typography>
-          <Typography variant="body2" color={(data.unrealizedPl || 0) >= 0 ? "success.main" : "error.main"}>
-            P&L: {formatCurrency(data.unrealizedPl || 0, baseCurrency)} ({formatPercentage(data.unrealizedPlPercentage || 0)})
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Allocation:
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {formatPercentage(data.percentage || 0)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Current Value:
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {formatCurrency(data.totalValue, baseCurrency)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Quantity:
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {data.quantity?.toLocaleString() || '0'}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Market Price:
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {formatCurrency(data.currentPrice, baseCurrency)}
+            </Typography>
+          </Box>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            p: 1,
+            backgroundColor: (data.unrealizedPl || 0) >= 0 ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+            borderRadius: 1,
+            border: `1px solid ${(data.unrealizedPl || 0) >= 0 ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              Unrealized P&L:
+            </Typography>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: (data.unrealizedPl || 0) >= 0 ? '#4caf50' : '#f44336'
+                }}
+              >
+                {formatCurrency(data.unrealizedPl || 0, baseCurrency)}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: (data.unrealizedPl || 0) >= 0 ? '#4caf50' : '#f44336',
+                  fontSize: '0.7rem'
+                }}
+              >
+                {formatPercentage(data.unrealizedPlPercentage || 0)}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       );
     }
@@ -118,30 +175,206 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         Individual asset holdings with values and performance
       </Typography>
       
-      {/* Chart */}
-      <Box sx={{ height: 300, mb: 3 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="symbol" 
-              tick={{ fontSize: 12 }}
-              angle={-45}
-              textAnchor="end"
-              height={80}
-            />
-            <YAxis
-              tickFormatter={(value) => formatPercentage(value)}
-              tick={{ fontSize: 12 }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Charts */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        {/* Allocation Chart */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+            Asset Allocation (%)
+          </Typography>
+          <Box sx={{ height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="symbol" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis
+                  tickFormatter={(value) => formatPercentage(value)}
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </Grid>
+
+        {/* P&L Chart */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+            Unrealized P&L ({baseCurrency})
+          </Typography>
+          <Box sx={{ height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="symbol" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis
+                  tickFormatter={(value) => formatCurrency(value, baseCurrency)}
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <Box sx={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: 2,
+                          p: 2,
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          minWidth: 200
+                        }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#1a1a1a' }}>
+                            {data.symbol} - {data.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Current Value:
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {formatCurrency(data.totalValue, baseCurrency)}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Quantity:
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {data.quantity?.toLocaleString() || '0'}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Market Price:
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {formatCurrency(data.currentPrice, baseCurrency)}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            p: 1,
+                            backgroundColor: data.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                            borderRadius: 1,
+                            border: `1px solid ${data.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
+                          }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Unrealized P&L:
+                            </Typography>
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  fontWeight: 600,
+                                  color: data.unrealizedPl >= 0 ? '#4caf50' : '#f44336'
+                                }}
+                              >
+                                {formatCurrency(data.unrealizedPl, baseCurrency)}
+                              </Typography>
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  color: data.unrealizedPl >= 0 ? '#4caf50' : '#f44336',
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                {formatPercentage(data.unrealizedPlPercentage)}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="unrealizedPl" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.unrealizedPl >= 0 ? '#4caf50' : '#f44336'} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* P&L Summary */}
+      <Box sx={{ 
+        mb: 3, 
+        p: 2, 
+        backgroundColor: 'rgba(25, 118, 210, 0.04)', 
+        borderRadius: 2,
+        border: '1px solid rgba(25, 118, 210, 0.12)'
+      }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          Portfolio Performance Summary
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                Total Unrealized P&L
+              </Typography>
+              <Typography 
+                variant="h6" 
+                color={chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0) >= 0 ? "success.main" : "error.main"}
+                sx={{ fontWeight: 'bold', display: 'block' }}
+              >
+                {formatCurrency(
+                  chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0), 
+                  baseCurrency
+                )}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                Profitable Assets
+              </Typography>
+              <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', display: 'block' }}>
+                {chartData.filter(asset => asset.unrealizedPl > 0).length} / {chartData.length}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                Best Performer
+              </Typography>
+              <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold', display: 'block' }}>
+                {chartData.length > 0 ? 
+                  chartData.reduce((best, asset) => 
+                    asset.unrealizedPlPercentage > best.unrealizedPlPercentage ? asset : best
+                  ).symbol : 'N/A'
+                }
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
       </Box>
 
       {/* Asset Detail Cards */}
@@ -269,34 +502,45 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   </Box>
                 </Box>
                 
-                {/* P&L */}
+                {/* P&L - Highlighted */}
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between',
                   mt: 1,
-                  pt: 0.5,
-                  borderTop: '1px solid',
-                  borderColor: 'divider'
+                  p: 0.75,
+                  backgroundColor: asset.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.08)' : 'rgba(244, 67, 54, 0.08)',
+                  borderRadius: 1,
+                  border: `1px solid ${asset.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}`
                 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                    P&L
-                  </Typography>
-                  <Box sx={{ textAlign: 'right' }}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                      Unrealized P&L
+                    </Typography>
                     <Typography 
-                      variant="caption" 
+                      variant="body2" 
                       fontWeight="bold"
                       color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                      sx={{ fontSize: '0.7rem', display: 'block' }}
+                      sx={{ fontSize: '0.8rem', display: 'block' }}
                     >
                       {formatCurrency(asset.unrealizedPl, baseCurrency)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography 
+                      variant="body2" 
+                      fontWeight="bold"
+                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
+                      sx={{ fontSize: '0.8rem', display: 'block' }}
+                    >
+                      {formatPercentage(asset.unrealizedPlPercentage)}
                     </Typography>
                     <Typography 
                       variant="caption" 
                       color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
                       sx={{ fontSize: '0.65rem' }}
                     >
-                      {formatPercentage(asset.unrealizedPlPercentage)}
+                      {asset.unrealizedPl >= 0 ? 'Profit' : 'Loss'}
                     </Typography>
                   </Box>
                 </Box>
@@ -327,7 +571,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Total Value
+                Total Asset Value
               </Typography>
               <Typography variant="h5" color="primary" fontWeight="bold">
                 {formatCurrency(data.reduce((sum, asset) => sum + asset.totalValue, 0), baseCurrency)}

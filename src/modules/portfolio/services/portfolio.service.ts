@@ -107,9 +107,10 @@ export class PortfolioService {
     // Calculate values real-time using new calculator
     try {
       const calculatedValues = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
+      const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
       
       // Override DB values with real-time calculations
-      portfolio.totalValue = calculatedValues.totalValue;
+      portfolio.totalValue = assetValue; // Only asset value for Total Portfolio Value
       portfolio.realizedPl = calculatedValues.realizedPl;
       portfolio.unrealizedPl = calculatedValues.unrealizedPl;
     } catch (error) {
@@ -204,8 +205,8 @@ export class PortfolioService {
    */
   async calculatePortfolioValue(portfolio: Portfolio): Promise<void> {
     try {
-      // First, recalculate cash balance from trades to ensure accuracy
-      await this.cashFlowService.recalculateCashBalanceFromTrades(portfolio.portfolioId);
+      // First, recalculate cash balance from all cash flows to ensure accuracy
+      await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolio.portfolioId);
       
       // Get updated portfolio with correct cash balance
       const updatedPortfolio = await this.portfolioEntityRepository.findOne({

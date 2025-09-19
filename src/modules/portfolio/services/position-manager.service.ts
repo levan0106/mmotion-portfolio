@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-// PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { Portfolio } from '../entities/portfolio.entity';
-
-// TODO: This entire service needs to be refactored to work with trades instead of PortfolioAsset
-// All methods are temporarily commented out to prevent compilation errors
+import { PortfolioCalculationService } from './portfolio-calculation.service';
 
 /**
  * Service class for managing portfolio positions.
@@ -13,16 +10,11 @@ import { Portfolio } from '../entities/portfolio.entity';
  */
 @Injectable()
 export class PositionManagerService {
-  // TODO: This entire service needs to be refactored to work with trades instead of PortfolioAsset
-  // All methods are temporarily commented out to prevent compilation errors
-  
   constructor(
     @InjectRepository(Portfolio)
     private readonly portfolioRepository: Repository<Portfolio>,
+    private readonly portfolioCalculationService: PortfolioCalculationService,
   ) {}
-
-  // All methods are temporarily disabled until refactored to use trades
-  // TODO: Implement position management through trades
 
   /**
    * Get current positions for a portfolio
@@ -30,8 +22,27 @@ export class PositionManagerService {
    * @returns Current positions
    */
   async getCurrentPositions(portfolioId: string): Promise<any[]> {
-    // TODO: Implement when position management is refactored to use trades
-    return [];
+    try {
+      // Get portfolio to get current cash balance
+      const portfolio = await this.portfolioRepository.findOne({
+        where: { portfolioId }
+      });
+
+      if (!portfolio) {
+        return [];
+      }
+
+      // Use PortfolioCalculationService to calculate positions
+      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
+        portfolioId,
+        parseFloat(portfolio.cashBalance.toString())
+      );
+
+      return calculation.assetPositions || [];
+    } catch (error) {
+      console.error('Error getting current positions:', error);
+      return [];
+    }
   }
 
   /**
@@ -40,13 +51,46 @@ export class PositionManagerService {
    * @returns Position aggregation data
    */
   async getPositionAggregation(portfolioId: string): Promise<any> {
-    // TODO: Implement when position management is refactored to use trades
-    return {
-      totalValue: 0,
-      totalCost: 0,
-      totalUnrealizedPl: 0,
-      totalRealizedPl: 0,
-      positionCount: 0,
-    };
+    try {
+      // Get portfolio to get current cash balance
+      const portfolio = await this.portfolioRepository.findOne({
+        where: { portfolioId }
+      });
+
+      if (!portfolio) {
+        return {
+          totalValue: 0,
+          totalCost: 0,
+          totalUnrealizedPl: 0,
+          totalRealizedPl: 0,
+          positionCount: 0,
+        };
+      }
+
+      // Use PortfolioCalculationService to calculate positions
+      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
+        portfolioId,
+        parseFloat(portfolio.cashBalance.toString())
+      );
+
+      const positions = calculation.assetPositions || [];
+      
+      return {
+        totalValue: positions.reduce((sum, pos) => sum + pos.currentValue, 0),
+        totalCost: positions.reduce((sum, pos) => sum + (pos.avgCost * pos.quantity), 0),
+        totalUnrealizedPl: positions.reduce((sum, pos) => sum + pos.unrealizedPl, 0),
+        totalRealizedPl: calculation.realizedPl || 0,
+        positionCount: positions.length,
+      };
+    } catch (error) {
+      console.error('Error getting position aggregation:', error);
+      return {
+        totalValue: 0,
+        totalCost: 0,
+        totalUnrealizedPl: 0,
+        totalRealizedPl: 0,
+        positionCount: 0,
+      };
+    }
   }
 }

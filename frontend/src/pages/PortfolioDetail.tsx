@@ -326,32 +326,6 @@ const PortfolioDetail: React.FC = () => {
   const totalFeesAndTaxes = trades.reduce((sum, trade) => sum + (Number(trade.fee) || 0) + (Number(trade.tax) || 0), 0);
   const realizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
-  const summaryCards = [
-    {
-      title: 'Total Trades (Số giao dịch)',
-      value: totalTrades,
-      color: 'primary',
-      icon: <TrendingUp />,
-    },
-    {
-      title: 'Total Volume (Tổng giá trị giao dịch)',
-      value: formatCurrency(totalVolume, portfolio?.baseCurrency || 'VND'),
-      color: 'info',
-      icon: <AccountBalance />,
-    },
-    {
-      title: 'Fees & Taxes (Phí và thuế)',
-      value: formatCurrency(totalFeesAndTaxes, portfolio?.baseCurrency || 'VND'),
-      color: 'warning',
-      icon: <TrendingDown />,
-    },
-    {
-      title: 'Realized P&L (Lợi nhuận thực tế)',
-      value: formatCurrency(realizedPL, portfolio?.baseCurrency || 'VND'),
-      color: realizedPL >= 0 ? 'success' : 'error',
-      icon: <TrendingUp />,
-    },
-  ];
 
   // Debug logging
   React.useEffect(() => {
@@ -394,21 +368,21 @@ const PortfolioDetail: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ scrollBehavior: 'smooth' }}>
+    <Container maxWidth="xl" sx={{ scrollBehavior: 'smooth', py: 4, px: { xs: 2, sm: 3 } }}>
 
       {/* Sticky Header */}
       <Box
         sx={{
           position: 'sticky',
-          top: 40, // Position below tabs
-          zIndex: 999, // Below tabs
-          backgroundColor: 'background.paper',
+          top: 0, // Position at very top
+          zIndex: 1200, // Above everything
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: 2,
+          py: 3,
           px: 3,
           mb: 4,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           backdropFilter: 'blur(10px)',
         }}
       >
@@ -504,88 +478,289 @@ const PortfolioDetail: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Portfolio Key Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      {/* Portfolio Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 6 }}>
+        {/* Portfolio Value & NAV */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 120, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Typography color="text.secondary" gutterBottom variant="body2">
-                Current NAV (Giá trị tài sản hiện tại)
-              </Typography>
-              <Typography variant="h5" component="div">
-                {navData ? formatCurrency(navData.navValue, portfolio.baseCurrency) : 'N/A'}
-              </Typography>
-            </CardContent>
+          <Card sx={{
+            background: 'linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%)',
+            color: '#1a1a1a',
+            position: 'relative',
+            overflow: 'hidden',
+            border: '1px solid #e0e7ff',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <Box sx={{ 
+              position: 'absolute', 
+              top: -20, 
+              right: -20, 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              background: 'rgba(102, 126, 234, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <AccountBalance sx={{ fontSize: 32, opacity: 0.6, color: '#667eea' }} />
+            </Box>
+             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+               <Box>
+                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                   Portfolio Value
+                 </Typography>
+                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                   Giá trị tài sản & NAV
+                 </Typography>
+               </Box>
+               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Assets Value
+                   </Typography>
+                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                     {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Current NAV (+cash)
+                   </Typography>
+                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                     {navData ? formatCurrency(navData.navValue, portfolio.baseCurrency) : 'N/A'}
+                   </Typography>
+                 </Box>
+               </Box>
+             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 120, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Typography color="text.secondary" gutterBottom variant="body2">
-                Total Return (Tổng lợi nhuận)
-              </Typography>
-              <Typography variant="h5" component="div" color={(performanceData?.totalReturn || 0) >= 0 ? 'success.main' : 'error.main'}>
-                {performanceData ? formatPercentage(performanceData.totalReturn) : 'N/A'}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 120, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Typography color="text.secondary" gutterBottom variant="body2">
-                Annualized Return (Lợi nhuận hàng năm)
-              </Typography>
-              <Typography variant="h5" component="div" color={(performanceData?.annualizedReturn || 0) >= 0 ? 'success.main' : 'error.main'}>
-                {performanceData ? formatPercentage(performanceData.annualizedReturn) : 'N/A'}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 120, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Typography color="text.secondary" gutterBottom variant="body2">
-                Base Currency (Tiền tệ cơ sở)
-              </Typography>
-              <Typography variant="h5" component="div">
-                {portfolio.baseCurrency}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
 
+        {/* Performance Metrics */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            background: (performanceData?.totalReturn || 0) >= 0 
+              ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+              : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            color: '#1a1a1a',
+            position: 'relative',
+            overflow: 'hidden',
+            border: (performanceData?.totalReturn || 0) >= 0 
+              ? '1px solid #bae6fd'
+              : '1px solid #fecaca',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: (performanceData?.totalReturn || 0) >= 0 
+                ? '0 4px 20px rgba(79, 172, 254, 0.15)'
+                : '0 4px 20px rgba(250, 112, 154, 0.15)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <Box sx={{ 
+              position: 'absolute', 
+              top: -20, 
+              right: -20, 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              background: (performanceData?.totalReturn || 0) >= 0 
+                ? 'rgba(79, 172, 254, 0.1)'
+                : 'rgba(250, 112, 154, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {(performanceData?.totalReturn || 0) >= 0 ? 
+                <TrendingUp sx={{ fontSize: 32, opacity: 0.6, color: '#0ea5e9' }} /> : 
+                <TrendingDown sx={{ fontSize: 32, opacity: 0.6, color: '#f43f5e' }} />
+              }
+            </Box>
+             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+               <Box>
+                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                   Performance
+                 </Typography>
+                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                   Tổng & Lợi nhuận hàng năm
+                 </Typography>
+               </Box>
+               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Total Return
+                   </Typography>
+                   <Typography 
+                     variant="h6" 
+                     sx={{ 
+                       fontWeight: 800, 
+                       fontSize: '1.2rem', 
+                       lineHeight: 1.2,
+                       color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
+                     }}
+                   >
+                     {performanceData ? formatPercentage(performanceData.totalReturn) : 'N/A'}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Annualized
+                   </Typography>
+                   <Typography 
+                     variant="h6" 
+                     sx={{ 
+                       fontWeight: 800, 
+                       fontSize: '1.2rem', 
+                       lineHeight: 1.2,
+                       color: (performanceData?.annualizedReturn || 0) >= 0 ? '#059669' : '#dc2626'
+                     }}
+                   >
+                     {performanceData ? formatPercentage(performanceData.annualizedReturn) : 'N/A'}
+                   </Typography>
+                 </Box>
+               </Box>
+             </CardContent>
+          </Card>
+        </Grid>
 
-      {/* Trading Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {summaryCards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ height: 120, boxShadow: 2 }}>
-              <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
-                      {card.title}
-                    </Typography>
-                    <Typography variant="h5" component="div">
-                      {card.value}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      color: `${card.color}.main`,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {card.icon}
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+        {/* Trading Activity */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+            color: '#1a1a1a',
+            position: 'relative',
+            overflow: 'hidden',
+            border: '1px solid #bbf7d0',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(34, 197, 94, 0.15)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <Box sx={{ 
+              position: 'absolute', 
+              top: -20, 
+              right: -20, 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              background: 'rgba(34, 197, 94, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <TrendingUp sx={{ fontSize: 32, opacity: 0.6, color: '#22c55e' }} />
+            </Box>
+             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+               <Box>
+                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                   Trading Activity
+                 </Typography>
+                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                   Giao dịch & Khối lượng
+                 </Typography>
+               </Box>
+               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Total Trades
+                   </Typography>
+                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                     {totalTrades}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Total Volume
+                   </Typography>
+                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                     {formatCurrency(totalVolume, portfolio?.baseCurrency || 'VND')}
+                   </Typography>
+                 </Box>
+               </Box>
+             </CardContent>
+          </Card>
+        </Grid>
+
+        {/* P&L & Costs */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{  
+            background: realizedPL >= 0 
+              ? 'linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%)'
+              : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            color: '#1a1a1a',
+            position: 'relative',
+            overflow: 'hidden',
+            border: realizedPL >= 0 
+              ? '1px solid #f3e8ff'
+              : '1px solid #fecaca',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: realizedPL >= 0 
+                ? '0 4px 20px rgba(240, 147, 251, 0.15)'
+                : '0 4px 20px rgba(255, 154, 158, 0.15)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <Box sx={{ 
+              position: 'absolute', 
+              top: -20, 
+              right: -20, 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              background: realizedPL >= 0 
+                ? 'rgba(240, 147, 251, 0.1)'
+                : 'rgba(255, 154, 158, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {realizedPL >= 0 ? 
+                <TrendingUp sx={{ fontSize: 32, opacity: 0.6, color: '#a855f7' }} /> : 
+                <TrendingDown sx={{ fontSize: 32, opacity: 0.6, color: '#f43f5e' }} />
+              }
+            </Box>
+             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+               <Box>
+                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                   P&L & Costs
+                 </Typography>
+                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                   Lợi nhuận & Chi phí
+                 </Typography>
+               </Box>
+               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Realized P&L
+                   </Typography>
+                   <Typography 
+                     variant="h6" 
+                     sx={{ 
+                       fontWeight: 800, 
+                       fontSize: '1.2rem', 
+                       lineHeight: 1.2,
+                       color: realizedPL >= 0 ? '#059669' : '#dc2626'
+                     }}
+                   >
+                     {formatCurrency(realizedPL, portfolio?.baseCurrency || 'VND')}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ flex: 1 }}>
+                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                     Fees & Taxes
+                   </Typography>
+                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#ea580c' }}>
+                     {formatCurrency(totalFeesAndTaxes, portfolio?.baseCurrency || 'VND')}
+                   </Typography>
+                 </Box>
+               </Box>
+             </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
 
@@ -593,14 +768,15 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 110, // Position at very top
-          zIndex: 1100, // Above header
-          backgroundColor: 'background.paper',
+          top: 100, // Position below header
+          zIndex: 1100, // Below header
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: 1,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          py: 2,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           backdropFilter: 'blur(10px)',
+          marginTop: 2, // Add margin from cards
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2 }}>
@@ -664,6 +840,7 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
+            pt: 3, // Add padding top
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
               <Grid item xs={12}>
@@ -687,6 +864,7 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
+            pt: 3, // Add padding top
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
               <Grid item xs={12}>
@@ -705,6 +883,7 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
+            pt: 3, // Add padding top
           }}>
 
             {/* Portfolio Overview Section */}
@@ -731,7 +910,7 @@ const PortfolioDetail: React.FC = () => {
                       {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Total Value - NAV (Giá trị tài sản hiện tại)
+                      Total Portfolio Value (Tổng giá trị tài sản)
                     </Typography>
                   </Box>
                 </Grid>
@@ -797,7 +976,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                    Asset Allocation
+                    Asset Type Allocation (Phân bổ loại tài sản)
                   </Typography>
               <Grid container spacing={getUltraSpacing(3, 1)}>
                 {/* Asset Allocation Chart - Left Side */}
@@ -836,7 +1015,7 @@ const PortfolioDetail: React.FC = () => {
                     height: '100%'
                   }}>
                     <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-                      Allocation Summary
+                      Asset Type Allocation Summary 
                     </Typography>
                     {allocationData && Object.keys(allocationData.allocation).length > 0 ? (
                       <Box>
@@ -882,7 +1061,7 @@ const PortfolioDetail: React.FC = () => {
                           textAlign: 'center'
                         }}>
                           <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Total Portfolio Value
+                            Total Asset Value (Tổng giá trị tài sản)
                           </Typography>
                           <Typography variant="h5" color="primary" fontWeight="bold">
                             {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
@@ -907,7 +1086,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                Asset Detail Summary
+                Asset Detail Summary (Tổng quan tài sản)
               </Typography>
               <Box sx={{ 
                 p: 3, 
@@ -940,7 +1119,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                Risk & Performance Analysis
+                Risk & Performance Analysis (Rủi ro và hiệu suất)
               </Typography>
               <Grid container spacing={getUltraSpacing(3, 1)}>
                 <Grid item xs={12} md={6}>
@@ -1002,7 +1181,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                Risk Metrics
+                Risk Metrics (Chỉ số rủi ro)
               </Typography>
               <Box sx={{ 
                 p: 3, 
@@ -1035,7 +1214,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                Diversification & Timeline
+                Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)
               </Typography>
               <Grid container spacing={getUltraSpacing(3, 1)}>
                 <Grid item xs={12} md={6}>
@@ -1097,7 +1276,7 @@ const PortfolioDetail: React.FC = () => {
                 mb: getUltraSpacing(3, 1),
                 fontSize: isCompactMode ? '0.9rem' : undefined
               }}>
-                Benchmark Comparison
+                Benchmark Comparison (So sánh với benchmark)
               </Typography>
               <Box sx={{ 
                 p: 3, 
@@ -1130,6 +1309,7 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
+            pt: 3, // Add padding top
           }}>
             <CashFlowLayout 
               portfolioId={portfolioId!} 

@@ -7,6 +7,7 @@ import { AssetCacheService } from './asset-cache.service';
 import { MarketDataService } from '../../market-data/services/market-data.service';
 import { AssetGlobalSyncService } from './asset-global-sync.service';
 import { AssetValueCalculatorService } from './asset-value-calculator.service';
+import { CashFlowService } from '../../portfolio/services/cash-flow.service';
 
 /**
  * Create Asset DTO
@@ -56,6 +57,7 @@ export class AssetService {
     private readonly marketDataService: MarketDataService,
     private readonly assetGlobalSyncService: AssetGlobalSyncService,
     private readonly assetValueCalculator: AssetValueCalculatorService,
+    private readonly cashFlowService: CashFlowService,
   ) {}
 
   /**
@@ -417,10 +419,11 @@ export class AssetService {
     
     // Delete all trades and their details
     for (const trade of trades) {
-      // First delete trade details (foreign key constraint)
-      await this.assetRepository.deleteTradeDetails(trade.tradeId);
       // Then delete the trade
       await this.assetRepository.deleteTrade(trade.tradeId);
+      // Delete cash flows associated with this trade
+      await this.cashFlowService.deleteCashFlowByTradeId(trade.tradeId);
+      
     }
     
     // Invalidate cache

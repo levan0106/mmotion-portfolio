@@ -81,11 +81,11 @@ export class CashFlow {
 
   // Computed properties
   get isInflow(): boolean {
-    return [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST].includes(this.type);
+    return [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST, CashFlowType.SELL_TRADE].includes(this.type);
   }
 
   get isOutflow(): boolean {
-    return [CashFlowType.WITHDRAWAL, CashFlowType.FEE, CashFlowType.TAX].includes(this.type);
+    return [CashFlowType.WITHDRAWAL, CashFlowType.FEE, CashFlowType.TAX, CashFlowType.BUY_TRADE].includes(this.type);
   }
 
   get netAmount(): number {

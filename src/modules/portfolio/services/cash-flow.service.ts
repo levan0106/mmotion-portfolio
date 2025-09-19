@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Portfolio } from '../entities/portfolio.entity';
 import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.entity';
 import { Trade, TradeSide } from '../../trading/entities/trade.entity';
+import { Asset } from '../../asset/entities/asset.entity';
 import { CreateCashFlowDto } from '../dto/cash-flow.dto';
 
 export interface CashFlowUpdateResult {
@@ -34,6 +35,8 @@ export class CashFlowService {
     private readonly cashFlowRepository: Repository<CashFlow>,
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
+    @InjectRepository(Asset)
+    private readonly assetRepository: Repository<Asset>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -98,7 +101,69 @@ export class CashFlowService {
   }
 
   /**
-   * Recalculate cash balance from all trades
+   * Recalculate cash balance from all cash flows (including deposits, trades, etc.)
+   * @param portfolioId Portfolio ID
+   * @returns Promise<CashFlowUpdateResult>
+   */
+  async recalculateCashBalanceFromAllFlows(portfolioId: string): Promise<CashFlowUpdateResult> {
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
+
+    // Get all cash flows for this portfolio (including deposits, trades, etc.)
+    const allCashFlows = await this.cashFlowRepository.find({
+      where: { portfolioId },
+      order: { flowDate: 'ASC' }
+    });
+
+    // Filter only completed cash flows
+    const cashFlows = allCashFlows.filter(cashFlow => 
+      cashFlow.status === CashFlowStatus.COMPLETED
+    );
+
+    // If no cash flows exist, preserve current cash balance
+    if (cashFlows.length === 0) {
+      return {
+        portfolioId,
+        oldCashBalance,
+        newCashBalance: oldCashBalance,
+        cashFlowAmount: 0,
+        cashFlowType: 'NO_CASH_FLOWS',
+      };
+    }
+
+    let calculatedCashBalance = 0; // Start with 0 for complete recalculation
+
+    // Process each cash flow
+    for (const cashFlow of cashFlows) {
+      // Use netAmount which applies correct sign based on cash flow type
+      calculatedCashBalance += cashFlow.netAmount;
+    }
+
+    // Format calculated cash balance
+    const formattedCashBalance = Number(calculatedCashBalance.toFixed(2));
+
+    // Update portfolio cash balance
+    portfolio.cashBalance = formattedCashBalance;
+    await this.portfolioRepository.save(portfolio);
+
+    return {
+      portfolioId,
+      oldCashBalance,
+      newCashBalance: formattedCashBalance,
+      cashFlowAmount: Number((formattedCashBalance - oldCashBalance).toFixed(2)),
+      cashFlowType: 'RECALCULATION_ALL_FLOWS',
+    };
+  }
+
+  /**
+   * Recalculate cash balance from all trades only
    * @param portfolioId Portfolio ID
    * @returns Promise<CashFlowUpdateResult>
    */
@@ -119,7 +184,8 @@ export class CashFlowService {
       order: { tradeDate: 'ASC' }
     });
 
-    let calculatedCashBalance = 0; // Start with 0, assuming no initial cash
+    // Start with current cash balance instead of 0
+    let calculatedCashBalance = parseFloat(portfolio.cashBalance.toString());
 
     // Process each trade to calculate correct cash balance
     for (const trade of trades) {
@@ -331,6 +397,7 @@ export class CashFlowService {
     description: string,
     reference?: string,
     effectiveDate?: Date,
+    currency?: string,
   ): Promise<CashFlowCreateResult> {
     // Validate portfolio exists
     const portfolio = await this.portfolioRepository.findOne({
@@ -341,9 +408,10 @@ export class CashFlowService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    // Validate amount
-    if (amount <= 0) {
-      throw new BadRequestException('Amount must be positive');
+    // Format and validate amount (allow negative for BUY_TRADE)
+    const formattedAmount = Number(amount.toFixed(2));
+    if (formattedAmount === 0) {
+      throw new BadRequestException('Amount cannot be zero');
     }
 
     // Use transaction to ensure consistency
@@ -355,19 +423,27 @@ export class CashFlowService {
       const cashFlow = manager.create(CashFlow, {
         portfolioId,
         type,
-        amount,
+        amount: formattedAmount,
         description,
         reference,
         status: CashFlowStatus.COMPLETED,
-        flowDate: new Date(),
+        flowDate: effectiveDate || new Date(), // Use effectiveDate as flowDate
         effectiveDate: effectiveDate || new Date(),
+        currency: currency || portfolio.baseCurrency || 'VND',
       });
 
       const savedCashFlow = await manager.save(cashFlow);
 
       // Calculate new cash balance
       const netAmount = savedCashFlow.netAmount;
-      const newCashBalance = currentCashBalance + netAmount;
+      const newCashBalance = Number((currentCashBalance + netAmount).toFixed(2));
+
+      // Validate cash balance doesn't go negative (only for outflows, but allow trades)
+      const isInflow = [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST, CashFlowType.SELL_TRADE].includes(type);
+      const isTrade = [CashFlowType.BUY_TRADE, CashFlowType.SELL_TRADE].includes(type);
+      if (newCashBalance < 0 && !isInflow && !isTrade) {
+        throw new BadRequestException('Insufficient cash balance for this operation');
+      }
 
       // Update portfolio cash balance
       await manager.update(Portfolio, 
@@ -391,22 +467,32 @@ export class CashFlowService {
    * Create cash flow from trade (for trade settlements)
    */
   async createCashFlowFromTrade(trade: Trade): Promise<CashFlowCreateResult> {
+    console.log(`[CashFlowService] createCashFlowFromTrade called for tradeId: ${trade.tradeId}, side: ${trade.side}, quantity: ${trade.quantity}, price: ${trade.price}`);
+    
+    // Delete existing cash flows for this trade first to avoid duplicates (silent - no balance recalculation)
+    await this.deleteCashFlowByTradeIdSilent(trade.tradeId);
+
     const tradeAmount = parseFloat(trade.totalAmount.toString());
     const fee = parseFloat(trade.fee.toString()) || 0;
     const tax = parseFloat(trade.tax.toString()) || 0;
+
+    // Load asset information
+    const asset = await this.assetRepository.findOne({
+      where: { id: trade.assetId }
+    });
 
     let type: CashFlowType;
     let amount: number;
     let description: string;
 
     if (trade.side === TradeSide.BUY) {
-      type = CashFlowType.TRADE_SETTLEMENT;
-      amount = tradeAmount + fee + tax;
-      description = `Trade settlement: BUY ${trade.quantity} ${trade.asset?.symbol || 'asset'} @ ${trade.price}`;
+      type = CashFlowType.BUY_TRADE;
+      amount = Number((tradeAmount + fee + tax).toFixed(2)); // Positive amount, netAmount will be negative
+      description = `BUY ${Number(trade.quantity).toFixed(asset?.symbol in ['USDT', 'USDC','BTC','ETH','SOL'] ? 5 : 2)} shares of ${asset?.symbol || 'asset'} at ${Number(trade.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} [TradeID: ${trade.tradeId}]`;
     } else {
-      type = CashFlowType.TRADE_SETTLEMENT;
-      amount = tradeAmount - fee - tax;
-      description = `Trade settlement: SELL ${trade.quantity} ${trade.asset?.symbol || 'asset'} @ ${trade.price}`;
+      type = CashFlowType.SELL_TRADE;
+      amount = Number((tradeAmount - fee - tax).toFixed(2)); // Positive amount, netAmount will be positive
+      description = `SELL ${Number(trade.quantity).toFixed(asset?.symbol in ['USDT', 'USDC','BTC','ETH','SOL'] ? 5 : 2)} shares of ${asset?.symbol || 'asset'} at ${Number(trade.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} [TradeID: ${trade.tradeId}]`;
     }
 
     return await this.createCashFlow(
@@ -415,7 +501,8 @@ export class CashFlowService {
       amount,
       description,
       trade.tradeId,
-      trade.tradeDate,
+      trade.tradeDate, // Use trade date as flowDate
+      'VND', // Default currency for trades
     );
   }
 
@@ -525,5 +612,75 @@ export class CashFlowService {
       // Recalculate portfolio balance
       await this.recalculateCashBalanceFromTrades(portfolioId);
     });
+  }
+
+  /**
+   * Delete cash flows by trade ID (when trade is deleted) - with balance recalculation
+   */
+  async deleteCashFlowByTradeId(tradeId: string): Promise<void> {
+    console.log(`[CashFlowService] deleteCashFlowByTradeId called for tradeId: ${tradeId}`);
+    
+    // Find cash flows with this trade ID as reference
+    const cashFlows = await this.cashFlowRepository.find({
+      where: { reference: tradeId }
+    });
+
+    console.log(`[CashFlowService] Found ${cashFlows.length} cash flows for tradeId: ${tradeId}`);
+
+    if (cashFlows.length === 0) {
+      console.log(`[CashFlowService] No cash flows to delete for tradeId: ${tradeId}`);
+      return; // No cash flows to delete
+    }
+
+    // Get portfolio ID from first cash flow
+    const portfolioId = cashFlows[0].portfolioId;
+
+    // Delete all cash flows with this trade ID using raw query without transaction
+    const deleteResult = await this.dataSource.query(
+      'DELETE FROM cash_flows WHERE reference = $1',
+      [tradeId]
+    );
+    console.log(`[CashFlowService] Deleted cash flows for tradeId: ${tradeId} using raw query without transaction`);
+    
+    // Recalculate portfolio balance
+    await this.recalculateCashBalanceFromTrades(portfolioId);
+    
+    // Verify deletion after transaction
+    const remainingCashFlows = await this.cashFlowRepository.find({
+      where: { reference: tradeId }
+    });
+    console.log(`[CashFlowService] Remaining cash flows after deletion: ${remainingCashFlows.length}`);
+  }
+
+  /**
+   * Delete cash flows by trade ID (for avoiding duplicates) - without balance recalculation
+   */
+  async deleteCashFlowByTradeIdSilent(tradeId: string): Promise<void> {
+    console.log(`[CashFlowService] deleteCashFlowByTradeIdSilent called for tradeId: ${tradeId}`);
+    
+    // Find cash flows with this trade ID as reference
+    const cashFlows = await this.cashFlowRepository.find({
+      where: { reference: tradeId }
+    });
+
+    console.log(`[CashFlowService] Found ${cashFlows.length} cash flows for tradeId: ${tradeId}`);
+
+    if (cashFlows.length === 0) {
+      console.log(`[CashFlowService] No cash flows to delete for tradeId: ${tradeId}`);
+      return; // No cash flows to delete
+    }
+
+    // Delete all cash flows with this trade ID using raw query without transaction
+    const deleteResult = await this.dataSource.query(
+      'DELETE FROM cash_flows WHERE reference = $1',
+      [tradeId]
+    );
+    console.log(`[CashFlowService] Deleted cash flows for tradeId: ${tradeId} using raw query without transaction`);
+    
+    // Verify deletion after transaction
+    const remainingCashFlows = await this.cashFlowRepository.find({
+      where: { reference: tradeId }
+    });
+    console.log(`[CashFlowService] Remaining cash flows after deletion: ${remainingCashFlows.length}`);
   }
 }

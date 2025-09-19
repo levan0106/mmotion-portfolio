@@ -667,5 +667,7 @@ export class AssetRepository implements IAssetRepository {
    */
   async deleteTrade(tradeId: string): Promise<void> {
     await this.tradeRepository.delete(tradeId);
+    // First delete trade details (foreign key constraint)
+    await this.deleteTradeDetails(tradeId);
   }
 }

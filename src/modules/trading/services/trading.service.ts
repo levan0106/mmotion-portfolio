@@ -251,6 +251,9 @@ export class TradingService {
       await this.reprocessTradeMatching(updatedTrade);
     }
 
+    // Delete old cash flow before updating portfolio positions
+    await this.cashFlowService.deleteCashFlowByTradeId(tradeId);
+
     // Update portfolio positions
     if (isAssetChanged) {
       // If asset changed, update both old and new asset positions
@@ -297,12 +300,12 @@ export class TradingService {
         buyTradeId: tradeId,
       });
     }
-
+    
+    // Delete cash flows associated with this trade FIRST
+    await this.cashFlowService.deleteCashFlowByTradeId(tradeId);
+    
     // Delete the trade
     await this.tradeRepository.delete(tradeId);
-
-    // Update portfolio position
-    await this.updatePortfolioPosition(trade);
 
     // Invalidate all related caches
     await this.invalidateAllRelatedCaches(trade.portfolioId, trade.assetId);
@@ -985,11 +988,15 @@ export class TradingService {
    */
   private async updatePortfolioPosition(trade: Trade): Promise<void> {
     try {
+      console.log(`[TradingService] updatePortfolioPosition called for tradeId: ${trade.tradeId}`);
+      
       // Create cash flow from trade and update portfolio balance
       await this.cashFlowService.createCashFlowFromTrade(trade);
       
       // Update asset position (placeholder for future implementation)
       await this.updatePortfolioPositionForAsset(trade.assetId, trade.portfolioId, trade.price);
+      
+      console.log(`[TradingService] updatePortfolioPosition completed for tradeId: ${trade.tradeId}`);
     } catch (error) {
       console.error('Error updating portfolio position:', error);
       // Don't throw error to avoid breaking trade creation

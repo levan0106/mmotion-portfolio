@@ -78,8 +78,8 @@ export class PortfolioCalculationService {
     // Calculate current positions and unrealized P&L
     const positions = await this.calculateCurrentPositions(portfolioId, trades);
 
-    // Calculate total value
-    const totalValue = currentCashBalance + positions.reduce((sum, pos) => sum + pos.currentValue, 0);
+    // Calculate total value (only asset positions, excluding cash balance)
+    const totalValue = positions.reduce((sum, pos) => sum + pos.currentValue, 0);
 
     // Calculate total unrealized P&L
     const unrealizedPl = positions.reduce((sum, pos) => sum + pos.unrealizedPl, 0);
@@ -236,14 +236,16 @@ export class PortfolioCalculationService {
   }
 
   /**
-   * Calculate NAV for a portfolio
+   * Calculate NAV for a portfolio (cash + assets)
    * @param portfolioId - Portfolio ID
    * @param currentCashBalance - Current cash balance
    * @returns Promise<number>
    */
   async calculateNAV(portfolioId: string, currentCashBalance: number = 0): Promise<number> {
     const result = await this.calculatePortfolioValues(portfolioId, currentCashBalance);
-    return result.totalValue;
+    // NAV = cash balance + asset positions value
+    const assetValue = result.assetPositions.reduce((sum, pos) => sum + pos.currentValue, 0);
+    return currentCashBalance + assetValue;
   }
 
   /**
