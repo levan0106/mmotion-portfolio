@@ -58,15 +58,13 @@ export class TradeRepository extends Repository<Trade> {
    * @returns Array of trades
    */
   async findTradesByPortfolio(portfolioId: string): Promise<Trade[]> {
-    return this.tradeRepository.find({
-      where: {
-        portfolioId: portfolioId,
-      },
-      order: {
-        tradeDate: 'DESC',
-      },
-      relations: ['asset', 'portfolio'],
-    });
+    return this.tradeRepository
+      .createQueryBuilder('trade')
+      .leftJoinAndSelect('trade.asset', 'asset')
+      .leftJoinAndSelect('trade.portfolio', 'portfolio')
+      .where('trade.portfolioId = :portfolioId', { portfolioId })
+      .orderBy('trade.tradeDate', 'DESC')
+      .getMany();
   }
 
   /**

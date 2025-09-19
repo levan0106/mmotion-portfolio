@@ -1098,6 +1098,7 @@ export class TradingService {
           assetId: trade.assetId,
           assetSymbol: trade.asset?.symbol || 'N/A',
           assetName: trade.asset?.name,
+          asset: trade.asset, // Include full asset object
           tradeDate: trade.tradeDate,
           side: trade.side,
           quantity: trade.quantity,

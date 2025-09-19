@@ -384,158 +384,207 @@ export class PortfolioAnalyticsService {
           calculatedAt: string;
         };
       }
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - months);
 
-    // Get all trades for the portfolio in the date range
-    const trades = await this.tradeRepository.findTradesByDateRange(
-      startDate,
-      endDate,
-      portfolioId,
-    );
-
-    // Get portfolio details
-    const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
-    if (!portfolio) {
-      throw new Error(`Portfolio with ID ${portfolioId} not found`);
-    }
-
-    // Group trades by month and calculate allocation for each month
-    const timelineData = [];
-    const monthlyData = new Map<string, Map<string, { quantity: number; value: number }>>();
-
-    // Initialize monthly data structure
-    for (let i = months - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      monthlyData.set(monthKey, new Map());
-    }
-
-    // Process trades chronologically
-    const sortedTrades = trades.sort((a, b) => new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime());
-
-    for (const trade of sortedTrades) {
-      const tradeDate = new Date(trade.tradeDate);
-      const monthKey = `${tradeDate.getFullYear()}-${String(tradeDate.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (!monthlyData.has(monthKey)) {
-        continue; // Skip trades outside our date range
+      // Get portfolio details
+      const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+      if (!portfolio) {
+        throw new Error(`Portfolio with ID ${portfolioId} not found`);
       }
 
-      const monthData = monthlyData.get(monthKey);
-      const assetType = trade.asset?.type || 'UNKNOWN';
-      const quantity = parseFloat(trade.quantity.toString());
-      const price = parseFloat(trade.price.toString());
-      const value = quantity * price;
+      // Get current asset positions using PortfolioCalculationService
+      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
+        portfolioId,
+        parseFloat(portfolio.cashBalance.toString()),
+      );
 
-      if (!monthData.has(assetType)) {
-        monthData.set(assetType, { quantity: 0, value: 0 });
+      // Get asset types from database
+      const assetInfoQuery = `
+        SELECT DISTINCT
+          asset.symbol,
+          asset.name,
+          asset.type as "assetType"
+        FROM assets asset
+        INNER JOIN trades trade ON asset.id = trade.asset_id
+        WHERE trade.portfolio_id = $1
+      `;
+      const assetInfos = await this.portfolioRepository.query(assetInfoQuery, [portfolioId]);
+      const assetInfoMap = new Map(assetInfos.map(info => [info.symbol, info]));
+
+      // Get all trades for the portfolio in the date range
+      const allTrades = await this.tradeRepository.findTradesByPortfolio(portfolioId);
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - months);
+      
+      const trades = allTrades.filter(trade => {
+        const tradeDate = new Date(trade.tradeDate);
+        return tradeDate >= startDate && tradeDate <= endDate;
+      });
+
+      // Group trades by month and calculate allocation for each month
+      const timelineData = [];
+      const monthlyData = new Map<string, Map<string, { quantity: number; value: number }>>();
+
+      // Initialize monthly data structure
+      for (let i = months - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        monthlyData.set(monthKey, new Map());
       }
 
-      const current = monthData.get(assetType);
-      if (trade.side === 'BUY') {
-        current.quantity += quantity;
-        current.value += value;
-      } else {
-        current.quantity -= quantity;
-        current.value -= value;
-      }
+      // Process trades chronologically and apply cumulative effects
+      const sortedTrades = trades.sort((a, b) => new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime());
 
-      // Ensure quantity doesn't go negative (shouldn't happen with proper trade validation)
-      if (current.quantity < 0) {
-        current.quantity = 0;
-        current.value = 0;
-      }
-    }
+      // Track cumulative holdings for each asset type
+      const cumulativeHoldings = new Map<string, { quantity: number; value: number }>();
 
-    // Convert monthly data to timeline format with proper cumulative allocation
-    // Calculate cumulative quantities and values for each month
-    const cumulativeData = new Map<string, { quantities: Record<string, number>; values: Record<string, number> }>();
-    
-    // Process months in chronological order (oldest first)
-    for (let i = months - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const monthData = monthlyData.get(monthKey);
-      
-      // Get previous month's cumulative data
-      const prevMonth = new Date(date);
-      prevMonth.setMonth(prevMonth.getMonth() - 1);
-      const prevMonthKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-      const prevCumulative = cumulativeData.get(prevMonthKey) || { quantities: {}, values: {} };
-      
-      // Start with previous month's cumulative data
-      const currentQuantities = { ...prevCumulative.quantities };
-      const currentValues = { ...prevCumulative.values };
-      
-      // Apply trades from current month
-      for (const [assetType, data] of monthData) {
-        if (!currentQuantities[assetType]) {
-          currentQuantities[assetType] = 0;
-          currentValues[assetType] = 0;
-        }
+      for (const trade of sortedTrades) {
+        const tradeDate = new Date(trade.tradeDate);
+        const tradeMonthKey = `${tradeDate.getFullYear()}-${String(tradeDate.getMonth() + 1).padStart(2, '0')}`;
         
-        currentQuantities[assetType] += data.quantity;
-        currentValues[assetType] += data.value;
-        
-        // If quantity becomes 0 or negative, reset to 0
-        if (currentQuantities[assetType] <= 0) {
-          currentQuantities[assetType] = 0;
-          currentValues[assetType] = 0;
-        }
-      }
-      
-      
-      // Store cumulative data for this month
-      cumulativeData.set(monthKey, { quantities: currentQuantities, values: currentValues });
-    }
-    
-    // Generate timeline data points in chronological order
-    for (let i = months - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const cumulative = cumulativeData.get(monthKey);
-
-      const dataPoint: any = {
-        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`,
-      };
-
-      if (cumulative) {
-        // Calculate total cumulative value
-        let totalCumulativeValue = 0;
-        for (const [assetType, value] of Object.entries(cumulative.values)) {
-          totalCumulativeValue += value;
+        if (!monthlyData.has(tradeMonthKey)) {
+          continue; // Skip trades outside our date range
         }
 
-        // Calculate allocation percentages based on cumulative values
-        if (totalCumulativeValue > 0) {
-          for (const [assetType, value] of Object.entries(cumulative.values)) {
-            if (value > 0) {
-              const percentage = (value / totalCumulativeValue) * 100;
-              dataPoint[assetType] = Math.round(percentage * 10) / 10;
+        // Get asset type from database lookup
+        let assetType = 'UNKNOWN';
+        const symbol = trade.asset?.symbol;
+        if (symbol) {
+          const assetInfo = assetInfoMap.get(symbol);
+          if (assetInfo) {
+            assetType = (assetInfo as any).assetType;
+          }
+        }
+
+        const quantity = parseFloat(trade.quantity.toString());
+        const price = parseFloat(trade.price.toString());
+        const value = quantity * price;
+
+        // Update cumulative holdings
+        if (!cumulativeHoldings.has(assetType)) {
+          cumulativeHoldings.set(assetType, { quantity: 0, value: 0 });
+        }
+
+        const currentHolding = cumulativeHoldings.get(assetType);
+        if (trade.side === 'BUY') {
+          currentHolding.quantity += quantity;
+          currentHolding.value += value;
+        } else {
+          currentHolding.quantity -= quantity;
+          currentHolding.value -= value;
+        }
+
+        // Ensure quantity doesn't go negative
+        if (currentHolding.quantity < 0) {
+          currentHolding.quantity = 0;
+          currentHolding.value = 0;
+        }
+
+        // Apply this trade's effect to all months from trade date onwards
+        for (let i = months - 1; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          
+          // Only apply to months on or after the trade month
+          if (monthKey >= tradeMonthKey) {
+            const monthData = monthlyData.get(monthKey);
+            
+            if (!monthData.has(assetType)) {
+              monthData.set(assetType, { quantity: 0, value: 0 });
             }
+
+            // Update month data with current cumulative holdings
+            const current = monthData.get(assetType);
+            current.quantity = currentHolding.quantity;
+            current.value = currentHolding.value;
           }
         }
       }
 
-      timelineData.push(dataPoint);
-    }
+      // Generate timeline data points in chronological order
+      for (let i = months - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const monthData = monthlyData.get(monthKey);
 
-    const result = {
-      portfolioId,
-      totalValue: parseFloat(portfolio.totalValue.toString()),
-      data: timelineData,
-      calculatedAt: new Date().toISOString(),
-    };
+        const dataPoint: any = {
+          date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`,
+        };
 
-    // Cache the result
-    await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+        // For current month, use current positions with current prices
+        const isCurrentMonth = i === 0;
+        if (isCurrentMonth) {
+          // Use current positions from PortfolioCalculationService
+          const currentPositions = new Map<string, { quantity: number; value: number }>();
+          
+          for (const position of calculation.assetPositions) {
+            if (position.quantity > 0) {
+              // Get asset type from symbol
+              let assetType = 'UNKNOWN';
+              const assetInfo = assetInfoMap.get(position.symbol);
+              if (assetInfo) {
+                assetType = (assetInfo as any).assetType;
+              }
+              
+              if (!currentPositions.has(assetType)) {
+                currentPositions.set(assetType, { quantity: 0, value: 0 });
+              }
+              
+              const current = currentPositions.get(assetType);
+              current.quantity += position.quantity;
+              current.value += position.currentValue;
+            }
+          }
+          
+          // Calculate allocation percentages for current month
+          let totalValue = 0;
+          for (const [assetType, data] of currentPositions) {
+            totalValue += data.value;
+          }
+          
+          if (totalValue > 0) {
+            for (const [assetType, data] of currentPositions) {
+              if (data.value > 0) {
+                const percentage = (data.value / totalValue) * 100;
+                dataPoint[assetType] = Math.round(percentage * 10) / 10;
+              }
+            }
+          }
+        } else if (monthData && monthData.size > 0) {
+          // For historical months, use trade-based calculations
+          let totalValue = 0;
+          for (const [assetType, data] of monthData) {
+            totalValue += data.value;
+          }
 
-    return result;
+          // Calculate allocation percentages
+          if (totalValue > 0) {
+            for (const [assetType, data] of monthData) {
+              if (data.value > 0) {
+                const percentage = (data.value / totalValue) * 100;
+                dataPoint[assetType] = Math.round(percentage * 10) / 10;
+              }
+            }
+          }
+        }
+
+        timelineData.push(dataPoint);
+      }
+
+      const result = {
+        portfolioId,
+        totalValue: parseFloat(portfolio.totalValue.toString()),
+        data: timelineData,
+        calculatedAt: new Date().toISOString(),
+      };
+
+      // Cache the result
+      await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+
+      return result;
     } catch (error) {
       console.error('Error in calculateAllocationTimeline service:', error);
       throw error;

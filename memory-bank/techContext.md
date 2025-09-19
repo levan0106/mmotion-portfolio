@@ -52,8 +52,8 @@
 - **Compilation Status**: All TypeScript errors fixed ✅
 
 ### Infrastructure & DevOps
-- **Docker**: Containerization cho all services
-- **Docker Compose**: Local development environment
+- **Docker**: Containerization cho all services - **PROJECT RUNS WITH DOCKER**
+- **Docker Compose**: Local development environment - **PRIMARY DEPLOYMENT METHOD**
 - **Kubernetes**: Production orchestration
 - **GitHub Actions**: CI/CD pipeline
 - **AWS/GCP**: Cloud hosting
@@ -66,17 +66,17 @@
 - Redis 6+
 - Docker & Docker Compose
 
-### Local Development - **IMPLEMENTED**
+### Local Development - **IMPLEMENTED WITH DOCKER**
 ```bash
 # Clone repository
 git clone <repo-url>
 cd portfolio-management-system
 
-# Quick setup (automated)
+# Quick setup (automated with Docker)
 chmod +x scripts/setup-local.sh
 ./scripts/setup-local.sh
 
-# Or manual setup
+# Or manual setup with Docker
 npm install
 cd frontend && npm install && cd ..
 cp env.example .env
@@ -85,18 +85,22 @@ npm run typeorm:migration:run
 npm run seed:dev
 npm run start:dev  # Backend
 cd frontend && npm start  # Frontend
+
+# Alternative: Full Docker setup
+docker-compose up -d  # Runs all services in Docker containers
 ```
 
-### Local Run Checklist - **IMPLEMENTED ✅**
+### Local Run Checklist - **IMPLEMENTED WITH DOCKER ✅**
 - [x] Copy `.env.example` to `.env` and set database/redis URLs
-- [x] Run `docker-compose up -d postgres redis`
+- [x] Run `docker-compose up -d postgres redis` (Docker containers for database services)
 - [x] Run migrations `npm run typeorm:migration:run`
 - [x] Seed minimal data (assets, sample portfolio)
-- [x] Start backend `npm run start:dev`
-- [x] Start frontend `cd frontend && npm run dev`
+- [x] Start backend `npm run start:dev` (or use Docker: `docker-compose up backend`)
+- [x] Start frontend `cd frontend && npm run dev` (or use Docker: `docker-compose up frontend`)
 - [x] Verify Swagger at `http://localhost:3000/api`
 - [x] Check health endpoint `/health`
 - [x] Access frontend at `http://localhost:5173`
+- [x] **Docker Alternative**: Run `docker-compose up -d` for full containerized setup
 - [x] Automated verification scripts available
 - [x] Complete setup documentation in README.md
 - [x] Database fully seeded with comprehensive test data
