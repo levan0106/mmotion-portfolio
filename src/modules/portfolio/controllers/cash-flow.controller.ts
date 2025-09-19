@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CashFlowService } from '../services/cash-flow.service';
 import { 
@@ -56,29 +56,49 @@ export class CashFlowController {
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO string)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO string)' })
-  @ApiResponse({ status: 200, description: 'Cash flow history retrieved successfully', type: [CashFlowResponseDto] })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10)', example: 10 })
+  @ApiResponse({ status: 200, description: 'Cash flow history retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getCashFlowHistory(
     @Param('id', ParseUUIDPipe) portfolioId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-  ): Promise<CashFlowResponseDto[]> {
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<{
+    data: CashFlowResponseDto[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
 
-    const cashFlows = await this.cashFlowService.getCashFlowHistory(portfolioId, start, end);
+    const result = await this.cashFlowService.getCashFlowHistory(portfolioId, start, end, pageNum, limitNum);
     
-    return cashFlows.map((cashFlow) => ({
-      cashflowId: cashFlow.cashFlowId,
-      portfolioId: cashFlow.portfolioId,
-      flowDate: cashFlow.flowDate,
-      amount: cashFlow.amount,
-      currency: cashFlow.currency,
-      type: cashFlow.type,
-      description: cashFlow.description,
-      createdAt: cashFlow.createdAt,
-      updatedAt: cashFlow.updatedAt,
-    }));
+    return {
+      data: result.data.map((cashFlow) => ({
+        cashflowId: cashFlow.cashFlowId,
+        portfolioId: cashFlow.portfolioId,
+        flowDate: cashFlow.flowDate,
+        amount: cashFlow.amount,
+        currency: cashFlow.currency,
+        type: cashFlow.type,
+        description: cashFlow.description,
+        status: cashFlow.status,
+        reference: cashFlow.reference,
+        effectiveDate: cashFlow.effectiveDate,
+        createdAt: cashFlow.createdAt,
+        updatedAt: cashFlow.updatedAt,
+      })),
+      pagination: result.pagination,
+    };
   }
 
   /**
@@ -204,6 +224,46 @@ export class CashFlowController {
       createDividendDto.reference,
       createDividendDto.effectiveDate,
     );
+  }
+
+  /**
+   * Update an existing cash flow.
+   */
+  @Put(':cashFlowId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update an existing cash flow' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiParam({ name: 'cashFlowId', description: 'Cash Flow ID' })
+  @ApiResponse({ status: 200, description: 'Cash flow updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 404, description: 'Portfolio or cash flow not found' })
+  async updateCashFlow(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Param('cashFlowId', ParseUUIDPipe) cashFlowId: string,
+    @Body() updateCashFlowDto: CreateCashFlowDto,
+  ) {
+    return await this.cashFlowService.updateCashFlow(
+      portfolioId,
+      cashFlowId,
+      updateCashFlowDto,
+    );
+  }
+
+  /**
+   * Delete an existing cash flow.
+   */
+  @Delete(':cashFlowId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing cash flow' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiParam({ name: 'cashFlowId', description: 'Cash Flow ID' })
+  @ApiResponse({ status: 204, description: 'Cash flow deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Portfolio or cash flow not found' })
+  async deleteCashFlow(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Param('cashFlowId', ParseUUIDPipe) cashFlowId: string,
+  ) {
+    await this.cashFlowService.deleteCashFlow(portfolioId, cashFlowId);
   }
 
   /**

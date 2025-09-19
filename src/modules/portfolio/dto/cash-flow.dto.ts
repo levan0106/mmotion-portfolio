@@ -34,12 +34,12 @@ export class CreateCashFlowDto {
   @ApiProperty({
     description: 'Cash flow amount (positive for inflow, negative for outflow)',
     example: 1000000,
-    minimum: -1000000000,
-    maximum: 1000000000,
+    minimum: -1000000000000,
+    maximum: 1000000000000,
   })
   @IsNumber()
-  @Min(-1000000000)
-  @Max(1000000000)
+  @Min(-1000000000000)
+  @Max(1000000000000)
   amount: number;
 
   /**
@@ -91,6 +91,44 @@ export class CreateCashFlowDto {
   @IsString()
   @Transform(({ value }) => typeof value === 'string' ? value.toUpperCase() : value)
   currency?: string;
+
+  /**
+   * Status (optional, defaults to COMPLETED).
+   */
+  @ApiProperty({
+    description: 'Status (optional, defaults to COMPLETED)',
+    example: 'COMPLETED',
+    required: false,
+    enum: ['COMPLETED', 'PENDING', 'CANCELLED'],
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  /**
+   * Reference (optional).
+   */
+  @ApiProperty({
+    description: 'Reference (optional)',
+    example: 'REF123',
+    required: false,
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  reference?: string;
+
+  /**
+   * Effective date (optional).
+   */
+  @ApiProperty({
+    description: 'Effective date (optional)',
+    example: '2024-01-15T10:30:00Z',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  effectiveDate?: string;
 }
 
 /**
@@ -150,8 +188,20 @@ export class CashFlowResponseDto {
   @ApiProperty({ description: 'Description' })
   description: string;
 
+  @ApiProperty({ description: 'Status' })
+  status: string;
+
+  @ApiProperty({ description: 'Reference', required: false })
+  reference?: string;
+
+  @ApiProperty({ description: 'Effective date', required: false })
+  effectiveDate?: Date;
+
   @ApiProperty({ description: 'Created at' })
   createdAt: Date;
+
+  @ApiProperty({ description: 'Updated at' })
+  updatedAt: Date;
 }
 
 /**

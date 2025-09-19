@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Portfolio } from '../entities/portfolio.entity';
 import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.entity';
 import { Trade, TradeSide } from '../../trading/entities/trade.entity';
+import { CreateCashFlowDto } from '../dto/cash-flow.dto';
 
 export interface CashFlowUpdateResult {
   portfolioId: string;
@@ -179,10 +180,15 @@ export class CashFlowService {
     }
 
     const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
-    const newCashBalance = oldCashBalance + amount;
+    
+    // Calculate net amount based on cash flow type
+    const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
+    const netAmount = isInflow ? amount : -amount;
+    const newCashBalance = oldCashBalance + netAmount;
 
-    // Validate cash balance doesn't go negative (unless it's a withdrawal)
-    if (newCashBalance < 0 && type !== 'WITHDRAWAL') {
+
+    // Validate cash balance doesn't go negative (only for outflows)
+    if (newCashBalance < 0 && !isInflow) {
       throw new BadRequestException('Insufficient cash balance for this operation');
     }
 
@@ -194,7 +200,7 @@ export class CashFlowService {
     const cashFlow = this.cashFlowRepository.create({
       portfolioId,
       flowDate,
-      amount,
+      amount: Math.abs(amount), // Store absolute amount
       currency: 'VND', // Should be from portfolio baseCurrency
       type: type as any,
       description,
@@ -206,7 +212,7 @@ export class CashFlowService {
       portfolioId,
       oldCashBalance,
       newCashBalance,
-      cashFlowAmount: amount,
+      cashFlowAmount: netAmount,
       cashFlowType: type,
     };
   }
@@ -216,13 +222,25 @@ export class CashFlowService {
    * @param portfolioId Portfolio ID
    * @param startDate Start date (optional)
    * @param endDate End date (optional)
-   * @returns Promise<CashFlow[]>
+   * @param page Page number (default: 1)
+   * @param limit Items per page (default: 10)
+   * @returns Promise<{data: CashFlow[], pagination: {page: number, limit: number, total: number, totalPages: number}}>
    */
   async getCashFlowHistory(
     portfolioId: string,
     startDate?: Date,
     endDate?: Date,
-  ): Promise<CashFlow[]> {
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: CashFlow[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     const query = this.cashFlowRepository
       .createQueryBuilder('cashFlow')
       .where('cashFlow.portfolioId = :portfolioId', { portfolioId })
@@ -236,7 +254,26 @@ export class CashFlowService {
       query.andWhere('cashFlow.flowDate <= :endDate', { endDate });
     }
 
-    return await query.getMany();
+    // Get total count for pagination
+    const total = await query.getCount();
+
+    // Apply pagination
+    const offset = (page - 1) * limit;
+    query.skip(offset).take(limit);
+
+    const data = await query.getMany();
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
   }
 
   /**
@@ -417,6 +454,76 @@ export class CashFlowService {
         newCashBalance: result.newCashBalance,
         portfolioUpdated: true,
       };
+    });
+  }
+
+  /**
+   * Update an existing cash flow.
+   */
+  async updateCashFlow(
+    portfolioId: string,
+    cashFlowId: string,
+    updateData: CreateCashFlowDto,
+  ): Promise<CashFlow> {
+    const cashFlow = await this.cashFlowRepository.findOne({
+      where: { cashFlowId, portfolioId },
+    });
+
+    if (!cashFlow) {
+      throw new NotFoundException('Cash flow not found');
+    }
+
+    if (cashFlow.status === CashFlowStatus.CANCELLED) {
+      throw new BadRequestException('Cannot update cancelled cash flow');
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      // Update cash flow
+      await manager.update(CashFlow, 
+        { cashFlowId }, 
+        {
+          type: updateData.type as CashFlowType,
+          amount: updateData.amount,
+          currency: updateData.currency,
+          description: updateData.description,
+          flowDate: updateData.flowDate ? new Date(updateData.flowDate) : cashFlow.flowDate,
+          status: updateData.status as CashFlowStatus || cashFlow.status,
+          reference: updateData.reference || cashFlow.reference,
+          effectiveDate: updateData.effectiveDate ? new Date(updateData.effectiveDate) : cashFlow.effectiveDate,
+          updatedAt: new Date(),
+        }
+      );
+
+      // Recalculate portfolio balance
+      await this.recalculateCashBalanceFromTrades(portfolioId);
+
+      // Return updated cash flow
+      return await manager.findOne(CashFlow, { where: { cashFlowId } });
+    });
+  }
+
+  /**
+   * Delete an existing cash flow.
+   */
+  async deleteCashFlow(portfolioId: string, cashFlowId: string): Promise<void> {
+    const cashFlow = await this.cashFlowRepository.findOne({
+      where: { cashFlowId, portfolioId },
+    });
+
+    if (!cashFlow) {
+      throw new NotFoundException('Cash flow not found');
+    }
+
+    // Allow deletion of cancelled cash flows
+    // Only prevent deletion if it's a critical business rule violation
+    // For now, we allow deletion of any cash flow regardless of status
+
+    await this.dataSource.transaction(async (manager) => {
+      // Delete cash flow
+      await manager.delete(CashFlow, { cashFlowId });
+
+      // Recalculate portfolio balance
+      await this.recalculateCashBalanceFromTrades(portfolioId);
     });
   }
 }

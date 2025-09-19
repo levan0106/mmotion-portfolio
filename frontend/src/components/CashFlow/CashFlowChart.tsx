@@ -8,6 +8,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
+  Paper,
+  Grid,
+  Divider,
+  Skeleton,
+  Alert,
+  IconButton,
+  Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
   LineChart,
@@ -23,8 +31,32 @@ import {
   PieChart,
   Pie,
   Cell,
+  ReferenceLine,
 } from 'recharts';
 import { formatCurrency } from '../../utils/format';
+
+// Add CSS for animations
+const styles = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}
+import {
+  TrendingUp,
+  AccountBalance,
+  Timeline,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  Refresh,
+} from '@mui/icons-material';
 
 interface CashFlowChartProps {
   portfolioId: string;
@@ -49,13 +81,23 @@ interface MonthlyData {
 
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('line');
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
   const [lineData, setLineData] = useState<CashFlowData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const COLORS = ['#4caf50', '#f44336', '#2196f3', '#ff9800'];
+  const COLORS = {
+    deposits: '#4caf50',
+    withdrawals: '#f44336', 
+    dividends: '#2196f3',
+    interest: '#ff9800',
+    netFlow: '#9c27b0',
+    cumulative: '#ff5722',
+    grid: '#e0e0e0',
+    text: '#424242',
+  };
+
 
   useEffect(() => {
     loadData();
@@ -66,13 +108,18 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
       setLoading(true);
       console.log('Loading cash flow data for portfolio:', portfolioId);
       
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history`);
+      // Load all data for chart (no pagination needed for chart)
+      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?limit=1000`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
-      console.log('Raw API response:', data);
+      const responseData = await response.json();
+      console.log('Raw API response:', responseData);
+      
+      // Extract the actual data array from the new pagination format
+      const data = responseData.data || [];
+      console.log('Extracted data array:', data);
 
       // Process data for different chart types
       processLineData(data);
@@ -89,12 +136,16 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     const daysAgo = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
+    
+    console.log(`Processing line data for ${daysAgo} days ago from ${startDate.toISOString()}`);
+    console.log(`Total records: ${data.length}`);
 
     const filteredData = data.filter(cf => 
-      new Date(cf.flowDate) >= startDate && cf.status === 'COMPLETED'
+      new Date(cf.flowDate) >= startDate && (cf.status === 'COMPLETED' || !cf.status)
     );
 
     console.log(`Filtered ${filteredData.length} records for line chart`);
+    console.log('Sample filtered record:', filteredData[0]);
 
     // Group by date
     const groupedData = filteredData.reduce((acc, cf) => {
@@ -103,9 +154,10 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
         acc[date] = { date, deposits: 0, withdrawals: 0, dividends: 0, netFlow: 0 };
       }
       
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[date].deposits += Math.abs(cf.amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[date].withdrawals += Math.abs(cf.amount);
-      else if (cf.type === 'DIVIDEND') acc[date].dividends += cf.amount;
+      const amount = parseFloat(cf.amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[date].deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[date].withdrawals += Math.abs(amount);
+      else if (cf.type === 'DIVIDEND') acc[date].dividends += amount;
       
       acc[date].netFlow = acc[date].deposits + acc[date].dividends - acc[date].withdrawals;
       
@@ -131,7 +183,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     startDate.setMonth(startDate.getMonth() - monthsAgo);
 
     const filteredData = data.filter(cf => 
-      new Date(cf.flowDate) >= startDate && cf.status === 'COMPLETED'
+      new Date(cf.flowDate) >= startDate && (cf.status === 'COMPLETED' || !cf.status)
     );
 
     // Group by month
@@ -143,9 +195,10 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
         acc[month] = { month, deposits: 0, withdrawals: 0, dividends: 0, netFlow: 0 };
       }
       
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[month].deposits += Math.abs(cf.amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[month].withdrawals += Math.abs(cf.amount);
-      else if (cf.type === 'DIVIDEND') acc[month].dividends += cf.amount;
+      const amount = parseFloat(cf.amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[month].deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[month].withdrawals += Math.abs(amount);
+      else if (cf.type === 'DIVIDEND') acc[month].dividends += amount;
       
       acc[month].netFlow = acc[month].deposits + acc[month].dividends - acc[month].withdrawals;
       
@@ -164,22 +217,23 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     startDate.setDate(startDate.getDate() - daysAgo);
 
     const filteredData = data.filter(cf => 
-      new Date(cf.flowDate) >= startDate && cf.status === 'COMPLETED'
+      new Date(cf.flowDate) >= startDate && (cf.status === 'COMPLETED' || !cf.status)
     );
 
     const totals = filteredData.reduce((acc, cf) => {
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc.deposits += Math.abs(cf.amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc.withdrawals += Math.abs(cf.amount);
-      else if (cf.type === 'DIVIDEND') acc.dividends += cf.amount;
-      else if (cf.type === 'INTEREST') acc.interest += cf.amount;
+      const amount = parseFloat(cf.amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc.deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc.withdrawals += Math.abs(amount);
+      else if (cf.type === 'DIVIDEND') acc.dividends += amount;
+      else if (cf.type === 'INTEREST') acc.interest += amount;
       return acc;
     }, { deposits: 0, withdrawals: 0, dividends: 0, interest: 0 });
 
     const result = [
-      { name: 'Deposits', value: totals.deposits, color: COLORS[0] },
-      { name: 'Withdrawals', value: totals.withdrawals, color: COLORS[1] },
-      { name: 'Dividends', value: totals.dividends, color: COLORS[2] },
-      { name: 'Interest', value: totals.interest, color: COLORS[3] },
+      { name: 'Deposits', value: totals.deposits, color: COLORS.deposits },
+      { name: 'Withdrawals', value: totals.withdrawals, color: COLORS.withdrawals },
+      { name: 'Dividends', value: totals.dividends, color: COLORS.dividends },
+      { name: 'Interest', value: totals.interest, color: COLORS.interest },
     ].filter(item => item.value > 0);
 
     setPieData(result);
@@ -188,22 +242,46 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   const renderChart = () => {
     if (loading) {
       return (
-        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={400}>
-          <Typography variant="h6" gutterBottom>Loading chart data...</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Fetching cash flow data for portfolio {portfolioId}
-          </Typography>
+        <Box sx={{ p: 3 }}>
+          <Box display="flex" alignItems="center" mb={2}>
+            <Refresh sx={{ mr: 1, animation: 'spin 1s linear infinite' }} />
+            <Typography variant="h6">Loading Chart Data</Typography>
+          </Box>
+          <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
+          <Box mt={2}>
+            <Typography variant="body2" color="text.secondary">
+              Fetching cash flow data for portfolio {portfolioId}
+            </Typography>
+          </Box>
         </Box>
       );
     }
 
     if (lineData.length === 0 && monthlyData.length === 0 && pieData.length === 0) {
       return (
-        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={400}>
-          <Typography variant="h6" gutterBottom>No Data Available</Typography>
-          <Typography variant="body2" color="text.secondary">
-            No cash flow data found for the selected time range
-          </Typography>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Alert 
+            severity="info" 
+            icon={<Timeline />}
+            sx={{ 
+              mb: 2,
+              '& .MuiAlert-message': {
+                width: '100%'
+              }
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              No Cash Flow Data Available
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              No cash flow data found for the selected time range. Try selecting a longer time period.
+            </Typography>
+          </Alert>
+          <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+            <Typography variant="caption" color="text.secondary">
+              Debug Info: Line data: {lineData.length}, Monthly data: {monthlyData.length}, Pie data: {pieData.length}
+            </Typography>
+          </Paper>
         </Box>
       );
     }
@@ -211,59 +289,222 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     switch (chartType) {
       case 'line':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={lineData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), '']} />
-              <Legend />
-              <Line type="monotone" dataKey="deposits" stroke={COLORS[0]} strokeWidth={2} />
-              <Line type="monotone" dataKey="withdrawals" stroke={COLORS[1]} strokeWidth={2} />
-              <Line type="monotone" dataKey="dividends" stroke={COLORS[2]} strokeWidth={2} />
-              <Line type="monotone" dataKey="netFlow" stroke="#9c27b0" strokeWidth={3} />
-              <Line type="monotone" dataKey="cumulative" stroke="#ff5722" strokeWidth={2} strokeDasharray="5 5" />
-            </LineChart>
-          </ResponsiveContainer>
+          <Box>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart 
+                data={lineData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <defs>
+                  <linearGradient id="depositsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.deposits} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={COLORS.deposits} stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="withdrawalsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.withdrawals} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={COLORS.withdrawals} stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke={COLORS.grid}
+                  opacity={0.3}
+                />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12, fill: COLORS.text }}
+                  axisLine={{ stroke: COLORS.grid }}
+                  tickLine={{ stroke: COLORS.grid }}
+                />
+                <YAxis 
+                  tickFormatter={(value) => formatCurrency(value)} 
+                  tick={{ fontSize: 12, fill: COLORS.text }}
+                  axisLine={{ stroke: COLORS.grid }}
+                  tickLine={{ stroke: COLORS.grid }}
+                />
+                <Tooltip 
+                  formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
+                  labelStyle={{ color: COLORS.text }}
+                  contentStyle={{ 
+                    backgroundColor: 'white',
+                    border: `1px solid ${COLORS.grid}`,
+                    borderRadius: 8,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: 20 }}
+                />
+                <ReferenceLine y={0} stroke={COLORS.grid} strokeDasharray="2 2" />
+                <Line 
+                  type="monotone" 
+                  dataKey="deposits" 
+                  stroke={COLORS.deposits} 
+                  strokeWidth={3}
+                  dot={{ fill: COLORS.deposits, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.deposits, strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="withdrawals" 
+                  stroke={COLORS.withdrawals} 
+                  strokeWidth={3}
+                  dot={{ fill: COLORS.withdrawals, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.withdrawals, strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="dividends" 
+                  stroke={COLORS.dividends} 
+                  strokeWidth={3}
+                  dot={{ fill: COLORS.dividends, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.dividends, strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="netFlow" 
+                  stroke={COLORS.netFlow} 
+                  strokeWidth={4}
+                  dot={{ fill: COLORS.netFlow, strokeWidth: 2, r: 5 }}
+                  activeDot={{ r: 7, stroke: COLORS.netFlow, strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="cumulative" 
+                  stroke={COLORS.cumulative} 
+                  strokeWidth={3} 
+                  strokeDasharray="8 4"
+                  dot={{ fill: COLORS.cumulative, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.cumulative, strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
         );
 
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), '']} />
-              <Legend />
-              <Bar dataKey="deposits" fill={COLORS[0]} />
-              <Bar dataKey="withdrawals" fill={COLORS[1]} />
-              <Bar dataKey="dividends" fill={COLORS[2]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Box>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={monthlyData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <defs>
+                  <linearGradient id="depositsBar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.deposits} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={COLORS.deposits} stopOpacity={0.4}/>
+                  </linearGradient>
+                  <linearGradient id="withdrawalsBar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.withdrawals} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={COLORS.withdrawals} stopOpacity={0.4}/>
+                  </linearGradient>
+                  <linearGradient id="dividendsBar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.dividends} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={COLORS.dividends} stopOpacity={0.4}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke={COLORS.grid}
+                  opacity={0.3}
+                />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fontSize: 12, fill: COLORS.text }}
+                  axisLine={{ stroke: COLORS.grid }}
+                  tickLine={{ stroke: COLORS.grid }}
+                />
+                <YAxis 
+                  tickFormatter={(value) => formatCurrency(value)} 
+                  tick={{ fontSize: 12, fill: COLORS.text }}
+                  axisLine={{ stroke: COLORS.grid }}
+                  tickLine={{ stroke: COLORS.grid }}
+                />
+                <Tooltip 
+                  formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
+                  labelStyle={{ color: COLORS.text }}
+                  contentStyle={{ 
+                    backgroundColor: 'white',
+                    border: `1px solid ${COLORS.grid}`,
+                    borderRadius: 8,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: 20 }}
+                />
+                <ReferenceLine y={0} stroke={COLORS.grid} strokeDasharray="2 2" />
+                <Bar 
+                  dataKey="deposits" 
+                  fill="url(#depositsBar)" 
+                  radius={[4, 4, 0, 0]}
+                  stroke={COLORS.deposits}
+                  strokeWidth={1}
+                />
+                <Bar 
+                  dataKey="withdrawals" 
+                  fill="url(#withdrawalsBar)" 
+                  radius={[4, 4, 0, 0]}
+                  stroke={COLORS.withdrawals}
+                  strokeWidth={1}
+                />
+                <Bar 
+                  dataKey="dividends" 
+                  fill="url(#dividendsBar)" 
+                  radius={[4, 4, 0, 0]}
+                  stroke={COLORS.dividends}
+                  strokeWidth={1}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
         );
 
       case 'pie':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), '']} />
-            </PieChart>
-          </ResponsiveContainer>
+          <Box>
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }: any) => 
+                    `${name}: ${(percent * 100).toFixed(1)}%`
+                  }
+                  outerRadius={100}
+                  innerRadius={40}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      stroke={entry.color}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
+                  contentStyle={{ 
+                    backgroundColor: 'white',
+                    border: `1px solid ${COLORS.grid}`,
+                    borderRadius: 8,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36}
+                  wrapperStyle={{ paddingTop: 20 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </Box>
         );
 
       default:
@@ -272,24 +513,69 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">Cash Flow Analytics</Typography>
-          <Box display="flex" gap={2}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+    <Card 
+      sx={{ 
+        borderRadius: 3,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(0,0,0,0.05)'
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box>
+            <Typography variant="h5" fontWeight="600" color="text.primary" gutterBottom>
+              Cash Flow Analytics
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Track your portfolio's cash movements and trends
+            </Typography>
+          </Box>
+          
+          {/* Controls */}
+          <Box display="flex" gap={2} alignItems="center">
+            <MuiTooltip title="Refresh Data">
+              <IconButton 
+                onClick={loadData} 
+                disabled={loading}
+                sx={{ 
+                  bgcolor: 'primary.50',
+                  '&:hover': { bgcolor: 'primary.100' }
+                }}
+              >
+                <Refresh />
+              </IconButton>
+            </MuiTooltip>
+            
+            <FormControl size="small" sx={{ minWidth: 140 }}>
               <InputLabel>Chart Type</InputLabel>
               <Select
                 value={chartType}
                 label="Chart Type"
                 onChange={(e) => setChartType(e.target.value as any)}
               >
-                <MenuItem value="line">Line Chart</MenuItem>
-                <MenuItem value="bar">Bar Chart</MenuItem>
-                <MenuItem value="pie">Pie Chart</MenuItem>
+                <MenuItem value="line">
+                  <Box display="flex" alignItems="center">
+                    <Timeline sx={{ mr: 1, fontSize: 20 }} />
+                    Line Chart
+                  </Box>
+                </MenuItem>
+                <MenuItem value="bar">
+                  <Box display="flex" alignItems="center">
+                    <BarChartIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Bar Chart
+                  </Box>
+                </MenuItem>
+                <MenuItem value="pie">
+                  <Box display="flex" alignItems="center">
+                    <PieChartIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Pie Chart
+                  </Box>
+                </MenuItem>
               </Select>
             </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            
+            <FormControl size="small" sx={{ minWidth: 140 }}>
               <InputLabel>Time Range</InputLabel>
               <Select
                 value={timeRange}
@@ -305,13 +591,35 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
           </Box>
         </Box>
 
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Chart */}
         {renderChart()}
 
-        {chartType === 'line' && (
+
+        {/* Data Summary */}
+        {lineData.length > 0 && (
           <Box mt={2}>
-            <Typography variant="body2" color="textSecondary">
-              <strong>Purple line:</strong> Net cash flow per day | <strong>Orange dashed:</strong> Cumulative cash flow
-            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6} sm={3}>
+                <Chip 
+                  icon={<TrendingUp />}
+                  label={`${lineData.length} data points`}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Chip 
+                  icon={<AccountBalance />}
+                  label={`${timeRange.toUpperCase()} view`}
+                  color="secondary"
+                  variant="outlined"
+                  size="small"
+                />
+              </Grid>
+            </Grid>
           </Box>
         )}
       </CardContent>

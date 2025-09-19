@@ -18,6 +18,9 @@ export enum CashFlowType {
   FEE = 'FEE',
   TAX = 'TAX',
   ADJUSTMENT = 'ADJUSTMENT',
+  BUY_TRADE = 'BUY_TRADE',
+  SELL_TRADE = 'SELL_TRADE',
+  OTHER = 'OTHER',
   TRADE_SETTLEMENT = 'TRADE_SETTLEMENT', // Tự động tạo từ trades
 }
 
@@ -62,7 +65,7 @@ export class CashFlow {
   @Column({ type: 'timestamp', name: 'effective_date', nullable: true })
   effectiveDate: Date; // Khi nào thực sự có hiệu lực
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid', name: 'trade_id', nullable: true })
   tradeId: string; // Link to trade if created from trade
 
   @CreateDateColumn({ name: 'created_at' })

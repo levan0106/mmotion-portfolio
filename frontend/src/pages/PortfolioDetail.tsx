@@ -619,10 +619,10 @@ const PortfolioDetail: React.FC = () => {
               },
             }}
           >
-            <Tab label="Trading Management" />
             <Tab label="Trading Analysis" defaultChecked />
-            <Tab label="Cash Flow" />
             <Tab label="Asset Allocation" />
+            <Tab label="Trading Management" />
+            <Tab label="Cash Flow" />
           </Tabs>
           
           {/* Compact Mode Toggle */}
@@ -659,24 +659,8 @@ const PortfolioDetail: React.FC = () => {
           backdropFilter: 'blur(10px)',
         }}
       >
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ 
-            backgroundColor: 'background.paper',
-            minHeight: '80vh',
-          }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
-              <Grid item xs={12}>
-                <TradeListContainer 
-                  portfolioId={portfolioId!} 
-                  onCreate={() => setShowCreateForm(true)}
-                  isCompactMode={isCompactMode}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value={tabValue} index={0}>
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
@@ -704,17 +688,20 @@ const PortfolioDetail: React.FC = () => {
             backgroundColor: 'background.paper',
             minHeight: '80vh',
           }}>
-            <CashFlowLayout 
-              portfolioId={portfolioId!} 
-              onCashFlowUpdate={() => {
-                // Refresh portfolio data when cash flow is updated
-                refetchPortfolio();
-              }}
-            />
+            <Grid container spacing={getUltraSpacing(3, 1)}>
+              <Grid item xs={12}>
+                <TradeListContainer 
+                  portfolioId={portfolioId!} 
+                  onCreate={() => setShowCreateForm(true)}
+                  isCompactMode={isCompactMode}
+                />
+              </Grid>
+            </Grid>
           </Box>
         </TabPanel>
 
-        <TabPanel value={tabValue} index={3}>
+        
+        <TabPanel value={tabValue} index={1}>
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
@@ -1138,6 +1125,22 @@ const PortfolioDetail: React.FC = () => {
 
           </Box>
         </TabPanel>
+
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ 
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
+          }}>
+            <CashFlowLayout 
+              portfolioId={portfolioId!} 
+              onCashFlowUpdate={() => {
+                // Refresh portfolio data when cash flow is updated
+                refetchPortfolio();
+              }}
+            />
+          </Box>
+        </TabPanel>
+
       </Box>
       {/* Create Trade Modal */}
       {showCreateForm && (
