@@ -1,0 +1,363 @@
+/* SnapshotExportImport Component Styles */
+
+.snapshot-export-import {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.export-import-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.export-import-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: #495057;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.export-import-header p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.export-import-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.export-section,
+.import-section {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.export-section h4,
+.import-section h4 {
+  margin: 0 0 1.5rem 0;
+  color: #495057;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.export-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: white;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.export-format {
+  margin-bottom: 1.5rem;
+}
+
+.export-format label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.format-options {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.format-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #495057;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.format-options label:hover {
+  background: #e9ecef;
+}
+
+.format-options input[type="radio"] {
+  margin: 0;
+}
+
+.export-btn,
+.import-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  min-width: 150px;
+}
+
+.export-btn {
+  background: #007bff;
+  color: white;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.export-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.import-file-select {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.file-select-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px dashed #007bff;
+  background: transparent;
+  color: #007bff;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.file-select-btn:hover {
+  background: #007bff;
+  color: white;
+  border-style: solid;
+}
+
+.selected-file {
+  font-size: 0.875rem;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.import-preview {
+  margin-bottom: 1.5rem;
+}
+
+.import-preview h5 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.preview-table {
+  max-height: 300px;
+  overflow: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.preview-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.preview-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  position: sticky;
+  top: 0;
+}
+
+.preview-table td {
+  color: #6c757d;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-btn {
+  background: #28a745;
+  color: white;
+}
+
+.import-btn:hover:not(:disabled) {
+  background: #1e7e34;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.import-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.export-import-info {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.export-import-info h5 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.export-import-info ul {
+  margin: 0 0 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.export-import-info li {
+  margin-bottom: 0.5rem;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.export-import-info strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .export-import-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .export-filters {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .snapshot-export-import {
+    padding: 1rem;
+  }
+  
+  .export-section,
+  .import-section {
+    padding: 1rem;
+  }
+  
+  .export-filters {
+    grid-template-columns: 1fr;
+  }
+  
+  .format-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .import-file-select {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .file-select-btn {
+    text-align: center;
+  }
+  
+  .preview-table {
+    font-size: 0.625rem;
+  }
+  
+  .preview-table th,
+  .preview-table td {
+    padding: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .snapshot-export-import {
+    padding: 0.75rem;
+  }
+  
+  .export-section,
+  .import-section {
+    padding: 0.75rem;
+  }
+  
+  .export-import-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .export-section h4,
+  .import-section h4 {
+    font-size: 1.125rem;
+  }
+  
+  .export-btn,
+  .import-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .file-select-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+}

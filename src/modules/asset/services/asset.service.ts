@@ -565,7 +565,7 @@ export class AssetService {
     }>(cacheKey);
 
     if (cached) {
-      console.log(`[DEBUG] Using cached current values for ${assetId}: currentPrice=${cached.currentPrice}`);
+      console.log(`[DEBUG] Using cached current values for ${assetId}: currentPrice=${cached.currentPrice}, currentQuantity=${cached.currentQuantity}`);
       return cached;
     }
 
@@ -573,7 +573,7 @@ export class AssetService {
 
     // Get asset first
     const asset = await this.assetRepository.findById(assetId);
-    console.log(`[DEBUG] Asset found: ${asset ? 'YES' : 'NO'}, initialQuantity: ${asset?.initialQuantity}`);
+    console.log(`[DEBUG] Asset found: ${asset ? 'YES' : 'NO'}, initialQuantity: ${asset?.initialQuantity}, currentQuantity: ${asset?.currentQuantity}`);
     if (!asset) {
       return {
         currentValue: 0,
@@ -613,13 +613,13 @@ export class AssetService {
     }
 
     if (!trades || trades.length === 0) {
-      // If no trades, use initial quantity for current quantity and get market price
-      const initialQuantity = Number(asset.initialQuantity || 0);
+      // If no trades in this portfolio, quantity should be 0
+      console.log(`[DEBUG] No trades found for asset ${assetId} in portfolio ${portfolioId}, returning quantity = 0`);
       result = {
-        currentValue: initialQuantity * currentMarketPrice,
-        currentQuantity: initialQuantity,
+        currentValue: 0,
+        currentQuantity: 0,
         currentPrice: currentMarketPrice,
-        avgCost: Number(asset.initialValue || 0) / initialQuantity || 0,
+        avgCost: 0,
       };
     } else {
       // Calculate current quantity and average cost
@@ -634,6 +634,8 @@ export class AssetService {
         const tax = Number(trade.tax || 0);
         const totalTradeCost = quantity * price + fee + tax;
         
+        console.log(`[DEBUG] Trade: ${trade.side} ${quantity} @ ${price}, portfolioId: ${trade.portfolioId}, currentQuantity before: ${currentQuantity}`);
+        
         if (trade.side === 'BUY') {
           currentQuantity += quantity;
           totalCost += totalTradeCost;
@@ -642,6 +644,8 @@ export class AssetService {
           currentQuantity -= quantity;
           // For sells, we don't add to totalCost but we need to track for avgCost calculation
         }
+        
+        console.log(`[DEBUG] Trade processed: currentQuantity after: ${currentQuantity}`);
       }
 
       

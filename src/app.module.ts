@@ -9,6 +9,8 @@ import { SharedModule } from './modules/shared/shared.module';
 import { LoggingModule } from './modules/logging/logging.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { MarketDataModule } from './modules/market-data/market-data.module';
+import { SnapshotModule } from './modules/portfolio/snapshot.module';
+import { PortfolioSnapshotModule } from './modules/portfolio/portfolio-snapshot.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestLoggingController } from './test-logging.controller';
@@ -58,6 +60,8 @@ import { TestLoggingController } from './test-logging.controller';
       LoggingModule,
       MetricsModule,
       MarketDataModule,
+      SnapshotModule,
+      PortfolioSnapshotModule,
   ],
   controllers: [AppController, TestLoggingController],
   providers: [AppService],

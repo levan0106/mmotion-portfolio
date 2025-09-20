@@ -2,7 +2,45 @@
 
 ## What Works
 ### ✅ Completed
-- **PORTFOLIO DETAIL UI/UX ENHANCEMENTS - COMPLETED** (Current Session - December 19, 2024)
+- **ALLOCATION TIMELINE HYBRID IMPLEMENTATION - PHASE 1 COMPLETED** (Previous Session - December 19, 2024)
+  - **Hybrid Logic Implementation**: Complete implementation of hybrid approach for allocation timeline
+  - **Current Month Logic**: Uses PortfolioCalculationService with current market prices for accurate real-time allocation
+  - **Historical Month Logic**: Uses trade-based calculations with historical prices for historical accuracy
+  - **GOLD Allocation Fix**: Fixed critical bug where GOLD allocation showed 12.6% instead of correct 24.2%
+  - **Asset Relation Loading**: Fixed asset relation loading in trades API and repository using createQueryBuilder
+  - **Database-Driven Asset Detection**: Removed hardcoded fallbacks, implemented proper database lookup for asset types
+  - **Code Quality**: Clean, maintainable code with no debug hardcode or temporary fixes
+  - **Git Integration**: Successfully committed Phase 1 changes with comprehensive commit message
+  - **Key Features Implemented**:
+    - ✅ **Hybrid Timeline Logic**: Current month uses current positions, historical months use trade data
+    - ✅ **Asset Type Detection**: Database-driven asset type lookup via assetInfoMap
+    - ✅ **GOLD Allocation Accuracy**: Correctly shows 24.2% (only DOJI remaining, 9999 sold)
+    - ✅ **Asset Relation Fix**: Fixed trade.asset loading in repository and service layers
+    - ✅ **Clean Code**: Removed all hardcoded debug fallbacks and temporary fixes
+    - ✅ **Production Ready**: Clean, optimized code ready for Phase 2 implementation
+    - ✅ **Git Commit**: Detailed commit message documenting all changes and improvements
+
+- **CR-006 ASSET SNAPSHOT SYSTEM - COMPLETE IMPLEMENTATION** (Current Session - December 20, 2024)
+  - **Backend Implementation**: Complete snapshot system with asset and portfolio snapshots
+  - **Database Schema**: AssetAllocationSnapshot and PortfolioSnapshot entities with P&L tracking
+  - **API Endpoints**: 6 comprehensive endpoints for snapshot management and timeline integration
+  - **Frontend Integration**: Complete UI with collapsible tables, refresh functionality, and format helpers
+  - **Key Features Implemented**:
+    - ✅ **Multi-Granularity Support**: Daily, weekly, monthly snapshot granularities
+    - ✅ **P&L Tracking**: Complete realized/unrealized P&L tracking for each asset and portfolio
+    - ✅ **Performance Optimization**: Timeline queries optimized with caching and efficient queries
+    - ✅ **Database Schema**: AssetAllocationSnapshot and PortfolioSnapshot entities with 20+ fields
+    - ✅ **API Design**: 6 new endpoints for snapshot management and timeline integration
+    - ✅ **Frontend Integration**: Enhanced UI with collapsible tables and granularity selection
+    - ✅ **Hybrid Approach**: Current period real-time + historical snapshots
+    - ✅ **Caching Strategy**: Redis caching with 5-minute TTL for performance
+    - ✅ **Format Helpers**: Consistent formatting across all snapshot components
+    - ✅ **Refresh Functionality**: Complete refresh system for both asset and portfolio snapshots
+    - ✅ **Collapsible UI**: Level 1 (Date + Asset Type) and Level 2 (Asset Details) with toggle functionality
+    - ✅ **Data Validation**: Fixed asset quantity calculation to be portfolio-specific
+    - ✅ **Error Handling**: Comprehensive error handling and user feedback
+  - **Implementation Complete**: All 35 tasks completed across 5 phases
+- **PORTFOLIO DETAIL UI/UX ENHANCEMENTS - COMPLETED** (Previous Session - December 19, 2024)
   - **Card Layout Optimization**: Redesigned 8 cards into 4 professional merged cards for better space utilization
   - **Typography Improvements**: Enhanced font hierarchy with proper sizing (1.1rem titles, 1.2rem values, 0.85rem labels)
   - **Color Scheme Standardization**: Implemented consistent black/gray text colors (#1a1a1a, #666666) for better readability

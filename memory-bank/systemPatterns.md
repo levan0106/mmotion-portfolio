@@ -48,6 +48,10 @@ flowchart LR
 - **Modal Enhancement Pattern**: Add Edit/Delete buttons to detail modals for better UX (Asset Management UI Enhancements completed)
 - **AssetAutocomplete Pattern**: Advanced searchable dropdown with pagination, currency formatting, and edit modal support (TradeForm AssetAutocomplete Integration completed)
 - **Force Re-render Pattern**: Key-based re-render mechanism for components that need to reset when external data changes (TradeForm AssetAutocomplete Integration completed)
+- **Snapshot System Pattern**: Multi-granularity snapshots with asset and portfolio level tracking (CR-006 Asset Snapshot System completed)
+- **Collapsible Table Pattern**: Hierarchical data display with Level 1 (Date + Asset Type) and Level 2 (Asset Details) (CR-006 Asset Snapshot System completed)
+- **Format Helper Pattern**: Centralized formatting utilities for consistent data display across all components (CR-006 Asset Snapshot System completed)
+- **Refresh Trigger Pattern**: Parent-child refresh communication using refreshTrigger prop for data synchronization (CR-006 Asset Snapshot System completed)
 - **Asset Loading Optimization**: Handle cases where component value is set before data is loaded from API (TradeForm AssetAutocomplete Integration completed)
 
 ## Component Relationships
@@ -253,7 +257,29 @@ erDiagram
 - **Mobile Responsive**: Optimized for all screen sizes with proper touch interactions - **COMPLETED**
 - **Production Ready**: Clean, maintainable code with no linter errors - **COMPLETED**
 
-### 17. Circuit Breaker Pattern - **PLANNED**
+### 17. Allocation Timeline Hybrid Pattern - **IMPLEMENTED WITH PHASE 1 ✅**
+- **Current Month Logic**: Uses PortfolioCalculationService with current market prices for real-time accuracy - **COMPLETED**
+- **Historical Month Logic**: Uses trade-based calculations with historical prices for historical accuracy - **COMPLETED**
+- **Asset Type Detection**: Database-driven asset type lookup via assetInfoMap for maintainability - **COMPLETED**
+- **Asset Relation Loading**: Fixed trade.asset loading using createQueryBuilder with leftJoinAndSelect - **COMPLETED**
+- **GOLD Allocation Fix**: Fixed critical bug showing correct 24.2% instead of 12.6% - **COMPLETED**
+- **Clean Code**: Removed all hardcoded debug fallbacks and temporary fixes - **COMPLETED**
+- **Hybrid Balance**: Perfect balance between historical accuracy and current accuracy - **COMPLETED**
+- **Production Ready**: Clean, optimized code ready for Phase 2 implementation - **COMPLETED**
+
+### 18. Asset Snapshot System Pattern - **PLANNED FOR PHASE 2**
+- **Multi-Granularity Snapshots**: Daily, weekly, monthly snapshot support for flexible data analysis - **PLANNED**
+- **Asset-Level Tracking**: Individual asset snapshots for better grouping and analysis - **PLANNED**
+- **P&L Tracking**: Comprehensive P&L tracking (realized, unrealized, total) in snapshots - **PLANNED**
+- **Symbol Field Support**: Asset symbol field for efficient querying and filtering - **PLANNED**
+- **Database Schema**: AssetAllocationSnapshot entity with comprehensive fields - **PLANNED**
+- **API Endpoints**: Complete REST API for snapshot management - **PLANNED**
+- **Frontend Integration**: Enhanced timeline component with snapshot data - **PLANNED**
+- **Performance Optimization**: Redis caching and database indexing - **PLANNED**
+- **Testing Strategy**: Unit, integration, and E2E tests - **PLANNED**
+- **Documentation**: Complete API and user documentation - **PLANNED**
+
+### 19. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented

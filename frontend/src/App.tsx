@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box } from '@mui/material';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
@@ -17,33 +17,8 @@ import PortfolioDetail from './pages/PortfolioDetail';
 import Trading from './pages/Trading';
 import AssetManagement from './pages/AssetManagement';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
-
-// Create a custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-        },
-      },
-    },
-  },
-});
+import SnapshotManagementPage from './pages/SnapshotManagement';
+import { customTheme } from './theme/customTheme';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -69,7 +44,7 @@ const App: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={customTheme}>
         <CssBaseline />
         <Router>
           <AppLayout>
@@ -81,6 +56,7 @@ const App: React.FC = () => {
                 <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
                 <Route path="/assets" element={<AssetManagement />} />
                 <Route path="/global-assets" element={<GlobalAssetsPage />} />
+                <Route path="/snapshots" element={<SnapshotManagementPage />} />
                 <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
                 <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
                 <Route path="/settings" element={<div>Settings Page - Coming Soon</div>} />

@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Testing
+  postgres-test:
+    image: postgres:15
+    container_name: portfolio-test-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: portfolio_test
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./test/test-data:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d portfolio_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Redis Cache for Testing
+  redis-test:
+    image: redis:7-alpine
+    container_name: portfolio-test-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_test_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Test Application
+  app-test:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: portfolio-test-app
+    environment:
+      NODE_ENV: test
+      DB_HOST: postgres-test
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: portfolio_test
+      REDIS_HOST: redis-test
+      REDIS_PORT: 6379
+      PORT: 3000
+      HOST: 0.0.0.0
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src
+      - ../test:/app/test
+      - ../package.json:/app/package.json
+      - ../tsconfig.json:/app/tsconfig.json
+      - ../nest-cli.json:/app/nest-cli.json
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        npm run typeorm:migration:run &&
+        echo 'Starting application...' &&
+        npm run start:prod
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - test-network
+
+  # Test Runner
+  test-runner:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: portfolio-test-runner
+    environment:
+      NODE_ENV: test
+      DB_HOST: postgres-test
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: portfolio_test
+      REDIS_HOST: redis-test
+      REDIS_PORT: 6379
+      APP_URL: http://app-test:3000
+    depends_on:
+      app-test:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src
+      - ../test:/app/test
+      - ../package.json:/app/package.json
+      - ../tsconfig.json:/app/tsconfig.json
+      - ../nest-cli.json:/app/nest-cli.json
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+    command: >
+      sh -c "
+        echo 'Waiting for application to be ready...' &&
+        sleep 30 &&
+        echo 'Running health check...' &&
+        npx ts-node test/test-health-check.ts &&
+        echo 'Running tests...' &&
+        npm run test:e2e:docker &&
+        echo 'Generating test summary...' &&
+        npx ts-node test/test-summary.ts
+      "
+    networks:
+      - test-network
+
+volumes:
+  postgres_test_data:
+    driver: local
+  redis_test_data:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge
