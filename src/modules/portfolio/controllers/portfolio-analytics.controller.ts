@@ -11,6 +11,7 @@ import { PortfolioAnalyticsService } from '../services/portfolio-analytics.servi
 import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { AssetDetailSummaryResponseDto } from '../dto/asset-detail-summary.dto';
+import { PositionManagerService } from '../services/position-manager.service';
 
 /**
  * Controller for Portfolio analytics and advanced reporting.
@@ -22,6 +23,7 @@ export class PortfolioAnalyticsController {
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly portfolioService: PortfolioService,
     private readonly portfolioRepository: PortfolioRepository,
+    private readonly positionManagerService: PositionManagerService,
   ) {}
 
   /**
@@ -336,43 +338,53 @@ export class PortfolioAnalyticsController {
   @ApiResponse({ status: 200, description: 'Asset performance data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getAssetPerformance(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    const allocation = await this.portfolioService.getAssetAllocation(id);
+    // Get real positions data from position manager service
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
+    const positions = await this.positionManagerService.getCurrentPositions(id);
 
-    // Generate mock performance data based on allocation
-    const performanceData = allocation.map((item, index) => {
-      // Mock performance calculations (1M, 3M, 6M, 1Y returns)
-      const timeframes = ['1M', '3M', '6M', '1Y'];
-      const selectedTimeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
+    // Group positions by asset type and calculate real performance
+    const groupedPositions = positions.reduce((acc: Record<string, {
+      totalValue: number;
+      totalUnrealizedPl: number;
+      positions: any[];
+    }>, position: any) => {
+      const assetType = position.assetType || 'UNKNOWN';
       
-      let basePerformance = (Math.random() - 0.3) * 0.5; // -15% to +35%
-      
-      // Adjust based on asset type
-      switch (item.assetType.toLowerCase()) {
-        case 'stock':
-          basePerformance *= 1.2; // Stocks tend to be more volatile
-          break;
-        case 'bond':
-          basePerformance *= 0.6; // Bonds are more stable
-          break;
-        case 'gold':
-          basePerformance *= 0.8; // Gold is moderate
-          break;
-        case 'crypto':
-          basePerformance *= 1.8; // Crypto is very volatile
-          break;
-        default:
-          basePerformance *= 1.0;
+      if (!acc[assetType]) {
+        acc[assetType] = {
+          totalValue: 0,
+          totalUnrealizedPl: 0,
+          positions: []
+        };
       }
+      
+      acc[assetType].totalValue += position.currentValue || 0;
+      acc[assetType].totalUnrealizedPl += position.unrealizedPl || 0;
+      acc[assetType].positions.push(position);
+      
+      return acc;
+    }, {});
+
+    // Calculate real performance data
+    const performanceData = Object.entries(groupedPositions).map(([assetType, data]: [string, {
+      totalValue: number;
+      totalUnrealizedPl: number;
+      positions: any[];
+    }], index) => {
+      // Calculate performance as unrealized P&L percentage
+      const performance = data.totalValue > 0 
+        ? (data.totalUnrealizedPl / data.totalValue) * 100 
+        : 0;
 
       const colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336'];
       
       return {
-        assetType: item.assetType,
-        performance: basePerformance,
-        value: item.totalValue,
+        assetType: assetType,
+        performance: performance / 100, // Convert to decimal for chart
+        value: data.totalValue,
         color: colors[index % colors.length],
-        timeframe: selectedTimeframe,
+        unrealizedPl: data.totalUnrealizedPl,
+        positionCount: data.positions.length,
       };
     });
 
@@ -462,31 +474,30 @@ export class PortfolioAnalyticsController {
    * Get asset allocation timeline data.
    */
   @Get('allocation-timeline')
-  @ApiOperation({ summary: 'Get asset allocation timeline data with snapshot support' })
+  @ApiOperation({ summary: 'Get asset allocation timeline data with real snapshot data' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
-  @ApiQuery({ name: 'useSnapshots', required: false, description: 'Whether to use snapshot data (default: true)' })
-  @ApiQuery({ name: 'granularity', required: false, enum: ['DAILY', 'WEEKLY', 'MONTHLY'], description: 'Snapshot granularity (default: DAILY)' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 12)' })
+  @ApiQuery({ name: 'granularity', required: false, enum: ['DAILY', 'WEEKLY', 'MONTHLY'], description: 'Snapshot granularity (default: MONTHLY)' })
   @ApiResponse({ status: 200, description: 'Allocation timeline data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getAllocationTimeline(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('months') months?: string,
-    @Query('useSnapshots') useSnapshots?: string,
     @Query('granularity') granularity?: string,
   ): Promise<any> {
-    const monthsToLookBack = months ? parseInt(months, 10) : 12;
-    const useSnapshotData = useSnapshots !== 'false'; // Default to true
-    const snapshotGranularity = granularity as any || 'DAILY';
+    // Limit to maximum 12 months
+    const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 12);
+    const snapshotGranularity = granularity as any || 'MONTHLY'; // Default to MONTHLY for better performance
     
-    if (isNaN(monthsToLookBack) || monthsToLookBack < 1 || monthsToLookBack > 60) {
-      throw new Error('Months parameter must be a number between 1 and 60');
+    if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
+      throw new Error('Months parameter must be a number between 1 and 12');
     }
 
+    // Always use snapshot data for real allocation timeline
     return await this.portfolioAnalyticsService.calculateAllocationTimeline(
       id, 
       monthsToLookBack, 
-      useSnapshotData, 
+      true, // Always use snapshots for real data
       snapshotGranularity
     );
   }

@@ -3,12 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 
-// Hook for portfolio analytics allocation timeline (supports both snapshot and trade-based calculation)
+// Hook for portfolio analytics allocation timeline (now uses real snapshot data with 12 month limit)
 export const usePortfolioAllocationTimeline = (
   portfolioId: string,
   months: number = 12,
-  useSnapshots: boolean = true,
-  granularity: string = 'DAILY'
+  granularity: string = 'MONTHLY'
 ) => {
   const [allocationData, setAllocationData] = useState<{ date: string; [key: string]: string | number }[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
@@ -22,10 +21,10 @@ export const usePortfolioAllocationTimeline = (
     setError(null);
     
     try {
+      // Use new API that enforces 12 month limit and always uses snapshot data
       const data = await apiService.getPortfolioAllocationTimeline(
         portfolioId,
         months,
-        useSnapshots,
         granularity
       );
       setAllocationData(data.data || []);
@@ -35,13 +34,13 @@ export const usePortfolioAllocationTimeline = (
     } finally {
       setLoading(false);
     }
-  }, [portfolioId, months, useSnapshots, granularity]);
+  }, [portfolioId, months, granularity]);
 
   useEffect(() => {
     if (portfolioId) {
       fetchAllocationData();
     }
-  }, [portfolioId, months, useSnapshots, granularity]);
+  }, [portfolioId, months, granularity, fetchAllocationData]);
 
   return {
     allocationData,

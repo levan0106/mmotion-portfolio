@@ -157,12 +157,10 @@ class ApiService {
   async getPortfolioAllocationTimeline(
     portfolioId: string, 
     months?: number, 
-    useSnapshots?: boolean, 
     granularity?: string
   ): Promise<any> {
     const params = new URLSearchParams();
     if (months) params.append('months', months.toString());
-    if (useSnapshots !== undefined) params.append('useSnapshots', useSnapshots.toString());
     if (granularity) params.append('granularity', granularity);
     
     const queryString = params.toString();
@@ -187,7 +185,7 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioPositions(portfolioId: string): Promise<any[]> {
+  async getPortfolioPositions(portfolioId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/positions`);
     return response.data;
   }

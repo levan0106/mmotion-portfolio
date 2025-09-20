@@ -22,7 +22,6 @@ import {
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Refresh as RefreshIcon,
   TrendingUp as TrendingUpIcon,
   Category as CategoryIcon,
   Visibility as ViewIcon,
@@ -34,7 +33,7 @@ import {
   CurrencyExchange as ForexIcon,
 } from '@mui/icons-material';
 import { useSnapshots } from '../../hooks/useSnapshots';
-import { usePortfolio, usePortfolios } from '../../hooks/usePortfolios';
+import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAssets } from '../../hooks/useAssets';
 import { useAccount } from '../../hooks/useAccount';
 import { usePortfolioSnapshots } from '../../hooks/usePortfolioSnapshots';

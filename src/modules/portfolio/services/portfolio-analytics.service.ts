@@ -355,18 +355,18 @@ export class PortfolioAnalyticsService {
   }
 
   /**
-   * Calculate asset allocation timeline for a portfolio.
+   * Calculate asset allocation timeline for a portfolio using real snapshot data.
    * @param portfolioId - Portfolio ID
-   * @param months - Number of months to look back (default: 12)
-   * @param useSnapshots - Whether to use snapshot data instead of trade data (default: true)
-   * @param granularity - Snapshot granularity (default: DAILY)
+   * @param months - Number of months to look back (max: 12)
+   * @param useSnapshots - Always true for real data
+   * @param granularity - Snapshot granularity (default: MONTHLY for better performance)
    * @returns Promise<AllocationTimelineResponse>
    */
   async calculateAllocationTimeline(
     portfolioId: string,
     months: number = 12,
     useSnapshots: boolean = true,
-    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
+    granularity: SnapshotGranularity = SnapshotGranularity.MONTHLY,
   ): Promise<{
     portfolioId: string;
     totalValue: number;
@@ -377,8 +377,11 @@ export class PortfolioAnalyticsService {
     calculatedAt: string;
   }> {
     try {
-      const cacheKey = `allocation-timeline:${portfolioId}:${months}:${useSnapshots}:${granularity}`;
-      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+      // Enforce maximum 12 months limit
+      const monthsToLookBack = Math.min(months, 12);
+      
+      const cacheKey = `allocation-timeline:${portfolioId}:${monthsToLookBack}:${granularity}`;
+      const CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache for real data
       
       // Try to get from cache first (if enabled)
       if (this.CACHE_ENABLED) {
@@ -402,11 +405,11 @@ export class PortfolioAnalyticsService {
         throw new Error(`Portfolio with ID ${portfolioId} not found`);
       }
 
-      // If using snapshots, use snapshot-based calculation
+      // Always use snapshot-based calculation for real data
       if (useSnapshots) {
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setMonth(startDate.getMonth() - months);
+        startDate.setMonth(startDate.getMonth() - monthsToLookBack);
 
         // Use SnapshotService to get allocation timeline data
         const snapshotData = await this.snapshotService.getAnalyticsAllocationTimeline(
@@ -430,7 +433,7 @@ export class PortfolioAnalyticsService {
         return result;
       }
 
-      // Fallback to original trade-based calculation
+      // Fallback to original trade-based calculation (should not be used with real data)
       const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
         portfolioId,
         parseFloat(portfolio.cashBalance.toString()),
@@ -453,7 +456,7 @@ export class PortfolioAnalyticsService {
       const allTrades = await this.tradeRepository.findTradesByPortfolio(portfolioId);
       const endDate = new Date();
       const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - months);
+      startDate.setMonth(startDate.getMonth() - monthsToLookBack);
       
       const trades = allTrades.filter(trade => {
         const tradeDate = new Date(trade.tradeDate);
@@ -465,7 +468,7 @@ export class PortfolioAnalyticsService {
       const monthlyData = new Map<string, Map<string, { quantity: number; value: number }>>();
 
       // Initialize monthly data structure
-      for (let i = months - 1; i >= 0; i--) {
+      for (let i = monthsToLookBack - 1; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -521,7 +524,7 @@ export class PortfolioAnalyticsService {
         }
 
         // Apply this trade's effect to all months from trade date onwards
-        for (let i = months - 1; i >= 0; i--) {
+        for (let i = monthsToLookBack - 1; i >= 0; i--) {
           const date = new Date();
           date.setMonth(date.getMonth() - i);
           const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -543,7 +546,7 @@ export class PortfolioAnalyticsService {
       }
 
       // Generate timeline data points in chronological order
-      for (let i = months - 1; i >= 0; i--) {
+      for (let i = monthsToLookBack - 1; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;

@@ -17,6 +17,7 @@ export interface PortfolioCalculationResult {
   assetPositions: Array<{
     assetId: string;
     symbol: string;
+    assetType: string;
     quantity: number;
     avgCost: number;
     currentValue: number;
@@ -122,6 +123,7 @@ export class PortfolioCalculationService {
   ): Promise<Array<{
     assetId: string;
     symbol: string;
+    assetType: string;
     quantity: number;
     avgCost: number;
     currentValue: number;
@@ -161,6 +163,7 @@ export class PortfolioCalculationService {
   ): Promise<{
     assetId: string;
     symbol: string;
+    assetType: string;
     quantity: number;
     avgCost: number;
     currentValue: number;
@@ -170,10 +173,12 @@ export class PortfolioCalculationService {
     let totalQuantity = 0;
     let totalCost = 0;
     let symbol = '';
+    let assetType = 'UNKNOWN';
 
     // Process trades in chronological order
     for (const trade of trades) {
       symbol = trade.asset?.symbol || '';
+      assetType = trade.asset?.type || 'UNKNOWN';
       
       if (trade.side === 'BUY') {
         totalQuantity += parseFloat(trade.quantity.toString());
@@ -188,6 +193,7 @@ export class PortfolioCalculationService {
       return {
         assetId,
         symbol,
+        assetType,
         quantity: 0,
         avgCost: 0,
         currentValue: 0,
@@ -227,6 +233,7 @@ export class PortfolioCalculationService {
     return {
       assetId,
       symbol,
+      assetType,
       quantity: totalQuantity,
       avgCost,
       currentValue,

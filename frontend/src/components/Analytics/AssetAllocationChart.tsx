@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Box, Typography } from '@mui/material';
 import { AssetAllocationResponse } from '../../types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
@@ -11,6 +11,7 @@ import { formatCurrency, formatPercentage } from '../../utils/format';
 interface AssetAllocationChartProps {
   data: AssetAllocationResponse;
   baseCurrency: string;
+  compact?: boolean;
 }
 
 const COLORS = [
@@ -22,6 +23,7 @@ const COLORS = [
 const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   data,
   baseCurrency,
+  compact = false,
 }) => {
   // Transform data for the chart
   const chartData = Object.entries(data.allocation).map(([assetType, allocation], index) => ({
@@ -59,19 +61,42 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
 
   const CustomLegend = ({ payload }: any) => {
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1, mt: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        gap: compact ? 0.5 : 0.8,
+        alignItems: 'flex-start'
+      }}>
         {payload.map((entry: any, index: number) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box key={index} sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: compact ? 0.4 : 0.6,
+            width: '100%'
+          }}>
             <Box
               sx={{
-                width: 12,
-                height: 12,
+                width: compact ? 8 : 10,
+                height: compact ? 8 : 10,
                 backgroundColor: entry.color,
                 borderRadius: '50%',
+                flexShrink: 0
               }}
             />
-            <Typography variant="caption">
-              {entry.value} ({formatPercentage(entry.payload.value)})
+            <Typography variant="caption" sx={{ 
+              fontSize: compact ? '0.65rem' : '0.75rem',
+              lineHeight: 1.2,
+              fontWeight: 500
+            }}>
+              {entry.value}
+            </Typography>
+            <Typography variant="caption" sx={{ 
+              fontSize: compact ? '0.6rem' : '0.7rem',
+              lineHeight: 1.2,
+              color: 'text.secondary',
+              ml: 'auto'
+            }}>
+              {formatPercentage(entry.payload.value)}
             </Typography>
           </Box>
         ))}
@@ -81,8 +106,8 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
 
   if (!data || Object.keys(data.allocation).length === 0) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+      <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
+        <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
           No asset allocation data available
         </Typography>
       </Box>
@@ -90,27 +115,41 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   }
 
   return (
-    <Box sx={{ height: 400 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ name, value }) => `${name}: ${formatPercentage(value)}`}
-            outerRadius={120}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend content={<CustomLegend />} />
-        </PieChart>
-      </ResponsiveContainer>
+    <Box sx={{ height: compact ? 133 : 187, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ flex: 1, height: '100%' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={false}
+              outerRadius={compact ? 60 : 90}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </Box>
+      <Box sx={{ 
+        width: compact ? 120 : 150, 
+        ml: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
+        <CustomLegend payload={chartData.map((entry) => ({
+          value: entry.name,
+          color: entry.color,
+          payload: { value: entry.value }
+        }))} />
+      </Box>
     </Box>
   );
 };

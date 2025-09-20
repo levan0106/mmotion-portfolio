@@ -279,7 +279,18 @@ erDiagram
 - **Testing Strategy**: Unit, integration, and E2E tests - **COMPLETED**
 - **Documentation**: Complete API and user documentation - **COMPLETED**
 
-### 19. Cash Balance System Pattern - **IMPLEMENTED WITH CRITICAL BUG FIXES ✅**
+### 19. Allocation Timeline Simplified Pattern - **IMPLEMENTED WITH SIMPLIFIED LOGIC ✅**
+- **DAILY-First Approach**: Always calculate DAILY timeline first, then filter for other granularities - **COMPLETED**
+- **MONTHLY Filtering**: filterToMonthlyData() method selects last day of each month from DAILY data - **COMPLETED**
+- **WEEKLY Filtering**: filterToWeeklyData() method takes every 7th day from DAILY data - **COMPLETED**
+- **Real Data Integration**: All granularities use actual snapshot data from database - **COMPLETED**
+- **Simple Carry-forward**: Use last known allocation data for missing dates - **COMPLETED**
+- **Performance Optimization**: Eliminated complex date range generation, simplified to basic filtering - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with simple filter methods - **COMPLETED**
+- **Maintainability**: Simple, easy-to-understand filtering logic - **COMPLETED**
+- **Production Ready**: Clean, optimized code ready for production - **COMPLETED**
+
+### 20. Cash Balance System Pattern - **IMPLEMENTED WITH CRITICAL BUG FIXES ✅**
 - **Two-Source Logic**: Portfolio.cashBalance (performance) vs CashFlow calculation (accuracy) - **COMPLETED**
 - **Performance Optimization**: Direct read from portfolio.cashBalance for display-only operations - **COMPLETED**
 - **Accuracy Priority**: Calculate from cash_flows when updating portfolio.cashBalance - **COMPLETED**

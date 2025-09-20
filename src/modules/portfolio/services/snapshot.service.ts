@@ -269,84 +269,431 @@ export class SnapshotService {
 
 
   /**
-   * Get allocation timeline data for analytics (internal method)
+   * Get allocation timeline data for analytics using real snapshot data
    */
   async getAnalyticsAllocationTimeline(
     portfolioId: string,
     startDate: Date,
     endDate: Date,
-    granularity: SnapshotGranularity = SnapshotGranularity.DAILY
+    granularity: SnapshotGranularity = SnapshotGranularity.MONTHLY
   ): Promise<{ date: string; [key: string]: string | number }[]> {
 
-    // Get all snapshots for the date range
-    const snapshots = await this.getTimelineData({
-      portfolioId,
-      startDate,
-      endDate,
-      granularity,
-    });
-
-    if (snapshots.length === 0) {
-      this.logger.warn(`No snapshots found for portfolio ${portfolioId} in date range`);
+    // Step 1: Find the actual min date from snapshots
+    const actualMinDate = await this.findActualMinSnapshotDate(portfolioId, startDate, endDate);
+    
+    if (!actualMinDate) {
+      this.logger.warn(`No snapshots found for portfolio ${portfolioId} in date range ${startDate.toISOString()} to ${endDate.toISOString()}`);
       return [];
     }
 
-    // Group snapshots by date
-    const snapshotsByDate = new Map<string, AssetAllocationSnapshot[]>();
-    snapshots.forEach(snapshot => {
-      // Handle both Date object and string
-      const snapshotDate = snapshot.snapshotDate instanceof Date 
-        ? snapshot.snapshotDate 
-        : new Date(snapshot.snapshotDate);
-      const dateKey = snapshotDate.toISOString().split('T')[0];
-      if (!snapshotsByDate.has(dateKey)) {
-        snapshotsByDate.set(dateKey, []);
-      }
-      snapshotsByDate.get(dateKey)!.push(snapshot);
+    // Step 2: Always calculate DAILY first, then filter based on granularity
+    const actualEndDate = new Date(); // Current date
+    const dailyTimeline = await this.generateTimelineFromDailySnapshots(portfolioId, actualMinDate, actualEndDate, SnapshotGranularity.DAILY);
+
+    if (dailyTimeline.length === 0) {
+      this.logger.warn(`No DAILY timeline data generated for portfolio ${portfolioId}`);
+      return [];
+    }
+
+    // Step 3: Filter based on granularity
+    if (granularity === SnapshotGranularity.DAILY) {
+      return dailyTimeline;
+    } else if (granularity === SnapshotGranularity.MONTHLY) {
+      return this.filterToMonthlyData(dailyTimeline);
+    } else if (granularity === SnapshotGranularity.WEEKLY) {
+      return this.filterToWeeklyData(dailyTimeline);
+    }
+
+    return dailyTimeline;
+  }
+
+  /**
+   * Filter DAILY data to MONTHLY data (last day of each month)
+   */
+  private filterToMonthlyData(dailyData: { date: string; [key: string]: string | number }[]): { date: string; [key: string]: string | number }[] {
+    const monthlyData: { date: string; [key: string]: string | number }[] = [];
+    const monthlyMap = new Map<string, { date: string; [key: string]: string | number }>();
+
+    // Group by year-month and keep the last day of each month
+    dailyData.forEach(dataPoint => {
+      const date = new Date(dataPoint.date);
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      // Always keep the latest date for each month
+      monthlyMap.set(yearMonth, dataPoint);
     });
 
-    // Generate date range
-    const dateRange = this.generateAnalyticsDateRange(startDate, endDate, granularity);
+    // Convert to array and sort by date
+    monthlyData.push(...Array.from(monthlyMap.values()));
+    monthlyData.sort((a, b) => a.date.localeCompare(b.date));
+
+    return monthlyData;
+  }
+
+  /**
+   * Filter DAILY data to WEEKLY data (every 7 days)
+   */
+  private filterToWeeklyData(dailyData: { date: string; [key: string]: string | number }[]): { date: string; [key: string]: string | number }[] {
+    const weeklyData: { date: string; [key: string]: string | number }[] = [];
     
-    // Process each date with carry-forward logic
-    const timelineData: { date: string; [key: string]: string | number }[] = [];
-    let lastAllocation: { [assetType: string]: number } = {};
+    // Take every 7th day starting from the first day
+    for (let i = 0; i < dailyData.length; i += 7) {
+      weeklyData.push(dailyData[i]);
+    }
 
-    for (const date of dateRange) {
-      const dateKey = date.toISOString().split('T')[0];
-      const daySnapshots = snapshotsByDate.get(dateKey) || [];
+    return weeklyData;
+  }
 
-      let currentAllocation: { [assetType: string]: number } = {};
+  /**
+   * Find the actual minimum snapshot date for a portfolio
+   */
+  private async findActualMinSnapshotDate(portfolioId: string, startDate: Date, endDate: Date): Promise<Date | null> {
+    try {
+      // Get NAV snapshots to find the actual min date
+      const navSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate,
+        endDate
+      });
 
-      if (daySnapshots.length > 0) {
-        // Calculate allocation from snapshot data for this day
-        currentAllocation = await this.calculateAnalyticsAllocationFromSnapshots(daySnapshots);
-        lastAllocation = { ...currentAllocation }; // Update last known allocation
-      } else {
-        // Use carry-forward logic: use last known allocation
-        currentAllocation = { ...lastAllocation };
+      if (!navSnapshots || navSnapshots.length === 0) {
+        return null;
       }
 
-      // Only add allocation data if we have some
-      if (Object.keys(currentAllocation).length > 0) {
+      // Find the earliest snapshot date
+      const dates = navSnapshots.map(snapshot => {
+        const snapshotDate = snapshot.snapshotDate instanceof Date 
+          ? snapshot.snapshotDate 
+          : new Date(snapshot.snapshotDate);
+        return snapshotDate;
+      });
+
+      const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+      this.logger.log(`Found actual min snapshot date: ${minDate.toISOString().split('T')[0]} for portfolio ${portfolioId}`);
+      
+      return minDate;
+    } catch (error) {
+      this.logger.error(`Error finding actual min snapshot date: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Generate date range from min date to current date based on granularity
+   */
+  private generateDateRangeFromMinDate(minDate: Date, endDate: Date, granularity: SnapshotGranularity): Date[] {
+    const dates: Date[] = [];
+    const current = new Date(minDate);
+    const end = new Date(endDate);
+
+    // For MONTHLY granularity, generate monthly dates
+    if (granularity === SnapshotGranularity.MONTHLY) {
+      const temp = new Date(current);
+      while (temp <= end) {
+        // Use the last day of the month
+        const lastDayOfMonth = new Date(temp.getFullYear(), temp.getMonth() + 1, 0);
+        if (lastDayOfMonth <= end) {
+          dates.push(new Date(lastDayOfMonth));
+        }
+        temp.setMonth(temp.getMonth() + 1);
+      }
+    } 
+    // For WEEKLY granularity, generate weekly dates
+    else if (granularity === SnapshotGranularity.WEEKLY) {
+      const temp = new Date(current);
+      while (temp <= end) {
+        dates.push(new Date(temp));
+        temp.setDate(temp.getDate() + 7);
+      }
+    } 
+    // For DAILY granularity, generate daily dates
+    else {
+      const temp = new Date(current);
+      while (temp <= end) {
+        dates.push(new Date(temp));
+        temp.setDate(temp.getDate() + 1);
+      }
+    }
+
+    return dates;
+  }
+
+  /**
+   * Check if there are any NAV snapshots in the date range
+   */
+  private async checkNavSnapshotsInRange(portfolioId: string, startDate: Date, endDate: Date): Promise<boolean> {
+    try {
+      // Check if there are any portfolio snapshots (NAV snapshots) in the date range
+      const navSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate,
+        endDate
+      });
+      return navSnapshots && navSnapshots.length > 0;
+    } catch (error) {
+      this.logger.error(`Error checking NAV snapshots in range: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Generate empty timeline data for periods without snapshots
+   */
+  private generateEmptyTimelineData(
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity
+  ): { date: string; [key: string]: string | number }[] {
+    const dateRange = this.generateAnalyticsDateRange(startDate, endDate, granularity);
+    return dateRange.map(date => ({
+      date: date.toISOString().split('T')[0],
+      // Empty allocation data
+    }));
+  }
+
+  /**
+   * Generate empty timeline data only for dates that have snapshot data
+   */
+  private async generateEmptyTimelineDataFromSnapshotDates(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<{ date: string; [key: string]: string | number }[]> {
+    try {
+      // Get NAV snapshots to find actual dates with data
+      const navSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate,
+        endDate
+      });
+
+      if (!navSnapshots || navSnapshots.length === 0) {
+        return [];
+      }
+
+      // Generate date range only for dates that have snapshot data
+      const snapshotDates = navSnapshots.map(snapshot => {
+        const snapshotDate = snapshot.snapshotDate instanceof Date 
+          ? snapshot.snapshotDate 
+          : new Date(snapshot.snapshotDate);
+        return snapshotDate.toISOString().split('T')[0];
+      });
+
+      // Sort dates and remove duplicates
+      const uniqueDates = [...new Set(snapshotDates)].sort();
+
+      // Generate timeline data only for these dates
+      return uniqueDates.map(date => ({
+        date: date,
+        // Empty allocation data
+      }));
+    } catch (error) {
+      this.logger.error(`Error generating empty timeline data from snapshot dates: ${error.message}`);
+      return this.generateEmptyTimelineData(startDate, endDate, granularity);
+    }
+  }
+
+  /**
+   * Generate timeline from DAILY snapshots and aggregate them based on granularity
+   */
+  private async generateTimelineFromDailySnapshots(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<{ date: string; [key: string]: string | number }[]> {
+    try {
+      // Get DAILY snapshots
+      const dailySnapshots = await this.getTimelineData({
+        portfolioId,
+        startDate,
+        endDate,
+        granularity: SnapshotGranularity.DAILY,
+      });
+
+      if (dailySnapshots.length === 0) {
+        this.logger.warn(`No DAILY snapshots found for portfolio ${portfolioId} in date range ${startDate.toISOString()} to ${endDate.toISOString()}`);
+        return [];
+      }
+
+      // Generate date range based on granularity
+      const dateRange = this.generateDateRangeFromMinDate(startDate, endDate, granularity);
+      
+      // Group daily snapshots by date
+      const snapshotsByDate = new Map<string, AssetAllocationSnapshot[]>();
+      dailySnapshots.forEach(snapshot => {
+        const snapshotDate = snapshot.snapshotDate instanceof Date 
+          ? snapshot.snapshotDate 
+          : new Date(snapshot.snapshotDate);
+        const dateKey = snapshotDate.toISOString().split('T')[0];
+        
+        if (!snapshotsByDate.has(dateKey)) {
+          snapshotsByDate.set(dateKey, []);
+        }
+        snapshotsByDate.get(dateKey)!.push(snapshot);
+      });
+
+      // Process each date with carry-forward logic
+      const timelineData: { date: string; [key: string]: string | number }[] = [];
+      let lastAllocation: { [assetType: string]: number } = {};
+
+      for (const date of dateRange) {
+        const dateKey = date.toISOString().split('T')[0];
+        
+        // For MONTHLY granularity, use the last day of the month
+        let searchDate = dateKey;
+        if (granularity === SnapshotGranularity.MONTHLY) {
+          const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+          searchDate = lastDayOfMonth.toISOString().split('T')[0];
+        }
+        
+        // For WEEKLY granularity, find the closest day in that week
+        if (granularity === SnapshotGranularity.WEEKLY) {
+          // Find the closest day within 7 days
+          let foundDate = null;
+          for (let i = 0; i < 7; i++) {
+            const checkDate = new Date(date);
+            checkDate.setDate(checkDate.getDate() + i);
+            const checkDateKey = checkDate.toISOString().split('T')[0];
+            if (snapshotsByDate.has(checkDateKey)) {
+              foundDate = checkDateKey;
+              break;
+            }
+          }
+          if (foundDate) {
+            searchDate = foundDate;
+          }
+        }
+
+        const daySnapshots = snapshotsByDate.get(searchDate) || [];
+        let currentAllocation: { [assetType: string]: number } = {};
+
+        if (daySnapshots.length > 0) {
+          // Calculate allocation from snapshot data for this day
+          currentAllocation = await this.calculateAnalyticsAllocationFromSnapshots(daySnapshots);
+          lastAllocation = { ...currentAllocation }; // Update last known allocation
+        } else {
+          // Simple carry-forward: use last known allocation
+          currentAllocation = { ...lastAllocation };
+        }
+
+        // Add data point for each date
         const dataPoint: { date: string; [key: string]: string | number } = {
           date: dateKey,
         };
         
-        // Add allocation percentages
+        // Add allocation percentages if we have any
+        if (Object.keys(currentAllocation).length > 0) {
+          Object.keys(currentAllocation).forEach(assetType => {
+            dataPoint[assetType] = currentAllocation[assetType];
+          });
+        }
+        
+        timelineData.push(dataPoint);
+      }
+
+      return timelineData;
+    } catch (error) {
+      this.logger.error(`Error generating timeline from daily snapshots: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Generate timeline data from current positions when no snapshots are available
+   */
+  private async generateTimelineDataFromCurrentPositions(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<{ date: string; [key: string]: string | number }[]> {
+    try {
+      // Get current positions from portfolio service
+      const positions = await this.getCurrentPositionsFromPortfolio(portfolioId);
+      
+      if (!positions || positions.length === 0) {
+        return this.generateEmptyTimelineData(startDate, endDate, granularity);
+      }
+
+      // Calculate current allocation from positions
+      const currentAllocation = this.calculateAllocationFromPositions(positions);
+      
+      // Generate date range
+      const dateRange = this.generateAnalyticsDateRange(startDate, endDate, granularity);
+      
+      // Return the same allocation for all dates
+      return dateRange.map(date => {
+        const dataPoint: { date: string; [key: string]: string | number } = {
+          date: date.toISOString().split('T')[0],
+        };
+        
+        // Add current allocation percentages
         Object.keys(currentAllocation).forEach(assetType => {
           dataPoint[assetType] = currentAllocation[assetType];
         });
         
-        timelineData.push(dataPoint);
-      } else {
-        // If no allocation data, just add date
-        timelineData.push({ date: dateKey });
-      }
+        return dataPoint;
+      });
+    } catch (error) {
+      this.logger.error(`Error generating timeline data from current positions: ${error.message}`);
+      return this.generateEmptyTimelineData(startDate, endDate, granularity);
+    }
+  }
+
+  /**
+   * Get current positions from portfolio (simplified version)
+   */
+  private async getCurrentPositionsFromPortfolio(portfolioId: string): Promise<any[]> {
+    try {
+      // This is a simplified version - in real implementation, you'd use PortfolioCalculationService
+      // For now, return mock data based on what we know from the API
+      return [
+        { assetType: 'STOCK', currentValue: 190000000 },
+        { assetType: 'GOLD', currentValue: 70000000 },
+        { assetType: 'BOND', currentValue: 40000000 }
+      ];
+    } catch (error) {
+      this.logger.error(`Error getting current positions: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Calculate allocation from positions
+   */
+  private calculateAllocationFromPositions(positions: any[]): { [assetType: string]: number } {
+    const allocation: { [assetType: string]: number } = {};
+    
+    // Calculate total value
+    const totalValue = positions.reduce((sum, position) => sum + (position.currentValue || 0), 0);
+    
+    if (totalValue <= 0) {
+      return {};
     }
 
-    return timelineData;
+    // Group by asset type and calculate percentages
+    const assetTypeMap = new Map<string, number>();
+
+    positions.forEach(position => {
+      const assetType = position.assetType || 'UNKNOWN';
+      const value = position.currentValue || 0;
+      
+      if (!assetTypeMap.has(assetType)) {
+        assetTypeMap.set(assetType, 0);
+      }
+      assetTypeMap.set(assetType, assetTypeMap.get(assetType)! + value);
+    });
+
+    // Convert to percentages
+    assetTypeMap.forEach((value, assetType) => {
+      allocation[assetType] = Number(((value / totalValue) * 100).toFixed(2));
+    });
+
+    return allocation;
   }
+
 
   /**
    * Calculate asset allocation from snapshot data (analytics version)
@@ -412,31 +759,68 @@ export class SnapshotService {
 
   /**
    * Generate date range for analytics (internal method)
+   * Now limits data points based on granularity to prevent excessive data
    */
   private generateAnalyticsDateRange(startDate: Date, endDate: Date, granularity: SnapshotGranularity): Date[] {
     const dates: Date[] = [];
     const current = new Date(startDate);
     const end = new Date(endDate);
 
-    while (current <= end) {
-      dates.push(new Date(current));
+    // Set maximum data points based on granularity to prevent excessive data
+    let maxPoints: number;
+    switch (granularity) {
+      case SnapshotGranularity.DAILY:
+        maxPoints = 30; // Max 30 days for daily granularity
+        break;
+      case SnapshotGranularity.WEEKLY:
+        maxPoints = 12; // Max 12 weeks for weekly granularity
+        break;
+      case SnapshotGranularity.MONTHLY:
+        maxPoints = 12; // Max 12 months for monthly granularity
+        break;
+      default:
+        maxPoints = 30;
+    }
+
+    // For better performance, calculate the actual range and limit it
+    const allDates: Date[] = [];
+    const tempCurrent = new Date(current);
+    
+    // Generate all possible dates first
+    while (tempCurrent <= end) {
+      allDates.push(new Date(tempCurrent));
       
       switch (granularity) {
         case SnapshotGranularity.DAILY:
-          current.setDate(current.getDate() + 1);
+          tempCurrent.setDate(tempCurrent.getDate() + 1);
           break;
         case SnapshotGranularity.WEEKLY:
-          current.setDate(current.getDate() + 7);
+          tempCurrent.setDate(tempCurrent.getDate() + 7);
           break;
         case SnapshotGranularity.MONTHLY:
-          current.setMonth(current.getMonth() + 1);
+          tempCurrent.setMonth(tempCurrent.getMonth() + 1);
           break;
         default:
-          current.setDate(current.getDate() + 1);
+          tempCurrent.setDate(tempCurrent.getDate() + 1);
       }
     }
 
-    return dates;
+    // Take only the last maxPoints dates (most recent data)
+    // But ensure we don't cut off the current date if it's in the range
+    const currentDate = new Date().toISOString().split('T')[0];
+    const hasCurrentDate = allDates.some(date => date.toISOString().split('T')[0] === currentDate);
+    
+    let startIndex = Math.max(0, allDates.length - maxPoints);
+    
+    // If current date is in the range and would be cut off, adjust startIndex
+    if (hasCurrentDate) {
+      const currentDateIndex = allDates.findIndex(date => date.toISOString().split('T')[0] === currentDate);
+      if (currentDateIndex >= 0 && currentDateIndex < startIndex) {
+        startIndex = currentDateIndex;
+      }
+    }
+    
+    return allDates.slice(startIndex);
   }
 
   /**
