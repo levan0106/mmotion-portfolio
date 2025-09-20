@@ -123,16 +123,16 @@ export class CashFlowService {
     });
 
     // Filter only completed cash flows
-    const cashFlows = allCashFlows.filter(cashFlow => 
+    const completedCashFlows = allCashFlows.filter(cashFlow => 
       cashFlow.status === CashFlowStatus.COMPLETED
     );
 
     // If no cash flows exist, preserve current cash balance
-    if (cashFlows.length === 0) {
+    if (completedCashFlows.length === 0) {
       return {
         portfolioId,
         oldCashBalance,
-        newCashBalance: oldCashBalance,
+        newCashBalance: 0,
         cashFlowAmount: 0,
         cashFlowType: 'NO_CASH_FLOWS',
       };
@@ -140,8 +140,9 @@ export class CashFlowService {
 
     let calculatedCashBalance = 0; // Start with 0 for complete recalculation
 
+
     // Process each cash flow
-    for (const cashFlow of cashFlows) {
+    for (const cashFlow of completedCashFlows) {
       // Use netAmount which applies correct sign based on cash flow type
       calculatedCashBalance += cashFlow.netAmount;
     }
@@ -152,6 +153,9 @@ export class CashFlowService {
     // Update portfolio cash balance
     portfolio.cashBalance = formattedCashBalance;
     await this.portfolioRepository.save(portfolio);
+
+    console.log(`[CashFlowService] recalculateCashBalanceFromAllFlows called for portfolioId: ${portfolioId}, 
+      oldCashBalance: ${oldCashBalance}, newCashBalance: ${formattedCashBalance}`); 
 
     return {
       portfolioId,
@@ -244,13 +248,28 @@ export class CashFlowService {
     if (amount === 0) {
       throw new BadRequestException('Cash flow amount cannot be zero');
     }
+    
+    // Create cash flow record
+    const cashFlow = this.cashFlowRepository.create({
+      portfolioId,
+      flowDate,
+      amount: Math.abs(amount), // Store absolute amount
+      currency: 'VND', // TODO: Should be from portfolio baseCurrency
+      type: type as any,
+      description,
+    });
 
-    const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
+    await this.cashFlowRepository.save(cashFlow);
+
+    // implement get cashbalance from all cash flows
+    const cashBalance = await this.recalculateCashBalanceFromAllFlows(portfolioId);
+
+    const oldCashBalance = parseFloat(cashBalance.oldCashBalance.toString());
+    const newCashBalance = parseFloat(cashBalance.newCashBalance.toString());
     
     // Calculate net amount based on cash flow type
     const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
-    const netAmount = isInflow ? amount : -amount;
-    const newCashBalance = oldCashBalance + netAmount;
+    const netAmount = isInflow ? Math.abs(amount) : -Math.abs(amount);
 
 
     // Validate cash balance doesn't go negative (only for outflows)
@@ -261,18 +280,6 @@ export class CashFlowService {
     // Update portfolio cash balance
     portfolio.cashBalance = newCashBalance;
     await this.portfolioRepository.save(portfolio);
-
-    // Create cash flow record
-    const cashFlow = this.cashFlowRepository.create({
-      portfolioId,
-      flowDate,
-      amount: Math.abs(amount), // Store absolute amount
-      currency: 'VND', // Should be from portfolio baseCurrency
-      type: type as any,
-      description,
-    });
-
-    await this.cashFlowRepository.save(cashFlow);
 
     return {
       portfolioId,
@@ -356,7 +363,18 @@ export class CashFlowService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    return parseFloat(portfolio.cashBalance.toString());
+    // Calculate cash balance from all cash flows instead of using database value
+    const cashFlows = await this.cashFlowRepository.find({
+      where: { portfolioId },
+      order: { flowDate: 'ASC' }
+    });
+
+    const totalCashFlow = cashFlows.reduce((sum, flow) => {
+      // Use netAmount which applies correct sign based on cash flow type
+      return sum + flow.netAmount;
+    }, 0);
+
+    return totalCashFlow;
   }
 
   /**
@@ -364,13 +382,17 @@ export class CashFlowService {
    * @param portfolioId Portfolio ID
    * @returns Promise<number> Recalculated cash balance
    */
-  async recalculateCashBalance(portfolioId: string): Promise<number> {
+  /*
+    async recalculateCashBalance(portfolioId: string): Promise<number> {
     const cashFlows = await this.cashFlowRepository.find({
       where: { portfolioId },
       order: { flowDate: 'ASC' }
     });
 
-    const totalCashFlow = cashFlows.reduce((sum, flow) => sum + parseFloat(flow.amount.toString()), 0);
+    const totalCashFlow = cashFlows.reduce((sum, flow) => {
+      // Use netAmount which applies correct sign based on cash flow type
+      return sum + parseFloat(flow.netAmount.toString());
+    }, 0);
 
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId }
@@ -386,6 +408,7 @@ export class CashFlowService {
 
     return totalCashFlow;
   }
+*/
 
   /**
    * Create a new cash flow and automatically update portfolio balance
@@ -434,9 +457,27 @@ export class CashFlowService {
 
       const savedCashFlow = await manager.save(cashFlow);
 
-      // Calculate new cash balance
-      const netAmount = savedCashFlow.netAmount;
-      const newCashBalance = Number((currentCashBalance + netAmount).toFixed(2));
+      // Calculate cash balance within transaction using manager
+      const allCashFlows = await manager.find(CashFlow, {
+        where: { portfolioId },
+        order: { flowDate: 'ASC' }
+      });
+
+      // Filter only completed cash flows
+      const completedCashFlows = allCashFlows.filter(cashFlow => 
+        cashFlow.status === CashFlowStatus.COMPLETED
+      );
+
+      // Calculate new cash balance from all completed cash flows
+      let newCashBalance = 0;
+      for (const cf of completedCashFlows) {
+        newCashBalance += cf.netAmount;
+      }
+
+      console.log(`[CashFlowService] createCashFlow called for portfolioId: ${portfolioId}, type: ${type}, 
+        amount: ${amount}, description: ${description}, reference: ${reference}, effectiveDate: ${effectiveDate}, 
+        currency: ${currency}, currentCashBalance: ${currentCashBalance}, newCashBalance: ${newCashBalance}`); 
+      
 
       // Validate cash balance doesn't go negative (only for outflows, but allow trades)
       const isInflow = [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST, CashFlowType.SELL_TRADE].includes(type);
@@ -445,13 +486,10 @@ export class CashFlowService {
         throw new BadRequestException('Insufficient cash balance for this operation');
       }
 
-      // Update portfolio cash balance
+      // Update portfolio cash balance within transaction
       await manager.update(Portfolio, 
         { portfolioId }, 
-        { 
-          cashBalance: newCashBalance,
-          updatedAt: new Date()
-        }
+        { cashBalance: newCashBalance }
       );
 
       return {
@@ -642,8 +680,8 @@ export class CashFlowService {
     );
     console.log(`[CashFlowService] Deleted cash flows for tradeId: ${tradeId} using raw query without transaction`);
     
-    // Recalculate portfolio balance
-    await this.recalculateCashBalanceFromTrades(portfolioId);
+    // Recalculate portfolio balance from all cash flows
+    await this.recalculateCashBalanceFromAllFlows(portfolioId);
     
     // Verify deletion after transaction
     const remainingCashFlows = await this.cashFlowRepository.find({

@@ -123,6 +123,7 @@ export class PortfolioSnapshotService {
     });
     
     // Simplified total return calculation to avoid precision issues
+    // TODO: Implement this when we have historical data
     const totalReturn = 0; // Set to 0 for now to avoid SQL errors
 
     // Calculate asset allocation
@@ -203,6 +204,15 @@ export class PortfolioSnapshotService {
       notes: `Portfolio snapshot created from ${assetSnapshots.length} asset snapshots`,
     };
 
+    // Delete existing portfolio snapshots for the same date first
+    // This ensures we only have one portfolio snapshot per day per portfolio
+    const deletedCount = await this.portfolioSnapshotRepo.deleteByPortfolioDateAndGranularity(
+      portfolioId, 
+      date, 
+      granularity
+    );
+    
+    // Create new snapshot
     return await this.createPortfolioSnapshot(createDto);
   }
 
@@ -500,5 +510,21 @@ export class PortfolioSnapshotService {
       totalReturn = Number((totalReturn + Number(s.returnPercentage || 0)).toFixed(8));
     });
     return Number((totalReturn / ytdSnapshots.length).toFixed(8));
+  }
+
+  /**
+   * Delete portfolio snapshots by portfolio, date, and granularity
+   * This is used to ensure only one portfolio snapshot per day per portfolio
+   */
+  async deleteByPortfolioDateAndGranularity(
+    portfolioId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    return await this.portfolioSnapshotRepo.deleteByPortfolioDateAndGranularity(
+      portfolioId,
+      snapshotDate,
+      granularity
+    );
   }
 }

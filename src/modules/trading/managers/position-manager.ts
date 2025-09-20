@@ -1,6 +1,8 @@
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { Trade, TradeSide } from '../entities/trade.entity';
 import { TradeDetail } from '../entities/trade-detail.entity';
+import { PortfolioCalculationService } from '../../portfolio/services/portfolio-calculation.service';
+import { PortfolioValueCalculatorService } from '../../portfolio/services/portfolio-value-calculator.service';
 
 export interface PositionUpdate {
   assetId: string;
@@ -23,6 +25,11 @@ export interface PositionMetrics {
 }
 
 export class PositionManager {
+  constructor(
+    private readonly portfolioCalculationService?: PortfolioCalculationService,
+    private readonly portfolioValueCalculator?: PortfolioValueCalculatorService,
+  ) {}
+
   /**
    * Update position after a trade
    * @param currentPosition Current portfolio asset position

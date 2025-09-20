@@ -10,6 +10,8 @@ import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { AssetDetailSummaryResponseDto, AssetDetailSummaryDto } from '../dto/asset-detail-summary.dto';
 import { TradeRepository } from '../../trading/repositories/trade.repository';
 import { Trade } from '../../trading/entities/trade.entity';
+import { SnapshotService } from './snapshot.service';
+import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -17,6 +19,8 @@ import { Trade } from '../../trading/entities/trade.entity';
  */
 @Injectable()
 export class PortfolioAnalyticsService {
+  private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
+
   constructor(
     private readonly portfolioRepository: PortfolioRepository,
     @InjectRepository(NavSnapshot)
@@ -24,6 +28,7 @@ export class PortfolioAnalyticsService {
     private readonly portfolioCalculationService: PortfolioCalculationService,
     private readonly tradeRepository: TradeRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly snapshotService: SnapshotService,
   ) {}
 
   /**
@@ -353,11 +358,15 @@ export class PortfolioAnalyticsService {
    * Calculate asset allocation timeline for a portfolio.
    * @param portfolioId - Portfolio ID
    * @param months - Number of months to look back (default: 12)
+   * @param useSnapshots - Whether to use snapshot data instead of trade data (default: true)
+   * @param granularity - Snapshot granularity (default: DAILY)
    * @returns Promise<AllocationTimelineResponse>
    */
   async calculateAllocationTimeline(
     portfolioId: string,
     months: number = 12,
+    useSnapshots: boolean = true,
+    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
   ): Promise<{
     portfolioId: string;
     totalValue: number;
@@ -368,21 +377,23 @@ export class PortfolioAnalyticsService {
     calculatedAt: string;
   }> {
     try {
-      const cacheKey = `allocation-timeline:${portfolioId}:${months}`;
+      const cacheKey = `allocation-timeline:${portfolioId}:${months}:${useSnapshots}:${granularity}`;
       const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
       
-      // Try to get from cache first
-      const cachedResult = await this.cacheManager.get(cacheKey);
-      if (cachedResult) {
-        return cachedResult as {
-          portfolioId: string;
-          totalValue: number;
-          data: Array<{
-            date: string;
-            [assetType: string]: string | number;
-          }>;
-          calculatedAt: string;
-        };
+      // Try to get from cache first (if enabled)
+      if (this.CACHE_ENABLED) {
+        const cachedResult = await this.cacheManager.get(cacheKey);
+        if (cachedResult) {
+          return cachedResult as {
+            portfolioId: string;
+            totalValue: number;
+            data: Array<{
+              date: string;
+              [assetType: string]: string | number;
+            }>;
+            calculatedAt: string;
+          };
+        }
       }
 
       // Get portfolio details
@@ -391,7 +402,35 @@ export class PortfolioAnalyticsService {
         throw new Error(`Portfolio with ID ${portfolioId} not found`);
       }
 
-      // Get current asset positions using PortfolioCalculationService
+      // If using snapshots, use snapshot-based calculation
+      if (useSnapshots) {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - months);
+
+        // Use SnapshotService to get allocation timeline data
+        const snapshotData = await this.snapshotService.getAnalyticsAllocationTimeline(
+          portfolioId,
+          startDate,
+          endDate,
+          granularity
+        );
+
+        const result = {
+          portfolioId,
+          totalValue: parseFloat(portfolio.totalValue.toString()),
+          data: snapshotData,
+          calculatedAt: new Date().toISOString(),
+        };
+
+        // Cache the result (if enabled)
+        if (this.CACHE_ENABLED) {
+          await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+        }
+        return result;
+      }
+
+      // Fallback to original trade-based calculation
       const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
         portfolioId,
         parseFloat(portfolio.cashBalance.toString()),
@@ -581,8 +620,10 @@ export class PortfolioAnalyticsService {
         calculatedAt: new Date().toISOString(),
       };
 
-      // Cache the result
-      await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+      // Cache the result (if enabled)
+      if (this.CACHE_ENABLED) {
+        await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+      }
 
       return result;
     } catch (error) {

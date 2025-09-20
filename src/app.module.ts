@@ -45,12 +45,12 @@ import { TestLoggingController } from './test-logging.controller';
       ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     }),
 
-    // Cache module
-    CacheModule.register({
+    // Cache module - conditionally enabled
+    ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
       isGlobal: true,
       ttl: parseInt(process.env.CACHE_TTL) || 300000, // 5 minutes
       max: parseInt(process.env.CACHE_MAX_ITEMS) || 1000,
-    }),
+    })] : []),
 
     // Feature modules
       PortfolioModule,

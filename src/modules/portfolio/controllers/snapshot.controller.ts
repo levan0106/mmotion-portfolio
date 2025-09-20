@@ -71,9 +71,6 @@ export class SnapshotController {
   @Post('portfolio/:portfolioId')
   @ApiOperation({ summary: 'Create snapshots for all assets in a portfolio and portfolio snapshot' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'snapshotDate', description: 'Snapshot date', required: false })
-  @ApiQuery({ name: 'granularity', enum: SnapshotGranularity, description: 'Snapshot granularity', required: false })
-  @ApiQuery({ name: 'createdBy', description: 'Created by user', required: false })
   @ApiCreatedResponse({
     description: 'Portfolio snapshots created successfully',
     schema: {
@@ -89,49 +86,37 @@ export class SnapshotController {
   @ApiNotFoundResponse({ description: 'Portfolio not found' })
   async createPortfolioSnapshot(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
-    @Query('snapshotDate') snapshotDate?: string,
-    @Query('granularity') granularity?: SnapshotGranularity,
-    @Query('createdBy') createdBy?: string,
+    @Body() body: {
+      snapshotDate?: string;
+      granularity?: SnapshotGranularity;
+      createdBy?: string;
+    } = {},
   ): Promise<{ 
     message: string; 
     assetSnapshots: SnapshotResponseDto[]; 
     portfolioSnapshot: any;
     assetCount: number;
   }> {
-    const date = snapshotDate ? new Date(snapshotDate) : new Date();
-    const granularityValue = granularity || SnapshotGranularity.DAILY;
+    const date = body.snapshotDate ? new Date(body.snapshotDate) : new Date();
+    const granularityValue = body.granularity || SnapshotGranularity.DAILY;
     
     // Create asset snapshots first
     const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
       portfolioId,
       date,
       granularityValue,
-      createdBy,
+      body.createdBy,
     );
     
-    let portfolioSnapshot = null;
-    
-    // Only create portfolio snapshot if we have asset snapshots
-    if (assetSnapshots.length > 0) {
-      try {
-        portfolioSnapshot = await this.portfolioSnapshotService.createPortfolioSnapshotFromAssetSnapshots(
-          portfolioId,
-          date,
-          granularityValue,
-          createdBy,
-        );
-      } catch (error) {
-        this.logger.warn(`Failed to create portfolio snapshot: ${error.message}`);
-        // Continue without portfolio snapshot if it fails
-      }
-    }
+    // Portfolio snapshot is already created by createPortfolioSnapshot method
+    // No need to create it again here to avoid duplicate calls
     
     const response = {
       message: assetSnapshots.length > 0 
         ? `Successfully created ${assetSnapshots.length} asset snapshots and portfolio snapshot for portfolio ${portfolioId}`
         : `No assets found in portfolio ${portfolioId}. No snapshots created.`,
       assetSnapshots: assetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
-      portfolioSnapshot,
+      portfolioSnapshot: null, // Portfolio snapshot is created internally by createPortfolioSnapshot
       assetCount: assetSnapshots.length,
     };
     

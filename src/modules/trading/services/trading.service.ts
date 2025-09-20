@@ -12,6 +12,8 @@ import { LIFOEngine } from '../engines/lifo-engine';
 import { PositionManager } from '../managers/position-manager';
 import { AssetCacheService } from '../../asset/services/asset-cache.service';
 import { CashFlowService } from '../../portfolio/services/cash-flow.service';
+import { PortfolioCalculationService } from '../../portfolio/services/portfolio-calculation.service';
+import { PortfolioValueCalculatorService } from '../../portfolio/services/portfolio-value-calculator.service';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 
@@ -29,6 +31,8 @@ export interface TradeMatchingResult {
  */
 @Injectable()
 export class TradingService {
+  private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
+
   constructor(
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
@@ -42,6 +46,8 @@ export class TradingService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly assetCacheService: AssetCacheService,
     private readonly cashFlowService: CashFlowService,
+    private readonly portfolioCalculationService: PortfolioCalculationService,
+    private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
   ) {}
 
   /**
@@ -111,8 +117,10 @@ export class TradingService {
       const clearResults = await Promise.allSettled(
         allCacheKeys.map(async (key) => {
           try {
-            await this.cacheManager.del(key);
-            console.log(`Cache clear attempt for key '${key}': success`);
+            if (this.CACHE_ENABLED) {
+              await this.cacheManager.del(key);
+              console.log(`Cache clear attempt for key '${key}': success`);
+            }
             return true;
           } catch (error) {
             console.log(`Cache clear attempt for key '${key}': failed - ${error.message}`);
@@ -172,8 +180,8 @@ export class TradingService {
       await this.processTradeMatching(savedTrade);
     }
 
-    // Update portfolio position
-    await this.updatePortfolioPosition(savedTrade);
+    // Create cash flow from trade
+    await this.cashFlowService.createCashFlowFromTrade(savedTrade);
 
     // Invalidate all related caches
     await this.invalidateAllRelatedCaches(savedTrade.portfolioId, savedTrade.assetId);
@@ -251,18 +259,8 @@ export class TradingService {
       await this.reprocessTradeMatching(updatedTrade);
     }
 
-    // Delete old cash flow before updating portfolio positions
-    await this.cashFlowService.deleteCashFlowByTradeId(tradeId);
-
-    // Update portfolio positions
-    if (isAssetChanged) {
-      // If asset changed, update both old and new asset positions
-      await this.updatePortfolioPositionForAsset(originalAssetId, trade.portfolioId);
-      await this.updatePortfolioPositionForAsset(updatedTrade.assetId, trade.portfolioId);
-    } else {
-      // If asset didn't change, just update the current asset position
-      await this.updatePortfolioPosition(updatedTrade);
-    }
+    // Always create cash flow for the updated trade
+    await this.cashFlowService.createCashFlowFromTrade(updatedTrade);
 
     // Invalidate all related caches (including both old and new asset if changed)
     await this.invalidateAllRelatedCaches(updatedTrade.portfolioId, updatedTrade.assetId);
@@ -638,12 +636,32 @@ export class TradingService {
       actualEndDate,
     );
 
-    // Calculate overall P&L summary from trade details (avoid double counting)
+    // Use PortfolioCalculationService for consistent P&L calculations
+    let portfolioCalculation;
+    try {
+      portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+    } catch (error) {
+      console.error('Error getting portfolio calculation:', error);
+      portfolioCalculation = { assetPositions: [], totalValue: 0 };
+    }
+
+    // Calculate overall P&L summary using helper services
     const allRealizedTrades = [...topTrades, ...worstTrades];
     const uniqueTrades = allRealizedTrades.filter((trade, index, self) => 
       index === self.findIndex(t => t.tradeId === trade.tradeId)
     );
-    const totalPnl = uniqueTrades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
+    
+    // Use PortfolioValueCalculatorService for realized P&L
+    const totalRealizedPnl = portfolioCalculation.assetPositions.reduce(
+      (sum, position) => sum + position.realizedPl,
+      0
+    );
+    const totalUnrealizedPnl = portfolioCalculation.assetPositions.reduce(
+      (sum, position) => sum + position.unrealizedPl,
+      0
+    );
+    const totalPnl = totalRealizedPnl + totalUnrealizedPnl;
+    
     const totalVolume = statistics.totalVolume;
     const totalTrades = statistics.totalTrades;
     
@@ -671,6 +689,8 @@ export class TradingService {
     
     const overallPnlSummary = {
       totalPnl: totalPnl,
+      totalRealizedPnl: totalRealizedPnl,
+      totalUnrealizedPnl: totalUnrealizedPnl,
       totalVolume: totalVolume,
       averagePnl: totalRealizedTrades > 0 ? totalPnl / totalRealizedTrades : 0,
       winCount: winningTrades,
@@ -834,15 +854,37 @@ export class TradingService {
       // Calculate performance for each asset
       const assetPerformance = [];
       
+      // Get portfolio calculation for unrealized P&L
+      let portfolioCalculation;
+      try {
+        portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+      } catch (error) {
+        console.error('Error getting portfolio calculation for asset performance:', error);
+        portfolioCalculation = { assetPositions: [] };
+      }
+      
       for (const [assetId, trades] of assetGroups) {
         const asset = trades[0].asset;
         if (!asset) continue;
 
-        // Calculate metrics for this asset
-        const totalPl = trades.reduce((sum, trade) => sum + (Number(trade.pnl) || 0), 0);
         const tradesCount = trades.length;
         const winCount = trades.filter(trade => (Number(trade.pnl) || 0) > 0).length;
         const winRate = tradesCount > 0 ? (winCount / tradesCount) * 100 : 0;
+        
+        // Get real-time P&L from portfolio calculation including unrealized and realized P&L
+        let assetUnrealizedPl = 0;
+        let assetRealizedPl = 0;
+        let totalPl = 0;
+        try {
+          const assetPosition = portfolioCalculation.assetPositions.find(pos => pos.assetId === assetId);
+          if (assetPosition) {
+            assetUnrealizedPl = assetPosition.unrealizedPl;
+            assetRealizedPl = assetPosition.realizedPl;
+            totalPl = assetUnrealizedPl + assetRealizedPl;
+          }
+        } catch (error) {
+          console.error(`Error getting unrealized P&L for asset ${assetId}:`, error);
+        }
         
         // Calculate total volume (sum of all trade values)
         const totalVolume = trades.reduce((sum, trade) => {
@@ -871,6 +913,8 @@ export class TradingService {
           assetSymbol: asset.symbol || 'N/A',
           assetName: asset.name || 'N/A',
           totalPl: Math.round(totalPl * 100) / 100,
+          realizedPl: Math.round(assetRealizedPl * 100) / 100, // Realized P&L from trades
+          unrealizedPl: Math.round(assetUnrealizedPl * 100) / 100, // Unrealized P&L from helper
           tradesCount: tradesCount,
           winCount: winCount,
           winRate: Math.round(winRate * 100) / 100,
@@ -980,43 +1024,6 @@ export class TradingService {
         maxDrawdown: 0,
       };
     }
-  }
-
-  /**
-   * Update portfolio position after trade
-   * @param trade Trade that affects the position
-   */
-  private async updatePortfolioPosition(trade: Trade): Promise<void> {
-    try {
-      console.log(`[TradingService] updatePortfolioPosition called for tradeId: ${trade.tradeId}`);
-      
-      // Create cash flow from trade and update portfolio balance
-      await this.cashFlowService.createCashFlowFromTrade(trade);
-      
-      // Update asset position (placeholder for future implementation)
-      await this.updatePortfolioPositionForAsset(trade.assetId, trade.portfolioId, trade.price);
-      
-      console.log(`[TradingService] updatePortfolioPosition completed for tradeId: ${trade.tradeId}`);
-    } catch (error) {
-      console.error('Error updating portfolio position:', error);
-      // Don't throw error to avoid breaking trade creation
-    }
-  }
-
-  /**
-   * Update portfolio position for a specific asset
-   * TODO: Refactor to use trades instead of portfolioAssets
-   * @param assetId Asset ID
-   * @param portfolioId Portfolio ID
-   * @param marketPrice Optional market price (if not provided, will use latest trade price)
-   */
-  private async updatePortfolioPositionForAsset(
-    assetId: string,
-    portfolioId: string,
-    marketPrice?: number,
-  ): Promise<void> {
-    // TODO: Implement using trades instead of portfolioAssets
-    return;
   }
 
 

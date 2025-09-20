@@ -462,22 +462,33 @@ export class PortfolioAnalyticsController {
    * Get asset allocation timeline data.
    */
   @Get('allocation-timeline')
-  @ApiOperation({ summary: 'Get asset allocation timeline data' })
+  @ApiOperation({ summary: 'Get asset allocation timeline data with snapshot support' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
   @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
+  @ApiQuery({ name: 'useSnapshots', required: false, description: 'Whether to use snapshot data (default: true)' })
+  @ApiQuery({ name: 'granularity', required: false, enum: ['DAILY', 'WEEKLY', 'MONTHLY'], description: 'Snapshot granularity (default: DAILY)' })
   @ApiResponse({ status: 200, description: 'Allocation timeline data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getAllocationTimeline(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('months') months?: string,
+    @Query('useSnapshots') useSnapshots?: string,
+    @Query('granularity') granularity?: string,
   ): Promise<any> {
     const monthsToLookBack = months ? parseInt(months, 10) : 12;
+    const useSnapshotData = useSnapshots !== 'false'; // Default to true
+    const snapshotGranularity = granularity as any || 'DAILY';
     
     if (isNaN(monthsToLookBack) || monthsToLookBack < 1 || monthsToLookBack > 60) {
       throw new Error('Months parameter must be a number between 1 and 60');
     }
 
-    return await this.portfolioAnalyticsService.calculateAllocationTimeline(id, monthsToLookBack);
+    return await this.portfolioAnalyticsService.calculateAllocationTimeline(
+      id, 
+      monthsToLookBack, 
+      useSnapshotData, 
+      snapshotGranularity
+    );
   }
 
   /**

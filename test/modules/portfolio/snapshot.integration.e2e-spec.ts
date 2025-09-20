@@ -308,7 +308,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
   describe('POST /snapshots/portfolio/:portfolioId', () => {
     it('should create portfolio snapshots', async () => {
-      const query = {
+      const requestBody = {
         snapshotDate: '2024-01-01',
         granularity: SnapshotGranularity.DAILY,
         createdBy: 'test-user',
@@ -316,10 +316,12 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/snapshots/portfolio/${testPortfolioId}`)
-        .query(query)
+        .send(requestBody)
         .expect(201);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('assetSnapshots');
+      expect(Array.isArray(response.body.assetSnapshots)).toBe(true);
     });
   });
 

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TradingController } from './controllers/trading.controller';
 import { PositionController } from './controllers/position.controller';
 import { RiskManagementController } from './controllers/risk-management.controller';
@@ -22,6 +23,12 @@ import { Asset } from '../asset/entities/asset.entity';
 import { Account } from '../shared/entities/account.entity';
 import { AssetCacheService } from '../asset/services/asset-cache.service';
 import { CashFlowService } from '../portfolio/services/cash-flow.service';
+import { PortfolioCalculationService } from '../portfolio/services/portfolio-calculation.service';
+import { PortfolioValueCalculatorService } from '../portfolio/services/portfolio-value-calculator.service';
+import { GlobalAsset } from '../asset/entities/global-asset.entity';
+import { AssetPrice } from '../asset/entities/asset-price.entity';
+import { AssetValueCalculatorService } from '../asset/services/asset-value-calculator.service';
+import { MarketDataModule } from '../market-data/market-data.module';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -38,7 +45,15 @@ import { CashFlowService } from '../portfolio/services/cash-flow.service';
       CashFlow,
       Asset,
       Account,
+      GlobalAsset,
+      AssetPrice,
     ]),
+    MarketDataModule,
+    // Import CacheModule conditionally
+    ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
+      ttl: parseInt(process.env.CACHE_TTL) || 300000,
+      max: parseInt(process.env.CACHE_MAX_ITEMS) || 1000,
+    })] : []),
   ],
   controllers: [
     TradingController,
@@ -57,6 +72,19 @@ import { CashFlowService } from '../portfolio/services/cash-flow.service';
     RiskManager,
     AssetCacheService,
     CashFlowService,
+    PortfolioCalculationService,
+    PortfolioValueCalculatorService,
+    AssetValueCalculatorService,
+    // Mock cache manager when cache is disabled
+    ...(process.env.CACHE_ENABLED !== 'true' ? [{
+      provide: CACHE_MANAGER,
+      useValue: {
+        get: () => null,
+        set: () => Promise.resolve(),
+        del: () => Promise.resolve(),
+        reset: () => Promise.resolve(),
+      },
+    }] : []),
   ],
   exports: [
     TradingService,

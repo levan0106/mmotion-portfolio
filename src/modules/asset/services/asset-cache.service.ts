@@ -13,6 +13,7 @@ export class AssetCacheService {
   }>();
 
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
 
   /**
    * Get cached data
@@ -20,6 +21,10 @@ export class AssetCacheService {
    * @returns Cached data or null if not found or expired
    */
   get<T>(key: string): T | null {
+    if (!this.CACHE_ENABLED) {
+      return null;
+    }
+    
     const cached = this.cache.get(key);
     
     if (!cached) {
@@ -42,6 +47,10 @@ export class AssetCacheService {
    * @param ttl - Time to live in milliseconds
    */
   set<T>(key: string, data: T, ttl: number = this.DEFAULT_TTL): void {
+    if (!this.CACHE_ENABLED) {
+      return;
+    }
+    
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -54,6 +63,10 @@ export class AssetCacheService {
    * @param key - Cache key
    */
   delete(key: string): void {
+    if (!this.CACHE_ENABLED) {
+      return;
+    }
+    
     this.cache.delete(key);
   }
 
@@ -61,6 +74,10 @@ export class AssetCacheService {
    * Clear all cache
    */
   clear(): void {
+    if (!this.CACHE_ENABLED) {
+      return;
+    }
+    
     this.cache.clear();
   }
 

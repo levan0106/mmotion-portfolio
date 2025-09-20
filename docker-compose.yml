@@ -49,6 +49,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - CACHE_ENABLED=false
       - PORT=3000
       # Logging Configuration
       - LOG_LEVEL=info

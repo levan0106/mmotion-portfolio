@@ -436,16 +436,6 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
                       Date
                     </Typography>
                     <Box sx={{ flexGrow: 1 }} />
-                    <Tooltip title="Refresh Data">
-                      <IconButton 
-                        size="small" 
-                        onClick={handleRefresh} 
-                        disabled={loading}
-                        sx={{ p: 0.5 }}
-                      >
-                        <RefreshIcon />
-                      </IconButton>
-                    </Tooltip>
                   </Box>
                 </TableCell>
                 <TableCell>Asset</TableCell>

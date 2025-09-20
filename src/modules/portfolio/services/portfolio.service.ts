@@ -21,6 +21,7 @@ import { CashFlowService } from './cash-flow.service';
 @Injectable()
 export class PortfolioService {
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
 
   constructor(
     private readonly portfolioRepository: PortfolioRepository,
@@ -93,10 +94,12 @@ export class PortfolioService {
   async getPortfolioDetails(portfolioId: string): Promise<Portfolio> {
     const cacheKey = `portfolio:${portfolioId}`;
     
-    // Try to get from cache first
-    const cachedPortfolio = await this.cacheManager.get<Portfolio>(cacheKey);
-    if (cachedPortfolio) {
-      return cachedPortfolio;
+    // Try to get from cache first (if enabled)
+    if (this.CACHE_ENABLED) {
+      const cachedPortfolio = await this.cacheManager.get<Portfolio>(cacheKey);
+      if (cachedPortfolio) {
+        return cachedPortfolio;
+      }
     }
 
     const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
@@ -109,18 +112,24 @@ export class PortfolioService {
       const calculatedValues = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
       const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
       
+      // Calculate correct cash balance from cash flows
+      const correctCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+      
       // Override DB values with real-time calculations
       portfolio.totalValue = assetValue; // Only asset value for Total Portfolio Value
       portfolio.realizedPl = calculatedValues.realizedPl;
       portfolio.unrealizedPl = calculatedValues.unrealizedPl;
+      portfolio.cashBalance = correctCashBalance; // Use calculated cash balance
     } catch (error) {
       console.error(`Error calculating real-time values for portfolio ${portfolioId}:`, error);
       // Fallback to old calculation method
       await this.calculatePortfolioValue(portfolio);
     }
 
-    // Cache the result
-    await this.cacheManager.set(cacheKey, portfolio, this.CACHE_TTL);
+    // Cache the result (if enabled)
+    if (this.CACHE_ENABLED) {
+      await this.cacheManager.set(cacheKey, portfolio, this.CACHE_TTL);
+    }
 
     return portfolio;
   }
@@ -177,25 +186,74 @@ export class PortfolioService {
   }
 
   /**
-   * Get all portfolios for an account.
+   * Get all portfolios for an account with real-time P&L calculation.
    * @param accountId - Account ID
    * @returns Promise<Portfolio[]>
    */
   async getPortfoliosByAccount(accountId: string): Promise<Portfolio[]> {
     const cacheKey = `portfolios:account:${accountId}`;
     
-    // Try to get from cache first
-    const cachedPortfolios = await this.cacheManager.get<Portfolio[]>(cacheKey);
-    if (cachedPortfolios) {
-      return cachedPortfolios;
+    // Try to get from cache first (if enabled)
+    if (this.CACHE_ENABLED) {
+      const cachedPortfolios = await this.cacheManager.get<Portfolio[]>(cacheKey);
+      if (cachedPortfolios) {
+        return cachedPortfolios;
+      }
     }
 
     const portfolios = await this.portfolioRepository.findByAccountId(accountId);
     
-    // Cache the result
-    await this.cacheManager.set(cacheKey, portfolios, this.CACHE_TTL);
+    // Calculate real-time P&L for each portfolio using PortfolioCalculationService
+    const portfoliosWithRealTimePL = await Promise.all(
+      portfolios.map(async (portfolio) => {
+        try {
+          // Calculate correct cash balance from cash flows
+          const correctCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolio.portfolioId);
+          
+          // Use PortfolioCalculationService to get real-time calculations
+          const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
+            portfolio.portfolioId,
+            correctCashBalance
+          );
 
-    return portfolios;
+          // Calculate total unrealized P&L from all asset positions
+          const totalUnrealizedPL = calculation.assetPositions.reduce(
+            (sum, position) => sum + position.unrealizedPl,
+            0
+          );
+
+          // Calculate total realized P&L from trade details
+          const totalRealizedPL = await this.portfolioValueCalculator.calculateRealizedPL(portfolio.portfolioId);
+
+          // Calculate total value (cash + assets)
+          const totalAssetValue = calculation.assetPositions.reduce(
+            (sum, position) => sum + position.currentValue,
+            0
+          );
+          const totalValue = correctCashBalance + totalAssetValue;
+
+          // Return portfolio with updated real-time values
+          return {
+            ...portfolio,
+            totalValue: totalValue,
+            unrealizedPl: totalUnrealizedPL,
+            realizedPl: totalRealizedPL,
+            cashBalance: correctCashBalance, // Use calculated cash balance
+          };
+        } catch (error) {
+          // If calculation fails, return original portfolio data
+          console.error(`Error calculating real-time P&L for portfolio ${portfolio.portfolioId}:`, error);
+          return portfolio;
+        }
+      })
+    );
+    
+    // Cache the result (if enabled)
+    if (this.CACHE_ENABLED) {
+      await this.cacheManager.set(cacheKey, portfoliosWithRealTimePL, this.CACHE_TTL);
+    }
+
+    return portfoliosWithRealTimePL;
   }
 
   /**
@@ -281,20 +339,24 @@ export class PortfolioService {
     try {
       const cacheKey = `allocation:${portfolioId}`;
       
-      // Try to get from cache first
-      const cachedAllocation = await this.cacheManager.get(cacheKey);
-      if (cachedAllocation) {
-        return cachedAllocation as Array<{
-          assetType: string;
-          totalValue: number;
-          percentage: number;
-        }>;
+      // Try to get from cache first (if enabled)
+      if (this.CACHE_ENABLED) {
+        const cachedAllocation = await this.cacheManager.get(cacheKey);
+        if (cachedAllocation) {
+          return cachedAllocation as Array<{
+            assetType: string;
+            totalValue: number;
+            percentage: number;
+          }>;
+        }
       }
 
       const allocation = await this.portfolioRepository.getAssetAllocation(portfolioId);
       
-      // Cache the result
-      await this.cacheManager.set(cacheKey, allocation, this.CACHE_TTL);
+      // Cache the result (if enabled)
+      if (this.CACHE_ENABLED) {
+        await this.cacheManager.set(cacheKey, allocation, this.CACHE_TTL);
+      }
 
       return allocation;
     } catch (error) {
@@ -317,22 +379,26 @@ export class PortfolioService {
   }> {
     const cacheKey = `metrics:${portfolioId}`;
     
-    // Try to get from cache first
-    const cachedMetrics = await this.cacheManager.get(cacheKey);
-    if (cachedMetrics) {
-      return cachedMetrics as {
-        totalValue: number;
-        cashBalance: number;
-        unrealizedPL: number;
-        realizedPL: number;
-        assetCount: number;
-      };
+    // Try to get from cache first (if enabled)
+    if (this.CACHE_ENABLED) {
+      const cachedMetrics = await this.cacheManager.get(cacheKey);
+      if (cachedMetrics) {
+        return cachedMetrics as {
+          totalValue: number;
+          cashBalance: number;
+          unrealizedPL: number;
+          realizedPL: number;
+          assetCount: number;
+        };
+      }
     }
 
     const metrics = await this.portfolioRepository.getPortfolioAnalytics(portfolioId);
     
-    // Cache the result
-    await this.cacheManager.set(cacheKey, metrics, this.CACHE_TTL);
+    // Cache the result (if enabled)
+    if (this.CACHE_ENABLED) {
+      await this.cacheManager.set(cacheKey, metrics, this.CACHE_TTL);
+    }
 
     return metrics;
   }
@@ -356,6 +422,8 @@ export class PortfolioService {
    * @param accountId - Account ID
    */
   private async clearAccountCache(accountId: string): Promise<void> {
+    if (!this.CACHE_ENABLED) return;
+    
     const key = `portfolios:account:${accountId}`;
     await this.cacheManager.del(key);
   }

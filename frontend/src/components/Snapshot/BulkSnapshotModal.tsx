@@ -110,10 +110,15 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     setStatus({ type: null, message: '' });
 
     try {
-      const apiUrl = `/snapshots/portfolio/${selectedPortfolioId}?snapshotDate=${snapshotDate}&granularity=DAILY&createdBy=${accountId}`;
+      const apiUrl = `/snapshots/portfolio/${selectedPortfolioId}`;
+      const requestBody = {
+        snapshotDate: snapshotDate,
+        granularity: 'DAILY',
+        createdBy: accountId
+      };
             
       // Create snapshot using the bulk creation endpoint for portfolio
-      const response = await apiService.api.post(apiUrl);
+      const response = await apiService.api.post(apiUrl, requestBody);
       
       console.log('Bulk snapshot creation response:', response);
       console.log('Response status:', response.status);

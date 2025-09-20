@@ -164,6 +164,22 @@
     - ✅ **Test Coverage**: Comprehensive test script covering all functionality
     - ✅ **Error Recovery**: Non-blocking updates and recalculation capabilities
     - ✅ **Performance**: Optimized database queries and caching
+- **CASH BALANCE SYSTEM CRITICAL BUG FIXES - COMPLETED** (Current Session - September 20, 2025)
+  - **Race Condition Fix**: Fixed critical race condition in createCashFlow method where recalculateCashBalanceFromAllFlows was called outside transaction scope
+  - **Transaction Scope Fix**: Moved cash balance calculation inside transaction using manager.find() instead of this.cashFlowRepository.find()
+  - **Logic Fix**: Fixed cash balance calculation logic to use oldCashBalance + newCashFlowAmount instead of recalculating from all cash flows
+  - **Data Consistency**: Ensured cash flow creation and portfolio cash balance update happen in same transaction
+  - **Performance Optimization**: Eliminated unnecessary query to all cash flows during cash flow creation
+  - **Code Quality**: Clean, maintainable code with proper error handling and transaction management
+  - **Key Features Implemented**:
+    - ✅ **Transaction Consistency**: All cash flow operations within database transactions
+    - ✅ **Race Condition Prevention**: Fixed critical race condition in createCashFlow method
+    - ✅ **Data Integrity**: Portfolio cash balance always updated within same transaction as cash flow creation
+    - ✅ **Logic Optimization**: Use oldCashBalance + newCashFlowAmount instead of recalculating all cash flows
+    - ✅ **Performance**: Eliminated unnecessary queries during cash flow creation
+    - ✅ **Error Handling**: Comprehensive error handling and transaction rollback
+    - ✅ **Code Quality**: Clean, maintainable code with proper transaction management
+    - ✅ **Production Ready**: Fixed critical bugs, system now production-ready
 - **ALLOCATION TIMELINE IMPLEMENTATION & UI ENHANCEMENTS - COMPLETED** (Previous Session - December 19, 2024)
   - **Allocation Timeline Backend**: Complete service for calculating historical asset allocation percentages over time
   - **Cumulative Allocation Logic**: Fixed complex logic to properly track asset quantities and values across months

@@ -267,17 +267,28 @@ erDiagram
 - **Hybrid Balance**: Perfect balance between historical accuracy and current accuracy - **COMPLETED**
 - **Production Ready**: Clean, optimized code ready for Phase 2 implementation - **COMPLETED**
 
-### 18. Asset Snapshot System Pattern - **PLANNED FOR PHASE 2**
-- **Multi-Granularity Snapshots**: Daily, weekly, monthly snapshot support for flexible data analysis - **PLANNED**
-- **Asset-Level Tracking**: Individual asset snapshots for better grouping and analysis - **PLANNED**
-- **P&L Tracking**: Comprehensive P&L tracking (realized, unrealized, total) in snapshots - **PLANNED**
-- **Symbol Field Support**: Asset symbol field for efficient querying and filtering - **PLANNED**
-- **Database Schema**: AssetAllocationSnapshot entity with comprehensive fields - **PLANNED**
-- **API Endpoints**: Complete REST API for snapshot management - **PLANNED**
-- **Frontend Integration**: Enhanced timeline component with snapshot data - **PLANNED**
-- **Performance Optimization**: Redis caching and database indexing - **PLANNED**
-- **Testing Strategy**: Unit, integration, and E2E tests - **PLANNED**
-- **Documentation**: Complete API and user documentation - **PLANNED**
+### 18. Asset Snapshot System Pattern - **IMPLEMENTED WITH CR-006 ✅**
+- **Multi-Granularity Snapshots**: Daily, weekly, monthly snapshot support for flexible data analysis - **COMPLETED**
+- **Asset-Level Tracking**: Individual asset snapshots for better grouping and analysis - **COMPLETED**
+- **P&L Tracking**: Comprehensive P&L tracking (realized, unrealized, total) in snapshots - **COMPLETED**
+- **Symbol Field Support**: Asset symbol field for efficient querying and filtering - **COMPLETED**
+- **Database Schema**: AssetAllocationSnapshot entity with comprehensive fields - **COMPLETED**
+- **API Endpoints**: Complete REST API for snapshot management - **COMPLETED**
+- **Frontend Integration**: Enhanced timeline component with snapshot data - **COMPLETED**
+- **Performance Optimization**: Redis caching and database indexing - **COMPLETED**
+- **Testing Strategy**: Unit, integration, and E2E tests - **COMPLETED**
+- **Documentation**: Complete API and user documentation - **COMPLETED**
+
+### 19. Cash Balance System Pattern - **IMPLEMENTED WITH CRITICAL BUG FIXES ✅**
+- **Two-Source Logic**: Portfolio.cashBalance (performance) vs CashFlow calculation (accuracy) - **COMPLETED**
+- **Performance Optimization**: Direct read from portfolio.cashBalance for display-only operations - **COMPLETED**
+- **Accuracy Priority**: Calculate from cash_flows when updating portfolio.cashBalance - **COMPLETED**
+- **Transaction Consistency**: All cash flow operations within database transactions - **COMPLETED**
+- **Race Condition Prevention**: Fixed critical race condition in createCashFlow method - **COMPLETED**
+- **Data Integrity**: Portfolio cash balance always updated within same transaction as cash flow creation - **COMPLETED**
+- **Logic Optimization**: Use oldCashBalance + newCashFlowAmount instead of recalculating all cash flows - **COMPLETED**
+- **Error Handling**: Comprehensive error handling and transaction rollback - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with proper transaction management - **COMPLETED**
 
 ### 19. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
@@ -285,15 +296,22 @@ erDiagram
 - Graceful degradation - Error handling implemented
 
 ## Scalability Considerations
-### Environments Strategy - **IMPLEMENTED**
-- **Local (Dev)**: ✅ Docker Compose (Postgres, Redis) + NestJS services + React.js frontend; run and verify locally first
-  - ✅ Complete Docker Compose setup with health checks
-  - ✅ Automated setup and verification scripts
-  - ✅ Swagger documentation and health monitoring
-  - ✅ Database seeding and testing tools
-  - ✅ React.js frontend with Material-UI components
-  - ✅ Full-stack integration with API services
-  - ✅ Real-time updates and interactive charts
+### Environments Strategy - **IMPLEMENTED WITH DOCKER** ✅
+- **Local (Dev)**: ✅ **DOCKER-BASED DEVELOPMENT** - Complete containerized setup
+  - ✅ **Docker Compose**: All services (PostgreSQL, Redis, Backend, Frontend) in containers
+  - ✅ **Containerized Services**: Each service runs in its own Docker container
+  - ✅ **Development Command**: `docker-compose up -d` for full containerized development
+  - ✅ **Service Isolation**: Proper container isolation and networking
+  - ✅ **Health Checks**: Container health monitoring and service discovery
+  - ✅ **Volume Management**: Persistent data storage for database and logs
+  - ✅ **Environment Configuration**: Proper environment variable handling in containers
+  - ✅ **Automated Setup**: Complete Docker Compose setup with health checks
+  - ✅ **Verification Scripts**: Automated setup and verification scripts
+  - ✅ **Swagger Documentation**: API documentation and health monitoring
+  - ✅ **Database Seeding**: Database seeding and testing tools
+  - ✅ **React.js Frontend**: Material-UI components in Docker container
+  - ✅ **Full-stack Integration**: API services with real-time updates
+  - ✅ **Interactive Charts**: Real-time updates and interactive charts
 - **Staging/Cloud**: Containerized deployments with CI/CD after local verification
 
 ### Scaling

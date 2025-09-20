@@ -224,6 +224,23 @@ export class PortfolioSnapshotRepository {
   }
 
   /**
+   * Delete portfolio snapshots by portfolio, date, and granularity
+   * This is used to ensure only one portfolio snapshot per day per portfolio
+   */
+  async deleteByPortfolioDateAndGranularity(
+    portfolioId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    const result = await this.repository.delete({
+      portfolioId,
+      snapshotDate,
+      granularity,
+    });
+    return result.affected || 0;
+  }
+
+  /**
    * Delete portfolio snapshots by portfolio and date range
    */
   async deleteByPortfolioAndDateRange(

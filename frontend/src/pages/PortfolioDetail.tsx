@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
+import { usePortfolioAllocationTimeline } from '../hooks/usePortfolioAnalytics';
 import AssetAllocationChart from '../components/Analytics/AssetAllocationChart';
 import PerformanceChart from '../components/Analytics/PerformanceChart';
 import RiskReturnChart from '../components/Analytics/RiskReturnChart';
@@ -91,9 +92,12 @@ const PortfolioDetail: React.FC = () => {
   const [diversificationData, setDiversificationData] = useState<any>(null);
   const [isDiversificationLoading, setIsDiversificationLoading] = useState(false);
   const [diversificationError, setDiversificationError] = useState<string | null>(null);
-  const [allocationTimelineData, setAllocationTimelineData] = useState<any>(null);
-  const [isAllocationTimelineLoading, setIsAllocationTimelineLoading] = useState(false);
-  const [allocationTimelineError, setAllocationTimelineError] = useState<string | null>(null);
+  // Allocation timeline data using new hook
+  const { 
+    allocationData: allocationTimelineData, 
+    loading: isAllocationTimelineLoading, 
+    error: allocationTimelineError 
+  } = usePortfolioAllocationTimeline(portfolioId!, 12, true, 'DAILY');
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
@@ -200,26 +204,7 @@ const PortfolioDetail: React.FC = () => {
     fetchDiversificationData();
   }, [portfolioId]);
 
-  // Fetch allocation timeline data
-  useEffect(() => {
-    const fetchAllocationTimelineData = async () => {
-      if (!portfolioId) return;
-      
-      try {
-        setIsAllocationTimelineLoading(true);
-        setAllocationTimelineError(null);
-        const response = await apiService.getPortfolioAllocationTimeline(portfolioId);
-        setAllocationTimelineData(response);
-      } catch (error) {
-        console.error('Error fetching allocation timeline data:', error);
-        setAllocationTimelineError('Failed to load allocation timeline data');
-      } finally {
-        setIsAllocationTimelineLoading(false);
-      }
-    };
-
-    fetchAllocationTimelineData();
-  }, [portfolioId]);
+  // Allocation timeline data is now handled by usePortfolioAllocationTimeline hook
 
 
   // Fetch benchmark comparison data
@@ -308,7 +293,7 @@ const PortfolioDetail: React.FC = () => {
       setAssetPerformanceData(null);
       setRiskMetricsData(null);
       setDiversificationData(null);
-      setAllocationTimelineData(null);
+      // allocationTimelineData is now managed by usePortfolioAllocationTimeline hook
       setBenchmarkData(null);
       setAssetDetailData(null);
       
@@ -1257,7 +1242,7 @@ const PortfolioDetail: React.FC = () => {
                       <Typography color="error">{allocationTimelineError}</Typography>
                     ) : (
                       <AssetAllocationTimeline 
-                        data={allocationTimelineData?.data || []} 
+                        data={allocationTimelineData || []} 
                         baseCurrency={portfolio.baseCurrency}
                         title="Allocation Timeline"
                       />

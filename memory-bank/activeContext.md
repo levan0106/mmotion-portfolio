@@ -57,6 +57,13 @@
     - ✅ **Task 6**: Validation and error handling - Complete with robust error recovery
     - ✅ **Task 7**: Portfolio calculation integration - Complete with updated cash balance logic
     - ✅ **Task 8**: Testing infrastructure - Complete with comprehensive test script and documentation
+- ✅ **Cash Balance System Critical Bug Fixes - COMPLETED** (Current Session - September 20, 2025)
+    - ✅ **Race Condition Fix**: Fixed critical race condition in createCashFlow method where recalculateCashBalanceFromAllFlows was called outside transaction scope
+    - ✅ **Transaction Scope Fix**: Moved cash balance calculation inside transaction using manager.find() instead of this.cashFlowRepository.find()
+    - ✅ **Logic Fix**: Fixed cash balance calculation logic to use oldCashBalance + newCashFlowAmount instead of recalculating from all cash flows
+    - ✅ **Data Consistency**: Ensured cash flow creation and portfolio cash balance update happen in same transaction
+    - ✅ **Performance Optimization**: Eliminated unnecessary query to all cash flows during cash flow creation
+    - ✅ **Code Quality**: Clean, maintainable code with proper error handling and transaction management
   - ✅ **CR-005 Phase 4: Frontend Integration - COMPLETED** (Current Session - December 19, 2024)
     - ✅ **API Call Standardization**: Converted all hooks to use centralized apiService
     - ✅ **Frontend Integration**: Updated GlobalAssetsPage to use real API instead of mock data
@@ -142,11 +149,11 @@
     - ✅ **Error Handling**: Comprehensive error handling and user feedback
   - **Implementation Complete**: All 35 tasks completed across 5 phases
 - ✅ **DOCKER DEPLOYMENT CONFIGURATION - COMPLETED** (Previous Session - December 19, 2024)
-  - **Docker Setup Confirmed**: Project runs with Docker and Docker Compose
-  - **Containerization**: All services (PostgreSQL, Redis, Backend, Frontend) containerized
-  - **Development Environment**: Docker Compose provides complete local development setup
-  - **Deployment Method**: Docker is the primary deployment method for the project
-  - **Documentation Updated**: Memory bank updated to reflect Docker-based deployment
+  - **Docker Setup Confirmed**: Project runs with Docker and Docker Compose ✅
+  - **Containerization**: All services (PostgreSQL, Redis, Backend, Frontend) containerized ✅
+  - **Development Environment**: Docker Compose provides complete local development setup ✅
+  - **Deployment Method**: Docker is the primary deployment method for the project ✅
+  - **Documentation Updated**: Memory bank updated to reflect Docker-based deployment ✅
   - **Key Features Confirmed**:
     - ✅ **Docker Compose**: Complete multi-service setup with postgres, redis, backend, frontend
     - ✅ **Containerization**: All services run in Docker containers
