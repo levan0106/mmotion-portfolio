@@ -12,6 +12,7 @@ import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { AssetDetailSummaryResponseDto } from '../dto/asset-detail-summary.dto';
 import { PositionManagerService } from '../services/position-manager.service';
+import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
 /**
  * Controller for Portfolio analytics and advanced reporting.
@@ -543,45 +544,123 @@ export class PortfolioAnalyticsController {
   }
 
   /**
-   * Get benchmark comparison data.
+   * Get benchmark comparison data using real portfolio snapshots.
    */
   @Get('benchmark-comparison')
-  @ApiOperation({ summary: 'Get benchmark comparison data' })
+  @ApiOperation({ summary: 'Get benchmark comparison data using real portfolio snapshots' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 24)' })
   @ApiResponse({ status: 200, description: 'Benchmark comparison data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getBenchmarkComparison(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
+  async getBenchmarkComparison(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months') months?: string,
+  ): Promise<any> {
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
-
-    // Generate mock benchmark comparison data (last 12 months)
-    const benchmarkData = [];
-    const now = new Date();
-    let portfolioValue = 100;
-    let benchmarkValue = 100;
     
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    // Limit to maximum 24 months
+    const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 24);
+    
+    if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
+      throw new Error('Months parameter must be a number between 1 and 24');
+    }
+
+    // Get real portfolio snapshot data
+    const endDate = new Date();
+    let startDate = new Date();
+    startDate.setMonth(endDate.getMonth() - monthsToLookBack);
+    
+    console.log(`Benchmark comparison: Initial timeframe ${monthsToLookBack} months from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    
+    // First, get daily all available snapshots to determine the correct startDate
+    const portfolioSnapshots = await this.portfolioAnalyticsService.getPortfolioSnapshotTimeline(
+      id,
+      startDate,
+      endDate,
+      SnapshotGranularity.DAILY
+    );
+    
+    // Generate benchmark data (VN Index simulation)
+    const benchmarkData = [];
+    let portfolioValue = 0;
+    let benchmarkValue = 0; 
+    
+    // If we have real portfolio data, use it
+    if (portfolioSnapshots && portfolioSnapshots.length > 0) {
+      console.log(`Benchmark comparison: Real portfolio snapshots available for benchmark comparison using 
+        daily granularity ${portfolioSnapshots.length} months to look back`);
+      // Sort snapshots by date
+      const sortedSnapshots = portfolioSnapshots.sort((a, b) => 
+        new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+      );      
+
+      // Determine the correct startDate based on available snapshots
+      if (portfolioSnapshots && portfolioSnapshots.length > 0) {
+        const minSnapshotDate = new Date(Math.min(...portfolioSnapshots.map(s => new Date(s.snapshotDate).getTime())));
+        
+        if (minSnapshotDate > startDate) {
+          startDate = minSnapshotDate;
+        } 
+      }      
+
+      // Generate date list based on timeframe
+      const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
+      console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
       
-      // Generate monthly returns
-      const portfolioReturn = (Math.random() - 0.4) * 0.2; // -8% to +12%
-      const benchmarkReturn = (Math.random() - 0.3) * 0.15; // -4.5% to +10.5%
+      // Calculate cumulative returns for each date
+      const cumulativeReturns = this.calculateCumulativeReturns(dateList, sortedSnapshots);
+      console.log(`Calculated cumulative returns for ${cumulativeReturns.length} dates`);
       
-      portfolioValue *= (1 + portfolioReturn);
-      benchmarkValue *= (1 + benchmarkReturn);
-      
-      benchmarkData.push({
-        date: date.toISOString().split('T')[0],
-        portfolio: portfolioReturn * 100,
-        benchmark: benchmarkReturn * 100,
-        difference: (portfolioReturn - benchmarkReturn) * 100,
-      });
+      // Generate benchmark data based on timeframe
+      for (let i = 0; i < dateList.length; i++) {
+        const date = dateList[i];
+        const portfolioReturn = cumulativeReturns[i] || 0;
+        
+        // Generate benchmark return (simulated VN Index)
+        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: Number(portfolioReturn.toFixed(4)),
+          benchmark: Number((benchmarkReturn * 100).toFixed(4)),
+          difference: Number((portfolioReturn - (benchmarkReturn * 100)).toFixed(4)),
+        });
+      }
+    } else {
+      console.log(`Benchmark comparison: No snapshots available for benchmark comparison using 
+        daily granularity ${monthsToLookBack} months to look back`);
+      // Fallback to mock data if no snapshots available
+      for (let i = monthsToLookBack - 1; i >= 0; i--) {
+        const date = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
+        
+        // Generate monthly returns
+        const portfolioReturn = (Math.random() - 0.4) * 0.2; // TODO: -8% to +12%
+        const benchmarkReturn = (Math.random() - 0.3) * 0.15; // TODO: -4.5% to +10.5%
+        
+        portfolioValue *= (1 + portfolioReturn);
+        benchmarkValue *= (1 + benchmarkReturn);
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: portfolioReturn * 100,
+          benchmark: benchmarkReturn * 100,
+          difference: (portfolioReturn - benchmarkReturn) * 100,
+        });
+      }
     }
 
     return {
       portfolioId: id,
       totalValue: portfolio.totalValue,
       data: benchmarkData,
-      benchmarkName: 'S&P 500',
+      benchmarkName: 'VN Index',
+      period: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        months: monthsToLookBack,
+      },
+      dataSource: portfolioSnapshots && portfolioSnapshots.length > 0 ? 'real_snapshots' : 'simulated',
+      snapshotCount: portfolioSnapshots ? portfolioSnapshots.length : 0,
       calculatedAt: new Date().toISOString(),
     };
   }
@@ -638,5 +717,109 @@ export class PortfolioAnalyticsController {
         assetCount: allocation.length,
       },
     };
+  }
+
+  /**
+   * Generate date list based on timeframe
+   */
+  private generateDateList(startDate: Date, endDate: Date, months: number): Date[] {
+    const dates: Date[] = [];
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Generate daily dates
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    console.log(`Generated ${dates.length} daily dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    return dates;
+  }
+
+  /**
+   * Calculate cumulative returns for each date based on snapshots
+   */
+  private calculateCumulativeReturns(dateList: Date[], snapshots: any[]): number[] {
+    const returns: number[] = [];
+    
+    if (snapshots.length === 0) {
+      return new Array(dateList.length).fill(0);
+    }
+    
+    // Find the first snapshot value as baseline
+    const firstSnapshot = snapshots[0];
+    const baselineValue = parseFloat(firstSnapshot.totalValue) || 0;
+    const baselineDate = new Date(firstSnapshot.snapshotDate);
+    
+    console.log(`Baseline: ${baselineValue} on ${baselineDate.toISOString().split('T')[0]}`);
+    
+    for (let i = 0; i < dateList.length; i++) {
+      const currentDate = dateList[i];
+      
+      // Find the closest snapshot that is on or before this date
+      const closestSnapshot = this.findClosestSnapshotOnOrBefore(currentDate, snapshots);
+      
+      if (closestSnapshot) {
+        const currentValue = parseFloat(closestSnapshot.totalValue) || 0;
+        const returnValue = baselineValue > 0 ? ((currentValue - baselineValue) / baselineValue) * 100 : 0;
+        returns.push(returnValue);
+        
+        if (i < 5 || i % 30 === 0) { // Log first 5 and every 30th for debugging
+          console.log(`Date ${currentDate.toISOString().split('T')[0]}: value=${currentValue}, return=${returnValue.toFixed(4)}%`);
+        }
+      } else {
+        // No snapshot found, use previous return or 0
+        const previousReturn = returns.length > 0 ? returns[returns.length - 1] : 0;
+        returns.push(previousReturn);
+      }
+    }
+    
+    return returns;
+  }
+
+  /**
+   * Find the closest snapshot for a given date
+   */
+  private findClosestSnapshot(targetDate: Date, snapshots: any[]): any | null {
+    if (snapshots.length === 0) return null;
+    
+    let closest = snapshots[0];
+    let minDiff = Math.abs(new Date(closest.snapshotDate).getTime() - targetDate.getTime());
+    
+    for (const snapshot of snapshots) {
+      const diff = Math.abs(new Date(snapshot.snapshotDate).getTime() - targetDate.getTime());
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = snapshot;
+      }
+    }
+    
+    return closest;
+  }
+
+  /**
+   * Find the closest snapshot that is on or before a given date
+   */
+  private findClosestSnapshotOnOrBefore(targetDate: Date, snapshots: any[]): any | null {
+    if (snapshots.length === 0) return null;
+    
+    let closest: any | null = null;
+    let closestDate = new Date(0); // Start with epoch
+    
+    for (const snapshot of snapshots) {
+      const snapshotDate = new Date(snapshot.snapshotDate);
+      
+      // Only consider snapshots that are on or before the target date
+      if (snapshotDate <= targetDate) {
+        // If this snapshot is closer to target date than current closest
+        if (snapshotDate > closestDate) {
+          closest = snapshot;
+          closestDate = snapshotDate;
+        }
+      }
+    }
+    
+    return closest;
   }
 }

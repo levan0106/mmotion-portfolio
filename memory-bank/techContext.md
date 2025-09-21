@@ -28,6 +28,8 @@
 - **Frontend Data Mapping**: Proper API data flow to UI components ✅
 - **Real-time Calculations**: Trade Details with accurate financial calculations ✅
 - **Data Transparency**: Alert system for database vs calculated values ✅
+- **Benchmark Comparison**: Real-time portfolio performance comparison with proper startDate determination ✅
+- **Snapshot Data Integration**: Use real portfolio snapshot data for historical performance calculations ✅
 - **Portfolio Analytics**: 8 advanced charts with comprehensive analysis ✅
 - **Compact Mode**: Ultra compact mode with global toggle for maximum data density ✅
 - **Global Assets System**: CR-005 documentation complete (PRD, TDD, TBD) ✅

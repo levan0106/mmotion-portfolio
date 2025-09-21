@@ -171,11 +171,11 @@ export const TradeList: React.FC<TradeListProps> = ({
 
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
-          <Typography variant="h5" component="h2" gutterBottom>
+          <Typography variant="h6" component="h2" gutterBottom>
             Trade History
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -518,7 +518,7 @@ export const TradeList: React.FC<TradeListProps> = ({
 };
 
 // Wrapper component that uses the hook
-export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () => void; isCompactMode?: boolean }> = ({ portfolioId, onCreate, isCompactMode = false }) => {
+export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () => void; isCompactMode?: boolean }> = ({ portfolioId, onCreate, isCompactMode: _isCompactMode = false }) => {
   const [filters, setFilters] = useState({
     assetId: '',
     side: '',
@@ -599,7 +599,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
   }
 
   return (
-    <Box sx={{ p: isCompactMode ? 1 : 0 }}>
+    <Box>
       <TradeList
         trades={trades || []}
         isLoading={isLoading}

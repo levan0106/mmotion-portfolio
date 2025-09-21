@@ -175,8 +175,9 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioBenchmarkComparison(portfolioId: string): Promise<any> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/benchmark-comparison`);
+  async getPortfolioBenchmarkComparison(portfolioId: string, months?: number): Promise<any> {
+    const params = months ? { months: months.toString() } : {};
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/benchmark-comparison`, { params });
     return response.data;
   }
 

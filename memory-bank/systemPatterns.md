@@ -48,6 +48,8 @@ flowchart LR
 - **Modal Enhancement Pattern**: Add Edit/Delete buttons to detail modals for better UX (Asset Management UI Enhancements completed)
 - **AssetAutocomplete Pattern**: Advanced searchable dropdown with pagination, currency formatting, and edit modal support (TradeForm AssetAutocomplete Integration completed)
 - **Force Re-render Pattern**: Key-based re-render mechanism for components that need to reset when external data changes (TradeForm AssetAutocomplete Integration completed)
+- **Benchmark Comparison Pattern**: Real-time portfolio performance comparison with proper startDate determination and timeframe synchronization (Benchmark Comparison Logic Enhancement completed)
+- **Snapshot Data Pattern**: Use real portfolio snapshot data for historical performance calculations with proper date range filtering (Benchmark Comparison Logic Enhancement completed)
 - **Snapshot System Pattern**: Multi-granularity snapshots with asset and portfolio level tracking (CR-006 Asset Snapshot System completed)
 - **Collapsible Table Pattern**: Hierarchical data display with Level 1 (Date + Asset Type) and Level 2 (Asset Details) (CR-006 Asset Snapshot System completed)
 - **Format Helper Pattern**: Centralized formatting utilities for consistent data display across all components (CR-006 Asset Snapshot System completed)

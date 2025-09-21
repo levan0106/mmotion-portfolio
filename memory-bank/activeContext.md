@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: TradeForm UI/UX Enhancements - COMPLETED**
-**Latest Update: Current Price Display Integration and Card Cleanup (Current Session)**
+**Phase: Benchmark Comparison Logic Enhancement - COMPLETED**
+**Latest Update: Fixed startDate determination logic and timeframe dropdown synchronization (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,24 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **TRADEFORM CURRENT PRICE DISPLAY & CARD CLEANUP - COMPLETED** (Current Session - December 20, 2024)
+- ✅ **BENCHMARK COMPARISON LOGIC ENHANCEMENT - COMPLETED** (Current Session - December 21, 2024)
+  - **startDate Determination Fix**: Fixed critical logic issue where startDate was determined after calculating returns
+  - **Correct Logic Implementation**: Now determines startDate first, then gets snapshots for correct date range
+  - **Timeframe Dropdown Synchronization**: Fixed frontend dropdown not updating when timeframe changes
+  - **Real Data Integration**: All benchmark comparison now uses real snapshot data with proper date filtering
+  - **Performance Optimization**: Eliminated unnecessary database queries and improved calculation accuracy
+  - **Code Quality**: Clean, maintainable code with comprehensive logging and error handling
+  - **Key Features Implemented**:
+    - ✅ **Correct startDate Logic**: First get all snapshots to determine minDate, then adjust startDate accordingly
+    - ✅ **Accurate Date Range**: Get snapshots only for the correct date range after startDate determination
+    - ✅ **Frontend Synchronization**: BenchmarkComparison component syncs with parent component's timeframe state
+    - ✅ **Real Snapshot Data**: All calculations use actual portfolio snapshot data instead of mock data
+    - ✅ **Proper Date Filtering**: Generate date list based on correct startDate and endDate
+    - ✅ **Cumulative Returns**: Calculate returns based on total_value from snapshots over time
+    - ✅ **Performance**: Efficient database queries with proper date range filtering
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- ✅ **TRADEFORM CURRENT PRICE DISPLAY & CARD CLEANUP - COMPLETED** (Previous Session - December 20, 2024)
   - **Current Price Display Integration**: Complete integration of current price display in AssetAutocomplete component
   - **Card Cleanup**: Removed redundant Current Price card from TradeForm to avoid duplication
   - **UI Simplification**: Streamlined TradeForm layout by removing unnecessary state and imports

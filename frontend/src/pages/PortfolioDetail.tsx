@@ -34,7 +34,6 @@ import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { usePortfolioAllocationTimeline } from '../hooks/usePortfolioAnalytics';
 import AssetAllocationChart from '../components/Analytics/AssetAllocationChart';
 import UnrealizedPnLChart from '../components/Analytics/UnrealizedPnLChart';
-import PerformanceChart from '../components/Analytics/PerformanceChart';
 import RiskReturnChart from '../components/Analytics/RiskReturnChart';
 import AssetPerformanceChart from '../components/Analytics/AssetPerformanceChart';
 import RiskMetricsDashboard from '../components/Analytics/RiskMetricsDashboard';
@@ -77,6 +76,38 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+// Helper component for consistent section structure
+interface SectionWrapperProps {
+  title: string;
+  children: React.ReactNode;
+  isCompactMode: boolean;
+  getUltraSpacing: (normal: number, ultra: number) => number;
+}
+
+function SectionWrapper({ title, children, isCompactMode, getUltraSpacing }: SectionWrapperProps) {
+  return (
+    <Grid item xs={12}>
+      <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
+        fontWeight: 600, 
+        color: '#1a1a1a', 
+        mb: getUltraSpacing(2, 0.5),
+        fontSize: isCompactMode ? '0.9rem' : undefined
+      }}>
+        {title}
+      </Typography>
+      <Box sx={{ 
+        p: getUltraSpacing(2, 1), 
+        backgroundColor: 'white', 
+        borderRadius: 2, 
+        boxShadow: 1,
+        border: '1px solid #e0e0e0'
+      }}>
+        {children}
+      </Box>
+    </Grid>
+  );
+}
+
 const PortfolioDetail: React.FC = () => {
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
@@ -103,6 +134,7 @@ const PortfolioDetail: React.FC = () => {
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+  const [benchmarkTimeframe, setBenchmarkTimeframe] = useState('1Y');
   const [assetDetailData, setAssetDetailData] = useState<any>(null);
   const [isAssetDetailLoading, setIsAssetDetailLoading] = useState(false);
   const [assetDetailError, setAssetDetailError] = useState<string | null>(null);
@@ -218,7 +250,10 @@ const PortfolioDetail: React.FC = () => {
       try {
         setIsBenchmarkLoading(true);
         setBenchmarkError(null);
-        const response = await apiService.getPortfolioBenchmarkComparison(portfolioId);
+        
+        // Convert timeframe to months
+        const months = getTimeframeMonths(benchmarkTimeframe);
+        const response = await apiService.getPortfolioBenchmarkComparison(portfolioId, months);
         setBenchmarkData(response);
       } catch (error) {
         console.error('Error fetching benchmark data:', error);
@@ -229,7 +264,26 @@ const PortfolioDetail: React.FC = () => {
     };
 
     fetchBenchmarkData();
-  }, [portfolioId]);
+  }, [portfolioId, benchmarkTimeframe]);
+
+  // Helper function to convert timeframe to months
+  const getTimeframeMonths = (timeframe: string): number => {
+    switch (timeframe) {
+      case '1M': return 1;
+      case '3M': return 3;
+      case '6M': return 6;
+      case '1Y': return 12;
+      case '2Y': return 24;
+      case '5Y': return 60;
+      case 'ALL': return 24; // Max 24 months for API
+      default: return 12;
+    }
+  };
+
+  // Handle benchmark timeframe change
+  const handleBenchmarkTimeframeChange = (timeframe: string) => {
+    setBenchmarkTimeframe(timeframe);
+  };
 
   // Fetch asset detail summary data
   useEffect(() => {
@@ -828,57 +882,67 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 3, // Add padding top
+            pt: 0, // Reduced padding top by half
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
-              <Grid item xs={12}>
-                <PerformanceChart 
-                  portfolioId={portfolioId!} 
-                  baseCurrency={portfolio.baseCurrency}
-                  title="Portfolio Performance"
-                />
-              </Grid>
-              <Grid item xs={12}>
+              {/* Portfolio Performance Section - Renamed from Benchmark Comparison */}
+              <SectionWrapper 
+                title="Portfolio Performance (Hiệu suất danh mục)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
+                {isBenchmarkLoading ? (
+                  <Box display="flex" justifyContent="center" p={2}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : benchmarkError ? (
+                  <Typography color="error" variant="body2">{benchmarkError}</Typography>
+                ) : (
+                  <BenchmarkComparison 
+                    data={benchmarkData?.data || []} 
+                    baseCurrency={portfolio.baseCurrency}
+                    title="Portfolio Performance"
+                    benchmarkName={benchmarkData?.benchmarkName || 'VN Index'}
+                    isCompactMode={isCompactMode}
+                    getUltraSpacing={getUltraSpacing}
+                    portfolioId={portfolioId}
+                    onTimeframeChange={handleBenchmarkTimeframeChange}
+                    currentTimeframe={benchmarkTimeframe}
+                  />
+                )}
+              </SectionWrapper>
+              {/* Trading Analysis Section */}
+              <SectionWrapper 
+                title="Trading Analysis (Phân tích giao dịch)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
                 <TradeAnalysisContainer 
                   portfolioId={portfolioId!} 
                   isCompactMode={isCompactMode}
                 />
-              </Grid>
+              </SectionWrapper>
               
               {/* Risk Metrics Section */}
-              <Grid item xs={12}>
-                <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-                  <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                    fontWeight: 600, 
-                    color: '#1a1a1a', 
-                    mb: getUltraSpacing(2, 0.5),
-                    fontSize: isCompactMode ? '0.9rem' : undefined
-                  }}>
-                    Risk Metrics (Chỉ số rủi ro)
-                  </Typography>
-                  <Box sx={{ 
-                    p: getUltraSpacing(2, 1), 
-                    backgroundColor: 'white', 
-                    borderRadius: 2, 
-                    boxShadow: 1,
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    {isRiskMetricsLoading ? (
-                      <Box display="flex" justifyContent="center" p={2}>
-                        <CircularProgress size={24} />
-                      </Box>
-                    ) : riskMetricsError ? (
-                      <Typography color="error" variant="body2">{riskMetricsError}</Typography>
-                    ) : (
-                      <RiskMetricsDashboard 
-                        data={riskMetricsData?.data || {}} 
-                        baseCurrency={portfolio.baseCurrency}
-                        title="Risk Metrics Dashboard"
-                      />
-                    )}
+              <SectionWrapper 
+                title="Risk Metrics (Chỉ số rủi ro)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
+                {isRiskMetricsLoading ? (
+                  <Box display="flex" justifyContent="center" p={2}>
+                    <CircularProgress size={24} />
                   </Box>
-                </Box>
-              </Grid>
+                ) : riskMetricsError ? (
+                  <Typography color="error" variant="body2">{riskMetricsError}</Typography>
+                ) : (
+                  <RiskMetricsDashboard 
+                    data={riskMetricsData?.data || {}}
+                    baseCurrency={portfolio.baseCurrency}
+                    title="Risk Metrics Dashboard"
+                  />
+                )}
+              </SectionWrapper>
             </Grid>
           </Box>
         </TabPanel>
@@ -887,16 +951,21 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 3, // Add padding top
+            pt: 0, // No padding top for consistency
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
-              <Grid item xs={12}>
+              {/* Trading Management Section */}
+              <SectionWrapper 
+                title="Trading Management (Quản lý giao dịch)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
                 <TradeListContainer 
                   portfolioId={portfolioId!} 
                   onCreate={() => setShowCreateForm(true)}
                   isCompactMode={isCompactMode}
                 />
-              </Grid>
+              </SectionWrapper>
             </Grid>
           </Box>
         </TabPanel>
@@ -906,101 +975,93 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 3, // Add padding top
+            pt: 0, // No padding top for consistency
           }}>
-
-            {/* Portfolio Overview Section */}
-            <Box sx={{ mb: getUltraSpacing(4, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(3, 1),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Portfolio Overview
-              </Typography>
-              <Grid container spacing={getUltraSpacing(3, 1)}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box sx={{ 
-                    p: getUltraSpacing(3, 1), 
-                    backgroundColor: 'white', 
-                    borderRadius: 2, 
-                    boxShadow: 1,
-                    textAlign: 'center',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <Typography variant="h4" color="primary" fontWeight="bold">
-                      {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Total Portfolio Value (Tổng giá trị tài sản)
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box sx={{ 
-                    p: getUltraSpacing(3, 1), 
-                    backgroundColor: 'white', 
-                    borderRadius: 2, 
-                    boxShadow: 1,
-                    textAlign: 'center',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <Typography variant="h4" color="success.main" fontWeight="bold">
-                      {formatCurrency(portfolio.unrealizedPl, portfolio.baseCurrency)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Unrealized P&L (Lợi nhuận chưa thực hiện)
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box sx={{ 
-                    p: getUltraSpacing(3, 1), 
-                    backgroundColor: 'white', 
-                    borderRadius: 2, 
-                    boxShadow: 1,
-                    textAlign: 'center',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <Typography variant="h4" color="info.main" fontWeight="bold">
-                      {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Cash Balance (Số dư tiền mặt)
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box sx={{ 
-                    p: getUltraSpacing(3, 1), 
-                    backgroundColor: 'white', 
-                    borderRadius: 2, 
-                    boxShadow: 1,
-                    textAlign: 'center',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <Typography variant="h4" color="warning.main" fontWeight="bold">
-                      {Object.keys(allocationData?.allocation || {}).length}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Asset Classes (Loại tài sản)
-                  </Typography>
+            <Grid container spacing={getUltraSpacing(3, 1)}>
+              {/* Portfolio Overview Section */}
+              <SectionWrapper 
+                title="Portfolio Overview (Tổng quan danh mục)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
+                <Grid container spacing={getUltraSpacing(3, 1)}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ 
+                      p: getUltraSpacing(3, 1), 
+                      backgroundColor: 'white', 
+                      borderRadius: 2, 
+                      boxShadow: 1,
+                      textAlign: 'center',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h4" color="primary" fontWeight="bold">
+                        {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Total Portfolio Value (Tổng giá trị tài sản)
+                      </Typography>
                     </Box>
-                </Grid>
-            </Grid>
-            </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ 
+                      p: getUltraSpacing(3, 1), 
+                      backgroundColor: 'white', 
+                      borderRadius: 2, 
+                      boxShadow: 1,
+                      textAlign: 'center',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h4" color="success.main" fontWeight="bold">
+                        {formatCurrency(portfolio.unrealizedPl, portfolio.baseCurrency)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Unrealized P&L (Lợi nhuận chưa thực hiện)
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ 
+                      p: getUltraSpacing(3, 1), 
+                      backgroundColor: 'white', 
+                      borderRadius: 2, 
+                      boxShadow: 1,
+                      textAlign: 'center',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h4" color="info.main" fontWeight="bold">
+                        {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Cash Balance (Số dư tiền mặt)
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ 
+                      p: getUltraSpacing(3, 1), 
+                      backgroundColor: 'white', 
+                      borderRadius: 2, 
+                      boxShadow: 1,
+                      textAlign: 'center',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h4" color="warning.main" fontWeight="bold">
+                        {Object.keys(allocationData?.allocation || {}).length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Asset Classes (Loại tài sản)
+                    </Typography>
+                      </Box>
+                  </Grid>
+              </Grid>
+              </SectionWrapper>
 
-            {/* Asset Allocation Section */}
-            <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(2, 0.5),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                    Asset Type Allocation (Phân bổ loại tài sản)
-                  </Typography>
+              {/* Asset Allocation Section */}
+              <SectionWrapper 
+                title="Asset Type Allocation (Phân bổ loại tài sản)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
               <Grid container spacing={getUltraSpacing(2, 1)}>
                 {/* Asset Allocation Pie Chart - Column 1 */}
                 <Grid item xs={12} md={4}>
@@ -1139,18 +1200,14 @@ const PortfolioDetail: React.FC = () => {
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
+              </SectionWrapper>
 
-            {/* Asset Detail Summary Section */}
-            <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(2, 0.5),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Asset Detail Summary (Tổng quan tài sản)
-              </Typography>
+              {/* Asset Detail Summary Section */}
+              <SectionWrapper 
+                title="Asset Detail Summary (Tổng quan tài sản)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
               <Box sx={{ 
                 p: getUltraSpacing(2, 1), 
                 backgroundColor: 'white', 
@@ -1172,18 +1229,14 @@ const PortfolioDetail: React.FC = () => {
                   />
                 )}
               </Box>
-            </Box>
+              </SectionWrapper>
 
-            {/* Risk & Performance Analysis Section */}
-            <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(2, 0.5),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Risk & Performance Analysis (Rủi ro và hiệu suất)
-              </Typography>
+              {/* Risk & Performance Analysis Section */}
+              <SectionWrapper 
+                title="Risk & Performance Analysis (Rủi ro và hiệu suất)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
               <Grid container spacing={getUltraSpacing(2, 1)}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
@@ -1236,19 +1289,14 @@ const PortfolioDetail: React.FC = () => {
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
+              </SectionWrapper>
 
-
-            {/* Diversification & Timeline Section */}
-            <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(2, 0.5),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)
-              </Typography>
+              {/* Diversification & Timeline Section */}
+              <SectionWrapper 
+                title="Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
               <Grid container spacing={getUltraSpacing(2, 1)}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
@@ -1297,45 +1345,10 @@ const PortfolioDetail: React.FC = () => {
                       />
                     )}
                   </Box>
+                </Grid>
+              </Grid>
+              </SectionWrapper>
             </Grid>
-          </Grid>
-            </Box>
-
-
-            {/* Benchmark Comparison Section */}
-            <Box sx={{ mb: getUltraSpacing(2, 1) }}>
-              <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: '#1a1a1a', 
-                mb: getUltraSpacing(2, 0.5),
-                fontSize: isCompactMode ? '0.9rem' : undefined
-              }}>
-                Benchmark Comparison (So sánh với benchmark)
-              </Typography>
-              <Box sx={{ 
-                p: getUltraSpacing(2, 1), 
-                backgroundColor: 'white', 
-                borderRadius: 2, 
-                boxShadow: 1,
-                border: '1px solid #e0e0e0'
-              }}>
-                {isBenchmarkLoading ? (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={24} />
-                  </Box>
-                ) : benchmarkError ? (
-                  <Typography color="error" variant="body2">{benchmarkError}</Typography>
-                ) : (
-                  <BenchmarkComparison 
-                    data={benchmarkData?.data || []} 
-                    baseCurrency={portfolio.baseCurrency}
-                    title="Benchmark Comparison"
-                    benchmarkName={benchmarkData?.benchmarkName || 'S&P 500'}
-                  />
-                )}
-              </Box>
-            </Box>
-
           </Box>
         </TabPanel>
 
@@ -1343,15 +1356,24 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 3, // Add padding top
+            pt: 0, // No padding top for consistency
           }}>
-            <CashFlowLayout 
-              portfolioId={portfolioId!} 
-              onCashFlowUpdate={() => {
-                // Refresh portfolio data when cash flow is updated
-                refetchPortfolio();
-              }}
-            />
+            <Grid container spacing={getUltraSpacing(3, 1)}>
+              {/* Cash Flow Management Section */}
+              <SectionWrapper 
+                title="Cash Flow Management (Quản lý dòng tiền)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
+                <CashFlowLayout 
+                  portfolioId={portfolioId!} 
+                  onCashFlowUpdate={() => {
+                    // Refresh portfolio data when cash flow is updated
+                    refetchPortfolio();
+                  }}
+                />
+              </SectionWrapper>
+            </Grid>
           </Box>
         </TabPanel>
 

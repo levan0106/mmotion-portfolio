@@ -160,7 +160,9 @@ export class PortfolioSnapshotService {
     // Calculate returns (simplified - would need historical data for accurate calculation)
     const dailyReturn = Number(this.calculateDailyReturn(assetSnapshots).toFixed(4));
     const weeklyReturn = Number((dailyReturn * 7).toFixed(4)); // Simplified
-    const monthlyReturn = Number((dailyReturn * 30).toFixed(4)); // Simplified
+    // Monthly return should be calculated properly, not just daily * 30
+    // For now, use a more reasonable calculation or set to 0 if no historical data
+    const monthlyReturn = 0; // TODO: Implement proper monthly return calculation
     const ytdReturn = Number(this.calculateYtdReturn(assetSnapshots).toFixed(4));
 
     // Debug logging

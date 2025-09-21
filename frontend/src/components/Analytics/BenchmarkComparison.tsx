@@ -2,7 +2,7 @@
  * Benchmark Comparison component
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -14,7 +14,19 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
-import { Box, Typography, Paper, Grid, Card, CardContent, Chip } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Grid, 
+  Card, 
+  CardContent, 
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
 import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
 import { TrendingUp, TrendingDown, CompareArrows } from '@mui/icons-material';
 
@@ -30,13 +42,36 @@ interface BenchmarkComparisonProps {
   baseCurrency?: string;
   title?: string;
   benchmarkName?: string;
+  isCompactMode?: boolean;
+  getUltraSpacing?: (normal: number, ultra: number) => number;
+  portfolioId?: string;
+  onTimeframeChange?: (timeframe: string) => void;
+  currentTimeframe?: string;
 }
 
 const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   data,
   title = 'Benchmark Comparison',
   benchmarkName = 'Market Index',
+  isCompactMode: _isCompactMode = false,
+  getUltraSpacing = (normal) => normal,
+  portfolioId: _portfolioId,
+  onTimeframeChange,
+  currentTimeframe = '1Y',
 }) => {
+  const [timeframe, setTimeframe] = useState(currentTimeframe);
+
+  // Sync local state with prop changes
+  useEffect(() => {
+    setTimeframe(currentTimeframe);
+  }, [currentTimeframe]);
+
+  const handleTimeframeChange = (newTimeframe: string) => {
+    setTimeframe(newTimeframe);
+    if (onTimeframeChange) {
+      onTimeframeChange(newTimeframe);
+    }
+  };
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -84,12 +119,44 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Portfolio performance vs {benchmarkName}
-      </Typography>
+      {/* Header with Timeframe Dropdown */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        mb: getUltraSpacing(2, 1)
+      }}>
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Portfolio performance vs {benchmarkName}
+          </Typography>
+        </Box>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Timeframe</InputLabel>
+          <Select
+            value={timeframe}
+            label="Timeframe"
+            onChange={(e) => handleTimeframeChange(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                fontSize: '0.875rem'
+              }
+            }}
+          >
+            <MenuItem value="1M">1 Month</MenuItem>
+            <MenuItem value="3M">3 Months</MenuItem>
+            <MenuItem value="6M">6 Months</MenuItem>
+            <MenuItem value="1Y">1 Year</MenuItem>
+            <MenuItem value="2Y">2 Years</MenuItem>
+            <MenuItem value="5Y">5 Years</MenuItem>
+            <MenuItem value="ALL">All Time</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Performance Metrics */}
       <Grid container spacing={2} sx={{ mb: 3 }}>

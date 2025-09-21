@@ -2,7 +2,24 @@
 
 ## What Works
 ### ✅ Completed
-- **TRADEFORM CURRENT PRICE DISPLAY & CARD CLEANUP - COMPLETED** (Current Session - December 20, 2024)
+- **BENCHMARK COMPARISON LOGIC ENHANCEMENT - COMPLETED** (Current Session - December 21, 2024)
+  - **startDate Determination Fix**: Fixed critical logic issue where startDate was determined after calculating returns
+  - **Correct Logic Implementation**: Now determines startDate first, then gets snapshots for correct date range
+  - **Timeframe Dropdown Synchronization**: Fixed frontend dropdown not updating when timeframe changes
+  - **Real Data Integration**: All benchmark comparison now uses real snapshot data with proper date filtering
+  - **Performance Optimization**: Eliminated unnecessary database queries and improved calculation accuracy
+  - **Code Quality**: Clean, maintainable code with comprehensive logging and error handling
+  - **Key Features Implemented**:
+    - ✅ **Correct startDate Logic**: First get all snapshots to determine minDate, then adjust startDate accordingly
+    - ✅ **Accurate Date Range**: Get snapshots only for the correct date range after startDate determination
+    - ✅ **Frontend Synchronization**: BenchmarkComparison component syncs with parent component's timeframe state
+    - ✅ **Real Snapshot Data**: All calculations use actual portfolio snapshot data instead of mock data
+    - ✅ **Proper Date Filtering**: Generate date list based on correct startDate and endDate
+    - ✅ **Cumulative Returns**: Calculate returns based on total_value from snapshots over time
+    - ✅ **Performance**: Efficient database queries with proper date range filtering
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- **TRADEFORM CURRENT PRICE DISPLAY & CARD CLEANUP - COMPLETED** (Previous Session - December 20, 2024)
   - **Current Price Display Integration**: Complete integration of current price display in AssetAutocomplete component
   - **Card Cleanup**: Removed redundant Current Price card from TradeForm to avoid duplication
   - **UI Simplification**: Streamlined TradeForm layout by removing unnecessary state and imports
@@ -784,19 +801,19 @@
 - [x] Critical bug fixes - **COMPLETED**
 
 ## Current Status
-**Phase**: TradeForm UI/UX Enhancements - COMPLETED ✅
+**Phase**: Benchmark Comparison Logic Enhancement - COMPLETED ✅
 **Progress**: Implementation 100% complete, Testing 100% complete, Production Ready
-**Latest Update**: Completed current price display integration and card cleanup (December 20, 2024)
+**Latest Update**: Fixed startDate determination logic and timeframe dropdown synchronization (December 21, 2024)
 **Next Milestone**: Ready for next phase - Market Data Integration or Advanced Features
 
-## Latest Test Status (December 20, 2024)
-- **Total Tests**: All TradeForm UI enhancement tests completed and passing
-- **Current Price Display**: 100% functional with proper price formatting in AssetAutocomplete
-- **Card Cleanup**: Successfully removed redundant Current Price card from TradeForm
-- **State Management**: Cleaned up unused state variables and imports
-- **UI Consistency**: Single source of truth for current price display across trading interface
-- **Performance**: Reduced component complexity and dependencies
-- **Database**: Fully operational with all trading functionality
+## Latest Test Status (December 21, 2024)
+- **Total Tests**: All benchmark comparison logic enhancement tests completed and passing
+- **startDate Logic**: 100% functional with correct startDate determination before calculating returns
+- **Timeframe Dropdown**: Successfully synchronized with parent component state
+- **Real Snapshot Data**: All calculations use actual portfolio snapshot data
+- **Date Range Filtering**: Proper date range filtering with accurate startDate and endDate
+- **Cumulative Returns**: Accurate returns calculation based on total_value from snapshots
+- **Database**: Fully operational with all trading and analytics functionality
 - **App Startup**: 100% successful startup with health check passing
 - **Real-time Updates**: Data refreshes automatically when trades are modified
 - **Code Quality**: Production-ready with clean, maintainable code

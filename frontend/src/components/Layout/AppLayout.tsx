@@ -154,15 +154,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </Typography>
           </Box>
         </Box>
-        <Chip
-          label="v2.0.0"
-          size="small"
-          sx={{
-            bgcolor: 'rgba(255,255,255,0.2)',
-            color: 'white',
-            fontWeight: 'bold',
-          }}
-        />
+        
       </Box>
 
       {/* Navigation */}

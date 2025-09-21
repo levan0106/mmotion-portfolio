@@ -120,16 +120,6 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
   const locale = getLocale(currency);
 
-  // ✅ ĐÚNG - Helper function để format volatility một cách thông minh
-  const formatVolatility = (volatility: number): string => {
-    if (volatility >= 100) {
-      return formatPercentageWithSeparators(volatility, 1, locale); // 123.4%
-    } else if (volatility >= 10) {
-      return formatPercentageWithSeparators(volatility, 2, locale); // 12.34%
-    } else {
-      return formatPercentageWithSeparators(volatility, 2, locale); // 1.23%
-    }
-  };
 
   // ✅ ĐÚNG - Validation data trước khi sử dụng theo UTILS_GUIDE.md
   const isValidAnalysis = useMemo(() => {
@@ -342,7 +332,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   }
 
   return (
-    <Box sx={{ p: isCompactMode ? 1 : 3 }}>
+    <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 4}>
         <Box>
@@ -735,77 +725,6 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Typography>
                 </Box>
               )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Risk Metrics Section */}
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-                <Typography variant="h6">
-                  Risk Metrics
-                </Typography>
-                <Chip
-                  label="Risk Assessment"
-                  color="warning"
-                  size="small"
-                  variant="outlined"
-                />
-              </Box>
-              <Grid container spacing={3}>
-                <Grid item xs={6} sm={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'primary.50', borderRadius: 2 }}>
-                    <Typography variant="h4" color="primary" fontWeight="bold">
-                      {analysis.riskMetrics.sharpeRatio}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      Sharpe Ratio
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Box textAlign="center" p={2} sx={{ 
-                    bgcolor: analysis.riskMetrics.volatility > 200 ? 'error.50' : 'warning.50', 
-                    borderRadius: 2 
-                  }}>
-                    <Typography variant="h4" color={analysis.riskMetrics.volatility > 200 ? "error.main" : "warning.main"} fontWeight="bold">
-                      {formatVolatility(analysis.riskMetrics.volatility)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      Volatility
-                      {analysis.riskMetrics.volatility > 200 && (
-                        <Typography variant="caption" color="error.main" display="block">
-                          ⚠️ Extreme volatility
-                        </Typography>
-                      )}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'error.50', borderRadius: 2 }}>
-                    <Typography variant="h4" color="error.main" fontWeight="bold">
-                      {formatCurrency(analysis.riskMetrics.var95, currency, {}, locale)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      VaR (95%)
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'error.50', borderRadius: 2 }}>
-                    <Typography variant="h4" color="error.main" fontWeight="bold">
-                      {formatCurrency(analysis.riskMetrics.maxDrawdown, currency, {}, locale)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mt={1}>
-                      Max Drawdown
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
             </CardContent>
           </Card>
         </Grid>

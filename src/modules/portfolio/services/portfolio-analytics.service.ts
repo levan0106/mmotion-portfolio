@@ -12,6 +12,7 @@ import { TradeRepository } from '../../trading/repositories/trade.repository';
 import { Trade } from '../../trading/entities/trade.entity';
 import { SnapshotService } from './snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
+import { PortfolioSnapshotService } from './portfolio-snapshot.service';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -29,6 +30,7 @@ export class PortfolioAnalyticsService {
     private readonly tradeRepository: TradeRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly snapshotService: SnapshotService,
+    private readonly portfolioSnapshotService: PortfolioSnapshotService,
   ) {}
 
   /**
@@ -632,6 +634,36 @@ export class PortfolioAnalyticsService {
     } catch (error) {
       console.error('Error in calculateAllocationTimeline service:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get portfolio snapshot timeline data for benchmark comparison.
+   * @param portfolioId - Portfolio ID
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @param granularity - Snapshot granularity
+   * @returns Promise<PortfolioSnapshot[]>
+   */
+  async getPortfolioSnapshotTimeline(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity = SnapshotGranularity.MONTHLY
+  ): Promise<any[]> {
+    try {
+      // Use portfolio snapshot service to get portfolio snapshots
+      const portfolioSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate,
+        endDate,
+        granularity
+      });
+
+      return portfolioSnapshots || [];
+    } catch (error) {
+      console.error('Error in getPortfolioSnapshotTimeline service:', error);
+      return [];
     }
   }
 }
