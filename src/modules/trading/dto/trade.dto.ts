@@ -101,6 +101,26 @@ export class CreateTradeDto {
   source?: TradeSource = TradeSource.MANUAL;
 
   @ApiPropertyOptional({
+    description: 'Exchange/platform where trade was executed',
+    example: 'VNDIRECT',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString({ message: 'Exchange must be a string' })
+  @MaxLength(100, { message: 'Exchange must not exceed 100 characters' })
+  exchange?: string;
+
+  @ApiPropertyOptional({
+    description: 'Funding source used for this trade',
+    example: 'VIETCOMBANK',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString({ message: 'Funding source must be a string' })
+  @MaxLength(100, { message: 'Funding source must not exceed 100 characters' })
+  fundingSource?: string;
+
+  @ApiPropertyOptional({
     description: 'Additional notes for the trade',
     example: 'testing note',
     maxLength: 1000,
@@ -210,6 +230,26 @@ export class UpdateTradeDto {
   @IsOptional()
   @IsEnum(TradeSource, { message: 'Trade source must be a valid enum value' })
   source?: TradeSource;
+
+  @ApiPropertyOptional({
+    description: 'Exchange/platform where trade was executed',
+    example: 'VNDIRECT',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString({ message: 'Exchange must be a string' })
+  @MaxLength(100, { message: 'Exchange must not exceed 100 characters' })
+  exchange?: string;
+
+  @ApiPropertyOptional({
+    description: 'Funding source used for this trade',
+    example: 'VIETCOMBANK',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString({ message: 'Funding source must be a string' })
+  @MaxLength(100, { message: 'Funding source must not exceed 100 characters' })
+  fundingSource?: string;
 
   @ApiPropertyOptional({
     description: 'Additional notes for the trade',

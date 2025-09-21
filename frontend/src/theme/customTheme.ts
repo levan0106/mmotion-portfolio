@@ -136,7 +136,7 @@ export const customTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          scrollbarColor: '#6b6b6b #2b2b2b',
+          scrollbarColor: '#6b6b6b #f5f5f5',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             backgroundColor: '#f5f5f5',
             width: 8,

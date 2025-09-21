@@ -973,6 +973,14 @@ export class SnapshotService {
    */
   private async getCurrentPrice(symbol: string): Promise<number> {
     try {
+      // Check if this is a mapped symbol that doesn't exist in database
+      const mappedType = this.getAnalyticsAssetTypeFromSymbol(symbol);
+      if (mappedType === 'DEPOSIT' || mappedType === 'CASH') {
+        // For DEPOSIT and CASH, return 1 as they are typically 1:1 with base currency
+        this.logger.debug(`Using mapped price for ${symbol} (${mappedType}): 1`);
+        return 1;
+      }
+
       // Try to get current price from global asset first
       const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(symbol);
       if (globalAssetPrice !== null && globalAssetPrice > 0) {

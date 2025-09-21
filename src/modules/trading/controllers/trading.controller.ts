@@ -618,7 +618,7 @@ export class TradingController {
         name: portfolio.name,
       },
       assets: assets.map(asset => ({
-        id: asset.assetId,
+        id: asset.id,
         symbol: asset.symbol,
         name: asset.name,
       })),

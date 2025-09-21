@@ -290,7 +290,17 @@ erDiagram
 - **Maintainability**: Simple, easy-to-understand filtering logic - **COMPLETED**
 - **Production Ready**: Clean, optimized code ready for production - **COMPLETED**
 
-### 20. Cash Balance System Pattern - **IMPLEMENTED WITH CRITICAL BUG FIXES ✅**
+### 20. TradeForm UI/UX Enhancement Pattern - **IMPLEMENTED WITH CURRENT PRICE DISPLAY ✅**
+- **Current Price Display Integration**: Complete integration of current price display in AssetAutocomplete component - **COMPLETED**
+- **Card Cleanup Strategy**: Remove redundant UI elements to avoid duplication and maintain single source of truth - **COMPLETED**
+- **State Management Optimization**: Clean up unused state variables and imports for better performance - **COMPLETED**
+- **UI Consistency**: Ensure consistent price display location across all trading interfaces - **COMPLETED**
+- **Code Optimization**: Remove unnecessary dependencies and logic for cleaner components - **COMPLETED**
+- **User Experience**: Provide clear, consistent price information without UI clutter - **COMPLETED**
+- **Performance**: Reduce component complexity and dependencies for better performance - **COMPLETED**
+- **Production Ready**: Clean, maintainable code with no linter errors - **COMPLETED**
+
+### 21. Cash Balance System Pattern - **IMPLEMENTED WITH CRITICAL BUG FIXES ✅**
 - **Two-Source Logic**: Portfolio.cashBalance (performance) vs CashFlow calculation (accuracy) - **COMPLETED**
 - **Performance Optimization**: Direct read from portfolio.cashBalance for display-only operations - **COMPLETED**
 - **Accuracy Priority**: Calculate from cash_flows when updating portfolio.cashBalance - **COMPLETED**
@@ -301,7 +311,7 @@ erDiagram
 - **Error Handling**: Comprehensive error handling and transaction rollback - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with proper transaction management - **COMPLETED**
 
-### 19. Circuit Breaker Pattern - **PLANNED**
+### 22. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented
@@ -323,6 +333,7 @@ erDiagram
   - ✅ **React.js Frontend**: Material-UI components in Docker container
   - ✅ **Full-stack Integration**: API services with real-time updates
   - ✅ **Interactive Charts**: Real-time updates and interactive charts
+  - ✅ **Primary Deployment Method**: Docker is the main way to run the project
 - **Staging/Cloud**: Containerized deployments with CI/CD after local verification
 
 ### Scaling

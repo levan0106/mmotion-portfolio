@@ -67,6 +67,8 @@ export interface Trade {
   totalCost?: number;
   tradeType?: TradeType;
   source?: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -297,6 +299,8 @@ export const TradeList: React.FC<TradeListProps> = ({
               <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Asset</TableCell>
               <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Side</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Exchange</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Funding Source</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Quantity</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Price</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Total Value</TableCell>
@@ -309,7 +313,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
                     <CircularProgress size={40} />
                     <Typography color="text.secondary">Loading trades...</Typography>
@@ -318,7 +322,7 @@ export const TradeList: React.FC<TradeListProps> = ({
               </TableRow>
             ) : filteredTrades.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
                     <Typography variant="h6" color="text.secondary">
                       No trades found
@@ -382,6 +386,16 @@ export const TradeList: React.FC<TradeListProps> = ({
                           },
                         }}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {trade.exchange || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {trade.fundingSource || '-'}
+                      </Typography>
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body2">

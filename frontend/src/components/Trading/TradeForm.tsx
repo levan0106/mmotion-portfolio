@@ -25,7 +25,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../hooks/useAccount';
-import { TradeSide, TradeType, TradeFormData } from '../../types';
+import { TradeSide, TradeType, TradeSource, TradeFormData } from '../../types';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { AssetAutocomplete } from '../Common/AssetAutocomplete';
 
@@ -52,6 +52,9 @@ const tradeSchema = yup.object({
   fee: yup.number().min(0, 'Fee cannot be negative').optional(),
   tax: yup.number().min(0, 'Tax cannot be negative').optional(),
   tradeType: yup.mixed<TradeType>().oneOf(Object.values(TradeType)).optional(),
+  source: yup.mixed<TradeSource>().oneOf(Object.values(TradeSource)).optional(),
+  exchange: yup.string().max(100, 'Exchange cannot exceed 100 characters').optional(),
+  fundingSource: yup.string().max(100, 'Funding source cannot exceed 100 characters').optional(),
   notes: yup.string().max(500, 'Notes cannot exceed 500 characters').optional(),
 });
 
@@ -226,6 +229,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       fee: initialData?.fee || 0,
       tax: initialData?.tax || 0,
       tradeType: initialData?.tradeType || TradeType.MARKET,
+      source: initialData?.source || TradeSource.MANUAL,
+      exchange: initialData?.exchange || '',
+      fundingSource: initialData?.fundingSource || '',
       notes: initialData?.notes || '',
     },
   });
@@ -274,6 +280,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       setValue('fee', initialData.fee || 0);
       setValue('tax', initialData.tax || 0);
       setValue('tradeType', initialData.tradeType || TradeType.MARKET);
+      setValue('source', initialData.source || TradeSource.MANUAL);
+      setValue('exchange', initialData.exchange || '');
+      setValue('fundingSource', initialData.fundingSource || '');
       setValue('notes', initialData.notes || '');
     }
   }, [initialData, mode, setValue]);
@@ -305,6 +314,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         fee: allFormValues.fee || 0,
         tax: allFormValues.tax || 0,
         tradeType: allFormValues.tradeType || TradeType.MARKET,
+        source: allFormValues.source || TradeSource.MANUAL,
+        exchange: allFormValues.exchange || '',
+        fundingSource: allFormValues.fundingSource || '',
         notes: allFormValues.notes || '',
       };
       
@@ -453,6 +465,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         />
                       )}
                     />
+                    
                   </Grid>
 
                   {/* Trade Date */}
@@ -688,107 +701,177 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     </FormControl>
                   )}
                 />
-              </Grid>
-
-
-                  {/* Notes */}
-                  <Grid item xs={12}>
-                    <Controller
-                      name="notes"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Notes"
-                          multiline
-                          rows={3}
-                          fullWidth
-                          error={!!errors.notes}
-                          helperText={errors.notes?.message}
-                          disabled={isLoading}
-                          placeholder="Additional notes about this trade..."
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2
-                            }
-                          }}
-                        />
-                      )}
-                    />
                   </Grid>
                 </Grid>
               </Box>
 
-              {/* Summary Section */}
-              <Box mb={2} p={1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
-                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
-                  Trade Summary
-                </Typography>
-                <Grid container spacing={1.5}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Total Value
-                          </Typography>
-                          <Typography variant="h6" fontWeight="bold" color="info.main">
-                            {formatCurrency(calculatedValues.value, portfolioCurrency)}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Fees & Taxes
-                          </Typography>
-                          <Typography variant="h6" fontWeight="bold" color="warning.main">
-                            {formatCurrency(calculatedValues.fee + calculatedValues.tax, portfolioCurrency)}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Total Cost
-                          </Typography>
-                          <Typography variant="h6" fontWeight="bold" color="primary.main">
-                            {formatCurrency(calculatedValues.cost, portfolioCurrency)}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Trade Side
-                          </Typography>
-                          <Chip
-                            label={watch('side')}
-                            color={getSideColor(watch('side'))}
-                            icon={<span>{getSideIcon(watch('side'))}</span>}
-                            size="small"
-                            sx={{ fontWeight: 600 }}
-                          />
-                        </Box>
-                      </Grid>
-                    </Grid>
+            {/* Exchange, Funding Source and Notes Section */}
+            <Box mb={1.5}>
+              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+                Exchange, Funding & Notes
+              </Typography>
+              <Grid container spacing={1.5}>
+                {/* Exchange */}
+                <Grid item xs={12} md={4}>
+                  <Controller
+                    name="exchange"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Exchange/Platform"
+                        fullWidth
+                        error={!!errors.exchange}
+                        helperText={errors.exchange?.message || 'e.g., VNDIRECT, BINANCE, COINBASE'}
+                        disabled={isLoading}
+                        placeholder="Enter exchange or platform name"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2
+                          }
+                        }}
+                        inputProps={{
+                          style: { textTransform: 'uppercase' }
+                        }}
+                        onChange={(e) => {
+                          // Auto UPPERCASE on input
+                          field.onChange(e.target.value.toUpperCase());
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+
+                {/* Funding Source */}
+                <Grid item xs={12} md={4}>
+                  <Controller
+                    name="fundingSource"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Funding Source"
+                        fullWidth
+                        error={!!errors.fundingSource}
+                        helperText={errors.fundingSource?.message || 'e.g., VIETCOMBANK, BANK_ACCOUNT_001'}
+                        disabled={isLoading}
+                        placeholder="Enter funding source"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2
+                          }
+                        }}
+                        inputProps={{
+                          style: { textTransform: 'uppercase' }
+                        }}
+                        onChange={(e) => {
+                          // Auto UPPERCASE on input
+                          field.onChange(e.target.value.toUpperCase());
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+
+                {/* Notes */}
+                <Grid item xs={12} md={4}>
+                  <Controller
+                    name="notes"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Notes"
+                        multiline
+                        rows={3}
+                        fullWidth
+                        error={!!errors.notes}
+                        helperText={errors.notes?.message || 'Optional notes about this trade'}
+                        disabled={isLoading}
+                        placeholder="Enter any additional notes about this trade"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+
+            {/* Summary Section */}
+            <Box mb={2} p={1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
+              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+                Trade Summary
+              </Typography>
+              <Grid container spacing={1.5}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Total Value
+                    </Typography>
+                    <Typography variant="h6" fontWeight="bold" color="info.main">
+                      {formatCurrency(calculatedValues.value, portfolioCurrency)}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Fees & Taxes
+                    </Typography>
+                    <Typography variant="h6" fontWeight="bold" color="warning.main">
+                      {formatCurrency(calculatedValues.fee + calculatedValues.tax, portfolioCurrency)}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Total Cost
+                    </Typography>
+                    <Typography variant="h6" fontWeight="bold" color="primary.main">
+                      {formatCurrency(calculatedValues.cost, portfolioCurrency)}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Trade Side
+                    </Typography>
+                    <Chip
+                      label={watch('side')}
+                      color={getSideColor(watch('side'))}
+                      icon={<span>{getSideIcon(watch('side'))}</span>}
+                      size="small"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+
+
+            {/* Submit Button */}
+            {showSubmitButton && (
+              <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={!isValid || isLoading}
+                  startIcon={isLoading ? <CircularProgress size={20} /> : null}
+                  sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
+                >
+                  {isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
+                </Button>
               </Box>
-
-
-              {/* Submit Button */}
-              {showSubmitButton && (
-                <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!isValid || isLoading}
-                    startIcon={isLoading ? <CircularProgress size={20} /> : null}
-                    sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
-                  >
-                    {isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
-                  </Button>
-                </Box>
-              )}
-            </form>
-    </LocalizationProvider>
+            )}
+          </form>
+        </LocalizationProvider>
   );
 };
 

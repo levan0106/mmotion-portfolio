@@ -1,8 +1,9 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: CR-006 Asset Snapshot System - Ready for Implementation**
-**Latest Update: Complete documentation analysis completed, ready to start Phase 1 implementation (Current Session)**
+**Phase: TradeForm UI/UX Enhancements - COMPLETED**
+**Latest Update: Current Price Display Integration and Card Cleanup (Current Session)**
+**Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
 - ✅ Thiết lập Memory Bank cho project tracking
@@ -110,7 +111,25 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **ALLOCATION TIMELINE SIMPLIFIED LOGIC - COMPLETED** (Current Session - December 20, 2024)
+- ✅ **TRADEFORM CURRENT PRICE DISPLAY & CARD CLEANUP - COMPLETED** (Current Session - December 20, 2024)
+  - **Current Price Display Integration**: Complete integration of current price display in AssetAutocomplete component
+  - **Card Cleanup**: Removed redundant Current Price card from TradeForm to avoid duplication
+  - **UI Simplification**: Streamlined TradeForm layout by removing unnecessary state and imports
+  - **Single Source of Truth**: Current price now displayed only in AssetAutocomplete for consistency
+  - **Code Optimization**: Removed unused selectedAsset state, useAssets hook, and related logic
+  - **Performance Improvement**: Cleaner component with fewer dependencies and state variables
+  - **User Experience**: Consistent price display location across all trading interfaces
+  - **Key Features Implemented**:
+    - ✅ **AssetAutocomplete Integration**: Current price displayed as "Current Price: 100,000 đ" format
+    - ✅ **Card Removal**: Eliminated redundant Current Price card from TradeForm
+    - ✅ **State Cleanup**: Removed selectedAsset state and related useEffect logic
+    - ✅ **Import Cleanup**: Removed unused Asset type and useAssets hook imports
+    - ✅ **Layout Optimization**: Cleaner, more focused TradeForm layout
+    - ✅ **Consistency**: Single location for current price display across trading interface
+    - ✅ **Performance**: Reduced component complexity and dependencies
+    - ✅ **Production Ready**: Clean, maintainable code with no linter errors
+
+- ✅ **ALLOCATION TIMELINE SIMPLIFIED LOGIC - COMPLETED** (Previous Session - December 20, 2024)
   - **Simplified Logic Implementation**: Always calculate DAILY first, then filter for MONTHLY/WEEKLY granularities
   - **MONTHLY Filtering**: Select last day of each month from DAILY data for accurate monthly representation
   - **WEEKLY Filtering**: Take every 7th day from DAILY data for consistent weekly intervals

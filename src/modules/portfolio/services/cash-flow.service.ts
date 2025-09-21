@@ -236,6 +236,7 @@ export class CashFlowService {
     type: string,
     description: string,
     flowDate: Date = new Date(),
+    fundingSource?: string,
   ): Promise<CashFlowUpdateResult> {
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId }
@@ -257,6 +258,7 @@ export class CashFlowService {
       currency: 'VND', // TODO: Should be from portfolio baseCurrency
       type: type as any,
       description,
+      fundingSource: fundingSource?.toUpperCase().trim(),
     });
 
     await this.cashFlowRepository.save(cashFlow);
@@ -421,6 +423,7 @@ export class CashFlowService {
     reference?: string,
     effectiveDate?: Date,
     currency?: string,
+    fundingSource?: string,
   ): Promise<CashFlowCreateResult> {
     // Validate portfolio exists
     const portfolio = await this.portfolioRepository.findOne({
@@ -453,6 +456,7 @@ export class CashFlowService {
         flowDate: effectiveDate || new Date(), // Use effectiveDate as flowDate
         effectiveDate: effectiveDate || new Date(),
         currency: currency || portfolio.baseCurrency || 'VND',
+        fundingSource: fundingSource?.toUpperCase().trim(),
       });
 
       const savedCashFlow = await manager.save(cashFlow);
@@ -476,7 +480,7 @@ export class CashFlowService {
 
       console.log(`[CashFlowService] createCashFlow called for portfolioId: ${portfolioId}, type: ${type}, 
         amount: ${amount}, description: ${description}, reference: ${reference}, effectiveDate: ${effectiveDate}, 
-        currency: ${currency}, currentCashBalance: ${currentCashBalance}, newCashBalance: ${newCashBalance}`); 
+        currency: ${currency}, fundingSource: ${fundingSource}, currentCashBalance: ${currentCashBalance}, newCashBalance: ${newCashBalance}`); 
       
 
       // Validate cash balance doesn't go negative (only for outflows, but allow trades)
@@ -540,7 +544,8 @@ export class CashFlowService {
       description,
       trade.tradeId,
       trade.tradeDate, // Use trade date as flowDate
-      'VND', // Default currency for trades
+      'VND', // TODO: Default currency for trades
+      trade.fundingSource, // Pass fundingSource from trade
     );
   }
 
@@ -615,12 +620,13 @@ export class CashFlowService {
           status: updateData.status as CashFlowStatus || cashFlow.status,
           reference: updateData.reference || cashFlow.reference,
           effectiveDate: updateData.effectiveDate ? new Date(updateData.effectiveDate) : cashFlow.effectiveDate,
+          fundingSource: updateData.fundingSource?.toUpperCase().trim() || cashFlow.fundingSource,
           updatedAt: new Date(),
         }
       );
 
-      // Recalculate portfolio balance
-      await this.recalculateCashBalanceFromTrades(portfolioId);
+      // Recalculate portfolio balance from all cash flows
+      await this.recalculateCashBalanceFromAllFlows(portfolioId);
 
       // Return updated cash flow
       return await manager.findOne(CashFlow, { where: { cashFlowId } });
@@ -647,8 +653,8 @@ export class CashFlowService {
       // Delete cash flow
       await manager.delete(CashFlow, { cashFlowId });
 
-      // Recalculate portfolio balance
-      await this.recalculateCashBalanceFromTrades(portfolioId);
+      // Recalculate portfolio balance from all cash flows
+      await this.recalculateCashBalanceFromAllFlows(portfolioId);
     });
   }
 

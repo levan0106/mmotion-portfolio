@@ -10,8 +10,6 @@
 export enum AssetType {
   STOCK = 'STOCK',
   BOND = 'BOND',
-  ETF = 'ETF',
-  MUTUAL_FUND = 'MUTUAL_FUND',
   CRYPTO = 'CRYPTO',
   COMMODITY = 'COMMODITY',
   REIT = 'REIT',
@@ -114,8 +112,6 @@ export interface AssetStatistics {
 export interface AssetAllocation {
   [AssetType.STOCK]: number;
   [AssetType.BOND]: number;
-  [AssetType.ETF]: number;
-  [AssetType.MUTUAL_FUND]: number;
   [AssetType.CRYPTO]: number;
   [AssetType.COMMODITY]: number;
   [AssetType.REIT]: number;
@@ -256,9 +252,7 @@ export interface ApiError {
 export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.STOCK]: 'Cổ phiếu',
   [AssetType.BOND]: 'Trái phiếu',
-  [AssetType.ETF]: 'Quỹ ETF',
-  [AssetType.MUTUAL_FUND]: 'Quỹ tương hỗ',
-  [AssetType.CRYPTO]: 'Tiền điện tử',
+  [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa',
   [AssetType.REIT]: 'Bất động sản',
   [AssetType.GOLD]: 'Vàng',
@@ -269,10 +263,8 @@ export const AssetTypeLabels: Record<AssetType, string> = {
 
 // Asset Type Descriptions for UI
 export const AssetTypeDescriptions: Record<AssetType, string> = {
-  [AssetType.STOCK]: 'Cổ phiếu của các công ty niêm yết',
+  [AssetType.STOCK]: 'Cổ phiếu của các công ty niêm yết và quỹ hoán đổi danh mục',
   [AssetType.BOND]: 'Trái phiếu chính phủ và doanh nghiệp',
-  [AssetType.ETF]: 'Quỹ hoán đổi danh mục',
-  [AssetType.MUTUAL_FUND]: 'Quỹ đầu tư tương hỗ',
   [AssetType.CRYPTO]: 'Tiền điện tử và tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
   [AssetType.REIT]: 'Quỹ đầu tư bất động sản',

@@ -68,6 +68,9 @@ export class CashFlow {
   @Column({ type: 'uuid', name: 'trade_id', nullable: true })
   tradeId: string; // Link to trade if created from trade
 
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'funding_source' })
+  fundingSource?: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

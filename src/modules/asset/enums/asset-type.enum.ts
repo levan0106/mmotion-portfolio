@@ -11,6 +11,9 @@ export enum AssetType {
   
   /** Gold and precious metals */
   GOLD = 'GOLD',
+
+  /** Crypto currencies */
+  CRYPTO = 'CRYPTO',
   
   /** Commodities */
   COMMODITY = 'COMMODITY',
@@ -29,6 +32,7 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.STOCK]: 'Cổ phiếu',
   [AssetType.BOND]: 'Trái phiếu',
   [AssetType.GOLD]: 'Vàng',
+  [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa',
   [AssetType.DEPOSIT]: 'Tiền gửi',
   [AssetType.CASH]: 'Tiền mặt'
@@ -38,9 +42,10 @@ export const AssetTypeLabels: Record<AssetType, string> = {
  * Asset type descriptions for UI.
  */
 export const AssetTypeDescriptions: Record<AssetType, string> = {
-  [AssetType.STOCK]: 'Cổ phiếu của các công ty niêm yết',
+  [AssetType.STOCK]: 'Cổ phiếu của các công ty niêm yết và quỹ hoán đổi danh mục',
   [AssetType.BOND]: 'Trái phiếu chính phủ và doanh nghiệp',
   [AssetType.GOLD]: 'Vàng và kim loại quý',
+  [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
   [AssetType.DEPOSIT]: 'Tiền gửi ngân hàng và sản phẩm tiết kiệm',
   [AssetType.CASH]: 'Tiền mặt và các khoản tương đương tiền'

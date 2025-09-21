@@ -38,6 +38,7 @@ interface CashFlow {
   status: string;
   flowDate: string;
   effectiveDate?: string;
+  fundingSource?: string;
 }
 
 interface CashFlowManagementProps {
@@ -59,6 +60,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
     description: '',
     reference: '',
     effectiveDate: '',
+    fundingSource: '',
   });
 
   // Load cash flow history
@@ -91,6 +93,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
         description: formData.description,
         reference: formData.reference || undefined,
         effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate) : undefined,
+        fundingSource: formData.fundingSource || undefined,
       };
 
       const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/${dialogType}`, {
@@ -107,7 +110,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       }
 
       // Reset form and close dialog
-      setFormData({ amount: '', description: '', reference: '', effectiveDate: '' });
+      setFormData({ amount: '', description: '', reference: '', effectiveDate: '', fundingSource: '' });
       setDialogOpen(false);
       
       // Reload data
@@ -224,6 +227,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
                   <TableCell>Amount</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Reference</TableCell>
+                  <TableCell>Funding Source</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
@@ -250,6 +254,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
                     </TableCell>
                     <TableCell>{cashFlow.description}</TableCell>
                     <TableCell>{cashFlow.reference || '-'}</TableCell>
+                    <TableCell>{cashFlow.fundingSource || '-'}</TableCell>
                     <TableCell>{formatDate(cashFlow.flowDate)}</TableCell>
                     <TableCell>
                       <Chip
@@ -309,6 +314,17 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
               value={formData.reference}
               onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
               margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Funding Source (Optional)"
+              value={formData.fundingSource}
+              onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
+              margin="normal"
+              placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+              inputProps={{
+                style: { textTransform: 'uppercase' }
+              }}
             />
             <TextField
               fullWidth

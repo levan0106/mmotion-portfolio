@@ -81,6 +81,12 @@ export class Trade {
   @Column('varchar', { length: 100, nullable: true, name: 'source' })
   source: string;
 
+  @Column('varchar', { length: 100, nullable: true, name: 'exchange' })
+  exchange?: string;
+
+  @Column('varchar', { length: 100, nullable: true, name: 'funding_source' })
+  fundingSource?: string;
+
   @Column('text', { nullable: true, name: 'notes' })
   notes?: string;
 

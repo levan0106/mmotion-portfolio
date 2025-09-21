@@ -72,6 +72,7 @@ export interface CashFlow {
   currency: string;
   type: string;
   description?: string;
+  fundingSource?: string;
   createdAt: string;
 }
 
@@ -167,6 +168,7 @@ export interface CashFlowFormData {
   type: string;
   description?: string;
   flowDate: string;
+  fundingSource?: string;
 }
 
 // Filter and search types

@@ -169,6 +169,8 @@ export class TradingService {
       tax: createTradeDto.tax || 0,
       tradeType: createTradeDto.tradeType || TradeType.NORMAL,
       source: createTradeDto.source,
+      exchange: createTradeDto.exchange?.toUpperCase().trim(),
+      fundingSource: createTradeDto.fundingSource?.toUpperCase().trim(),
       notes: createTradeDto.notes,
     });
 
@@ -231,6 +233,8 @@ export class TradingService {
     if (updateTradeDto.tax !== undefined) trade.tax = updateTradeDto.tax;
     if (updateTradeDto.tradeType !== undefined) trade.tradeType = updateTradeDto.tradeType;
     if (updateTradeDto.source !== undefined) trade.source = updateTradeDto.source;
+    if (updateTradeDto.exchange !== undefined) trade.exchange = updateTradeDto.exchange?.toUpperCase().trim();
+    if (updateTradeDto.fundingSource !== undefined) trade.fundingSource = updateTradeDto.fundingSource?.toUpperCase().trim();
     if (updateTradeDto.notes !== undefined) trade.notes = updateTradeDto.notes;
     
     // Use update method instead of save for better reliability
@@ -245,6 +249,8 @@ export class TradingService {
       tax: trade.tax,
       tradeType: trade.tradeType,
       source: trade.source,
+      exchange: trade.exchange,
+      fundingSource: trade.fundingSource,
       notes: trade.notes,
     });
     
@@ -1116,6 +1122,8 @@ export class TradingService {
           totalCost: (Number(trade.totalAmount) || 0) + (Number(trade.fee) || 0) + (Number(trade.tax) || 0),
           tradeType: trade.tradeType,
           source: trade.source,
+          exchange: trade.exchange,
+          fundingSource: trade.fundingSource,
           notes: trade.notes,
           createdAt: trade.createdAt,
           updatedAt: trade.updatedAt,

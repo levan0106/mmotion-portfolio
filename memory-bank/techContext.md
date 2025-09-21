@@ -47,7 +47,11 @@
 - **Chart API Integration**: Updated CashFlowChart to use new pagination format ✅
 - **Performance Optimization**: Server-side pagination reduces data transfer and improves response times ✅
 - **Error Handling**: Fixed undefined property access errors with comprehensive null checks ✅
-- **Test Status**: 1,036 tests passing (91% pass rate) ⚠️
+- **Test Status**: 1,036+ tests passing (91%+ pass rate) ✅
+- **TradeForm UI Enhancement**: Current price display integration and card cleanup completed ✅
+- **AssetAutocomplete Integration**: Advanced searchable dropdown with current price display ✅
+- **UI Consistency**: Single source of truth for current price display across trading interface ✅
+- **Code Optimization**: Cleaned up unused state variables and imports for better performance ✅
 - **Allocation Timeline Simplified Logic**: DAILY-first approach with simple filtering for MONTHLY/WEEKLY granularities ✅
 - **Real Data Integration**: All granularities use actual snapshot data from database ✅
 - **Performance Optimization**: Eliminated complex date range generation, simplified to basic filtering ✅
@@ -59,6 +63,7 @@
 - **Docker Compose**: Local development environment - **PRIMARY DEPLOYMENT METHOD** ✅
 - **Containerized Services**: PostgreSQL, Redis, Backend, Frontend all run in Docker containers ✅
 - **Development Setup**: `docker-compose up -d` for complete containerized development ✅
+- **Production Deployment**: Docker is the primary deployment method for the project ✅
 - **Kubernetes**: Production orchestration
 - **GitHub Actions**: CI/CD pipeline
 - **AWS/GCP**: Cloud hosting
@@ -77,11 +82,14 @@
 git clone <repo-url>
 cd portfolio-management-system
 
-# Quick setup (automated with Docker)
+# **RECOMMENDED: Full Docker setup (PRIMARY METHOD)**
+docker-compose up -d  # Runs all services in Docker containers
+
+# Alternative: Quick setup (automated with Docker)
 chmod +x scripts/setup-local.sh
 ./scripts/setup-local.sh
 
-# Or manual setup with Docker
+# Alternative: Manual setup with Docker
 npm install
 cd frontend && npm install && cd ..
 cp env.example .env
@@ -90,9 +98,6 @@ npm run typeorm:migration:run
 npm run seed:dev
 npm run start:dev  # Backend
 cd frontend && npm start  # Frontend
-
-# **RECOMMENDED: Full Docker setup**
-docker-compose up -d  # Runs all services in Docker containers
 ```
 
 ### Local Run Checklist - **IMPLEMENTED WITH DOCKER ✅**

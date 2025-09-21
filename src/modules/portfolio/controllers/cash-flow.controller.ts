@@ -45,6 +45,7 @@ export class CashFlowController {
       createCashFlowDto.type,
       createCashFlowDto.description,
       flowDate,
+      createCashFlowDto.fundingSource,
     );
   }
 
@@ -94,6 +95,7 @@ export class CashFlowController {
         status: cashFlow.status,
         reference: cashFlow.reference,
         effectiveDate: cashFlow.effectiveDate,
+        fundingSource: cashFlow.fundingSource,
         createdAt: cashFlow.createdAt,
         updatedAt: cashFlow.updatedAt,
       })),

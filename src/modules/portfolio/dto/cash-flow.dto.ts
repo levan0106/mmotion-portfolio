@@ -129,6 +129,20 @@ export class CreateCashFlowDto {
   @IsOptional()
   @IsDateString()
   effectiveDate?: string;
+
+  /**
+   * Funding source (optional).
+   */
+  @ApiProperty({
+    description: 'Funding source used for this cash flow',
+    example: 'VIETCOMBANK',
+    required: false,
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.toUpperCase().trim() : value)
+  fundingSource?: string;
 }
 
 /**
@@ -196,6 +210,9 @@ export class CashFlowResponseDto {
 
   @ApiProperty({ description: 'Effective date', required: false })
   effectiveDate?: Date;
+
+  @ApiProperty({ description: 'Funding source', required: false })
+  fundingSource?: string;
 
   @ApiProperty({ description: 'Created at' })
   createdAt: Date;

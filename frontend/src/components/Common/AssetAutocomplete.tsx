@@ -378,9 +378,9 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
         </Alert>
       )}
       
-      {pagination.total > 0 && (
+      {selectedAsset && selectedAsset.currentPrice && selectedAsset.currentPrice > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          Showing {formatNumber(assets.length)} of {formatNumber(pagination.total)} assets
+          Current Price: {formatCurrency(selectedAsset.currentPrice, currency)}
         </Typography>
       )}
     </Box>

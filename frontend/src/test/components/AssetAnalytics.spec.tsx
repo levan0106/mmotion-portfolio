@@ -84,8 +84,6 @@ const mockStatistics: AssetStatistics = {
   assetsByType: {
     [AssetType.STOCK]: 1,
     [AssetType.BOND]: 1,
-    [AssetType.ETF]: 0,
-    [AssetType.MUTUAL_FUND]: 0,
     [AssetType.CRYPTO]: 0,
     [AssetType.COMMODITY]: 0,
     [AssetType.REIT]: 0,
@@ -178,8 +176,6 @@ describe('AssetAnalytics', () => {
             assetsByType: {
               [AssetType.STOCK]: 0,
               [AssetType.BOND]: 0,
-              [AssetType.ETF]: 0,
-              [AssetType.MUTUAL_FUND]: 0,
               [AssetType.CRYPTO]: 0,
               [AssetType.COMMODITY]: 0,
               [AssetType.REIT]: 0,
@@ -496,8 +492,6 @@ describe('AssetAnalytics', () => {
             assetsByType: {
               [AssetType.STOCK]: 0,
               [AssetType.BOND]: 0,
-              [AssetType.ETF]: 0,
-              [AssetType.MUTUAL_FUND]: 0,
               [AssetType.CRYPTO]: 0,
               [AssetType.COMMODITY]: 0,
               [AssetType.REIT]: 0,
@@ -587,8 +581,6 @@ describe('AssetAnalytics', () => {
             assetsByType: {
               [AssetType.STOCK]: 1,
               [AssetType.BOND]: 0,
-              [AssetType.ETF]: 0,
-              [AssetType.MUTUAL_FUND]: 0,
               [AssetType.CRYPTO]: 0,
               [AssetType.COMMODITY]: 0,
               [AssetType.REIT]: 0,
@@ -622,8 +614,6 @@ describe('AssetAnalytics', () => {
             assetsByType: {
               [AssetType.STOCK]: 1,
               [AssetType.BOND]: 0,
-              [AssetType.ETF]: 0,
-              [AssetType.MUTUAL_FUND]: 0,
               [AssetType.CRYPTO]: 0,
               [AssetType.COMMODITY]: 0,
               [AssetType.REIT]: 0,

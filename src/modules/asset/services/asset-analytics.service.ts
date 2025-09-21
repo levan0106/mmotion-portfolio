@@ -53,6 +53,7 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: 0,
         [AssetType.BOND]: 0,
         [AssetType.GOLD]: 0,
+        [AssetType.CRYPTO]: 0,
         [AssetType.COMMODITY]: 0,
         [AssetType.DEPOSIT]: 0,
         [AssetType.CASH]: 0,
@@ -63,6 +64,7 @@ export class AssetAnalyticsService {
       [AssetType.STOCK]: 0,
       [AssetType.BOND]: 0,
       [AssetType.GOLD]: 0,
+      [AssetType.CRYPTO]: 0,
       [AssetType.COMMODITY]: 0,
       [AssetType.DEPOSIT]: 0,
       [AssetType.CASH]: 0,
@@ -308,11 +310,13 @@ export class AssetAnalyticsService {
    */
   private calculateTypeCorrelation(type1: AssetType, type2: AssetType): number {
     // Simplified correlation matrix based on asset types
+    // TODO: Improve correlation matrix
     const correlations: Record<AssetType, Record<AssetType, number>> = {
       [AssetType.STOCK]: {
         [AssetType.STOCK]: 0.8,
         [AssetType.BOND]: -0.2,
         [AssetType.GOLD]: 0.1,
+        [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.2,
         [AssetType.DEPOSIT]: 0.0,
         [AssetType.CASH]: 0.0,
@@ -321,6 +325,7 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: -0.2,
         [AssetType.BOND]: 0.6,
         [AssetType.GOLD]: 0.3,
+        [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.1,
         [AssetType.DEPOSIT]: 0.4,
         [AssetType.CASH]: 0.0,
@@ -329,6 +334,7 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: 0.1,
         [AssetType.BOND]: 0.3,
         [AssetType.GOLD]: 0.7,
+        [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.4,
         [AssetType.DEPOSIT]: 0.0,
         [AssetType.CASH]: 0.0,
@@ -337,6 +343,7 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: 0.2,
         [AssetType.BOND]: 0.1,
         [AssetType.GOLD]: 0.4,
+        [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.6,
         [AssetType.DEPOSIT]: 0.0,
         [AssetType.CASH]: 0.0,
@@ -345,6 +352,7 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: 0.0,
         [AssetType.BOND]: 0.4,
         [AssetType.GOLD]: 0.0,
+        [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.0,
         [AssetType.DEPOSIT]: 0.9,
         [AssetType.CASH]: 0.5,
@@ -353,9 +361,19 @@ export class AssetAnalyticsService {
         [AssetType.STOCK]: 0.0,
         [AssetType.BOND]: 0.0,
         [AssetType.GOLD]: 0.0,
+        [AssetType.CRYPTO]: 0.0,
         [AssetType.COMMODITY]: 0.0,
         [AssetType.DEPOSIT]: 0.5,
         [AssetType.CASH]: 1.0,
+      },
+      [AssetType.CRYPTO]: {
+        [AssetType.STOCK]: 0.1,
+        [AssetType.BOND]: 0.1,
+        [AssetType.GOLD]: 0.1,
+        [AssetType.CRYPTO]: 0.8,
+        [AssetType.COMMODITY]: 0.1,
+        [AssetType.DEPOSIT]: 0.1,
+        [AssetType.CASH]: 0.0,
       },
     };
 

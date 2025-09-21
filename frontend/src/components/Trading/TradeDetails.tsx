@@ -52,6 +52,8 @@ export interface Trade {
   totalCost: number;
   tradeType: TradeType;
   source: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -237,6 +239,22 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                       color={getSourceColor(trade.source)}
                       size="small"
                     />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">
+                      Exchange
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {trade.exchange || '-'}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">
+                      Funding Source
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {trade.fundingSource || '-'}
+                    </Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">

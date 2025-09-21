@@ -4,7 +4,9 @@ import { Repository } from 'typeorm';
 import { Asset } from '../entities/asset.entity';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { NationConfigService } from './nation-config.service';
+import { BasicPriceService } from './basic-price.service';
 
 export interface AssetSyncData {
   symbol: string;
@@ -24,6 +26,7 @@ export class AssetGlobalSyncService {
     @InjectRepository(Asset)
     private readonly assetRepository: Repository<Asset>,
     private readonly nationConfigService: NationConfigService,
+    private readonly basicPriceService: BasicPriceService,
   ) {
     console.log('[SYNC SERVICE] AssetGlobalSyncService constructor called');
   }
@@ -44,10 +47,16 @@ export class AssetGlobalSyncService {
       });
 
       if (globalAsset) {
-        console.log(`[SYNC SERVICE] Global asset already exists: ${globalAsset.id}`);
-        this.logger.log(`Global asset already exists: ${globalAsset.id}`);
+        console.log(`[SYNC SERVICE] Global asset already exists: ${globalAsset.id} for symbol: ${assetData.symbol}`);
+        this.logger.log(`Global asset already exists: ${globalAsset.id} for symbol: ${assetData.symbol}`);
+        
+        // Ensure market price exists even if global asset already exists
+        await this.ensureMarketPriceExists(globalAsset.id, assetData.userId);
+        
         return globalAsset.id;
       }
+
+      console.log(`[SYNC SERVICE] No existing global asset found for symbol: ${assetData.symbol}, creating new one...`);
 
       // Get nation config for user's currency - default to VN for now
       let nationCode = 'VN';
@@ -77,12 +86,65 @@ export class AssetGlobalSyncService {
         isActive: true,
       });
 
+      console.log(`[SYNC SERVICE] Creating global asset with symbol: ${assetData.symbol}, name: ${assetData.name}`);
       const savedGlobalAsset = await this.globalAssetRepository.save(globalAsset);
-      this.logger.log(`Created new global asset: ${savedGlobalAsset.id}`);
+      console.log(`[SYNC SERVICE] Created new global asset: ${savedGlobalAsset.id} with symbol: ${savedGlobalAsset.symbol}`);
+      this.logger.log(`Created new global asset: ${savedGlobalAsset.id} with symbol: ${savedGlobalAsset.symbol}`);
+
+      // Create initial market price record for the global asset
+      await this.createInitialMarketPrice(savedGlobalAsset.id, assetData.userId);
 
       return savedGlobalAsset.id;
     } catch (error) {
       this.logger.error(`Failed to sync asset on create: ${error.message}`, error.stack);
+      return null;
+    }
+  }
+
+  /**
+   * Create initial market price record for a global asset using BasicPriceService
+   * Only creates if it doesn't already exist to avoid overwriting existing prices
+   * @param globalAssetId - Global asset ID
+   * @param userId - User ID who created the asset
+   * @returns Created AssetPrice ID or null if already exists
+   */
+  private async createInitialMarketPrice(globalAssetId: string, userId?: string): Promise<string | null> {
+    try {
+      console.log(`[SYNC SERVICE] Checking if market price exists for global asset: ${globalAssetId}, userId: ${userId}`);
+      
+      // First check if price already exists
+      const existingPrice = await this.basicPriceService.findByAssetId(globalAssetId);
+      if (existingPrice) {
+        console.log(`[SYNC SERVICE] Market price already exists for global asset: ${globalAssetId}, skipping creation`);
+        this.logger.log(`Market price already exists for global asset: ${globalAssetId}, skipping creation`);
+        return existingPrice.id;
+      }
+
+      console.log(`[SYNC SERVICE] No existing market price found, creating new one for global asset: ${globalAssetId}`);
+      
+      // Use BasicPriceService to create market price with default value 1
+      const priceResponse = await this.basicPriceService.create({
+        assetId: globalAssetId,
+        currentPrice: 1, // Default price is 1 for all asset types
+        priceType: PriceType.MANUAL,
+        priceSource: PriceSource.USER,
+        lastPriceUpdate: new Date().toISOString(),
+        metadata: {
+          created_by: userId || 'asset_creation',
+          is_initial: true,
+          note: 'Initial price created during asset creation'
+        }
+      });
+
+      this.logger.log(`Created initial market price: ${priceResponse.id} for global asset: ${globalAssetId}`);
+      return priceResponse.id;
+    } catch (error) {
+      // If price already exists, that's fine - just log and continue
+      if (error.message && (error.message.includes('already exists') || error.message.includes('duplicate'))) {
+        console.log(`[SYNC SERVICE] Market price already exists for global asset: ${globalAssetId}, skipping creation`);
+        return null;
+      }
+      this.logger.error(`Failed to create initial market price: ${error.message}`, error.stack);
       return null;
     }
   }
@@ -158,9 +220,38 @@ export class AssetGlobalSyncService {
         this.logger.log(`Updated global asset: ${globalAsset.id}`);
       }
 
+      // Ensure market price record exists for the global asset
+      await this.ensureMarketPriceExists(globalAsset.id, assetData.userId);
+
       return globalAsset.id;
     } catch (error) {
       this.logger.error(`Failed to sync asset on update: ${error.message}`, error.stack);
+      return null;
+    }
+  }
+
+  /**
+   * Ensure market price record exists for a global asset
+   * Only creates if it doesn't already exist to avoid overwriting existing prices
+   * @param globalAssetId - Global asset ID
+   * @param userId - User ID who created the asset
+   * @returns AssetPrice ID if created/found
+   */
+  private async ensureMarketPriceExists(globalAssetId: string, userId?: string): Promise<string | null> {
+    try {
+      console.log(`[SYNC SERVICE] Ensuring market price exists for global asset: ${globalAssetId}`);
+      
+      // Check if price already exists first
+      const existingPrice = await this.basicPriceService.findByAssetId(globalAssetId);
+      if (existingPrice) {
+        console.log(`[SYNC SERVICE] Market price already exists for global asset: ${globalAssetId}, no action needed`);
+        return existingPrice.id;
+      }
+
+      // Create market price if it doesn't exist
+      return await this.createInitialMarketPrice(globalAssetId, userId);
+    } catch (error) {
+      this.logger.error(`Failed to ensure market price exists: ${error.message}`, error.stack);
       return null;
     }
   }

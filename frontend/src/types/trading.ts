@@ -34,6 +34,8 @@ export interface Trade {
   tax?: number;
   tradeType?: TradeType;
   source?: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -67,6 +69,8 @@ export interface CreateTradeDto {
   tax?: number;
   tradeType?: TradeType;
   source?: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
 }
 
@@ -78,6 +82,8 @@ export interface UpdateTradeDto {
   tax?: number;
   tradeType?: TradeType;
   source?: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
 }
 
@@ -347,6 +353,8 @@ export interface TradeFormData {
   tax?: number;
   tradeType?: TradeType;
   source?: TradeSource;
+  exchange?: string;
+  fundingSource?: string;
   notes?: string;
 }
 

@@ -42,6 +42,7 @@ import {
   AccountBalanceWallet as WithdrawIcon,
   TrendingUp as DividendIcon,
   TrendingUp,
+  TrendingDown,
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,
@@ -65,6 +66,7 @@ interface CashFlow {
   flowDate: string;
   effectiveDate?: string;
   currency?: string;
+  fundingSource?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -96,6 +98,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     currency: 'VND',
     flowDate: '',
     status: 'COMPLETED',
+    fundingSource: '',
   });
   const [tabValue, setTabValue] = useState(0);
   const [filterTypes, setFilterTypes] = useState<string[]>(['ALL']);
@@ -177,6 +180,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate).toISOString() : undefined,
         currency: formData.currency,
         status: formData.status,
+        fundingSource: formData.fundingSource || undefined,
       };
 
       const isEdit = editingCashFlow !== null;
@@ -259,6 +263,52 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
+  const getTypeDescription = (type: string) => {
+    switch (type) {
+      case 'deposit': return 'Add money to your portfolio';
+      case 'withdrawal': return 'Remove money from your portfolio';
+      case 'dividend': return 'Record dividend income received';
+      case 'interest': return 'Record interest income earned';
+      case 'fee': return 'Record fees or charges';
+      case 'tax': return 'Record tax payments';
+      case 'adjustment': return 'Record balance adjustments';
+      case 'buy_trade': return 'Record money spent on buying assets';
+      case 'sell_trade': return 'Record money received from selling assets';
+      default: return 'Add a new cash flow transaction';
+    }
+  };
+
+  const formatTypeName = (type: string) => {
+    return type.replace(/_/g, ' ');
+  };
+
+  const isCashFlowIn = (type: string) => {
+    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
+  };
+
+  const getCashFlowDirection = (type: string) => {
+    return isCashFlowIn(type) ? 'IN' : 'OUT';
+  };
+
+  const getCashFlowDirectionColor = (type: string) => {
+    return isCashFlowIn(type) ? 'success' : 'error';
+  };
+
+  const getCashFlowDirectionIcon = (type: string) => {
+    switch (type) {
+      case 'DEPOSIT': return <DepositIcon />;
+      case 'WITHDRAWAL': return <WithdrawIcon />;
+      case 'DIVIDEND': return <DividendIcon />;
+      case 'INTEREST': return <TrendingUp />;
+      case 'FEE': return <CancelIcon />;
+      case 'TAX': return <CancelIcon />;
+      case 'ADJUSTMENT': return <BalanceIcon />;
+      case 'BUY_TRADE': return <WithdrawIcon />;
+      case 'SELL_TRADE': return <DepositIcon />;
+      default: return isCashFlowIn(type) ? <TrendingUp /> : <TrendingDown />;
+    }
+  };
+
   // Calculate summary stats using all cash flows (not paginated data)
   const totalDeposits = (allCashFlows || [])
     .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') && cf.status === 'COMPLETED')
@@ -308,6 +358,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       currency: 'VND',
       flowDate: getCurrentLocalDateTime(),
       status: 'COMPLETED',
+      fundingSource: '',
     });
   };
 
@@ -340,6 +391,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       currency: cashFlow.currency || 'VND',
       flowDate: flowDate.toISOString().slice(0, 16),
       status: cashFlow.status || 'COMPLETED',
+      fundingSource: cashFlow.fundingSource || '',
     });
     
     setDialogOpen(true);
@@ -396,17 +448,18 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   // CSV Export functions
   const generateCSV = (data: CashFlow[]) => {
-    const headers = ['Date', 'Type', 'Amount', 'Currency', 'Description', 'Reference', 'Status'];
+    const headers = ['Date', 'Type', 'Amount', 'Currency', 'Description', 'Reference', 'Funding Source', 'Status'];
     const csvRows = [headers.join(',')];
     
     data.forEach(cf => {
       const row = [
         formatDate(cf.flowDate),
-        cf.type.replace('_', ' '),
+        formatTypeName(cf.type),
         cf.amount,
         'VND',
         `"${cf.description.replace(/"/g, '""')}"`,
         cf.reference || '',
+        cf.fundingSource || '',
         cf.status
       ];
       csvRows.push(row.join(','));
@@ -724,6 +777,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                         <TableCell><strong>Amount</strong></TableCell>
                         <TableCell><strong>Description</strong></TableCell>
                         <TableCell><strong>Reference</strong></TableCell>
+                        <TableCell><strong>Funding Source</strong></TableCell>
                         <TableCell><strong>Date</strong></TableCell>
                         <TableCell><strong>Status</strong></TableCell>
                         <TableCell><strong>Actions</strong></TableCell>
@@ -735,7 +789,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           <TableCell>
                             <Chip
                               {...(getTypeIcon(cashFlow.type) && { icon: getTypeIcon(cashFlow.type) })}
-                              label={cashFlow.type.replace('_', ' ')}
+                              label={formatTypeName(cashFlow.type)}
                               color={getTypeColor(cashFlow.type) as any}
                               size="small"
                               variant="outlined"
@@ -757,6 +811,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           <TableCell>
                             <Typography variant="body2" color="text.secondary">
                               {cashFlow.reference || '-'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {cashFlow.fundingSource || '-'}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -910,20 +969,40 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             {editingCashFlow ? (
               <>
                 <EditIcon color="primary" />
-                <Box>
-                  <Typography variant="h6">Edit Cash Flow</Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Typography variant="h6">Edit Cash Flow</Typography>
+                    <Chip
+                      icon={getCashFlowDirectionIcon(editingCashFlow.type)}
+                      label={`${formatTypeName(editingCashFlow.type)} - ${getCashFlowDirection(editingCashFlow.type)}`}
+                      color={getCashFlowDirectionColor(editingCashFlow.type) as any}
+                      size="small"
+                      variant="filled"
+                    />
+                  </Box>
                   <Typography variant="body2" color="text.secondary">
-                    ID: {editingCashFlow.cashflowId?.slice(0, 8)}...
+                    ID: {editingCashFlow.cashflowId?.slice(0, 8)}... | Type: {formatTypeName(editingCashFlow.type)}
                   </Typography>
                 </Box>
               </>
             ) : (
               <>
-                <AddIcon color="primary" />
-                <Box>
-                  <Typography variant="h6">Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow</Typography>
+                {getTypeIcon(dialogType)}
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Typography variant="h6" color={getTypeColor(dialogType)}>
+                      Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow
+                    </Typography>
+                    <Chip
+                      icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
+                      label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
+                      color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
+                      size="small"
+                      variant="filled"
+                    />
+                  </Box>
                   <Typography variant="body2" color="text.secondary">
-                    Add a new cash flow transaction
+                    {getTypeDescription(dialogType)}
                   </Typography>
                 </Box>
               </>
@@ -953,6 +1032,39 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                   Please check your input and try again.
                 </Typography>
+              </Alert>
+            )}
+            
+            {/* Cash Flow Type Indicator */}
+            {!editingCashFlow && (
+              <Alert 
+                severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
+                sx={{ 
+                  mb: 2, 
+                  borderLeft: `4px solid ${getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#4caf50' : '#f44336'}`,
+                  backgroundColor: getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#e8f5e8' : '#ffebee'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {getTypeIcon(dialogType)}
+                  <Box sx={{ flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography variant="body2" fontWeight="bold">
+                        {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
+                      </Typography>
+                      <Chip
+                        icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
+                        label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
+                        color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
+                        size="small"
+                        variant="filled"
+                      />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {getTypeDescription(dialogType)}
+                    </Typography>
+                  </Box>
+                </Box>
               </Alert>
             )}
             
@@ -1021,6 +1133,19 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     </Typography>
                   )}
                 </FormControl>
+                
+                <TextField
+                  fullWidth
+                  label="Funding Source (Optional)"
+                  value={formData.fundingSource}
+                  onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
+                  margin="normal"
+                  placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+                  helperText="Source of funding for this transaction (optional)"
+                  inputProps={{
+                    style: { textTransform: 'uppercase' }
+                  }}
+                />
               </Grid>
               
               {/* Right Column */}
@@ -1055,10 +1180,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   margin="normal"
                   helperText="External reference number or ID (optional)"
                 />
-              </Grid>
-              
-              {/* Full Width Description */}
-              <Grid item xs={12}>
+                
                 <TextField
                   fullWidth
                   label="Description"
@@ -1075,6 +1197,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   }
                 />
               </Grid>
+              
             </Grid>
           </Box>
         </DialogContent>

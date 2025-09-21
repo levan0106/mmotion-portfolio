@@ -46,8 +46,6 @@ export const groupAssetsByType = (assets: Asset[]): Record<AssetType, Asset[]> =
   const grouped: Record<AssetType, Asset[]> = {
     [AssetType.STOCK]: [],
     [AssetType.BOND]: [],
-    [AssetType.ETF]: [],
-    [AssetType.MUTUAL_FUND]: [],
     [AssetType.CRYPTO]: [],
     [AssetType.COMMODITY]: [],
     [AssetType.REIT]: [],
@@ -74,8 +72,6 @@ export const calculateAssetAllocation = (assets: Asset[]): Record<AssetType, num
   return {
     [AssetType.STOCK]: 0,
     [AssetType.BOND]: 0,
-    [AssetType.ETF]: 0,
-    [AssetType.MUTUAL_FUND]: 0,
     [AssetType.CRYPTO]: 0,
     [AssetType.COMMODITY]: 0,
     [AssetType.REIT]: 0,
@@ -90,8 +86,6 @@ export const calculateAssetAllocation = (assets: Asset[]): Record<AssetType, num
   const allocation: Record<AssetType, number> = {
     [AssetType.STOCK]: 0,
     [AssetType.BOND]: 0,
-    [AssetType.ETF]: 0,
-    [AssetType.MUTUAL_FUND]: 0,
     [AssetType.CRYPTO]: 0,
     [AssetType.COMMODITY]: 0,
     [AssetType.REIT]: 0,

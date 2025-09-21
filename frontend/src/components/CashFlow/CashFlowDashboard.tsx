@@ -52,6 +52,7 @@ interface CashFlow {
   status: string;
   flowDate: string;
   effectiveDate?: string;
+  fundingSource?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +76,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
     description: '',
     reference: '',
     effectiveDate: '',
+    fundingSource: '',
   });
   // const [tabValue, setTabValue] = useState(0); // Unused variable
   const [filterType, setFilterType] = useState<string>('ALL');
@@ -110,6 +112,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
         description: formData.description,
         reference: formData.reference || undefined,
         effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate) : undefined,
+        fundingSource: formData.fundingSource || undefined,
       };
 
       const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/${dialogType}`, {
@@ -126,7 +129,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
       }
 
       // Reset form and close dialog
-      setFormData({ amount: '', description: '', reference: '', effectiveDate: '' });
+      setFormData({ amount: '', description: '', reference: '', effectiveDate: '', fundingSource: '' });
       setDialogOpen(false);
       setSpeedDialOpen(false);
       
@@ -186,6 +189,52 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
       case 'BUY_TRADE': return <WithdrawIcon />;
       case 'SELL_TRADE': return <DepositIcon />;
       default: return undefined;
+    }
+  };
+
+  const getTypeDescription = (type: string) => {
+    switch (type) {
+      case 'deposit': return 'Add money to your portfolio';
+      case 'withdrawal': return 'Remove money from your portfolio';
+      case 'dividend': return 'Record dividend income received';
+      case 'interest': return 'Record interest income earned';
+      case 'fee': return 'Record fees or charges';
+      case 'tax': return 'Record tax payments';
+      case 'adjustment': return 'Record balance adjustments';
+      case 'buy_trade': return 'Record money spent on buying assets';
+      case 'sell_trade': return 'Record money received from selling assets';
+      default: return 'Add a new cash flow transaction';
+    }
+  };
+
+  const formatTypeName = (type: string) => {
+    return type.replace(/_/g, ' ');
+  };
+
+  const isCashFlowIn = (type: string) => {
+    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
+  };
+
+  const getCashFlowDirection = (type: string) => {
+    return isCashFlowIn(type) ? 'IN' : 'OUT';
+  };
+
+  const getCashFlowDirectionColor = (type: string) => {
+    return isCashFlowIn(type) ? 'success' : 'error';
+  };
+
+  const getCashFlowDirectionIcon = (type: string) => {
+    switch (type) {
+      case 'DEPOSIT': return <DepositIcon />;
+      case 'WITHDRAWAL': return <WithdrawIcon />;
+      case 'DIVIDEND': return <DividendIcon />;
+      case 'INTEREST': return <TrendingUpIcon />;
+      case 'FEE': return <CancelIcon />;
+      case 'TAX': return <CancelIcon />;
+      case 'ADJUSTMENT': return <BalanceIcon />;
+      case 'BUY_TRADE': return <WithdrawIcon />;
+      case 'SELL_TRADE': return <DepositIcon />;
+      default: return isCashFlowIn(type) ? <TrendingUpIcon /> : <TrendingDownIcon />;
     }
   };
 
@@ -364,6 +413,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                   <TableCell>Amount</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Reference</TableCell>
+                  <TableCell>Funding Source</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
@@ -375,9 +425,10 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                     <TableCell>
                       <Chip
                         {...(getTypeIcon(cashFlow.type) && { icon: getTypeIcon(cashFlow.type) })}
-                        label={cashFlow.type}
+                        label={formatTypeName(cashFlow.type)}
                         color={getTypeColor(cashFlow.type) as any}
                         size="small"
+                        variant="outlined"
                       />
                     </TableCell>
                     <TableCell>
@@ -390,6 +441,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                     </TableCell>
                     <TableCell>{cashFlow.description}</TableCell>
                     <TableCell>{cashFlow.reference || '-'}</TableCell>
+                    <TableCell>{cashFlow.fundingSource || '-'}</TableCell>
                     <TableCell>{formatDate(cashFlow.flowDate)}</TableCell>
                     <TableCell>
                       <Chip
@@ -439,12 +491,60 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
       {/* Cash Flow Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {dialogType === 'deposit' && 'Create Deposit'}
-          {dialogType === 'withdrawal' && 'Create Withdrawal'}
-          {dialogType === 'dividend' && 'Create Dividend'}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {getTypeIcon(dialogType.toUpperCase())}
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Typography variant="h6" color={getTypeColor(dialogType.toUpperCase())}>
+                  Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)}
+                </Typography>
+                <Chip
+                  icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
+                  label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
+                  color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
+                  size="small"
+                  variant="filled"
+                />
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {getTypeDescription(dialogType)}
+              </Typography>
+            </Box>
+          </Box>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
+            {/* Cash Flow Type Indicator */}
+            <Alert 
+              severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
+              sx={{ 
+                mb: 2, 
+                borderLeft: `4px solid ${getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#4caf50' : '#f44336'}`,
+                backgroundColor: getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#e8f5e8' : '#ffebee'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {getTypeIcon(dialogType.toUpperCase())}
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Typography variant="body2" fontWeight="bold">
+                      {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
+                    </Typography>
+                    <Chip
+                      icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
+                      label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
+                      color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
+                      size="small"
+                      variant="filled"
+                    />
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {getTypeDescription(dialogType)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Alert>
+            
             <TextField
               fullWidth
               label="Amount"
@@ -455,6 +555,17 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
               required
               InputProps={{
                 startAdornment: <InputAdornment position="start">₫</InputAdornment>,
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Funding Source (Optional)"
+              value={formData.fundingSource}
+              onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
+              margin="normal"
+              placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+              inputProps={{
+                style: { textTransform: 'uppercase' }
               }}
             />
             <TextField
