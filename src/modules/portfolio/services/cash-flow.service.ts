@@ -6,6 +6,7 @@ import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.en
 import { Trade, TradeSide } from '../../trading/entities/trade.entity';
 import { Asset } from '../../asset/entities/asset.entity';
 import { CreateCashFlowDto } from '../dto/cash-flow.dto';
+import { Deposit } from '../entities/deposit.entity';
 
 export interface CashFlowUpdateResult {
   portfolioId: string;
@@ -270,7 +271,7 @@ export class CashFlowService {
     const newCashBalance = parseFloat(cashBalance.newCashBalance.toString());
     
     // Calculate net amount based on cash flow type
-    const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
+    const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'].includes(type);
     const netAmount = isInflow ? Math.abs(amount) : -Math.abs(amount);
 
 
@@ -512,7 +513,7 @@ export class CashFlowService {
     console.log(`[CashFlowService] createCashFlowFromTrade called for tradeId: ${trade.tradeId}, side: ${trade.side}, quantity: ${trade.quantity}, price: ${trade.price}`);
     
     // Delete existing cash flows for this trade first to avoid duplicates (silent - no balance recalculation)
-    await this.deleteCashFlowByTradeIdSilent(trade.tradeId);
+    await this.deleteCashFlowByReferenceIdSilent(trade.tradeId);
 
     const tradeAmount = parseFloat(trade.totalAmount.toString());
     const fee = parseFloat(trade.fee.toString()) || 0;
@@ -661,70 +662,106 @@ export class CashFlowService {
   /**
    * Delete cash flows by trade ID (when trade is deleted) - with balance recalculation
    */
-  async deleteCashFlowByTradeId(tradeId: string): Promise<void> {
-    console.log(`[CashFlowService] deleteCashFlowByTradeId called for tradeId: ${tradeId}`);
+  async deleteCashFlowAndRecalculateBalanceByReferenceId(referenceId: string): Promise<void> {
+    console.log(`[CashFlowService] deleteCashFlowAndRecalculateBalanceByReferenceId called for referenceId: ${referenceId}`);
     
     // Find cash flows with this trade ID as reference
     const cashFlows = await this.cashFlowRepository.find({
-      where: { reference: tradeId }
+      where: { reference: referenceId }
     });
 
-    console.log(`[CashFlowService] Found ${cashFlows.length} cash flows for tradeId: ${tradeId}`);
+    console.log(`[CashFlowService] Found ${cashFlows.length} cash flows for referenceId: ${referenceId}`);
 
     if (cashFlows.length === 0) {
-      console.log(`[CashFlowService] No cash flows to delete for tradeId: ${tradeId}`);
-      return; // No cash flows to delete
+      console.log(`[CashFlowService] No cash flows to delete for referenceId: ${referenceId}`);
+      return null; // No cash flows to delete
     }
 
-    // Get portfolio ID from first cash flow
+    // Get portfolio ID from first cash flow before deletion
     const portfolioId = cashFlows[0].portfolioId;
 
-    // Delete all cash flows with this trade ID using raw query without transaction
-    const deleteResult = await this.dataSource.query(
-      'DELETE FROM cash_flows WHERE reference = $1',
-      [tradeId]
-    );
-    console.log(`[CashFlowService] Deleted cash flows for tradeId: ${tradeId} using raw query without transaction`);
+    // First, delete cash flows silently
+    await this.deleteCashFlowByReferenceIdSilent(referenceId);
     
-    // Recalculate portfolio balance from all cash flows
-    await this.recalculateCashBalanceFromAllFlows(portfolioId);
-    
-    // Verify deletion after transaction
-    const remainingCashFlows = await this.cashFlowRepository.find({
-      where: { reference: tradeId }
-    });
-    console.log(`[CashFlowService] Remaining cash flows after deletion: ${remainingCashFlows.length}`);
+    // If cash flows were deleted, recalculate balance
+    if (portfolioId) {
+      await this.recalculateCashBalanceFromAllFlows(portfolioId);
+      console.log(`[CashFlowService] Recalculated cash balance after deletion for portfolioId: ${portfolioId}`);
+    }
   }
 
   /**
    * Delete cash flows by trade ID (for avoiding duplicates) - without balance recalculation
    */
-  async deleteCashFlowByTradeIdSilent(tradeId: string): Promise<void> {
-    console.log(`[CashFlowService] deleteCashFlowByTradeIdSilent called for tradeId: ${tradeId}`);
+  async deleteCashFlowByReferenceIdSilent(referenceId: string): Promise<void> {
+    console.log(`[CashFlowService] deleteCashFlowByReferenceIdSilent called for referenceId: ${referenceId}`);
     
-    // Find cash flows with this trade ID as reference
-    const cashFlows = await this.cashFlowRepository.find({
-      where: { reference: tradeId }
-    });
-
-    console.log(`[CashFlowService] Found ${cashFlows.length} cash flows for tradeId: ${tradeId}`);
-
-    if (cashFlows.length === 0) {
-      console.log(`[CashFlowService] No cash flows to delete for tradeId: ${tradeId}`);
-      return; // No cash flows to delete
-    }
 
     // Delete all cash flows with this trade ID using raw query without transaction
     const deleteResult = await this.dataSource.query(
       'DELETE FROM cash_flows WHERE reference = $1',
-      [tradeId]
+      [referenceId]
     );
-    console.log(`[CashFlowService] Deleted cash flows for tradeId: ${tradeId} using raw query without transaction`);
+    console.log(`[CashFlowService] Deleted cash flows for referenceId: ${referenceId} using raw query without transaction`);
     
     // Verify deletion after transaction
     const remainingCashFlows = await this.cashFlowRepository.find({
-      where: { reference: tradeId }
+      where: { reference: referenceId }
     });
     console.log(`[CashFlowService] Remaining cash flows after deletion: ${remainingCashFlows.length}`);
+    
+  }
+
+  /**
+   * Create cash flow from deposit (handles both creation and settlement)
+   * Deletes existing cash flows for the deposit before creating new ones
+   */
+  async createCashFlowFromDeposit( deposit: Deposit ): Promise<void> {
+    const amount = (Number(deposit.principal) + Number(deposit.actualInterest || 0));
+    const type = deposit.status === 'ACTIVE' ? CashFlowType.DEPOSIT_CREATION : CashFlowType.DEPOSIT_SETTLEMENT;
+    
+    console.log(`[CashFlowService] createCashFlowFromDeposit called for depositId: ${deposit.depositId}, type: ${type}, amount: ${amount}`);
+    
+    const referenceId = this.formatReferenceId(deposit.depositId, deposit.status);
+
+    // First, delete any existing cash flows for this deposit
+    await this.deleteCashFlowByReferenceIdSilent(referenceId);
+    
+    // Format description based on type and amount
+    const description = this.formatDepositDescription(type, Math.abs(amount), deposit.bankName, deposit.depositId);
+    // Then create the new cash flow
+    await this.createCashFlow(
+      deposit.portfolioId, 
+      type, 
+      amount, 
+      description,  
+      referenceId,
+      deposit.startDate,
+      'VND', // Default currency for deposits
+      deposit.bankName, // Pass fundingSource from deposit
+    );
+    
+    console.log(`[CashFlowService] Successfully created cash flow for depositId: ${deposit.depositId}`);
+  }
+
+  /**
+   * Format deposit description based on type
+   */
+  private formatDepositDescription(
+    type: CashFlowType,
+    amount: number,
+    bankName: string,
+    depositId: string,
+  ): string {
+    const formattedAmount = Math.abs(amount).toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+    
+    return `${type === CashFlowType.DEPOSIT_CREATION ? 'DEPOSIT' : 'WITHDRAWAL'} ${formattedAmount} at ${bankName} [TradeID: ${depositId}]`;
+  }
+
+  formatReferenceId(referenceId: string, type: string): string {
+    return (referenceId +"_"+ type).substring(0, 50);
   }
 }

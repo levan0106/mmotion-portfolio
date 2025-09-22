@@ -306,7 +306,7 @@ export class TradingService {
     }
     
     // Delete cash flows associated with this trade FIRST
-    await this.cashFlowService.deleteCashFlowByTradeId(tradeId);
+    await this.cashFlowService.deleteCashFlowAndRecalculateBalanceByReferenceId(tradeId);
     
     // Delete the trade
     await this.tradeRepository.delete(tradeId);

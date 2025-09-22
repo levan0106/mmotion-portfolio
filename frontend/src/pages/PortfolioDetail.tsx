@@ -27,6 +27,7 @@ import {
   Refresh as RefreshIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { usePortfolioPositions } from '../hooks/usePortfolioPositions';
@@ -45,7 +46,13 @@ import { TradeForm } from '../components/Trading/TradeForm';
 import { TradeListContainer } from '../components/Trading/TradeList';
 import { TradeAnalysisContainer } from '../components/Trading/TradeAnalysis';
 import CashFlowLayout from '../components/CashFlow/CashFlowLayout';
-import { formatCurrency, formatPercentage } from '../utils/format';
+import DepositManagementTab from '../components/Deposit/DepositManagementTab';
+import { 
+  formatCurrency, 
+  formatPercentage, 
+  formatNumber, 
+  formatNumberWithSeparators 
+} from '../utils/format';
 import { CreateTradeDto } from '../types';
 import { apiService } from '../services/api';
 import './PortfolioDetail.styles.css';
@@ -710,7 +717,7 @@ const PortfolioDetail: React.FC = () => {
                      Total Trades
                    </Typography>
                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
-                     {totalTrades}
+                     {formatNumberWithSeparators(totalTrades, 0)}
                    </Typography>
                  </Box>
                  <Box sx={{ flex: 1 }}>
@@ -840,6 +847,7 @@ const PortfolioDetail: React.FC = () => {
             <Tab label="Trading Analysis" defaultChecked />
             <Tab label="Asset Allocation" />
             <Tab label="Trading Management" />
+            <Tab label="Deposit Management" />
             <Tab label="Cash Flow" />
           </Tabs>
           
@@ -1046,7 +1054,7 @@ const PortfolioDetail: React.FC = () => {
                       border: '1px solid #e0e0e0'
                     }}>
                       <Typography variant="h4" color="warning.main" fontWeight="bold">
-                        {Object.keys(allocationData?.allocation || {}).length}
+                        {formatNumberWithSeparators(Object.keys(allocationData?.allocation || {}).length, 0)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                         Asset Classes (Loại tài sản)
@@ -1150,7 +1158,7 @@ const PortfolioDetail: React.FC = () => {
                                 {assetType.toUpperCase()}
                               </Typography>
                               <Typography variant="body2" fontWeight="bold" color="primary" sx={{ fontSize: '0.75rem' }}>
-                                {allocation.percentage.toFixed(1)}%
+                                {formatNumber(allocation.percentage, 1)}%
                               </Typography>
                             </Box>
                             <Box 
@@ -1359,6 +1367,25 @@ const PortfolioDetail: React.FC = () => {
             pt: 0, // No padding top for consistency
           }}>
             <Grid container spacing={getUltraSpacing(3, 1)}>
+              {/* Deposit Management Section */}
+              <SectionWrapper 
+                title="Deposit Management (Quản lý tiền gửi)"
+                isCompactMode={isCompactMode}
+                getUltraSpacing={getUltraSpacing}
+              >
+                <DepositManagementTab portfolioId={portfolioId!} />
+              </SectionWrapper>
+            </Grid>
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={4}>
+          <Box sx={{ 
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
+            pt: 0, // No padding top for consistency
+          }}>
+            <Grid container spacing={getUltraSpacing(3, 1)}>
               {/* Cash Flow Management Section */}
               <SectionWrapper 
                 title="Cash Flow Management (Quản lý dòng tiền)"
@@ -1400,20 +1427,53 @@ const PortfolioDetail: React.FC = () => {
             sx={{
               bgcolor: 'white',
               borderRadius: 3,
-              p: 4,
+              p: 0,
               maxWidth: 900,
               width: '95%',
               maxHeight: '95%',
-              overflow: 'auto',
+              overflow: 'hidden',
               boxShadow: 24,
               animation: 'modalSlideIn 0.3s ease-out',
+              position: 'relative',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <TradeForm
-              onSubmit={handleCreateTrade}
-              defaultPortfolioId={portfolioId!}
-            />
+            {/* Modal Header with Close Button */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 2,
+                borderBottom: 1,
+                borderColor: 'divider',
+                bgcolor: 'grey.50',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold">
+                Create New Trade
+              </Typography>
+              <IconButton
+                onClick={() => setShowCreateForm(false)}
+                size="small"
+                sx={{
+                  '&:hover': {
+                    bgcolor: 'error.main',
+                    color: 'white',
+                  },
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Modal Content */}
+            <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(95vh - 80px)' }}>
+              <TradeForm
+                onSubmit={handleCreateTrade}
+                defaultPortfolioId={portfolioId!}
+              />
+            </Box>
           </Box>
         </Box>
       )}

@@ -11,6 +11,7 @@ import { MetricsModule } from './modules/metrics/metrics.module';
 import { MarketDataModule } from './modules/market-data/market-data.module';
 import { SnapshotModule } from './modules/portfolio/snapshot.module';
 import { PortfolioSnapshotModule } from './modules/portfolio/portfolio-snapshot.module';
+import { DepositModule } from './modules/portfolio/deposit.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestLoggingController } from './test-logging.controller';
@@ -62,6 +63,7 @@ import { TestLoggingController } from './test-logging.controller';
       MarketDataModule,
       SnapshotModule,
       PortfolioSnapshotModule,
+      DepositModule,
   ],
   controllers: [AppController, TestLoggingController],
   providers: [AppService],

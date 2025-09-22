@@ -68,6 +68,7 @@ export interface TradeFormProps {
   defaultPortfolioId?: string;
   showSubmitButton?: boolean;
   formRef?: React.RefObject<HTMLFormElement>;
+  isModal?: boolean;
 }
 
 /**
@@ -203,6 +204,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   defaultPortfolioId,
   showSubmitButton = true,
   formRef,
+  isModal = false,
 }) => {
 
   const { accountId } = useAccount();
@@ -395,11 +397,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
       <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
               {/* Basic Information Section */}
-              <Box mb={1.5}>
-                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+              <Box mb={isModal ? 1 : 1.5}>
+                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
                   Basic Information
                 </Typography>
-                <Grid container spacing={1.5}>
+                <Grid container spacing={isModal ? 1 : 1.5}>
                   {/* Portfolio Selection */}
                   <Grid item xs={12} md={4}>
                     <Controller
@@ -519,12 +521,12 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 </Grid>
               </Box>
 
-              {/* Trade Details Section */}
-              <Box mb={1.5}>
-                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
-                  Trade Details
-                </Typography>
-                <Grid container spacing={1.5}>
+            {/* Trade Details Section */}
+            <Box mb={isModal ? 1 : 1.5}>
+              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
+                Trade Details
+              </Typography>
+              <Grid container spacing={isModal ? 1 : 1.5}>
                   {/* Trade Side */}
                   <Grid item xs={12} md={4}>
                     <Controller
@@ -627,12 +629,12 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 </Grid>
               </Box>
 
-              {/* Additional Information Section */}
-              <Box mb={1.5}>
-                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
-                  Additional Information
-                </Typography>
-                <Grid container spacing={1.5}>
+            {/* Additional Information Section */}
+            <Box mb={isModal ? 1 : 1.5}>
+              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
+                Additional Information
+              </Typography>
+              <Grid container spacing={isModal ? 1 : 1.5}>
                   {/* Fee */}
                   <Grid item xs={12} md={4}>
                     <Controller
@@ -803,11 +805,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
 
             {/* Summary Section */}
-            <Box mb={2} p={1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
-              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+            <Box mb={isModal ? 1 : 2} p={isModal ? 1 : 1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
+              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
                 Trade Summary
               </Typography>
-              <Grid container spacing={1.5}>
+              <Grid container spacing={isModal ? 1 : 1.5}>
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>

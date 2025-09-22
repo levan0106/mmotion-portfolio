@@ -244,6 +244,65 @@ export class PortfolioSnapshotService {
   }
 
   /**
+   * Update deposit fields in portfolio snapshot
+   */
+  async updateDepositFields(portfolioId: string, depositData: {
+    totalDepositPrincipal: number;
+    totalDepositInterest: number;
+    totalDepositValue: number;
+    totalDepositCount: number;
+  }): Promise<void> {
+    this.logger.log(`Updating deposit fields for portfolio ${portfolioId}`);
+
+    // Get the latest snapshot for the portfolio
+    const latestSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: { portfolioId },
+      order: { snapshotDate: 'DESC' }
+    });
+
+    if (latestSnapshot) {
+      // Update the latest snapshot
+      latestSnapshot.totalDepositPrincipal = depositData.totalDepositPrincipal;
+      latestSnapshot.totalDepositInterest = depositData.totalDepositInterest;
+      latestSnapshot.totalDepositValue = depositData.totalDepositValue;
+      latestSnapshot.totalDepositCount = depositData.totalDepositCount;
+
+      await this.portfolioSnapshotRepository.save(latestSnapshot);
+      this.logger.log(`Updated deposit fields in latest snapshot for portfolio ${portfolioId}`);
+    } else {
+      this.logger.warn(`No snapshot found for portfolio ${portfolioId}, creating new one`);
+      
+      // Create a new snapshot with deposit data
+      const portfolio = await this.portfolioRepository.findOne({
+        where: { portfolioId }
+      });
+
+      if (portfolio) {
+        const newSnapshot = this.portfolioSnapshotRepository.create({
+          portfolioId,
+          portfolioName: portfolio.name,
+          snapshotDate: new Date(),
+          granularity: SnapshotGranularity.DAILY,
+          totalValue: portfolio.totalValue,
+          totalPl: portfolio.unrealizedPl + portfolio.realizedPl,
+          unrealizedPl: portfolio.unrealizedPl,
+          realizedPl: portfolio.realizedPl,
+          cashBalance: portfolio.cashBalance,
+          investedValue: portfolio.totalValue - portfolio.cashBalance,
+          totalDepositPrincipal: depositData.totalDepositPrincipal,
+          totalDepositInterest: depositData.totalDepositInterest,
+          totalDepositValue: depositData.totalDepositValue,
+          totalDepositCount: depositData.totalDepositCount,
+          isActive: true,
+        });
+
+        await this.portfolioSnapshotRepository.save(newSnapshot);
+        this.logger.log(`Created new snapshot with deposit data for portfolio ${portfolioId}`);
+      }
+    }
+  }
+
+  /**
    * Get timeline data for portfolio
    */
   async getPortfolioSnapshotTimeline(query: PortfolioSnapshotTimelineQuery): Promise<PortfolioSnapshot[]> {

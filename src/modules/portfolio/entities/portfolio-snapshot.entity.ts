@@ -71,6 +71,19 @@ export class PortfolioSnapshot {
   @Column({ name: 'invested_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
   investedValue: number;
 
+  // Deposit Fields
+  @Column({ name: 'total_deposit_principal', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalDepositPrincipal: number;
+
+  @Column({ name: 'total_deposit_interest', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalDepositInterest: number;
+
+  @Column({ name: 'total_deposit_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalDepositValue: number;
+
+  @Column({ name: 'total_deposit_count', type: 'int', default: 0 })
+  totalDepositCount: number;
+
   // Performance Metrics
   @Column({ name: 'daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
   dailyReturn: number;

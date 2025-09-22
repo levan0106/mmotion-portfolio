@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Grid,
   Chip,
@@ -128,19 +126,19 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
       <Box 
         sx={{ 
           bgcolor: 'grey.50', 
-          p: 2, 
-          borderRadius: 2, 
+          p: 1.5, 
+          borderRadius: 1, 
           mb: 2,
           border: 1,
           borderColor: 'grey.200'
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="h5" component="h2" fontWeight="bold" color="primary">
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Typography variant="h6" component="h2" fontWeight="bold" color="primary">
               Trade Details
             </Typography>
-            <Box display="flex" gap={1}>
+            <Box display="flex" gap={0.5}>
               <Chip
                 label={trade.assetSymbol}
                 color="primary"
@@ -170,11 +168,12 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                 variant="contained"
                 startIcon={<EditIcon />}
                 onClick={() => onEdit(trade)}
+                size="small"
                 sx={{ 
                   textTransform: 'none',
                   fontWeight: 600,
-                  px: 3,
-                  py: 1
+                  px: 2,
+                  py: 0.5
                 }}
               >
                 Edit Trade
@@ -187,17 +186,21 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
         </Typography>
       </Box>
 
-      {/* Trade Information */}
-      <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ boxShadow: 2, height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold">
+      {/* Trade Information - Simplified Layout */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+          Trade Information
+        </Typography>
+        <Grid container spacing={2}>
+          {/* Basic Info */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, border: 1, borderColor: 'grey.200' }}>
+              <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight="bold">
                 Basic Information
               </Typography>
-              <Grid container spacing={1.5}>
+              <Grid container spacing={1}>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Trade ID
                   </Typography>
                   <Typography variant="body2" fontFamily="monospace" fontWeight="medium">
@@ -205,7 +208,7 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Date & Time
                   </Typography>
                   <Typography variant="body2" fontWeight="medium">
@@ -213,7 +216,7 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Asset
                   </Typography>
                   <Typography variant="body2" fontWeight="medium">
@@ -221,115 +224,82 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Trade Type
+                  <Typography variant="body2" color="text.secondary">
+                    Type
                   </Typography>
                   <Chip
                     label={trade.tradeType}
                     color={getTypeColor(trade.tradeType)}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Source
-                    </Typography>
-                    <Chip
-                      label={trade.source}
-                      color={getSourceColor(trade.source)}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Exchange
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {trade.exchange || '-'}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Funding Source
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {trade.fundingSource || '-'}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Created
-                    </Typography>
-                    <Typography variant="body2">
-                      {format(parseISO(trade.createdAt.toString()), 'MMM dd, yyyy')}
-                    </Typography>
-                  </Grid>
+                    size="small"
+                  />
                 </Grid>
-              </CardContent>
-            </Card>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Source
+                  </Typography>
+                  <Chip
+                    label={trade.source}
+                    color={getSourceColor(trade.source)}
+                    size="small"
+                  />
+                </Grid>
+              </Grid>
+            </Box>
           </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ boxShadow: 2, height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold">
-                Financial Metrics
+          {/* Financial Info */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, border: 1, borderColor: 'grey.200' }}>
+              <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight="bold">
+                Financial Details
               </Typography>
-              {(trade.totalValue !== calculatedTotalValue || trade.totalCost !== calculatedTotalCost) && (
-                <Alert severity="info" sx={{ mb: 2, fontSize: '0.75rem' }}>
-                  <Typography variant="caption">
-                    <strong>Note:</strong> Values shown are calculated from quantity × price. 
-                    Database values: Total Value: {formatCurrency(Number(trade.totalValue) || 0)}, Total Cost: {formatCurrency(Number(trade.totalCost) || 0)}
-                  </Typography>
-                </Alert>
-              )}
-              <Grid container spacing={1.5}>
+              <Grid container spacing={1}>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Quantity
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight="bold">
+                  <Typography variant="body2" fontWeight="bold">
                     {formatNumber(trade.quantity, 2)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Price per Unit
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight="bold">
+                  <Typography variant="body2" fontWeight="bold">
                     {formatCurrency(trade.price)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Total Value
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight="bold" color="info.main">
+                  <Typography variant="body2" fontWeight="bold" color="info.main">
                     {formatCurrency(calculatedTotalValue)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Fees & Taxes
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight="bold" color="warning.main">
+                  <Typography variant="body2" fontWeight="bold" color="warning.main">
                     {formatCurrency(calculatedFeesAndTaxes)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Total Cost
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight="bold" color="primary.main">
+                  <Typography variant="body2" fontWeight="bold" color="primary.main">
                     {formatCurrency(calculatedTotalCost)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary">
                     Realized P&L
                   </Typography>
                   <Typography
-                    variant="subtitle1"
+                    variant="body2"
                     fontWeight="bold"
                     color={trade.realizedPl && trade.realizedPl >= 0 ? 'success.main' : 'error.main'}
                   >
@@ -337,156 +307,140 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                   </Typography>
                 </Grid>
               </Grid>
-            </CardContent>
-          </Card>
+            </Box>
+          </Grid>
         </Grid>
-        </Grid>
+      </Box>
 
         {/* Notes */}
         {trade.notes && (
           <Box mb={2}>
-            <Card sx={{ boxShadow: 2 }}>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold">
-                  Notes
-                </Typography>
-                <Alert 
-                  severity="info" 
-                  variant="outlined"
-                  sx={{ 
-                    bgcolor: 'info.50',
-                    borderColor: 'info.200',
-                    '& .MuiAlert-message': {
-                      width: '100%'
-                    }
-                  }}
-                >
-                  <Typography variant="body1">
-                    {trade.notes}
-                  </Typography>
-                </Alert>
-              </CardContent>
-            </Card>
+            <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1 }}>
+              Notes
+            </Typography>
+            <Box sx={{ p: 1.5, bgcolor: 'info.50', borderRadius: 1, border: 1, borderColor: 'info.200' }}>
+              <Typography variant="body2">
+                {trade.notes}
+              </Typography>
+            </Box>
           </Box>
         )}
 
         {/* Trade Matching Details */}
         {trade.side === TradeSide.SELL && tradeDetails.length > 0 && (
           <Box mb={2}>
-            <Card sx={{ boxShadow: 2 }}>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold">
-                  Trade Matching Details
-                </Typography>
-                <Grid container spacing={2} mb={2}>
-                  <Grid item xs={12} sm={4}>
-                    <Box textAlign="center" p={2} sx={{ bgcolor: 'success.50', borderRadius: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Total Matched
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="success.main">
-                        {formatNumber(totalMatchedQuantity, 2)}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Box textAlign="center" p={2} sx={{ bgcolor: 'warning.50', borderRadius: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Remaining
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="warning.main">
-                        {formatNumber(trade.remainingQuantity || 0, 2)}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Box textAlign="center" p={2} sx={{ 
-                      bgcolor: totalRealizedPL >= 0 ? 'success.50' : 'error.50', 
-                      borderRadius: 2 
-                    }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Total Realized P&L
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color={totalRealizedPL >= 0 ? 'success.main' : 'error.main'}
-                      >
-                        {formatCurrency(totalRealizedPL)}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
+            <Typography variant="subtitle1" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
+              Trade Matching Details
+            </Typography>
+            <Grid container spacing={1.5} mb={2}>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center" p={1.5} sx={{ bgcolor: 'success.50', borderRadius: 1, border: 1, borderColor: 'success.200' }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Total Matched
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold" color="success.main">
+                    {formatNumber(totalMatchedQuantity, 2)}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center" p={1.5} sx={{ bgcolor: 'warning.50', borderRadius: 1, border: 1, borderColor: 'warning.200' }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Remaining
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold" color="warning.main">
+                    {formatNumber(trade.remainingQuantity || 0, 2)}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center" p={1.5} sx={{ 
+                  bgcolor: totalRealizedPL >= 0 ? 'success.50' : 'error.50', 
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: totalRealizedPL >= 0 ? 'success.200' : 'error.200'
+                }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Total Realized P&L
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color={totalRealizedPL >= 0 ? 'success.main' : 'error.main'}
+                  >
+                    {formatCurrency(totalRealizedPL)}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
 
-                <TableContainer 
-                  component={Paper} 
-                  variant="outlined"
-                  sx={{ 
-                    borderRadius: 2,
-                    boxShadow: 1
-                  }}
-                >
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: 'grey.50' }}>
-                        <TableCell sx={{ fontWeight: 600 }}>Buy Trade ID</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>Matched Qty</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>Buy Price</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>Sell Price</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>P&L</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Matched Date</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {tradeDetails.map((detail) => (
-                        <TableRow 
-                          key={detail.detailId}
-                          sx={{ 
-                            '&:nth-of-type(odd)': { bgcolor: 'grey.25' },
-                            '&:hover': { bgcolor: 'action.hover' }
-                          }}
+            <TableContainer 
+              component={Paper} 
+              variant="outlined"
+              sx={{ 
+                borderRadius: 1,
+                boxShadow: 1
+              }}
+            >
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: 'grey.50' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Buy Trade ID</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>Matched Qty</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>Buy Price</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>Sell Price</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>P&L</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Matched Date</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tradeDetails.map((detail) => (
+                    <TableRow 
+                      key={detail.detailId}
+                      sx={{ 
+                        '&:nth-of-type(odd)': { bgcolor: 'grey.25' },
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                    >
+                      <TableCell>
+                        <Typography variant="body2" fontFamily="monospace" fontWeight="medium">
+                          {detail.buyTradeId.slice(0, 8)}...
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(detail.matchedQty, 2)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatCurrency(detail.buyPrice)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatCurrency(detail.sellPrice)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography
+                          variant="body2"
+                          color={detail.pnl >= 0 ? 'success.main' : 'error.main'}
+                          fontWeight="bold"
                         >
-                          <TableCell>
-                            <Typography variant="body2" fontFamily="monospace" fontWeight="medium">
-                              {detail.buyTradeId.slice(0, 8)}...
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" fontWeight="medium">
-                              {formatNumber(detail.matchedQty, 2)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" fontWeight="medium">
-                              {formatCurrency(detail.buyPrice)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" fontWeight="medium">
-                              {formatCurrency(detail.sellPrice)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography
-                              variant="body2"
-                              color={detail.pnl >= 0 ? 'success.main' : 'error.main'}
-                              fontWeight="bold"
-                            >
-                              {formatCurrency(detail.pnl)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight="medium">
-                              {format(parseISO(detail.createdAt.toString()), 'MMM dd, yyyy')}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
+                          {formatCurrency(detail.pnl)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {format(parseISO(detail.createdAt.toString()), 'MMM dd, yyyy')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Box>
         )}
 
@@ -497,13 +451,13 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
               severity="warning" 
               variant="outlined"
               sx={{ 
-                borderRadius: 2,
+                borderRadius: 1,
                 '& .MuiAlert-message': {
                   width: '100%'
                 }
               }}
             >
-              <Typography variant="body1" fontWeight="medium">
+              <Typography variant="body2" fontWeight="medium">
                 ⚠️ This sell trade has <strong>{formatNumber(trade.remainingQuantity || 0, 2)} units</strong> remaining unmatched.
                 Consider matching with available buy trades to realize P&L.
               </Typography>

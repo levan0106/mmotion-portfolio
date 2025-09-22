@@ -155,8 +155,8 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
       }
       
       const amount = parseFloat(cf.amount);
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[date].deposits += Math.abs(amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[date].withdrawals += Math.abs(amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT') acc[date].deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE' || cf.type === 'DEPOSIT_CREATION') acc[date].withdrawals += Math.abs(amount);
       else if (cf.type === 'DIVIDEND') acc[date].dividends += amount;
       
       acc[date].netFlow = acc[date].deposits + acc[date].dividends - acc[date].withdrawals;
@@ -196,8 +196,8 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
       }
       
       const amount = parseFloat(cf.amount);
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc[month].deposits += Math.abs(amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc[month].withdrawals += Math.abs(amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT') acc[month].deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE' || cf.type === 'DEPOSIT_CREATION') acc[month].withdrawals += Math.abs(amount);
       else if (cf.type === 'DIVIDEND') acc[month].dividends += amount;
       
       acc[month].netFlow = acc[month].deposits + acc[month].dividends - acc[month].withdrawals;
@@ -222,8 +222,8 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
 
     const totals = filteredData.reduce((acc, cf) => {
       const amount = parseFloat(cf.amount);
-      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') acc.deposits += Math.abs(amount);
-      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') acc.withdrawals += Math.abs(amount);
+      if (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT') acc.deposits += Math.abs(amount);
+      else if (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE' || cf.type === 'DEPOSIT_CREATION') acc.withdrawals += Math.abs(amount);
       else if (cf.type === 'DIVIDEND') acc.dividends += amount;
       else if (cf.type === 'INTEREST') acc.interest += amount;
       return acc;

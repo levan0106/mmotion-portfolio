@@ -38,6 +38,7 @@ import {
   Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
+  AccountBalanceWallet as DepositIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -89,6 +90,13 @@ const menuItems = [
     path: '/analytics', 
     description: 'Advanced analytics',
     badge: null
+  },
+  { 
+    text: 'Deposits', 
+    icon: <DepositIcon />, 
+    path: '/deposits', 
+    description: 'Manage deposits',
+    badge: 'NEW'
   },
   { 
     text: 'Reports', 

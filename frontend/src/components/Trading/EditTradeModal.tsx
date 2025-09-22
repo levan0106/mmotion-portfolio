@@ -59,8 +59,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
       fullWidth
       PaperProps={{
         sx: { 
-          minHeight: '70vh',
-          maxHeight: '85vh',
+          maxHeight: '90vh',
           overflow: 'hidden'
         }
       }}
@@ -77,9 +76,11 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
         <DialogContent
           dividers
           sx={{
-            overflow: 'auto',
-            maxHeight: 'calc(85vh - 100px)',
-            p: 0
+            overflow: 'hidden',
+            p: 0,
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           <Box sx={{ p: 2 }}>
@@ -91,6 +92,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
             mode="edit"
             showSubmitButton={false}
             formRef={formRef}
+            isModal={true}
           />
         </Box>
       </DialogContent>

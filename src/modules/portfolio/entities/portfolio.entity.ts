@@ -13,6 +13,7 @@ import { Account } from '../../shared/entities/account.entity';
 import { NavSnapshot } from './nav-snapshot.entity';
 import { CashFlow } from './cash-flow.entity';
 import { Trade } from '../../trading/entities/trade.entity';
+import { Deposit } from './deposit.entity';
 
 /**
  * Portfolio entity representing investment portfolios.
@@ -106,4 +107,10 @@ export class Portfolio {
    */
   @OneToMany(() => Trade, (trade) => trade.portfolio)
   trades: Trade[];
+
+  /**
+   * Deposits for this portfolio.
+   */
+  @OneToMany(() => Deposit, (deposit) => deposit.portfolio)
+  deposits: Deposit[];
 }

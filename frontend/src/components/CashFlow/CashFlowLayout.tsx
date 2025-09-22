@@ -106,7 +106,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   // Pagination state
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 50,
     total: 0,
     totalPages: 0,
   });
@@ -134,7 +134,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   };
 
   // Load cash flow history (paginated)
-  const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 10) => {
+  const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 50) => {
     try {
       setLoading(true);
       const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?page=${page}&limit=${limit}`);
@@ -151,7 +151,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   // Pagination handlers
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
-    loadCashFlows(page, pagination?.limit || 10);
+    loadCashFlows(page, pagination?.limit || 50);
   };
 
   const handlePageSizeChange = (event: SelectChangeEvent<number>) => {
@@ -243,6 +243,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       case 'TRADE_SETTLEMENT': return 'default';
       case 'BUY_TRADE': return 'error';
       case 'SELL_TRADE': return 'success';
+      case 'DEPOSIT_SETTLEMENT': return 'success';
+      case 'DEPOSIT_CREATION': return 'error';
       default: return 'default';
     }
   };
@@ -259,6 +261,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       case 'ADJUSTMENT': return <BalanceIcon />;
       case 'BUY_TRADE': return <WithdrawIcon />;
       case 'SELL_TRADE': return <DepositIcon />;
+      case 'DEPOSIT_SETTLEMENT': return <DepositIcon />;
+      case 'DEPOSIT_CREATION': return <WithdrawIcon />;
       default: return undefined;
     }
   };
@@ -274,6 +278,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       case 'adjustment': return 'Record balance adjustments';
       case 'buy_trade': return 'Record money spent on buying assets';
       case 'sell_trade': return 'Record money received from selling assets';
+      case 'deposit_settlement': return 'Record money received from deposit settlement';
+      case 'deposit_creation': return 'Record money spent on deposit creation';
       default: return 'Add a new cash flow transaction';
     }
   };
@@ -283,7 +289,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   };
 
   const isCashFlowIn = (type: string) => {
-    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(type);
+    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'].includes(type);
   };
 
   const getCashFlowDirection = (type: string) => {
@@ -305,17 +311,19 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       case 'ADJUSTMENT': return <BalanceIcon />;
       case 'BUY_TRADE': return <WithdrawIcon />;
       case 'SELL_TRADE': return <DepositIcon />;
+      case 'DEPOSIT_SETTLEMENT': return <DepositIcon />;
+      case 'DEPOSIT_CREATION': return <WithdrawIcon />;
       default: return isCashFlowIn(type) ? <TrendingUp /> : <TrendingDown />;
     }
   };
 
   // Calculate summary stats using all cash flows (not paginated data)
   const totalDeposits = (allCashFlows || [])
-    .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') && cf.status === 'COMPLETED')
+    .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
   const totalWithdrawals = (allCashFlows || [])
-    .filter(cf => (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE') && cf.status === 'COMPLETED')
+    .filter(cf => (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE' || cf.type === 'DEPOSIT_CREATION') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
   const totalDividends = (allCashFlows || [])
@@ -333,7 +341,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const filteredTotal = filteredCashFlows
     .filter(cf => cf.status === 'COMPLETED')
     .reduce((sum, cf) => {
-      const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE'].includes(cf.type);
+      const isInflow = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'].includes(cf.type);
       // For inflows: add positive amount, for outflows: subtract positive amount
       return sum + (isInflow ? Math.abs(cf.amount) : -Math.abs(cf.amount));
     }, 0);
@@ -716,6 +724,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                         <Checkbox checked={filterTypes.includes('SELL_TRADE')} />
                         <ListItemText primary="Sell Trades" />
                       </MenuItem>
+                      <MenuItem value="DEPOSIT_SETTLEMENT">
+                        <Checkbox checked={filterTypes.includes('DEPOSIT_SETTLEMENT')} />
+                        <ListItemText primary="Deposit Settlements" />
+                      </MenuItem>
+                      <MenuItem value="DEPOSIT_CREATION">
+                        <Checkbox checked={filterTypes.includes('DEPOSIT_CREATION')} />
+                        <ListItemText primary="Deposit Creations" />
+                      </MenuItem>
                     </Select>
                   </FormControl>
                   <Button
@@ -729,7 +745,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   <Button
                     size="small"
                     variant="outlined"
-                    onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE'])}
+                    onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT', 'DEPOSIT_CREATION'])}
                     disabled={filterTypes.length === 9 && !filterTypes.includes('ALL')}
                   >
                     Reset
@@ -797,29 +813,29 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           </TableCell>
                           <TableCell>
                             <Typography
-                              color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' ? 'success.main' : 'error.main'}
+                              color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'}
                               fontWeight="bold"
                             >
-                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' ? cashFlow.amount : -cashFlow.amount)}
+                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
+                            <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
                               {cashFlow.description}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
                               {cashFlow.reference || '-'}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
                               {cashFlow.fundingSource || '-'}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">
+                            <Typography variant="body2" sx={{ fontSize: '12px' }}>
                               {formatDate(cashFlow.flowDate)}
                             </Typography>
                           </TableCell>

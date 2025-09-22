@@ -43,34 +43,31 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="xl"
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: { 
-          minHeight: '80vh',
           maxHeight: '90vh',
-          borderRadius: 3,
+          borderRadius: 2,
           boxShadow: 24,
         }
       }}
     >
       <DialogTitle sx={{ 
-        bgcolor: 'primary.50', 
+        bgcolor: 'grey.50', 
         borderBottom: 1, 
         borderColor: 'divider',
-        py: 2
+        py: 1.5
       }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="h5" fontWeight="bold">
+            <Typography variant="h6" fontWeight="bold">
               Trade Details
             </Typography>
             {trade && (
-              <Box display="flex" gap={1}>
-                <Typography variant="body2" color="text.secondary">
-                  {trade.assetSymbol} - {trade.assetName}
-                </Typography>
-              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {trade.assetSymbol} - {trade.assetName}
+              </Typography>
             )}
           </Box>
           <IconButton 
@@ -88,7 +85,7 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0 }}>
+      <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
         {error && (
           <Alert severity="error" sx={{ m: 2, mb: 0 }}>
             {error}
@@ -105,7 +102,7 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
             </Box>
           </Box>
         ) : (
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
             <TradeDetails
               trade={trade}
               tradeDetails={tradeDetails}

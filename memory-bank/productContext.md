@@ -13,6 +13,7 @@ Nhà đầu tư cần một hệ thống toàn diện để:
 3. **Complex Calculations**: Tự động tính toán FIFO/LIFO, TWR, IRR
 4. **Multi-asset Support**: Hỗ trợ nhiều loại tài sản (cổ phiếu, trái phiếu, vàng, tiền gửi)
 5. **Performance Analytics**: Phân tích hiệu suất chi tiết theo nhiều khung thời gian
+6. **Deposit Management**: Quản lý tiền gửi ngân hàng với tính lãi suất đơn và tất toán sớm
 
 ## How It Should Work
 ### User Experience Goals - **FULLY IMPLEMENTED**
@@ -26,6 +27,9 @@ Nhà đầu tư cần một hệ thống toàn diện để:
 - **System Monitoring**: ✅ Theo dõi hoạt động hệ thống và audit trail (Logging dashboard)
 - **Asset Management**: ✅ Quản lý tài sản với computed fields và market data (CR-004 completed)
 - **Price Display**: ✅ Hiển thị giá thị trường và giá trung bình chính xác (Frontend Price Display Fix completed)
+- **Deposit Management**: ✅ Quản lý tiền gửi ngân hàng với tính lãi suất đơn và tất toán sớm (CR-007 completed 85%)
+- **Format Consistency**: ✅ Định dạng số liệu nhất quán với format helpers (Format Helpers Integration completed)
+- **Modal UX Enhancement**: ✅ Cải thiện trải nghiệm người dùng với nút close và header chuyên nghiệp (Modal UI/UX Enhancement completed)
 
 ### Core User Flows - **FULLY IMPLEMENTED**
 1. **Portfolio Setup**: ✅ Tạo portfolio, thêm tài sản ban đầu (Portfolio management interface)
@@ -35,6 +39,7 @@ Nhà đầu tư cần một hệ thống toàn diện để:
 5. **Position Management**: ✅ Quản lý vị thế, tính toán P&L theo FIFO/LIFO (Trading system)
 6. **Risk Management**: ✅ Thiết lập stop-loss, take-profit, cảnh báo rủi ro (Risk management)
 7. **Logging & Monitoring**: ✅ Theo dõi hệ thống, audit trail, performance metrics (Logging system)
+8. **Deposit Management**: ✅ Quản lý tiền gửi ngân hàng với tính lãi suất đơn và tất toán sớm (CR-007 completed 85%)
 
 ## Target Users
 - **Individual Investors**: Nhà đầu tư cá nhân quản lý danh mục

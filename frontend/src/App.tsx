@@ -18,6 +18,7 @@ import Trading from './pages/Trading';
 import AssetManagement from './pages/AssetManagement';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
+import DepositManagement from './pages/DepositManagement';
 import { customTheme } from './theme/customTheme';
 
 // Create a client
@@ -57,6 +58,7 @@ const App: React.FC = () => {
                 <Route path="/assets" element={<AssetManagement />} />
                 <Route path="/global-assets" element={<GlobalAssetsPage />} />
                 <Route path="/snapshots" element={<SnapshotManagementPage />} />
+                <Route path="/deposits" element={<DepositManagement />} />
                 <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
                 <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
                 <Route path="/settings" element={<div>Settings Page - Coming Soon</div>} />

@@ -67,6 +67,30 @@ class ApiService {
     return response.data;
   }
 
+  // Generic GET method
+  async get<T = any>(url: string, config?: any): Promise<T> {
+    const response = await this.api.get(url, config);
+    return response.data;
+  }
+
+  // Generic POST method
+  async post<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    const response = await this.api.post(url, data, config);
+    return response.data;
+  }
+
+  // Generic PUT method
+  async put<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    const response = await this.api.put(url, data, config);
+    return response.data;
+  }
+
+  // Generic DELETE method
+  async delete<T = any>(url: string, config?: any): Promise<T> {
+    const response = await this.api.delete(url, config);
+    return response.data;
+  }
+
   // Asset endpoints
   async getAssets(): Promise<Asset[]> {
     const response = await this.api.get('/api/v1/assets');

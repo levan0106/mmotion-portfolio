@@ -31,6 +31,7 @@ import { SnapshotRepository } from './repositories/snapshot.repository';
 import { PortfolioSnapshotRepository } from './repositories/portfolio-snapshot.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
+import { DepositModule } from './deposit.module';
 
 /**
  * Portfolio module for managing investment portfolios.
@@ -58,6 +59,7 @@ import { AssetModule } from '../asset/asset.module';
     })] : []),
     MarketDataModule,
     AssetModule,
+    DepositModule,
   ],
   controllers: [
     PortfolioController,

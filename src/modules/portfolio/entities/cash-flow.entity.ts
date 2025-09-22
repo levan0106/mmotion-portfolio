@@ -20,6 +20,8 @@ export enum CashFlowType {
   ADJUSTMENT = 'ADJUSTMENT',
   BUY_TRADE = 'BUY_TRADE',
   SELL_TRADE = 'SELL_TRADE',
+  DEPOSIT_CREATION = 'DEPOSIT_CREATION',
+  DEPOSIT_SETTLEMENT = 'DEPOSIT_SETTLEMENT',
   OTHER = 'OTHER',
   TRADE_SETTLEMENT = 'TRADE_SETTLEMENT', // Tự động tạo từ trades
 }
@@ -84,11 +86,11 @@ export class CashFlow {
 
   // Computed properties
   get isInflow(): boolean {
-    return [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST, CashFlowType.SELL_TRADE].includes(this.type);
+    return [CashFlowType.DEPOSIT, CashFlowType.DIVIDEND, CashFlowType.INTEREST, CashFlowType.SELL_TRADE, CashFlowType.DEPOSIT_SETTLEMENT].includes(this.type);
   }
 
   get isOutflow(): boolean {
-    return [CashFlowType.WITHDRAWAL, CashFlowType.FEE, CashFlowType.TAX, CashFlowType.BUY_TRADE].includes(this.type);
+    return [CashFlowType.WITHDRAWAL, CashFlowType.FEE, CashFlowType.TAX, CashFlowType.BUY_TRADE, CashFlowType.DEPOSIT_CREATION].includes(this.type);
   }
 
   get netAmount(): number {
