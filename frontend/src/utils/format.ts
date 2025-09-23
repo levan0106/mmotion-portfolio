@@ -33,25 +33,34 @@ interface CurrencyOptions {
 }
 
 /**
- * Format a number as currency
- * @param amount - The amount to format
+ * Format a number or string as currency (handles API string values)
+ * @param amount - The amount to format (can be string or number)
  * @param currency - The currency code (default: 'VND')
  * @param options - Additional formatting options
  * @param locale - The locale for formatting (default: 'vi-VN')
  * @returns Formatted currency string
  */
 export const formatCurrency = (
-  amount: number | undefined | null,
+  amount: string | number | undefined | null,
   currency: string = 'VND',
   options: CurrencyOptions = {},
   locale: string = 'en-US'
 ): string => {
   locale = 'en-US';
+  
+  // Convert string to number if needed
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
   const { compact = false, precision = currency === 'VND' ? 0 : 2, showSymbol = true } = options;
   
-  if (amount === undefined || amount === null || isNaN(amount)) {
-    amount = 0;
+  if (numAmount === undefined || numAmount === null || isNaN(numAmount)) {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+      notation: compact ? 'compact' : 'standard',
+    }).format(0);
   }
   
   // Format the number
@@ -59,7 +68,7 @@ export const formatCurrency = (
     minimumFractionDigits: precision,
     maximumFractionDigits: precision,
     notation: compact ? 'compact' : 'standard',
-  }).format(amount);
+  }).format(numAmount);
   
   // Add currency symbol if requested
   if (showSymbol) {
@@ -71,19 +80,23 @@ export const formatCurrency = (
 };
 
 /**
- * Format a number with specified decimal places
- * @param num - The number to format
+ * Format a number or string with specified decimal places (handles API string values)
+ * @param num - The number or string to format
  * @param decimals - Number of decimal places (default: 2)
  * @param locale - The locale for formatting (default: 'en-US')
  * @returns Formatted number string
  */
 export const formatNumber = (
-  num: number | undefined | null,
+  num: string | number | undefined | null,
   decimals: number = 2,
   locale: string = 'en-US'
 ): string => {
   locale = 'en-US';
-  if (num === undefined || num === null || isNaN(num)) {
+  
+  // Convert string to number if needed
+  const numValue = typeof num === 'string' ? parseFloat(num) : num;
+  
+  if (numValue === undefined || numValue === null || isNaN(numValue)) {
     return new Intl.NumberFormat(locale, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
@@ -93,24 +106,27 @@ export const formatNumber = (
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(num);
+  }).format(numValue);
 };
 
 /**
- * Format a number as percentage
- * @param value - The value to format as percentage
+ * Format a number or string as percentage (handles API string values)
+ * @param value - The value to format as percentage (can be string or number)
  * @param decimals - Number of decimal places (default: 2)
  * @param locale - The locale for formatting (default: 'en-US')
  * @returns Formatted percentage string
  */
 export const formatPercentage = (
-  value: number | undefined | null,
+  value: string | number | undefined | null,
   decimals: number = 2,
   locale: string = 'en-US'
 ): string => {
   locale = 'en-US';
 
-  if (value === undefined || value === null || isNaN(value)) {
+  // Convert string to number if needed
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (numValue === undefined || numValue === null || isNaN(numValue)) {
     return new Intl.NumberFormat(locale, {
       style: 'percent',
       minimumFractionDigits: decimals,
@@ -122,7 +138,7 @@ export const formatPercentage = (
     style: 'percent',
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(value / 100);
+  }).format(numValue / 100);
 };
 
 /**
@@ -151,6 +167,7 @@ export const formatPercentageWithSeparators = (
     maximumFractionDigits: decimals,
   }).format(value) + '%';
 };
+
 
 /**
  * Format a large number with K, M, B suffixes

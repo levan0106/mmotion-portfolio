@@ -21,16 +21,16 @@ export interface PortfolioSnapshotAggregationResult {
   portfolioName: string;
   snapshotDate: string;
   granularity: SnapshotGranularity;
-  totalValue: number;
+  totalPortfolioValue: number;
   totalAssetPl: number;
   totalPortfolioPl: number;
   totalReturn: number;
   cashBalance: number;
-  investedValue: number;
+  totalPortfolioInvested: number;
   assetCount: number;
   activeAssetCount: number;
-  volatility: number;
-  maxDrawdown: number;
+  portfolioVolatility: number;
+  portfolioMaxDrawdown: number;
 }
 
 @Injectable()
@@ -157,16 +157,16 @@ export class PortfolioSnapshotRepository {
         'snapshot.portfolioName',
         'snapshot.snapshotDate',
         'snapshot.granularity',
-        'snapshot.totalValue',
+        'snapshot.totalPortfolioValue',
         'snapshot.totalAssetPl',
         'snapshot.totalPortfolioPl',
         'snapshot.totalReturn',
         'snapshot.cashBalance',
-        'snapshot.investedValue',
+        'snapshot.totalPortfolioInvested',
         'snapshot.assetCount',
         'snapshot.activeAssetCount',
-        'snapshot.volatility',
-        'snapshot.maxDrawdown',
+        'snapshot.portfolioVolatility',
+        'snapshot.portfolioMaxDrawdown',
       ])
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('snapshot.snapshotDate BETWEEN :startDate AND :endDate', { startDate, endDate })
@@ -189,15 +189,15 @@ export class PortfolioSnapshotRepository {
     return await this.repository
       .createQueryBuilder('snapshot')
       .select([
-        'snapshot.portfolioId',
-        'snapshot.portfolioName',
-        'COUNT(snapshot.id) as snapshotCount',
-        'MAX(snapshot.snapshotDate) as latestSnapshotDate',
-        'MIN(snapshot.snapshotDate) as oldestSnapshotDate',
+        'snapshot.portfolioId as "portfolioId"',
+        'snapshot.portfolioName as "portfolioName"',
+        'COUNT(snapshot.id) as "snapshotCount"',
+        'MAX(snapshot.snapshotDate) as "latestSnapshotDate"',
+        'MIN(snapshot.snapshotDate) as "oldestSnapshotDate"',
       ])
       .where('snapshot.isActive = :isActive', { isActive: true })
       .groupBy('snapshot.portfolioId, snapshot.portfolioName')
-      .orderBy('latestSnapshotDate', 'DESC')
+      .orderBy('"latestSnapshotDate"', 'DESC')
       .getRawMany();
   }
 
@@ -321,6 +321,24 @@ export class PortfolioSnapshotRepository {
       },
     });
     return count > 0;
+  }
+
+  /**
+   * Find portfolio snapshot by unique key
+   */
+  async findByUniqueKey(
+    portfolioId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<PortfolioSnapshot | null> {
+    return await this.repository.findOne({
+      where: {
+        portfolioId,
+        snapshotDate,
+        granularity,
+        isActive: true,
+      },
+    });
   }
 
   /**

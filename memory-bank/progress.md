@@ -2,7 +2,30 @@
 
 ## What Works
 ### ✅ Completed
-- **ASSET SNAPSHOT DELETION LOGIC FIX - COMPLETED** (Current Session - September 23, 2025)
+- **ASSET NAME REMOVAL & PERFORMANCE METRICS IMPLEMENTATION - COMPLETED** (Current Session - September 23, 2025)
+  - **Asset Name Removal**: Completely removed Asset Name from both frontend and backend systems
+  - **Database Schema Update**: Removed asset_name and asset_group_name columns from performance snapshot tables
+  - **Entity Updates**: Updated AssetPerformanceSnapshot and AssetGroupPerformanceSnapshot entities
+  - **Service Updates**: Modified PerformanceSnapshotService to remove assetName and assetGroupName references
+  - **Frontend Updates**: Removed Asset Name column from SnapshotAssetPerformanceTab component
+  - **Table Layout Optimization**: Adjusted table width and column alignment after removing Asset Name column
+  - **Performance Metrics Implementation**: Implemented comprehensive IRR, Alpha, and Beta calculations
+  - **Database Migration**: Added 15 new columns for IRR, Alpha, Beta metrics (1M, 3M, 6M, 1Y, YTD)
+  - **Calculation Services**: Enhanced MWRIRRCalculationService and AlphaBetaCalculationService with asset/group level methods
+  - **Query Builder Fixes**: Corrected snake_case column names in all query builders
+  - **Mock Benchmark API**: Created BenchmarkMockService and BenchmarkMockController for testing
+  - **Code Quality**: Clean, maintainable code with proper error handling and transaction management
+  - **Key Features Implemented**:
+    - ✅ **Asset Name Removal**: Complete removal from database, entities, services, and frontend
+    - ✅ **Performance Metrics**: IRR, Alpha, Beta calculations for both asset and asset group levels
+    - ✅ **Database Schema**: 15 new columns added for comprehensive performance tracking
+    - ✅ **Calculation Services**: Enhanced services with asset/group level calculation methods
+    - ✅ **Query Fixes**: Corrected all query builder syntax to use proper snake_case column names
+    - ✅ **Mock Benchmark API**: Complete mock API for benchmark data testing
+    - ✅ **Frontend Optimization**: Clean table layout with proper column alignment
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- **ASSET SNAPSHOT DELETION LOGIC FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **Root Cause Analysis**: Identified that backend was using soft delete (set `isActive: false`) but not filtering by `isActive: true` by default
   - **Frontend Issue**: Frontend was not sending `isActive: true` parameter, so backend returned both active and inactive snapshots
   - **Backend Fix**: Modified `SnapshotRepository.createQueryBuilder()` to default filter by `isActive: true` when parameter not provided
@@ -908,18 +931,20 @@
 - [x] Critical bug fixes - **COMPLETED**
 
 ## Current Status
-**Phase**: Asset Snapshot Deletion Logic Fix - COMPLETED ✅
+**Phase**: Asset Name Removal & Performance Metrics Implementation - COMPLETED ✅
 **Progress**: Implementation 100% complete, Testing 100% complete, Production Ready
-**Latest Update**: Fixed critical soft delete filtering issue where deleted snapshots were still visible in frontend (September 23, 2025)
+**Latest Update**: Removed Asset Name from frontend and backend, implemented comprehensive IRR/Alpha/Beta calculations for Asset and Asset Group Performance (September 23, 2025)
 **Next Milestone**: Ready for next phase - Market Data Integration or Advanced Features
 
 ## Latest Test Status (September 23, 2025)
-- **Total Tests**: All asset snapshot deletion logic fix tests completed and passing
-- **Soft Delete Logic**: 100% functional with proper `isActive: true` filtering by default
-- **Backend Filtering**: Successfully defaults to active snapshots when parameter not provided
-- **Frontend Integration**: Deleted snapshots no longer appear in frontend lists
-- **Data Integrity**: Deleted snapshots remain in database for audit purposes
-- **Backward Compatibility**: Explicit `isActive` parameter still works for admin/debug purposes
+- **Total Tests**: All asset name removal and performance metrics implementation tests completed and passing
+- **Asset Name Removal**: 100% functional with complete removal from database, entities, services, and frontend
+- **Performance Metrics**: IRR, Alpha, Beta calculations implemented for both asset and asset group levels
+- **Database Schema**: 15 new columns added for comprehensive performance tracking (1M, 3M, 6M, 1Y, YTD)
+- **Calculation Services**: Enhanced MWRIRRCalculationService and AlphaBetaCalculationService with asset/group level methods
+- **Query Builder Fixes**: All query builders corrected to use proper snake_case column names
+- **Mock Benchmark API**: Complete mock API for benchmark data testing with BenchmarkMockService and BenchmarkMockController
+- **Frontend Optimization**: Clean table layout with proper column alignment after Asset Name removal
 - **Database**: Fully operational with all trading and analytics functionality
 - **App Startup**: 100% successful startup with health check passing
 - **Real-time Updates**: Data refreshes automatically when trades are modified

@@ -28,6 +28,7 @@ import {
   MoreVert as MoreIcon,
   CameraAlt as SnapshotIcon,
   Delete as DeleteIcon,
+  BarChart as PerformanceIcon,
 } from '@mui/icons-material';
 import { SnapshotSimpleList } from './SnapshotSimpleList';
 import { SnapshotForm } from './SnapshotForm';
@@ -36,6 +37,7 @@ import { SnapshotExportImport } from './SnapshotExportImport';
 import { PortfolioSelector } from './PortfolioSelector';
 import { BulkSnapshotModal } from './BulkSnapshotModal';
 import DeleteSnapshotsModal from './DeleteSnapshotsModal';
+import PerformanceSnapshotDashboard from '../PerformanceSnapshot/PerformanceSnapshotDashboard';
 import { SnapshotResponse, SnapshotFormData, CreateSnapshotRequest, UpdateSnapshotRequest } from '../../types/snapshot.types';
 import { useSnapshots } from '../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../hooks/usePortfolioSnapshots';
@@ -44,7 +46,7 @@ interface SnapshotManagementProps {
   portfolioId?: string;
 }
 
-type ViewMode = 'dashboard' | 'list' | 'create' | 'edit' | 'export-import';
+type ViewMode = 'dashboard' | 'list' | 'create' | 'edit' | 'export-import' | 'performance';
 
 export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   portfolioId: initialPortfolioId,
@@ -309,6 +311,14 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
           />
         );
       
+      case 'performance':
+        return (
+          <PerformanceSnapshotDashboard
+            key={selectedPortfolioId}
+            portfolioId={selectedPortfolioId}
+          />
+        );
+      
       default:
         return null;
     }
@@ -321,6 +331,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       case 'create': return 2;
       case 'edit': return 2;
       case 'export-import': return 3;
+      case 'performance': return 4;
       default: return 0;
     }
   };
@@ -331,6 +342,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       case 1: setViewMode('list'); break;
       case 2: setViewMode('create'); break;
       case 3: setViewMode('export-import'); break;
+      case 4: setViewMode('performance'); break;
       default: setViewMode('dashboard');
     }
   };
@@ -395,6 +407,12 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
               icon={<ExportIcon />}
               iconPosition="start"
               label="Export/Import"
+              sx={{ minWidth: 140 }}
+            />
+            <Tab
+              icon={<PerformanceIcon />}
+              iconPosition="start"
+              label="Performance"
               sx={{ minWidth: 140 }}
             />
           </Tabs>

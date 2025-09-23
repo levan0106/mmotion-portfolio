@@ -30,6 +30,7 @@ import {
 } from '@nestjs/swagger';
 import { SnapshotService } from '../services/snapshot.service';
 import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
+import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import {
   CreateSnapshotDto,
   UpdateSnapshotDto,
@@ -42,7 +43,7 @@ import {
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
 @ApiTags('Snapshots')
-@Controller('snapshots')
+@Controller('api/v1/snapshots')
 export class SnapshotController {
   private readonly logger = new Logger(SnapshotController.name);
 
@@ -50,6 +51,8 @@ export class SnapshotController {
     private readonly snapshotService: SnapshotService,
     @Inject(forwardRef(() => PortfolioSnapshotService))
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
+    @Inject(forwardRef(() => PerformanceSnapshotService))
+    private readonly performanceSnapshotService: PerformanceSnapshotService,
   ) {}
 
   @Post()
@@ -108,15 +111,32 @@ export class SnapshotController {
       body.createdBy,
     );
     
-    // Portfolio snapshot is already created by createPortfolioSnapshot method
-    // No need to create it again here to avoid duplicate calls
+    // Create performance snapshots if basic snapshots were created successfully
+    let performanceSnapshots = null;
+    if (assetSnapshots.length > 0) {
+      try {
+        this.logger.log(`Creating performance snapshots for portfolio ${portfolioId}`);
+        performanceSnapshots = await this.performanceSnapshotService.createPerformanceSnapshots(
+          portfolioId,
+          date,
+          granularityValue,
+          body.createdBy,
+        );
+        this.logger.log(`Performance snapshots created successfully: 1 portfolio, ${performanceSnapshots.assetSnapshots.length} assets, ${performanceSnapshots.groupSnapshots.length} groups`);
+      } catch (error) {
+        this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioId}:`, error);
+        // Don't fail the entire operation if performance snapshots fail
+        // Basic snapshots are more critical
+      }
+    }
     
     const response = {
       message: assetSnapshots.length > 0 
-        ? `Successfully created ${assetSnapshots.length} asset snapshots and portfolio snapshot for portfolio ${portfolioId}`
+        ? `Successfully created ${assetSnapshots.length} asset snapshots, portfolio snapshot${performanceSnapshots ? ' and performance snapshots' : ''} for portfolio ${portfolioId}`
         : `No assets found in portfolio ${portfolioId}. No snapshots created.`,
       assetSnapshots: assetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
       portfolioSnapshot: null, // Portfolio snapshot is created internally by createPortfolioSnapshot
+      performanceSnapshots: performanceSnapshots,
       assetCount: assetSnapshots.length,
     };
     
@@ -377,46 +397,46 @@ export class SnapshotController {
     };
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Soft delete snapshot' })
-  @ApiParam({ name: 'id', description: 'Snapshot ID' })
-  @ApiOkResponse({ description: 'Snapshot deleted successfully' })
-  @ApiNotFoundResponse({ description: 'Snapshot not found' })
-  async deleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.snapshotService.deleteSnapshot(id);
-  }
+  // @Delete(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // @ApiOperation({ summary: 'Soft delete snapshot' })
+  // @ApiParam({ name: 'id', description: 'Snapshot ID' })
+  // @ApiOkResponse({ description: 'Snapshot deleted successfully' })
+  // @ApiNotFoundResponse({ description: 'Snapshot not found' })
+  // async deleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  //   await this.snapshotService.deleteSnapshot(id);
+  // }
 
-  @Delete(':id/hard')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Hard delete snapshot' })
-  @ApiParam({ name: 'id', description: 'Snapshot ID' })
-  @ApiOkResponse({ description: 'Snapshot permanently deleted' })
-  @ApiNotFoundResponse({ description: 'Snapshot not found' })
-  async hardDeleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.snapshotService.hardDeleteSnapshot(id);
-  }
+  // @Delete(':id/hard')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // @ApiOperation({ summary: 'Hard delete snapshot' })
+  // @ApiParam({ name: 'id', description: 'Snapshot ID' })
+  // @ApiOkResponse({ description: 'Snapshot permanently deleted' })
+  // @ApiNotFoundResponse({ description: 'Snapshot not found' })
+  // async hardDeleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  //   await this.snapshotService.hardDeleteSnapshot(id);
+  // }
 
-  @Post('cleanup')
-  @ApiOperation({ summary: 'Clean up old snapshots based on retention policy' })
-  @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID', required: false })
-  @ApiOkResponse({
-    description: 'Old snapshots cleaned up successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        cleanedCount: { type: 'number' },
-      },
-    },
-  })
-  async cleanupOldSnapshots(@Query('portfolioId') portfolioId?: string) {
-    const cleanedCount = await this.snapshotService.cleanupOldSnapshots(portfolioId);
-    return {
-      message: `Successfully cleaned up ${cleanedCount} old snapshots`,
-      cleanedCount,
-    };
-  }
+  // @Post('cleanup')
+  // @ApiOperation({ summary: 'Clean up old snapshots based on retention policy' })
+  // @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID', required: false })
+  // @ApiOkResponse({
+  //   description: 'Old snapshots cleaned up successfully',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       message: { type: 'string' },
+  //       cleanedCount: { type: 'number' },
+  //     },
+  //   },
+  // })
+  // async cleanupOldSnapshots(@Query('portfolioId') portfolioId?: string) {
+  //   const cleanedCount = await this.snapshotService.cleanupOldSnapshots(portfolioId);
+  //   return {
+  //     message: `Successfully cleaned up ${cleanedCount} old snapshots`,
+  //     cleanedCount,
+  //   };
+  // }
 
   /**
    * Map entity to response DTO
@@ -482,12 +502,33 @@ export class SnapshotController {
       throw new BadRequestException('Start date must be before end date');
     }
 
-    return await this.snapshotService.deleteSnapshotsByDateRange(
+    // Delete basic snapshots
+    const basicResult = await this.snapshotService.deleteSnapshotsByDateRange(
       portfolioId,
       start,
       end,
       granularity,
     );
+
+    // Delete performance snapshots
+    let performanceResult = { deletedCount: 0, message: 'No performance snapshots to delete' };
+    try {
+      performanceResult = await this.performanceSnapshotService.deletePerformanceSnapshotsByDateRange(
+        portfolioId,
+        start,
+        end,
+        granularity,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to delete performance snapshots for portfolio ${portfolioId}:`, error);
+      // Don't fail the entire operation if performance snapshots deletion fails
+    }
+
+    const totalDeleted = basicResult.deletedCount + performanceResult.deletedCount;
+    return {
+      deletedCount: totalDeleted,
+      message: `Deleted ${basicResult.deletedCount} basic snapshots and ${performanceResult.deletedCount} performance snapshots for portfolio ${portfolioId} from ${startDate} to ${endDate}`,
+    };
   }
 
   /**
@@ -510,11 +551,32 @@ export class SnapshotController {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
     }
 
-    return await this.snapshotService.deleteSnapshotsByDate(
+    // Delete basic snapshots
+    const basicResult = await this.snapshotService.deleteSnapshotsByDate(
       portfolioId,
       date,
       granularity,
     );
+
+    // Delete performance snapshots
+    let performanceResult = { deletedCount: 0, message: 'No performance snapshots to delete' };
+    try {
+      performanceResult = await this.performanceSnapshotService.deletePerformanceSnapshotsByDateRange(
+        portfolioId,
+        date,
+        date,
+        granularity,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to delete performance snapshots for portfolio ${portfolioId}:`, error);
+      // Don't fail the entire operation if performance snapshots deletion fails
+    }
+
+    const totalDeleted = basicResult.deletedCount + performanceResult.deletedCount;
+    return {
+      deletedCount: totalDeleted,
+      message: `Deleted ${basicResult.deletedCount} basic snapshots and ${performanceResult.deletedCount} performance snapshots for portfolio ${portfolioId} on ${snapshotDate}`,
+    };
   }
 
   /**
@@ -529,9 +591,28 @@ export class SnapshotController {
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Param('granularity') granularity: SnapshotGranularity,
   ): Promise<{ deletedCount: number; message: string }> {
-    return await this.snapshotService.deleteSnapshotsByGranularity(
+    // Delete basic snapshots
+    const basicResult = await this.snapshotService.deleteSnapshotsByGranularity(
       portfolioId,
       granularity,
     );
+
+    // Delete performance snapshots
+    let performanceResult = { deletedCount: 0, message: 'No performance snapshots to delete' };
+    try {
+      performanceResult = await this.performanceSnapshotService.deletePerformanceSnapshotsByGranularity(
+        portfolioId,
+        granularity,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to delete performance snapshots for portfolio ${portfolioId}:`, error);
+      // Don't fail the entire operation if performance snapshots deletion fails
+    }
+
+    const totalDeleted = basicResult.deletedCount + performanceResult.deletedCount;
+    return {
+      deletedCount: totalDeleted,
+      message: `Deleted ${basicResult.deletedCount} basic snapshots and ${performanceResult.deletedCount} performance snapshots for portfolio ${portfolioId} with granularity ${granularity}`,
+    };
   }
 }

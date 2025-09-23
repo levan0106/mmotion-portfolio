@@ -7,6 +7,10 @@ import { NavSnapshot } from './entities/nav-snapshot.entity';
 import { CashFlow } from './entities/cash-flow.entity';
 import { AssetAllocationSnapshot } from './entities/asset-allocation-snapshot.entity';
 import { PortfolioSnapshot } from './entities/portfolio-snapshot.entity';
+import { PortfolioPerformanceSnapshot } from './entities/portfolio-performance-snapshot.entity';
+import { AssetPerformanceSnapshot } from './entities/asset-performance-snapshot.entity';
+import { AssetGroupPerformanceSnapshot } from './entities/asset-group-performance-snapshot.entity';
+import { BenchmarkData } from './entities/benchmark-data.entity';
 import { Deposit } from './entities/deposit.entity';
 import { Account } from '../shared/entities/account.entity';
 import { Asset } from '../asset/entities/asset.entity';
@@ -23,10 +27,15 @@ import { PortfolioValueCalculatorService } from './services/portfolio-value-calc
 import { CashFlowService } from './services/cash-flow.service';
 import { SnapshotService } from './services/snapshot.service';
 import { PortfolioSnapshotService } from './services/portfolio-snapshot.service';
+import { PerformanceSnapshotService } from './services/performance-snapshot.service';
+import { TWRCalculationService } from './services/twr-calculation.service';
+import { MWRIRRCalculationService } from './services/mwr-irr-calculation.service';
+import { AlphaBetaCalculationService } from './services/alpha-beta-calculation.service';
+import { RiskMetricsCalculationService } from './services/risk-metrics-calculation.service';
 import { PortfolioController } from './controllers/portfolio.controller';
 import { PortfolioAnalyticsController } from './controllers/portfolio-analytics.controller';
 import { CashFlowController } from './controllers/cash-flow.controller';
-import { SnapshotController } from './controllers/snapshot.controller';
+import { PerformanceSnapshotController } from './controllers/performance-snapshot.controller';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { SnapshotRepository } from './repositories/snapshot.repository';
 import { PortfolioSnapshotRepository } from './repositories/portfolio-snapshot.repository';
@@ -34,6 +43,7 @@ import { DepositRepository } from './repositories/deposit.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 import { DepositModule } from './deposit.module';
+import { PortfolioSnapshotModule } from './portfolio-snapshot.module';
 import { SharedModule } from '../shared/shared.module';
 
 /**
@@ -48,6 +58,10 @@ import { SharedModule } from '../shared/shared.module';
       CashFlow,
       AssetAllocationSnapshot,
       PortfolioSnapshot,
+      PortfolioPerformanceSnapshot,
+      AssetPerformanceSnapshot,
+      AssetGroupPerformanceSnapshot,
+      BenchmarkData,
       Deposit,
       Account,
       Asset,
@@ -64,13 +78,14 @@ import { SharedModule } from '../shared/shared.module';
     MarketDataModule,
     AssetModule,
     DepositModule,
+    PortfolioSnapshotModule,
     SharedModule,
   ],
   controllers: [
     PortfolioController,
     PortfolioAnalyticsController,
     CashFlowController,
-    SnapshotController,
+    PerformanceSnapshotController,
   ],
   providers: [
     PortfolioRepository,
@@ -82,6 +97,11 @@ import { SharedModule } from '../shared/shared.module';
     CashFlowService,
     SnapshotService,
     PortfolioSnapshotService,
+    PerformanceSnapshotService,
+    TWRCalculationService,
+    MWRIRRCalculationService,
+    AlphaBetaCalculationService,
+    RiskMetricsCalculationService,
     SnapshotRepository,
     PortfolioSnapshotRepository,
     DepositRepository,
@@ -103,6 +123,11 @@ import { SharedModule } from '../shared/shared.module';
     PositionManagerService,
     PortfolioValueCalculatorService,
     CashFlowService,
+    PerformanceSnapshotService,
+    TWRCalculationService,
+    MWRIRRCalculationService,
+    AlphaBetaCalculationService,
+    RiskMetricsCalculationService,
     PortfolioRepository,
   ],
 })

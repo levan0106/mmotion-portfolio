@@ -55,7 +55,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
     await DatabaseTestUtils.cleanDatabase(dataSource);
   });
 
-  describe('POST /snapshots', () => {
+  describe('POST /api/v1/snapshots', () => {
     it('should create a new snapshot', async () => {
       const createSnapshotDto = {
         portfolioId: testPortfolioId,
@@ -82,7 +82,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(createSnapshotDto)
         .expect(201);
 
@@ -127,7 +127,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400);
     });
@@ -139,13 +139,13 @@ describe('Snapshot Integration Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(incompleteDto)
         .expect(400);
     });
   });
 
-  describe('GET /snapshots', () => {
+  describe('GET /api/v1/snapshots', () => {
     beforeEach(async () => {
       // Create test snapshots
       await createTestSnapshots();
@@ -153,7 +153,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should return all snapshots', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
@@ -162,7 +162,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should filter snapshots by portfolioId', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({ portfolioId: testPortfolioId })
         .expect(200);
 
@@ -174,7 +174,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should filter snapshots by date range', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           startDate: '2024-01-01',
@@ -192,7 +192,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should filter snapshots by granularity', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           granularity: SnapshotGranularity.DAILY,
@@ -207,7 +207,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should support pagination', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           page: 1,
@@ -220,7 +220,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
     });
   });
 
-  describe('GET /snapshots/:id', () => {
+  describe('GET /api/v1/snapshots/:id', () => {
     let snapshotId: string;
 
     beforeEach(async () => {
@@ -230,7 +230,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should return a snapshot by id', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/snapshots/${snapshotId}`)
+        .get(`/api/v1/snapshots/${snapshotId}`)
         .expect(200);
 
       expect(response.body.id).toBe(snapshotId);
@@ -239,12 +239,12 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should return 404 for non-existent snapshot', async () => {
       await request(app.getHttpServer())
-        .get('/snapshots/non-existent-id')
+        .get('/api/v1/snapshots/non-existent-id')
         .expect(404);
     });
   });
 
-  describe('PUT /snapshots/:id', () => {
+  describe('PUT /api/v1/snapshots/:id', () => {
     let snapshotId: string;
 
     beforeEach(async () => {
@@ -261,7 +261,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .put(`/snapshots/${snapshotId}`)
+        .put(`/api/v1/snapshots/${snapshotId}`)
         .send(updateData)
         .expect(200);
 
@@ -276,13 +276,13 @@ describe('Snapshot Integration Tests (e2e)', () => {
       const updateData = { notes: 'Updated notes' };
 
       await request(app.getHttpServer())
-        .put('/snapshots/non-existent-id')
+        .put('/api/v1/snapshots/non-existent-id')
         .send(updateData)
         .expect(404);
     });
   });
 
-  describe('DELETE /snapshots/:id', () => {
+  describe('DELETE /api/v1/snapshots/:id', () => {
     let snapshotId: string;
 
     beforeEach(async () => {
@@ -292,7 +292,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should soft delete a snapshot', async () => {
       const response = await request(app.getHttpServer())
-        .delete(`/snapshots/${snapshotId}`)
+        .delete(`/api/v1/snapshots/${snapshotId}`)
         .expect(200);
 
       expect(response.body.id).toBe(snapshotId);
@@ -301,12 +301,12 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should return 404 for non-existent snapshot', async () => {
       await request(app.getHttpServer())
-        .delete('/snapshots/non-existent-id')
+        .delete('/api/v1/snapshots/non-existent-id')
         .expect(404);
     });
   });
 
-  describe('POST /snapshots/portfolio/:portfolioId', () => {
+  describe('POST /api/v1/snapshots/portfolio/:portfolioId', () => {
     it('should create portfolio snapshots', async () => {
       const requestBody = {
         snapshotDate: '2024-01-01',
@@ -315,7 +315,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post(`/snapshots/portfolio/${testPortfolioId}`)
+        .post(`/api/v1/snapshots/portfolio/${testPortfolioId}`)
         .send(requestBody)
         .expect(201);
 
@@ -325,7 +325,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
     });
   });
 
-  describe('POST /snapshots/:id/recalculate', () => {
+  describe('POST /api/v1/snapshots/:id/recalculate', () => {
     let snapshotId: string;
 
     beforeEach(async () => {
@@ -335,7 +335,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should recalculate snapshot values', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/snapshots/${snapshotId}/recalculate`)
+        .post(`/api/v1/snapshots/${snapshotId}/recalculate`)
         .expect(200);
 
       expect(response.body.id).toBe(snapshotId);
@@ -345,19 +345,19 @@ describe('Snapshot Integration Tests (e2e)', () => {
 
     it('should return 404 for non-existent snapshot', async () => {
       await request(app.getHttpServer())
-        .post('/snapshots/non-existent-id/recalculate')
+        .post('/api/v1/snapshots/non-existent-id/recalculate')
         .expect(404);
     });
   });
 
-  describe('GET /snapshots/timeline', () => {
+  describe('GET /api/v1/snapshots/timeline', () => {
     beforeEach(async () => {
       await createTestSnapshots();
     });
 
     it('should return timeline data', async () => {
       const response = await request(app.getHttpServer())
-        .get('/snapshots/timeline')
+        .get('/api/v1/snapshots/timeline')
         .query({
           portfolioId: testPortfolioId,
           startDate: '2024-01-01',
@@ -370,14 +370,14 @@ describe('Snapshot Integration Tests (e2e)', () => {
     });
   });
 
-  describe('GET /snapshots/aggregated-timeline/:portfolioId', () => {
+  describe('GET /api/v1/snapshots/aggregated-timeline/:portfolioId', () => {
     beforeEach(async () => {
       await createTestSnapshots();
     });
 
     it('should return aggregated timeline data', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/snapshots/aggregated-timeline/${testPortfolioId}`)
+        .get(`/api/v1/snapshots/aggregated-timeline/${testPortfolioId}`)
         .query({
           startDate: '2024-01-01',
           endDate: '2024-01-31',
@@ -389,14 +389,14 @@ describe('Snapshot Integration Tests (e2e)', () => {
     });
   });
 
-  describe('GET /snapshots/statistics/:portfolioId', () => {
+  describe('GET /api/v1/snapshots/statistics/:portfolioId', () => {
     beforeEach(async () => {
       await createTestSnapshots();
     });
 
     it('should return portfolio statistics', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/snapshots/statistics/${testPortfolioId}`)
+        .get(`/api/v1/snapshots/statistics/${testPortfolioId}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('totalSnapshots');
@@ -408,14 +408,14 @@ describe('Snapshot Integration Tests (e2e)', () => {
     });
   });
 
-  describe('POST /snapshots/cleanup', () => {
+  describe('POST /api/v1/snapshots/cleanup', () => {
     beforeEach(async () => {
       await createTestSnapshots();
     });
 
     it('should cleanup old snapshots', async () => {
       const response = await request(app.getHttpServer())
-        .post('/snapshots/cleanup')
+        .post('/api/v1/snapshots/cleanup')
         .send({
           portfolioId: testPortfolioId,
         })
@@ -453,7 +453,7 @@ describe('Snapshot Integration Tests (e2e)', () => {
     };
 
     const response = await request(app.getHttpServer())
-      .post('/snapshots')
+      .post('/api/v1/snapshots')
       .send(snapshotData)
       .expect(201);
 

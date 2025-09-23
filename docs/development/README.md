@@ -22,6 +22,9 @@ This section contains development guides, testing, debugging, and utilities for 
 - [Testing Utils](./utils/TESTING_UTILS.md) - Test helper utilities
 - [Error Handling Utils](./utils/ERROR_HANDLING_UTILS.md) - Error management
 
+### Development Guidelines
+- [Controller Decision Matrix](./controller-decision-matrix.md) - **NEW** - Decision matrix for choosing controllers
+
 ### Troubleshooting
 - [Troubleshooting Guide](./troubleshooting.md) - Common issues and solutions
 

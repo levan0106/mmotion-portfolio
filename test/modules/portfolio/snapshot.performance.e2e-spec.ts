@@ -88,7 +88,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
         };
 
         const response = await request(app.getHttpServer())
-          .post('/snapshots')
+          .post('/api/v1/snapshots')
           .send(snapshotData)
           .expect(201);
 
@@ -117,7 +117,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
 
       // Test query performance
       const response = await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           startDate: '2024-01-01',
@@ -149,7 +149,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
         const startTime = Date.now();
 
         const response = await request(app.getHttpServer())
-          .get('/snapshots')
+          .get('/api/v1/snapshots')
           .query({
             portfolioId: testPortfolioId,
             page,
@@ -184,7 +184,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
 
       // Test timeline query performance
       const response = await request(app.getHttpServer())
-        .get('/snapshots/timeline')
+        .get('/api/v1/snapshots/timeline')
         .query({
           portfolioId: testPortfolioId,
           startDate: '2024-01-01',
@@ -212,7 +212,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
 
       // Test aggregated timeline query performance
       const response = await request(app.getHttpServer())
-        .get(`/snapshots/aggregated-timeline/${testPortfolioId}`)
+        .get(`/api/v1/snapshots/aggregated-timeline/${testPortfolioId}`)
         .query({
           startDate: '2024-01-01',
           endDate: '2024-12-31',
@@ -240,7 +240,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
       // Make concurrent requests
       const promises = Array.from({ length: concurrentRequests }, (_, i) =>
         request(app.getHttpServer())
-          .get('/snapshots')
+          .get('/api/v1/snapshots')
           .query({
             portfolioId: testPortfolioId,
             page: 1,
@@ -273,7 +273,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
       // Update multiple snapshots
       const updatePromises = snapshots.slice(0, 50).map(snapshot =>
         request(app.getHttpServer())
-          .put(`/snapshots/${snapshot.id}`)
+          .put(`/api/v1/snapshots/${snapshot.id}`)
           .send({
             notes: `Updated snapshot ${snapshot.id}`,
             quantity: snapshot.quantity + 10,
@@ -301,7 +301,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
       // Delete multiple snapshots
       const deletePromises = snapshots.slice(0, 50).map(snapshot =>
         request(app.getHttpServer())
-          .delete(`/snapshots/${snapshot.id}`)
+          .delete(`/api/v1/snapshots/${snapshot.id}`)
           .expect(200)
       );
 
@@ -346,7 +346,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(snapshotData)
         .expect(201);
 
@@ -390,7 +390,7 @@ describe('Snapshot Performance Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(snapshotData)
         .expect(201);
 

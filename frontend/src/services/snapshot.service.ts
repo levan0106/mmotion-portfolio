@@ -1,7 +1,12 @@
-// Snapshot Service for CR-006 Asset Snapshot System
+// Unified Snapshot Service - Merged from snapshot.service.ts and performance-snapshot.service.ts
+// Handles both basic snapshots and performance snapshots
 
+import axios, { AxiosResponse } from 'axios';
 import { apiService } from './api';
+
+// Import types from unified snapshot system
 import {
+  // Basic Snapshot Types
   SnapshotResponse,
   CreateSnapshotRequest,
   UpdateSnapshotRequest,
@@ -12,12 +17,34 @@ import {
   SnapshotTimelineQuery,
   BulkRecalculateResponse,
   CleanupResponse,
+  
+  // Performance Snapshot Types
+  PerformanceSnapshotResult,
+  CreatePerformanceSnapshotDto,
+  PerformanceSnapshotQueryDto,
+  PortfolioPerformanceSnapshot,
+  AssetPerformanceSnapshot,
+  AssetGroupPerformanceSnapshot,
+  PortfolioPerformanceSummary,
+  AssetPerformanceSummary,
+  AssetGroupPerformanceSummary,
+  PerformanceSnapshotExport,
+  
+  // Unified Types
+  SnapshotGranularity,
 } from '../types/snapshot.types';
 
-export class SnapshotService {
-  private baseUrl = '/snapshots';
+export class UnifiedSnapshotService {
+  private readonly basicSnapshotUrl = `/api/v1/snapshots`;
+  private readonly performanceSnapshotUrl = `/api/v1/performance-snapshots`;
 
-  // Get all snapshots with optional filters
+  // ============================================================================
+  // BASIC SNAPSHOT OPERATIONS (from original snapshot.service.ts)
+  // ============================================================================
+
+  /**
+   * Get all snapshots with optional filters
+   */
   async getSnapshots(params?: SnapshotQueryParams): Promise<SnapshotResponse[]> {
     const queryParams = new URLSearchParams();
     
@@ -29,11 +56,13 @@ export class SnapshotService {
       });
     }
 
-    const response = await apiService.api.get(`${this.baseUrl}?${queryParams.toString()}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}?${queryParams.toString()}`);
     return response.data;
   }
 
-  // Get paginated snapshots
+  /**
+   * Get paginated snapshots
+   */
   async getSnapshotsPaginated(params?: SnapshotQueryParams): Promise<PaginatedSnapshotResponse> {
     const queryParams = new URLSearchParams();
     
@@ -45,23 +74,29 @@ export class SnapshotService {
       });
     }
 
-    const response = await apiService.api.get(`${this.baseUrl}/paginated?${queryParams.toString()}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/paginated?${queryParams.toString()}`);
     return response.data;
   }
 
-  // Get snapshot by ID
+  /**
+   * Get snapshot by ID
+   */
   async getSnapshotById(id: string): Promise<SnapshotResponse> {
-    const response = await apiService.api.get(`${this.baseUrl}/${id}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/${id}`);
     return response.data;
   }
 
-  // Create new snapshot
+  /**
+   * Create new snapshot
+   */
   async createSnapshot(data: CreateSnapshotRequest): Promise<SnapshotResponse> {
-    const response = await apiService.api.post(this.baseUrl, data);
+    const response = await apiService.api.post(this.basicSnapshotUrl, data);
     return response.data;
   }
 
-  // Create portfolio snapshots
+  /**
+   * Create portfolio snapshots
+   */
   async createPortfolioSnapshots(
     portfolioId: string,
     snapshotDate?: string,
@@ -75,24 +110,30 @@ export class SnapshotService {
     if (createdBy) queryParams.append('createdBy', createdBy);
 
     const response = await apiService.api.post(
-      `${this.baseUrl}/portfolio/${portfolioId}?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/portfolio/${portfolioId}?${queryParams.toString()}`
     );
     return response.data;
   }
 
-  // Update snapshot
+  /**
+   * Update snapshot
+   */
   async updateSnapshot(id: string, data: UpdateSnapshotRequest): Promise<SnapshotResponse> {
-    const response = await apiService.api.put(`${this.baseUrl}/${id}`, data);
+    const response = await apiService.api.put(`${this.basicSnapshotUrl}/${id}`, data);
     return response.data;
   }
 
-  // Recalculate snapshot
+  /**
+   * Recalculate snapshot
+   */
   async recalculateSnapshot(id: string): Promise<SnapshotResponse> {
-    const response = await apiService.api.put(`${this.baseUrl}/${id}/recalculate`);
+    const response = await apiService.api.put(`${this.basicSnapshotUrl}/${id}/recalculate`);
     return response.data;
   }
 
-  // Bulk recalculate snapshots
+  /**
+   * Bulk recalculate snapshots
+   */
   async bulkRecalculateSnapshots(
     portfolioId: string,
     snapshotDate?: string
@@ -101,22 +142,28 @@ export class SnapshotService {
     if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
 
     const response = await apiService.api.post(
-      `${this.baseUrl}/bulk-recalculate/${portfolioId}?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/bulk-recalculate/${portfolioId}?${queryParams.toString()}`
     );
     return response.data;
   }
 
-  // Delete snapshot (soft delete)
+  /**
+   * Delete snapshot (soft delete)
+   */
   async deleteSnapshot(id: string): Promise<void> {
-    await apiService.api.delete(`${this.baseUrl}/${id}`);
+    await apiService.api.delete(`${this.basicSnapshotUrl}/${id}`);
   }
 
-  // Hard delete snapshot
+  /**
+   * Hard delete snapshot
+   */
   async hardDeleteSnapshot(id: string): Promise<void> {
-    await apiService.api.delete(`${this.baseUrl}/${id}/hard`);
+    await apiService.api.delete(`${this.basicSnapshotUrl}/${id}/hard`);
   }
 
-  // Get timeline data
+  /**
+   * Get timeline data
+   */
   async getTimelineData(query: SnapshotTimelineQuery): Promise<SnapshotResponse[]> {
     const queryParams = new URLSearchParams();
     Object.entries(query).forEach(([key, value]) => {
@@ -125,11 +172,13 @@ export class SnapshotService {
       }
     });
 
-    const response = await apiService.api.get(`${this.baseUrl}/timeline?${queryParams.toString()}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/timeline?${queryParams.toString()}`);
     return response.data;
   }
 
-  // Get aggregated timeline data
+  /**
+   * Get aggregated timeline data
+   */
   async getAggregatedTimelineData(
     portfolioId: string,
     startDate: string,
@@ -142,11 +191,13 @@ export class SnapshotService {
     queryParams.append('endDate', endDate);
     if (granularity) queryParams.append('granularity', granularity);
 
-    const response = await apiService.api.get(`${this.baseUrl}/timeline/aggregated?${queryParams.toString()}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/timeline/aggregated?${queryParams.toString()}`);
     return response.data;
   }
 
-  // Get latest snapshot for portfolio
+  /**
+   * Get latest snapshot for portfolio
+   */
   async getLatestSnapshot(
     portfolioId: string,
     assetId?: string,
@@ -157,27 +208,33 @@ export class SnapshotService {
     if (granularity) queryParams.append('granularity', granularity);
 
     const response = await apiService.api.get(
-      `${this.baseUrl}/latest/${portfolioId}?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/latest/${portfolioId}?${queryParams.toString()}`
     );
     return response.data;
   }
 
-  // Get snapshot statistics
+  /**
+   * Get snapshot statistics
+   */
   async getSnapshotStatistics(portfolioId: string): Promise<SnapshotStatistics> {
-    const response = await apiService.api.get(`${this.baseUrl}/statistics/${portfolioId}`);
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/statistics/${portfolioId}`);
     return response.data;
   }
 
-  // Cleanup old snapshots
+  /**
+   * Cleanup old snapshots
+   */
   async cleanupOldSnapshots(portfolioId?: string): Promise<CleanupResponse> {
     const queryParams = new URLSearchParams();
     if (portfolioId) queryParams.append('portfolioId', portfolioId);
 
-    const response = await apiService.api.post(`${this.baseUrl}/cleanup?${queryParams.toString()}`);
+    const response = await apiService.api.post(`${this.basicSnapshotUrl}/cleanup?${queryParams.toString()}`);
     return response.data;
   }
 
-  // Delete snapshots by date range
+  /**
+   * Delete snapshots by date range
+   */
   async deleteSnapshotsByDateRange(
     portfolioId: string,
     startDate: string,
@@ -190,12 +247,14 @@ export class SnapshotService {
     if (granularity) queryParams.append('granularity', granularity);
 
     const response = await apiService.api.delete(
-      `${this.baseUrl}/portfolio/${portfolioId}/date-range?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/date-range?${queryParams.toString()}`
     );
     return response.data;
   }
 
-  // Delete snapshots by specific date
+  /**
+   * Delete snapshots by specific date
+   */
   async deleteSnapshotsByDate(
     portfolioId: string,
     snapshotDate: string,
@@ -206,28 +265,524 @@ export class SnapshotService {
     if (granularity) queryParams.append('granularity', granularity);
 
     const response = await apiService.api.delete(
-      `${this.baseUrl}/portfolio/${portfolioId}/date?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/date?${queryParams.toString()}`
     );
     return response.data;
   }
 
-  // Delete snapshots by granularity
+  /**
+   * Delete snapshots by granularity
+   */
   async deleteSnapshotsByGranularity(
     portfolioId: string,
     granularity: string
   ): Promise<{ deletedCount: number; message: string }> {
     const response = await apiService.api.delete(
-      `${this.baseUrl}/portfolio/${portfolioId}/granularity/${granularity}`
+      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/granularity/${granularity}`
     );
     return response.data;
   }
 
-  // Get portfolios that have snapshots
-  async getPortfoliosWithSnapshots(): Promise<{ portfolioId: string; portfolioName: string; snapshotCount: number; latestSnapshotDate: string; oldestSnapshotDate: string }[]> {
-    const response = await apiService.api.get(`${this.baseUrl}/portfolios`);
+  /**
+   * Get portfolios that have snapshots
+   */
+  async getPortfoliosWithSnapshots(): Promise<{ 
+    portfolioId: string; 
+    portfolioName: string; 
+    snapshotCount: number; 
+    latestSnapshotDate: string; 
+    oldestSnapshotDate: string; 
+  }[]> {
+    const response = await apiService.api.get(`${this.basicSnapshotUrl}/portfolios`);
     return response.data;
+  }
+
+  // ============================================================================
+  // PERFORMANCE SNAPSHOT OPERATIONS (from performance-snapshot.service.ts)
+  // ============================================================================
+
+  /**
+   * Create performance snapshots for a portfolio
+   */
+  async createPerformanceSnapshots(dto: CreatePerformanceSnapshotDto): Promise<PerformanceSnapshotResult> {
+    const response: AxiosResponse<PerformanceSnapshotResult> = await axios.post(this.performanceSnapshotUrl, dto);
+    return response.data;
+  }
+
+  /**
+   * Get portfolio performance snapshots
+   */
+  async getPortfolioPerformanceSnapshots(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto
+  ): Promise<PortfolioPerformanceSnapshot[]> {
+    const params = new URLSearchParams();
+    
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+
+    const response: AxiosResponse<PortfolioPerformanceSnapshot[]> = await axios.get(
+      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get asset performance snapshots
+   */
+  async getAssetPerformanceSnapshots(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto
+  ): Promise<AssetPerformanceSnapshot[]> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetId) {
+      params.append('assetId', query.assetId);
+    }
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+
+    const response: AxiosResponse<AssetPerformanceSnapshot[]> = await axios.get(
+      `${this.performanceSnapshotUrl}/asset/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get asset group performance snapshots
+   */
+  async getAssetGroupPerformanceSnapshots(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto
+  ): Promise<AssetGroupPerformanceSnapshot[]> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetType) {
+      params.append('assetType', query.assetType);
+    }
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+
+    const response: AxiosResponse<AssetGroupPerformanceSnapshot[]> = await axios.get(
+      `${this.performanceSnapshotUrl}/group/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get portfolio performance summary
+   */
+  async getPortfolioPerformanceSummary(
+    portfolioId: string,
+    period: string = '1Y'
+  ): Promise<PortfolioPerformanceSummary> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+    
+    const response: AxiosResponse<PortfolioPerformanceSummary> = await axios.get(
+      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}/summary?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get asset performance summary
+   */
+  async getAssetPerformanceSummary(
+    portfolioId: string,
+    query?: { assetId?: string; period?: string }
+  ): Promise<AssetPerformanceSummary> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetId) {
+      params.append('assetId', query.assetId);
+    }
+    if (query?.period) {
+      params.append('period', query.period);
+    }
+
+    const response: AxiosResponse<AssetPerformanceSummary> = await axios.get(
+      `${this.performanceSnapshotUrl}/asset/${portfolioId}/summary?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get asset group performance summary
+   */
+  async getAssetGroupPerformanceSummary(
+    portfolioId: string,
+    query?: { assetType?: string; period?: string }
+  ): Promise<AssetGroupPerformanceSummary> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetType) {
+      params.append('assetType', query.assetType);
+    }
+    if (query?.period) {
+      params.append('period', query.period);
+    }
+
+    const response: AxiosResponse<AssetGroupPerformanceSummary> = await axios.get(
+      `${this.performanceSnapshotUrl}/group/${portfolioId}/summary?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Delete performance snapshots by date range
+   */
+  async deletePerformanceSnapshotsByDateRange(
+    portfolioId: string,
+    startDate: string,
+    endDate: string,
+    granularity?: SnapshotGranularity
+  ): Promise<{ deletedCount: number; message: string }> {
+    const params = new URLSearchParams();
+    params.append('startDate', startDate);
+    params.append('endDate', endDate);
+    
+    if (granularity) {
+      params.append('granularity', granularity);
+    }
+
+    const response: AxiosResponse<{ deletedCount: number; message: string }> = await axios.delete(
+      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Export performance snapshots
+   */
+  async exportPerformanceSnapshots(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto
+  ): Promise<PerformanceSnapshotExport> {
+    const params = new URLSearchParams();
+    
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+
+    const response: AxiosResponse<PerformanceSnapshotExport> = await axios.get(
+      `${this.performanceSnapshotUrl}/export/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get performance metrics for dashboard
+   */
+  async getPerformanceDashboardData(portfolioId: string): Promise<any> {
+    const response: AxiosResponse<any> = await axios.get(`${this.performanceSnapshotUrl}/dashboard/${portfolioId}`);
+    return response.data;
+  }
+
+  /**
+   * Get performance comparison data
+   */
+  async getPerformanceComparison(
+    portfolioId: string,
+    benchmarkId: string,
+    period: string = '1Y'
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('benchmarkId', benchmarkId);
+    params.append('period', period);
+
+    const response: AxiosResponse<any> = await axios.get(
+      `${this.performanceSnapshotUrl}/comparison/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get risk analysis data
+   */
+  async getRiskAnalysis(portfolioId: string, period: string = '1Y'): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+
+    const response: AxiosResponse<any> = await axios.get(
+      `${this.performanceSnapshotUrl}/risk-analysis/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get performance attribution data
+   */
+  async getPerformanceAttribution(
+    portfolioId: string,
+    period: string = '1Y'
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+
+    const response: AxiosResponse<any> = await axios.get(
+      `${this.performanceSnapshotUrl}/attribution/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get performance trends
+   */
+  async getPerformanceTrends(
+    portfolioId: string,
+    metric: string,
+    period: string = '1Y'
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('metric', metric);
+    params.append('period', period);
+
+    const response: AxiosResponse<any> = await axios.get(
+      `${this.performanceSnapshotUrl}/trends/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get benchmark data
+   */
+  async getBenchmarkData(
+    benchmarkId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (startDate) {
+      params.append('startDate', startDate);
+    }
+    if (endDate) {
+      params.append('endDate', endDate);
+    }
+
+    const response: AxiosResponse<any> = await axios.get(
+      `${this.performanceSnapshotUrl}/benchmark/${benchmarkId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get available benchmarks
+   */
+  async getAvailableBenchmarks(): Promise<any[]> {
+    const response: AxiosResponse<any[]> = await axios.get(`${this.performanceSnapshotUrl}/benchmarks`);
+    return response.data;
+  }
+
+  /**
+   * Get performance alerts
+   */
+  async getPerformanceAlerts(portfolioId: string): Promise<any[]> {
+    const response: AxiosResponse<any[]> = await axios.get(`${this.performanceSnapshotUrl}/alerts/${portfolioId}`);
+    return response.data;
+  }
+
+  /**
+   * Create performance alert
+   */
+  async createPerformanceAlert(portfolioId: string, alert: any): Promise<any> {
+    const response: AxiosResponse<any> = await axios.post(`${this.performanceSnapshotUrl}/alerts/${portfolioId}`, alert);
+    return response.data;
+  }
+
+  /**
+   * Update performance alert
+   */
+  async updatePerformanceAlert(portfolioId: string, alertId: string, alert: any): Promise<any> {
+    const response: AxiosResponse<any> = await axios.put(`${this.performanceSnapshotUrl}/alerts/${portfolioId}/${alertId}`, alert);
+    return response.data;
+  }
+
+  /**
+   * Delete performance alert
+   */
+  async deletePerformanceAlert(portfolioId: string, alertId: string): Promise<any> {
+    const response: AxiosResponse<any> = await axios.delete(`${this.performanceSnapshotUrl}/alerts/${portfolioId}/${alertId}`);
+    return response.data;
+  }
+
+  // ============================================================================
+  // UNIFIED UTILITY METHODS
+  // ============================================================================
+
+  /**
+   * Get all snapshot types for a portfolio (both basic and performance)
+   */
+  async getAllSnapshotsForPortfolio(
+    portfolioId: string,
+    startDate?: string,
+    endDate?: string,
+    granularity?: string
+  ): Promise<{
+    basicSnapshots: SnapshotResponse[];
+    performanceSnapshots: PortfolioPerformanceSnapshot[];
+    assetSnapshots: AssetPerformanceSnapshot[];
+    groupSnapshots: AssetGroupPerformanceSnapshot[];
+  }> {
+    const [basicSnapshots, performanceSnapshots, assetSnapshots, groupSnapshots] = await Promise.all([
+      this.getSnapshots({
+        portfolioId,
+        startDate,
+        endDate,
+        granularity: granularity as SnapshotGranularity,
+      }),
+      this.getPortfolioPerformanceSnapshots(portfolioId, {
+        startDate,
+        endDate,
+        granularity: granularity as SnapshotGranularity,
+      }),
+      this.getAssetPerformanceSnapshots(portfolioId, {
+        startDate,
+        endDate,
+        granularity: granularity as SnapshotGranularity,
+      }),
+      this.getAssetGroupPerformanceSnapshots(portfolioId, {
+        startDate,
+        endDate,
+        granularity: granularity as SnapshotGranularity,
+      }),
+    ]);
+
+    return {
+      basicSnapshots,
+      performanceSnapshots,
+      assetSnapshots,
+      groupSnapshots,
+    };
+  }
+
+  /**
+   * Create both basic and performance snapshots for a portfolio
+   */
+  async createAllSnapshotsForPortfolio(
+    portfolioId: string,
+    snapshotDate: string,
+    granularity: string = 'DAILY',
+    createdBy?: string
+  ): Promise<{
+    basicSnapshots: SnapshotResponse[];
+    performanceSnapshots: PerformanceSnapshotResult;
+  }> {
+    const [basicSnapshots, performanceSnapshots] = await Promise.all([
+      this.createPortfolioSnapshots(portfolioId, snapshotDate, granularity, createdBy),
+      this.createPerformanceSnapshots({
+        portfolioId,
+        snapshotDate,
+        granularity: granularity as SnapshotGranularity,
+        createdBy,
+      }),
+    ]);
+
+    return {
+      basicSnapshots,
+      performanceSnapshots,
+    };
+  }
+
+  /**
+   * Delete all snapshot types for a portfolio by date range
+   */
+  async deleteAllSnapshotsByDateRange(
+    portfolioId: string,
+    startDate: string,
+    endDate: string,
+    granularity?: string
+  ): Promise<{
+    basicDeleted: { deletedCount: number; message: string };
+    performanceDeleted: { deletedCount: number; message: string };
+  }> {
+    const [basicDeleted, performanceDeleted] = await Promise.all([
+      this.deleteSnapshotsByDateRange(portfolioId, startDate, endDate, granularity),
+      this.deletePerformanceSnapshotsByDateRange(
+        portfolioId,
+        startDate,
+        endDate,
+        granularity as SnapshotGranularity
+      ),
+    ]);
+
+    return {
+      basicDeleted,
+      performanceDeleted,
+    };
+  }
+
+  /**
+   * Get comprehensive portfolio analysis (combines both snapshot types)
+   */
+  async getComprehensivePortfolioAnalysis(
+    portfolioId: string,
+    period: string = '1Y'
+  ): Promise<{
+    basicStatistics: SnapshotStatistics;
+    performanceSummary: PortfolioPerformanceSummary;
+    assetSummary: AssetPerformanceSummary;
+    groupSummary: AssetGroupPerformanceSummary;
+    riskAnalysis: any;
+    performanceTrends: any;
+  }> {
+    const [
+      basicStatistics,
+      performanceSummary,
+      assetSummary,
+      groupSummary,
+      riskAnalysis,
+      performanceTrends,
+    ] = await Promise.all([
+      this.getSnapshotStatistics(portfolioId),
+      this.getPortfolioPerformanceSummary(portfolioId, period),
+      this.getAssetPerformanceSummary(portfolioId, { period }),
+      this.getAssetGroupPerformanceSummary(portfolioId, { period }),
+      this.getRiskAnalysis(portfolioId, period),
+      this.getPerformanceTrends(portfolioId, 'twr', period),
+    ]);
+
+    return {
+      basicStatistics,
+      performanceSummary,
+      assetSummary,
+      groupSummary,
+      riskAnalysis,
+      performanceTrends,
+    };
   }
 }
 
 // Export singleton instance
-export const snapshotService = new SnapshotService();
+export const snapshotService = new UnifiedSnapshotService();
+
+// Export individual service instances for backward compatibility
+export const performanceSnapshotService = snapshotService;

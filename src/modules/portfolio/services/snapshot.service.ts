@@ -8,8 +8,8 @@ import { AssetService } from '../../asset/services/asset.service';
 import { AssetGlobalSyncService } from '../../asset/services/asset-global-sync.service';
 import { MarketDataService } from '../../asset/services/market-data.service';
 import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
+import { AssetRepository } from '../../asset/repositories/asset.repository';
 import { Trade } from '../../trading/entities/trade.entity';
-import { TradeDetail } from '../../trading/entities/trade-detail.entity';
 import { PortfolioSnapshotService } from './portfolio-snapshot.service';
 
 export interface CreateSnapshotDto {
@@ -75,10 +75,9 @@ export class SnapshotService {
     private readonly assetGlobalSyncService: AssetGlobalSyncService,
     private readonly marketDataService: MarketDataService,
     private readonly assetValueCalculator: AssetValueCalculatorService,
+    private readonly assetRepository: AssetRepository,
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
-    @InjectRepository(TradeDetail)
-    private readonly tradeDetailRepository: Repository<TradeDetail>,
     @Inject(forwardRef(() => PortfolioSnapshotService))
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
   ) {}
@@ -94,18 +93,17 @@ export class SnapshotService {
       throw new NotFoundException(`Asset with ID ${createDto.assetId} not found`);
     }
 
-    // Check if snapshot already exists
-    const exists = await this.snapshotRepo.exists(
+    // Check if snapshot already exists and delete it to avoid duplicates
+    const existingSnapshot = await this.snapshotRepo.findByUniqueKey(
       createDto.portfolioId,
       createDto.assetId,
       new Date(createDto.snapshotDate),
       createDto.granularity
     );
 
-    if (exists) {
-      throw new BadRequestException(
-        `Snapshot already exists for portfolio ${createDto.portfolioId}, asset ${createDto.assetSymbol} on ${createDto.snapshotDate} with granularity ${createDto.granularity}`
-      );
+    if (existingSnapshot) {
+      this.logger.warn(`Snapshot already exists for portfolio ${createDto.portfolioId}, asset ${createDto.assetSymbol} on ${createDto.snapshotDate}. Deleting old snapshot and creating new one.`);
+      await this.snapshotRepo.delete(existingSnapshot.id);
     }
 
     // Create snapshot
@@ -130,6 +128,8 @@ export class SnapshotService {
     granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
     createdBy?: string
   ): Promise<AssetAllocationSnapshot[]> {
+    this.logger.log(`Creating portfolio snapshot for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
+    
     // Get all assets in portfolio
     const assets = await this.assetService.findByPortfolioId(portfolioId);
     
@@ -140,22 +140,54 @@ export class SnapshotService {
     
     const snapshots: Partial<AssetAllocationSnapshot>[] = [];
 
+    // First pass: collect all current values to calculate total portfolio value
+    const assetData: Array<{
+      asset: any;
+      currentValue: number;
+      positionData: any;
+      currentPrice: number;
+    }> = [];
+
     for (const asset of assets) {
       // Get real current price
       const currentPrice = await this.getCurrentPrice(asset.symbol);
       
-      // Get real cost data from trades
-      const costData = await this.getCostData(asset.id, portfolioId);
+      // Get trades for this asset in this portfolio
+      const trades = await this.assetRepository.getTradesForAssetByPortfolio(asset.id, portfolioId);
       
-      // Calculate real values - get quantity from trades for this specific portfolio
-      const currentValues = await this.assetService.calculateCurrentValues(asset.id, portfolioId);
-      const quantity = currentValues.currentQuantity;
-      const costBasis = quantity * costData.avgCost;
-      const currentValue = this.assetValueCalculator.calculateCurrentValue(quantity, currentPrice);
-      const unrealizedPl = this.assetValueCalculator.calculateUnrealizedPL(quantity, currentPrice, costData.avgCost);
-      const realizedPl = costData.realizedPl;
-      const totalPl = realizedPl + unrealizedPl;
-      const returnPercentage = this.assetValueCalculator.calculateReturnPercentage(quantity, currentPrice, costData.avgCost);
+      // Use FIFO calculation to get all values at once
+      const positionData = this.assetValueCalculator.calculateAssetPositionFIFO(trades, currentPrice);
+      
+      assetData.push({
+        asset,
+        currentValue: positionData.currentValue,
+        positionData,
+        currentPrice
+      });
+    }
+
+    // Calculate total portfolio value
+    const totalPortfolioValue = assetData.reduce((sum, data) => sum + data.currentValue, 0);
+
+    // Second pass: create snapshots with calculated values
+    for (const data of assetData) {
+      const { asset, currentValue, positionData, currentPrice } = data;
+      const { quantity, avgCost, unrealizedPl, realizedPl, totalPnl } = positionData;
+      const costBasis = quantity * avgCost;
+      const returnPercentage = this.assetValueCalculator.calculateReturnPercentage(quantity, currentPrice, avgCost);
+      
+      // Calculate allocation percentage
+      const allocationPercentage = totalPortfolioValue > 0 
+        ? Number(((currentValue / totalPortfolioValue) * 100).toFixed(4))
+        : 0;
+
+      // Calculate daily return and cumulative return
+      const { dailyReturn, cumulativeReturn } = await this.calculateReturnsForAsset(
+        asset.id, 
+        portfolioId, 
+        snapshotDate, 
+        currentValue
+      );
       
       const snapshot: Partial<AssetAllocationSnapshot> = {
         portfolioId,
@@ -167,15 +199,15 @@ export class SnapshotService {
         currentPrice,
         currentValue,
         costBasis,
-        avgCost: costData.avgCost,
+        avgCost,
         realizedPl,
         unrealizedPl,
-        totalPl,
-        allocationPercentage: 0, // TODO: Will be calculated after all snapshots are created
-        portfolioTotalValue: 0, // TODO: Will be calculated after all snapshots are created
+        totalPl: totalPnl,
+        allocationPercentage,
+        portfolioTotalValue: totalPortfolioValue,
         returnPercentage,
-        dailyReturn: 0, // TODO: Will be calculated later
-        cumulativeReturn: 0, // TODO: Will be calculated later
+        dailyReturn,
+        cumulativeReturn,
         isActive: true,
         createdBy,
         notes: `Portfolio snapshot for ${snapshotDate.toISOString().split('T')[0]}`,
@@ -188,7 +220,7 @@ export class SnapshotService {
     // This ensures we only have one snapshot per day per portfolio
     const deletedAssetCount = await this.snapshotRepo.deleteByPortfolioDateAndGranularity(portfolioId, snapshotDate, granularity);
 
-    // Create all snapshots in batch
+    // Create all snapshots in batch (all fields are already calculated)
     const createdSnapshots = await this.snapshotRepo.createMany(snapshots);
 
     // Create portfolio snapshot after asset snapshots are created
@@ -207,6 +239,58 @@ export class SnapshotService {
     
     return createdSnapshots;
   }
+
+
+  /**
+   * Calculate daily return and cumulative return for a specific asset
+   */
+  private async calculateReturnsForAsset(
+    assetId: string,
+    portfolioId: string,
+    snapshotDate: Date,
+    currentValue: number
+  ): Promise<{ dailyReturn: number; cumulativeReturn: number }> {
+    try {
+      // Get previous snapshots for this asset
+      const previousSnapshots = await this.snapshotRepo.findMany({
+        portfolioId,
+        assetId,
+        granularity: SnapshotGranularity.DAILY,
+        endDate: new Date(snapshotDate.getTime() - 24 * 60 * 60 * 1000), // Previous day
+        limit: 2,
+        orderBy: 'snapshotDate',
+        orderDirection: 'DESC'
+      });
+
+      let dailyReturn = 0;
+      let cumulativeReturn = 0;
+
+      if (previousSnapshots.length > 0) {
+        // Calculate daily return from previous day
+        const previousValue = Number(previousSnapshots[0].currentValue) || 0;
+        if (previousValue > 0) {
+          dailyReturn = Number(((currentValue - previousValue) / previousValue * 100).toFixed(4));
+        }
+
+        // Calculate cumulative return from first snapshot
+        if (previousSnapshots.length > 1) {
+          const firstValue = Number(previousSnapshots[1].currentValue) || 0;
+          if (firstValue > 0) {
+            cumulativeReturn = Number(((currentValue - firstValue) / firstValue * 100).toFixed(4));
+          }
+        } else {
+          // If this is the second snapshot, cumulative return = daily return
+          cumulativeReturn = dailyReturn;
+        }
+      }
+
+      return { dailyReturn, cumulativeReturn };
+    } catch (error) {
+      this.logger.error(`Error calculating returns for asset ${assetId}: ${error.message}`);
+      return { dailyReturn: 0, cumulativeReturn: 0 };
+    }
+  }
+
 
   /**
    * Get snapshot by ID
@@ -1033,76 +1117,6 @@ export class SnapshotService {
     }
   }
 
-  /**
-   * Get cost data for an asset from trades
-   */
-  private async getCostData(assetId: string, portfolioId: string): Promise<{
-    costBasis: number;
-    avgCost: number;
-    realizedPl: number;
-  }> {
-    try {
-      
-      // Get all trades for this asset in this portfolio
-      const trades = await this.tradeRepository.find({
-        where: { 
-          assetId,
-          portfolioId
-        },
-        order: { tradeDate: 'ASC' }
-      });
-
-      if (trades.length === 0) {
-        return {
-          costBasis: 0,
-          avgCost: 0,
-          realizedPl: 0,
-        };
-      }
-
-      // Calculate average cost and total cost from buy trades
-      let totalQuantity = 0;
-      let totalCost = 0;
-      let realizedPl = 0;
-
-      for (const trade of trades) {
-        const quantity = parseFloat(trade.quantity.toString());
-        const price = parseFloat(trade.price.toString());
-        const fee = parseFloat(trade.fee?.toString() || '0');
-        const tax = parseFloat(trade.tax?.toString() || '0');
-        const totalTradeCost = quantity * price + fee + tax;
-
-        if (trade.side === 'BUY') {
-          totalQuantity += quantity;
-          totalCost += totalTradeCost;
-        } else if (trade.side === 'SELL') {
-          totalQuantity -= quantity;
-          // Calculate realized P&L from trade details
-          const tradeDetails = await this.tradeDetailRepository.find({
-            where: { sellTradeId: trade.tradeId }
-          });
-          realizedPl += tradeDetails.reduce((sum, detail) => sum + (Number(detail.pnl) || 0), 0);
-        }
-      }
-
-      const avgCost = totalQuantity > 0 ? totalCost / totalQuantity : 0;
-      const costBasis = totalQuantity * avgCost;
-
-      
-      return {
-        costBasis,
-        avgCost,
-        realizedPl,
-      };
-    } catch (error) {
-      this.logger.error(`Error getting cost data for asset ${assetId}:`, error);
-      return {
-        costBasis: 0,
-        avgCost: 0,
-        realizedPl: 0,
-      };
-    }
-  }
 
   /**
    * Recalculate snapshot data from current asset state
@@ -1274,5 +1288,6 @@ export class SnapshotService {
     this.logger.log(message);
     return { deletedCount, message };
   }
+
 
 }

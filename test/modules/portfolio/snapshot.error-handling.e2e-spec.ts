@@ -58,7 +58,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
   describe('Validation Error Handling', () => {
     it('should return 400 for invalid UUID format', async () => {
       await request(app.getHttpServer())
-        .get('/snapshots/invalid-uuid')
+        .get('/api/v1/snapshots/invalid-uuid')
         .expect(400);
     });
 
@@ -88,7 +88,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400);
     });
@@ -119,7 +119,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400);
     });
@@ -150,7 +150,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400);
     });
@@ -162,7 +162,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(incompleteDto)
         .expect(400);
     });
@@ -193,7 +193,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400);
     });
@@ -204,7 +204,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       const nonExistentId = '00000000-0000-0000-0000-000000000000';
       
       await request(app.getHttpServer())
-        .get(`/snapshots/${nonExistentId}`)
+        .get(`/api/v1/snapshots/${nonExistentId}`)
         .expect(404);
     });
 
@@ -213,7 +213,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       const updateData = { notes: 'Updated notes' };
 
       await request(app.getHttpServer())
-        .put(`/snapshots/${nonExistentId}`)
+        .put(`/api/v1/snapshots/${nonExistentId}`)
         .send(updateData)
         .expect(404);
     });
@@ -222,7 +222,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       const nonExistentId = '00000000-0000-0000-0000-000000000000';
 
       await request(app.getHttpServer())
-        .delete(`/snapshots/${nonExistentId}`)
+        .delete(`/api/v1/snapshots/${nonExistentId}`)
         .expect(404);
     });
 
@@ -230,7 +230,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       const nonExistentId = '00000000-0000-0000-0000-000000000000';
 
       await request(app.getHttpServer())
-        .post(`/snapshots/${nonExistentId}/recalculate`)
+        .post(`/api/v1/snapshots/${nonExistentId}/recalculate`)
         .expect(404);
     });
   });
@@ -238,7 +238,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
   describe('Bad Request Error Handling', () => {
     it('should return 400 for invalid query parameters', async () => {
       await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: 'invalid-uuid',
           startDate: 'invalid-date',
@@ -252,7 +252,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
 
     it('should return 400 for invalid date range', async () => {
       await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           startDate: '2024-12-31',
@@ -263,7 +263,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
 
     it('should return 400 for invalid pagination parameters', async () => {
       await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({
           portfolioId: testPortfolioId,
           page: 0, // Invalid page number
@@ -303,14 +303,14 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
 
       // Create a snapshot first
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(201);
 
       // Try to create a duplicate snapshot (if there are unique constraints)
       // This might cause a database error
       await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(invalidDto)
         .expect(400); // or 409 Conflict, depending on implementation
     });
@@ -343,7 +343,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(largeNumberDto)
         .expect(201);
 
@@ -376,7 +376,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(smallNumberDto)
         .expect(201);
 
@@ -410,7 +410,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(longStringDto)
         .expect(201);
 
@@ -443,7 +443,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(specialStringDto)
         .expect(201);
 
@@ -477,7 +477,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .post('/snapshots')
+        .post('/api/v1/snapshots')
         .send(unicodeDto)
         .expect(201);
 
@@ -490,7 +490,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
     it('should handle rapid consecutive requests', async () => {
       const requests = Array.from({ length: 100 }, (_, i) =>
         request(app.getHttpServer())
-          .get('/snapshots')
+          .get('/api/v1/snapshots')
           .query({ portfolioId: testPortfolioId })
           .expect(200)
       );
@@ -505,7 +505,7 @@ describe('Snapshot Error Handling Tests (e2e)', () => {
       const startTime = Date.now();
       
       await request(app.getHttpServer())
-        .get('/snapshots')
+        .get('/api/v1/snapshots')
         .query({ portfolioId: testPortfolioId })
         .expect(200);
 

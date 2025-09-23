@@ -68,7 +68,7 @@ export const BulkSnapshotCreator: React.FC<BulkSnapshotCreatorProps> = ({
       // For now, we'll create a simple snapshot - in a real implementation,
       // this would call a bulk creation endpoint that creates snapshots for all assets
       // We'll use a simplified approach for now
-      await apiService.api.post('/snapshots', {
+      await apiService.api.post('/api/v1/snapshots', {
         portfolioId: selectedPortfolioId,
         snapshotDate: snapshotDate,
         granularity: 'DAILY',

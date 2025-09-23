@@ -328,7 +328,28 @@ erDiagram
 - **Code Quality Pattern**: Clean imports, proper TypeScript typing, and maintainable code - **COMPLETED**
 - **Production Ready Pattern**: Frontend builds successfully with no errors - **COMPLETED**
 
-### 23. Circuit Breaker Pattern - **PLANNED**
+### 23. Performance Metrics Calculation Pattern - **IMPLEMENTED WITH IRR/ALPHA/BETA ✅**
+- **Asset-Level Performance**: IRR, Alpha, Beta calculations for individual assets - **COMPLETED**
+- **Asset Group-Level Performance**: IRR, Alpha, Beta calculations for asset groups - **COMPLETED**
+- **Multi-Timeframe Support**: 1M, 3M, 6M, 1Y, YTD calculations for comprehensive analysis - **COMPLETED**
+- **Database Schema**: 15 new columns added for performance tracking - **COMPLETED**
+- **Calculation Services**: Enhanced MWRIRRCalculationService and AlphaBetaCalculationService - **COMPLETED**
+- **Query Builder Optimization**: Corrected snake_case column names for proper database queries - **COMPLETED**
+- **Mock Benchmark API**: Complete mock API for benchmark data testing - **COMPLETED**
+- **Integration**: Seamless integration with existing snapshot system - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
+
+### 24. Asset Name Simplification Pattern - **IMPLEMENTED ✅**
+- **Asset Name Removal**: Complete removal from database, entities, services, and frontend - **COMPLETED**
+- **Symbol-Only Approach**: Simplified to use only asset symbols for identification - **COMPLETED**
+- **Database Schema Update**: Removed asset_name and asset_group_name columns - **COMPLETED**
+- **Entity Updates**: Updated AssetPerformanceSnapshot and AssetGroupPerformanceSnapshot entities - **COMPLETED**
+- **Service Updates**: Modified PerformanceSnapshotService to remove assetName references - **COMPLETED**
+- **Frontend Optimization**: Clean table layout with proper column alignment - **COMPLETED**
+- **Table Layout**: Adjusted table width and column alignment after Asset Name removal - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
+
+### 25. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented

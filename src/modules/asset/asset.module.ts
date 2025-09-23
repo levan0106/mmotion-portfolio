@@ -110,6 +110,7 @@ import { LoggingModule } from '../logging/logging.module';
     AssetCacheService,
     AssetValueCalculatorService,
     AutoSyncService,
+    AssetRepository,
     TypeOrmModule,
   ],
 })

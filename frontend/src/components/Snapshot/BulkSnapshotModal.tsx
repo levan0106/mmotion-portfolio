@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../hooks/useAccount';
+import { SnapshotGranularity } from '../../types/snapshot.types';
 
 interface Portfolio {
   portfolioId: string;
@@ -61,6 +62,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   const [snapshotDate, setSnapshotDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const [granularity, setGranularity] = useState<SnapshotGranularity>(SnapshotGranularity.DAILY);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
   const [status, setStatus] = useState<{
@@ -98,10 +100,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   };
 
   const handleCreateSnapshot = async () => {
-    if (!selectedPortfolioId || !snapshotDate) {
+    if (!selectedPortfolioId || !snapshotDate || !granularity) {
       setStatus({
         type: 'error',
-        message: 'Please select a portfolio and snapshot date'
+        message: 'Please select a portfolio, snapshot date, and granularity'
       });
       return;
     }
@@ -110,10 +112,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     setStatus({ type: null, message: '' });
 
     try {
-      const apiUrl = `/snapshots/portfolio/${selectedPortfolioId}`;
+      const apiUrl = `/api/v1/snapshots/portfolio/${selectedPortfolioId}`;
       const requestBody = {
         snapshotDate: snapshotDate,
-        granularity: 'DAILY',
+        granularity: granularity,
         createdBy: accountId
       };
             
@@ -182,6 +184,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   const handleReset = () => {
     setSelectedPortfolioId('');
     setSnapshotDate(new Date().toISOString().split('T')[0]);
+    setGranularity(SnapshotGranularity.DAILY);
     setStatus({ type: null, message: '' });
   };
 
@@ -278,6 +281,21 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
             helperText="Select the date for the snapshot"
           />
 
+          {/* Granularity Selection */}
+          <FormControl fullWidth>
+            <InputLabel>Snapshot Granularity</InputLabel>
+            <Select
+              value={granularity}
+              onChange={(e) => setGranularity(e.target.value as SnapshotGranularity)}
+              label="Snapshot Granularity"
+              disabled={isCreating}
+            >
+              <MenuItem value={SnapshotGranularity.DAILY}>Daily</MenuItem>
+              <MenuItem value={SnapshotGranularity.WEEKLY}>Weekly</MenuItem>
+              <MenuItem value={SnapshotGranularity.MONTHLY}>Monthly</MenuItem>
+            </Select>
+          </FormControl>
+
           {/* Selected Portfolio Info */}
           {selectedPortfolio && (
             <Box sx={{ 
@@ -345,7 +363,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
           variant="contained"
           startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
           onClick={handleCreateSnapshot}
-          disabled={!selectedPortfolioId || !snapshotDate || isCreating || isLoadingPortfolios}
+          disabled={!selectedPortfolioId || !snapshotDate || !granularity || isCreating || isLoadingPortfolios}
           sx={{ textTransform: 'none', minWidth: 140 }}
         >
           {isCreating ? 'Creating...' : 'Create Snapshot'}

@@ -51,17 +51,16 @@ export class PortfolioSnapshotService {
       throw new NotFoundException(`Portfolio with ID ${createDto.portfolioId} not found`);
     }
 
-    // Check if snapshot already exists
-    const exists = await this.portfolioSnapshotRepo.exists(
+    // Check if snapshot already exists and delete it to avoid duplicates
+    const existingSnapshot = await this.portfolioSnapshotRepo.findByUniqueKey(
       createDto.portfolioId,
       snapshotDate,
       createDto.granularity
     );
 
-    if (exists) {
-      throw new BadRequestException(
-        `Portfolio snapshot already exists for portfolio ${createDto.portfolioId} on ${snapshotDate.toISOString().split('T')[0]} with granularity ${createDto.granularity}`
-      );
+    if (existingSnapshot) {
+      this.logger.warn(`Portfolio snapshot already exists for portfolio ${createDto.portfolioId} on ${snapshotDate.toISOString().split('T')[0]}. Deleting old snapshot and creating new one.`);
+      await this.portfolioSnapshotRepo.delete(existingSnapshot.id);
     }
 
     // Create snapshot

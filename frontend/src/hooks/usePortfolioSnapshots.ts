@@ -63,7 +63,7 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
       if (queryOptions.orderBy) params.append('orderBy', queryOptions.orderBy);
       if (queryOptions.orderDirection) params.append('orderDirection', queryOptions.orderDirection);
 
-      const response = await apiClient.api.get(`/portfolio-snapshots?${params.toString()}`);
+      const response = await apiClient.api.get(`/api/v1/portfolio-snapshots?${params.toString()}`);
       
       if (response.data.success) {
         setPortfolioSnapshots(response.data.data);
@@ -98,7 +98,7 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
       if (queryOptions.orderBy) params.append('orderBy', queryOptions.orderBy);
       if (queryOptions.orderDirection) params.append('orderDirection', queryOptions.orderDirection);
 
-      const response = await apiClient.api.get(`/portfolio-snapshots/paginated?${params.toString()}`);
+      const response = await apiClient.api.get(`/api/v1/portfolio-snapshots/paginated?${params.toString()}`);
       
       if (response.data.success) {
         setPortfolioSnapshots(response.data.data);
@@ -121,7 +121,7 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
 
   const createPortfolioSnapshot = useCallback(async (data: any): Promise<PortfolioSnapshot> => {
     try {
-      const response = await apiClient.api.post('/portfolio-snapshots', data);
+      const response = await apiClient.api.post('/api/v1/portfolio-snapshots', data);
       
       if (response.data.success) {
         // Refresh the list after creating
@@ -139,7 +139,7 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
 
   const updatePortfolioSnapshot = useCallback(async (id: string, data: any): Promise<PortfolioSnapshot> => {
     try {
-      const response = await apiClient.api.put(`/portfolio-snapshots/${id}`, data);
+      const response = await apiClient.api.put(`/api/v1/portfolio-snapshots/${id}`, data);
       
       if (response.data.success) {
         // Refresh the list after updating
@@ -157,7 +157,7 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
 
   const deletePortfolioSnapshot = useCallback(async (id: string): Promise<void> => {
     try {
-      const response = await apiClient.api.delete(`/portfolio-snapshots/${id}`);
+      const response = await apiClient.api.delete(`/api/v1/portfolio-snapshots/${id}`);
       
       if (response.data.success) {
         // Refresh the list after deleting
@@ -219,7 +219,7 @@ export const usePortfolioSnapshotTimeline = (
       params.append('endDate', endDate);
       if (granularity) params.append('granularity', granularity);
 
-      const response = await apiClient.api.get(`/portfolio-snapshots/timeline/${portfolioId}?${params.toString()}`);
+      const response = await apiClient.api.get(`/api/v1/portfolio-snapshots/timeline/${portfolioId}?${params.toString()}`);
       
       if (response.data.success) {
         setTimelineData(response.data.data);
@@ -270,7 +270,7 @@ export const usePortfolioSnapshotAggregatedTimeline = (
       params.append('endDate', endDate);
       if (granularity) params.append('granularity', granularity);
 
-      const response = await apiClient.api.get(`/portfolio-snapshots/timeline/${portfolioId}/aggregated?${params.toString()}`);
+      const response = await apiClient.api.get(`/api/v1/portfolio-snapshots/timeline/${portfolioId}/aggregated?${params.toString()}`);
       
       if (response.data.success) {
         setAggregatedData(response.data.data);
@@ -314,7 +314,7 @@ export const useLatestPortfolioSnapshot = (portfolioId: string, granularity?: st
       const params = new URLSearchParams();
       if (granularity) params.append('granularity', granularity);
 
-      const response = await apiClient.api.get(`/portfolio-snapshots/latest/${portfolioId}?${params.toString()}`);
+      const response = await apiClient.api.get(`/api/v1/portfolio-snapshots/latest/${portfolioId}?${params.toString()}`);
       
       if (response.data.success) {
         setLatestSnapshot(response.data.data);

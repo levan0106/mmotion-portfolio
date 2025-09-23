@@ -235,6 +235,25 @@ export class SnapshotRepository {
   }
 
   /**
+   * Find snapshot by unique key
+   */
+  async findByUniqueKey(
+    portfolioId: string,
+    assetId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<AssetAllocationSnapshot | null> {
+    return await this.repository.findOne({
+      where: {
+        portfolioId,
+        assetId,
+        snapshotDate,
+        granularity,
+      },
+    });
+  }
+
+  /**
    * Find portfolios that have snapshots
    */
   async findPortfoliosWithSnapshots(): Promise<{ portfolioId: string; portfolioName: string; snapshotCount: number; latestSnapshotDate: Date; oldestSnapshotDate: Date }[]> {

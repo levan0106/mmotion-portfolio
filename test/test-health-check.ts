@@ -181,7 +181,7 @@ class TestHealthCheck {
     const startTime = performance.now();
     
     try {
-      const response = await axios.get(`${this.baseUrl}/snapshots`, {
+      const response = await axios.get(`${this.baseUrl}/api/v1/snapshots`, {
         timeout: 5000,
         params: {
           page: 1,

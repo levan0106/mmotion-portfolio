@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Asset Snapshot Deletion Logic Fix - COMPLETED (100%)**
-**Latest Update: Fixed critical soft delete filtering issue where deleted snapshots were still visible in frontend (Current Session)**
+**Phase: Asset Name Removal & Performance Metrics Implementation - COMPLETED (100%)**
+**Latest Update: Removed Asset Name from frontend and backend, implemented IRR/Alpha/Beta calculations for Asset and Asset Group Performance (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,30 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **ASSET SNAPSHOT DELETION LOGIC FIX - COMPLETED** (Current Session - September 23, 2025)
+- ✅ **ASSET NAME REMOVAL & PERFORMANCE METRICS IMPLEMENTATION - COMPLETED** (Current Session - September 23, 2025)
+  - **Asset Name Removal**: Completely removed Asset Name from both frontend and backend systems
+  - **Database Schema Update**: Removed asset_name and asset_group_name columns from performance snapshot tables
+  - **Entity Updates**: Updated AssetPerformanceSnapshot and AssetGroupPerformanceSnapshot entities
+  - **Service Updates**: Modified PerformanceSnapshotService to remove assetName and assetGroupName references
+  - **Frontend Updates**: Removed Asset Name column from SnapshotAssetPerformanceTab component
+  - **Table Layout Optimization**: Adjusted table width and column alignment after removing Asset Name column
+  - **Performance Metrics Implementation**: Implemented comprehensive IRR, Alpha, and Beta calculations
+  - **Database Migration**: Added 15 new columns for IRR, Alpha, Beta metrics (1M, 3M, 6M, 1Y, YTD)
+  - **Calculation Services**: Enhanced MWRIRRCalculationService and AlphaBetaCalculationService with asset/group level methods
+  - **Query Builder Fixes**: Corrected snake_case column names in all query builders
+  - **Mock Benchmark API**: Created BenchmarkMockService and BenchmarkMockController for testing
+  - **Code Quality**: Clean, maintainable code with proper error handling and transaction management
+  - **Key Features Implemented**:
+    - ✅ **Asset Name Removal**: Complete removal from database, entities, services, and frontend
+    - ✅ **Performance Metrics**: IRR, Alpha, Beta calculations for both asset and asset group levels
+    - ✅ **Database Schema**: 15 new columns added for comprehensive performance tracking
+    - ✅ **Calculation Services**: Enhanced services with asset/group level calculation methods
+    - ✅ **Query Fixes**: Corrected all query builder syntax to use proper snake_case column names
+    - ✅ **Mock Benchmark API**: Complete mock API for benchmark data testing
+    - ✅ **Frontend Optimization**: Clean table layout with proper column alignment
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- ✅ **ASSET SNAPSHOT DELETION LOGIC FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **Root Cause Analysis**: Identified that backend was using soft delete (set `isActive: false`) but not filtering by `isActive: true` by default
   - **Frontend Issue**: Frontend was not sending `isActive: true` parameter, so backend returned both active and inactive snapshots
   - **Backend Fix**: Modified `SnapshotRepository.createQueryBuilder()` to default filter by `isActive: true` when parameter not provided
@@ -1060,16 +1083,13 @@
 - **Documentation Updates** - Update API docs and user guides
 
 ## Recent Achievements (Current Session)
-- ✅ **Asset-GlobalAsset Sync Service**: Created `AssetGlobalSyncService` for automatic sync
-- ✅ **Asset Service Integration**: Updated `AssetService` to use GlobalAsset for currentPrice
-- ✅ **Fresh Price Data**: Implemented direct join with global_assets for calculations
-- ✅ **Create/Update Sync**: Assets automatically sync with GlobalAsset on create/update
-- ✅ **Fallback Logic**: Graceful fallback to MarketDataService if GlobalAsset unavailable
-- ✅ **Test Script**: Created comprehensive integration test script
-- ✅ **Real-time Value Calculations**: Implemented `AssetValueCalculatorService` and `PortfolioValueCalculatorService`
-- ✅ **Tax/Fee Options Enhancement**: Added support for both percentage and fixed value options
-- ✅ **Centralized Calculation Logic**: All currentValue calculations now use consistent logic
-- ✅ **Future-proof Architecture**: Easy to add tax, fee, discount, commission calculations
+- ✅ **Controller Decision Matrix Documentation**: Created comprehensive decision matrix for choosing between SnapshotController and PerformanceSnapshotController
+- ✅ **Development Guidelines**: Added controller selection guidelines to development documentation
+- ✅ **Quick Reference Guide**: Created quick reference document for easy developer access
+- ✅ **Documentation Structure**: Organized documentation with proper cross-references and examples
+- ✅ **Decision Framework**: Established clear criteria for API placement decisions
+- ✅ **Examples and Use Cases**: Provided specific examples including monthly returns API implementation
+- ✅ **Maintenance Guidelines**: Created guidelines for updating documentation as system evolves
 
 ## Remaining Questions
 1. Database partitioning strategy for large datasets?

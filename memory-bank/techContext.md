@@ -63,7 +63,13 @@
 - **Allocation Timeline Simplified Logic**: DAILY-first approach with simple filtering for MONTHLY/WEEKLY granularities ✅
 - **Real Data Integration**: All granularities use actual snapshot data from database ✅
 - **Performance Optimization**: Eliminated complex date range generation, simplified to basic filtering ✅
-- **Database Status**: Fully operational with computed fields ✅
+- **Performance Metrics Implementation**: IRR, Alpha, Beta calculations for asset and asset group levels ✅
+- **Database Schema Enhancement**: 15 new columns added for comprehensive performance tracking ✅
+- **Calculation Services Enhancement**: Enhanced MWRIRRCalculationService and AlphaBetaCalculationService ✅
+- **Query Builder Optimization**: Corrected snake_case column names for proper database queries ✅
+- **Mock Benchmark API**: Complete mock API for benchmark data testing ✅
+- **Asset Name Simplification**: Complete removal from database, entities, services, and frontend ✅
+- **Database Status**: Fully operational with computed fields and performance metrics ✅
 - **Compilation Status**: All TypeScript errors fixed ✅
 
 ### Infrastructure & DevOps
