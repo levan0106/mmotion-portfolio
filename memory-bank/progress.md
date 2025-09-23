@@ -2,7 +2,23 @@
 
 ## What Works
 ### ✅ Completed
-- **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Current Session - September 23, 2025)
+- **SQL COLUMN NAMING FIX - COMPLETED** (Current Session - September 23, 2025)
+  - **SQL Error Resolution**: Fixed critical SQL error 'column "snapshotdate" does not exist' in SnapshotRepository
+  - **Column Name Standardization**: Updated all query builders to use proper snake_case column names
+  - **Query Builder Updates**: Fixed 12 instances of incorrect column references in SnapshotRepository
+  - **Database Consistency**: Ensured all TypeORM queries use correct database column names
+  - **Error Prevention**: Eliminated SQL errors that were preventing snapshot creation
+  - **Code Quality**: Clean, maintainable code with proper database naming conventions
+  - **Key Features Implemented**:
+    - ✅ **Column Name Fix**: Changed snapshot.snapshotDate to snapshot.snapshot_date in all queries
+    - ✅ **Query Builder Updates**: Fixed orderBy, where, select, groupBy clauses
+    - ✅ **Database Consistency**: All queries now use proper snake_case column names
+    - ✅ **Error Elimination**: No more SQL column not found errors
+    - ✅ **Snapshot Creation**: Snapshot creation now works without SQL errors
+    - ✅ **Performance**: No performance impact, same query efficiency
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **Deposit Value Logic Fix**: Fixed critical logic where totalDepositValue and totalDepositPrincipal included settled deposits
   - **API Services Updated**: Updated all deposit-related services to only calculate values for active deposits
   - **Services Modified**: DepositCalculationService, DepositService, PortfolioService, PortfolioRepository

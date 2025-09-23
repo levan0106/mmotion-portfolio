@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Deposit Value Calculation Logic Fix - COMPLETED (100%)**
-**Latest Update: Fixed deposit value calculation logic to only include active deposits, updated all related services and APIs (Current Session)**
+**Phase: FUEVFVND Price Issue Investigation - IN PROGRESS (80%)**
+**Latest Update: Fixed SQL column naming issue in SnapshotRepository, investigating why FUEVFVND still has currentPrice = 1 in snapshots (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,20 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Current Session - September 23, 2025)
+- 🔄 **FUEVFVND PRICE ISSUE INVESTIGATION - IN PROGRESS** (Current Session - September 23, 2025)
+  - **SQL Column Naming Fix**: Fixed critical SQL error 'column "snapshotdate" does not exist' in SnapshotRepository
+  - **Column Name Standardization**: Updated all query builders to use snake_case column names (snapshot_date instead of snapshotDate)
+  - **Debug Logging Added**: Added comprehensive debug logging to getCurrentPriceFromGlobalAsset and getAnalyticsAssetTypeFromSymbol
+  - **Logic Verification**: Confirmed that other assets get correct prices, FUEVFVND is specific issue
+  - **Current Status**: FUEVFVND still has currentPrice = 1, investigation ongoing
+  - **Key Findings**:
+    - ✅ **SQL Error Fixed**: SnapshotRepository now uses correct column names
+    - ✅ **Other Assets Working**: Assets like 16287, 46139, 35481 have correct prices
+    - ❌ **FUEVFVND Issue**: Still shows currentPrice = 1 in all snapshots
+    - 🔍 **Debug Logs**: No debug messages found for FUEVFVND processing
+    - 🔍 **Next Steps**: Investigate why FUEVFVND not processed by getCurrentPriceFromGlobalAsset
+
+- ✅ **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **Deposit Value Logic Fix**: Fixed critical logic where totalDepositValue and totalDepositPrincipal included settled deposits
   - **API Services Updated**: Updated all deposit-related services to only calculate values for active deposits
   - **Services Modified**: DepositCalculationService, DepositService, PortfolioService, PortfolioRepository
