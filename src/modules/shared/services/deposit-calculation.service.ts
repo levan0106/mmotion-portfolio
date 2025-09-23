@@ -49,9 +49,9 @@ export class DepositCalculationService {
         ? parseFloat(deposit.interestRate) 
         : (deposit.interestRate || 0);
 
-      totalDepositPrincipal += principal;
-
       if (deposit.status === 'ACTIVE') {
+        // Only count principal for active deposits
+        totalDepositPrincipal += principal;
         // For active deposits, calculate accrued interest
         const accruedInterest = deposit.calculateAccruedInterest();
         const parsedAccruedInterest = typeof accruedInterest === 'string' 
@@ -75,7 +75,7 @@ export class DepositCalculationService {
         
         totalDepositInterest += actualInterest;
         realizedDepositPnL += actualInterest;
-        totalDepositValue += principal + actualInterest;
+        // Don't add to totalDepositValue for settled deposits
       }
     });
 
@@ -108,9 +108,9 @@ export class DepositCalculationService {
         ? parseFloat(deposit.principal) 
         : (deposit.principal || 0);
       
-      totalDepositPrincipal += principal;
-
       if (deposit.status === 'ACTIVE') {
+        // Only count principal for active deposits
+        totalDepositPrincipal += principal;
         const accruedInterest = deposit.calculateAccruedInterest();
         const parsedAccruedInterest = typeof accruedInterest === 'string' 
           ? parseFloat(accruedInterest) 
@@ -132,7 +132,7 @@ export class DepositCalculationService {
         
         totalDepositInterest += actualInterest;
         realizedDepositPnL += actualInterest;
-        totalDepositValue += principal + actualInterest;
+        // Don't add to totalDepositValue for settled deposits
       }
     });
 

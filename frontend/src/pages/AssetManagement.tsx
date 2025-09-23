@@ -74,7 +74,7 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
     createAsset,
   } = useAssets({ 
     initialFilters, 
-    autoFetch: true 
+    autoFetch: false 
   });
 
   // Handle filter changes

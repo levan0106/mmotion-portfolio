@@ -339,7 +339,17 @@ erDiagram
 - **Integration**: Seamless integration with existing snapshot system - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 
-### 24. Asset Name Simplification Pattern - **IMPLEMENTED ✅**
+### 24. Deposit Value Calculation Pattern - **IMPLEMENTED ✅**
+- **Active Deposits Only**: totalDepositValue and totalDepositPrincipal only include ACTIVE deposits - **COMPLETED**
+- **Settled Deposits Excluded**: Settled deposits only contribute to realized P&L, not total values - **COMPLETED**
+- **Service Consistency**: All services (DepositCalculationService, DepositService, PortfolioService) use same logic - **COMPLETED**
+- **API Accuracy**: Deposit analytics API returns correct values for active deposits only - **COMPLETED**
+- **Snapshot Integration**: Portfolio snapshot creation uses corrected deposit calculation logic - **COMPLETED**
+- **Database Updates**: All deposit-related calculations updated in database queries - **COMPLETED**
+- **Logic Consistency**: Ensured all deposit calculations follow same pattern across all services - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with proper error handling and transaction management - **COMPLETED**
+
+### 25. Asset Name Simplification Pattern - **IMPLEMENTED ✅**
 - **Asset Name Removal**: Complete removal from database, entities, services, and frontend - **COMPLETED**
 - **Symbol-Only Approach**: Simplified to use only asset symbols for identification - **COMPLETED**
 - **Database Schema Update**: Removed asset_name and asset_group_name columns - **COMPLETED**
@@ -349,7 +359,7 @@ erDiagram
 - **Table Layout**: Adjusted table width and column alignment after Asset Name removal - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 
-### 25. Circuit Breaker Pattern - **PLANNED**
+### 26. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented

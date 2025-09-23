@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Asset Name Removal & Performance Metrics Implementation - COMPLETED (100%)**
-**Latest Update: Removed Asset Name from frontend and backend, implemented IRR/Alpha/Beta calculations for Asset and Asset Group Performance (Current Session)**
+**Phase: Deposit Value Calculation Logic Fix - COMPLETED (100%)**
+**Latest Update: Fixed deposit value calculation logic to only include active deposits, updated all related services and APIs (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,24 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **ASSET NAME REMOVAL & PERFORMANCE METRICS IMPLEMENTATION - COMPLETED** (Current Session - September 23, 2025)
+- ✅ **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Current Session - September 23, 2025)
+  - **Deposit Value Logic Fix**: Fixed critical logic where totalDepositValue and totalDepositPrincipal included settled deposits
+  - **API Services Updated**: Updated all deposit-related services to only calculate values for active deposits
+  - **Services Modified**: DepositCalculationService, DepositService, PortfolioService, PortfolioRepository
+  - **Logic Consistency**: Ensured all deposit calculations follow same pattern - only active deposits count
+  - **API Verification**: Verified deposit analytics API returns correct values (totalPrincipal: 32801661, totalValue: 32831731.95)
+  - **Snapshot API Testing**: Tested /api/v1/snapshots/portfolio endpoint - correctly calculates deposit data using fixed logic
+  - **Code Quality**: Clean, maintainable code with proper error handling and transaction management
+  - **Key Features Implemented**:
+    - ✅ **Active Deposits Only**: totalDepositValue and totalDepositPrincipal only include ACTIVE deposits
+    - ✅ **Settled Deposits Excluded**: Settled deposits only contribute to realized P&L, not total values
+    - ✅ **Service Consistency**: All services (DepositCalculationService, DepositService, PortfolioService) use same logic
+    - ✅ **API Accuracy**: Deposit analytics API returns correct values for active deposits only
+    - ✅ **Snapshot Integration**: Portfolio snapshot creation uses corrected deposit calculation logic
+    - ✅ **Database Updates**: All deposit-related calculations updated in database queries
+    - ✅ **Production Ready**: Clean, optimized code ready for production
+
+- ✅ **ASSET NAME REMOVAL & PERFORMANCE METRICS IMPLEMENTATION - COMPLETED** (Previous Session - September 23, 2025)
   - **Asset Name Removal**: Completely removed Asset Name from both frontend and backend systems
   - **Database Schema Update**: Removed asset_name and asset_group_name columns from performance snapshot tables
   - **Entity Updates**: Updated AssetPerformanceSnapshot and AssetGroupPerformanceSnapshot entities

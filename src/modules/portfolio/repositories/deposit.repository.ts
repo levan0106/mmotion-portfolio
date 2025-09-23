@@ -197,7 +197,8 @@ export class DepositRepository {
     const activeDeposits = deposits.filter(d => d.status === 'ACTIVE');
     const settledDeposits = deposits.filter(d => d.status === 'SETTLED');
 
-    const totalPrincipal = deposits.reduce((sum, d) => {
+    // Only calculate totalPrincipal for active deposits (not settled)
+    const totalPrincipal = activeDeposits.reduce((sum, d) => {
       const principal = typeof d.principal === 'string' ? parseFloat(d.principal) : (d.principal || 0);
       return sum + principal;
     }, 0);
@@ -207,7 +208,8 @@ export class DepositRepository {
       return sum + actualInterest;
     }, 0);
     const totalInterest = totalAccruedInterest + totalSettledInterest;
-    const totalValue = totalPrincipal + totalAccruedInterest + totalSettledInterest;
+    // Only calculate totalValue for active deposits (not settled)
+    const totalValue = totalPrincipal + totalAccruedInterest;
     const averageInterestRate = deposits.length > 0 
       ? deposits.reduce((sum, d) => {
           const interestRate = typeof d.interestRate === 'string' ? parseFloat(d.interestRate) : (d.interestRate || 0);

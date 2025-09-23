@@ -27,6 +27,7 @@ import {
   CalendarToday as CalendarIcon,
   Notes as NotesIcon,
   Timer as TimerIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { formatCurrency, formatDate } from '../../utils/format';
 
@@ -60,6 +61,7 @@ interface DepositDetailsModalProps {
   onClose: () => void;
   deposit: Deposit | null;
   onSettle?: (deposit: Deposit) => void;
+  onEdit?: (deposit: Deposit) => void;
 }
 
 const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
@@ -67,6 +69,7 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
   onClose,
   deposit,
   onSettle,
+  onEdit,
 }) => {
   if (!deposit) return null;
 
@@ -404,6 +407,24 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
         >
           Đóng
         </Button>
+        
+        {deposit.canBeEdited && onEdit && (
+          <Button 
+            onClick={() => onEdit(deposit)} 
+            variant="contained" 
+            color="primary"
+            size="large"
+            startIcon={<EditIcon />}
+            sx={{ 
+              minWidth: 140,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            Chỉnh sửa
+          </Button>
+        )}
         
         {deposit.canBeSettled && onSettle && (
           <Button 

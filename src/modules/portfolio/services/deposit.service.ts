@@ -296,7 +296,8 @@ export class DepositService {
     const settledDeposits = allDeposits.filter(d => d.status === 'SETTLED');
     
     const totalDeposits = allDeposits.length;
-    const totalPrincipal = allDeposits.reduce((sum, d) => {
+    // Only calculate totalPrincipal and totalValue for active deposits (not settled)
+    const totalPrincipal = activeDeposits.reduce((sum, d) => {
       const principal = typeof d.principal === 'string' ? parseFloat(d.principal) : (d.principal || 0);
       return sum + principal;
     }, 0);
@@ -309,7 +310,8 @@ export class DepositService {
       const actualInterest = typeof d.actualInterest === 'string' ? parseFloat(d.actualInterest) : (d.actualInterest || 0);
       return sum + actualInterest;
     }, 0);
-    const totalValue = allDeposits.reduce((sum, d) => {
+    // Only calculate totalValue for active deposits (not settled)
+    const totalValue = activeDeposits.reduce((sum, d) => {
       const totalValue = d.calculateTotalValue();
       const parsedTotalValue = typeof totalValue === 'string' ? parseFloat(totalValue) : (totalValue || 0);
       return sum + parsedTotalValue;

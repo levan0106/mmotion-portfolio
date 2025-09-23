@@ -123,7 +123,7 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     {
       enabled: !!portfolioId,
       staleTime: 1 * 60 * 1000, // 1 minute
-      refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+      refetchInterval: false, // Disabled auto refresh
     }
   );
 
@@ -152,7 +152,7 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     {
       enabled: !!portfolioId,
       staleTime: 30 * 1000, // 30 seconds - reduced for testing
-      refetchInterval: 60 * 1000, // Refetch every minute
+      refetchInterval: false, // Disabled auto refresh
     }
   );
 

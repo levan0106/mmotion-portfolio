@@ -211,6 +211,7 @@ export class PortfolioRepository extends Repository<Portfolio> {
       
       if (deposit.status === 'SETTLED') {
         interest = parseFloat(deposit.actual_interest) || 0;
+        // Don't add to totalDepositValue for settled deposits
       } else {
         // Use same logic as calculateAccruedInterest()
         const currentDate = new Date();
@@ -225,9 +226,9 @@ export class PortfolioRepository extends Repository<Portfolio> {
           interest = (principal * interestRate * daysDiff) / (100 * 365);
           interest = Math.round(interest * 100) / 100;
         }
+        // Only add to totalDepositValue for active deposits
+        totalDepositValue += principal + interest;
       }
-      
-      totalDepositValue += principal + interest;
     }
     
     // Calculate total portfolio value including deposits

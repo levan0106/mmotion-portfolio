@@ -69,7 +69,10 @@
 - **Query Builder Optimization**: Corrected snake_case column names for proper database queries ✅
 - **Mock Benchmark API**: Complete mock API for benchmark data testing ✅
 - **Asset Name Simplification**: Complete removal from database, entities, services, and frontend ✅
-- **Database Status**: Fully operational with computed fields and performance metrics ✅
+- **Deposit Value Calculation Fix**: Fixed logic to only include active deposits in totalDepositValue and totalDepositPrincipal ✅
+- **Service Consistency**: All deposit-related services use consistent logic for active vs settled deposits ✅
+- **API Accuracy**: Deposit analytics and snapshot APIs return correct values for active deposits only ✅
+- **Database Status**: Fully operational with computed fields, performance metrics, and corrected deposit calculations ✅
 - **Compilation Status**: All TypeScript errors fixed ✅
 
 ### Infrastructure & DevOps

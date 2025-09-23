@@ -42,7 +42,7 @@ const tradeSchema = yup.object({
   quantity: yup
     .number()
     .positive('Quantity must be positive')
-    .min(0.01, 'Quantity must be at least 0.01')
+    .min(0.00001, 'Quantity must be at least 0.00001')
     .required('Quantity is required'),
   price: yup
     .number()
@@ -84,7 +84,8 @@ const FormattedNumberField: React.FC<{
   disabled?: boolean;
   inputProps?: any;
   currency?: string;
-}> = ({ field, label, error, helperText, disabled, inputProps, currency }) => {
+  decimalPlaces?: number;
+}> = ({ field, label, error, helperText, disabled, inputProps, currency, decimalPlaces = 2 }) => {
   const [displayValue, setDisplayValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
@@ -93,7 +94,7 @@ const FormattedNumberField: React.FC<{
     if (!value || value === '') return '';
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numValue)) return '';
-    return formatNumber(numValue, currency === 'VND' ? 0 : 2);
+    return formatNumber(numValue, currency === 'VND' ? 0 : decimalPlaces);
   };
 
   // Parse display value back to number
@@ -578,7 +579,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                           error={!!errors.quantity}
                           helperText={errors.quantity?.message}
                           disabled={isLoading}
-                          inputProps={{ step: '0.01', min: '0.01' }}
+                          inputProps={{ step: '0.00001', min: '0.00001' }}
+                          decimalPlaces={5}
                         />
                       )}
                     />

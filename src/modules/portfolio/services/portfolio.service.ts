@@ -682,6 +682,7 @@ export class PortfolioService {
       if (deposit.status === 'SETTLED') {
         interest = parseFloat(deposit.actual_interest) || 0;
         totalDepositRealizedPnL += interest;
+        // Don't add to totalDepositValue for settled deposits
       } else {
         // Use same logic as calculateAccruedInterest()
         const currentDate = new Date();
@@ -697,9 +698,9 @@ export class PortfolioService {
           interest = Math.round(interest * 100) / 100;
         }
         totalDepositUnrealizedPnL += interest;
+        // Only add to totalDepositValue for active deposits
+        totalDepositValue += principal + interest;
       }
-      
-      totalDepositValue += principal + interest;
     }
 
     return {

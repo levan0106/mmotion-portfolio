@@ -419,7 +419,12 @@ const PerformanceSnapshotDashboard: React.FC<PerformanceSnapshotDashboardProps> 
                             <Typography variant="body2" color="text.secondary">
                               TWR:
                             </Typography>
-                            <Typography variant="body2" fontWeight="medium">
+                            <Typography 
+                              variant="body2" 
+                              fontWeight="medium"
+                              color={group?.twr && Number(group.twr) >= 0 ? 'success.main' : 'error.main'}
+                            >
+                              {group?.twr && Number(group.twr) >= 0 ? '+' : ''}
                               {formatPercentage(group?.twr)}
                             </Typography>
                           </Box>
@@ -427,7 +432,11 @@ const PerformanceSnapshotDashboard: React.FC<PerformanceSnapshotDashboardProps> 
                             <Typography variant="body2" color="text.secondary">
                               Sharpe:
                             </Typography>
-                            <Typography variant="body2" fontWeight="medium">
+                            <Typography 
+                              variant="body2" 
+                              fontWeight="medium"
+                              color={group?.sharpeRatio && Number(group.sharpeRatio) >= 0 ? 'success.main' : 'error.main'}
+                            >
                               {(group?.sharpeRatio || 0).toFixed(2)}
                             </Typography>
                           </Box>

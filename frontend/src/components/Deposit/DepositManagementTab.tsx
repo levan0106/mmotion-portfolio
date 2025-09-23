@@ -423,6 +423,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
         }}
         deposit={selectedDeposit}
         onSettle={handleSettleDepositClick}
+        onEdit={handleEditDeposit}
       />
     </Box>
   );
