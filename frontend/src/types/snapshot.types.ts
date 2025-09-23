@@ -252,13 +252,33 @@ export interface PortfolioSnapshot {
   unrealizedDepositPnL: number;
   realizedDepositPnL: number;
   
-  // Performance Metrics
+  // Asset Performance Metrics (Assets Only)
+  assetDailyReturn: number;
+  assetWeeklyReturn: number;
+  assetMonthlyReturn: number;
+  assetYtdReturn: number;
+  
+  // Asset Risk Metrics (Assets Only)
+  assetVolatility: number;
+  assetMaxDrawdown: number;
+  
+  // Portfolio Performance Metrics (Assets + Deposits)
+  portfolioDailyReturn: number;
+  portfolioWeeklyReturn: number;
+  portfolioMonthlyReturn: number;
+  portfolioYtdReturn: number;
+  
+  // Portfolio Risk Metrics (Assets + Deposits)
+  portfolioVolatility: number;
+  portfolioMaxDrawdown: number;
+  
+  // Legacy Performance Metrics (DEPRECATED - for backward compatibility)
   dailyReturn: number;
   weeklyReturn: number;
   monthlyReturn: number;
   ytdReturn: number;
   
-  // Risk Metrics
+  // Legacy Risk Metrics (DEPRECATED - for backward compatibility)
   volatility: number;
   maxDrawdown: number;
   

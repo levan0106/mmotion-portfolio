@@ -375,8 +375,11 @@ export class SnapshotRepository {
       queryBuilder.andWhere('snapshot.snapshotDate <= :endDate', { endDate: options.endDate });
     }
 
+    // Default to only active snapshots if isActive is not explicitly set
     if (options.isActive !== undefined) {
       queryBuilder.andWhere('snapshot.isActive = :isActive', { isActive: options.isActive });
+    } else {
+      queryBuilder.andWhere('snapshot.isActive = :isActive', { isActive: true });
     }
 
     // Apply ordering

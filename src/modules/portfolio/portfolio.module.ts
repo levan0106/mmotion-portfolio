@@ -34,6 +34,7 @@ import { DepositRepository } from './repositories/deposit.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 import { DepositModule } from './deposit.module';
+import { SharedModule } from '../shared/shared.module';
 
 /**
  * Portfolio module for managing investment portfolios.
@@ -63,6 +64,7 @@ import { DepositModule } from './deposit.module';
     MarketDataModule,
     AssetModule,
     DepositModule,
+    SharedModule,
   ],
   controllers: [
     PortfolioController,

@@ -288,7 +288,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
           
           {portfolioSnapshots && portfolioSnapshots.length > 0 ? (
             <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider', overflowX: 'auto' }}>
-              <Table size="small" sx={{ minWidth: 3500 }}>
+              <Table size="small" sx={{ minWidth: 4500 }}>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }}>Date</TableCell>
@@ -314,14 +314,20 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Realized</TableCell>
                     {/* Cash Level */}
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Cash</TableCell>
-                    {/* Performance Metrics */}
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Total %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Daily %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Weekly %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Monthly %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">YTD %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Vol %</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Max DD</TableCell>
+                    {/* Portfolio Performance Metrics (Assets + Deposits) */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Daily %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Weekly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Monthly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio YTD %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Portfolio Vol %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Portfolio Max DD</TableCell>
+                    {/* Asset Performance Metrics (Assets Only) */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Daily %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Weekly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Monthly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset YTD %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Asset Vol %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Asset Max DD</TableCell>
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Assets</TableCell>
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Active</TableCell>
                     <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Type</TableCell>
@@ -373,12 +379,12 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
                       
                       {/* Portfolio Unrealized P&L */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
-                        <Typography 
-                          variant="body2" 
-                          fontWeight={600}
+                          <Typography 
+                            variant="body2" 
+                            fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
                           color={snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
-                        >
+                          >
                           {snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? '+' : ''}
                           {formatCurrency(Number(snapshot.unrealizedPortfolioPl || 0), baseCurrency)}
                           </Typography>
@@ -473,9 +479,9 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
                       
                       {/* Deposit Interest */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
-                        <Typography 
-                          variant="body2" 
-                          fontWeight={600}
+                          <Typography 
+                            variant="body2" 
+                            fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
                           color={snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? 'success.main' : 'error.main'}
                         >
@@ -517,87 +523,145 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
                           </Typography>
                       </TableCell>
                       
-                      {/* Total Return % */}
+                      {/* Portfolio Daily Return % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
-                          color={snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? 'success.main' : 'error.main'}
+                          color={snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? '+' : ''}
-                          {formatPercentage(Number(snapshot.totalReturn || 0))}
+                          {snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.portfolioDailyReturn || 0))}
                         </Typography>
                       </TableCell>
                       
-                      {/* Daily Return % */}
+                      {/* Portfolio Weekly Return % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
-                          color={snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? 'success.main' : 'error.main'}
+                          color={snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? '+' : ''}
-                          {formatPercentage(Number(snapshot.dailyReturn || 0))}
+                          {snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.portfolioWeeklyReturn || 0))}
                         </Typography>
                       </TableCell>
                       
-                      {/* Weekly Return % */}
+                      {/* Portfolio Monthly Return % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
-                          color={snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? 'success.main' : 'error.main'}
+                          color={snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? '+' : ''}
-                          {formatPercentage(Number(snapshot.weeklyReturn || 0))}
+                          {snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.portfolioMonthlyReturn || 0))}
                         </Typography>
                       </TableCell>
                       
-                      {/* Monthly Return % */}
+                      {/* Portfolio YTD Return % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
-                          color={snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? 'success.main' : 'error.main'}
+                          color={snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? '+' : ''}
-                          {formatPercentage(Number(snapshot.monthlyReturn || 0))}
+                          {snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.portfolioYtdReturn || 0))}
                         </Typography>
                       </TableCell>
                       
-                      {/* YTD Return % */}
-                      <TableCell align="right" sx={{ py: 0.5 }}>
-                        <Typography 
-                          variant="body2" 
-                          fontWeight={600}
-                          sx={{ fontSize: '0.7rem' }}
-                          color={snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? 'success.main' : 'error.main'}
-                        >
-                          {snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? '+' : ''}
-                          {formatPercentage(Number(snapshot.ytdReturn || 0))}
-                        </Typography>
-                      </TableCell>
-                      
-                      {/* Volatility % */}
+                      {/* Portfolio Volatility % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                          {formatPercentage(Number(snapshot.volatility || 0))}
+                          {formatPercentage(Number(snapshot.portfolioVolatility || 0))}
                         </Typography>
                       </TableCell>
                       
-                      {/* Max Drawdown % */}
+                      {/* Portfolio Max Drawdown % */}
                       <TableCell align="right" sx={{ py: 0.5 }}>
-                          <Typography 
-                            variant="body2" 
-                            fontWeight={600}
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
                           sx={{ fontSize: '0.7rem' }}
                           color="error.main"
                         >
-                          -{formatPercentage(Number(snapshot.maxDrawdown || 0))}
+                          -{formatPercentage(Number(snapshot.portfolioMaxDrawdown || 0))}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Asset Daily Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.assetDailyReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Weekly Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.assetWeeklyReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Monthly Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.assetMonthlyReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset YTD Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.assetYtdReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Volatility % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatPercentage(Number(snapshot.assetVolatility || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Max Drawdown % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color="error.main"
+                        >
+                          -{formatPercentage(Number(snapshot.assetMaxDrawdown || 0))}
                         </Typography>
                       </TableCell>
                       
