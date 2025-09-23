@@ -14,8 +14,9 @@ export interface AssetValueCalculationOptions {
 }
 
 export interface AssetPosition {
+  side?: string | 'BUY' | 'SELL';
   quantity: number;
-  currentPrice: number;
+  price: number;
   avgCost?: number;
   tax?: TaxFeeOption | number;
   fee?: TaxFeeOption | number;
@@ -240,7 +241,7 @@ export class AssetValueCalculatorService {
     return assets.reduce((total, asset) => {
       return total + this.calculateCurrentValue(
         asset.quantity,
-        asset.currentPrice,
+        asset.price,
         {
           tax: asset.tax,
           fee: asset.fee,
@@ -260,7 +261,7 @@ export class AssetValueCalculatorService {
    * @param options - Additional calculation options
    * @returns Unrealized P&L
    */
-  calculateUnrealizedPL(
+  calculateUnrealizedPL( // cách tính này không đúng, cần cải thiện, cần tính toán lại
     quantity: number,
     currentPrice: number,
     avgCost: number,
@@ -271,7 +272,7 @@ export class AssetValueCalculatorService {
     }
 
     const currentValue = this.calculateCurrentValue(quantity, currentPrice, options);
-    const costBasis = quantity * avgCost;
+    const costBasis = quantity * avgCost; 
     
     return currentValue - costBasis;
   }
@@ -283,20 +284,7 @@ export class AssetValueCalculatorService {
    */
   calculateTotalUnrealizedPL(assets: AssetPosition[]): number {
     return assets.reduce((total, asset) => {
-      if (!asset.avgCost) return total;
-      
-      return total + this.calculateUnrealizedPL(
-        asset.quantity,
-        asset.currentPrice,
-        asset.avgCost,
-        {
-          tax: asset.tax,
-          fee: asset.fee,
-          discount: asset.discount,
-          commission: asset.commission,
-          otherDeductions: asset.otherDeductions,
-        }
-      );
+      return total + this.calculateAssetPositionFIFO([asset], asset.price).unrealizedPl;
     }, 0);
   }
 
@@ -325,4 +313,98 @@ export class AssetValueCalculatorService {
     
     return ((currentValue - costBasis) / costBasis) * 100;
   }
+
+  
+  /**
+   * Calculate position for a specific asset using FIFO algorithm
+   * @param assetId - Asset ID
+   * @param trades - Trades for this asset
+   * @param currentPrice - Current price of the asset
+   * @returns Promise<AssetPosition>
+   */
+  calculateAssetPositionFIFO(
+    trades: AssetPosition[],
+    currentPrice: number,
+  ): {
+    quantity: number;
+    avgCost: number;
+    currentValue: number;
+    unrealizedPl: number;
+    realizedPl: number;
+    totalPnl: number;
+    currentPrice: number;
+  } {
+
+    let realizedPnl = 0;
+    const buyTrades: Array<{
+      quantity: number;
+      price: number;
+      fee:number;
+      tax:number;
+      remainingQuantity: number;
+    }> = [];
+  
+    for (const trade of trades) {
+
+      const quantity = parseFloat(trade.quantity.toString());
+      const price = parseFloat(trade.price.toString());
+      const fee = parseFloat(trade.fee?.toString() || '0');
+      const tax = parseFloat(trade.tax?.toString() || '0');
+  
+      if (trade.side === 'BUY') {
+        // chỉ lưu cost gốc, không cộng fee/tax BUY
+        buyTrades.push({
+          quantity,
+          price,
+          fee,
+          tax,
+          remainingQuantity: quantity,
+        });
+      } else if (trade.side === 'SELL') {
+        let remainingToSell = Math.abs(quantity);
+  
+        for (const buyTrade of buyTrades) {
+          if (remainingToSell <= 0) break;
+          if (buyTrade.remainingQuantity <= 0) continue;
+  
+          const sellFromThisTrade = Math.min(remainingToSell, buyTrade.remainingQuantity);
+  
+          const cost = sellFromThisTrade * buyTrade.price;
+          const proceeds = sellFromThisTrade * price;
+  
+          // chỉ trừ fee + tax SELL
+          realizedPnl += proceeds - cost - (fee + tax) * (sellFromThisTrade / Math.abs(quantity));
+  
+          buyTrade.remainingQuantity -= sellFromThisTrade;
+          remainingToSell -= sellFromThisTrade;
+        }
+      }
+    }
+  
+    // Unrealized PnL
+    let netQuantity = 0;
+    let totalCostBasis = 0;
+    for (const buyTrade of buyTrades) {
+      if (buyTrade.remainingQuantity > 0) {
+        netQuantity += buyTrade.remainingQuantity;
+        const proportion = buyTrade.remainingQuantity / buyTrade.quantity;
+        totalCostBasis += (buyTrade.remainingQuantity * buyTrade.price) + (buyTrade.fee * proportion) + (buyTrade.tax * proportion);
+      }
+    }
+  
+    const marketValue = netQuantity * currentPrice;
+    const unrealizedPnl = marketValue - totalCostBasis;
+    const totalPnl = realizedPnl + unrealizedPnl;
+  
+    return {
+      quantity: netQuantity,
+      avgCost: netQuantity > 0 ? totalCostBasis / netQuantity : 0,
+      currentValue: marketValue,
+      unrealizedPl: unrealizedPnl,
+      realizedPl: realizedPnl,
+      totalPnl,
+      currentPrice,
+    };
+  }
+  
 }

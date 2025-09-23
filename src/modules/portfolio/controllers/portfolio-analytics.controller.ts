@@ -116,9 +116,12 @@ export class PortfolioAnalyticsController {
       }, {});
     }
 
+    // Calculate total value including deposits
+    const totalValue = allocation.reduce((sum, item) => sum + item.totalValue, 0);
+
     return {
       portfolioId: id,
-      totalValue: portfolio.totalValue,
+      totalValue: totalValue,
       allocation: groupedAllocation,
       groupBy: groupby || 'type',
       calculatedAt: new Date().toISOString(),

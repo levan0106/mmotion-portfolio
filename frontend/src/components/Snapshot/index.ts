@@ -1,7 +1,6 @@
 // Snapshot Components Export
 
 export { SnapshotList } from './SnapshotList';
-export { SnapshotListView } from './SnapshotListView';
 export { SnapshotSimpleList } from './SnapshotSimpleList';
 export type { SnapshotListFilters } from './SnapshotListFilters';
 export { SnapshotForm } from './SnapshotForm';

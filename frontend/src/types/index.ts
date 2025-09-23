@@ -34,10 +34,22 @@ export interface Portfolio extends BaseEntity {
   accountId: string;
   name: string;
   baseCurrency: string;
-  totalValue: number;
+  totalValue: number; // Keep for backward compatibility
   cashBalance: number;
-  unrealizedPl: number;
-  realizedPl: number;
+  unrealizedPl: number; // Keep for backward compatibility
+  realizedPl: number; // Keep for backward compatibility
+  
+  // New explicit value and P&L fields
+  totalAssetValue: number;
+  totalInvestValue: number;
+  totalAllValue: number;
+  realizedAssetPnL: number;
+  realizedInvestPnL: number;
+  realizedAllPnL: number;
+  unrealizedAssetPnL: number;
+  unrealizedInvestPnL: number;
+  unrealizedAllPnL: number;
+  
   account?: Account;
   portfolioAssets?: PortfolioAsset[];
   navSnapshots?: NavSnapshot[];

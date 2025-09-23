@@ -7,6 +7,7 @@ import { NavSnapshot } from './entities/nav-snapshot.entity';
 import { CashFlow } from './entities/cash-flow.entity';
 import { AssetAllocationSnapshot } from './entities/asset-allocation-snapshot.entity';
 import { PortfolioSnapshot } from './entities/portfolio-snapshot.entity';
+import { Deposit } from './entities/deposit.entity';
 import { Account } from '../shared/entities/account.entity';
 import { Asset } from '../asset/entities/asset.entity';
 import { GlobalAsset } from '../asset/entities/global-asset.entity';
@@ -29,6 +30,7 @@ import { SnapshotController } from './controllers/snapshot.controller';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { SnapshotRepository } from './repositories/snapshot.repository';
 import { PortfolioSnapshotRepository } from './repositories/portfolio-snapshot.repository';
+import { DepositRepository } from './repositories/deposit.repository';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 import { DepositModule } from './deposit.module';
@@ -45,6 +47,7 @@ import { DepositModule } from './deposit.module';
       CashFlow,
       AssetAllocationSnapshot,
       PortfolioSnapshot,
+      Deposit,
       Account,
       Asset,
       GlobalAsset,
@@ -79,6 +82,7 @@ import { DepositModule } from './deposit.module';
     PortfolioSnapshotService,
     SnapshotRepository,
     PortfolioSnapshotRepository,
+    DepositRepository,
     TradeRepository,
     // Mock cache manager when cache is disabled
     ...(process.env.CACHE_ENABLED !== 'true' ? [{

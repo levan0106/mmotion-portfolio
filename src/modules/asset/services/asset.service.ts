@@ -827,7 +827,7 @@ export class AssetService {
         const currentPrice = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
         return {
           quantity: asset.currentQuantity || 0,
-          currentPrice: currentPrice || 0,
+          price: currentPrice || 0,
           ...options
         };
       })

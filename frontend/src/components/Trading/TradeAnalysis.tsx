@@ -22,7 +22,6 @@ import {
 import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
-  Timeline as TimelineIcon,
   ShowChart as ShowChartIcon,
 } from '@mui/icons-material';
 import {
@@ -72,6 +71,11 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   isCompactMode = false,
 }) => {
   const [chartView, setChartView] = useState<'pie' | 'compact'>('pie');
+  const [pnlLines, setPnlLines] = useState({
+    total: true,
+    realized: true,
+    unrealized: true,
+  });
 
   // Color palette for charts - more distinct colors
   const COLORS = [
@@ -158,7 +162,12 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   const monthlyChartData = useMemo(() => {
     return analysis.monthlyPerformance.map((month) => ({
       month: month.month,
+      // Total P&L (realized + unrealized)
       pnl: parseFloat(month.totalPl?.toString() || '0'),
+      // Realized P&L from trades
+      realizedPnl: parseFloat((month as any).realizedPl?.toString() || '0'),
+      // Unrealized P&L from current positions
+      unrealizedPnl: parseFloat((month as any).unrealizedPl?.toString() || '0'),
       trades: month.tradesCount || 0,
       winRate: month.winRate || 0,
       totalVolume: parseFloat(month.totalVolume?.toString() || '0'),
@@ -166,6 +175,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       losingTrades: month.losingTrades || 0,
       // Format for display
       formattedPnl: formatCurrency(parseFloat(month.totalPl?.toString() || '0'), currency, {}, locale),
+      formattedRealizedPnl: formatCurrency(parseFloat((month as any).realizedPl?.toString() || '0'), currency, {}, locale),
+      formattedUnrealizedPnl: formatCurrency(parseFloat((month as any).unrealizedPl?.toString() || '0'), currency, {}, locale),
       formattedVolume: formatCurrency(parseFloat(month.totalVolume?.toString() || '0'), currency, {}, locale),
       formattedWinRate: formatPercentage(month.winRate || 0, 1, locale),
       // Color based on P&L
@@ -239,36 +250,129 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             borderRadius: 2,
             p: 2,
             boxShadow: 3,
-            minWidth: 200,
+            minWidth: 280,
           }}
         >
           <Typography variant="subtitle2" fontWeight="bold" color="primary" gutterBottom>
             {label}
           </Typography>
-          {payload.map((entry: any, index: number) => (
-            <Box key={index} sx={{ mb: 0.5 }}>
-              <Typography variant="body2" color="text.secondary">
-                {entry.dataKey === 'pnl' ? 'P&L' : 
-                 entry.dataKey === 'trades' ? 'Trades' :
-                 entry.dataKey === 'winRate' ? 'Win Rate' :
-                 entry.dataKey === 'value' ? 'Value' : entry.dataKey}:
-              </Typography>
-              <Typography variant="body2" fontWeight="bold" color={entry.color}>
-                {entry.dataKey === 'pnl' && data?.formattedPnl ? data.formattedPnl :
-                 entry.dataKey === 'trades' ? entry.value :
-                 entry.dataKey === 'winRate' && data?.formattedWinRate ? data.formattedWinRate :
-                 entry.dataKey === 'value' && data?.formattedValue ? data.formattedValue :
-                 entry.dataKey === 'pnl' ? formatCurrency(entry.value, currency, {}, locale) : entry.value}
-              </Typography>
-            </Box>
-          ))}
-          {/* Additional info for asset performance */}
-          {data?.fullName && (
-            <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #f0f0f0' }}>
-              <Typography variant="caption" color="text.secondary">
-                {data.fullName}
-              </Typography>
-            </Box>
+          
+          {/* Monthly Performance Chart Tooltip */}
+          {data?.month && (
+            <>
+              {/* P&L Summary */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  P&L Summary
+                </Typography>
+                <Box sx={{ pl: 1 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Total P&L:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" color={data.pnl >= 0 ? 'success.main' : 'error.main'}>
+                      {formatCurrency(data.pnl || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Realized P&L:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium" color={data.realizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                      {formatCurrency(data.realizedPnl || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Unrealized P&L:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium" color={data.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                      {formatCurrency(data.unrealizedPnl || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Trading Statistics */}
+              <Box sx={{ mb: 1.5, pt: 1, borderTop: '1px solid #f0f0f0' }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Trading Statistics
+                </Typography>
+                <Box sx={{ pl: 1 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Trades:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {data.trades || 0}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Win Rate:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {formatPercentage(data.winRate || 0, 1, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Volume:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {formatCurrency(data.totalVolume || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+            </>
+          )}
+
+          {/* Asset Performance Chart Tooltip */}
+          {data?.name && !data?.month && (
+            <>
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Asset Performance
+                </Typography>
+                <Box sx={{ pl: 1 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Symbol:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" color="primary">
+                      {data.name}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      P&L:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" color={data.originalValue >= 0 ? 'success.main' : 'error.main'}>
+                      {formatCurrency(data.originalValue || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Percentage:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium" color={data.percentage >= 0 ? 'success.main' : 'error.main'}>
+                      {formatPercentage(data.percentage || 0, 2, locale)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Additional info for asset performance */}
+              {data?.fullName && (
+                <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #f0f0f0' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {data.fullName}
+                  </Typography>
+                </Box>
+              )}
+            </>
           )}
         </Box>
       );
@@ -378,15 +482,16 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       {/* Summary Cards */}
       <Grid container spacing={isCompactMode ? 1 : 3} mb={isCompactMode ? 2 : 4}>
         {/* Total P&L Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 140, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card sx={{ height: 200, boxShadow: 2 }}>
+            <CardContent sx={{ p: 2 }}>
+              {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     Total P&L
                   </Typography>
-                  <Typography variant="h4" color={analysis.pnlSummary.totalPnl >= 0 ? 'success.main' : 'error.main'}>
+                  <Typography variant="h5" color={analysis.pnlSummary.totalPnl >= 0 ? 'success.main' : 'error.main'} fontWeight="bold">
                     {formatCurrency(analysis.pnlSummary.totalPnl, currency, {}, locale)}
                   </Typography>
                 </Box>
@@ -400,97 +505,161 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <TrendingUpIcon />
                 </Box>
               </Box>
+              
+              {/* P&L Breakdown */}
+              <Box sx={{ mb: 2 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Realized P&L:
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color={(analysis.pnlSummary as any).totalRealizedPnl >= 0 ? 'success.main' : 'error.main'}
+                    fontWeight="medium"
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {formatCurrency((analysis.pnlSummary as any).totalRealizedPnl, currency, {}, locale)}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Unrealized P&L:
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color={(analysis.pnlSummary as any).totalUnrealizedPnl >= 0 ? 'success.main' : 'error.main'}
+                    fontWeight="medium"
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {formatCurrency((analysis.pnlSummary as any).totalUnrealizedPnl, currency, {}, locale)}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* Win Rate */}
               <Box display="flex" alignItems="center" gap={1}>
                 <Chip
                   label={`${formatPercentage(analysis.pnlSummary.winRate, 1, locale)} Win Rate`}
                   color={analysis.pnlSummary.winRate >= 50 ? 'success' : 'warning'}
                   size="small"
                   variant="outlined"
+                  sx={{ fontSize: '0.75rem' }}
                 />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Total Trades Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 140, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Trading Statistics Card - Combined Trades & Volume */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card sx={{ height: 200, boxShadow: 2 }}>
+            <CardContent sx={{ p: 2 }}>
+              {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Total Trades
+                    Trading Statistics
                   </Typography>
-                  <Typography variant="h4">
-                    {formatNumber(analysis.statistics.totalTrades, 0, locale)}
+                  <Typography variant="h5" color="primary" fontWeight="bold">
+                    {formatNumber(analysis.statistics.totalTrades, 0, locale)} Trades
                   </Typography>
                 </Box>
-                <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>
-                  <AssessmentIcon />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={`Avg: ${formatCurrency(analysis.statistics.averagePrice, currency, {}, locale)}`}
+                    color="info"
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                  <AssessmentIcon sx={{ color: 'primary.main' }} />
                 </Box>
               </Box>
-              <Box display="flex" gap={1} flexWrap="wrap">
-                <Chip
-                  label={`${analysis.statistics.buyTrades} Buy`}
-                  color="success"
-                  size="small"
-                  variant="outlined"
-                />
-                <Chip
-                  label={`${analysis.statistics.sellTrades} Sell`}
-                  color="error"
-                  size="small"
-                  variant="outlined"
-                />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Total Volume Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 140, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Total Volume
+              
+              {/* Trades Breakdown */}
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Buy Trades:
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="body2" color="success.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    {analysis.statistics.buyTrades}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Sell Trades:
+                  </Typography>
+                  <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    {analysis.statistics.sellTrades}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Total Volume:
+                  </Typography>
+                  <Typography variant="body2" color="info.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
                     {formatCurrency(analysis.statistics.totalVolume, currency, {}, locale)}
                   </Typography>
                 </Box>
-                <Box sx={{ color: 'info.main', display: 'flex', alignItems: 'center' }}>
-                  <TimelineIcon />
-                </Box>
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Avg: {formatCurrency(analysis.statistics.averagePrice, currency, {}, locale)}
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Risk Metrics Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: 140, boxShadow: 2 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Risk Metrics Card - Volatility & Max Drawdown */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card sx={{ height: 200, boxShadow: 2 }}>
+            <CardContent sx={{ p: 2 }}>
+              {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Sharpe Ratio
+                    Risk Metrics
                   </Typography>
-                  <Typography variant="h4" color="primary">
-                    {analysis.riskMetrics.sharpeRatio}
+                  <Typography variant="h5" color="warning.main" fontWeight="bold">
+                    {analysis.riskMetrics.volatility?.toFixed(2) || 'N/A'}%
                   </Typography>
                 </Box>
-                <Box sx={{ color: 'warning.main', display: 'flex', alignItems: 'center' }}>
-                  <ShowChartIcon />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={`Risk Level: ${analysis.riskMetrics.volatility > 20 ? 'High' : analysis.riskMetrics.volatility > 10 ? 'Medium' : 'Low'}`}
+                    color={analysis.riskMetrics.volatility > 20 ? 'error' : analysis.riskMetrics.volatility > 10 ? 'warning' : 'success'}
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                  <ShowChartIcon sx={{ color: 'warning.main' }} />
                 </Box>
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Risk-Adjusted Return
-              </Typography>
+              
+              {/* Risk Breakdown */}
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Max Drawdown:
+                  </Typography>
+                  <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    {formatCurrency(analysis.riskMetrics.maxDrawdown || 0, currency, {}, locale)}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    VaR 95%:
+                  </Typography>
+                  <Typography variant="body2" color="warning.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    {formatCurrency(analysis.riskMetrics.var95 || 0, currency, {}, locale)}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Sharpe Ratio:
+                  </Typography>
+                  <Typography variant="body2" color="primary.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    {analysis.riskMetrics.sharpeRatio?.toFixed(2) || 'N/A'}
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -506,12 +675,29 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 <Typography variant="h6">
                   Monthly Performance
                 </Typography>
-                <Chip
-                  label="P&L Trend"
-                  color="primary"
-                  size="small"
-                  variant="outlined"
-                />
+                <Box display="flex" gap={1}>
+                  <Chip
+                    label="Total P&L"
+                    size="small"
+                    color={pnlLines.total ? 'primary' : 'default'}
+                    onClick={() => setPnlLines(prev => ({ ...prev, total: !prev.total }))}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                  <Chip
+                    label="Realized P&L"
+                    size="small"
+                    color={pnlLines.realized ? 'success' : 'default'}
+                    onClick={() => setPnlLines(prev => ({ ...prev, realized: !prev.realized }))}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                  <Chip
+                    label="Unrealized P&L"
+                    size="small"
+                    color={pnlLines.unrealized ? 'warning' : 'default'}
+                    onClick={() => setPnlLines(prev => ({ ...prev, unrealized: !prev.unrealized }))}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                </Box>
               </Box>
               <Box sx={{ flex: 1, minHeight: 0 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -536,28 +722,45 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   />
-                  <Line
-                    type="monotone"
-                    dataKey="pnl"
-                    stroke="#1976d2"
-                    strokeWidth={3}
-                    dot={(props) => {
-                      const { cx, cy, payload, index } = props;
-                      return (
-                        <circle
-                          key={`dot-${index}`}
-                          cx={cx}
-                          cy={cy}
-                          r={4}
-                          fill={payload?.color || '#1976d2'}
-                          stroke="#fff"
-                          strokeWidth={2}
-                        />
-                      );
-                    }}
-                    activeDot={{ r: 6, stroke: '#1976d2', strokeWidth: 2 }}
-                    name="P&L"
-                  />
+                  
+                  {/* Total P&L Line */}
+                  {pnlLines.total && (
+                    <Line
+                      type="monotone"
+                      dataKey="pnl"
+                      stroke="#1976d2"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: 6, stroke: '#1976d2', strokeWidth: 2 }}
+                      name="Total P&L"
+                    />
+                  )}
+                  
+                  {/* Realized P&L Line */}
+                  {pnlLines.realized && (
+                    <Line
+                      type="monotone"
+                      dataKey="realizedPnl"
+                      stroke="#00C49F"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#00C49F', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: 5, stroke: '#00C49F', strokeWidth: 2 }}
+                      name="Realized P&L"
+                    />
+                  )}
+                  
+                  {/* Unrealized P&L Line */}
+                  {pnlLines.unrealized && (
+                    <Line
+                      type="monotone"
+                      dataKey="unrealizedPnl"
+                      stroke="#FF8042"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#FF8042', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: 5, stroke: '#FF8042', strokeWidth: 2 }}
+                      name="Unrealized P&L"
+                    />
+                  )}
                 </LineChart>
                 </ResponsiveContainer>
               </Box>
@@ -592,7 +795,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 </Box>
               </Box>
               
-              {assetChartData && assetChartData.length > 0 && assetChartData.some(item => item.value > 0) ? (
+              {assetChartData && assetChartData.length > 0 ? (
                 <Box sx={{ height: 350, display: 'flex', flexDirection: 'column' }}>
 
                   {chartView === 'pie' ? (

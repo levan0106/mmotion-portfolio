@@ -310,7 +310,7 @@ export const SnapshotChartsDashboard: React.FC<SnapshotChartsDashboardProps> = (
                   ? new Intl.NumberFormat('en-US', {
                       style: 'currency',
                       currency: 'USD',
-                    }).format(aggregatedData[aggregatedData.length - 1].totalValue)
+                    }).format(aggregatedData[aggregatedData.length - 1].totalAssetValue)
                   : 'N/A'
                 }
               </Typography>

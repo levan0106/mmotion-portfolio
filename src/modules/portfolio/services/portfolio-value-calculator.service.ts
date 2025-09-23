@@ -63,13 +63,16 @@ export class PortfolioValueCalculatorService {
   async calculateRealizedPL(portfolioId: string): Promise<number> {
     try {
       const result = await this.portfolioRepository.manager.query(`
-        SELECT COALESCE(SUM(td.pnl), 0) as totalRealizedPl
+        SELECT COALESCE(SUM(td.pnl), 0) as "totalRealizedPl"
         FROM trade_details td
         INNER JOIN trades t ON td.sell_trade_id = t.trade_id
         WHERE t.portfolio_id = $1 AND t.side = 'SELL'
       `, [portfolioId]);
 
-      return parseFloat((result[0]?.totalRealizedPl || 0).toString());
+      const rawValue = result?.[0]?.totalRealizedPl || 0;
+      const realizedPl = parseFloat(String(rawValue));
+      
+      return realizedPl;
     } catch (error) {
       console.error(`Error calculating realized PL for portfolio ${portfolioId}:`, error);
       return 0;
@@ -141,7 +144,7 @@ export class PortfolioValueCalculatorService {
       // Transform to AssetPosition format
       return result.assetPositions.map(pos => ({
         quantity: pos.quantity,
-        currentPrice: pos.currentValue / pos.quantity, // Calculate price from value
+        price: pos.currentValue / pos.quantity, // Calculate price from value
         avgCost: pos.avgCost,
         // Future: Add tax, fee, discount here based on asset type or configuration
       }));

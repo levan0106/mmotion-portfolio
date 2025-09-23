@@ -48,6 +48,7 @@ flowchart LR
 - **Asset Update Logic**: Preserve empty strings for description field to allow clearing (Asset Management UI Enhancements completed)
 - **Modal Enhancement Pattern**: Add Edit/Delete buttons to detail modals for better UX (Asset Management UI Enhancements completed)
 - **AssetAutocomplete Pattern**: Advanced searchable dropdown with pagination, currency formatting, and edit modal support (TradeForm AssetAutocomplete Integration completed)
+- **Portfolio Snapshot Table Pattern**: Consistent column alignment with proper header-data cell matching, optimized width for currency columns, and duplicate tab removal (Portfolio Snapshot Management UI/UX Enhancements completed)
 - **Force Re-render Pattern**: Key-based re-render mechanism for components that need to reset when external data changes (TradeForm AssetAutocomplete Integration completed)
 - **Deposit Management Pattern**: Simple interest calculation with real-time accrual and early settlement support (CR-007 completed)
 - **Format Helpers Pattern**: Centralized formatting utilities for consistent number, currency, and date display across all components (Format Helpers Integration completed)

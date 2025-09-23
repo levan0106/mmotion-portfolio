@@ -20,6 +20,9 @@ const COLORS = [
   '#FFB347', '#87CEEB', '#DDA0DD', '#F0E68C', '#98FB98',
 ];
 
+// Special color for deposits
+const DEPOSITS_COLOR = '#4CAF50'; // Green color for deposits
+
 const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   data,
   baseCurrency,
@@ -30,7 +33,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
     name: assetType.toUpperCase(),
     value: allocation.percentage,
     marketValue: allocation.value,
-    color: COLORS[index % COLORS.length],
+    color: assetType.toLowerCase() === 'deposits' ? DEPOSITS_COLOR : COLORS[index % COLORS.length],
   }));
 
   const CustomTooltip = ({ active, payload }: any) => {

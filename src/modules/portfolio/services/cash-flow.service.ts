@@ -736,7 +736,7 @@ export class CashFlowService {
       amount, 
       description,  
       referenceId,
-      deposit.startDate,
+      type === CashFlowType.DEPOSIT_CREATION ? deposit.startDate : deposit.settledAt,
       'VND', // Default currency for deposits
       deposit.bankName, // Pass fundingSource from deposit
     );

@@ -155,19 +155,19 @@ export class PortfolioRepository extends Repository<Portfolio> {
     const positions = await this.portfolioRepository.query(query, [portfolioId]);
     console.log('Raw positions from query:', JSON.stringify(positions, null, 2));
 
-    // Calculate total portfolio value
-    const totalValue = positions.reduce((sum, position) => {
+    // Calculate total portfolio value from assets
+    const assetTotalValue = positions.reduce((sum, position) => {
       const quantity = parseFloat(position.totalQuantity) || 0;
       const price = parseFloat(position.currentPrice) || 0;
       return sum + (quantity * price);
     }, 0);
 
-    // Calculate allocation percentages
-    const allocation = positions.map(position => {
+    // Calculate allocation percentages for assets
+    const assetAllocation = positions.map(position => {
       const quantity = parseFloat(position.totalQuantity) || 0;
       const price = parseFloat(position.currentPrice) || 0;
       const positionValue = quantity * price;
-      const percentage = totalValue > 0 ? (positionValue / totalValue) * 100 : 0;
+      const percentage = assetTotalValue > 0 ? (positionValue / assetTotalValue) * 100 : 0;
 
       return {
         assetType: position.assetType || 'UNKNOWN',
@@ -177,7 +177,7 @@ export class PortfolioRepository extends Repository<Portfolio> {
     });
 
     // Group by asset type and sum values
-    const groupedAllocation = allocation.reduce((acc, item) => {
+    const groupedAssetAllocation = assetAllocation.reduce((acc, item) => {
       if (!item.assetType) return acc; // Skip items without assetType
       const existing = acc.find(a => a.assetType === item.assetType);
       if (existing) {
@@ -189,14 +189,69 @@ export class PortfolioRepository extends Repository<Portfolio> {
       return acc;
     }, []);
 
-    // Recalculate percentages based on total portfolio value
-    if (totalValue > 0) {
-      groupedAllocation.forEach(item => {
-        item.percentage = (item.totalValue / totalValue) * 100;
+    // Get deposits data using the same logic as calculateAccruedInterest()
+    const depositsQuery = `
+      SELECT 
+        principal,
+        interest_rate,
+        start_date,
+        end_date,
+        status,
+        actual_interest
+      FROM deposits 
+      WHERE portfolio_id = $1
+    `;
+
+    const depositsResult = await this.portfolioRepository.query(depositsQuery, [portfolioId]);
+    
+    let totalDepositValue = 0;
+    for (const deposit of depositsResult) {
+      const principal = parseFloat(deposit.principal) || 0;
+      let interest = 0;
+      
+      if (deposit.status === 'SETTLED') {
+        interest = parseFloat(deposit.actual_interest) || 0;
+      } else {
+        // Use same logic as calculateAccruedInterest()
+        const currentDate = new Date();
+        const startDate = new Date(deposit.start_date);
+        const endDate = new Date(deposit.end_date);
+        
+        if (currentDate >= startDate) {
+          const calculationDate = currentDate > endDate ? endDate : currentDate;
+          const timeDiff = calculationDate.getTime() - startDate.getTime();
+          const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          const interestRate = parseFloat(deposit.interest_rate) || 0;
+          interest = (principal * interestRate * daysDiff) / (100 * 365);
+          interest = Math.round(interest * 100) / 100;
+        }
+      }
+      
+      totalDepositValue += principal + interest;
+    }
+    
+    // Calculate total portfolio value including deposits
+    const totalPortfolioValue = assetTotalValue + totalDepositValue;
+
+    // Recalculate asset percentages based on total portfolio value (including deposits)
+    if (totalPortfolioValue > 0) {
+      groupedAssetAllocation.forEach(item => {
+        item.percentage = (item.totalValue / totalPortfolioValue) * 100;
       });
     }
 
-    return groupedAllocation;
+    // Add deposits as a special asset type
+    const finalAllocation = [...groupedAssetAllocation];
+    
+    if (totalDepositValue > 0) {
+      finalAllocation.push({
+        assetType: 'DEPOSITS',
+        totalValue: totalDepositValue,
+        percentage: totalPortfolioValue > 0 ? (totalDepositValue / totalPortfolioValue) * 100 : 0,
+      });
+    }
+
+    return finalAllocation;
   }
 
   /**

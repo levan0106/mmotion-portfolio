@@ -70,6 +70,62 @@ export class Portfolio {
   @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'realized_pl' })
   realizedPl: number;
 
+  // ===== NEW FIELDS FOR EXPLICIT VALUE AND P&L CATEGORIZATION =====
+  
+  /**
+   * Total value of assets only (stocks, bonds, etc.)
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'total_asset_value' })
+  totalAssetValue: number;
+
+  /**
+   * Total value of assets + deposits
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'total_invest_value' })
+  totalInvestValue: number;
+
+  /**
+   * Total value of assets + deposits + cash
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'total_all_value' })
+  totalAllValue: number;
+
+  /**
+   * Realized P&L from assets only
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'realized_asset_pnl' })
+  realizedAssetPnL: number;
+
+  /**
+   * Realized P&L from assets + deposits
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'realized_invest_pnl' })
+  realizedInvestPnL: number;
+
+  /**
+   * Realized P&L from assets + deposits + cash
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'realized_all_pnl' })
+  realizedAllPnL: number;
+
+  /**
+   * Unrealized P&L from assets only
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'unrealized_asset_pnl' })
+  unrealizedAssetPnL: number;
+
+  /**
+   * Unrealized P&L from assets + deposits
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'unrealized_invest_pnl' })
+  unrealizedInvestPnL: number;
+
+  /**
+   * Unrealized P&L from assets + deposits + cash
+   */
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'unrealized_all_pnl' })
+  unrealizedAllPnL: number;
+
   /**
    * Timestamp when the portfolio was created.
    */

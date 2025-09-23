@@ -22,7 +22,8 @@ export interface PortfolioSnapshotAggregationResult {
   snapshotDate: string;
   granularity: SnapshotGranularity;
   totalValue: number;
-  totalPl: number;
+  totalAssetPl: number;
+  totalPortfolioPl: number;
   totalReturn: number;
   cashBalance: number;
   investedValue: number;
@@ -157,7 +158,8 @@ export class PortfolioSnapshotRepository {
         'snapshot.snapshotDate',
         'snapshot.granularity',
         'snapshot.totalValue',
-        'snapshot.totalPl',
+        'snapshot.totalAssetPl',
+        'snapshot.totalPortfolioPl',
         'snapshot.totalReturn',
         'snapshot.cashBalance',
         'snapshot.investedValue',

@@ -186,14 +186,32 @@ export class PortfolioController {
   @Get(':id/nav')
   @ApiOperation({ summary: 'Get current NAV for a portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiResponse({ status: 200, description: 'Current NAV retrieved successfully' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Current NAV retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        navValue: { 
+          type: 'number', 
+          description: 'Net Asset Value (cash + assets) - trading performance',
+          example: 1500000000 
+        },
+        totalValue: { 
+          type: 'number', 
+          description: 'Total asset value only (excluding deposits)',
+          example: 1400000000 
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getCurrentNAV(@Param('id', ParseUUIDPipe) id: string): Promise<{ navValue: number; totalValue: number }> {
     const nav = await this.portfolioAnalyticsService.calculateNAV(id);
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
     return { 
-      navValue: nav,
-      totalValue: nav // Both NAV and Total Value should be the same (cash + assets)
+      navValue: nav, // NAV = cash + assets (trading performance)
+      totalValue: portfolio.totalAssetValue // Total asset value only
     };
   }
 
@@ -430,4 +448,5 @@ export class PortfolioController {
       searchTerm: search,
     };
   }
+
 }

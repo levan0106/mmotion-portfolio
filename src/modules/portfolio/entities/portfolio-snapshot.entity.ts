@@ -49,18 +49,32 @@ export class PortfolioSnapshot {
   })
   granularity: SnapshotGranularity;
 
-  // Portfolio Summary Data
-  @Column({ name: 'total_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
-  totalValue: number;
+  // Asset Value Fields (Assets Only)
+  @Column({ name: 'total_asset_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalAssetValue: number;
 
-  @Column({ name: 'total_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
-  totalPl: number;
+  @Column({ name: 'total_asset_invested', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalAssetInvested: number;
 
-  @Column({ name: 'unrealized_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
-  unrealizedPl: number;
+  // Asset P&L Fields (Assets Only)
+  @Column({ name: 'total_asset_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalAssetPl: number;
 
-  @Column({ name: 'realized_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
-  realizedPl: number;
+  @Column({ name: 'unrealized_asset_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  unrealizedAssetPl: number;
+
+  @Column({ name: 'realized_asset_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  realizedAssetPl: number;
+
+  // Portfolio P&L Fields (Assets + Deposits)
+  @Column({ name: 'total_portfolio_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalPortfolioPl: number;
+
+  @Column({ name: 'unrealized_portfolio_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  unrealizedPortfolioPl: number;
+
+  @Column({ name: 'realized_portfolio_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  realizedPortfolioPl: number;
 
   @Column({ name: 'total_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
   totalReturn: number;
@@ -68,8 +82,12 @@ export class PortfolioSnapshot {
   @Column({ name: 'cash_balance', type: 'decimal', precision: 20, scale: 8, default: 0 })
   cashBalance: number;
 
-  @Column({ name: 'invested_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
-  investedValue: number;
+  // Portfolio Value Fields (Assets + Deposits)
+  @Column({ name: 'total_portfolio_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalPortfolioValue: number;
+
+  @Column({ name: 'total_portfolio_invested', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalPortfolioInvested: number;
 
   // Deposit Fields
   @Column({ name: 'total_deposit_principal', type: 'decimal', precision: 20, scale: 8, default: 0 })
@@ -83,6 +101,13 @@ export class PortfolioSnapshot {
 
   @Column({ name: 'total_deposit_count', type: 'int', default: 0 })
   totalDepositCount: number;
+
+  // Deposit P&L Fields
+  @Column({ name: 'unrealized_deposit_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  unrealizedDepositPnL: number;
+
+  @Column({ name: 'realized_deposit_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  realizedDepositPnL: number;
 
   // Performance Metrics
   @Column({ name: 'daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })

@@ -20,26 +20,50 @@ export class CreatePortfolioSnapshotDto {
   @IsEnum(SnapshotGranularity)
   granularity: SnapshotGranularity;
 
-  @ApiProperty({ description: 'Total portfolio value', example: 1000000 })
+  // Asset Value Fields (Assets Only)
+  @ApiProperty({ description: 'Total Asset Value', example: 1000000 })
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  totalValue: number;
+  totalAssetValue: number;
 
-  @ApiProperty({ description: 'Total P&L', example: 50000 })
+  @ApiProperty({ description: 'Total Asset Invested', example: 800000 })
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  totalAssetInvested: number;
+
+  // Asset P&L Fields (Assets Only)
+  @ApiProperty({ description: 'Total Asset P&L', example: 50000 })
   @IsNumber()
   @Type(() => Number)
-  totalPl: number;
+  totalAssetPl: number;
 
-  @ApiProperty({ description: 'Unrealized P&L', example: 30000 })
+  @ApiProperty({ description: 'Unrealized Asset P&L', example: 30000 })
   @IsNumber()
   @Type(() => Number)
-  unrealizedPl: number;
+  unrealizedAssetPl: number;
 
-  @ApiProperty({ description: 'Realized P&L', example: 20000 })
+  @ApiProperty({ description: 'Realized Asset P&L', example: 20000 })
   @IsNumber()
   @Type(() => Number)
-  realizedPl: number;
+  realizedAssetPl: number;
+
+  // Portfolio P&L Fields (Assets + Deposits)
+  @ApiProperty({ description: 'Total Portfolio P&L (Assets + Deposits)', example: 55000 })
+  @IsNumber()
+  @Type(() => Number)
+  totalPortfolioPl: number;
+
+  @ApiProperty({ description: 'Unrealized Portfolio P&L (Assets + Deposits)', example: 35000 })
+  @IsNumber()
+  @Type(() => Number)
+  unrealizedPortfolioPl: number;
+
+  @ApiProperty({ description: 'Realized Portfolio P&L (Assets + Deposits)', example: 20000 })
+  @IsNumber()
+  @Type(() => Number)
+  realizedPortfolioPl: number;
 
   @ApiProperty({ description: 'Total return percentage', example: 5.0 })
   @IsNumber()
@@ -52,11 +76,18 @@ export class CreatePortfolioSnapshotDto {
   @Type(() => Number)
   cashBalance: number;
 
-  @ApiProperty({ description: 'Invested value', example: 800000 })
+  // Portfolio Value Fields (Assets + Deposits)
+  @ApiProperty({ description: 'Total Portfolio Value (Assets + Deposits)', example: 1200000 })
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @Type(() => Number)
-  investedValue: number;
+  totalPortfolioValue: number;
+
+  @ApiProperty({ description: 'Total Portfolio Invested (Assets + Deposits)', example: 1000000 })
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  totalPortfolioInvested: number;
 
   @ApiProperty({ description: 'Daily return percentage', example: 0.5 })
   @IsNumber()
@@ -115,6 +146,46 @@ export class CreatePortfolioSnapshotDto {
   @Type(() => Number)
   activeAssetCount: number;
 
+  @ApiPropertyOptional({ description: 'Total deposit principal', example: 500000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalDepositPrincipal?: number;
+
+  @ApiPropertyOptional({ description: 'Total deposit interest', example: 25000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalDepositInterest?: number;
+
+  @ApiPropertyOptional({ description: 'Total deposit value', example: 525000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalDepositValue?: number;
+
+  @ApiPropertyOptional({ description: 'Total deposit count', example: 3 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalDepositCount?: number;
+
+  @ApiPropertyOptional({ description: 'Unrealized deposit P&L', example: 15000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  unrealizedDepositPnL?: number;
+
+  @ApiPropertyOptional({ description: 'Realized deposit P&L', example: 10000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  realizedDepositPnL?: number;
+
   @ApiPropertyOptional({ description: 'Is active', example: true })
   @IsOptional()
   @IsBoolean()
@@ -132,18 +203,58 @@ export class CreatePortfolioSnapshotDto {
 }
 
 export class UpdatePortfolioSnapshotDto {
-  @ApiPropertyOptional({ description: 'Total portfolio value', example: 1000000 })
+  // Asset Value Fields (Assets Only)
+  @ApiPropertyOptional({ description: 'Total Asset Value', example: 1000000 })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  totalValue?: number;
+  totalAssetValue?: number;
 
-  @ApiPropertyOptional({ description: 'Total P&L', example: 50000 })
+  @ApiPropertyOptional({ description: 'Total Asset Invested', example: 800000 })
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  totalAssetInvested?: number;
+
+  // Asset P&L Fields (Assets Only)
+  @ApiPropertyOptional({ description: 'Total Asset P&L', example: 50000 })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  totalPl?: number;
+  totalAssetPl?: number;
+
+  @ApiPropertyOptional({ description: 'Unrealized Asset P&L', example: 30000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  unrealizedAssetPl?: number;
+
+  @ApiPropertyOptional({ description: 'Realized Asset P&L', example: 20000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  realizedAssetPl?: number;
+
+  // Portfolio P&L Fields (Assets + Deposits)
+  @ApiPropertyOptional({ description: 'Total Portfolio P&L (Assets + Deposits)', example: 55000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  totalPortfolioPl?: number;
+
+  @ApiPropertyOptional({ description: 'Unrealized Portfolio P&L (Assets + Deposits)', example: 35000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  unrealizedPortfolioPl?: number;
+
+  @ApiPropertyOptional({ description: 'Realized Portfolio P&L (Assets + Deposits)', example: 20000 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  realizedPortfolioPl?: number;
 
   @ApiPropertyOptional({ description: 'Total return percentage', example: 5.0 })
   @IsOptional()
@@ -158,12 +269,20 @@ export class UpdatePortfolioSnapshotDto {
   @Type(() => Number)
   cashBalance?: number;
 
-  @ApiPropertyOptional({ description: 'Invested value', example: 800000 })
+  // Portfolio Value Fields (Assets + Deposits)
+  @ApiPropertyOptional({ description: 'Total Portfolio Value (Assets + Deposits)', example: 1200000 })
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @Type(() => Number)
-  investedValue?: number;
+  totalPortfolioValue?: number;
+
+  @ApiPropertyOptional({ description: 'Total Portfolio Invested (Assets + Deposits)', example: 1000000 })
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  totalPortfolioInvested?: number;
 
   @ApiPropertyOptional({ description: 'Daily return percentage', example: 0.5 })
   @IsOptional()
@@ -258,11 +377,32 @@ export class PortfolioSnapshotResponseDto {
   @ApiProperty({ description: 'Snapshot granularity', enum: SnapshotGranularity, example: SnapshotGranularity.DAILY })
   granularity: SnapshotGranularity;
 
-  @ApiProperty({ description: 'Total portfolio value', example: 1000000 })
-  totalValue: number;
+  // Asset Value Fields (Assets Only)
+  @ApiProperty({ description: 'Total Asset Value', example: 1000000 })
+  totalAssetValue: number;
 
-  @ApiProperty({ description: 'Total P&L', example: 50000 })
-  totalPl: number;
+  @ApiProperty({ description: 'Total Asset Invested', example: 800000 })
+  totalAssetInvested: number;
+
+  // Asset P&L Fields (Assets Only)
+  @ApiProperty({ description: 'Total Asset P&L', example: 50000 })
+  totalAssetPl: number;
+
+  @ApiProperty({ description: 'Unrealized Asset P&L', example: 30000 })
+  unrealizedAssetPl: number;
+
+  @ApiProperty({ description: 'Realized Asset P&L', example: 20000 })
+  realizedAssetPl: number;
+
+  // Portfolio P&L Fields (Assets + Deposits)
+  @ApiProperty({ description: 'Total Portfolio P&L (Assets + Deposits)', example: 55000 })
+  totalPortfolioPl: number;
+
+  @ApiProperty({ description: 'Unrealized Portfolio P&L (Assets + Deposits)', example: 35000 })
+  unrealizedPortfolioPl: number;
+
+  @ApiProperty({ description: 'Realized Portfolio P&L (Assets + Deposits)', example: 20000 })
+  realizedPortfolioPl: number;
 
   @ApiProperty({ description: 'Total return percentage', example: 5.0 })
   totalReturn: number;
@@ -270,8 +410,12 @@ export class PortfolioSnapshotResponseDto {
   @ApiProperty({ description: 'Cash balance', example: 200000 })
   cashBalance: number;
 
-  @ApiProperty({ description: 'Invested value', example: 800000 })
-  investedValue: number;
+  // Portfolio Value Fields (Assets + Deposits)
+  @ApiProperty({ description: 'Total Portfolio Value (Assets + Deposits)', example: 1200000 })
+  totalPortfolioValue: number;
+
+  @ApiProperty({ description: 'Total Portfolio Invested (Assets + Deposits)', example: 1000000 })
+  totalPortfolioInvested: number;
 
   @ApiProperty({ description: 'Daily return percentage', example: 0.5 })
   dailyReturn: number;

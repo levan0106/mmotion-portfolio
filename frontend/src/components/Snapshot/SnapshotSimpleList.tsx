@@ -287,96 +287,342 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
           )}
           
           {portfolioSnapshots && portfolioSnapshots.length > 0 ? (
-            <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider' }}>
-              <Table size="small">
+            <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider', overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 3500 }}>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Portfolio</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Total Value</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Total P&L</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Unrealized P&L</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Realized P&L</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Cash Balance</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Daily Return</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Assets</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Granularity</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Portfolio</TableCell>
+                    {/* Portfolio Level (Assets + Deposits) */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Value</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Invested</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio P&L</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio Unrealized</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio Realized</TableCell>
+                    {/* Asset Level (Assets Only) */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Asset Value</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Asset Invested</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset P&L</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset Unrealized</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset Realized</TableCell>
+                    {/* Deposit Level */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Deposits</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Value</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Principal</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Interest</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Unrealized</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Realized</TableCell>
+                    {/* Cash Level */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Cash</TableCell>
+                    {/* Performance Metrics */}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Total %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Daily %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Weekly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Monthly %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">YTD %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Vol %</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Max DD</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Assets</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Active</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Type</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {portfolioSnapshots.map((snapshot) => (
                     <TableRow key={snapshot.id} hover>
-                      <TableCell>
-                        <Typography variant="body2">
+                      {/* Date */}
+                      <TableCell sx={{ py: 0.5 }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
                           {formatDate(snapshot.snapshotDate)}
                       </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight={500}>
+                      
+                      {/* Portfolio */}
+                      <TableCell sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.7rem' }}>
                         {snapshot.portfolioName}
                       </Typography>
                       </TableCell>
-                      <TableCell align="right">
-                          <Typography variant="body2" fontWeight={600}>
-                          {formatCurrency(Number(snapshot.totalValue || 0), baseCurrency)}
+                      
+                      {/* Total Portfolio Value */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalPortfolioValue || 0), baseCurrency)}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      
+                      {/* Total Portfolio Invested */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalPortfolioInvested || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Portfolio P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
-                          color={snapshot.totalPl && Number(snapshot.totalPl) >= 0 ? 'success.main' : 'error.main'}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.totalPortfolioPl && Number(snapshot.totalPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.totalPl && Number(snapshot.totalPl) >= 0 ? '+' : ''}
-                          {formatCurrency(Number(snapshot.totalPl || 0), baseCurrency)}
+                          {snapshot.totalPortfolioPl && Number(snapshot.totalPortfolioPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.totalPortfolioPl || 0), baseCurrency)}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      
+                      {/* Portfolio Unrealized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.unrealizedPortfolioPl || 0), baseCurrency)}
+                          </Typography>
+                      </TableCell>
+                      
+                      {/* Portfolio Realized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.realizedPortfolioPl && Number(snapshot.realizedPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.realizedPortfolioPl && Number(snapshot.realizedPortfolioPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.realizedPortfolioPl || 0), baseCurrency)}
+                          </Typography>
+                      </TableCell>
+                      
+                      {/* Total Asset Value */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalAssetValue || 0), baseCurrency)}
+                          </Typography>
+                      </TableCell>
+                      
+                      {/* Total Asset Invested */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalAssetInvested || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.totalAssetPl && Number(snapshot.totalAssetPl) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.totalAssetPl && Number(snapshot.totalAssetPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.totalAssetPl || 0), baseCurrency)}
+                          </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Unrealized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
                           <Typography 
                             variant="body2" 
                             fontWeight={600}
-                          color={snapshot.unrealizedPl && Number(snapshot.unrealizedPl) >= 0 ? 'success.main' : 'error.main'}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.unrealizedAssetPl && Number(snapshot.unrealizedAssetPl) >= 0 ? 'success.main' : 'error.main'}
                           >
-                          {snapshot.unrealizedPl && Number(snapshot.unrealizedPl) >= 0 ? '+' : ''}
-                          {formatCurrency(Number(snapshot.unrealizedPl || 0), baseCurrency)}
+                          {snapshot.unrealizedAssetPl && Number(snapshot.unrealizedAssetPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.unrealizedAssetPl || 0), baseCurrency)}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      
+                      {/* Asset Realized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
                         <Typography 
                           variant="body2" 
                           fontWeight={600}
-                          color={snapshot.realizedPl && Number(snapshot.realizedPl) >= 0 ? 'success.main' : 'error.main'}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.realizedAssetPl && Number(snapshot.realizedAssetPl) >= 0 ? 'success.main' : 'error.main'}
                         >
-                          {snapshot.realizedPl && Number(snapshot.realizedPl) >= 0 ? '+' : ''}
-                          {formatCurrency(Number(snapshot.realizedPl || 0), baseCurrency)}
+                          {snapshot.realizedAssetPl && Number(snapshot.realizedAssetPl) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.realizedAssetPl || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Deposit Count */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {snapshot.totalDepositCount || 0}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
-                          <Typography variant="body2" fontWeight={600}>
+                      
+                      {/* Deposit Value */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalDepositValue || 0), baseCurrency)}
+                          </Typography>
+                      </TableCell>
+                      
+                      {/* Deposit Principal */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatCurrency(Number(snapshot.totalDepositPrincipal || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Deposit Interest */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.totalDepositInterest || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Deposit Unrealized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.unrealizedDepositPnL && Number(snapshot.unrealizedDepositPnL) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.unrealizedDepositPnL && Number(snapshot.unrealizedDepositPnL) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.unrealizedDepositPnL || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Deposit Realized P&L */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.realizedDepositPnL && Number(snapshot.realizedDepositPnL) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.realizedDepositPnL && Number(snapshot.realizedDepositPnL) >= 0 ? '+' : ''}
+                          {formatCurrency(Number(snapshot.realizedDepositPnL || 0), baseCurrency)}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Cash Balance */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
                           {formatCurrency(Number(snapshot.cashBalance || 0), baseCurrency)}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
-                          <Typography 
-                            variant="body2" 
-                            fontWeight={600}
+                      
+                      {/* Total Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.totalReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Daily Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
                           color={snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? 'success.main' : 'error.main'}
                         >
                           {snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? '+' : ''}
                           {formatPercentage(Number(snapshot.dailyReturn || 0))}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2">
+                      
+                      {/* Weekly Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.weeklyReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Monthly Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.monthlyReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* YTD Return % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color={snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          {snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? '+' : ''}
+                          {formatPercentage(Number(snapshot.ytdReturn || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Volatility % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {formatPercentage(Number(snapshot.volatility || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Max Drawdown % */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                          <Typography 
+                            variant="body2" 
+                            fontWeight={600}
+                          sx={{ fontSize: '0.7rem' }}
+                          color="error.main"
+                        >
+                          -{formatPercentage(Number(snapshot.maxDrawdown || 0))}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Asset Count */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
                           {snapshot.assetCount || 0}
                           </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      
+                      {/* Active Asset Count */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                          {snapshot.activeAssetCount || 0}
+                        </Typography>
+                      </TableCell>
+                      
+                      {/* Granularity Type */}
+                      <TableCell align="right" sx={{ py: 0.5 }}>
                         <Chip 
                           label={snapshot.granularity} 
                           size="small" 
                           variant="outlined"
                           color="primary"
+                          sx={{ fontSize: '0.65rem', height: 18 }}
                         />
                       </TableCell>
                     </TableRow>

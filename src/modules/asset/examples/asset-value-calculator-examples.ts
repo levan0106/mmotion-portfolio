@@ -126,13 +126,13 @@ export class AssetValueCalculatorExamples {
     const assets = [
       {
         quantity: 100,
-        currentPrice: 1000,
+        price: 1000,
         tax: { type: 'fixed', value: 1000 } as TaxFeeOption,
         fee: { type: 'percentage', value: 5 } as TaxFeeOption,
       },
       {
         quantity: 50,
-        currentPrice: 2000,
+        price: 2000,
         tax: { type: 'percentage', value: 10 } as TaxFeeOption,
         commission: { type: 'fixed', value: 500 } as TaxFeeOption,
       },

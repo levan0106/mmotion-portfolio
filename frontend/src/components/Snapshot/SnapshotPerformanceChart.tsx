@@ -79,11 +79,11 @@ export const SnapshotPerformanceChart: React.FC<SnapshotPerformanceChartProps> =
   const calculatePerformanceMetrics = () => {
     if (processedData.length === 0) return null;
 
-    const firstValue = processedData[0].totalValue;
-    const lastValue = processedData[processedData.length - 1].totalValue;
+    const firstValue = processedData[0].totalValue as number;
+    const lastValue = processedData[processedData.length - 1].totalValue as number;
     const totalReturn = firstValue > 0 ? ((lastValue - firstValue) / firstValue) * 100 : 0;
-    const maxValue = Math.max(...processedData.map(d => d.totalValue));
-    const minValue = Math.min(...processedData.map(d => d.totalValue));
+    const maxValue = Math.max(...processedData.map(d => d.totalValue as number));
+    const minValue = Math.min(...processedData.map(d => d.totalValue as number));
     const maxDrawdown = firstValue > 0 ? ((maxValue - minValue) / maxValue) * 100 : 0;
 
     return {
@@ -94,7 +94,7 @@ export const SnapshotPerformanceChart: React.FC<SnapshotPerformanceChartProps> =
       volatility: processedData.length > 1 ? 
         Math.sqrt(processedData.reduce((sum, d, i) => {
           if (i === 0) return 0;
-          const dailyReturn = (d.totalValue - processedData[i-1].totalValue) / processedData[i-1].totalValue;
+          const dailyReturn = ((d.totalValue as number) - (processedData[i-1].totalValue as number)) / (processedData[i-1].totalValue as number);
           return sum + Math.pow(dailyReturn, 2);
         }, 0) / (processedData.length - 1)) * 100 : 0
     };
@@ -142,7 +142,7 @@ export const SnapshotPerformanceChart: React.FC<SnapshotPerformanceChartProps> =
             />
             {showLegend && <Legend />}
             {showReferenceLine && (
-              <ReferenceLine yAxisId="left" y={processedData[0]?.totalValue} stroke="#666" strokeDasharray="5 5" />
+              <ReferenceLine yAxisId="left" y={processedData[0]?.totalValue as number} stroke="#666" strokeDasharray="5 5" />
             )}
             {showTotalValue && (
               <Line
@@ -217,7 +217,7 @@ export const SnapshotPerformanceChart: React.FC<SnapshotPerformanceChartProps> =
             />
             {showLegend && <Legend />}
             {showReferenceLine && (
-              <ReferenceLine y={processedData[0]?.totalValue} stroke="#666" strokeDasharray="5 5" />
+              <ReferenceLine y={processedData[0]?.totalValue as number} stroke="#666" strokeDasharray="5 5" />
             )}
             {showTotalValue && (
               <Area
@@ -263,7 +263,7 @@ export const SnapshotPerformanceChart: React.FC<SnapshotPerformanceChartProps> =
             />
             {showLegend && <Legend />}
             {showReferenceLine && (
-              <ReferenceLine yAxisId="left" y={processedData[0]?.totalValue} stroke="#666" strokeDasharray="5 5" />
+              <ReferenceLine yAxisId="left" y={processedData[0]?.totalValue as number} stroke="#666" strokeDasharray="5 5" />
             )}
             {showTotalValue && (
               <Bar

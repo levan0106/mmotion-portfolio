@@ -24,8 +24,8 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   onView,
   onEdit,
 }) => {
-  const isPositivePL = (Number(portfolio.unrealizedPl) || 0) >= 0;
-  const isPositiveRealizedPL = (Number(portfolio.realizedPl) || 0) >= 0;
+  const isPositivePL = (Number(portfolio.unrealizedInvestPnL) || 0) >= 0;
+  const isPositiveRealizedPL = (Number(portfolio.realizedInvestPnL) || 0) >= 0;
 
   const handleView = () => {
     onView(portfolio.portfolioId);
@@ -58,9 +58,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             <AccountBalance className="portfolio-card__total-value-icon" />
             <div>
               <div className="portfolio-card__total-value-amount">
-                {formatCurrency(Number(portfolio.totalValue) || 0, portfolio.baseCurrency)}
+                {formatCurrency(Number(portfolio.totalInvestValue) || 0, portfolio.baseCurrency)}
               </div>
-              <div className="portfolio-card__total-value-label">Total Value</div>
+              <div className="portfolio-card__total-value-label">Investment Value</div>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                   <TrendingDown className={`portfolio-card__pl-icon portfolio-card__pl-icon--negative`} />
                 )}
                 <div className={`portfolio-card__pl-amount ${isPositivePL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}>
-                  {formatCurrency(Number(portfolio.unrealizedPl) || 0, portfolio.baseCurrency)}
+                  {formatCurrency(Number(portfolio.unrealizedInvestPnL) || 0, portfolio.baseCurrency)}
                 </div>
               </div>
               <div className="portfolio-card__pl-label">Unrealized P&L</div>
@@ -87,7 +87,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                   <TrendingDown className={`portfolio-card__pl-icon portfolio-card__pl-icon--negative`} />
                 )}
                 <div className={`portfolio-card__pl-amount ${isPositiveRealizedPL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}>
-                  {formatCurrency(Number(portfolio.realizedPl) || 0, portfolio.baseCurrency)}
+                  {formatCurrency(Number(portfolio.realizedInvestPnL) || 0, portfolio.baseCurrency)}
                 </div>
               </div>
               <div className="portfolio-card__pl-label">Realized P&L</div>

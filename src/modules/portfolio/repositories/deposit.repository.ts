@@ -188,6 +188,7 @@ export class DepositRepository {
     totalPrincipal: number;
     totalAccruedInterest: number;
     totalSettledInterest: number;
+    totalInterest: number;
     totalValue: number;
     averageInterestRate: number;
   }> {
@@ -205,6 +206,7 @@ export class DepositRepository {
       const actualInterest = typeof d.actualInterest === 'string' ? parseFloat(d.actualInterest) : (d.actualInterest || 0);
       return sum + actualInterest;
     }, 0);
+    const totalInterest = totalAccruedInterest + totalSettledInterest;
     const totalValue = totalPrincipal + totalAccruedInterest + totalSettledInterest;
     const averageInterestRate = deposits.length > 0 
       ? deposits.reduce((sum, d) => {
@@ -220,6 +222,7 @@ export class DepositRepository {
       totalPrincipal,
       totalAccruedInterest,
       totalSettledInterest,
+      totalInterest,
       totalValue,
       averageInterestRate: Math.round(averageInterestRate * 100) / 100,
     };

@@ -80,10 +80,10 @@ export class PortfolioCalculationService {
     const positions = await this.calculateCurrentPositions(portfolioId, trades);
 
     // Calculate total value (only asset positions, excluding cash balance)
-    const totalValue = positions.reduce((sum, pos) => sum + pos.currentValue, 0);
+    const totalValue = positions.reduce((sum, pos) => sum + parseFloat(pos.currentValue.toString()), 0);
 
     // Calculate total unrealized P&L
-    const unrealizedPl = positions.reduce((sum, pos) => sum + pos.unrealizedPl, 0);
+    const unrealizedPl = positions.reduce((sum, pos) => sum + parseFloat(pos.unrealizedPl.toString()), 0);
 
     return {
       totalValue,
@@ -170,40 +170,14 @@ export class PortfolioCalculationService {
     unrealizedPl: number;
     currentPrice: number;
   }> {
-    let totalQuantity = 0;
-    let totalCost = 0;
     let symbol = '';
     let assetType = 'UNKNOWN';
 
-    // Process trades in chronological order
     for (const trade of trades) {
       symbol = trade.asset?.symbol || '';
       assetType = trade.asset?.type || 'UNKNOWN';
-      
-      if (trade.side === 'BUY') {
-        totalQuantity += parseFloat(trade.quantity.toString());
-        totalCost += parseFloat(trade.quantity.toString()) * parseFloat(trade.price.toString());
-      } else if (trade.side === 'SELL') {
-        totalQuantity -= parseFloat(trade.quantity.toString());
-        // For sells, we don't adjust cost basis (FIFO/LIFO would be handled differently)
-      }
     }
 
-    if (totalQuantity <= 0) {
-      return {
-        assetId,
-        symbol,
-        assetType,
-        quantity: 0,
-        avgCost: 0,
-        currentValue: 0,
-        unrealizedPl: 0,
-        currentPrice: 0,
-      };
-    }
-
-    const avgCost = totalCost / totalQuantity;
-    
     // Get current price from global assets (new logic)
     // Fallback to latest trade price if global asset price is not available
     let currentPrice: number;
@@ -227,20 +201,20 @@ export class PortfolioCalculationService {
       currentPrice = parseFloat(latestTrade.price.toString());
     }
     
-    const currentValue = this.assetValueCalculator.calculateCurrentValue(totalQuantity, currentPrice); // add tax, fee, commission, other deductions, discount
-    const unrealizedPl = this.assetValueCalculator.calculateUnrealizedPL(totalQuantity, currentPrice, avgCost); // add tax, fee, commission, other deductions, discount
+    const position = this.assetValueCalculator.calculateAssetPositionFIFO( trades, currentPrice);
 
     return {
       assetId,
       symbol,
       assetType,
-      quantity: totalQuantity,
-      avgCost,
-      currentValue,
-      unrealizedPl,
+      quantity: position.quantity,
+      avgCost: position.avgCost,
+      currentValue: position.currentValue,
+      unrealizedPl: position.unrealizedPl,
       currentPrice: currentPrice,
     };
   }
+
 
   /**
    * Calculate NAV for a portfolio (cash + assets)

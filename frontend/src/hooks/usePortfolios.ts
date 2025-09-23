@@ -151,7 +151,8 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     () => apiService.getPortfolioAllocation(portfolioId),
     {
       enabled: !!portfolioId,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 30 * 1000, // 30 seconds - reduced for testing
+      refetchInterval: 60 * 1000, // Refetch every minute
     }
   );
 

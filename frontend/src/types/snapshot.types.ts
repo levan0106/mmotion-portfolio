@@ -110,8 +110,12 @@ export interface SnapshotAggregation {
   portfolioId: string;
   snapshotDate: string;
   granularity: SnapshotGranularity;
-  totalValue: number;
-  totalPl: number;
+  totalAssetValue: number;
+  totalAssetInvested: number;
+  totalPortfolioValue: number;
+  totalPortfolioInvested: number;
+  totalAssetPl: number;
+  totalPortfolioPl: number;
   totalReturn: number;
   assetCount: number;
 }
@@ -217,14 +221,36 @@ export interface PortfolioSnapshot {
   snapshotDate: string;
   granularity: SnapshotGranularity;
   
-  // Portfolio Summary Data
-  totalValue: number;
-  totalPl: number;
-  unrealizedPl: number;
-  realizedPl: number;
+  // Asset Value Fields (Assets Only)
+  totalAssetValue: number;
+  totalAssetInvested: number;
+  
+  // Asset P&L Fields (Assets Only)
+  totalAssetPl: number;
+  unrealizedAssetPl: number;
+  realizedAssetPl: number;
+  
+  // Portfolio P&L Fields (Assets + Deposits)
+  totalPortfolioPl: number;
+  unrealizedPortfolioPl: number;
+  realizedPortfolioPl: number;
+  
   totalReturn: number;
   cashBalance: number;
-  investedValue: number;
+
+  // Portfolio Value Fields (Assets + Deposits)
+  totalPortfolioValue: number;
+  totalPortfolioInvested: number;
+  
+  // Deposit Fields
+  totalDepositPrincipal: number;
+  totalDepositInterest: number;
+  totalDepositValue: number;
+  totalDepositCount: number;
+  
+  // Deposit P&L Fields
+  unrealizedDepositPnL: number;
+  realizedDepositPnL: number;
   
   // Performance Metrics
   dailyReturn: number;
@@ -262,13 +288,18 @@ export interface CreatePortfolioSnapshotRequest {
   portfolioName: string;
   snapshotDate: string;
   granularity: SnapshotGranularity;
-  totalValue: number;
-  totalPl: number;
-  unrealizedPl: number;
-  realizedPl: number;
+  totalAssetValue: number;
+  totalAssetInvested: number;
+  totalPortfolioValue: number;
+  totalPortfolioInvested: number;
+  totalAssetPl: number;
+  totalPortfolioPl: number;
+  unrealizedAssetPl: number;
+  realizedAssetPl: number;
+  unrealizedPortfolioPl: number;
+  realizedPortfolioPl: number;
   totalReturn: number;
   cashBalance: number;
-  investedValue: number;
   dailyReturn: number;
   weeklyReturn: number;
   monthlyReturn: number;
@@ -314,7 +345,11 @@ export interface CombinedSnapshotData {
   date: string;
   portfolioSnapshot?: PortfolioSnapshot;
   assetSnapshots: SnapshotResponse[];
-  totalValue: number;
-  totalPl: number;
+  totalAssetValue: number;
+  totalAssetInvested: number;
+  totalPortfolioValue: number;
+  totalPortfolioInvested: number;
+  totalAssetPl: number;
+  totalPortfolioPl: number;
   assetCount: number;
 }

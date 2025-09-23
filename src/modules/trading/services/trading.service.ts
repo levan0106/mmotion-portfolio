@@ -14,6 +14,7 @@ import { AssetCacheService } from '../../asset/services/asset-cache.service';
 import { CashFlowService } from '../../portfolio/services/cash-flow.service';
 import { PortfolioCalculationService } from '../../portfolio/services/portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from '../../portfolio/services/portfolio-value-calculator.service';
+import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 
@@ -38,6 +39,8 @@ export class TradingService {
     private readonly tradeRepository: Repository<Trade>,
     @InjectRepository(TradeDetail)
     private readonly tradeDetailRepository: Repository<TradeDetail>,
+    @InjectRepository(Portfolio)
+    private readonly portfolioRepo: Repository<Portfolio>,
     private readonly tradeRepo: TradeRepository,
     private readonly tradeDetailRepo: TradeDetailRepository,
     private readonly fifoEngine: FIFOEngine,
@@ -588,6 +591,7 @@ export class TradingService {
       startDate,
       endDate,
     );
+    
 
     // Get top and worst performing trades
     const topTradesRaw = await this.tradeDetailRepo.getTopPerformingTrades(10, portfolioId);
@@ -650,6 +654,7 @@ export class TradingService {
       console.error('Error getting portfolio calculation:', error);
       portfolioCalculation = { assetPositions: [], totalValue: 0 };
     }
+    
 
     // Calculate overall P&L summary using helper services
     const allRealizedTrades = [...topTrades, ...worstTrades];
@@ -657,13 +662,10 @@ export class TradingService {
       index === self.findIndex(t => t.tradeId === trade.tradeId)
     );
     
-    // Use PortfolioValueCalculatorService for realized P&L
-    const totalRealizedPnl = portfolioCalculation.assetPositions.reduce(
-      (sum, position) => sum + position.realizedPl,
-      0
-    );
+    // Use PortfolioValueCalculatorService for accurate realized P&L
+    const totalRealizedPnl = await this.portfolioValueCalculator.calculateRealizedPL(portfolioId);
     const totalUnrealizedPnl = portfolioCalculation.assetPositions.reduce(
-      (sum, position) => sum + position.unrealizedPl,
+      (sum, position) => sum + (parseFloat(position.unrealizedPl?.toString() || '0') || 0),  
       0
     );
     const totalPnl = totalRealizedPnl + totalUnrealizedPnl;
@@ -757,6 +759,7 @@ export class TradingService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<any[]> {
+
     // Get all trades for the portfolio
     const trades = await this.tradeRepo.find({
       where: {
@@ -779,7 +782,9 @@ export class TradingService {
         monthlyData.set(monthKey, {
           month: monthKey,
           tradesCount: 0,
-          totalPl: 0,
+          totalPl: 0, // Total P&L (realized + unrealized)
+          realizedPl: 0, // Realized P&L from trades
+          unrealizedPl: 0, // Unrealized P&L from current positions
           totalVolume: 0,
           winRate: 0,
           winningTrades: 0,
@@ -801,7 +806,7 @@ export class TradingService {
         tradePnl = tradeDetails.reduce((sum, detail) => sum + parseFloat(detail.pnl?.toString() || '0'), 0);
       }
       
-      monthData.totalPl += tradePnl;
+      monthData.realizedPl += tradePnl;
       
       if (tradePnl > 0) {
         monthData.winningTrades++;
@@ -814,6 +819,112 @@ export class TradingService {
     for (const monthData of monthlyData.values()) {
       const totalTrades = monthData.winningTrades + monthData.losingTrades;
       monthData.winRate = totalTrades > 0 ? (monthData.winningTrades / totalTrades) * 100 : 0;
+    }
+
+        // Get historical portfolio snapshots for accurate unrealized P&L calculation
+        try {
+          // Get portfolio snapshots for the portfolio - use LAST_DAY of each month
+          const queryStartDate = startDate || new Date('2020-01-01');
+          const queryEndDate = endDate || new Date();
+          
+          const portfolioSnapshots = await this.portfolioRepo.manager.query(`
+            SELECT 
+              DATE_TRUNC('month', snapshot_date) as month,
+              total_value,
+              unrealized_asset_pl,
+              realized_asset_pl,
+              cash_balance,
+              invested_value,
+              snapshot_date,
+              ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('month', snapshot_date) ORDER BY snapshot_date DESC) as rn
+            FROM portfolio_snapshots 
+            WHERE portfolio_id = $1 
+            AND snapshot_date >= $2 
+            AND snapshot_date <= $3
+          `, [
+            portfolioId, 
+            queryStartDate, 
+            queryEndDate
+          ]);
+
+          // Filter to get only the last day of each month
+          const monthlySnapshots = portfolioSnapshots.filter(snapshot => snapshot.rn === '1');
+
+
+          // Create a map of month to snapshot data (using last day of month data)
+          const snapshotDataMap = new Map();
+          for (const snapshot of monthlySnapshots) {
+            const monthKey = snapshot.month.toISOString().substring(0, 7); // YYYY-MM
+            snapshotDataMap.set(monthKey, {
+              totalValue: parseFloat(snapshot.total_value || '0'),
+              unrealizedPl: parseFloat(snapshot.unrealized_asset_pl || '0'),
+              realizedPl: parseFloat(snapshot.realized_asset_pl || '0'),
+              cashBalance: parseFloat(snapshot.cash_balance || '0'),
+              investedValue: parseFloat(snapshot.invested_value || '0')
+            });
+          }
+
+      // Calculate unrealized P&L for each month using snapshot data
+      const months = Array.from(monthlyData.values());
+      for (const monthData of months) {
+        const snapshotData = snapshotDataMap.get(monthData.month);
+        
+        if (snapshotData) {
+          // Use unrealized P&L directly from snapshot
+          monthData.unrealizedPl = snapshotData.unrealizedPl;
+        } else {
+          // If no snapshot data for this month, try to find the closest snapshot
+          // Look for snapshots in the same month or previous months
+          let closestSnapshot = null;
+          const currentMonth = new Date(monthData.month + '-01');
+          
+          // Find the most recent snapshot before or during this month
+          for (const [snapshotMonth, data] of snapshotDataMap.entries()) {
+            const snapshotDate = new Date(snapshotMonth + '-01');
+            if (snapshotDate <= currentMonth) {
+              if (!closestSnapshot || snapshotDate > new Date(closestSnapshot.month + '-01')) {
+                closestSnapshot = { month: snapshotMonth, ...data };
+              }
+            }
+          }
+          
+          if (closestSnapshot) {
+            monthData.unrealizedPl = closestSnapshot.unrealizedPl;
+          } else {
+            // If no snapshot found, use 0
+            monthData.unrealizedPl = 0;
+          }
+        }
+        
+        monthData.totalPl = monthData.realizedPl + monthData.unrealizedPl;
+      }
+
+
+    } catch (error) {
+      console.error('Error calculating unrealized P&L from NAV snapshots:', error);
+      // Fallback: use current portfolio calculation
+      try {
+        const portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+        const currentUnrealizedPl = portfolioCalculation.assetPositions.reduce(
+          (sum, position) => sum + (parseFloat(position.unrealizedPl?.toString() || '0') || 0),
+          0
+        );
+
+        const months = Array.from(monthlyData.values());
+        if (months.length > 0) {
+          const unrealizedPlPerMonth = currentUnrealizedPl / months.length;
+          for (const monthData of months) {
+            monthData.unrealizedPl = unrealizedPlPerMonth;
+            monthData.totalPl = monthData.realizedPl + monthData.unrealizedPl;
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Fallback calculation also failed:', fallbackError);
+        // If all calculations fail, just use realized P&L
+        for (const monthData of monthlyData.values()) {
+          monthData.totalPl = monthData.realizedPl;
+        }
+      }
     }
     
     return Array.from(monthlyData.values()).sort((a, b) => a.month.localeCompare(b.month));
@@ -877,20 +988,24 @@ export class TradingService {
         const winCount = trades.filter(trade => (Number(trade.pnl) || 0) > 0).length;
         const winRate = tradesCount > 0 ? (winCount / tradesCount) * 100 : 0;
         
-        // Get real-time P&L from portfolio calculation including unrealized and realized P&L
+        // Calculate realized P&L from trades for this asset
+        const assetRealizedPl = trades.reduce((sum, trade) => {
+          return sum + (Number(trade.pnl) || 0);
+        }, 0);
+
+        // Get unrealized P&L from portfolio calculation
         let assetUnrealizedPl = 0;
-        let assetRealizedPl = 0;
-        let totalPl = 0;
         try {
           const assetPosition = portfolioCalculation.assetPositions.find(pos => pos.assetId === assetId);
+          
           if (assetPosition) {
-            assetUnrealizedPl = assetPosition.unrealizedPl;
-            assetRealizedPl = assetPosition.realizedPl;
-            totalPl = assetUnrealizedPl + assetRealizedPl;
+            assetUnrealizedPl = assetPosition.unrealizedPl || 0;
           }
         } catch (error) {
           console.error(`Error getting unrealized P&L for asset ${assetId}:`, error);
         }
+
+        const totalPl = assetUnrealizedPl + assetRealizedPl;
         
         // Calculate total volume (sum of all trade values)
         const totalVolume = trades.reduce((sum, trade) => {
@@ -914,13 +1029,14 @@ export class TradingService {
         const avgCost = totalQuantity > 0 ? totalCost / totalQuantity : 0;
         const marketValue = totalQuantity * (Number(trades[0].sellPrice) || 0); // Use latest sell price as market value
         
+
         const assetData = {
           assetId: assetId,
           assetSymbol: asset.symbol || 'N/A',
           assetName: asset.name || 'N/A',
-          totalPl: Math.round(totalPl * 100) / 100,
-          realizedPl: Math.round(assetRealizedPl * 100) / 100, // Realized P&L from trades
-          unrealizedPl: Math.round(assetUnrealizedPl * 100) / 100, // Unrealized P&L from helper
+          totalPl: Math.round((totalPl || 0) * 100) / 100,
+          realizedPl: Math.round((assetRealizedPl || 0) * 100) / 100, // Realized P&L from trades
+          unrealizedPl: Math.round((assetUnrealizedPl || 0) * 100) / 100, // Unrealized P&L from helper
           tradesCount: tradesCount,
           winCount: winCount,
           winRate: Math.round(winRate * 100) / 100,

@@ -50,9 +50,9 @@ const Dashboard: React.FC = () => {
 
   // Calculate summary statistics
   const totalPortfolios = portfolios.length;
-  const totalValue = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.totalValue?.toString()) || 0), 0);
-  const totalUnrealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.unrealizedPl?.toString()) || 0), 0);
-  const totalRealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.realizedPl?.toString()) || 0), 0);
+  const totalValue = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.totalInvestValue?.toString()) || 0), 0);
+  const totalUnrealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.unrealizedInvestPnL?.toString()) || 0), 0);
+  const totalRealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.realizedInvestPnL?.toString()) || 0), 0);
   const totalCashBalance = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.cashBalance?.toString()) || 0), 0);
 
   // Calculate performance metrics
@@ -177,7 +177,7 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="body2" fontWeight="medium" color="success.main">
                     {portfolios.length > 0 ? portfolios.reduce((best, current) => 
-                      (current.unrealizedPl || 0) > (best.unrealizedPl || 0) ? current : best
+                      (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
                     ).name : 'N/A'}
                   </Typography>
                 </Box>

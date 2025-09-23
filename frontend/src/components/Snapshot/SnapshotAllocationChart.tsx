@@ -224,7 +224,7 @@ export const SnapshotAllocationChart: React.FC<SnapshotAllocationChartProps> = (
     }
   };
 
-  const totalValue = processedData.reduce((sum, item) => sum + item.value, 0);
+  const totalValue = processedData.reduce((sum, item) => sum + (item.value as number), 0);
 
   return (
     <div className="snapshot-allocation-chart">

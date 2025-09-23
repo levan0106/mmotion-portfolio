@@ -94,6 +94,7 @@ export class PortfolioService {
   async getPortfolioDetails(portfolioId: string): Promise<Portfolio> {
     const cacheKey = `portfolio:${portfolioId}`;
     
+    
     // Try to get from cache first (if enabled)
     if (this.CACHE_ENABLED) {
       const cachedPortfolio = await this.cacheManager.get<Portfolio>(cacheKey);
@@ -115,11 +116,25 @@ export class PortfolioService {
       // Calculate correct cash balance from cash flows
       const correctCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
       
+      // Calculate new portfolio fields
+      const newFields = await this.calculateNewPortfolioFields(portfolioId);
+      
       // Override DB values with real-time calculations
-      portfolio.totalValue = assetValue; // Only asset value for Total Portfolio Value
-      portfolio.realizedPl = calculatedValues.realizedPl;
-      portfolio.unrealizedPl = calculatedValues.unrealizedPl;
+      portfolio.totalValue = assetValue; // Keep old field for backward compatibility
+      portfolio.realizedPl = calculatedValues.realizedPl; // Keep old field for backward compatibility
+      portfolio.unrealizedPl = calculatedValues.unrealizedPl; // Keep old field for backward compatibility
       portfolio.cashBalance = correctCashBalance; // Use calculated cash balance
+      
+      // Set new fields
+      portfolio.totalAssetValue = newFields.totalAssetValue;
+      portfolio.totalInvestValue = newFields.totalInvestValue;
+      portfolio.totalAllValue = newFields.totalAllValue;
+      portfolio.realizedAssetPnL = newFields.realizedAssetPnL;
+      portfolio.realizedInvestPnL = newFields.realizedInvestPnL;
+      portfolio.realizedAllPnL = newFields.realizedAllPnL;
+      portfolio.unrealizedAssetPnL = newFields.unrealizedAssetPnL;
+      portfolio.unrealizedInvestPnL = newFields.unrealizedInvestPnL;
+      portfolio.unrealizedAllPnL = newFields.unrealizedAllPnL;
     } catch (error) {
       console.error(`Error calculating real-time values for portfolio ${portfolioId}:`, error);
       // Fallback to old calculation method
@@ -232,13 +247,26 @@ export class PortfolioService {
           );
           const totalValue = correctCashBalance + totalAssetValue;
 
+          // Calculate new portfolio fields
+          const newFields = await this.calculateNewPortfolioFields(portfolio.portfolioId);
+
           // Return portfolio with updated real-time values
           return {
             ...portfolio,
-            totalValue: totalValue,
-            unrealizedPl: totalUnrealizedPL,
-            realizedPl: totalRealizedPL,
+            totalValue: totalValue, // Keep old field for backward compatibility
+            unrealizedPl: totalUnrealizedPL, // Keep old field for backward compatibility
+            realizedPl: totalRealizedPL, // Keep old field for backward compatibility
             cashBalance: correctCashBalance, // Use calculated cash balance
+            // Set new fields
+            totalAssetValue: newFields.totalAssetValue,
+            totalInvestValue: newFields.totalInvestValue,
+            totalAllValue: newFields.totalAllValue,
+            realizedAssetPnL: newFields.realizedAssetPnL,
+            realizedInvestPnL: newFields.realizedInvestPnL,
+            realizedAllPnL: newFields.realizedAllPnL,
+            unrealizedAssetPnL: newFields.unrealizedAssetPnL,
+            unrealizedInvestPnL: newFields.unrealizedInvestPnL,
+            unrealizedAllPnL: newFields.unrealizedAllPnL,
           };
         } catch (error) {
           // If calculation fails, return original portfolio data
@@ -281,11 +309,25 @@ export class PortfolioService {
         parseFloat(updatedPortfolio.cashBalance.toString()),
       );
 
+      // Calculate new portfolio fields
+      const newFields = await this.calculateNewPortfolioFields(portfolio.portfolioId);
+
       // Update portfolio with calculated values
-      portfolio.totalValue = calculation.totalValue;
-      portfolio.unrealizedPl = calculation.unrealizedPl;
-      portfolio.realizedPl = calculation.realizedPl;
+      portfolio.totalValue = calculation.totalValue; // Keep old field for backward compatibility
+      portfolio.unrealizedPl = calculation.unrealizedPl; // Keep old field for backward compatibility
+      portfolio.realizedPl = calculation.realizedPl; // Keep old field for backward compatibility
       portfolio.cashBalance = updatedPortfolio.cashBalance; // Update with correct cash balance
+      
+      // Set new fields
+      portfolio.totalAssetValue = newFields.totalAssetValue;
+      portfolio.totalInvestValue = newFields.totalInvestValue;
+      portfolio.totalAllValue = newFields.totalAllValue;
+      portfolio.realizedAssetPnL = newFields.realizedAssetPnL;
+      portfolio.realizedInvestPnL = newFields.realizedInvestPnL;
+      portfolio.realizedAllPnL = newFields.realizedAllPnL;
+      portfolio.unrealizedAssetPnL = newFields.unrealizedAssetPnL;
+      portfolio.unrealizedInvestPnL = newFields.unrealizedInvestPnL;
+      portfolio.unrealizedAllPnL = newFields.unrealizedAllPnL;
 
       // Save updated values to database
       await this.portfolioEntityRepository.save(portfolio);
@@ -589,5 +631,87 @@ export class PortfolioService {
     }
 
     return await query.getMany();
+  }
+
+
+  /**
+   * Calculate new portfolio value and P&L fields
+   * @param portfolioId - Portfolio ID
+   * @returns Promise<object> Calculated values
+   */
+  private async calculateNewPortfolioFields(portfolioId: string): Promise<{
+    totalAssetValue: number;
+    totalInvestValue: number;
+    totalAllValue: number;
+    realizedAssetPnL: number;
+    realizedInvestPnL: number;
+    realizedAllPnL: number;
+    unrealizedAssetPnL: number;
+    unrealizedInvestPnL: number;
+    unrealizedAllPnL: number;
+  }> {
+    // Get asset values and P&L
+    const calculatedValues = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
+    const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
+    const cashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+    
+    // Get realized P&L directly to ensure accuracy
+    const realizedAssetPnL = await this.portfolioValueCalculator.calculateRealizedPL(portfolioId);
+
+    // Calculate deposit values for proper realizedInvestPnL
+    const deposits = await this.portfolioRepository.manager.query(`
+      SELECT 
+        principal,
+        interest_rate,
+        start_date,
+        end_date,
+        status,
+        actual_interest
+      FROM deposits 
+      WHERE portfolio_id = $1
+    `, [portfolioId]);
+
+    let totalDepositValue = 0;
+    let totalDepositUnrealizedPnL = 0;
+    let totalDepositRealizedPnL = 0;
+
+    for (const deposit of deposits) {
+      const principal = parseFloat(deposit.principal) || 0;
+      let interest = 0;
+      
+      if (deposit.status === 'SETTLED') {
+        interest = parseFloat(deposit.actual_interest) || 0;
+        totalDepositRealizedPnL += interest;
+      } else {
+        // Use same logic as calculateAccruedInterest()
+        const currentDate = new Date();
+        const startDate = new Date(deposit.start_date);
+        const endDate = new Date(deposit.end_date);
+        
+        if (currentDate >= startDate) {
+          const calculationDate = currentDate > endDate ? endDate : currentDate;
+          const timeDiff = calculationDate.getTime() - startDate.getTime();
+          const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          const interestRate = parseFloat(deposit.interest_rate) || 0;
+          interest = (principal * interestRate * daysDiff) / (100 * 365);
+          interest = Math.round(interest * 100) / 100;
+        }
+        totalDepositUnrealizedPnL += interest;
+      }
+      
+      totalDepositValue += principal + interest;
+    }
+
+    return {
+      totalAssetValue: assetValue,
+      totalInvestValue: assetValue + totalDepositValue,
+      totalAllValue: assetValue + totalDepositValue + cashBalance,
+      realizedAssetPnL: realizedAssetPnL,
+      realizedInvestPnL: realizedAssetPnL + totalDepositRealizedPnL,
+      realizedAllPnL: realizedAssetPnL + totalDepositRealizedPnL,
+      unrealizedAssetPnL: calculatedValues.unrealizedPl,
+      unrealizedInvestPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
+      unrealizedAllPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
+    };
   }
 }

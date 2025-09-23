@@ -29,7 +29,6 @@ import {
   CameraAlt as SnapshotIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { SnapshotListView } from './SnapshotListView';
 import { SnapshotSimpleList } from './SnapshotSimpleList';
 import { SnapshotForm } from './SnapshotForm';
 import { SnapshotDashboard } from './SnapshotDashboard';
@@ -45,13 +44,13 @@ interface SnapshotManagementProps {
   portfolioId?: string;
 }
 
-type ViewMode = 'dashboard' | 'list' | 'simple-list' | 'create' | 'edit' | 'export-import';
+type ViewMode = 'dashboard' | 'list' | 'create' | 'edit' | 'export-import';
 
 export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   portfolioId: initialPortfolioId,
 }) => {
   const theme = useTheme();
-  const [viewMode, setViewMode] = useState<ViewMode>('simple-list');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | undefined>(initialPortfolioId);
   const [selectedSnapshot, setSelectedSnapshot] = useState<SnapshotResponse | null>(null);
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -256,22 +255,6 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       
       case 'list':
         return (
-          <SnapshotListView
-            key={selectedPortfolioId}
-            portfolioId={selectedPortfolioId}
-            onSnapshotSelect={(snapshot) => {
-              setSelectedSnapshot(snapshot);
-              setViewMode('edit');
-            }}
-            onSnapshotEdit={handleEditSnapshot}
-            onSnapshotDelete={handleDeleteSnapshot}
-            showActions={true}
-            pageSize={25}
-          />
-        );
-      
-      case 'simple-list':
-        return (
           <SnapshotSimpleList
             key={selectedPortfolioId}
             portfolioId={selectedPortfolioId}
@@ -335,10 +318,9 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
     switch (mode) {
       case 'dashboard': return 0;
       case 'list': return 1;
-      case 'simple-list': return 2;
-      case 'create': return 3;
-      case 'edit': return 3;
-      case 'export-import': return 4;
+      case 'create': return 2;
+      case 'edit': return 2;
+      case 'export-import': return 3;
       default: return 0;
     }
   };
@@ -347,9 +329,8 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
     switch (newValue) {
       case 0: setViewMode('dashboard'); break;
       case 1: setViewMode('list'); break;
-      case 2: setViewMode('simple-list'); break;
-      case 3: setViewMode('create'); break;
-      case 4: setViewMode('export-import'); break;
+      case 2: setViewMode('create'); break;
+      case 3: setViewMode('export-import'); break;
       default: setViewMode('dashboard');
     }
   };
@@ -401,13 +382,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             <Tab
               icon={<ListIcon />}
               iconPosition="start"
-              label="List View"
-              sx={{ minWidth: 120 }}
-            />
-            <Tab
-              icon={<ListIcon />}
-              iconPosition="start"
-              label="Simple List"
+              label="List"
               sx={{ minWidth: 120 }}
             />
             <Tab

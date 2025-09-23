@@ -371,9 +371,9 @@ const PortfolioDetail: React.FC = () => {
 
   // Calculate trading summary
   const totalTrades = trades.length;
-  const totalVolume = trades.reduce((sum, trade) => sum + (Number(trade.quantity) * Number(trade.price) || 0), 0);
-  const totalFeesAndTaxes = trades.reduce((sum, trade) => sum + (Number(trade.fee) || 0) + (Number(trade.tax) || 0), 0);
-  const realizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
+  const totalTradeVolume = trades.reduce((sum, trade) => sum + (Number(trade.quantity) * Number(trade.price) || 0), 0);
+  const totalTradeFeesAndTaxes = trades.reduce((sum, trade) => sum + (Number(trade.fee) || 0) + (Number(trade.tax) || 0), 0);
+  const totalTradeRealizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
 
   // Debug logging
@@ -569,10 +569,10 @@ const PortfolioDetail: React.FC = () => {
                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                  <Box sx={{ flex: 1 }}>
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
-                     Assets Value
+                     Investment Value
                    </Typography>
                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
-                     {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
+                     {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                    </Typography>
                  </Box>
                  <Box sx={{ flex: 1 }}>
@@ -580,7 +580,7 @@ const PortfolioDetail: React.FC = () => {
                      Current NAV (+cash)
                    </Typography>
                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
-                     {navData ? formatCurrency(navData.navValue, portfolio.baseCurrency) : 'N/A'}
+                     {formatCurrency(portfolio.totalAllValue, portfolio.baseCurrency)}
                    </Typography>
                  </Box>
                </Box>
@@ -725,7 +725,7 @@ const PortfolioDetail: React.FC = () => {
                      Total Volume
                    </Typography>
                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
-                     {formatCurrency(totalVolume, portfolio?.baseCurrency || 'VND')}
+                     {formatCurrency(totalTradeVolume, portfolio?.baseCurrency || 'VND')}
                    </Typography>
                  </Box>
                </Box>
@@ -736,18 +736,18 @@ const PortfolioDetail: React.FC = () => {
         {/* P&L & Costs */}
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{  
-            background: realizedPL >= 0 
+            background: totalTradeRealizedPL >= 0 
               ? 'linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%)'
               : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
             color: '#1a1a1a',
             position: 'relative',
             overflow: 'hidden',
-            border: realizedPL >= 0 
+            border: totalTradeRealizedPL >= 0 
               ? '1px solid #f3e8ff'
               : '1px solid #fecaca',
             '&:hover': {
               transform: 'translateY(-2px)',
-              boxShadow: realizedPL >= 0 
+              boxShadow: totalTradeRealizedPL >= 0 
                 ? '0 4px 20px rgba(240, 147, 251, 0.15)'
                 : '0 4px 20px rgba(255, 154, 158, 0.15)',
               transition: 'all 0.3s ease-in-out'
@@ -760,14 +760,14 @@ const PortfolioDetail: React.FC = () => {
               width: 80, 
               height: 80, 
               borderRadius: '50%', 
-              background: realizedPL >= 0 
+              background: totalTradeRealizedPL >= 0 
                 ? 'rgba(240, 147, 251, 0.1)'
                 : 'rgba(255, 154, 158, 0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              {realizedPL >= 0 ? 
+              {totalTradeRealizedPL >= 0 ? 
                 <TrendingUp sx={{ fontSize: 32, opacity: 0.6, color: '#a855f7' }} /> : 
                 <TrendingDown sx={{ fontSize: 32, opacity: 0.6, color: '#f43f5e' }} />
               }
@@ -792,10 +792,10 @@ const PortfolioDetail: React.FC = () => {
                        fontWeight: 800, 
                        fontSize: '1.2rem', 
                        lineHeight: 1.2,
-                       color: realizedPL >= 0 ? '#059669' : '#dc2626'
+                       color: portfolio.realizedInvestPnL >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
-                     {formatCurrency(realizedPL, portfolio?.baseCurrency || 'VND')}
+                     {formatCurrency(portfolio.realizedInvestPnL || 0, portfolio?.baseCurrency || 'VND')}
                    </Typography>
                  </Box>
                  <Box sx={{ flex: 1 }}>
@@ -803,7 +803,7 @@ const PortfolioDetail: React.FC = () => {
                      Fees & Taxes
                    </Typography>
                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#ea580c' }}>
-                     {formatCurrency(totalFeesAndTaxes, portfolio?.baseCurrency || 'VND')}
+                     {formatCurrency(totalTradeFeesAndTaxes, portfolio?.baseCurrency || 'VND')}
                    </Typography>
                  </Box>
                </Box>
@@ -1003,10 +1003,10 @@ const PortfolioDetail: React.FC = () => {
                       border: '1px solid #e0e0e0'
                     }}>
                       <Typography variant="h4" color="primary" fontWeight="bold">
-                        {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
+                        {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Total Portfolio Value (Tổng giá trị tài sản)
+                        Total Investment Value (Tổng giá trị đầu tư)
                       </Typography>
                     </Box>
                   </Grid>
@@ -1020,7 +1020,7 @@ const PortfolioDetail: React.FC = () => {
                       border: '1px solid #e0e0e0'
                     }}>
                       <Typography variant="h4" color="success.main" fontWeight="bold">
-                        {formatCurrency(portfolio.unrealizedPl, portfolio.baseCurrency)}
+                        {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                         Unrealized P&L (Lợi nhuận chưa thực hiện)
@@ -1193,10 +1193,10 @@ const PortfolioDetail: React.FC = () => {
                           textAlign: 'center'
                         }}>
                           <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem' }}>
-                            Total Asset Value
+                            Total Investment Value
                           </Typography>
                           <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
-                            {formatCurrency(portfolio.totalValue, portfolio.baseCurrency)}
+                            {formatCurrency(allocationData?.totalValue || 0, portfolio.baseCurrency)}
                           </Typography>
                         </Box>
                       </Box>

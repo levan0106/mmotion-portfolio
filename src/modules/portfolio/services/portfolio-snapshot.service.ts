@@ -7,6 +7,7 @@ import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.entity';
 import { Portfolio } from '../entities/portfolio.entity';
 import { CreatePortfolioSnapshotDto, UpdatePortfolioSnapshotDto } from '../dto/portfolio-snapshot.dto';
+import { DepositRepository } from '../repositories/deposit.repository';
 
 
 export interface PortfolioSnapshotTimelineQuery {
@@ -28,6 +29,7 @@ export class PortfolioSnapshotService {
     private readonly assetSnapshotRepository: Repository<AssetAllocationSnapshot>,
     @InjectRepository(Portfolio)
     private readonly portfolioRepository: Repository<Portfolio>,
+    private readonly depositRepository: DepositRepository,
   ) {}
 
   /**
@@ -110,16 +112,16 @@ export class PortfolioSnapshotService {
     }
 
     // Calculate portfolio-level metrics
-    let totalValue = 0;
-    let totalPl = 0;
-    let unrealizedPl = 0;
-    let realizedPl = 0;
+    let totalAssetValue = 0;
+    let totalAssetPl = 0;
+    let unrealizedAssetPl = 0;
+    let realizedAssetPl = 0;
     
     assetSnapshots.forEach(snapshot => {
-      totalValue = Number((totalValue + Number(snapshot.currentValue || 0)).toFixed(8));
-      totalPl = Number((totalPl + Number(snapshot.totalPl || 0)).toFixed(8));
-      unrealizedPl = Number((unrealizedPl + Number(snapshot.unrealizedPl || 0)).toFixed(8));
-      realizedPl = Number((realizedPl + Number(snapshot.realizedPl || 0)).toFixed(8));
+      totalAssetValue = Number((totalAssetValue + Number(snapshot.currentValue || 0)).toFixed(8));
+      totalAssetPl = Number((totalAssetPl + Number(snapshot.totalPl || 0)).toFixed(8));
+      unrealizedAssetPl = Number((unrealizedAssetPl + Number(snapshot.unrealizedPl || 0)).toFixed(8));
+      realizedAssetPl = Number((realizedAssetPl + Number(snapshot.realizedPl || 0)).toFixed(8));
     });
     
     // Simplified total return calculation to avoid precision issues
@@ -143,7 +145,7 @@ export class PortfolioSnapshotService {
     // Convert to percentage
     assetTypeMap.forEach((data, assetType) => {
       assetAllocation[assetType] = {
-        percentage: totalValue > 0 ? Number(((data.value / totalValue) * 100).toFixed(4)) : 0,
+        percentage: totalAssetValue > 0 ? Number(((data.value / totalAssetValue) * 100).toFixed(4)) : 0,
         value: Number(data.value.toFixed(8)),
         count: data.count,
       };
@@ -155,7 +157,19 @@ export class PortfolioSnapshotService {
 
     // Get cash balance from portfolio (if available)
     const cashBalance = Number((Number(portfolio.cashBalance || 0)).toFixed(8));
-    const investedValue = Number((totalValue - cashBalance).toFixed(8));
+    const totalAssetInvested = Number((totalAssetValue - cashBalance).toFixed(8));
+
+    // Calculate deposit data
+    const depositData = await this.calculateDepositData(portfolioId);
+
+    // Calculate Portfolio Value Fields (Assets + Deposits)
+    const totalPortfolioValue = Number((totalAssetValue + depositData.totalDepositValue).toFixed(8));
+    const totalPortfolioInvested = Number((totalAssetInvested + depositData.totalDepositPrincipal).toFixed(8));
+
+    // Calculate Portfolio P&L (Assets + Deposits)
+    const totalPortfolioPl = Number((totalAssetPl + depositData.totalDepositInterest).toFixed(8));
+    const unrealizedPortfolioPl = Number((unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
+    const realizedPortfolioPl = Number((realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
 
     // Calculate returns (simplified - would need historical data for accurate calculation)
     const dailyReturn = Number(this.calculateDailyReturn(assetSnapshots).toFixed(4));
@@ -167,11 +181,18 @@ export class PortfolioSnapshotService {
 
     // Debug logging
     console.log('Portfolio Snapshot Debug:', {
-      totalValue,
-      totalPl,
+      totalAssetValue,
+      totalAssetInvested,
+      totalPortfolioValue,
+      totalPortfolioInvested,
+      totalAssetPl,
+      unrealizedAssetPl,
+      realizedAssetPl,
+      totalPortfolioPl,
+      unrealizedPortfolioPl,
+      realizedPortfolioPl,
       totalReturn,
       cashBalance,
-      investedValue,
       dailyReturn,
       weeklyReturn,
       monthlyReturn,
@@ -186,13 +207,22 @@ export class PortfolioSnapshotService {
       portfolioName: portfolio.name,
       snapshotDate: date.toISOString().split('T')[0],
       granularity,
-      totalValue,
-      totalPl,
-      unrealizedPl,
-      realizedPl,
+      // Asset Value Fields (Assets Only)
+      totalAssetValue,
+      totalAssetInvested,
+      // Asset P&L Fields (Assets Only)
+      totalAssetPl,
+      unrealizedAssetPl,
+      realizedAssetPl,
+      // Portfolio Value Fields (Assets + Deposits)
+      totalPortfolioValue,
+      totalPortfolioInvested,
+      // Portfolio P&L Fields (Assets + Deposits)
+      totalPortfolioPl,
+      unrealizedPortfolioPl,
+      realizedPortfolioPl,
       totalReturn,
       cashBalance,
-      investedValue,
       dailyReturn,
       weeklyReturn,
       monthlyReturn,
@@ -202,6 +232,12 @@ export class PortfolioSnapshotService {
       assetAllocation,
       assetCount: assetSnapshots.length,
       activeAssetCount: assetSnapshots.filter(s => s.isActive).length,
+      totalDepositPrincipal: depositData.totalDepositPrincipal,
+      totalDepositInterest: depositData.totalDepositInterest,
+      totalDepositValue: depositData.totalDepositValue,
+      totalDepositCount: depositData.totalDepositCount,
+      unrealizedDepositPnL: depositData.unrealizedDepositPnL,
+      realizedDepositPnL: depositData.realizedDepositPnL,
       createdBy,
       notes: `Portfolio snapshot created from ${assetSnapshots.length} asset snapshots`,
     };
@@ -251,6 +287,8 @@ export class PortfolioSnapshotService {
     totalDepositInterest: number;
     totalDepositValue: number;
     totalDepositCount: number;
+    unrealizedDepositPnL: number;
+    realizedDepositPnL: number;
   }): Promise<void> {
     this.logger.log(`Updating deposit fields for portfolio ${portfolioId}`);
 
@@ -266,6 +304,17 @@ export class PortfolioSnapshotService {
       latestSnapshot.totalDepositInterest = depositData.totalDepositInterest;
       latestSnapshot.totalDepositValue = depositData.totalDepositValue;
       latestSnapshot.totalDepositCount = depositData.totalDepositCount;
+      latestSnapshot.unrealizedDepositPnL = depositData.unrealizedDepositPnL;
+      latestSnapshot.realizedDepositPnL = depositData.realizedDepositPnL;
+
+      // Recalculate Portfolio Value Fields (Assets + Deposits)
+      latestSnapshot.totalPortfolioValue = Number((latestSnapshot.totalAssetValue + depositData.totalDepositValue).toFixed(8));
+      latestSnapshot.totalPortfolioInvested = Number((latestSnapshot.totalAssetInvested + depositData.totalDepositPrincipal).toFixed(8));
+
+      // Recalculate Portfolio P&L Fields (Assets + Deposits)
+      latestSnapshot.totalPortfolioPl = Number((latestSnapshot.totalAssetPl + depositData.totalDepositInterest).toFixed(8));
+      latestSnapshot.unrealizedPortfolioPl = Number((latestSnapshot.unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
+      latestSnapshot.realizedPortfolioPl = Number((latestSnapshot.realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
 
       await this.portfolioSnapshotRepository.save(latestSnapshot);
       this.logger.log(`Updated deposit fields in latest snapshot for portfolio ${portfolioId}`);
@@ -283,16 +332,26 @@ export class PortfolioSnapshotService {
           portfolioName: portfolio.name,
           snapshotDate: new Date(),
           granularity: SnapshotGranularity.DAILY,
-          totalValue: portfolio.totalValue,
-          totalPl: portfolio.unrealizedPl + portfolio.realizedPl,
-          unrealizedPl: portfolio.unrealizedPl,
-          realizedPl: portfolio.realizedPl,
+          totalAssetValue: portfolio.totalValue,
+          totalAssetInvested: portfolio.totalValue - (portfolio.cashBalance || 0),
+          // Asset P&L Fields (Assets Only)
+          totalAssetPl: portfolio.unrealizedPl + portfolio.realizedPl,
+          unrealizedAssetPl: portfolio.unrealizedPl,
+          realizedAssetPl: portfolio.realizedPl,
+          // Portfolio Value Fields (Assets + Deposits)
+          totalPortfolioValue: portfolio.totalValue + depositData.totalDepositValue,
+          totalPortfolioInvested: (portfolio.totalValue - portfolio.cashBalance) + depositData.totalDepositPrincipal,
+          // Portfolio P&L Fields (Assets + Deposits)
+          totalPortfolioPl: (portfolio.unrealizedPl + portfolio.realizedPl) + depositData.totalDepositInterest,
+          unrealizedPortfolioPl: portfolio.unrealizedPl + depositData.unrealizedDepositPnL,
+          realizedPortfolioPl: portfolio.realizedPl + depositData.realizedDepositPnL,
           cashBalance: portfolio.cashBalance,
-          investedValue: portfolio.totalValue - portfolio.cashBalance,
           totalDepositPrincipal: depositData.totalDepositPrincipal,
           totalDepositInterest: depositData.totalDepositInterest,
           totalDepositValue: depositData.totalDepositValue,
           totalDepositCount: depositData.totalDepositCount,
+          unrealizedDepositPnL: depositData.unrealizedDepositPnL,
+          realizedDepositPnL: depositData.realizedDepositPnL,
           isActive: true,
         });
 
@@ -363,8 +422,8 @@ export class PortfolioSnapshotService {
     const snapshot = await this.getPortfolioSnapshotById(id);
     
     // Recalculate derived fields if needed
-    if (updateDto.totalValue !== undefined && updateDto.totalPl !== undefined) {
-      updateDto.totalReturn = updateDto.totalValue > 0 ? (updateDto.totalPl / (updateDto.totalValue - updateDto.totalPl)) * 100 : 0;
+    if (updateDto.totalAssetValue !== undefined && updateDto.totalAssetPl !== undefined) {
+      updateDto.totalReturn = updateDto.totalAssetValue > 0 ? (updateDto.totalAssetPl / (updateDto.totalAssetValue - updateDto.totalAssetPl)) * 100 : 0;
     }
 
     const updatedSnapshot = await this.portfolioSnapshotRepo.update(id, updateDto);
@@ -587,5 +646,28 @@ export class PortfolioSnapshotService {
       snapshotDate,
       granularity
     );
+  }
+
+  /**
+   * Calculate deposit data for a portfolio
+   */
+  private async calculateDepositData(portfolioId: string): Promise<{
+    totalDepositPrincipal: number;
+    totalDepositInterest: number;
+    totalDepositValue: number;
+    totalDepositCount: number;
+    unrealizedDepositPnL: number;
+    realizedDepositPnL: number;
+  }> {
+    const statistics = await this.depositRepository.getDepositStatistics(portfolioId);
+    
+    return {
+      totalDepositPrincipal: Number(statistics.totalPrincipal || 0),
+      totalDepositInterest: Number(statistics.totalInterest || 0),
+      totalDepositValue: Number(statistics.totalValue || 0),
+      totalDepositCount: statistics.totalDeposits || 0,
+      unrealizedDepositPnL: Number(statistics.totalAccruedInterest || 0),
+      realizedDepositPnL: Number(statistics.totalSettledInterest || 0),
+    };
   }
 }
