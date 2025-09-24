@@ -1,13 +1,19 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindManyOptions, Like, In } from 'typeorm';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { NationConfigService } from './nation-config.service';
+import { BasicPriceService } from './basic-price.service';
+import { PriceHistoryService } from './price-history.service';
 import { CreateGlobalAssetDto } from '../dto/create-global-asset.dto';
 import { UpdateGlobalAssetDto } from '../dto/update-global-asset.dto';
 import { GlobalAssetQueryDto } from '../dto/global-asset-query.dto';
 import { GlobalAssetResponseDto } from '../dto/global-asset-response.dto';
+import { BulkCreateAssetsDto, BulkAssetResultDto, BulkAssetItemDto } from '../dto/bulk-asset.dto';
+import { CreateAssetPriceDto } from '../dto/create-asset-price.dto';
+import { UpdateAssetPriceDto } from '../dto/update-asset-price.dto';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceType, PriceSource } from '../enums/price-type.enum';
 
 type NationCode = 'VN' | 'US' | 'UK' | 'JP' | 'SG';
 
@@ -30,6 +36,10 @@ export class GlobalAssetService {
     @InjectRepository(GlobalAsset)
     private readonly globalAssetRepository: Repository<GlobalAsset>,
     private readonly nationConfigService: NationConfigService,
+    @Inject(forwardRef(() => BasicPriceService))
+    private readonly basicPriceService: BasicPriceService,
+    @Inject(forwardRef(() => PriceHistoryService))
+    private readonly priceHistoryService: PriceHistoryService,
   ) {}
 
   /**
@@ -474,5 +484,270 @@ export class GlobalAssetService {
       marketInfo: asset.getMarketInfo(),
       canModify: asset.canModify(),
     };
+  }
+
+  /**
+   * Bulk create/update assets with prices.
+   * Creates new assets if they don't exist, updates prices if they do.
+   * @param bulkDto - Bulk asset creation data
+   * @returns Bulk operation result
+   */
+  async bulkCreateOrUpdateAssets(bulkDto: BulkCreateAssetsDto): Promise<BulkAssetResultDto> {
+    this.logger.log(`Bulk processing ${bulkDto.assets.length} assets`);
+
+    const result: BulkAssetResultDto = {
+      created: 0,
+      updated: 0,
+      failed: 0,
+      errors: [],
+      total: bulkDto.assets.length,
+    };
+
+    // Process each asset individually to handle errors gracefully
+    for (const assetData of bulkDto.assets) {
+      try {
+        await this.processBulkAsset(assetData, result);
+      } catch (error) {
+        result.failed++;
+        result.errors.push(`${assetData.symbol}: ${error.message}`);
+        this.logger.error(`Failed to process asset ${assetData.symbol}: ${error.message}`);
+      }
+    }
+
+    this.logger.log(`Bulk operation completed: ${result.created} created, ${result.updated} updated, ${result.failed} failed`);
+    return result;
+  }
+
+  /**
+   * Process a single asset in bulk operation.
+   * @param assetData - Asset data
+   * @param result - Result object to update
+   */
+  private async processBulkAsset(assetData: BulkAssetItemDto, result: BulkAssetResultDto): Promise<void> {
+    const { symbol, name, assetType, price, nation, currency, createdAt } = assetData;
+    
+    // Ensure assetType is properly typed as AssetType enum
+    const typedAssetType = assetType as AssetType;
+
+    // Check if asset already exists
+    const existingAsset = await this.findAssetBySymbolAndNation(symbol, nation as NationCode);
+
+    if (existingAsset) {
+      // Update existing asset price
+      await this.updateAssetPrice(existingAsset.id, price, createdAt || new Date().toISOString());
+      result.updated++;
+      this.logger.log(`Updated price for existing asset: ${symbol}.${nation}`);
+    } else {
+      // Create new asset
+      const assetName = name || symbol; // Use symbol as fallback if name is empty
+      const createDto: CreateGlobalAssetDto = {
+        symbol,
+        name: assetName,
+        type: typedAssetType,
+        nation: nation as NationCode,
+        marketCode: this.getDefaultMarketCode(nation as NationCode, typedAssetType),
+        currency,
+        timezone: this.getDefaultTimezone(nation as NationCode),
+        description: `Bulk created asset - ${assetName}`,
+        isActive: true,
+      };
+
+      const newAsset = await this.create(createDto);
+      
+      // Create initial price for the new asset (this will also create history record)
+      await this.updateAssetPrice(newAsset.id, price, createdAt || new Date().toISOString());
+      result.created++;
+      this.logger.log(`Created new asset: ${symbol}.${nation}`);
+    }
+  }
+
+  /**
+   * Find asset by symbol and nation.
+   * @param symbol - Asset symbol
+   * @param nation - Nation code
+   * @returns Asset if found, null otherwise
+   */
+  private async findAssetBySymbolAndNation(symbol: string, nation: NationCode): Promise<GlobalAsset | null> {
+    try {
+      return await this.globalAssetRepository.findOne({
+        where: { symbol, nation, isActive: true },
+      });
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Update asset price.
+   * @param assetId - Asset ID
+   * @param price - New price
+   */
+  private async updateAssetPrice(assetId: string, price: number, createdAt: string): Promise<void> {
+    try {
+      // Check if price exists for this asset
+      const existingPrices = await this.basicPriceService.findAll({
+        assetId,
+        page: 1,
+        limit: 1,
+      });
+
+      if (existingPrices.data.length > 0) {
+        // Get old price for history tracking
+        const oldPrice = existingPrices.data[0].currentPrice;
+        
+        // Update existing price
+        const priceId = existingPrices.data[0].id;
+        const updateDto: UpdateAssetPriceDto = {
+          currentPrice: price,
+          lastPriceUpdate: createdAt || new Date().toISOString(),
+        };
+        await this.basicPriceService.update(priceId, updateDto);
+        
+        // Create price history record
+        await this.createPriceHistoryRecord(assetId, price, oldPrice, 'Bulk update', createdAt);
+        
+        this.logger.log(`Updated price for asset ${assetId} from ${oldPrice} to ${price}`);
+      } else {
+        // Create new price if none exists
+        await this.createAssetPrice(assetId, price, createdAt);
+        
+        // Create price history record for initial price
+        await this.createPriceHistoryRecord(assetId, price, null, 'Bulk create', createdAt);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update price for asset ${assetId}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Create asset price.
+   * @param assetId - Asset ID
+   * @param price - Initial price
+   */
+  private async createAssetPrice(assetId: string, price: number, createdAt: string): Promise<void> {
+    try {
+      const createDto: CreateAssetPriceDto = {
+        assetId,
+        currentPrice: price,
+        priceType: PriceType.MANUAL,
+        priceSource: PriceSource.USER,
+        lastPriceUpdate: createdAt || new Date().toISOString(),
+      };
+      await this.basicPriceService.create(createDto);
+      this.logger.log(`Created initial price ${price} for asset ${assetId}`);
+    } catch (error) {
+      this.logger.error(`Failed to create price for asset ${assetId}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Create price history record for tracking price changes.
+   * @param assetId - Asset ID
+   * @param newPrice - New price
+   * @param oldPrice - Old price (null for initial price)
+   * @param changeReason - Reason for price change
+   * @param createdAt - Custom creation date (optional)
+   */
+  private async createPriceHistoryRecord(
+    assetId: string, 
+    newPrice: number, 
+    oldPrice: number | null, 
+    changeReason: string,
+    createdAt?: string
+  ): Promise<void> {
+    try {
+      const historyDto = {
+        assetId,
+        price: newPrice,
+        priceType: PriceType.MANUAL,
+        priceSource: PriceSource.USER,
+        changeReason,
+        createdAt: createdAt || new Date().toISOString(),
+        metadata: {
+          oldPrice,
+          changeAmount: oldPrice ? newPrice - oldPrice : null,
+          changePercentage: oldPrice ? ((newPrice - oldPrice) / oldPrice) * 100 : null,
+          source: 'bulk_operation',
+        },
+      };
+      
+      await this.priceHistoryService.createPriceHistory(historyDto);
+      this.logger.log(`Created price history record for asset ${assetId}: ${oldPrice || 'N/A'} → ${newPrice} at ${createdAt || 'now'}`);
+    } catch (error) {
+      this.logger.error(`Failed to create price history record for asset ${assetId}: ${error.message}`);
+      // Don't throw error here to avoid breaking the main operation
+    }
+  }
+
+  /**
+   * Get default market code for nation and asset type.
+   * @param nation - Nation code
+   * @param assetType - Asset type
+   * @returns Default market code
+   */
+  private getDefaultMarketCode(nation: NationCode, assetType: AssetType): string {
+    const marketCodes = {
+      VN: {
+        STOCK: 'HOSE',
+        BOND: 'HOSE',
+        GOLD: 'SJC',
+        COMMODITY: 'HOSE',
+        DEPOSIT: 'BANK',
+        CASH: 'BANK',
+      },
+      US: {
+        STOCK: 'NYSE',
+        BOND: 'NYSE',
+        GOLD: 'COMEX',
+        COMMODITY: 'CME',
+        DEPOSIT: 'BANK',
+        CASH: 'BANK',
+      },
+      UK: {
+        STOCK: 'LSE',
+        BOND: 'LSE',
+        GOLD: 'LME',
+        COMMODITY: 'LME',
+        DEPOSIT: 'BANK',
+        CASH: 'BANK',
+      },
+      JP: {
+        STOCK: 'TSE',
+        BOND: 'TSE',
+        GOLD: 'TGE',
+        COMMODITY: 'TGE',
+        DEPOSIT: 'BANK',
+        CASH: 'BANK',
+      },
+      SG: {
+        STOCK: 'SGX',
+        BOND: 'SGX',
+        GOLD: 'SGX',
+        COMMODITY: 'SGX',
+        DEPOSIT: 'BANK',
+        CASH: 'BANK',
+      },
+    };
+
+    return marketCodes[nation]?.[assetType] || 'DEFAULT';
+  }
+
+  /**
+   * Get default timezone for nation.
+   * @param nation - Nation code
+   * @returns Default timezone
+   */
+  private getDefaultTimezone(nation: NationCode): string {
+    const timezones = {
+      VN: 'Asia/Ho_Chi_Minh',
+      US: 'America/New_York',
+      UK: 'Europe/London',
+      JP: 'Asia/Tokyo',
+      SG: 'Asia/Singapore',
+    };
+
+    return timezones[nation] || 'UTC';
   }
 }

@@ -9,6 +9,8 @@ import {
   HttpCode,
   ParseUUIDPipe,
   ValidationPipe,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +21,8 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { MarketDataService, PriceUpdateResult, MarketDataConfig, MarketDataProvider } from '../services/market-data.service';
+import { GlobalAssetService } from '../services/global-asset.service';
+import { BulkCreateAssetsDto, BulkAssetResultDto } from '../dto/bulk-asset.dto';
 
 /**
  * Controller for managing market data operations.
@@ -27,7 +31,11 @@ import { MarketDataService, PriceUpdateResult, MarketDataConfig, MarketDataProvi
 @ApiTags('Market Data')
 @Controller('api/v1/market-data')
 export class MarketDataController {
-  constructor(private readonly marketDataService: MarketDataService) {}
+  constructor(
+    private readonly marketDataService: MarketDataService,
+    @Inject(forwardRef(() => GlobalAssetService))
+    private readonly globalAssetService: GlobalAssetService,
+  ) {}
 
   /**
    * Update prices for all active assets.
@@ -369,5 +377,98 @@ export class MarketDataController {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
     return this.marketDataService.getUpdateStatistics(start, end);
+  }
+
+  /**
+   * Bulk create/update assets with prices.
+   * Creates new assets if they don't exist, updates prices if they do.
+   */
+  @Post('assets/bulk')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Bulk create/update assets with prices',
+    description: 'Creates new assets if they don\'t exist, updates prices if they do. Processes each asset individually to handle errors gracefully.',
+  })
+  @ApiBody({
+    type: BulkCreateAssetsDto,
+    description: 'List of assets to create/update with prices',
+    examples: {
+      example1: {
+        summary: 'Vietnamese stocks example',
+        value: {
+          assets: [
+            {
+              symbol: 'HPG',
+              name: 'Hoa Phat Group',
+              assetType: 'Stock',
+              price: 25000,
+              nation: 'VN',
+              currency: 'VND',
+              createdAt: '08/24/2025'
+            },
+            {
+              symbol: 'VCB',
+              name: 'Vietcombank',
+              assetType: 'Stock',
+              price: 85000,
+              nation: 'VN',
+              currency: 'VND'
+            },
+            {
+              symbol: 'GOLD',
+              assetType: 'Gold',
+              price: 75000000,
+              nation: 'VN',
+              currency: 'VND'
+            }
+          ]
+        }
+      },
+      example2: {
+        summary: 'US stocks example',
+        value: {
+          assets: [
+            {
+              symbol: 'AAPL',
+              name: 'Apple Inc.',
+              assetType: 'Stock',
+              price: 150.25,
+              nation: 'US',
+              currency: 'USD'
+            },
+            {
+              symbol: 'GOOGL',
+              name: 'Alphabet Inc.',
+              assetType: 'Stock',
+              price: 2800.50,
+              nation: 'US',
+              currency: 'USD'
+            }
+          ]
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Bulk operation completed successfully',
+    type: BulkAssetResultDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { type: 'string', example: 'Validation failed' },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  async bulkCreateOrUpdateAssets(
+    @Body(ValidationPipe) bulkDto: BulkCreateAssetsDto,
+  ): Promise<BulkAssetResultDto> {
+    return this.globalAssetService.bulkCreateOrUpdateAssets(bulkDto);
   }
 }

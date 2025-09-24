@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: FUEVFVND Price Issue Investigation - IN PROGRESS (80%)**
-**Latest Update: Fixed SQL column naming issue in SnapshotRepository, investigating why FUEVFVND still has currentPrice = 1 in snapshots (Current Session)**
+**Phase: Portfolio Performance TWR Integration - COMPLETED (100%)**
+**Latest Update: Successfully implemented TWR (Time-Weighted Return) integration for Portfolio Performance chart with separate TWR period selector, fixed benchmark comparison API to use accurate performance snapshots instead of simple cumulative returns (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,18 +111,22 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- 🔄 **FUEVFVND PRICE ISSUE INVESTIGATION - IN PROGRESS** (Current Session - September 23, 2025)
-  - **SQL Column Naming Fix**: Fixed critical SQL error 'column "snapshotdate" does not exist' in SnapshotRepository
-  - **Column Name Standardization**: Updated all query builders to use snake_case column names (snapshot_date instead of snapshotDate)
-  - **Debug Logging Added**: Added comprehensive debug logging to getCurrentPriceFromGlobalAsset and getAnalyticsAssetTypeFromSymbol
-  - **Logic Verification**: Confirmed that other assets get correct prices, FUEVFVND is specific issue
-  - **Current Status**: FUEVFVND still has currentPrice = 1, investigation ongoing
-  - **Key Findings**:
-    - ✅ **SQL Error Fixed**: SnapshotRepository now uses correct column names
-    - ✅ **Other Assets Working**: Assets like 16287, 46139, 35481 have correct prices
-    - ❌ **FUEVFVND Issue**: Still shows currentPrice = 1 in all snapshots
-    - 🔍 **Debug Logs**: No debug messages found for FUEVFVND processing
-    - 🔍 **Next Steps**: Investigate why FUEVFVND not processed by getCurrentPriceFromGlobalAsset
+- ✅ **UNREALIZED P&L CHART INTEGRATION WITH DEPOSIT DATA - COMPLETED** (Current Session - September 24, 2025)
+  - **API Integration**: Successfully added deposit data to /analytics/asset-performance API endpoint
+  - **Backend Implementation**: Modified PortfolioAnalyticsController to fetch deposit data and include in response
+  - **Service Enhancement**: Added getPortfolioDeposits method to PortfolioService with proper deposit data formatting
+  - **Frontend Integration**: Updated UnrealizedPnLChart to use unified /analytics/asset-performance API
+  - **Data Flow Fix**: Fixed critical issue where frontend was calling wrong API endpoint (/analytics/performance vs /analytics/asset-performance)
+  - **Duplicate API Call Resolution**: Removed duplicate useEffect that was causing data conflicts and "No data" display
+  - **Chart Data Consistency**: Both Unrealized P&L and Asset Allocation charts now use same API for data consistency
+  - **Key Features Implemented**:
+    - ✅ **Deposit Data Integration**: DEPOSITS asset type now appears in Unrealized P&L chart with proper P&L calculations
+    - ✅ **Unified API**: Single /analytics/asset-performance endpoint serves both charts for data consistency
+    - ✅ **Frontend Data Flow**: Fixed data flow from API → PortfolioDetail → UnrealizedPnLChart
+    - ✅ **Error Handling**: Added null checks and array validation to prevent "data.map is not a function" errors
+    - ✅ **API Method Cleanup**: Removed duplicate getPortfolioAssetPerformance method to prevent conflicts
+    - ✅ **Chart Rendering**: Chart now displays all asset types including deposits with correct P&L values
+    - ✅ **Production Ready**: Clean, maintainable code with proper error handling and data validation
 
 - ✅ **DEPOSIT VALUE CALCULATION LOGIC FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **Deposit Value Logic Fix**: Fixed critical logic where totalDepositValue and totalDepositPrincipal included settled deposits
@@ -1113,13 +1117,14 @@
 - **Documentation Updates** - Update API docs and user guides
 
 ## Recent Achievements (Current Session)
-- ✅ **Controller Decision Matrix Documentation**: Created comprehensive decision matrix for choosing between SnapshotController and PerformanceSnapshotController
-- ✅ **Development Guidelines**: Added controller selection guidelines to development documentation
-- ✅ **Quick Reference Guide**: Created quick reference document for easy developer access
-- ✅ **Documentation Structure**: Organized documentation with proper cross-references and examples
-- ✅ **Decision Framework**: Established clear criteria for API placement decisions
-- ✅ **Examples and Use Cases**: Provided specific examples including monthly returns API implementation
-- ✅ **Maintenance Guidelines**: Created guidelines for updating documentation as system evolves
+- ✅ **Portfolio Performance TWR Integration**: Successfully implemented TWR (Time-Weighted Return) integration for Portfolio Performance chart
+- ✅ **Backend API Enhancement**: Fixed benchmark comparison API to use TWR from Performance Snapshots instead of simple cumulative returns
+- ✅ **TWR Period Parameter**: Added twrPeriod parameter to separate TWR selection from data range (months parameter)
+- ✅ **Frontend Integration**: Added TWR period selector to Portfolio Performance chart with options: 1D, 1W, 1M, 3M, 6M, 1Y, YTD
+- ✅ **API Service Update**: Updated frontend API service to support twrPeriod parameter
+- ✅ **Component Enhancement**: Enhanced BenchmarkComparison component with dual selectors (TWR Period + Timeframe)
+- ✅ **State Management**: Added proper state management for TWR period in PortfolioDetail page
+- ✅ **Data Accuracy**: Portfolio performance now uses accurate TWR calculations that account for cash flows
 
 ## Remaining Questions
 1. Database partitioning strategy for large datasets?

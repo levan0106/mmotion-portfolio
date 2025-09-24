@@ -118,7 +118,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   }
 
   return (
-    <Box sx={{ height: compact ? 133 : 187, display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ height: compact ? 133 : 220, display: 'flex', alignItems: 'center' }}>
       <Box sx={{ flex: 1, height: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

@@ -163,10 +163,6 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioAssetPerformance(portfolioId: string): Promise<any> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/asset-performance`);
-    return response.data;
-  }
 
   async getPortfolioRiskMetrics(portfolioId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/risk-metrics`);
@@ -199,8 +195,10 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioBenchmarkComparison(portfolioId: string, months?: number): Promise<any> {
-    const params = months ? { months: months.toString() } : {};
+  async getPortfolioBenchmarkComparison(portfolioId: string, months?: number, twrPeriod?: string): Promise<any> {
+    const params: any = {};
+    if (months) params.months = months.toString();
+    if (twrPeriod) params.twrPeriod = twrPeriod;
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/benchmark-comparison`, { params });
     return response.data;
   }
@@ -217,7 +215,7 @@ class ApiService {
 
   // Advanced analytics endpoints
   async getPortfolioAnalyticsPerformance(portfolioId: string, period?: string): Promise<any> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/performance`, {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/asset-performance`, {
       params: { period },
     });
     return response.data;

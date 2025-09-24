@@ -91,7 +91,7 @@ export class AssetPriceHistory {
     description: 'Timestamp when this price record was created',
     example: '2024-01-15T10:30:00.000Z',
   })
-  @CreateDateColumn({ name: 'created_at', comment: 'Price history record creation timestamp' })
+  @Column({ type: 'timestamp', name: 'created_at', comment: 'Price history record creation timestamp' })
   createdAt: Date;
 
   /**

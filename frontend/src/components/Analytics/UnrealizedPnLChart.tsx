@@ -7,73 +7,43 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Box, Typography } from '@mui/material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
-interface Position {
-  assetId?: string;
-  symbol?: string;
-  assetType?: string;
-  name?: string;
-  quantity?: number;
-  avgCost?: number;
-  currentPrice?: number;
-  currentValue?: number;
-  unrealizedPl?: number;
-  unrealizedPlPercentage?: number;
-  weight?: number;
+interface AssetPerformanceData {
+  assetType: string;
+  performance: number;
+  value: number;
+  color: string;
+  unrealizedPl: number;
+  positionCount: number;
 }
 
 interface UnrealizedPnLChartProps {
-  positions: Position[];
+  data: AssetPerformanceData[];
   baseCurrency: string;
   compact?: boolean;
 }
 
 
 const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
-  positions,
+  data,
   baseCurrency,
   compact = false,
 }) => {
-  // Group positions by asset type and calculate aggregated P&L
-  const groupedPositions = positions.reduce((acc, position) => {
-    // Use assetType as the grouping key, fallback to symbol if assetType is not available
-    const assetType = (position.assetType || position.symbol || 'UNKNOWN').toUpperCase();
-    
-    if (!acc[assetType]) {
-      acc[assetType] = {
-        totalUnrealizedPl: 0,
-        totalMarketValue: 0,
-        count: 0,
-        positions: []
-      };
-    }
-    
-    // Add null checks for numeric values - map to correct field names
-    acc[assetType].totalUnrealizedPl += position.unrealizedPl || 0;
-    acc[assetType].totalMarketValue += position.currentValue || 0;
-    acc[assetType].count += 1;
-    acc[assetType].positions.push(position);
-    
-    return acc;
-  }, {} as Record<string, {
-    totalUnrealizedPl: number;
-    totalMarketValue: number;
-    count: number;
-    positions: Position[];
-  }>);
-
-  // Transform grouped data for the chart
-  const chartData = Object.entries(groupedPositions).map(([assetType, data]) => {
-    const unrealizedPnLPercentage = data.totalMarketValue > 0 
-      ? (data.totalUnrealizedPl / data.totalMarketValue) * 100 
+  // Ensure data is an array
+  const safeData = Array.isArray(data) ? data : [];
+  
+  // Transform data for the chart
+  const chartData = safeData.map((item) => {
+    const unrealizedPnLPercentage = item.value > 0 
+      ? (item.unrealizedPl / item.value) * 100 
       : 0;
     
     return {
-      name: assetType,
-      unrealizedPnL: data.totalUnrealizedPl,
+      name: item.assetType,
+      unrealizedPnL: item.unrealizedPl,
       unrealizedPnLPercentage: unrealizedPnLPercentage,
-      marketValue: data.totalMarketValue,
-      positionCount: data.count,
-      color: data.totalUnrealizedPl >= 0 ? '#00C49F' : '#FF8042', // Green for profit, Red for loss
+      marketValue: item.value,
+      positionCount: item.positionCount,
+      color: item.unrealizedPl >= 0 ? '#00C49F' : '#FF8042', // Green for profit, Red for loss
     };
   });
 
@@ -218,11 +188,11 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
     return null;
   };
 
-  if (!positions || positions.length === 0) {
+  if (!safeData || safeData.length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
-          No position data available
+          No data available
         </Typography>
       </Box>
     );

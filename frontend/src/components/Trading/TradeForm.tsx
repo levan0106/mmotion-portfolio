@@ -262,12 +262,19 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     const price = Number(watchedPrice) || 0;
     const fee = Number(watchedFee) || 0;
     const tax = Number(watchedTax) || 0;
+    const side = watch('side');
     
     const value = quantity * price;
-    const cost = value + fee + tax;
+    
+    // Calculate total cost based on trade side
+    // SELL: Total Cost = Quantity*Price - Fees - Taxes (amount received)
+    // BUY: Total Cost = Quantity*Price + Fees + Taxes (amount paid)
+    const cost = side === TradeSide.SELL 
+      ? value - fee - tax  // SELL: subtract fees and taxes
+      : value + fee + tax; // BUY: add fees and taxes
     
     return { value, cost, fee, tax };
-  }, [watchedQuantity, watchedPrice, watchedFee, watchedTax]);
+  }, [watchedQuantity, watchedPrice, watchedFee, watchedTax, watch('side')]);
 
 
 
@@ -813,7 +820,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               </Typography>
               <Grid container spacing={isModal ? 1 : 1.5}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                  <Box textAlign="center" p={2} sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1, 
+                    border: 1, 
+                    borderColor: 'grey.300',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Total Value
                     </Typography>
@@ -823,7 +839,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                  <Box textAlign="center" p={2} sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1, 
+                    border: 1, 
+                    borderColor: 'grey.300',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Fees & Taxes
                     </Typography>
@@ -833,17 +858,40 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                  <Box textAlign="center" p={2} sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1, 
+                    border: 1, 
+                    borderColor: 'grey.300',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Total Cost
+                      {watch('side') === TradeSide.SELL ? 'Amount Received' : 'Amount Paid'}
                     </Typography>
                     <Typography variant="h6" fontWeight="bold" color="primary.main">
                       {formatCurrency(calculatedValues.cost, portfolioCurrency)}
                     </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: 0.5 }}>
+                      {watch('side') === TradeSide.SELL 
+                        ? '(Value - Fees - Taxes)' 
+                        : '(Value + Fees + Taxes)'}
+                    </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'grey.300' }}>
+                  <Box textAlign="center" p={2} sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1, 
+                    border: 1, 
+                    borderColor: 'grey.300',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Trade Side
                     </Typography>

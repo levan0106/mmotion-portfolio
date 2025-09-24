@@ -13,6 +13,7 @@ import { Asset } from '../../asset/entities/asset.entity';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './portfolio-value-calculator.service';
 import { CashFlowService } from './cash-flow.service';
+import { DepositRepository } from '../repositories/deposit.repository';
 
 /**
  * Service class for Portfolio business logic.
@@ -36,6 +37,7 @@ export class PortfolioService {
     private readonly portfolioCalculationService: PortfolioCalculationService,
     private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
     private readonly cashFlowService: CashFlowService,
+    private readonly depositRepository: DepositRepository,
   ) {}
 
   /**
@@ -714,5 +716,31 @@ export class PortfolioService {
       unrealizedInvestPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
       unrealizedAllPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
     };
+  }
+
+  /**
+   * Get portfolio deposits for analytics
+   */
+  async getPortfolioDeposits(portfolioId: string): Promise<any[]> {
+    try {
+      const deposits = await this.depositRepository.findActiveByPortfolioId(portfolioId);
+
+      return deposits.map(deposit => ({
+        assetId: deposit.depositId,
+        symbol: 'DEPOSIT',
+        assetType: 'DEPOSITS',
+        name: `Deposit ${deposit.depositId.slice(0, 8)}`,
+        quantity: 1,
+        avgCost: deposit.principal,
+        currentPrice: deposit.calculateTotalValue(),
+        currentValue: deposit.calculateTotalValue(),
+        unrealizedPl: deposit.calculateAccruedInterest(),
+        unrealizedPlPercentage: deposit.principal > 0 ? (deposit.calculateAccruedInterest() / deposit.principal) * 100 : 0,
+        weight: 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching portfolio deposits:', error);
+      return [];
+    }
   }
 }

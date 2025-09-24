@@ -197,7 +197,7 @@ export class PerformanceSnapshotController {
   @ApiOperation({ summary: 'Get asset performance summary' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'assetId', required: false, description: 'Asset ID' })
-  @ApiQuery({ name: 'period', required: false, description: 'Time period (1M, 3M, 6M, 1Y, YTD)' })
+  @ApiQuery({ name: 'period', required: false, description: 'Time period (1D, 1W, 1M, 3M, 6M, 1Y, YTD)' })
   @ApiResponse({ status: 200, description: 'Asset performance summary retrieved successfully' })
   async getAssetPerformanceSummary(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
@@ -250,7 +250,7 @@ export class PerformanceSnapshotController {
   @ApiOperation({ summary: 'Get asset group performance summary' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'assetType', required: false, description: 'Asset type (Stock, Bond, Crypto, etc.)' })
-  @ApiQuery({ name: 'period', required: false, description: 'Time period (1M, 3M, 6M, 1Y, YTD)' })
+  @ApiQuery({ name: 'period', required: false, description: 'Time period (1D, 1W, 1M, 3M, 6M, 1Y, YTD)' })
   @ApiResponse({ status: 200, description: 'Asset group performance summary retrieved successfully' })
   async getAssetGroupPerformanceSummary(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
@@ -307,7 +307,7 @@ export class PerformanceSnapshotController {
   @ApiOperation({ summary: 'Get performance trends for a portfolio' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'metric', required: false, description: 'Performance metric (twr, mwr, irr, alpha, beta, sharpe, volatility)' })
-  @ApiQuery({ name: 'period', required: false, description: 'Time period (1M, 3M, 6M, 1Y, YTD)' })
+  @ApiQuery({ name: 'period', required: false, description: 'Time period (1D, 1W, 1M, 3M, 6M, 1Y, YTD)' })
   @ApiQuery({ name: 'granularity', required: false, enum: SnapshotGranularity })
   @ApiResponse({ status: 200, description: 'Performance trends retrieved successfully' })
   async getPerformanceTrends(
@@ -321,6 +321,12 @@ export class PerformanceSnapshotController {
     const startDate = new Date();
     
     switch (period) {
+      case '1D':
+        startDate.setDate(endDate.getDate() - 1);
+        break;
+      case '1W':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
       case '1M':
         startDate.setMonth(endDate.getMonth() - 1);
         break;
@@ -427,7 +433,7 @@ export class PerformanceSnapshotController {
   @ApiOperation({ summary: 'Get performance comparison with benchmark' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'benchmarkId', required: false, description: 'Benchmark ID (default: 00000000-0000-0000-0000-000000000001)' })
-  @ApiQuery({ name: 'period', required: false, description: 'Time period (1M, 3M, 6M, 1Y, YTD)' })
+  @ApiQuery({ name: 'period', required: false, description: 'Time period (1D, 1W, 1M, 3M, 6M, 1Y, YTD)' })
   @ApiQuery({ name: 'granularity', required: false, enum: SnapshotGranularity })
   @ApiResponse({ status: 200, description: 'Performance comparison retrieved successfully' })
   async getPerformanceComparison(

@@ -36,6 +36,9 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
   title = 'Asset Performance Comparison',
   compact = false,
 }) => {
+  // Ensure data is an array
+  const safeData = Array.isArray(data) ? data : [];
+  
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -205,7 +208,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
     return null;
   };
 
-  if (data.length === 0) {
+  if (safeData.length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
@@ -231,7 +234,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
       </Typography>
       <Box sx={{ height: compact ? 167 : 267 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ 
+          <BarChart data={safeData} margin={{ 
             top: compact ? 10 : 20, 
             right: compact ? 15 : 30, 
             left: compact ? 10 : 20, 
@@ -249,7 +252,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="performance" radius={compact ? [2, 2, 0, 0] : [4, 4, 0, 0]}>
-              {data.map((entry, index) => (
+              {safeData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Bar>

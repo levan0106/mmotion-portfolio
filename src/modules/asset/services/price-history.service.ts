@@ -12,6 +12,7 @@ export interface CreatePriceHistoryDto {
   priceSource: string;
   changeReason?: string;
   metadata?: Record<string, any>;
+  createdAt?: string; // Optional custom creation date
 }
 
 export interface PriceHistoryQueryDto {
@@ -91,6 +92,7 @@ export class PriceHistoryService {
       priceSource: createDto.priceSource,
       changeReason: createDto.changeReason,
       metadata: createDto.metadata,
+      createdAt: createDto.createdAt ? new Date(createDto.createdAt) : new Date(),
     });
 
     const savedRecord = await this.priceHistoryRepository.save(priceHistory);

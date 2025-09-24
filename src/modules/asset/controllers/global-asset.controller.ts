@@ -582,4 +582,5 @@ export class GlobalAssetController {
       };
     }
   }
+
 }

@@ -284,7 +284,10 @@ export class AssetValueCalculatorService {
    */
   calculateTotalUnrealizedPL(assets: AssetPosition[]): number {
     return assets.reduce((total, asset) => {
-      return total + this.calculateAssetPositionFIFO([asset], asset.price).unrealizedPl;
+      // Calculate unrealized P&L directly: (current price - avg cost) * quantity
+      // avgcost already calculated using fifo algorithm
+      const unrealizedPl = (asset.price - asset.avgCost) * asset.quantity;
+      return total + unrealizedPl;
     }, 0);
   }
 

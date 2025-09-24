@@ -12,6 +12,7 @@ import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { AssetDetailSummaryResponseDto } from '../dto/asset-detail-summary.dto';
 import { PositionManagerService } from '../services/position-manager.service';
+import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
 /**
@@ -25,6 +26,7 @@ export class PortfolioAnalyticsController {
     private readonly portfolioService: PortfolioService,
     private readonly portfolioRepository: PortfolioRepository,
     private readonly positionManagerService: PositionManagerService,
+    private readonly performanceSnapshotService: PerformanceSnapshotService,
   ) {}
 
   /**
@@ -115,13 +117,18 @@ export class PortfolioAnalyticsController {
         return acc;
       }, {});
     }
+    // Calculate total deposits value and total assets value
+    const totalDepositsValue = allocation.reduce((sum, item) => sum + (item.assetType == 'DEPOSITS' ? item.totalValue : 0), 0);
+    const totalAssetsValue = allocation.reduce((sum, item) => sum + (item.assetType !== 'DEPOSITS' ? item.totalValue : 0), 0);
 
-    // Calculate total value including deposits
-    const totalValue = allocation.reduce((sum, item) => sum + item.totalValue, 0);
+    // Calculate total value (assets + deposits)
+    const totalValue = totalAssetsValue + totalDepositsValue;
 
     return {
       portfolioId: id,
       totalValue: totalValue,
+      totalAssetsValue: totalAssetsValue,
+      totalDepositsValue: totalDepositsValue,
       allocation: groupedAllocation,
       groupBy: groupby || 'type',
       calculatedAt: new Date().toISOString(),
@@ -369,6 +376,29 @@ export class PortfolioAnalyticsController {
       return acc;
     }, {});
 
+    // Add deposits as a separate group
+    try {
+      const deposits = await this.portfolioService.getPortfolioDeposits(id);
+      if (deposits && deposits.length > 0) {
+        const depositGroup = deposits.reduce((acc, deposit: any) => {
+          acc.totalValue += deposit.currentValue || 0;
+          acc.totalUnrealizedPl += deposit.unrealizedPl || 0;
+          acc.positions.push(deposit);
+          return acc;
+        }, {
+          totalValue: 0,
+          totalUnrealizedPl: 0,
+          positions: []
+        });
+
+        if (depositGroup.totalValue > 0) {
+          groupedPositions['DEPOSITS'] = depositGroup;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to get deposit data:', error.message);
+    }
+
     // Calculate real performance data
     const performanceData = Object.entries(groupedPositions).map(([assetType, data]: [string, {
       totalValue: number;
@@ -553,11 +583,13 @@ export class PortfolioAnalyticsController {
   @ApiOperation({ summary: 'Get benchmark comparison data using real portfolio snapshots' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
   @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 24)' })
+  @ApiQuery({ name: 'twrPeriod', required: false, description: 'TWR period to use (1D, 1W, 1M, 3M, 6M, 1Y, YTD, default: 1M)' })
   @ApiResponse({ status: 200, description: 'Benchmark comparison data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getBenchmarkComparison(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('months') months?: string,
+    @Query('twrPeriod') twrPeriod?: string,
   ): Promise<any> {
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
     
@@ -566,6 +598,14 @@ export class PortfolioAnalyticsController {
     
     if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
       throw new Error('Months parameter must be a number between 1 and 24');
+    }
+
+    // Set TWR period (default: 1M)
+    const twrPeriodToUse = twrPeriod || '1M';
+    const validTwrPeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', 'YTD'];
+    
+    if (!validTwrPeriods.includes(twrPeriodToUse)) {
+      throw new Error(`TWR period must be one of: ${validTwrPeriods.join(', ')}`);
     }
 
     // Get real portfolio snapshot data
@@ -588,8 +628,103 @@ export class PortfolioAnalyticsController {
     let portfolioValue = 0;
     let benchmarkValue = 0; 
     
-    // If we have real portfolio data, use it
-    if (portfolioSnapshots && portfolioSnapshots.length > 0) {
+    // Try to get performance snapshots first (more accurate TWR data)
+    let performanceSnapshots = [];
+    try {
+      performanceSnapshots = await this.performanceSnapshotService.getPortfolioPerformanceSnapshots(
+        id,
+        startDate,
+        endDate,
+        SnapshotGranularity.DAILY
+      );
+      console.log(`Found ${performanceSnapshots.length} performance snapshots with TWR data`);
+    } catch (error) {
+      console.log('Performance snapshots not available, falling back to portfolio snapshots');
+    }
+
+    // If we have performance snapshots with TWR data, use them
+    if (performanceSnapshots && performanceSnapshots.length > 0) {
+      console.log(`Benchmark comparison: Using TWR from performance snapshots (${performanceSnapshots.length} snapshots)`);
+      
+      // Sort snapshots by date
+      const sortedSnapshots = performanceSnapshots.sort((a, b) => 
+        new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+      );
+
+      // Determine the correct startDate based on available snapshots
+      const minSnapshotDate = new Date(Math.min(...performanceSnapshots.map(s => new Date(s.snapshotDate).getTime())));
+      if (minSnapshotDate > startDate) {
+        startDate = minSnapshotDate;
+      }
+
+      // Generate date list based on timeframe
+      const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
+      console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
+      
+      // Use TWR data from performance snapshots
+      for (let i = 0; i < dateList.length; i++) {
+        const date = dateList[i];
+        
+        // Find the closest performance snapshot for this date
+        const closestSnapshot = this.findClosestSnapshotOnOrBefore(date, sortedSnapshots);
+        
+        // Select appropriate TWR column based on twrPeriod parameter
+        let portfolioReturn = 0;
+        let twrColumn = '';
+        if (closestSnapshot) {
+          switch (twrPeriodToUse) {
+            case '1D':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR1D) || 0;
+              twrColumn = 'portfolioTWR1D';
+              break;
+            case '1W':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR1W) || 0;
+              twrColumn = 'portfolioTWR1W';
+              break;
+            case '1M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR1M) || 0;
+              twrColumn = 'portfolioTWR1M';
+              break;
+            case '3M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR3M) || 0;
+              twrColumn = 'portfolioTWR3M';
+              break;
+            case '6M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR6M) || 0;
+              twrColumn = 'portfolioTWR6M';
+              break;
+            case '1Y':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR1Y) || 0;
+              twrColumn = 'portfolioTWR1Y';
+              break;
+            case 'YTD':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWRYTD) || 0;
+              twrColumn = 'portfolioTWRYTD';
+              break;
+            default:
+              portfolioReturn = parseFloat(closestSnapshot.portfolioTWR1M) || 0;
+              twrColumn = 'portfolioTWR1M';
+          }
+        }
+        
+        // Debug log for first few iterations
+        if (i < 3) {
+          console.log(`Date ${date.toISOString().split('T')[0]}: Using ${twrColumn} = ${portfolioReturn}% (TWR period: ${twrPeriodToUse}, data range: ${monthsToLookBack} months)`);
+        }
+        
+        // Generate benchmark return (simulated VN Index)
+        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: Number(portfolioReturn.toFixed(4)),
+          benchmark: Number((benchmarkReturn * 100).toFixed(4)),
+          difference: Number((portfolioReturn - (benchmarkReturn * 100)).toFixed(4)),
+        });
+      }
+    }
+    // If we have real portfolio data, use it (fallback)
+    else if (portfolioSnapshots && portfolioSnapshots.length > 0) {
       console.log(`Benchmark comparison: Real portfolio snapshots available for benchmark comparison using 
         daily granularity ${portfolioSnapshots.length} months to look back`);
       // Sort snapshots by date
@@ -662,8 +797,10 @@ export class PortfolioAnalyticsController {
         endDate: endDate.toISOString(),
         months: monthsToLookBack,
       },
-      dataSource: portfolioSnapshots && portfolioSnapshots.length > 0 ? 'real_snapshots' : 'simulated',
-      snapshotCount: portfolioSnapshots ? portfolioSnapshots.length : 0,
+      twrPeriod: twrPeriodToUse,
+      dataSource: performanceSnapshots && performanceSnapshots.length > 0 ? 'performance_snapshots_twr' : 
+                 (portfolioSnapshots && portfolioSnapshots.length > 0 ? 'portfolio_snapshots_cumulative' : 'simulated'),
+      snapshotCount: performanceSnapshots ? performanceSnapshots.length : (portfolioSnapshots ? portfolioSnapshots.length : 0),
       calculatedAt: new Date().toISOString(),
     };
   }
@@ -752,7 +889,8 @@ export class PortfolioAnalyticsController {
     
     // Find the first snapshot value as baseline
     const firstSnapshot = snapshots[0];
-    const baselineValue = parseFloat(firstSnapshot.totalValue) || 0;
+    console.log(`DEBUG: First snapshot data:`, JSON.stringify(firstSnapshot, null, 2));
+    const baselineValue = parseFloat(firstSnapshot.totalPortfolioValue) || 0;
     const baselineDate = new Date(firstSnapshot.snapshotDate);
     
     console.log(`Baseline: ${baselineValue} on ${baselineDate.toISOString().split('T')[0]}`);
@@ -764,7 +902,7 @@ export class PortfolioAnalyticsController {
       const closestSnapshot = this.findClosestSnapshotOnOrBefore(currentDate, snapshots);
       
       if (closestSnapshot) {
-        const currentValue = parseFloat(closestSnapshot.totalValue) || 0;
+        const currentValue = parseFloat(closestSnapshot.totalPortfolioValue) || 0;
         const returnValue = baselineValue > 0 ? ((currentValue - baselineValue) / baselineValue) * 100 : 0;
         returns.push(returnValue);
         

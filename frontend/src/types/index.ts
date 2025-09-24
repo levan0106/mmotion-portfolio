@@ -145,6 +145,8 @@ export interface AllocationData {
 export interface AssetAllocationResponse {
   allocation: Record<string, AllocationData>;
   totalValue: number;
+  totalAssetsValue: number;
+  totalDepositsValue: number;
   assetCount: number;
 }
 

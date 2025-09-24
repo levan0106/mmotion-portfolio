@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { ApplicationLog } from '../entities/application-log.entity';
 import { RequestLog } from '../entities/request-log.entity';
 import { BusinessEventLog } from '../entities/business-event-log.entity';
 import { PerformanceLog } from '../entities/performance-log.entity';
-// Using crypto.randomUUID() instead of uuid package
 
 /**
  * LoggingService provides comprehensive logging functionality for the application.
@@ -260,7 +260,7 @@ export class LoggingService {
   ): Promise<void> {
     try {
       const logEntry = this.businessEventLogRepository.create({
-        eventId: crypto.randomUUID(),
+        eventId: randomUUID(),
         eventType: eventType,
         entityType: entityType,
         entityId: entityId,

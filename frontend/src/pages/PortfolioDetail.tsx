@@ -30,7 +30,6 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
-import { usePortfolioPositions } from '../hooks/usePortfolioPositions';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { usePortfolioAllocationTimeline } from '../hooks/usePortfolioAnalytics';
 import AssetAllocationChart from '../components/Analytics/AssetAllocationChart';
@@ -123,9 +122,6 @@ const PortfolioDetail: React.FC = () => {
   const [riskReturnData, setRiskReturnData] = useState<any>(null);
   const [isRiskReturnLoading, setIsRiskReturnLoading] = useState(false);
   const [riskReturnError, setRiskReturnError] = useState<string | null>(null);
-  const [assetPerformanceData, setAssetPerformanceData] = useState<any>(null);
-  const [isAssetPerformanceLoading, setIsAssetPerformanceLoading] = useState(false);
-  const [assetPerformanceError, setAssetPerformanceError] = useState<string | null>(null);
   const [riskMetricsData, setRiskMetricsData] = useState<any>(null);
   const [isRiskMetricsLoading, setIsRiskMetricsLoading] = useState(false);
   const [riskMetricsError, setRiskMetricsError] = useState<string | null>(null);
@@ -133,15 +129,17 @@ const PortfolioDetail: React.FC = () => {
   const [isDiversificationLoading, setIsDiversificationLoading] = useState(false);
   const [diversificationError, setDiversificationError] = useState<string | null>(null);
   // Allocation timeline data using new hook - now uses real API with 12 month limit
+  const [allocationTimelineGranularity, setAllocationTimelineGranularity] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('MONTHLY');
   const { 
     allocationData: allocationTimelineData, 
     loading: isAllocationTimelineLoading, 
     error: allocationTimelineError 
-  } = usePortfolioAllocationTimeline(portfolioId!, 12, 'MONTHLY');
+  } = usePortfolioAllocationTimeline(portfolioId!, 12, allocationTimelineGranularity);
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
   const [benchmarkTimeframe, setBenchmarkTimeframe] = useState('1Y');
+  const [benchmarkTwrPeriod, setBenchmarkTwrPeriod] = useState('1M');
   const [assetDetailData, setAssetDetailData] = useState<any>(null);
   const [isAssetDetailLoading, setIsAssetDetailLoading] = useState(false);
   const [assetDetailError, setAssetDetailError] = useState<string | null>(null);
@@ -160,7 +158,32 @@ const PortfolioDetail: React.FC = () => {
     isLoading: isAnalyticsLoading,
     error: analyticsError,
   } = usePortfolioAnalytics(portfolioId!);
-  const { positions, loading: positionsLoading, error: positionsError } = usePortfolioPositions(portfolioId!);
+  // Fetch asset performance data (includes deposits)
+  const [assetPerformanceData, setAssetPerformanceData] = useState<any[]>([]);
+  const [assetPerformanceLoading, setAssetPerformanceLoading] = useState(false);
+  const [assetPerformanceError, setAssetPerformanceError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAssetPerformanceData = async () => {
+      if (!portfolioId) return;
+      
+      setAssetPerformanceLoading(true);
+      setAssetPerformanceError(null);
+      
+      try {
+        const response = await apiService.getPortfolioAnalyticsPerformance(portfolioId);
+        setAssetPerformanceData(response.data || []);
+      } catch (error) {
+        console.error('Error fetching asset performance data:', error);
+        setAssetPerformanceError('Failed to load asset performance data');
+        setAssetPerformanceData([]);
+      } finally {
+        setAssetPerformanceLoading(false);
+      }
+    };
+
+    fetchAssetPerformanceData();
+  }, [portfolioId]);
 
   // Fetch risk-return data
   useEffect(() => {
@@ -183,26 +206,6 @@ const PortfolioDetail: React.FC = () => {
     fetchRiskReturnData();
   }, [portfolioId]);
 
-  // Fetch asset performance data
-  useEffect(() => {
-    const fetchAssetPerformanceData = async () => {
-      if (!portfolioId) return;
-      
-      try {
-        setIsAssetPerformanceLoading(true);
-        setAssetPerformanceError(null);
-        const response = await apiService.getPortfolioAssetPerformance(portfolioId);
-        setAssetPerformanceData(response);
-      } catch (error) {
-        console.error('Error fetching asset performance data:', error);
-        setAssetPerformanceError('Failed to load asset performance data');
-      } finally {
-        setIsAssetPerformanceLoading(false);
-      }
-    };
-
-    fetchAssetPerformanceData();
-  }, [portfolioId]);
 
   // Fetch risk metrics data
   useEffect(() => {
@@ -260,7 +263,7 @@ const PortfolioDetail: React.FC = () => {
         
         // Convert timeframe to months
         const months = getTimeframeMonths(benchmarkTimeframe);
-        const response = await apiService.getPortfolioBenchmarkComparison(portfolioId, months);
+        const response = await apiService.getPortfolioBenchmarkComparison(portfolioId, months, benchmarkTwrPeriod);
         setBenchmarkData(response);
       } catch (error) {
         console.error('Error fetching benchmark data:', error);
@@ -271,7 +274,7 @@ const PortfolioDetail: React.FC = () => {
     };
 
     fetchBenchmarkData();
-  }, [portfolioId, benchmarkTimeframe]);
+  }, [portfolioId, benchmarkTimeframe, benchmarkTwrPeriod]);
 
   // Helper function to convert timeframe to months
   const getTimeframeMonths = (timeframe: string): number => {
@@ -290,6 +293,11 @@ const PortfolioDetail: React.FC = () => {
   // Handle benchmark timeframe change
   const handleBenchmarkTimeframeChange = (timeframe: string) => {
     setBenchmarkTimeframe(timeframe);
+  };
+
+  // Handle benchmark TWR period change
+  const handleBenchmarkTwrPeriodChange = (twrPeriod: string) => {
+    setBenchmarkTwrPeriod(twrPeriod);
   };
 
   // Fetch asset detail summary data
@@ -354,7 +362,7 @@ const PortfolioDetail: React.FC = () => {
       
       // Reset all data states to trigger re-fetch
       setRiskReturnData(null);
-      setAssetPerformanceData(null);
+        setAssetPerformanceData([]);
       setRiskMetricsData(null);
       setDiversificationData(null);
       // allocationTimelineData is now managed by usePortfolioAllocationTimeline hook
@@ -916,6 +924,8 @@ const PortfolioDetail: React.FC = () => {
                     portfolioId={portfolioId}
                     onTimeframeChange={handleBenchmarkTimeframeChange}
                     currentTimeframe={benchmarkTimeframe}
+                    onTwrPeriodChange={handleBenchmarkTwrPeriodChange}
+                    currentTwrPeriod={benchmarkTwrPeriod}
                   />
                 )}
               </SectionWrapper>
@@ -1006,7 +1016,7 @@ const PortfolioDetail: React.FC = () => {
                         {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Total Investment Value (Tổng giá trị đầu tư)
+                        Total Investment Value (Assets + Deposits)
                       </Typography>
                     </Box>
                   </Grid>
@@ -1023,7 +1033,7 @@ const PortfolioDetail: React.FC = () => {
                         {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Unrealized P&L (Lợi nhuận chưa thực hiện)
+                        Unrealized P&L (Assets + Deposits)
                       </Typography>
                     </Box>
                   </Grid>
@@ -1097,7 +1107,7 @@ const PortfolioDetail: React.FC = () => {
                       <Typography color="error" variant="body2">Failed to load allocation data</Typography>
                     ) : (
                         <AssetAllocationChart 
-                          data={allocationData || { allocation: {}, totalValue: 0, assetCount: 0 }} 
+                          data={allocationData || { allocation: {}, totalValue: 0, totalAssetsValue: 0, totalDepositsValue: 0, assetCount: 0 }} 
                           baseCurrency={portfolio.baseCurrency} 
                           compact={isCompactMode}
                         />
@@ -1115,15 +1125,15 @@ const PortfolioDetail: React.FC = () => {
                     border: '1px solid #e0e0e0',
                     height: '100%'
                   }}>
-                    {positionsLoading ? (
+                    {assetPerformanceLoading ? (
                       <Box display="flex" justifyContent="center" p={1}>
                         <CircularProgress size={20} />
                       </Box>
-                    ) : positionsError ? (
+                    ) : assetPerformanceError ? (
                       <Typography color="error" variant="body2">Failed to load P&L data</Typography>
                     ) : (
                         <UnrealizedPnLChart 
-                          positions={positions || []} 
+                          data={assetPerformanceData || []} 
                           baseCurrency={portfolio.baseCurrency} 
                           compact={isCompactMode}
                         />
@@ -1192,12 +1202,27 @@ const PortfolioDetail: React.FC = () => {
                           borderTop: '1px solid #e0e0e0',
                           textAlign: 'center'
                         }}>
-                          <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem' }}>
-                            Total Investment Value
-                          </Typography>
-                          <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
-                            {formatCurrency(allocationData?.totalValue || 0, portfolio.baseCurrency)}
-                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+                            {/* Total Assets Value Column */}
+                            <Box sx={{ flex: 1, textAlign: 'center' }}>
+                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem', display: 'block' }}>
+                                Total Assets Value
+                              </Typography>
+                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                                {formatCurrency(allocationData?.totalAssetsValue || 0, portfolio.baseCurrency)}
+                              </Typography>
+                            </Box>
+                            
+                            {/* Total Deposits Value Column */}
+                            <Box sx={{ flex: 1, textAlign: 'center' }}>
+                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem', display: 'block' }}>
+                                Total Deposits Value
+                              </Typography>
+                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                                {formatCurrency(allocationData?.totalDepositsValue || 0, portfolio.baseCurrency)}
+                              </Typography>
+                            </Box>
+                          </Box>
                         </Box>
                       </Box>
                     ) : (
@@ -1280,7 +1305,7 @@ const PortfolioDetail: React.FC = () => {
                     border: '1px solid #e0e0e0',
                     height: '100%'
                   }}>
-                    {isAssetPerformanceLoading ? (
+                    {assetPerformanceLoading ? (
                       <Box display="flex" justifyContent="center" p={2}>
                         <CircularProgress size={24} />
                       </Box>
@@ -1288,7 +1313,7 @@ const PortfolioDetail: React.FC = () => {
                       <Typography color="error" variant="body2">{assetPerformanceError}</Typography>
                     ) : (
                       <AssetPerformanceChart 
-                        data={assetPerformanceData?.data || []} 
+                        data={assetPerformanceData || []} 
                         baseCurrency={portfolio.baseCurrency}
                         title="Asset Performance Comparison"
                         compact={isCompactMode}
@@ -1350,6 +1375,9 @@ const PortfolioDetail: React.FC = () => {
                         baseCurrency={portfolio.baseCurrency}
                         title="Allocation Timeline"
                         compact={isCompactMode}
+                        granularity={allocationTimelineGranularity}
+                        onGranularityChange={setAllocationTimelineGranularity}
+                        showGranularitySelector={true}
                       />
                     )}
                   </Box>

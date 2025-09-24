@@ -28,6 +28,8 @@
 - **Socket.io**: WebSocket support cho real-time updates ✅
 - **Asset Computed Fields**: Portfolio filtering và market data integration ✅
 - **Market Data Service**: Mock service với real-time price updates ✅
+- **Unified Analytics API**: Single endpoint serving multiple frontend components for data consistency ✅
+- **Deposit Data Integration**: Comprehensive deposit analytics with asset performance APIs ✅
 - **Frontend Data Mapping**: Proper API data flow to UI components ✅
 - **Real-time Calculations**: Trade Details with accurate financial calculations ✅
 - **Data Transparency**: Alert system for database vs calculated values ✅
@@ -46,6 +48,9 @@
 - **Edit Modal Support**: Proper asset selection when opening trade edit modal ✅
 - **Force Re-render Pattern**: Key-based re-render mechanism for component reset ✅
 - **Asset Loading Optimization**: Handle value setting before data loading ✅
+- **TWR Integration**: Portfolio Performance chart with Time-Weighted Return calculations ✅
+- **Performance Snapshot Integration**: Uses PortfolioPerformanceSnapshot entity for accurate TWR data ✅
+- **Dual Selector UI**: TWR Period and Timeframe selectors for maximum flexibility ✅
 - **Cash Flow Pagination**: Server-side pagination with TypeORM skip/take methods ✅
 - **API Response Format**: Updated to structured format with data array and pagination metadata ✅
 - **Frontend Pagination UI**: Material-UI Pagination component with page navigation and size selection ✅

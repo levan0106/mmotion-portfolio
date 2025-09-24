@@ -47,6 +47,8 @@ interface BenchmarkComparisonProps {
   portfolioId?: string;
   onTimeframeChange?: (timeframe: string) => void;
   currentTimeframe?: string;
+  onTwrPeriodChange?: (twrPeriod: string) => void;
+  currentTwrPeriod?: string;
 }
 
 const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
@@ -58,18 +60,32 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   portfolioId: _portfolioId,
   onTimeframeChange,
   currentTimeframe = '1Y',
+  onTwrPeriodChange,
+  currentTwrPeriod = '1M',
 }) => {
   const [timeframe, setTimeframe] = useState(currentTimeframe);
+  const [twrPeriod, setTwrPeriod] = useState(currentTwrPeriod);
 
   // Sync local state with prop changes
   useEffect(() => {
     setTimeframe(currentTimeframe);
   }, [currentTimeframe]);
 
+  useEffect(() => {
+    setTwrPeriod(currentTwrPeriod);
+  }, [currentTwrPeriod]);
+
   const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     if (onTimeframeChange) {
       onTimeframeChange(newTimeframe);
+    }
+  };
+
+  const handleTwrPeriodChange = (newTwrPeriod: string) => {
+    setTwrPeriod(newTwrPeriod);
+    if (onTwrPeriodChange) {
+      onTwrPeriodChange(newTwrPeriod);
     }
   };
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -119,7 +135,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
 
   return (
     <Box>
-      {/* Header with Timeframe Dropdown */}
+      {/* Header with Timeframe and TWR Period Dropdowns */}
       <Box sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -134,28 +150,52 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             Portfolio performance vs {benchmarkName}
           </Typography>
         </Box>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>Timeframe</InputLabel>
-          <Select
-            value={timeframe}
-            label="Timeframe"
-            onChange={(e) => handleTimeframeChange(e.target.value)}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                fontSize: '0.875rem'
-              }
-            }}
-          >
-            <MenuItem value="1M">1 Month</MenuItem>
-            <MenuItem value="3M">3 Months</MenuItem>
-            <MenuItem value="6M">6 Months</MenuItem>
-            <MenuItem value="1Y">1 Year</MenuItem>
-            <MenuItem value="2Y">2 Years</MenuItem>
-            <MenuItem value="5Y">5 Years</MenuItem>
-            <MenuItem value="ALL">All Time</MenuItem>
-          </Select>
-        </FormControl>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>TWR Period</InputLabel>
+            <Select
+              value={twrPeriod}
+              label="TWR Period"
+              onChange={(e) => handleTwrPeriodChange(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  fontSize: '0.875rem'
+                }
+              }}
+            >
+              <MenuItem value="1D">1 Day TWR</MenuItem>
+              <MenuItem value="1W">1 Week TWR</MenuItem>
+              <MenuItem value="1M">1 Month TWR</MenuItem>
+              <MenuItem value="3M">3 Months TWR</MenuItem>
+              <MenuItem value="6M">6 Months TWR</MenuItem>
+              <MenuItem value="1Y">1 Year TWR</MenuItem>
+              <MenuItem value="YTD">YTD TWR</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Timeframe</InputLabel>
+            <Select
+              value={timeframe}
+              label="Timeframe"
+              onChange={(e) => handleTimeframeChange(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  fontSize: '0.875rem'
+                }
+              }}
+            >
+              <MenuItem value="1M">1 Month</MenuItem>
+              <MenuItem value="3M">3 Months</MenuItem>
+              <MenuItem value="6M">6 Months</MenuItem>
+              <MenuItem value="1Y">1 Year</MenuItem>
+              <MenuItem value="2Y">2 Years</MenuItem>
+              <MenuItem value="5Y">5 Years</MenuItem>
+              <MenuItem value="ALL">All Time</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
 
       {/* Performance Metrics */}

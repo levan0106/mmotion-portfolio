@@ -2,7 +2,45 @@
 
 ## What Works
 ### ✅ Completed
-- **SQL COLUMN NAMING FIX - COMPLETED** (Current Session - September 23, 2025)
+- **PORTFOLIO PERFORMANCE TWR INTEGRATION - COMPLETED** (Current Session - September 24, 2025)
+  - **Backend API Enhancement**: Fixed benchmark comparison API to use TWR from Performance Snapshots instead of simple cumulative returns
+  - **TWR Period Parameter**: Added twrPeriod parameter to separate TWR selection from data range (months parameter)
+  - **Performance Snapshot Integration**: API now uses PortfolioPerformanceSnapshot entity with accurate TWR calculations
+  - **Field Name Fix**: Fixed critical bug where API was using incorrect field name (totalValue vs totalPortfolioValue)
+  - **TWR Column Selection**: Implemented logic to select appropriate TWR column based on twrPeriod parameter
+  - **Frontend Integration**: Added TWR period selector to Portfolio Performance chart with comprehensive options
+  - **API Service Update**: Updated frontend API service to support twrPeriod parameter
+  - **Component Enhancement**: Enhanced BenchmarkComparison component with dual selectors (TWR Period + Timeframe)
+  - **State Management**: Added proper state management for TWR period in PortfolioDetail page
+  - **Data Accuracy**: Portfolio performance now uses accurate TWR calculations that account for cash flows
+  - **Key Features Implemented**:
+    - ✅ **TWR Period Selector**: Frontend dropdown with options: 1D, 1W, 1M, 3M, 6M, 1Y, YTD
+    - ✅ **Dual Selectors**: Separate TWR Period and Timeframe selectors for maximum flexibility
+    - ✅ **Backend Logic**: Smart TWR column selection based on twrPeriod parameter
+    - ✅ **API Enhancement**: /api/v1/portfolios/{id}/analytics/benchmark-comparison now supports twrPeriod
+    - ✅ **Performance Snapshots**: Uses accurate TWR data from PortfolioPerformanceSnapshot entity
+    - ✅ **Data Source Tracking**: API response includes dataSource field indicating TWR vs cumulative data
+    - ✅ **Error Handling**: Proper validation and fallback to portfolio snapshots if performance snapshots unavailable
+    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling
+
+- **UNREALIZED P&L CHART INTEGRATION WITH DEPOSIT DATA - COMPLETED** (Previous Session - September 24, 2025)
+  - **API Integration**: Successfully added deposit data to /analytics/asset-performance API endpoint
+  - **Backend Implementation**: Modified PortfolioAnalyticsController to fetch deposit data and include in response
+  - **Service Enhancement**: Added getPortfolioDeposits method to PortfolioService with proper deposit data formatting
+  - **Frontend Integration**: Updated UnrealizedPnLChart to use unified /analytics/asset-performance API
+  - **Data Flow Fix**: Fixed critical issue where frontend was calling wrong API endpoint (/analytics/performance vs /analytics/asset-performance)
+  - **Duplicate API Call Resolution**: Removed duplicate useEffect that was causing data conflicts and "No data" display
+  - **Chart Data Consistency**: Both Unrealized P&L and Asset Allocation charts now use same API for data consistency
+  - **Key Features Implemented**:
+    - ✅ **Deposit Data Integration**: DEPOSITS asset type now appears in Unrealized P&L chart with proper P&L calculations
+    - ✅ **Unified API**: Single /analytics/asset-performance endpoint serves both charts for data consistency
+    - ✅ **Frontend Data Flow**: Fixed data flow from API → PortfolioDetail → UnrealizedPnLChart
+    - ✅ **Error Handling**: Added null checks and array validation to prevent "data.map is not a function" errors
+    - ✅ **API Method Cleanup**: Removed duplicate getPortfolioAssetPerformance method to prevent conflicts
+    - ✅ **Chart Rendering**: Chart now displays all asset types including deposits with correct P&L values
+    - ✅ **Production Ready**: Clean, maintainable code with proper error handling and data validation
+
+- **SQL COLUMN NAMING FIX - COMPLETED** (Previous Session - September 23, 2025)
   - **SQL Error Resolution**: Fixed critical SQL error 'column "snapshotdate" does not exist' in SnapshotRepository
   - **Column Name Standardization**: Updated all query builders to use proper snake_case column names
   - **Query Builder Updates**: Fixed 12 instances of incorrect column references in SnapshotRepository
