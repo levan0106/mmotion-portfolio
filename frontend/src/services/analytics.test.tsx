@@ -106,6 +106,8 @@ describe('AnalyticsService', () => {
         }
       },
       totalValue: 100000,
+      totalAssetsValue: 90000,
+      totalDepositsValue: 10000,
       assetCount: 3
     }
 
@@ -129,7 +131,7 @@ describe('AnalyticsService', () => {
       it('should render empty state when no data', () => {
         renderWithTheme(
           <AssetAllocationChart
-            data={{ allocation: {}, totalValue: 0, assetCount: 0 }}
+            data={{ allocation: {}, totalValue: 0, totalAssetsValue: 0, totalDepositsValue: 0, assetCount: 0 }}
             baseCurrency="USD"
           />
         )
@@ -177,6 +179,8 @@ describe('AnalyticsService', () => {
             }
           },
           totalValue: 100000,
+          totalAssetsValue: 100000,
+          totalDepositsValue: 0,
           assetCount: 1
         }
         
@@ -547,6 +551,8 @@ describe('AnalyticsService', () => {
         }
       },
       totalValue: 100000,
+      totalAssetsValue: 100000,
+      totalDepositsValue: 0,
       assetCount: 2
     }
 

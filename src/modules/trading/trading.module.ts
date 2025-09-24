@@ -29,6 +29,7 @@ import { GlobalAsset } from '../asset/entities/global-asset.entity';
 import { AssetPrice } from '../asset/entities/asset-price.entity';
 import { AssetValueCalculatorService } from '../asset/services/asset-value-calculator.service';
 import { MarketDataModule } from '../market-data/market-data.module';
+import { SharedModule } from '../shared/shared.module';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -49,6 +50,7 @@ import { MarketDataModule } from '../market-data/market-data.module';
       AssetPrice,
     ]),
     MarketDataModule,
+    SharedModule,
     // Import CacheModule conditionally
     ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
       ttl: parseInt(process.env.CACHE_TTL) || 300000,

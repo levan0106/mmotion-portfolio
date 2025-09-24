@@ -14,6 +14,7 @@ import { NavSnapshot } from './nav-snapshot.entity';
 import { CashFlow } from './cash-flow.entity';
 import { Trade } from '../../trading/entities/trade.entity';
 import { Deposit } from './deposit.entity';
+import { InvestorHolding } from './investor-holding.entity';
 
 /**
  * Portfolio entity representing investment portfolios.
@@ -126,6 +127,32 @@ export class Portfolio {
   @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'unrealized_all_pnl' })
   unrealizedAllPnL: number;
 
+  // ===== NAV/UNIT SYSTEM FIELDS =====
+  
+  /**
+   * Whether this portfolio operates as a fund with multiple investors
+   */
+  @Column({ type: 'boolean', default: false, name: 'is_fund' })
+  isFund: boolean;
+
+  /**
+   * Total number of fund units outstanding
+   */
+  @Column({ type: 'decimal', precision: 20, scale: 8, default: 0, name: 'total_outstanding_units' })
+  totalOutstandingUnits: number;
+
+  /**
+   * Current NAV per unit
+   */
+  @Column({ type: 'decimal', precision: 20, scale: 8, default: 0, name: 'nav_per_unit' })
+  navPerUnit: number;
+
+  /**
+   * Timestamp when NAV per unit was last calculated and updated
+   */
+  @Column({ type: 'timestamp', nullable: true, name: 'last_nav_date' })
+  lastNavDate: Date;
+
   /**
    * Timestamp when the portfolio was created.
    */
@@ -169,4 +196,32 @@ export class Portfolio {
    */
   @OneToMany(() => Deposit, (deposit) => deposit.portfolio)
   deposits: Deposit[];
+
+  /**
+   * Investor holdings in this fund (only applicable when isFund = true)
+   */
+  @OneToMany(() => InvestorHolding, (holding) => holding.portfolio)
+  investorHoldings: InvestorHolding[];
+
+  // Computed properties for fund management
+  /**
+   * Check if this portfolio can accept new investors
+   */
+  get canAcceptInvestors(): boolean {
+    return this.isFund;
+  }
+
+  /**
+   * Get total number of investors in this fund
+   */
+  get investorCount(): number {
+    return this.investorHoldings?.length || 0;
+  }
+
+  /**
+   * Check if NAV per unit is valid
+   */
+  get hasValidNavPerUnit(): boolean {
+    return this.isFund && this.totalOutstandingUnits > 0 && this.navPerUnit > 0;
+  }
 }

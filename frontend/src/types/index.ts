@@ -50,6 +50,11 @@ export interface Portfolio extends BaseEntity {
   unrealizedInvestPnL: number;
   unrealizedAllPnL: number;
   
+  // NAV/Unit System fields
+  isFund?: boolean;
+  totalOutstandingUnits?: number;
+  navPerUnit?: number;
+  
   account?: Account;
   portfolioAssets?: PortfolioAsset[];
   navSnapshots?: NavSnapshot[];
@@ -183,6 +188,91 @@ export interface CashFlowFormData {
   description?: string;
   flowDate: string;
   fundingSource?: string;
+}
+
+// NAV/Unit System types
+export interface InvestorHolding {
+  holdingId: string;
+  accountId: string;
+  portfolioId: string;
+  totalUnits: number;
+  avgCostPerUnit: number;
+  totalInvestment: number;
+  currentValue: number;
+  unrealizedPnL: number;
+  realizedPnL: number;
+  createdAt: string;
+  updatedAt: string;
+  account?: Account;
+  portfolio?: Portfolio;
+}
+
+export interface SubscribeToFundDto {
+  accountId: string;
+  portfolioId: string;
+  amount: number;
+  description?: string;
+}
+
+export interface RedeemFromFundDto {
+  accountId: string;
+  portfolioId: string;
+  units: number;
+  description?: string;
+}
+
+// Fund Unit Transaction types
+export interface FundUnitTransaction {
+  transactionId: string;
+  holdingId: string;
+  cashFlowId: string | null;
+  holdingType: 'SUBSCRIBE' | 'REDEEM';
+  units: number;
+  navPerUnit: number;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Holding Detail types
+export interface FundUnitTransactionWithCashFlow {
+  transaction: FundUnitTransaction;
+  cashFlow: CashFlow | null;
+}
+
+export interface HoldingSummary {
+  totalTransactions: number;
+  totalSubscriptions: number;
+  totalRedemptions: number;
+  totalUnitsSubscribed: number;
+  totalUnitsRedeemed: number;
+  totalAmountInvested: number;
+  totalAmountReceived: number;
+  netRealizedPnL: number;
+  currentUnrealizedPnL: number;
+  totalPnL: number;
+  returnPercentage: number;
+}
+
+export interface HoldingDetail {
+  holding: InvestorHolding;
+  transactions: FundUnitTransactionWithCashFlow[];
+  summary: HoldingSummary;
+}
+
+export interface SubscriptionResult {
+  holding: InvestorHolding;
+  cashFlow: CashFlow;
+  unitsIssued: number;
+  navPerUnit: number;
+}
+
+export interface RedemptionResult {
+  holding: InvestorHolding;
+  cashFlow: CashFlow;
+  unitsRedeemed: number;
+  amountReceived: number;
+  navPerUnit: number;
 }
 
 // Filter and search types

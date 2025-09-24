@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -14,6 +14,7 @@ import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './portfolio-value-calculator.service';
 import { CashFlowService } from './cash-flow.service';
 import { DepositRepository } from '../repositories/deposit.repository';
+import { NavUtilsService } from './nav-utils.service';
 
 /**
  * Service class for Portfolio business logic.
@@ -21,6 +22,7 @@ import { DepositRepository } from '../repositories/deposit.repository';
  */
 @Injectable()
 export class PortfolioService {
+  private readonly logger = new Logger(PortfolioService.name);
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
 
@@ -38,6 +40,7 @@ export class PortfolioService {
     private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
     private readonly cashFlowService: CashFlowService,
     private readonly depositRepository: DepositRepository,
+    private readonly navUtilsService: NavUtilsService,
   ) {}
 
   /**
@@ -120,6 +123,27 @@ export class PortfolioService {
       
       // Calculate new portfolio fields
       const newFields = await this.calculateNewPortfolioFields(portfolioId);
+      
+      // Get NAV per unit for funds (DB-first with fallback calculation)
+      if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
+        const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+          ? parseFloat(portfolio.totalOutstandingUnits) 
+          : portfolio.totalOutstandingUnits;
+        
+        // Check if DB value is valid and not stale
+        const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(portfolio.navPerUnit);
+        const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
+        
+        if (isNavPerUnitValid && !isNavPerUnitStale) {
+          // Use DB value (already set)
+          this.logger.debug(`Using DB navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
+        } else {
+          // Fallback to real-time calculation
+          portfolio.navPerUnit = newFields.totalAllValue / outstandingUnits;
+          const reason = !isNavPerUnitValid ? 'DB value is zero' : 'DB value is stale';
+          this.logger.debug(`Calculated real-time navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
+        }
+      }
       
       // Override DB values with real-time calculations
       portfolio.totalValue = assetValue; // Keep old field for backward compatibility
@@ -252,8 +276,30 @@ export class PortfolioService {
           // Calculate new portfolio fields
           const newFields = await this.calculateNewPortfolioFields(portfolio.portfolioId);
 
+          // Get NAV per unit for funds (DB-first with fallback calculation)
+          let navPerUnit = portfolio.navPerUnit || 0;
+          if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
+            const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+              ? parseFloat(portfolio.totalOutstandingUnits) 
+              : portfolio.totalOutstandingUnits;
+            
+            // Check if DB value is valid and not stale
+            const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(navPerUnit);
+            const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
+            
+            if (isNavPerUnitValid && !isNavPerUnitStale) {
+              // Use DB value (already set above)
+              this.logger.debug(`Using DB navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
+            } else {
+              // Fallback to real-time calculation
+              navPerUnit = newFields.totalAllValue / outstandingUnits;
+              const reason = !isNavPerUnitValid ? 'DB value is zero' : 'DB value is stale';
+              this.logger.debug(`Calculated real-time navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
+            }
+          }
+
           // Return portfolio with updated real-time values
-          return {
+          const updatedPortfolio = {
             ...portfolio,
             totalValue: totalValue, // Keep old field for backward compatibility
             unrealizedPl: totalUnrealizedPL, // Keep old field for backward compatibility
@@ -269,7 +315,25 @@ export class PortfolioService {
             unrealizedAssetPnL: newFields.unrealizedAssetPnL,
             unrealizedInvestPnL: newFields.unrealizedInvestPnL,
             unrealizedAllPnL: newFields.unrealizedAllPnL,
+            // Update NAV per unit for funds
+            navPerUnit: navPerUnit,
           };
+          
+          // Add computed properties to match Portfolio type
+          Object.defineProperty(updatedPortfolio, 'canAcceptInvestors', {
+            get: function() { return this.isFund; },
+            enumerable: true
+          });
+          Object.defineProperty(updatedPortfolio, 'investorCount', {
+            get: function() { return this.investorHoldings?.length || 0; },
+            enumerable: true
+          });
+          Object.defineProperty(updatedPortfolio, 'hasValidNavPerUnit', {
+            get: function() { return this.isFund && this.totalOutstandingUnits > 0 && this.navPerUnit > 0; },
+            enumerable: true
+          });
+          
+          return updatedPortfolio;
         } catch (error) {
           // If calculation fails, return original portfolio data
           console.error(`Error calculating real-time P&L for portfolio ${portfolio.portfolioId}:`, error);
@@ -283,7 +347,7 @@ export class PortfolioService {
       await this.cacheManager.set(cacheKey, portfoliosWithRealTimePL, this.CACHE_TTL);
     }
 
-    return portfoliosWithRealTimePL;
+    return portfoliosWithRealTimePL as Portfolio[];
   }
 
   /**
@@ -634,6 +698,7 @@ export class PortfolioService {
 
     return await query.getMany();
   }
+
 
 
   /**

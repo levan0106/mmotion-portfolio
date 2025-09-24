@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CircularProgress,
   Box,
@@ -40,12 +40,16 @@ import RiskMetricsDashboard from '../components/Analytics/RiskMetricsDashboard';
 import DiversificationHeatmap from '../components/Analytics/DiversificationHeatmap';
 import AssetAllocationTimeline from '../components/Analytics/AssetAllocationTimeline';
 import BenchmarkComparison from '../components/Analytics/BenchmarkComparison';
+import MWRBenchmarkComparison from '../components/Analytics/MWRBenchmarkComparison';
 import AssetDetailSummary from '../components/Analytics/AssetDetailSummary';
+import NAVSummary from '../components/Analytics/NAVSummary';
+import NAVHistoryChart from '../components/Analytics/NAVHistoryChart';
 import { TradeForm } from '../components/Trading/TradeForm';
 import { TradeListContainer } from '../components/Trading/TradeList';
 import { TradeAnalysisContainer } from '../components/Trading/TradeAnalysis';
 import CashFlowLayout from '../components/CashFlow/CashFlowLayout';
 import DepositManagementTab from '../components/Deposit/DepositManagementTab';
+import NAVHoldingsManagement from '../components/NAVUnit/NAVHoldingsManagement';
 import { 
   formatCurrency, 
   formatPercentage, 
@@ -117,6 +121,7 @@ function SectionWrapper({ title, children, isCompactMode, getUltraSpacing }: Sec
 const PortfolioDetail: React.FC = () => {
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [tabValue, setTabValue] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [riskReturnData, setRiskReturnData] = useState<any>(null);
@@ -138,13 +143,28 @@ const PortfolioDetail: React.FC = () => {
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+  const [mwrBenchmarkData, setMwrBenchmarkData] = useState<any>(null);
+  const [isMwrBenchmarkLoading, setIsMwrBenchmarkLoading] = useState(false);
+  const [mwrBenchmarkError, setMwrBenchmarkError] = useState<string | null>(null);
   const [benchmarkTimeframe, setBenchmarkTimeframe] = useState('1Y');
   const [benchmarkTwrPeriod, setBenchmarkTwrPeriod] = useState('1M');
+  const [benchmarkMwrPeriod, setBenchmarkMwrPeriod] = useState('1M');
   const [assetDetailData, setAssetDetailData] = useState<any>(null);
   const [isAssetDetailLoading, setIsAssetDetailLoading] = useState(false);
   const [assetDetailError, setAssetDetailError] = useState<string | null>(null);
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      const tabIndex = parseInt(tabParam, 10);
+      if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 5) {
+        setTabValue(tabIndex);
+      }
+    }
+  }, [searchParams]);
 
   // Ultra compact mode - gấp đôi compact
   const getUltraSpacing = (normal: number, ultra: number) => 
@@ -276,6 +296,30 @@ const PortfolioDetail: React.FC = () => {
     fetchBenchmarkData();
   }, [portfolioId, benchmarkTimeframe, benchmarkTwrPeriod]);
 
+  // Fetch MWR benchmark comparison data
+  useEffect(() => {
+    const fetchMWRBenchmarkData = async () => {
+      if (!portfolioId) return;
+      
+      try {
+        setIsMwrBenchmarkLoading(true);
+        setMwrBenchmarkError(null);
+        
+        // Convert timeframe to months
+        const months = getTimeframeMonths(benchmarkTimeframe);
+        const response = await apiService.getPortfolioMWRBenchmarkComparison(portfolioId, months, benchmarkMwrPeriod);
+        setMwrBenchmarkData(response);
+      } catch (error) {
+        console.error('Error fetching MWR benchmark data:', error);
+        setMwrBenchmarkError('Failed to load MWR benchmark data');
+      } finally {
+        setIsMwrBenchmarkLoading(false);
+      }
+    };
+
+    fetchMWRBenchmarkData();
+  }, [portfolioId, benchmarkTimeframe, benchmarkMwrPeriod]);
+
   // Helper function to convert timeframe to months
   const getTimeframeMonths = (timeframe: string): number => {
     switch (timeframe) {
@@ -298,6 +342,10 @@ const PortfolioDetail: React.FC = () => {
   // Handle benchmark TWR period change
   const handleBenchmarkTwrPeriodChange = (twrPeriod: string) => {
     setBenchmarkTwrPeriod(twrPeriod);
+  };
+
+  const handleBenchmarkMwrPeriodChange = (mwrPeriod: string) => {
+    setBenchmarkMwrPeriod(mwrPeriod);
   };
 
   // Fetch asset detail summary data
@@ -351,7 +399,7 @@ const PortfolioDetail: React.FC = () => {
         tradesQuery.refetch(),
         // Analytics data - call API directly
         apiService.getPortfolioRiskReturn(portfolioId),
-        apiService.getPortfolioAssetPerformance(portfolioId),
+        apiService.getPortfolioPerformance(portfolioId),
         apiService.getPortfolioRiskMetrics(portfolioId),
         apiService.getPortfolioDiversificationHeatmap(portfolioId),
         apiService.getPortfolioAllocationTimeline(portfolioId),
@@ -852,11 +900,12 @@ const PortfolioDetail: React.FC = () => {
               },
             }}
           >
-            <Tab label="Trading Analysis" defaultChecked />
+            <Tab label="Performance Analysis" defaultChecked />
             <Tab label="Asset Allocation" />
             <Tab label="Trading Management" />
             <Tab label="Deposit Management" />
             <Tab label="Cash Flow" />
+            <Tab label="NAV Holdings" />
           </Tabs>
           
           {/* Compact Mode Toggle */}
@@ -898,70 +947,189 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 0, // Reduced padding top by half
+            pt: 0,
+            px: getUltraSpacing(2, 1)
           }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
-              {/* Portfolio Performance Section - Renamed from Benchmark Comparison */}
-              <SectionWrapper 
-                title="Portfolio Performance (Hiệu suất danh mục)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-                {isBenchmarkLoading ? (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={24} />
-                  </Box>
-                ) : benchmarkError ? (
-                  <Typography color="error" variant="body2">{benchmarkError}</Typography>
-                ) : (
-                  <BenchmarkComparison 
-                    data={benchmarkData?.data || []} 
-                    baseCurrency={portfolio.baseCurrency}
-                    title="Portfolio Performance"
-                    benchmarkName={benchmarkData?.benchmarkName || 'VN Index'}
-                    isCompactMode={isCompactMode}
-                    getUltraSpacing={getUltraSpacing}
-                    portfolioId={portfolioId}
-                    onTimeframeChange={handleBenchmarkTimeframeChange}
-                    currentTimeframe={benchmarkTimeframe}
-                    onTwrPeriodChange={handleBenchmarkTwrPeriodChange}
-                    currentTwrPeriod={benchmarkTwrPeriod}
-                  />
-                )}
-              </SectionWrapper>
-              {/* Trading Analysis Section */}
-              <SectionWrapper 
-                title="Trading Analysis (Phân tích giao dịch)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-                <TradeAnalysisContainer 
-                  portfolioId={portfolioId!} 
-                  isCompactMode={isCompactMode}
-                />
-              </SectionWrapper>
+            {/* Performance Analysis Section */}
+            <Box sx={{ mb: getUltraSpacing(4, 1) }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                mb: getUltraSpacing(3, 1),
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                📊 Performance Analysis
+              </Typography>
               
-              {/* Risk Metrics Section */}
-              <SectionWrapper 
-                title="Risk Metrics (Chỉ số rủi ro)"
+              {/* NAV Summary */}
+              <NAVSummary
+                navValue={portfolio.totalAllValue || portfolio.totalValue || 0}
+                totalValue={portfolio.totalAssetValue || 0}
+                baseCurrency={portfolio.baseCurrency}
+                isFund={portfolio.isFund || false}
+                totalOutstandingUnits={portfolio.totalOutstandingUnits || 1}
+                navPerUnit={portfolio.navPerUnit || 0}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
-              >
-                {isRiskMetricsLoading ? (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={24} />
+              />
+
+              {/* NAV History Chart */}
+              <Box sx={{ mb: getUltraSpacing(3, 1) }}>
+                <NAVHistoryChart
+                  portfolioId={portfolioId!}
+                  baseCurrency={portfolio.baseCurrency}
+                />
+              </Box>
+              
+              {/* Side-by-Side Performance Views */}
+              <Grid container spacing={getUltraSpacing(2, 1)}>
+                {/* Fund Manager View - TWR */}
+                <Grid item xs={12} lg={6}>
+                  {/* Header */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 1.5, 
+                    mb: getUltraSpacing(1.5, 1),
+                    p: 1.5,
+                    backgroundColor: 'primary.50',
+                    borderRadius: 1.5,
+                    border: '1px solid',
+                    borderColor: 'primary.200'
+                  }}>
+                    <Box sx={{ 
+                      p: 0.8, 
+                      backgroundColor: 'primary.main', 
+                      borderRadius: 1,
+                      color: 'white',
+                      fontSize: '0.9rem'
+                    }}>
+                      🏢
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
+                        Fund Manager View
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        TWR - Pure investment management performance
+                      </Typography>
+                    </Box>
                   </Box>
-                ) : riskMetricsError ? (
-                  <Typography color="error" variant="body2">{riskMetricsError}</Typography>
-                ) : (
-                  <RiskMetricsDashboard 
-                    data={riskMetricsData?.data || {}}
-                    baseCurrency={portfolio.baseCurrency}
-                    title="Risk Metrics Dashboard"
-                  />
-                )}
-              </SectionWrapper>
-            </Grid>
+                  
+                  {/* Chart */}
+                  {isBenchmarkLoading ? (
+                    <Box display="flex" justifyContent="center" p={2}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : benchmarkError ? (
+                    <Typography color="error" variant="body2">{benchmarkError}</Typography>
+                  ) : (
+                    <BenchmarkComparison 
+                      data={benchmarkData?.data || []} 
+                      baseCurrency={portfolio.baseCurrency}
+                      title="Portfolio Performance (TWR)"
+                      benchmarkName={benchmarkData?.benchmarkName || 'VN Index'}
+                      isCompactMode={isCompactMode}
+                      getUltraSpacing={getUltraSpacing}
+                      portfolioId={portfolioId}
+                      onTimeframeChange={handleBenchmarkTimeframeChange}
+                      currentTimeframe={benchmarkTimeframe}
+                      onTwrPeriodChange={handleBenchmarkTwrPeriodChange}
+                      currentTwrPeriod={benchmarkTwrPeriod}
+                    />
+                  )}
+                </Grid>
+
+                {/* Individual Investor View - MWR */}
+                <Grid item xs={12} lg={6}>
+                  {/* Header */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 1.5, 
+                    mb: getUltraSpacing(1.5, 1),
+                    p: 1.5,
+                    backgroundColor: 'success.50',
+                    borderRadius: 1.5,
+                    border: '1px solid',
+                    borderColor: 'success.200'
+                  }}>
+                    <Box sx={{ 
+                      p: 0.8, 
+                      backgroundColor: 'success.main', 
+                      borderRadius: 1,
+                      color: 'white',
+                      fontSize: '0.9rem'
+                    }}>
+                      👤
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'success.main', mb: 0.5 }}>
+                        Individual Investor View
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        MWR - Actual investor returns with cash flows
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  {/* Chart */}
+                  {isMwrBenchmarkLoading ? (
+                    <Box display="flex" justifyContent="center" p={2}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : mwrBenchmarkError ? (
+                    <Typography color="error" variant="body2">{mwrBenchmarkError}</Typography>
+                  ) : (
+                    <MWRBenchmarkComparison 
+                      data={mwrBenchmarkData?.data || []} 
+                      title="Portfolio Performance (MWR)"
+                      benchmarkName={mwrBenchmarkData?.benchmarkName || 'VN Index'}
+                      mwrPeriod={mwrBenchmarkData?.mwrPeriod}
+                      onMWRPeriodChange={handleBenchmarkMwrPeriodChange}
+                      currentMWRPeriod={benchmarkMwrPeriod}
+                      onTimeframeChange={handleBenchmarkTimeframeChange}
+                      currentTimeframe={benchmarkTimeframe}
+                    />
+                  )}
+                </Grid>
+              </Grid>
+            </Box>
+            
+            {/* Trading Analysis Section */}
+            <SectionWrapper 
+              title="Trading Analysis (Phân tích giao dịch)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              <TradeAnalysisContainer 
+                portfolioId={portfolioId!} 
+                isCompactMode={isCompactMode}
+              />
+            </SectionWrapper>
+            
+            {/* Risk Metrics Section */}
+            <SectionWrapper 
+              title="Risk Metrics (Chỉ số rủi ro)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              {isRiskMetricsLoading ? (
+                <Box display="flex" justifyContent="center" p={2}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : riskMetricsError ? (
+                <Typography color="error" variant="body2">{riskMetricsError}</Typography>
+              ) : (
+                <RiskMetricsDashboard 
+                  data={riskMetricsData?.data || {}}
+                  baseCurrency={portfolio.baseCurrency}
+                  title="Risk Metrics Dashboard"
+                />
+              )}
+            </SectionWrapper>
           </Box>
         </TabPanel>
 
@@ -969,22 +1137,21 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 0, // No padding top for consistency
+            pt: 0,
+            px: getUltraSpacing(2, 1)
           }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
-              {/* Trading Management Section */}
-              <SectionWrapper 
-                title="Trading Management (Quản lý giao dịch)"
+            {/* Trading Management Section */}
+            <SectionWrapper 
+              title="Trading Management (Quản lý giao dịch)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              <TradeListContainer 
+                portfolioId={portfolioId!} 
+                onCreate={() => setShowCreateForm(true)}
                 isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-                <TradeListContainer 
-                  portfolioId={portfolioId!} 
-                  onCreate={() => setShowCreateForm(true)}
-                  isCompactMode={isCompactMode}
-                />
-              </SectionWrapper>
-            </Grid>
+              />
+            </SectionWrapper>
           </Box>
         </TabPanel>
 
@@ -993,9 +1160,9 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 0, // No padding top for consistency
+            pt: 0,
+            px: getUltraSpacing(2, 1)
           }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
               {/* Portfolio Overview Section */}
               <SectionWrapper 
                 title="Portfolio Overview (Tổng quan danh mục)"
@@ -1383,8 +1550,7 @@ const PortfolioDetail: React.FC = () => {
                   </Box>
                 </Grid>
               </Grid>
-              </SectionWrapper>
-            </Grid>
+            </SectionWrapper>
           </Box>
         </TabPanel>
 
@@ -1392,18 +1558,17 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 0, // No padding top for consistency
+            pt: 0,
+            px: getUltraSpacing(2, 1)
           }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
-              {/* Deposit Management Section */}
-              <SectionWrapper 
-                title="Deposit Management (Quản lý tiền gửi)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-                <DepositManagementTab portfolioId={portfolioId!} />
-              </SectionWrapper>
-            </Grid>
+            {/* Deposit Management Section */}
+            <SectionWrapper 
+              title="Deposit Management (Quản lý tiền gửi)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              <DepositManagementTab portfolioId={portfolioId!} />
+            </SectionWrapper>
           </Box>
         </TabPanel>
 
@@ -1411,24 +1576,45 @@ const PortfolioDetail: React.FC = () => {
           <Box sx={{ 
             backgroundColor: 'background.paper',
             minHeight: '80vh',
-            pt: 0, // No padding top for consistency
+            pt: 0,
+            px: getUltraSpacing(2, 1)
           }}>
-            <Grid container spacing={getUltraSpacing(3, 1)}>
-              {/* Cash Flow Management Section */}
-              <SectionWrapper 
-                title="Cash Flow Management (Quản lý dòng tiền)"
+            {/* Cash Flow Management Section */}
+            <SectionWrapper 
+              title="Cash Flow Management (Quản lý dòng tiền)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              <CashFlowLayout 
+                portfolioId={portfolioId!} 
+                onCashFlowUpdate={() => {
+                  // Refresh portfolio data when cash flow is updated
+                  refetchPortfolio();
+                }}
+              />
+            </SectionWrapper>
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={5}>
+          <Box sx={{ 
+            backgroundColor: 'background.paper',
+            minHeight: '80vh',
+            pt: 0,
+            px: getUltraSpacing(2, 1)
+          }}>
+            {/* NAV Holdings Management Section */}
+            <SectionWrapper 
+              title="NAV Holdings Management (Quản lý đơn vị quỹ)"
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            >
+              <NAVHoldingsManagement 
+                portfolio={portfolio}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
-              >
-                <CashFlowLayout 
-                  portfolioId={portfolioId!} 
-                  onCashFlowUpdate={() => {
-                    // Refresh portfolio data when cash flow is updated
-                    refetchPortfolio();
-                  }}
-                />
-              </SectionWrapper>
-            </Grid>
+              />
+            </SectionWrapper>
           </Box>
         </TabPanel>
 

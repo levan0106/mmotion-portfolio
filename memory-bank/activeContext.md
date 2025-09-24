@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Portfolio Performance TWR Integration - COMPLETED (100%)**
-**Latest Update: Successfully implemented TWR (Time-Weighted Return) integration for Portfolio Performance chart with separate TWR period selector, fixed benchmark comparison API to use accurate performance snapshots instead of simple cumulative returns (Current Session)**
+**Phase: Fund Unit Transaction System & Holding Detail Implementation - COMPLETED (100%)**
+**Latest Update: Successfully implemented complete fund unit transaction system with holding detail view, navigation improvements, and format helper integration (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,27 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **UNREALIZED P&L CHART INTEGRATION WITH DEPOSIT DATA - COMPLETED** (Current Session - September 24, 2025)
+- ✅ **FUND UNIT TRANSACTION SYSTEM & HOLDING DETAIL IMPLEMENTATION - COMPLETED** (Current Session - September 24, 2025)
+  - **Fund Unit Transaction System**: Complete implementation of fund subscription/redemption system with transaction tracking
+  - **Database Schema**: Created `fund_unit_transactions` table with 1:1 relationship to `cash_flows` and N:1 to `holdings`
+  - **Backend API**: Full CRUD operations for fund subscriptions and redemptions with proper validation
+  - **Holding Detail View**: Comprehensive holding detail page with transaction history and summary statistics
+  - **Navigation Improvements**: Smart back navigation that returns to correct NAV Holdings tab
+  - **Format Helper Integration**: Consistent formatting across all NAV pages using centralized utils
+  - **Error Handling**: Robust error handling for null/undefined values and edge cases
+  - **Key Features Implemented**:
+    - ✅ **Fund Unit Transaction Entity**: Complete entity with TypeORM decorators and relationships
+    - ✅ **Database Migration**: Successfully created fund_unit_transactions table with proper constraints
+    - ✅ **Subscription/Redemption Logic**: Complete business logic for fund subscriptions and redemptions
+    - ✅ **Cash Flow Integration**: Automatic cash flow creation with proper reference linking
+    - ✅ **Holding Detail API**: Comprehensive API endpoint for holding details with transaction history
+    - ✅ **Frontend Integration**: Complete UI for holding detail view with professional design
+    - ✅ **Smart Navigation**: Back button returns to correct NAV Holdings tab using URL parameters
+    - ✅ **Format Consistency**: All NAV pages use centralized format helpers for consistency
+    - ✅ **Error Recovery**: Proper handling of null values and edge cases
+    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling
+
+- ✅ **UNREALIZED P&L CHART INTEGRATION WITH DEPOSIT DATA - COMPLETED** (Previous Session - September 24, 2025)
   - **API Integration**: Successfully added deposit data to /analytics/asset-performance API endpoint
   - **Backend Implementation**: Modified PortfolioAnalyticsController to fetch deposit data and include in response
   - **Service Enhancement**: Added getPortfolioDeposits method to PortfolioService with proper deposit data formatting
@@ -1117,14 +1137,14 @@
 - **Documentation Updates** - Update API docs and user guides
 
 ## Recent Achievements (Current Session)
-- ✅ **Portfolio Performance TWR Integration**: Successfully implemented TWR (Time-Weighted Return) integration for Portfolio Performance chart
-- ✅ **Backend API Enhancement**: Fixed benchmark comparison API to use TWR from Performance Snapshots instead of simple cumulative returns
-- ✅ **TWR Period Parameter**: Added twrPeriod parameter to separate TWR selection from data range (months parameter)
-- ✅ **Frontend Integration**: Added TWR period selector to Portfolio Performance chart with options: 1D, 1W, 1M, 3M, 6M, 1Y, YTD
-- ✅ **API Service Update**: Updated frontend API service to support twrPeriod parameter
-- ✅ **Component Enhancement**: Enhanced BenchmarkComparison component with dual selectors (TWR Period + Timeframe)
-- ✅ **State Management**: Added proper state management for TWR period in PortfolioDetail page
-- ✅ **Data Accuracy**: Portfolio performance now uses accurate TWR calculations that account for cash flows
+- ✅ **Portfolio Performance Layout Optimization**: Successfully optimized Portfolio Performance layout with side-by-side TWR/MWR view
+- ✅ **HTML Structure Optimization**: Reduced HTML nesting levels from 6-7 levels to 4-5 levels for better performance
+- ✅ **Card Styling Unification**: Unified card styling between TWR and MWR components with consistent borders
+- ✅ **Key Insights Removal**: Removed Key Insights section for cleaner, more focused interface
+- ✅ **Layout Overlap Fix**: Fixed Trading Analysis section overlapping with Portfolio Performance charts
+- ✅ **Height Constraint Removal**: Removed `height: '100%'` constraints that were causing layout issues
+- ✅ **Card Size Optimization**: Optimized card sizes with consistent 80px height and compact font sizes
+- ✅ **Responsive Design**: Maintained responsive behavior across all screen sizes
 
 ## Remaining Questions
 1. Database partitioning strategy for large datasets?

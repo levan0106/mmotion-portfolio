@@ -2,7 +2,27 @@
 
 ## What Works
 ### ✅ Completed
-- **PORTFOLIO PERFORMANCE TWR INTEGRATION - COMPLETED** (Current Session - September 24, 2025)
+- **FUND UNIT TRANSACTION SYSTEM & HOLDING DETAIL IMPLEMENTATION - COMPLETED** (Current Session - September 24, 2025)
+  - **Fund Unit Transaction System**: Complete implementation of fund subscription/redemption system with transaction tracking
+  - **Database Schema**: Created `fund_unit_transactions` table with 1:1 relationship to `cash_flows` and N:1 to `holdings`
+  - **Backend API**: Full CRUD operations for fund subscriptions and redemptions with proper validation
+  - **Holding Detail View**: Comprehensive holding detail page with transaction history and summary statistics
+  - **Navigation Improvements**: Smart back navigation that returns to correct NAV Holdings tab
+  - **Format Helper Integration**: Consistent formatting across all NAV pages using centralized utils
+  - **Error Handling**: Robust error handling for null/undefined values and edge cases
+  - **Key Features Implemented**:
+    - ✅ **Fund Unit Transaction Entity**: Complete entity with TypeORM decorators and relationships
+    - ✅ **Database Migration**: Successfully created fund_unit_transactions table with proper constraints
+    - ✅ **Subscription/Redemption Logic**: Complete business logic for fund subscriptions and redemptions
+    - ✅ **Cash Flow Integration**: Automatic cash flow creation with proper reference linking
+    - ✅ **Holding Detail API**: Comprehensive API endpoint for holding details with transaction history
+    - ✅ **Frontend Integration**: Complete UI for holding detail view with professional design
+    - ✅ **Smart Navigation**: Back button returns to correct NAV Holdings tab using URL parameters
+    - ✅ **Format Consistency**: All NAV pages use centralized format helpers for consistency
+    - ✅ **Error Recovery**: Proper handling of null values and edge cases
+    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling
+
+- **PORTFOLIO PERFORMANCE TWR INTEGRATION - COMPLETED** (Previous Session - September 24, 2025)
   - **Backend API Enhancement**: Fixed benchmark comparison API to use TWR from Performance Snapshots instead of simple cumulative returns
   - **TWR Period Parameter**: Added twrPeriod parameter to separate TWR selection from data range (months parameter)
   - **Performance Snapshot Integration**: API now uses PortfolioPerformanceSnapshot entity with accurate TWR calculations

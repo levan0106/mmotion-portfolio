@@ -745,6 +745,15 @@ export class CashFlowService {
   }
 
   /**
+   * Get cash flow by ID
+   */
+  async getCashFlowById(cashFlowId: string): Promise<CashFlow | null> {
+    return this.cashFlowRepository.findOne({
+      where: { cashFlowId },
+    });
+  }
+
+  /**
    * Format deposit description based on type
    */
   private formatDepositDescription(

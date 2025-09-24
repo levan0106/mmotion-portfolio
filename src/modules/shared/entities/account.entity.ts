@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
+import { InvestorHolding } from '../../portfolio/entities/investor-holding.entity';
 
 /**
  * Account entity representing user accounts in the system.
@@ -39,6 +40,12 @@ export class Account {
   baseCurrency: string;
 
   /**
+   * Whether this account can invest in funds
+   */
+  @Column({ type: 'boolean', default: false, name: 'is_investor' })
+  isInvestor: boolean;
+
+  /**
    * Timestamp when the account was created.
    */
   @CreateDateColumn({ name: 'created_at' })
@@ -55,4 +62,25 @@ export class Account {
    */
   @OneToMany(() => Portfolio, (portfolio) => portfolio.account)
   portfolios: Portfolio[];
+
+  /**
+   * Investor holdings in funds (only applicable when isInvestor = true)
+   */
+  @OneToMany(() => InvestorHolding, (holding) => holding.account)
+  investorHoldings: InvestorHolding[];
+
+  // Computed properties for investor management
+  /**
+   * Check if this account can invest in funds
+   */
+  get canInvestInFunds(): boolean {
+    return this.isInvestor;
+  }
+
+  /**
+   * Get total number of fund holdings
+   */
+  get fundHoldingsCount(): number {
+    return this.investorHoldings?.length || 0;
+  }
 }

@@ -12,6 +12,8 @@ import { AssetPerformanceSnapshot } from './entities/asset-performance-snapshot.
 import { AssetGroupPerformanceSnapshot } from './entities/asset-group-performance-snapshot.entity';
 import { BenchmarkData } from './entities/benchmark-data.entity';
 import { Deposit } from './entities/deposit.entity';
+import { InvestorHolding } from './entities/investor-holding.entity';
+import { FundUnitTransaction } from './entities/fund-unit-transaction.entity';
 import { Account } from '../shared/entities/account.entity';
 import { Asset } from '../asset/entities/asset.entity';
 import { GlobalAsset } from '../asset/entities/global-asset.entity';
@@ -25,6 +27,8 @@ import { PositionManagerService } from './services/position-manager.service';
 import { PortfolioCalculationService } from './services/portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './services/portfolio-value-calculator.service';
 import { CashFlowService } from './services/cash-flow.service';
+import { InvestorHoldingService } from './services/investor-holding.service';
+import { NavUtilsService } from './services/nav-utils.service';
 import { SnapshotService } from './services/snapshot.service';
 import { PortfolioSnapshotService } from './services/portfolio-snapshot.service';
 import { PerformanceSnapshotService } from './services/performance-snapshot.service';
@@ -35,6 +39,7 @@ import { RiskMetricsCalculationService } from './services/risk-metrics-calculati
 import { PortfolioController } from './controllers/portfolio.controller';
 import { PortfolioAnalyticsController } from './controllers/portfolio-analytics.controller';
 import { CashFlowController } from './controllers/cash-flow.controller';
+import { InvestorHoldingController } from './controllers/investor-holding.controller';
 import { PerformanceSnapshotController } from './controllers/performance-snapshot.controller';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { SnapshotRepository } from './repositories/snapshot.repository';
@@ -63,6 +68,8 @@ import { SharedModule } from '../shared/shared.module';
       AssetGroupPerformanceSnapshot,
       BenchmarkData,
       Deposit,
+      InvestorHolding,
+      FundUnitTransaction,
       Account,
       Asset,
       GlobalAsset,
@@ -85,6 +92,7 @@ import { SharedModule } from '../shared/shared.module';
     PortfolioController,
     PortfolioAnalyticsController,
     CashFlowController,
+    InvestorHoldingController,
     PerformanceSnapshotController,
   ],
   providers: [
@@ -95,6 +103,8 @@ import { SharedModule } from '../shared/shared.module';
     PortfolioCalculationService,
     PortfolioValueCalculatorService,
     CashFlowService,
+    InvestorHoldingService,
+    NavUtilsService,
     SnapshotService,
     PortfolioSnapshotService,
     PerformanceSnapshotService,
@@ -121,8 +131,10 @@ import { SharedModule } from '../shared/shared.module';
     PortfolioService,
     PortfolioAnalyticsService,
     PositionManagerService,
+    PortfolioCalculationService,
     PortfolioValueCalculatorService,
     CashFlowService,
+    InvestorHoldingService,
     PerformanceSnapshotService,
     TWRCalculationService,
     MWRIRRCalculationService,

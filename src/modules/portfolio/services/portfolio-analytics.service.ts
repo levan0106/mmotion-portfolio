@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -20,6 +20,7 @@ import { PortfolioSnapshotService } from './portfolio-snapshot.service';
  */
 @Injectable()
 export class PortfolioAnalyticsService {
+  private readonly logger = new Logger(PortfolioAnalyticsService.name);
   private readonly CACHE_ENABLED = process.env.CACHE_ENABLED === 'true';
 
   constructor(
@@ -154,6 +155,23 @@ export class PortfolioAnalyticsService {
     const navValue = await this.calculateNAV(portfolioId);
     const totalValue = portfolio.totalValue;
 
+    // Calculate and update NAV per unit for funds
+    let navPerUnit = 0;
+    if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
+      const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+        ? parseFloat(portfolio.totalOutstandingUnits) 
+        : portfolio.totalOutstandingUnits;
+      navPerUnit = navValue / outstandingUnits;
+      
+      // Update portfolio with calculated NAV per unit and last NAV date
+      await this.portfolioRepository.update(portfolioId, {
+        navPerUnit: navPerUnit,
+        lastNavDate: navDate // Use snapshot date as last NAV date
+      });
+      
+      this.logger.log(`Updated navPerUnit to ${navPerUnit.toFixed(8)} for fund ${portfolioId} during daily snapshot`);
+    }
+
     // Check if snapshot already exists for this date
     const existingSnapshot = await this.navSnapshotRepository.findOne({
       where: {
@@ -167,6 +185,8 @@ export class PortfolioAnalyticsService {
       existingSnapshot.navValue = navValue;
       existingSnapshot.cashBalance = portfolio.cashBalance;
       existingSnapshot.totalValue = totalValue;
+      existingSnapshot.totalOutstandingUnits = portfolio.totalOutstandingUnits;
+      existingSnapshot.navPerUnit = navPerUnit;
       return await this.navSnapshotRepository.save(existingSnapshot);
     } else {
       // Create new snapshot
@@ -176,6 +196,8 @@ export class PortfolioAnalyticsService {
         navValue: navValue,
         cashBalance: portfolio.cashBalance,
         totalValue: totalValue,
+        totalOutstandingUnits: portfolio.totalOutstandingUnits,
+        navPerUnit: navPerUnit,
       });
 
       return await this.navSnapshotRepository.save(navSnapshot);
@@ -664,6 +686,65 @@ export class PortfolioAnalyticsService {
     } catch (error) {
       console.error('Error in getPortfolioSnapshotTimeline service:', error);
       return [];
+    }
+  }
+
+  /**
+   * Get NAV history for a portfolio from portfolio snapshots.
+   * @param portfolioId - Portfolio ID
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @param granularity - Data granularity (optional)
+   * @returns Promise<any>
+   */
+  async getNavHistory(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    granularity?: string
+  ): Promise<any> {
+    try {
+      const snapshotGranularity = granularity ? 
+        (granularity.toUpperCase() as SnapshotGranularity) : 
+        SnapshotGranularity.DAILY;
+
+      // Get portfolio snapshots
+      const portfolioSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate,
+        endDate,
+        granularity: snapshotGranularity
+      });
+
+      // Transform data for chart
+      const navHistory = portfolioSnapshots.map(snapshot => ({
+        date: snapshot.snapshotDate,
+        navValue: parseFloat(snapshot.totalPortfolioValue.toString()),
+        totalValue: parseFloat(snapshot.totalPortfolioValue.toString()),
+        cashBalance: parseFloat(snapshot.cashBalance.toString()),
+        assetValue: parseFloat(snapshot.totalAssetValue.toString()),
+        totalReturn: parseFloat(snapshot.totalReturn.toString()),
+        portfolioPnL: parseFloat(snapshot.totalPortfolioPl.toString()),
+        portfolioDailyReturn: parseFloat(snapshot.portfolioDailyReturn.toString()),
+        portfolioWeeklyReturn: parseFloat(snapshot.portfolioWeeklyReturn.toString()),
+        portfolioMonthlyReturn: parseFloat(snapshot.portfolioMonthlyReturn.toString()),
+        portfolioYtdReturn: parseFloat(snapshot.portfolioYtdReturn.toString())
+      }));
+
+      return {
+        portfolioId,
+        period: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        },
+        granularity: snapshotGranularity,
+        data: navHistory,
+        totalRecords: navHistory.length,
+        retrievedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Error in getNavHistory service:', error);
+      throw error;
     }
   }
 }

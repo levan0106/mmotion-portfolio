@@ -16,6 +16,12 @@ import {
   ApiResponse,
   Asset,
   Trade,
+  InvestorHolding,
+  SubscribeToFundDto,
+  RedeemFromFundDto,
+  SubscriptionResult,
+  RedemptionResult,
+  HoldingDetail,
 } from '../types';
 
 class ApiService {
@@ -203,6 +209,14 @@ class ApiService {
     return response.data;
   }
 
+  async getPortfolioMWRBenchmarkComparison(portfolioId: string, months?: number, mwrPeriod?: string): Promise<any> {
+    const params: any = {};
+    if (months) params.months = months.toString();
+    if (mwrPeriod) params.mwrPeriod = mwrPeriod;
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/mwr-benchmark-comparison`, { params });
+    return response.data;
+  }
+
   async getPortfolioAssetDetailSummary(portfolioId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/asset-detail-summary`);
     return response.data;
@@ -373,6 +387,37 @@ class ApiService {
     if (portfolioId) params.append('portfolioId', portfolioId);
     if (marketPrices) params.append('marketPrices', JSON.stringify(marketPrices));
     const response = await this.api.get(`/api/v1/assets/targets/monitor?${params}`);
+    return response.data;
+  }
+
+  // NAV/Unit System APIs
+  async getFundInvestors(portfolioId: string): Promise<InvestorHolding[]> {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/investors`);
+    return response.data;
+  }
+
+  async subscribeToFund(subscriptionDto: SubscribeToFundDto): Promise<SubscriptionResult> {
+    const response = await this.api.post(`/api/v1/portfolios/${subscriptionDto.portfolioId}/investors/subscribe`, subscriptionDto);
+    return response.data;
+  }
+
+  async redeemFromFund(redemptionDto: RedeemFromFundDto): Promise<RedemptionResult> {
+    const response = await this.api.post(`/api/v1/portfolios/${redemptionDto.portfolioId}/investors/redeem`, redemptionDto);
+    return response.data;
+  }
+
+  async getInvestorHolding(portfolioId: string, accountId: string): Promise<InvestorHolding> {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/investors/${accountId}`);
+    return response.data;
+  }
+
+  async convertPortfolioToFund(portfolioId: string): Promise<Portfolio> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-fund`);
+    return response.data;
+  }
+
+  async getHoldingDetail(holdingId: string): Promise<HoldingDetail> {
+    const response = await this.api.get(`/api/v1/investor-holdings/${holdingId}/detail`);
     return response.data;
   }
 

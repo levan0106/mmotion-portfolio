@@ -505,38 +505,6 @@ export class PortfolioAnalyticsController {
   }
 
   /**
-   * Get asset allocation timeline data.
-   */
-  @Get('allocation-timeline')
-  @ApiOperation({ summary: 'Get asset allocation timeline data with real snapshot data' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 12)' })
-  @ApiQuery({ name: 'granularity', required: false, enum: ['DAILY', 'WEEKLY', 'MONTHLY'], description: 'Snapshot granularity (default: MONTHLY)' })
-  @ApiResponse({ status: 200, description: 'Allocation timeline data retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getAllocationTimeline(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('months') months?: string,
-    @Query('granularity') granularity?: string,
-  ): Promise<any> {
-    // Limit to maximum 12 months
-    const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 12);
-    const snapshotGranularity = granularity as any || 'MONTHLY'; // Default to MONTHLY for better performance
-    
-    if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
-      throw new Error('Months parameter must be a number between 1 and 12');
-    }
-
-    // Always use snapshot data for real allocation timeline
-    return await this.portfolioAnalyticsService.calculateAllocationTimeline(
-      id, 
-      monthsToLookBack, 
-      true, // Always use snapshots for real data
-      snapshotGranularity
-    );
-  }
-
-  /**
    * Get cash flow analysis data.
    */
   @Get('cash-flow-analysis')
@@ -575,6 +543,39 @@ export class PortfolioAnalyticsController {
       calculatedAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Get asset allocation timeline data.
+   */
+  @Get('allocation-timeline')
+  @ApiOperation({ summary: 'Get asset allocation timeline data with real snapshot data' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 12)' })
+  @ApiQuery({ name: 'granularity', required: false, enum: ['DAILY', 'WEEKLY', 'MONTHLY'], description: 'Snapshot granularity (default: MONTHLY)' })
+  @ApiResponse({ status: 200, description: 'Allocation timeline data retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async getAllocationTimeline(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months') months?: string,
+    @Query('granularity') granularity?: string,
+  ): Promise<any> {
+    // Limit to maximum 12 months
+    const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 12);
+    const snapshotGranularity = granularity as any || 'MONTHLY'; // Default to MONTHLY for better performance
+    
+    if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
+      throw new Error('Months parameter must be a number between 1 and 12');
+    }
+
+    // Always use snapshot data for real allocation timeline
+    return await this.portfolioAnalyticsService.calculateAllocationTimeline(
+      id, 
+      monthsToLookBack, 
+      true, // Always use snapshots for real data
+      snapshotGranularity
+    );
+  }
+
 
   /**
    * Get benchmark comparison data using real portfolio snapshots.
@@ -806,6 +807,237 @@ export class PortfolioAnalyticsController {
   }
 
   /**
+   * Get MWR benchmark comparison data using real portfolio snapshots.
+   */
+  @Get('mwr-benchmark-comparison')
+  @ApiOperation({ summary: 'Get MWR benchmark comparison data using real portfolio snapshots' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 24)' })
+  @ApiQuery({ name: 'mwrPeriod', required: false, description: 'MWR period to use (1D, 1W, 1M, 3M, 6M, 1Y, YTD, default: 1M)' })
+  @ApiResponse({ status: 200, description: 'MWR benchmark comparison data retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async getMWRBenchmarkComparison(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months') months?: string,
+    @Query('mwrPeriod') mwrPeriod?: string,
+  ): Promise<any> {
+    const portfolio = await this.portfolioService.getPortfolioDetails(id);
+    
+    // Limit to maximum 24 months
+    const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 24);
+    
+    if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
+      throw new Error('Months parameter must be a number between 1 and 24');
+    }
+
+    // Set MWR period (default: 1M)
+    const mwrPeriodToUse = mwrPeriod || '1M';
+    const validMwrPeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', 'YTD'];
+    
+    if (!validMwrPeriods.includes(mwrPeriodToUse)) {
+      throw new Error(`MWR period must be one of: ${validMwrPeriods.join(', ')}`);
+    }
+
+    // Get real portfolio snapshot data
+    const endDate = new Date();
+    let startDate = new Date();
+    startDate.setMonth(endDate.getMonth() - monthsToLookBack);
+    
+    console.log(`MWR Benchmark comparison: Initial timeframe ${monthsToLookBack} months from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    
+    // First, get daily all available snapshots to determine the correct startDate
+    const portfolioSnapshots = await this.portfolioAnalyticsService.getPortfolioSnapshotTimeline(
+      id,
+      startDate,
+      endDate,
+      SnapshotGranularity.DAILY
+    );
+    
+    // Generate benchmark data (VN Index simulation)
+    const benchmarkData = [];
+    let portfolioValue = 0;
+    let benchmarkValue = 0; 
+    
+    // Try to get performance snapshots first (more accurate MWR data)
+    let performanceSnapshots = [];
+    try {
+      performanceSnapshots = await this.performanceSnapshotService.getPortfolioPerformanceSnapshots(
+        id,
+        startDate,
+        endDate,
+        SnapshotGranularity.DAILY
+      );
+      console.log(`Found ${performanceSnapshots.length} performance snapshots with MWR data`);
+    } catch (error) {
+      console.log('Performance snapshots not available, falling back to portfolio snapshots');
+    }
+
+    // If we have performance snapshots with MWR data, use them
+    if (performanceSnapshots && performanceSnapshots.length > 0) {
+      console.log(`MWR Benchmark comparison: Using MWR from performance snapshots (${performanceSnapshots.length} snapshots)`);
+      
+      // Sort snapshots by date
+      const sortedSnapshots = performanceSnapshots.sort((a, b) => 
+        new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+      );
+
+      // Determine the correct startDate based on available snapshots
+      const minSnapshotDate = new Date(Math.min(...performanceSnapshots.map(s => new Date(s.snapshotDate).getTime())));
+      if (minSnapshotDate > startDate) {
+        startDate = minSnapshotDate;
+      }
+
+      // Generate date list based on timeframe
+      const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
+      console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
+      
+      // Use MWR data from performance snapshots
+      for (let i = 0; i < dateList.length; i++) {
+        const date = dateList[i];
+        
+        // Find the closest performance snapshot for this date with non-zero MWR
+        const closestSnapshot = this.findClosestSnapshotWithMWR(date, sortedSnapshots, mwrPeriodToUse);
+        
+        // Select appropriate MWR column based on mwrPeriod parameter
+        let portfolioReturn = 0;
+        let mwrColumn = '';
+        if (closestSnapshot) {
+          switch (mwrPeriodToUse) {
+            case '1D':
+              // Fallback to 1M since 1D MWR not available
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR1M) || 0;
+              mwrColumn = 'portfolioMWR1M (fallback from 1D)';
+              break;
+            case '1W':
+              // Fallback to 1M since 1W MWR not available
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR1M) || 0;
+              mwrColumn = 'portfolioMWR1M (fallback from 1W)';
+              break;
+            case '1M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR1M) || 0;
+              mwrColumn = 'portfolioMWR1M';
+              break;
+            case '3M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR3M) || 0;
+              mwrColumn = 'portfolioMWR3M';
+              break;
+            case '6M':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR6M) || 0;
+              mwrColumn = 'portfolioMWR6M';
+              break;
+            case '1Y':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR1Y) || 0;
+              mwrColumn = 'portfolioMWR1Y';
+              break;
+            case 'YTD':
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWRYTD) || 0;
+              mwrColumn = 'portfolioMWRYTD';
+              break;
+            default:
+              portfolioReturn = parseFloat(closestSnapshot.portfolioMWR1M) || 0;
+              mwrColumn = 'portfolioMWR1M';
+          }
+        }
+        
+        // Debug log for first few iterations (optional)
+        // if (i < 3) {
+        //   console.log(`Date ${date.toISOString().split('T')[0]}: Using ${mwrColumn} = ${portfolioReturn}% (MWR period: ${mwrPeriodToUse}, data range: ${monthsToLookBack} months)`);
+        // }
+        
+        // Generate benchmark return (simulated VN Index)
+        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: Number(portfolioReturn.toFixed(4)),
+          benchmark: Number((benchmarkReturn * 100).toFixed(4)),
+          difference: Number((portfolioReturn - (benchmarkReturn * 100)).toFixed(4)),
+        });
+      }
+    }
+    // If we have real portfolio data, use it (fallback)
+    else if (portfolioSnapshots && portfolioSnapshots.length > 0) {
+      console.log(`MWR Benchmark comparison: Real portfolio snapshots available for benchmark comparison using 
+        daily granularity ${portfolioSnapshots.length} months to look back`);
+      // Sort snapshots by date
+      const sortedSnapshots = portfolioSnapshots.sort((a, b) => 
+        new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+      );      
+
+      // Determine the correct startDate based on available snapshots
+      if (portfolioSnapshots && portfolioSnapshots.length > 0) {
+        const minSnapshotDate = new Date(Math.min(...portfolioSnapshots.map(s => new Date(s.snapshotDate).getTime())));
+        
+        if (minSnapshotDate > startDate) {
+          startDate = minSnapshotDate;
+        } 
+      }      
+
+      // Generate date list based on timeframe
+      const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
+      console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
+      
+      // Calculate cumulative returns for each date
+      const cumulativeReturns = this.calculateCumulativeReturns(dateList, sortedSnapshots);
+      console.log(`Calculated cumulative returns for ${cumulativeReturns.length} dates`);
+      
+      // Generate benchmark data based on timeframe
+      for (let i = 0; i < dateList.length; i++) {
+        const date = dateList[i];
+        const portfolioReturn = cumulativeReturns[i] || 0;
+        
+        // Generate benchmark return (simulated VN Index)
+        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: Number(portfolioReturn.toFixed(4)),
+          benchmark: Number((benchmarkReturn * 100).toFixed(4)),
+          difference: Number((portfolioReturn - (benchmarkReturn * 100)).toFixed(4)),
+        });
+      }
+    } else {
+      console.log(`MWR Benchmark comparison: No snapshots available for benchmark comparison using 
+        daily granularity ${monthsToLookBack} months to look back`);
+      // Fallback to mock data if no snapshots available
+      for (let i = monthsToLookBack - 1; i >= 0; i--) {
+        const date = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
+        
+        // Generate monthly returns
+        const portfolioReturn = (Math.random() - 0.4) * 0.2; // TODO: -8% to +12%
+        const benchmarkReturn = (Math.random() - 0.3) * 0.15; // TODO: -4.5% to +10.5%
+        
+        portfolioValue *= (1 + portfolioReturn);
+        benchmarkValue *= (1 + benchmarkReturn);
+        
+        benchmarkData.push({
+          date: date.toISOString().split('T')[0],
+          portfolio: portfolioReturn * 100,
+          benchmark: benchmarkReturn * 100,
+          difference: (portfolioReturn - benchmarkReturn) * 100,
+        });
+      }
+    }
+
+    return {
+      portfolioId: id,
+      totalValue: portfolio.totalValue,
+      data: benchmarkData,
+      benchmarkName: 'VN Index',
+      period: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        months: monthsToLookBack,
+      },
+      mwrPeriod: mwrPeriodToUse,
+      dataSource: performanceSnapshots && performanceSnapshots.length > 0 ? 'performance_snapshots_mwr' : 
+                 (portfolioSnapshots && portfolioSnapshots.length > 0 ? 'portfolio_snapshots_cumulative' : 'simulated'),
+      snapshotCount: performanceSnapshots ? performanceSnapshots.length : (portfolioSnapshots ? portfolioSnapshots.length : 0),
+      calculatedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
    * Get asset detail summary data.
    */
   @Get('asset-detail-summary')
@@ -919,25 +1151,6 @@ export class PortfolioAnalyticsController {
     return returns;
   }
 
-  /**
-   * Find the closest snapshot for a given date
-   */
-  private findClosestSnapshot(targetDate: Date, snapshots: any[]): any | null {
-    if (snapshots.length === 0) return null;
-    
-    let closest = snapshots[0];
-    let minDiff = Math.abs(new Date(closest.snapshotDate).getTime() - targetDate.getTime());
-    
-    for (const snapshot of snapshots) {
-      const diff = Math.abs(new Date(snapshot.snapshotDate).getTime() - targetDate.getTime());
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = snapshot;
-      }
-    }
-    
-    return closest;
-  }
 
   /**
    * Find the closest snapshot that is on or before a given date
@@ -955,12 +1168,84 @@ export class PortfolioAnalyticsController {
       if (snapshotDate <= targetDate) {
         // If this snapshot is closer to target date than current closest
         if (snapshotDate > closestDate) {
-          closest = snapshot;
+        closest = snapshot;
           closestDate = snapshotDate;
         }
       }
     }
     
+    return closest;
+  }
+
+  /**
+   * Find the closest snapshot with non-zero MWR data
+   */
+  private findClosestSnapshotWithMWR(targetDate: Date, snapshots: any[], mwrPeriod: string): any | null {
+    if (snapshots.length === 0) return null;
+    
+    let closest: any | null = null;
+    let closestDate = new Date(0); // Start with epoch
+    
+    // console.log(`DEBUG: Looking for snapshot with non-zero MWR for date ${targetDate.toISOString().split('T')[0]}, period: ${mwrPeriod}`);
+    
+    for (const snapshot of snapshots) {
+      const snapshotDate = new Date(snapshot.snapshotDate);
+      
+      // Only consider snapshots that are on or before the target date
+      if (snapshotDate <= targetDate) {
+        // Check if this snapshot has non-zero MWR data
+        let hasNonZeroMWR = false;
+        let mwrValue = 0;
+        switch (mwrPeriod) {
+          case '1D':
+          case '1W':
+            // Fallback to 1M since 1D/1W not available
+            mwrValue = parseFloat(snapshot.portfolioMWR1M);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          case '1M':
+            mwrValue = parseFloat(snapshot.portfolioMWR1M);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          case '3M':
+            mwrValue = parseFloat(snapshot.portfolioMWR3M);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          case '6M':
+            mwrValue = parseFloat(snapshot.portfolioMWR6M);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          case '1Y':
+            mwrValue = parseFloat(snapshot.portfolioMWR1Y);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          case 'YTD':
+            mwrValue = parseFloat(snapshot.portfolioMWRYTD);
+            hasNonZeroMWR = mwrValue !== 0;
+            break;
+          default:
+            mwrValue = parseFloat(snapshot.portfolioMWR1M);
+            hasNonZeroMWR = mwrValue !== 0;
+        }
+        
+        // console.log(`DEBUG: Snapshot ${snapshotDate.toISOString().split('T')[0]}: MWR=${mwrValue}, hasNonZero=${hasNonZeroMWR}`);
+        
+        // If this snapshot has non-zero MWR and is closer to target date than current closest
+        if (hasNonZeroMWR && snapshotDate > closestDate) {
+          closest = snapshot;
+          closestDate = snapshotDate;
+          // console.log(`DEBUG: Found better snapshot: ${snapshotDate.toISOString().split('T')[0]} with MWR=${mwrValue}`);
+        }
+      }
+    }
+    
+    // If no snapshot with non-zero MWR found, return null instead of fallback
+    if (!closest) {
+      // console.log(`DEBUG: No snapshot with non-zero MWR found, returning null`);
+      return null;
+    }
+    
+    // console.log(`DEBUG: Final snapshot: ${closestDate.toISOString().split('T')[0]}`);
     return closest;
   }
 }

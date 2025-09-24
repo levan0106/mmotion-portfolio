@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   ReferenceLine,
   Legend,
@@ -21,14 +21,15 @@ import {
   Grid, 
   Card, 
   CardContent, 
-  Chip,
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Tooltip,
+  IconButton
 } from '@mui/material';
 import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
-import { TrendingUp, TrendingDown, CompareArrows } from '@mui/icons-material';
+import { TrendingUp, TrendingDown, CompareArrows, InfoOutlined } from '@mui/icons-material';
 
 interface BenchmarkDataPoint {
   date: string;
@@ -121,7 +122,6 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   const trackingError = Math.sqrt(
     data.reduce((sum, item) => sum + Math.pow(item.difference, 2), 0) / data.length
   );
-  const informationRatio = trackingError > 0 ? excessReturn / trackingError : 0;
 
   if (data.length === 0) {
     return (
@@ -134,18 +134,64 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   }
 
   return (
-    <Box>
-      {/* Header with Timeframe and TWR Period Dropdowns */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        mb: getUltraSpacing(2, 1)
-      }}>
+    <Card>
+      <CardContent>
+        {/* Header with Timeframe and TWR Period Dropdowns */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: getUltraSpacing(2, 1)
+        }}>
         <Box>
-          <Typography variant="h6" gutterBottom>
-            {title}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h6" gutterBottom sx={{ mb: 0 }}>
+              {title}
+            </Typography>
+            <Tooltip
+              title={
+                <Box sx={{ p: 1 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    Ghi chú cho nhà đầu tư:
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>TWR</strong> phản ánh năng lực quản lý quỹ, đã loại bỏ ảnh hưởng của dòng tiền.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>MWR</strong> phản ánh lợi nhuận thực tế của từng nhà đầu tư, có thể khác nhau tùy thời điểm nạp/rút vốn.
+                  </Typography>
+                  <Typography variant="body2">
+                    NĐT nên so sánh MWR cá nhân với TWR quỹ để hiểu rõ sự khác biệt.
+                  </Typography>
+                </Box>
+              }
+              arrow
+              placement="top"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    maxWidth: 400,
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: 3,
+                    '& .MuiTooltip-arrow': {
+                      color: 'background.paper',
+                      '&::before': {
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }
+                    }
+                  }
+                }
+              }}
+            >
+              <IconButton size="small" sx={{ color: 'primary.main' }}>
+                <InfoOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Typography variant="body2" color="text.secondary">
             Portfolio performance vs {benchmarkName}
           </Typography>
@@ -196,92 +242,89 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             </Select>
           </FormControl>
         </Box>
-      </Box>
+        </Box>
 
-      {/* Performance Metrics */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <TrendingUp color="primary" />
-                <Typography variant="subtitle2" color="text.secondary">
-                  Portfolio Return
+        {/* Performance Metrics */}
+        <Grid container spacing={1.5} sx={{ mb: 2 }}>
+          <Grid item xs={6} sm={3}>
+            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                  <TrendingUp color="primary" sx={{ fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    Portfolio
+                  </Typography>
+                </Box>
+                <Typography 
+                  variant="body1" 
+                  color={portfolioReturn >= 0 ? "success.main" : "error.main"} 
+                  fontWeight="bold"
+                  sx={{ fontSize: '0.9rem' }}
+                >
+                  {formatPercentage(portfolioReturn)}
                 </Typography>
-              </Box>
-              <Typography 
-                variant="h6" 
-                color={portfolioReturn >= 0 ? "success.main" : "error.main"} 
-                fontWeight="bold"
-              >
-                {formatPercentage(portfolioReturn)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <TrendingUp color="info" />
-                <Typography variant="subtitle2" color="text.secondary">
-                  {benchmarkName} Return
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                  <TrendingUp color="info" sx={{ fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    {benchmarkName}
+                  </Typography>
+                </Box>
+                <Typography 
+                  variant="body1" 
+                  color={benchmarkReturn >= 0 ? "success.main" : "error.main"} 
+                  fontWeight="bold"
+                  sx={{ fontSize: '0.9rem' }}
+                >
+                  {formatPercentage(benchmarkReturn)}
                 </Typography>
-              </Box>
-              <Typography 
-                variant="h6" 
-                color={benchmarkReturn >= 0 ? "success.main" : "error.main"} 
-                fontWeight="bold"
-              >
-                {formatPercentage(benchmarkReturn)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <CompareArrows color={excessReturn >= 0 ? "success" : "error"} />
-                <Typography variant="subtitle2" color="text.secondary">
-                  Excess Return
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                  <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    Excess
+                  </Typography>
+                </Box>
+                <Typography 
+                  variant="body1" 
+                  color={excessReturn >= 0 ? "success.main" : "error.main"} 
+                  fontWeight="bold"
+                  sx={{ fontSize: '0.9rem' }}
+                >
+                  {formatPercentage(excessReturn)}
                 </Typography>
-              </Box>
-              <Typography 
-                variant="h6" 
-                color={excessReturn >= 0 ? "success.main" : "error.main"} 
-                fontWeight="bold"
-              >
-                {formatPercentage(excessReturn)}
-              </Typography>
-              <Chip 
-                label={excessReturn >= 0 ? "OUTPERFORMING" : "UNDERPERFORMING"} 
-                color={excessReturn >= 0 ? "success" : "error"}
-                size="small"
-                sx={{ mt: 1 }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <TrendingDown color="warning" />
-                <Typography variant="subtitle2" color="text.secondary">
-                  Tracking Error
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                  <TrendingDown color="warning" sx={{ fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    Tracking Error
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="warning.main" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                  {formatPercentage(trackingError)}
                 </Typography>
-              </Box>
-              <Typography variant="h6" color="warning.main" fontWeight="bold">
-                {formatPercentage(trackingError)}
-              </Typography>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
 
-      {/* Performance Comparison Chart */}
-      <Box sx={{ height: 267, mb: 3 }}>
+        {/* Performance Comparison Chart */}
+        <Box sx={{ height: 267, mb: 3 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -294,7 +337,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: 12 }}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <RechartsTooltip content={<CustomTooltip />} />
             <Legend />
             <Line
               type="monotone"
@@ -318,63 +361,10 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             <ReferenceLine y={0} stroke="#666" strokeDasharray="2 2" />
           </LineChart>
         </ResponsiveContainer>
-      </Box>
+        </Box>
 
-      {/* Additional Metrics */}
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Risk-Adjusted Metrics
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Information Ratio:
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {informationRatio.toFixed(2)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Beta:
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {(Math.random() * 0.8 + 0.6).toFixed(2)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Alpha:
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {formatPercentage(excessReturn * 0.7)}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Performance Summary
-              </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                {excessReturn >= 0 
-                  ? `Your portfolio has outperformed the ${benchmarkName} by ${formatPercentage(excessReturn)} over the selected period.`
-                  : `Your portfolio has underperformed the ${benchmarkName} by ${formatPercentage(Math.abs(excessReturn))} over the selected period.`
-                }
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                The tracking error of {formatPercentage(trackingError)} indicates the level of deviation from the benchmark.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+      </CardContent>
+    </Card>
   );
 };
 

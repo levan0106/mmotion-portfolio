@@ -10,16 +10,21 @@ import {
   HttpStatus,
   HttpCode,
   ParseUUIDPipe,
+  ParseIntPipe,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { PositionManagerService } from '../services/position-manager.service';
+import { InvestorHoldingService } from '../services/investor-holding.service';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
+import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
+import { RedeemFromFundDto } from '../dto/redeem-from-fund.dto';
 import { Portfolio } from '../entities/portfolio.entity';
+import { InvestorHolding } from '../entities/investor-holding.entity';
 
 /**
  * Controller for Portfolio CRUD operations and basic analytics.
@@ -31,6 +36,7 @@ export class PortfolioController {
     private readonly portfolioService: PortfolioService,
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly positionManagerService: PositionManagerService,
+    private readonly investorHoldingService: InvestorHoldingService,
   ) {}
 
   /**
@@ -221,15 +227,21 @@ export class PortfolioController {
   @Get(':id/nav/history')
   @ApiOperation({ summary: 'Get NAV history for a portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
+  @ApiQuery({ name: 'granularity', required: false, description: 'Data granularity: DAILY, WEEKLY, MONTHLY (default: DAILY)' })
   @ApiResponse({ status: 200, description: 'NAV history retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getNavHistory(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    // TODO: Add date range parameters
+  async getNavHistory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months', new ParseIntPipe({ optional: true })) months?: number,
+    @Query('granularity') granularity?: string,
+  ): Promise<any> {
+    const monthsToLookBack = months || 12;
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 30); // Last 30 days
+    startDate.setMonth(endDate.getMonth() - monthsToLookBack);
 
-    return this.portfolioAnalyticsService.getPerformanceSummary(id);
+    return this.portfolioAnalyticsService.getNavHistory(id, startDate, endDate, granularity);
   }
 
   /**
@@ -447,6 +459,193 @@ export class PortfolioController {
       count: assets.length,
       searchTerm: search,
     };
+  }
+
+  /**
+   * Convert portfolio to fund
+   */
+  @Post(':id/convert-to-fund')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ 
+    summary: 'Convert portfolio to fund',
+    description: 'Converts a regular portfolio to a fund, enabling NAV/Unit management',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Portfolio converted to fund successfully',
+    type: Portfolio
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio not found' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Portfolio is already a fund' 
+  })
+  async convertToFund(@Param('id', ParseUUIDPipe) portfolioId: string): Promise<Portfolio> {
+    return this.investorHoldingService.convertPortfolioToFund(portfolioId);
+  }
+
+  /**
+   * Get fund investors
+   */
+  @Get(':id/investors')
+  @ApiOperation({ 
+    summary: 'Get fund investors',
+    description: 'Gets all investors and their holdings for a fund',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Investor holdings retrieved successfully',
+    type: [InvestorHolding]
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio not found' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Portfolio is not a fund' 
+  })
+  async getFundInvestors(@Param('id', ParseUUIDPipe) portfolioId: string): Promise<InvestorHolding[]> {
+    return this.investorHoldingService.getFundInvestors(portfolioId);
+  }
+
+  /**
+   * Get specific investor holding
+   */
+  @Get(':id/investors/:accountId')
+  @ApiOperation({ 
+    summary: 'Get investor holding',
+    description: 'Gets specific investor holding for a fund',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiParam({ name: 'accountId', description: 'Account ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Investor holding retrieved successfully',
+    type: InvestorHolding
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio or investor holding not found' 
+  })
+  async getInvestorHolding(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Param('accountId', ParseUUIDPipe) accountId: string
+  ): Promise<InvestorHolding> {
+    return this.investorHoldingService.getInvestorHolding(portfolioId, accountId);
+  }
+
+  /**
+   * Subscribe to fund
+   */
+  @Post(':id/investors/subscribe')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ 
+    summary: 'Subscribe to fund',
+    description: 'Allows an investor to subscribe to a fund by purchasing units',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiBody({ type: SubscribeToFundDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Fund subscription successful',
+    schema: {
+      type: 'object',
+      properties: {
+        holding: { $ref: '#/components/schemas/InvestorHolding' },
+        cashFlow: { $ref: '#/components/schemas/CashFlow' },
+        unitsIssued: { type: 'number' },
+        navPerUnit: { type: 'number' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio or account not found' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid subscription request' 
+  })
+  async subscribeToFund(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() subscribeDto: SubscribeToFundDto
+  ) {
+    return this.investorHoldingService.subscribeToFund({
+      ...subscribeDto,
+      portfolioId
+    });
+  }
+
+  /**
+   * Redeem from fund
+   */
+  @Post(':id/investors/redeem')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ 
+    summary: 'Redeem from fund',
+    description: 'Allows an investor to redeem units from a fund',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiBody({ type: RedeemFromFundDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Fund redemption successful',
+    schema: {
+      type: 'object',
+      properties: {
+        holding: { $ref: '#/components/schemas/InvestorHolding' },
+        cashFlow: { $ref: '#/components/schemas/CashFlow' },
+        unitsRedeemed: { type: 'number' },
+        amountReceived: { type: 'number' },
+        navPerUnit: { type: 'number' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio or account not found' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid redemption request' 
+  })
+  async redeemFromFund(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() redeemDto: RedeemFromFundDto
+  ) {
+    return this.investorHoldingService.redeemFromFund({
+      ...redeemDto,
+      portfolioId
+    });
+  }
+
+  @Post(':id/refresh-nav-per-unit')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh NAV per unit', description: 'Manually refresh NAV per unit calculation and update database' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'NAV per unit refreshed successfully', 
+    schema: { 
+      type: 'object', 
+      properties: { 
+        portfolioId: { type: 'string' }, 
+        navPerUnit: { type: 'number' }, 
+        totalAllValue: { type: 'number' }, 
+        totalOutstandingUnits: { type: 'number' } 
+      } 
+    } 
+  })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 400, description: 'Portfolio is not a fund' })
+  async refreshNavPerUnit(@Param('id', ParseUUIDPipe) portfolioId: string) {
+    return this.investorHoldingService.refreshNavPerUnit(portfolioId);
   }
 
 }

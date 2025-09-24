@@ -19,6 +19,7 @@ import AssetManagement from './pages/AssetManagement';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
 import DepositManagement from './pages/DepositManagement';
+import HoldingDetail from './pages/HoldingDetail';
 import { customTheme } from './theme/customTheme';
 
 // Create a client
@@ -55,6 +56,7 @@ const App: React.FC = () => {
                 <Route path="/portfolios" element={<Portfolios />} />
                 <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
                 <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
+                <Route path="/holdings/:holdingId" element={<HoldingDetail />} />
                 <Route path="/assets" element={<AssetManagement />} />
                 <Route path="/global-assets" element={<GlobalAssetsPage />} />
                 <Route path="/snapshots" element={<SnapshotManagementPage />} />

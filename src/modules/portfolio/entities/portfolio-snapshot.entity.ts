@@ -102,6 +102,20 @@ export class PortfolioSnapshot {
   @Column({ name: 'total_deposit_count', type: 'int', default: 0 })
   totalDepositCount: number;
 
+  // ===== NAV/UNIT SYSTEM FIELDS =====
+  
+  /**
+   * Total number of fund units outstanding at snapshot date
+   */
+  @Column({ name: 'total_outstanding_units', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  totalOutstandingUnits: number;
+
+  /**
+   * NAV per unit at snapshot date
+   */
+  @Column({ name: 'nav_per_unit', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  navPerUnit: number;
+
   // Deposit P&L Fields
   @Column({ name: 'unrealized_deposit_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
   unrealizedDepositPnL: number;

@@ -48,6 +48,10 @@ flowchart LR
 - **Asset Update Logic**: Preserve empty strings for description field to allow clearing (Asset Management UI Enhancements completed)
 - **Modal Enhancement Pattern**: Add Edit/Delete buttons to detail modals for better UX (Asset Management UI Enhancements completed)
 - **AssetAutocomplete Pattern**: Advanced searchable dropdown with pagination, currency formatting, and edit modal support (TradeForm AssetAutocomplete Integration completed)
+- **Fund Unit Transaction Pattern**: Complete fund subscription/redemption system with transaction tracking and cash flow integration (Fund Unit Transaction System completed)
+- **Holding Detail Pattern**: Comprehensive holding detail view with transaction history and summary statistics (Holding Detail Implementation completed)
+- **Smart Navigation Pattern**: URL parameter-based navigation that preserves context and returns to correct tabs (Navigation Improvements completed)
+- **Format Helper Pattern**: Centralized formatting utilities for consistent number, currency, and percentage display across all components (Format Helper Integration completed)
 - **TWR Integration Pattern**: Portfolio Performance chart with Time-Weighted Return calculations using Performance Snapshots (Portfolio Performance TWR Integration completed)
 - **Dual Selector Pattern**: Separate TWR Period and Timeframe selectors for maximum user flexibility (Portfolio Performance TWR Integration completed)
 - **Performance Snapshot Pattern**: Use PortfolioPerformanceSnapshot entity for accurate TWR data instead of simple cumulative returns (Portfolio Performance TWR Integration completed)
@@ -365,7 +369,21 @@ erDiagram
 - **Table Layout**: Adjusted table width and column alignment after Asset Name removal - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 
-### 26. Circuit Breaker Pattern - **PLANNED**
+### 26. NAV History Chart Implementation Pattern - **IMPLEMENTED ✅**
+- **Combo Chart Visualization**: Successfully implemented combo chart with NAV Value line + Portfolio P&L bar - **COMPLETED**
+- **Dual Y-Axis Design**: Left axis for NAV Value (currency), right axis for Portfolio P&L (currency) - **COMPLETED**
+- **Balanced Y-Axis Domains**: Implemented `min - (max - min)/2` formula for optimal chart scaling - **COMPLETED**
+- **Backend API Enhancement**: Added `portfolioPnL` field to NAV history API response - **COMPLETED**
+- **Professional Financial Charting**: Line chart for NAV evolution, bar chart for P&L performance - **COMPLETED**
+- **Interactive Tooltips**: Rich tooltips showing NAV, P&L, and Return % information - **COMPLETED**
+- **Reference Lines**: Starting NAV baseline and zero P&L reference lines - **COMPLETED**
+- **Timeframe Controls**: 3M, 6M, 12M, 24M, 36M timeframe options - **COMPLETED**
+- **Granularity Options**: Daily, Weekly, Monthly data granularity - **COMPLETED**
+- **Chart Integration**: Seamlessly integrated into Performance Analysis tab - **COMPLETED**
+- **Performance**: Optimized rendering with balanced Y-axis domains - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with no linter errors - **COMPLETED**
+
+### 27. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented
