@@ -76,7 +76,7 @@ export class PortfolioSnapshot {
   @Column({ name: 'realized_portfolio_pl', type: 'decimal', precision: 20, scale: 8, default: 0 })
   realizedPortfolioPl: number;
 
-  @Column({ name: 'total_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'total_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   totalReturn: number;
 
   @Column({ name: 'cash_balance', type: 'decimal', precision: 20, scale: 8, default: 0 })
@@ -116,6 +116,18 @@ export class PortfolioSnapshot {
   @Column({ name: 'nav_per_unit', type: 'decimal', precision: 20, scale: 8, default: 0 })
   navPerUnit: number;
 
+  /**
+   * Number of investors in the fund at snapshot date
+   */
+  @Column({ name: 'number_of_investors', type: 'integer', default: 0 })
+  numberOfInvestors: number;
+
+  /**
+   * Whether this portfolio is a fund
+   */
+  @Column({ name: 'is_fund', type: 'boolean', default: false })
+  isFund: boolean;
+
   // Deposit P&L Fields
   @Column({ name: 'unrealized_deposit_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
   unrealizedDepositPnL: number;
@@ -124,62 +136,62 @@ export class PortfolioSnapshot {
   realizedDepositPnL: number;
 
   // Asset Performance Metrics (Assets Only)
-  @Column({ name: 'asset_daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_daily_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetDailyReturn: number;
 
-  @Column({ name: 'asset_weekly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_weekly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetWeeklyReturn: number;
 
-  @Column({ name: 'asset_monthly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_monthly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetMonthlyReturn: number;
 
-  @Column({ name: 'asset_ytd_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_ytd_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetYtdReturn: number;
 
   // Asset Risk Metrics (Assets Only)
-  @Column({ name: 'asset_volatility', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_volatility', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetVolatility: number;
 
-  @Column({ name: 'asset_max_drawdown', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_max_drawdown', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetMaxDrawdown: number;
 
   // Portfolio Performance Metrics (Assets + Deposits)
-  @Column({ name: 'portfolio_daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_daily_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioDailyReturn: number;
 
-  @Column({ name: 'portfolio_weekly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_weekly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioWeeklyReturn: number;
 
-  @Column({ name: 'portfolio_monthly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_monthly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMonthlyReturn: number;
 
-  @Column({ name: 'portfolio_ytd_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_ytd_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioYtdReturn: number;
 
   // Portfolio Risk Metrics (Assets + Deposits)
-  @Column({ name: 'portfolio_volatility', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_volatility', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioVolatility: number;
 
-  @Column({ name: 'portfolio_max_drawdown', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_max_drawdown', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMaxDrawdown: number;
 
   // Legacy fields for backward compatibility (deprecated)
-  @Column({ name: 'daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'daily_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   dailyReturn: number;
 
-  @Column({ name: 'weekly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'weekly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   weeklyReturn: number;
 
-  @Column({ name: 'monthly_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'monthly_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   monthlyReturn: number;
 
-  @Column({ name: 'ytd_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'ytd_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   ytdReturn: number;
 
-  @Column({ name: 'volatility', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'volatility', type: 'decimal', precision: 15, scale: 6, default: 0 })
   volatility: number;
 
-  @Column({ name: 'max_drawdown', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'max_drawdown', type: 'decimal', precision: 15, scale: 6, default: 0 })
   maxDrawdown: number;
 
   // Dynamic Asset Allocation (JSON for flexibility)

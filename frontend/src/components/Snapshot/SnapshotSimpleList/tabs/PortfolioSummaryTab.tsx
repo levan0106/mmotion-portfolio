@@ -31,7 +31,10 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-        Portfolio Summary
+        Portfolio Summary Snapshots
+      </Typography>
+      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+        Cash balance được lấy từ bảng portfolio_snapshots.cash_balance có thể khác với cách tính trong tab Portfolio Performance.
       </Typography>
 
       {portfolioSnapshotsLoading && (
@@ -48,13 +51,13 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
       
       {portfolioSnapshots && portfolioSnapshots.length > 0 ? (
         <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider', overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 4500 }}>
+          <Table size="small" sx={{ minWidth: 4880 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Portfolio</TableCell>
                 {/* Portfolio Level (Assets + Deposits) */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Value</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Value (- cash)</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Invested</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio P&L</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio Unrealized</TableCell>
@@ -74,6 +77,11 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Realized</TableCell>
                 {/* Cash Level */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Cash</TableCell>
+                {/* Fund Management */}
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Outstanding Units</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }} align="right">NAV per Unit</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }} align="right">Investors</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="center">Is Fund</TableCell>
                 {/* Portfolio Performance Metrics (Assets + Deposits) */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Daily %</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Weekly %</TableCell>
@@ -283,6 +291,31 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                     <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
                       {formatCurrency(Number(snapshot.cashBalance || 0), baseCurrency)}
                     </Typography>
+                  </TableCell>
+                  
+                  {/* Fund Management */}
+                  <TableCell align="right" sx={{ py: 0.5 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      {Number(snapshot.totalOutstandingUnits || 0).toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: 0.5 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                      {formatCurrency(Number(snapshot.navPerUnit || 0), baseCurrency)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: 0.5 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      {Number(snapshot.numberOfInvestors || 0).toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center" sx={{ py: 0.5 }}>
+                    <Chip 
+                      label={snapshot.isFund ? 'Yes' : 'No'} 
+                      size="small" 
+                      color={snapshot.isFund ? 'primary' : 'default'}
+                      sx={{ fontSize: '0.6rem', height: 20 }}
+                    />
                   </TableCell>
                   
                   {/* Portfolio Daily Return % */}

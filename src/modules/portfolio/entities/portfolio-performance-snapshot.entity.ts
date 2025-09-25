@@ -47,108 +47,108 @@ export class PortfolioPerformanceSnapshot {
   granularity: SnapshotGranularity;
 
   // Portfolio TWR Metrics (Time-Weighted Returns)
-  @Column({ name: 'portfolio_twr_1d', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_1d', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR1D: number;
 
-  @Column({ name: 'portfolio_twr_1w', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_1w', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR1W: number;
 
-  @Column({ name: 'portfolio_twr_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR1M: number;
 
-  @Column({ name: 'portfolio_twr_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR3M: number;
 
-  @Column({ name: 'portfolio_twr_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR6M: number;
 
-  @Column({ name: 'portfolio_twr_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWR1Y: number;
 
-  @Column({ name: 'portfolio_twr_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_twr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWRYTD: number;
 
   // Portfolio MWR/IRR Metrics (Money-Weighted Returns)
-  @Column({ name: 'portfolio_mwr_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_mwr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWR1M: number;
 
-  @Column({ name: 'portfolio_mwr_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_mwr_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWR3M: number;
 
-  @Column({ name: 'portfolio_mwr_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_mwr_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWR6M: number;
 
-  @Column({ name: 'portfolio_mwr_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_mwr_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWR1Y: number;
 
-  @Column({ name: 'portfolio_mwr_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_mwr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWRYTD: number;
 
-  @Column({ name: 'portfolio_irr_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_irr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRR1M: number;
 
-  @Column({ name: 'portfolio_irr_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_irr_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRR3M: number;
 
-  @Column({ name: 'portfolio_irr_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_irr_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRR6M: number;
 
-  @Column({ name: 'portfolio_irr_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_irr_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRR1Y: number;
 
-  @Column({ name: 'portfolio_irr_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_irr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRRYTD: number;
 
   // Portfolio Alpha Metrics (vs Benchmark)
-  @Column({ name: 'portfolio_alpha_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_alpha_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioAlpha1M: number;
 
-  @Column({ name: 'portfolio_alpha_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_alpha_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioAlpha3M: number;
 
-  @Column({ name: 'portfolio_alpha_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_alpha_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioAlpha6M: number;
 
-  @Column({ name: 'portfolio_alpha_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_alpha_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioAlpha1Y: number;
 
-  @Column({ name: 'portfolio_alpha_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_alpha_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioAlphaYTD: number;
 
   // Portfolio Beta Metrics (vs Benchmark)
-  @Column({ name: 'portfolio_beta_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_beta_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioBeta1M: number;
 
-  @Column({ name: 'portfolio_beta_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_beta_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioBeta3M: number;
 
-  @Column({ name: 'portfolio_beta_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_beta_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioBeta6M: number;
 
-  @Column({ name: 'portfolio_beta_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_beta_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioBeta1Y: number;
 
-  @Column({ name: 'portfolio_beta_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_beta_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioBetaYTD: number;
 
   // Portfolio Information Ratio
-  @Column({ name: 'portfolio_information_ratio_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_information_ratio_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioInformationRatio1M: number;
 
-  @Column({ name: 'portfolio_information_ratio_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_information_ratio_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioInformationRatio3M: number;
 
-  @Column({ name: 'portfolio_information_ratio_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_information_ratio_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioInformationRatio1Y: number;
 
   // Portfolio Tracking Error
-  @Column({ name: 'portfolio_tracking_error_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_tracking_error_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTrackingError1M: number;
 
-  @Column({ name: 'portfolio_tracking_error_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_tracking_error_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTrackingError3M: number;
 
-  @Column({ name: 'portfolio_tracking_error_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'portfolio_tracking_error_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTrackingError1Y: number;
 
   // Cash Flow Tracking

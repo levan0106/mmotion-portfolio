@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { PortfolioSnapshotRepository, PortfolioSnapshotQueryOptions, PortfolioSnapshotAggregationResult } from '../repositories/portfolio-snapshot.repository';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
@@ -8,6 +8,7 @@ import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.e
 import { Portfolio } from '../entities/portfolio.entity';
 import { CreatePortfolioSnapshotDto, UpdatePortfolioSnapshotDto } from '../dto/portfolio-snapshot.dto';
 import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
+import { CashFlowService } from './cash-flow.service';
 
 
 export interface PortfolioSnapshotTimelineQuery {
@@ -30,6 +31,8 @@ export class PortfolioSnapshotService {
     @InjectRepository(Portfolio)
     private readonly portfolioRepository: Repository<Portfolio>,
     private readonly depositCalculationService: DepositCalculationService,
+    private readonly cashFlowService: CashFlowService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -154,9 +157,15 @@ export class PortfolioSnapshotService {
     const assetVolatility = Number(this.calculateVolatility(assetSnapshots).toFixed(4));
     const assetMaxDrawdown = Number(this.calculateMaxDrawdown(assetSnapshots).toFixed(4));
 
-    // Get cash balance from portfolio (if available)
+    // Get cash balance from portfolio (if available) and no need to calculate it again
     const cashBalance = Number((Number(portfolio.cashBalance || 0)).toFixed(8));
     const totalAssetInvested = Number((totalAssetValue - cashBalance).toFixed(8));
+
+    // get fund management metrics
+    const totalOutstandingUnits = Number((Number(portfolio.totalOutstandingUnits || 0)).toFixed(8));
+    const navPerUnit = Number((Number(portfolio.navPerUnit || 0)).toFixed(8));
+    const numberOfInvestors = Number((Number(portfolio.numberOfInvestors || 0)).toFixed(8));
+    const isFund = Boolean(portfolio.isFund || false);
 
     // Calculate deposit data
     const depositData = await this.depositCalculationService.calculateDepositData(portfolioId);
@@ -262,6 +271,11 @@ export class PortfolioSnapshotService {
       realizedPortfolioPl,
       totalReturn,
       cashBalance,
+      // Fund Management Fields
+      totalOutstandingUnits,
+      navPerUnit,
+      numberOfInvestors,
+      isFund,
       // Asset Performance Metrics (Assets Only)
       assetDailyReturn,
       assetWeeklyReturn,

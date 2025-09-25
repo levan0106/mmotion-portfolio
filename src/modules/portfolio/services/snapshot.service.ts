@@ -166,7 +166,7 @@ export class SnapshotService {
       });
     }
 
-    // Calculate total portfolio value
+    // Calculate total portfolio value (NAV) -> need to check include deposits or not
     const totalPortfolioValue = assetData.reduce((sum, data) => sum + data.currentValue, 0);
 
     // Second pass: create snapshots with calculated values
@@ -177,6 +177,7 @@ export class SnapshotService {
       const returnPercentage = this.assetValueCalculator.calculateReturnPercentage(quantity, currentPrice, avgCost);
       
       // Calculate allocation percentage
+      // we should include deposits in the total portfolio value
       const allocationPercentage = totalPortfolioValue > 0 
         ? Number(((currentValue / totalPortfolioValue) * 100).toFixed(4))
         : 0;

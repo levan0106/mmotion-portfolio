@@ -113,19 +113,19 @@ export const usePortfolio = (portfolioId: string) => {
 
 export const usePortfolioAnalytics = (portfolioId: string) => {
   // Fetch portfolio NAV
-  const {
-    data: navData,
-    isLoading: isNavLoading,
-    error: navError,
-  } = useQuery(
-    ['portfolio-nav', portfolioId],
-    () => apiService.getPortfolioNav(portfolioId),
-    {
-      enabled: !!portfolioId,
-      staleTime: 1 * 60 * 1000, // 1 minute
-      refetchInterval: false, // Disabled auto refresh
-    }
-  );
+  // const {
+  //   data: navData,
+  //   isLoading: isNavLoading,
+  //   error: navError,
+  // } = useQuery(
+  //   ['portfolio-nav', portfolioId],
+  //   () => apiService.getPortfolioNav(portfolioId),
+  //   {
+  //     enabled: !!portfolioId,
+  //     staleTime: 1 * 60 * 1000, // 1 minute
+  //     refetchInterval: false, // Disabled auto refresh
+  //   }
+  // );
 
   // Fetch portfolio performance
   const {

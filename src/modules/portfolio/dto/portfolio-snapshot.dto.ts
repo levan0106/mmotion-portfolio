@@ -255,6 +255,34 @@ export class CreatePortfolioSnapshotDto {
   @Type(() => Number)
   realizedDepositPnL?: number;
 
+  // Fund Management Fields
+  @ApiPropertyOptional({ description: 'Total outstanding units', example: 1000000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalOutstandingUnits?: number;
+
+  @ApiPropertyOptional({ description: 'NAV per unit', example: 1.25 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  navPerUnit?: number;
+
+  @ApiPropertyOptional({ description: 'Number of investors', example: 150 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  numberOfInvestors?: number;
+
+  @ApiPropertyOptional({ description: 'Whether this portfolio is a fund', example: true })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isFund?: boolean;
+
   @ApiPropertyOptional({ description: 'Is active', example: true })
   @IsOptional()
   @IsBoolean()
@@ -500,6 +528,34 @@ export class UpdatePortfolioSnapshotDto {
   @Type(() => Number)
   activeAssetCount?: number;
 
+  // Fund Management Fields
+  @ApiPropertyOptional({ description: 'Total outstanding units', example: 1000000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  totalOutstandingUnits?: number;
+
+  @ApiPropertyOptional({ description: 'NAV per unit', example: 1.25 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  navPerUnit?: number;
+
+  @ApiPropertyOptional({ description: 'Number of investors', example: 150 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  numberOfInvestors?: number;
+
+  @ApiPropertyOptional({ description: 'Whether this portfolio is a fund', example: true })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isFund?: boolean;
+
   @ApiPropertyOptional({ description: 'Is active', example: true })
   @IsOptional()
   @IsBoolean()
@@ -652,6 +708,19 @@ export class PortfolioSnapshotResponseDto {
 
   @ApiProperty({ description: 'Notes', example: 'Test portfolio snapshot' })
   notes: string;
+
+  // Fund Management Fields
+  @ApiProperty({ description: 'Total outstanding units', example: 1000000 })
+  totalOutstandingUnits: number;
+
+  @ApiProperty({ description: 'NAV per unit', example: 1.25 })
+  navPerUnit: number;
+
+  @ApiProperty({ description: 'Number of investors', example: 150 })
+  numberOfInvestors: number;
+
+  @ApiProperty({ description: 'Whether this portfolio is a fund', example: true })
+  isFund: boolean;
 
   @ApiProperty({ description: 'Created at', example: '2025-09-20T10:00:00Z' })
   createdAt: Date;

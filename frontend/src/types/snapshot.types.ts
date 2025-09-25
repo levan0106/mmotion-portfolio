@@ -373,6 +373,12 @@ export interface PortfolioPerformanceSnapshot {
   totalCashOutflows: number;
   netCashFlow: number;
   
+  // Fund Management Data
+  totalOutstandingUnits: number;
+  navPerUnit: number;
+  numberOfInvestors: number;
+  isFund: boolean;
+  
   // Benchmark Data
   benchmarkData: BenchmarkComparison;
   

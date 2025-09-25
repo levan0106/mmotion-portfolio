@@ -181,6 +181,9 @@ export class InvestorHoldingService {
     // 11. Update Portfolio NAV per unit
     await this.updatePortfolioNavPerUnit(dto.portfolioId);
 
+    // 12. Update Portfolio numberOfInvestors
+    await this.updatePortfolioNumberOfInvestors(dto.portfolioId);
+
     this.logger.log(`Fund subscription completed: ${unitsIssued.toFixed(3)} units issued at ${navPerUnit.toFixed(3)} per unit`);
 
     return {
@@ -283,6 +286,9 @@ export class InvestorHoldingService {
 
     // 10. Update Portfolio NAV per unit
     await this.updatePortfolioNavPerUnit(dto.portfolioId);
+
+    // 11. Update Portfolio numberOfInvestors
+    await this.updatePortfolioNumberOfInvestors(dto.portfolioId);
 
     this.logger.log(`Fund redemption completed: ${dto.units.toFixed(3)} units redeemed at ${navPerUnit.toFixed(3)} per unit`);
 
@@ -697,5 +703,28 @@ export class InvestorHoldingService {
       totalAllValue: realTimeNavValue,
       totalOutstandingUnits: outstandingUnits
     };
+  }
+
+  /**
+   * Update numberOfInvestors for a portfolio
+   */
+  private async updatePortfolioNumberOfInvestors(portfolioId: string): Promise<void> {
+    try {
+      const investorCount = await this.investorHoldingRepository
+        .createQueryBuilder('holding')
+        .select('COUNT(DISTINCT holding.accountId)', 'count')
+        .where('holding.portfolioId = :portfolioId', { portfolioId })
+        .getRawOne();
+
+      const numberOfInvestors = parseInt(investorCount?.count || '0', 10);
+
+      await this.portfolioRepository.update(portfolioId, {
+        numberOfInvestors: numberOfInvestors
+      });
+
+      this.logger.log(`Updated numberOfInvestors to ${numberOfInvestors} for portfolio ${portfolioId}`);
+    } catch (error) {
+      this.logger.error(`Error updating numberOfInvestors for portfolio ${portfolioId}:`, error);
+    }
   }
 }

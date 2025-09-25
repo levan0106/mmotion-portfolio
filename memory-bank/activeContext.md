@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: NAV Holdings Management & Real-time Cash Balance Enhancement - COMPLETED (100%)**
-**Latest Update: Successfully enhanced NAV Holdings Management with improved UI/UX, real-time cash balance calculations, and comprehensive fund management features (Current Session)**
+**Phase: Portfolio Snapshot System Enhancement & Fund Management Features - IN PROGRESS**
+**Latest Update: Implementing comprehensive portfolio snapshot system with fund management features, database precision fixes, and enhanced UI components (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,25 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **NAV HOLDINGS MANAGEMENT & REAL-TIME CASH BALANCE ENHANCEMENT - COMPLETED** (Current Session - September 24, 2025)
+- 🔄 **PORTFOLIO SNAPSHOT SYSTEM ENHANCEMENT & FUND MANAGEMENT FEATURES - IN PROGRESS** (Current Session - December 25, 2024)
+  - **Database Schema Updates**: Enhanced portfolio snapshot entities with fund management fields
+  - **Precision Fixes**: Fixed numeric precision issues in asset performance snapshots
+  - **Fund Management Integration**: Added isFund field and numberOfInvestors to portfolio snapshots
+  - **UI Component Updates**: Enhanced snapshot components with improved data handling
+  - **Migration Scripts**: Created 6 new database migrations for fund management features
+  - **Service Layer Updates**: Updated portfolio snapshot services with new functionality
+  - **Type Definitions**: Enhanced TypeScript types for snapshot data structures
+  - **Key Features in Progress**:
+    - 🔄 **Fund Management Fields**: Adding fund-specific fields to portfolio snapshots
+    - 🔄 **Investor Count Tracking**: Implementing numberOfInvestors field for fund portfolios
+    - 🔄 **Precision Improvements**: Fixing decimal precision in asset performance calculations
+    - 🔄 **UI Enhancements**: Updating snapshot components for better fund data display
+    - 🔄 **Data Migration**: Implementing database migrations for new fund features
+    - 🔄 **Service Integration**: Updating services to handle fund management data
+    - 🔄 **Type Safety**: Enhancing TypeScript definitions for fund-related data
+    - 🔄 **Cleanup Scripts**: Updating fund cleanup and data management scripts
+
+- ✅ **NAV HOLDINGS MANAGEMENT & REAL-TIME CASH BALANCE ENHANCEMENT - COMPLETED** (Previous Session - September 24, 2025)
   - **Refresh Button Enhancement**: Enhanced refresh button to refresh both holdings and Fund Summary data simultaneously
   - **Redemption Modal UI/UX**: Completely redesigned Process Fund Redemption modal with professional layout and real-time calculations
   - **Real-time Cash Balance**: Updated NAV calculations to use real-time cash balance from cash flows instead of stored portfolio.cashBalance

@@ -46,44 +46,44 @@ export class BenchmarkData {
   @Column({ name: 'benchmark_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
   benchmarkValue: number;
 
-  @Column({ name: 'benchmark_return_1d', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_1d', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn1D: number;
 
-  @Column({ name: 'benchmark_return_1w', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_1w', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn1W: number;
 
-  @Column({ name: 'benchmark_return_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn1M: number;
 
-  @Column({ name: 'benchmark_return_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn3M: number;
 
-  @Column({ name: 'benchmark_return_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn6M: number;
 
-  @Column({ name: 'benchmark_return_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturn1Y: number;
 
-  @Column({ name: 'benchmark_return_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_return_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkReturnYTD: number;
 
   // Benchmark Risk Metrics
-  @Column({ name: 'benchmark_volatility_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_volatility_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkVolatility1M: number;
 
-  @Column({ name: 'benchmark_volatility_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_volatility_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkVolatility3M: number;
 
-  @Column({ name: 'benchmark_volatility_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_volatility_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkVolatility1Y: number;
 
-  @Column({ name: 'benchmark_max_drawdown_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_max_drawdown_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkMaxDrawdown1M: number;
 
-  @Column({ name: 'benchmark_max_drawdown_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_max_drawdown_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkMaxDrawdown3M: number;
 
-  @Column({ name: 'benchmark_max_drawdown_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'benchmark_max_drawdown_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   benchmarkMaxDrawdown1Y: number;
 
   // Metadata

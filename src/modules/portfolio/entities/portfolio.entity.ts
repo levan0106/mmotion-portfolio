@@ -148,6 +148,12 @@ export class Portfolio {
   navPerUnit: number;
 
   /**
+   * Number of investors in the fund
+   */
+  @Column({ type: 'integer', default: 0, name: 'number_of_investors' })
+  numberOfInvestors: number;
+
+  /**
    * Timestamp when NAV per unit was last calculated and updated
    */
   @Column({ type: 'timestamp', nullable: true, name: 'last_nav_date' })

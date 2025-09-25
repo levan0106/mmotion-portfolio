@@ -321,13 +321,28 @@ export class CashFlowService {
       .createQueryBuilder('cashFlow')
       .where('cashFlow.portfolioId = :portfolioId', { portfolioId })
       .orderBy('cashFlow.flowDate', 'DESC');
-
+    
+    let startOfDay = startDate;
     if (startDate) {
-      query.andWhere('cashFlow.flowDate >= :startDate', { startDate });
+      startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0); // Set to start of day
     }
 
+    let endOfDay = endDate;
     if (endDate) {
-      query.andWhere('cashFlow.flowDate <= :endDate', { endDate });
+      endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999); // Set to end of day
+    }
+
+    // DEBUG: CashFlowService.getCashFlowHistory called for portfolio, startOfDay, endOfDay
+    console.log(`DEBUG: CashFlowService.getCashFlowHistory called for portfolio ${portfolioId}, startOfDay: ${startOfDay}, endOfDay: ${endOfDay}`);
+
+    if (startOfDay) {
+      query.andWhere('cashFlow.flowDate >= :startDate', { startDate: startOfDay });
+    }
+
+    if (endOfDay) {
+      query.andWhere('cashFlow.flowDate <= :endDate', { endDate: endOfDay });
     }
 
     // Get total count for pagination

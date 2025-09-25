@@ -48,7 +48,7 @@ async function cleanupFundData(portfolioId?: string): Promise<void> {
     let portfolios: any[];
     if (portfolioId) {
       const result = await client.query(
-        'SELECT portfolio_id, name, is_fund, total_outstanding_units, nav_per_unit FROM portfolios WHERE portfolio_id = $1',
+        'SELECT portfolio_id, name, is_fund, total_outstanding_units, nav_per_unit, number_of_investors FROM portfolios WHERE portfolio_id = $1',
         [portfolioId]
       );
       if (result.rows.length === 0) {
@@ -59,7 +59,7 @@ async function cleanupFundData(portfolioId?: string): Promise<void> {
     } else {
       // Get all funds
       const result = await client.query(
-        'SELECT portfolio_id, name, is_fund, total_outstanding_units, nav_per_unit FROM portfolios WHERE is_fund = true'
+        'SELECT portfolio_id, name, is_fund, total_outstanding_units, nav_per_unit, number_of_investors FROM portfolios WHERE is_fund = true'
       );
       portfolios = result.rows;
     }
@@ -78,6 +78,7 @@ async function cleanupFundData(portfolioId?: string): Promise<void> {
       console.log(`      - Is Fund: ${portfolio.is_fund}`);
       console.log(`      - Total Outstanding Units: ${portfolio.total_outstanding_units}`);
       console.log(`      - NAV per Unit: ${portfolio.nav_per_unit}`);
+      console.log(`      - Number of Investors: ${portfolio.number_of_investors}`);
       console.log(`      - Cash Balance: ${portfolio.cash_balance || 0}`);
 
       // Count existing data
@@ -132,7 +133,7 @@ async function cleanupFundData(portfolioId?: string): Promise<void> {
 
       // Reset portfolio to non-fund status and update cash balance
       await client.query(
-        'UPDATE portfolios SET is_fund = false, total_outstanding_units = 0, nav_per_unit = 0, last_nav_date = NULL, cash_balance = $2 WHERE portfolio_id = $1',
+        'UPDATE portfolios SET is_fund = false, total_outstanding_units = 0, nav_per_unit = 0, last_nav_date = NULL, cash_balance = $2, number_of_investors = 0 WHERE portfolio_id = $1',
         [portfolio.portfolio_id, newCashBalance]
       );
 
@@ -143,6 +144,7 @@ async function cleanupFundData(portfolioId?: string): Promise<void> {
       console.log(`      - Is Fund: false`);
       console.log(`      - Total Outstanding Units: 0`);
       console.log(`      - NAV per Unit: 0`);
+      console.log(`      - Number of Investors: 0`);
       console.log(`      - Cash Balance: ${newCashBalance} (recalculated from remaining cash flows)`);
 
       results.push({

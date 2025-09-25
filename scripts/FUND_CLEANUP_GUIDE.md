@@ -25,6 +25,7 @@ This guide explains how to clean up fund data for testing purposes. The cleanup 
 - Set `is_fund = false`
 - Set `total_outstanding_units = 0`
 - Set `nav_per_unit = 0`
+- Set `number_of_investors = 0`
 - Set `last_nav_date = NULL`
 
 ## Usage

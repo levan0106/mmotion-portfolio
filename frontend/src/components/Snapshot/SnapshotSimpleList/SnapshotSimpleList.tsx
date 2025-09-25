@@ -174,7 +174,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   const baseCurrency = portfolios.find(p => p.portfolioId === portfolioId)?.baseCurrency || 'VND';
   const { assets, loading: assetsLoading } = useAssets({ autoFetch: true });
 
-  // Portfolio Snapshots
+  // Portfolio/Fund Snapshots
   const { 
     portfolioSnapshots, 
     loading: portfolioSnapshotsLoading, 
@@ -303,7 +303,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
             <Tab 
               icon={<PortfolioIcon />} 
               iconPosition="start" 
-              label="Portfolios" 
+              label="Portfolio Summary" 
               sx={{ minWidth: 120 }}
             />
             <Tab 

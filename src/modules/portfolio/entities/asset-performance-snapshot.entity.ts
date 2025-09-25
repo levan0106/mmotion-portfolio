@@ -54,111 +54,111 @@ export class AssetPerformanceSnapshot {
   granularity: SnapshotGranularity;
 
   // Asset Performance Metrics
-  @Column({ name: 'asset_twr_1d', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_1d', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR1D: number;
 
-  @Column({ name: 'asset_twr_1w', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_1w', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR1W: number;
 
-  @Column({ name: 'asset_twr_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR1M: number;
 
-  @Column({ name: 'asset_twr_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR3M: number;
 
-  @Column({ name: 'asset_twr_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR6M: number;
 
-  @Column({ name: 'asset_twr_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWR1Y: number;
 
-  @Column({ name: 'asset_twr_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_twr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWRYTD: number;
 
   // Asset Risk Metrics
-  @Column({ name: 'asset_volatility_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_volatility_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetVolatility1M: number;
 
-  @Column({ name: 'asset_volatility_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_volatility_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetVolatility3M: number;
 
-  @Column({ name: 'asset_volatility_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_volatility_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetVolatility1Y: number;
 
-  @Column({ name: 'asset_sharpe_ratio_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_sharpe_ratio_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetSharpeRatio1M: number;
 
-  @Column({ name: 'asset_sharpe_ratio_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_sharpe_ratio_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetSharpeRatio3M: number;
 
-  @Column({ name: 'asset_sharpe_ratio_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_sharpe_ratio_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetSharpeRatio1Y: number;
 
-  @Column({ name: 'asset_max_drawdown_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_max_drawdown_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetMaxDrawdown1M: number;
 
-  @Column({ name: 'asset_max_drawdown_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_max_drawdown_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetMaxDrawdown3M: number;
 
-  @Column({ name: 'asset_max_drawdown_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_max_drawdown_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetMaxDrawdown1Y: number;
 
   // Asset Risk-Adjusted Returns
-  @Column({ name: 'asset_risk_adjusted_return_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_risk_adjusted_return_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetRiskAdjustedReturn1M: number;
 
-  @Column({ name: 'asset_risk_adjusted_return_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_risk_adjusted_return_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetRiskAdjustedReturn3M: number;
 
-  @Column({ name: 'asset_risk_adjusted_return_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_risk_adjusted_return_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetRiskAdjustedReturn1Y: number;
 
   // Asset IRR (Internal Rate of Return)
-  @Column({ name: 'asset_irr_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_irr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRR1M: number;
 
-  @Column({ name: 'asset_irr_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_irr_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRR3M: number;
 
-  @Column({ name: 'asset_irr_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_irr_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRR6M: number;
 
-  @Column({ name: 'asset_irr_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_irr_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRR1Y: number;
 
-  @Column({ name: 'asset_irr_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_irr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRRYTD: number;
 
   // Asset Alpha (vs Benchmark)
-  @Column({ name: 'asset_alpha_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_alpha_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetAlpha1M: number;
 
-  @Column({ name: 'asset_alpha_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_alpha_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetAlpha3M: number;
 
-  @Column({ name: 'asset_alpha_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_alpha_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetAlpha6M: number;
 
-  @Column({ name: 'asset_alpha_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_alpha_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetAlpha1Y: number;
 
-  @Column({ name: 'asset_alpha_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_alpha_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetAlphaYTD: number;
 
   // Asset Beta (vs Benchmark)
-  @Column({ name: 'asset_beta_1m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_beta_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetBeta1M: number;
 
-  @Column({ name: 'asset_beta_3m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_beta_3m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetBeta3M: number;
 
-  @Column({ name: 'asset_beta_6m', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_beta_6m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetBeta6M: number;
 
-  @Column({ name: 'asset_beta_1y', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_beta_1y', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetBeta1Y: number;
 
-  @Column({ name: 'asset_beta_ytd', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'asset_beta_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetBetaYTD: number;
 
   // Metadata

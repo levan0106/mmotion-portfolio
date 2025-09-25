@@ -80,20 +80,20 @@ export class AssetAllocationSnapshot {
   totalPl: number;
 
   // Allocation Data
-  @Column({ name: 'allocation_percentage', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'allocation_percentage', type: 'decimal', precision: 15, scale: 6, default: 0 })
   allocationPercentage: number;
 
   @Column({ name: 'portfolio_total_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
   portfolioTotalValue: number;
 
   // Performance Metrics
-  @Column({ name: 'return_percentage', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'return_percentage', type: 'decimal', precision: 15, scale: 6, default: 0 })
   returnPercentage: number;
 
-  @Column({ name: 'daily_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'daily_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   dailyReturn: number;
 
-  @Column({ name: 'cumulative_return', type: 'decimal', precision: 8, scale: 4, default: 0 })
+  @Column({ name: 'cumulative_return', type: 'decimal', precision: 15, scale: 6, default: 0 })
   cumulativeReturn: number;
 
   // Metadata

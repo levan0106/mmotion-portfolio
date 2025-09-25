@@ -30,6 +30,9 @@ const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabP
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
         Portfolio Performance Snapshots
       </Typography>
+      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+        Cash Inflows | Cash Outflows | Net Cash Flow được tính từ Cash Flows và filter theo ngày snapshot
+      </Typography>
       
       {performanceLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
