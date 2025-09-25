@@ -138,13 +138,13 @@ export class Portfolio {
   /**
    * Total number of fund units outstanding
    */
-  @Column({ type: 'decimal', precision: 20, scale: 8, default: 0, name: 'total_outstanding_units' })
+  @Column({ type: 'decimal', precision: 20, scale: 3, default: 0, name: 'total_outstanding_units' })
   totalOutstandingUnits: number;
 
   /**
    * Current NAV per unit
    */
-  @Column({ type: 'decimal', precision: 20, scale: 8, default: 0, name: 'nav_per_unit' })
+  @Column({ type: 'decimal', precision: 20, scale: 3, default: 0, name: 'nav_per_unit' })
   navPerUnit: number;
 
   /**

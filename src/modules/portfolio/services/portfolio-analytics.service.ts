@@ -34,23 +34,23 @@ export class PortfolioAnalyticsService {
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
   ) {}
 
-  /**
-   * Calculate Net Asset Value (NAV) for a portfolio.
-   * @param portfolioId - Portfolio ID
-   * @returns Promise<number>
-   */
-  async calculateNAV(portfolioId: string): Promise<number> {
-    const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
-    if (!portfolio) {
-      throw new Error(`Portfolio with ID ${portfolioId} not found`);
-    }
+  // /**
+  //  * Calculate Net Asset Value (NAV) for a portfolio.
+  //  * @param portfolioId - Portfolio ID
+  //  * @returns Promise<number>
+  //  */
+  // async calculateNAV(portfolioId: string): Promise<number> {
+  //   const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+  //   if (!portfolio) {
+  //     throw new Error(`Portfolio with ID ${portfolioId} not found`);
+  //   }
 
-    // Use the new calculation service
-    return await this.portfolioCalculationService.calculateNAV(
-      portfolioId,
-      parseFloat(portfolio.cashBalance.toString()),
-    );
-  }
+  //   // Use the new calculation service
+  //   return await this.portfolioCalculationService.calculateNAV(
+  //     portfolioId,
+  //     parseFloat(portfolio.cashBalance.toString()),
+  //   );
+  // }
 
   /**
    * Calculate Return on Equity (ROE) for a portfolio over a specific period.
@@ -137,72 +137,72 @@ export class PortfolioAnalyticsService {
     }));
   }
 
-  /**
-   * Generate NAV snapshot for a portfolio.
-   * @param portfolioId - Portfolio ID
-   * @param navDate - Date for the snapshot
-   * @returns Promise<NavSnapshot>
-   */
-  async generateNavSnapshot(
-    portfolioId: string,
-    navDate: Date = new Date(),
-  ): Promise<NavSnapshot> {
-    const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
-    if (!portfolio) {
-      throw new Error(`Portfolio with ID ${portfolioId} not found`);
-    }
+  // /**
+  //  * Generate NAV snapshot for a portfolio.
+  //  * @param portfolioId - Portfolio ID
+  //  * @param navDate - Date for the snapshot
+  //  * @returns Promise<NavSnapshot>
+  //  */
+  // async generateNavSnapshot(
+  //   portfolioId: string,
+  //   navDate: Date = new Date(),
+  // ): Promise<NavSnapshot> {
+  //   const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+  //   if (!portfolio) {
+  //     throw new Error(`Portfolio with ID ${portfolioId} not found`);
+  //   }
 
-    const navValue = await this.calculateNAV(portfolioId);
-    const totalValue = portfolio.totalValue;
+  //   const navValue = await this.calculateNAV(portfolioId);
+  //   const totalValue = portfolio.totalValue;
 
-    // Calculate and update NAV per unit for funds
-    let navPerUnit = 0;
-    if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
-      const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
-        ? parseFloat(portfolio.totalOutstandingUnits) 
-        : portfolio.totalOutstandingUnits;
-      navPerUnit = navValue / outstandingUnits;
+  //   // Calculate and update NAV per unit for funds
+  //   let navPerUnit = 0;
+  //   if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
+  //     const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+  //       ? parseFloat(portfolio.totalOutstandingUnits) 
+  //       : portfolio.totalOutstandingUnits;
+  //     navPerUnit = navValue / outstandingUnits;
       
-      // Update portfolio with calculated NAV per unit and last NAV date
-      await this.portfolioRepository.update(portfolioId, {
-        navPerUnit: navPerUnit,
-        lastNavDate: navDate // Use snapshot date as last NAV date
-      });
+  //     // Update portfolio with calculated NAV per unit and last NAV date
+  //     await this.portfolioRepository.update(portfolioId, {
+  //       navPerUnit: navPerUnit,
+  //       lastNavDate: navDate // Use snapshot date as last NAV date
+  //     });
       
-      this.logger.log(`Updated navPerUnit to ${navPerUnit.toFixed(8)} for fund ${portfolioId} during daily snapshot`);
-    }
+  //     this.logger.log(`Updated navPerUnit to ${navPerUnit.toFixed(8)} for fund ${portfolioId} during daily snapshot`);
+  //   }
 
-    // Check if snapshot already exists for this date
-    const existingSnapshot = await this.navSnapshotRepository.findOne({
-      where: {
-        portfolioId: portfolioId,
-        navDate: navDate,
-      },
-    });
+  //   // Check if snapshot already exists for this date
+  //   const existingSnapshot = await this.navSnapshotRepository.findOne({
+  //     where: {
+  //       portfolioId: portfolioId,
+  //       navDate: navDate,
+  //     },
+  //   });
 
-    if (existingSnapshot) {
-      // Update existing snapshot
-      existingSnapshot.navValue = navValue;
-      existingSnapshot.cashBalance = portfolio.cashBalance;
-      existingSnapshot.totalValue = totalValue;
-      existingSnapshot.totalOutstandingUnits = portfolio.totalOutstandingUnits;
-      existingSnapshot.navPerUnit = navPerUnit;
-      return await this.navSnapshotRepository.save(existingSnapshot);
-    } else {
-      // Create new snapshot
-      const navSnapshot = this.navSnapshotRepository.create({
-        portfolioId: portfolioId,
-        navDate: navDate,
-        navValue: navValue,
-        cashBalance: portfolio.cashBalance,
-        totalValue: totalValue,
-        totalOutstandingUnits: portfolio.totalOutstandingUnits,
-        navPerUnit: navPerUnit,
-      });
+  //   if (existingSnapshot) {
+  //     // Update existing snapshot
+  //     existingSnapshot.navValue = navValue;
+  //     existingSnapshot.cashBalance = portfolio.cashBalance;
+  //     existingSnapshot.totalValue = totalValue;
+  //     existingSnapshot.totalOutstandingUnits = portfolio.totalOutstandingUnits;
+  //     existingSnapshot.navPerUnit = navPerUnit;
+  //     return await this.navSnapshotRepository.save(existingSnapshot);
+  //   } else {
+  //     // Create new snapshot
+  //     const navSnapshot = this.navSnapshotRepository.create({
+  //       portfolioId: portfolioId,
+  //       navDate: navDate,
+  //       navValue: navValue,
+  //       cashBalance: portfolio.cashBalance,
+  //       totalValue: totalValue,
+  //       totalOutstandingUnits: portfolio.totalOutstandingUnits,
+  //       navPerUnit: navPerUnit,
+  //     });
 
-      return await this.navSnapshotRepository.save(navSnapshot);
-    }
-  }
+  //     return await this.navSnapshotRepository.save(navSnapshot);
+  //   }
+  // }
 
   /**
    * Calculate Time-Weighted Return (TWR).
@@ -277,42 +277,42 @@ export class PortfolioAnalyticsService {
     return 0;
   }
 
-  /**
-   * Get performance summary for a portfolio.
-   * @param portfolioId - Portfolio ID
-   * @returns Promise<object>
-   */
-  async getPerformanceSummary(portfolioId: string): Promise<{
-    currentNAV: number;
-    weekOnWeekChange: number;
-    roe1Month: number;
-    roe3Month: number;
-    roe1Year: number;
-    twr1Year: number;
-  }> {
-    const currentNAV = await this.calculateNAV(portfolioId);
-    const weekOnWeekChange = await this.calculateWeekOnWeekChange(portfolioId);
+  // /**
+  //  * Get performance summary for a portfolio.
+  //  * @param portfolioId - Portfolio ID
+  //  * @returns Promise<object>
+  //  */
+  // async getPerformanceSummary(portfolioId: string): Promise<{
+  //   currentNAV: number;
+  //   weekOnWeekChange: number;
+  //   roe1Month: number;
+  //   roe3Month: number;
+  //   roe1Year: number;
+  //   twr1Year: number;
+  // }> {
+  //   const currentNAV = await this.calculateNAV(portfolioId);
+  //   const weekOnWeekChange = await this.calculateWeekOnWeekChange(portfolioId);
 
-    // Calculate ROE for different periods
-    const now = new Date();
-    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  //   // Calculate ROE for different periods
+  //   const now = new Date();
+  //   const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  //   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+  //   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
 
-    const roe1Month = await this.calculateROE(portfolioId, oneMonthAgo, now);
-    const roe3Month = await this.calculateROE(portfolioId, threeMonthsAgo, now);
-    const roe1Year = await this.calculateROE(portfolioId, oneYearAgo, now);
-    const twr1Year = await this.calculateTWR(portfolioId, oneYearAgo, now);
+  //   const roe1Month = await this.calculateROE(portfolioId, oneMonthAgo, now);
+  //   const roe3Month = await this.calculateROE(portfolioId, threeMonthsAgo, now);
+  //   const roe1Year = await this.calculateROE(portfolioId, oneYearAgo, now);
+  //   const twr1Year = await this.calculateTWR(portfolioId, oneYearAgo, now);
 
-    return {
-      currentNAV,
-      weekOnWeekChange,
-      roe1Month,
-      roe3Month,
-      roe1Year,
-      twr1Year,
-    };
-  }
+  //   return {
+  //     currentNAV,
+  //     weekOnWeekChange,
+  //     roe1Month,
+  //     roe3Month,
+  //     roe1Year,
+  //     twr1Year,
+  //   };
+  // }
 
   /**
    * Get asset detail summary data for a portfolio.

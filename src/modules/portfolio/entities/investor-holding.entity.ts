@@ -44,37 +44,37 @@ export class InvestorHolding {
   /**
    * Total number of fund units held by the investor
    */
-  @Column({ name: 'total_units', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'total_units', type: 'decimal', precision: 20, scale: 3, default: 0 })
   totalUnits: number;
 
   /**
    * Average cost per unit (weighted average of all purchases)
    */
-  @Column({ name: 'avg_cost_per_unit', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'avg_cost_per_unit', type: 'decimal', precision: 20, scale: 3, default: 0 })
   avgCostPerUnit: number;
 
   /**
    * Total amount invested by the investor
    */
-  @Column({ name: 'total_investment', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'total_investment', type: 'decimal', precision: 20, scale: 3, default: 0 })
   totalInvestment: number;
 
   /**
    * Current market value of the holding
    */
-  @Column({ name: 'current_value', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'current_value', type: 'decimal', precision: 20, scale: 3, default: 0 })
   currentValue: number;
 
   /**
    * Unrealized profit/loss (current value - total investment)
    */
-  @Column({ name: 'unrealized_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'unrealized_pnl', type: 'decimal', precision: 20, scale: 3, default: 0 })
   unrealizedPnL: number;
 
   /**
    * Realized profit/loss from redemptions
    */
-  @Column({ name: 'realized_pnl', type: 'decimal', precision: 20, scale: 8, default: 0 })
+  @Column({ name: 'realized_pnl', type: 'decimal', precision: 20, scale: 3, default: 0 })
   realizedPnL: number;
 
   @CreateDateColumn({ name: 'created_at' })

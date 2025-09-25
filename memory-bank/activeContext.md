@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Fund Unit Transaction System & Holding Detail Implementation - COMPLETED (100%)**
-**Latest Update: Successfully implemented complete fund unit transaction system with holding detail view, navigation improvements, and format helper integration (Current Session)**
+**Phase: NAV Holdings Management & Real-time Cash Balance Enhancement - COMPLETED (100%)**
+**Latest Update: Successfully enhanced NAV Holdings Management with improved UI/UX, real-time cash balance calculations, and comprehensive fund management features (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,25 +111,22 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **FUND UNIT TRANSACTION SYSTEM & HOLDING DETAIL IMPLEMENTATION - COMPLETED** (Current Session - September 24, 2025)
-  - **Fund Unit Transaction System**: Complete implementation of fund subscription/redemption system with transaction tracking
-  - **Database Schema**: Created `fund_unit_transactions` table with 1:1 relationship to `cash_flows` and N:1 to `holdings`
-  - **Backend API**: Full CRUD operations for fund subscriptions and redemptions with proper validation
-  - **Holding Detail View**: Comprehensive holding detail page with transaction history and summary statistics
-  - **Navigation Improvements**: Smart back navigation that returns to correct NAV Holdings tab
-  - **Format Helper Integration**: Consistent formatting across all NAV pages using centralized utils
-  - **Error Handling**: Robust error handling for null/undefined values and edge cases
+- ✅ **NAV HOLDINGS MANAGEMENT & REAL-TIME CASH BALANCE ENHANCEMENT - COMPLETED** (Current Session - September 24, 2025)
+  - **Refresh Button Enhancement**: Enhanced refresh button to refresh both holdings and Fund Summary data simultaneously
+  - **Redemption Modal UI/UX**: Completely redesigned Process Fund Redemption modal with professional layout and real-time calculations
+  - **Real-time Cash Balance**: Updated NAV calculations to use real-time cash balance from cash flows instead of stored portfolio.cashBalance
+  - **Data Consistency**: Ensured data consistency between cash flows and NAV calculations for accurate fund management
+  - **UI/UX Improvements**: Enhanced modal layouts, validation warnings, and user experience across all fund management features
   - **Key Features Implemented**:
-    - ✅ **Fund Unit Transaction Entity**: Complete entity with TypeORM decorators and relationships
-    - ✅ **Database Migration**: Successfully created fund_unit_transactions table with proper constraints
-    - ✅ **Subscription/Redemption Logic**: Complete business logic for fund subscriptions and redemptions
-    - ✅ **Cash Flow Integration**: Automatic cash flow creation with proper reference linking
-    - ✅ **Holding Detail API**: Comprehensive API endpoint for holding details with transaction history
-    - ✅ **Frontend Integration**: Complete UI for holding detail view with professional design
-    - ✅ **Smart Navigation**: Back button returns to correct NAV Holdings tab using URL parameters
-    - ✅ **Format Consistency**: All NAV pages use centralized format helpers for consistency
-    - ✅ **Error Recovery**: Proper handling of null values and edge cases
-    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling
+    - ✅ **Dual Refresh Functionality**: Refresh button now updates both holdings data and Fund Summary (NAV per Unit, Total Outstanding Units, etc.)
+    - ✅ **Enhanced Redemption Modal**: Professional 3-column layout with Fund Information card, real-time calculations, and validation warnings
+    - ✅ **Real-time Cash Balance Integration**: NAV calculations now use `getCurrentCashBalance()` from cash flows for accuracy
+    - ✅ **Remaining Units Display**: Real-time calculation and display of remaining units after redemption in summary
+    - ✅ **Validation Warnings**: Smart warnings when attempting to redeem more units than available
+    - ✅ **Always-Visible Summary**: Redemption Summary always visible with fallback values for better UX
+    - ✅ **Data Accuracy**: Eliminated discrepancies between portfolio.cashBalance and actual cash flows
+    - ✅ **Professional UI**: Enhanced modal design with error themes, proper spacing, and clear information hierarchy
+    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling and real-time accuracy
 
 - ✅ **UNREALIZED P&L CHART INTEGRATION WITH DEPOSIT DATA - COMPLETED** (Previous Session - September 24, 2025)
   - **API Integration**: Successfully added deposit data to /analytics/asset-performance API endpoint

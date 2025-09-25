@@ -78,10 +78,12 @@ async function runTypeOrmMigrations() {
     console.log('\n⚠️  Step 5: Final Confirmation');
     console.log('-' .repeat(40));
     console.log('This will execute the following migrations:');
-    console.log('  1. AddMigrationTrackingToAssets - Add migration_status column');
-    console.log('  2. MigrateCodeToSymbol - Copy code to symbol field');
-    console.log('  3. ResolveSymbolConflicts - Resolve symbol conflicts');
-    console.log('  4. CleanupAssetSchema - Remove code column, add constraints');
+    console.log('  1. AddNavUnitSystem - Add NAV unit system fields');
+    console.log('  2. AddNavPerUnitToNavSnapshotsSimple - Add NAV per unit to snapshots');
+    console.log('  3. AddLastNavDateToPortfolio - Add last NAV date tracking');
+    console.log('  4. CreateFundUnitTransactions - Create fund unit transactions table');
+    console.log('  5. UpdateNavPrecisionTo3Decimals - Update NAV precision to 3 decimal places');
+    console.log('  6. UpdateCurrencyPrecisionTo3Decimals - Update currency precision to 3 decimal places');
     
     const finalConfirmation = await askQuestion('Proceed with schema migrations? (type "MIGRATE" to confirm): ');
     if (finalConfirmation !== 'MIGRATE') {
@@ -123,33 +125,54 @@ async function runTypeOrmMigrations() {
     console.log('\n🔍 Step 8: Checking Database Schema');
     console.log('-' .repeat(40));
     
-    const tableInfo = await dataSource.query(`
+    // Check fund_unit_transactions table
+    const fundUnitTableInfo = await dataSource.query(`
       SELECT 
         column_name,
         data_type,
         is_nullable,
         column_default
       FROM information_schema.columns 
-      WHERE table_name = 'assets' 
+      WHERE table_name = 'fund_unit_transactions' 
       ORDER BY ordinal_position
     `);
     
-    console.log('Assets table schema:');
-    tableInfo.forEach((column: any) => {
+    console.log('Fund Unit Transactions table schema:');
+    fundUnitTableInfo.forEach((column: any) => {
       console.log(`  - ${column.column_name}: ${column.data_type} (${column.is_nullable === 'YES' ? 'nullable' : 'not null'})`);
+    });
+
+    // Check investor_holdings table precision
+    const holdingTableInfo = await dataSource.query(`
+      SELECT 
+        column_name,
+        data_type,
+        numeric_precision,
+        numeric_scale
+      FROM information_schema.columns 
+      WHERE table_name = 'investor_holdings' 
+      AND column_name IN ('total_units', 'avg_cost_per_unit', 'total_investment', 'current_value', 'unrealized_pnl', 'realized_pnl')
+      ORDER BY ordinal_position
+    `);
+    
+    console.log('\nInvestor Holdings precision check:');
+    holdingTableInfo.forEach((column: any) => {
+      console.log(`  - ${column.column_name}: ${column.data_type}(${column.numeric_precision},${column.numeric_scale})`);
     });
 
     console.log('\n🎉 TypeORM migrations completed successfully!');
     console.log('=' .repeat(60));
     console.log('Migration Summary:');
-    console.log('✅ Schema migrations executed');
+    console.log('✅ NAV unit system implemented');
+    console.log('✅ Fund unit transactions table created');
+    console.log('✅ Precision updated to 3 decimal places');
     console.log('✅ Database structure updated');
-    console.log('✅ Constraints added');
-    console.log('✅ Indexes created');
+    console.log('✅ Constraints and indexes created');
     console.log('\nNext steps:');
-    console.log('1. Run data migration script');
-    console.log('2. Verify application functionality');
-    console.log('3. Test API endpoints');
+    console.log('1. Verify 3 decimal places precision in all tables');
+    console.log('2. Test fund subscription/redemption functionality');
+    console.log('3. Test holding detail API endpoints');
+    console.log('4. Verify frontend displays correct precision');
 
   } catch (error) {
     console.error('\n❌ TypeORM migration failed:', error.message);

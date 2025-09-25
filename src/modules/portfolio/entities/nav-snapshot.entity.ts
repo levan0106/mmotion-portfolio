@@ -50,13 +50,13 @@ export class NavSnapshot {
   /**
    * Total outstanding units for funds on this date.
    */
-  @Column({ type: 'decimal', precision: 20, scale: 8, name: 'total_outstanding_units', default: 0 })
+  @Column({ type: 'decimal', precision: 20, scale: 3, name: 'total_outstanding_units', default: 0 })
   totalOutstandingUnits: number;
 
   /**
    * NAV per unit for funds on this date.
    */
-  @Column({ type: 'decimal', precision: 20, scale: 8, name: 'nav_per_unit', default: 0 })
+  @Column({ type: 'decimal', precision: 20, scale: 3, name: 'nav_per_unit', default: 0 })
   navPerUnit: number;
 
   /**

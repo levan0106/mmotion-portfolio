@@ -222,7 +222,7 @@ const HoldingDetail: React.FC = () => {
                     Total Units
                   </Typography>
                   <Typography variant="h6">
-                    {formatNumberWithSeparators(holding.totalUnits, 8)}
+                    {formatNumberWithSeparators(holding.totalUnits, 3)}
                   </Typography>
                 </Box>
                 <Box>
@@ -299,7 +299,7 @@ const HoldingDetail: React.FC = () => {
             <Grid item xs={6} md={3}>
               <Box textAlign="center">
                 <Typography variant="h4" color="info.main">
-                  {formatNumberWithSeparators(summary.totalUnitsSubscribed, 2)}
+                  {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Units Subscribed
@@ -342,7 +342,7 @@ const HoldingDetail: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="right">
-                      {formatNumberWithSeparators(transaction.units, 8)}
+                      {formatNumberWithSeparators(transaction.units, 3)}
                     </TableCell>
                     <TableCell align="right">
                       {formatCurrency(transaction.navPerUnit, 'VND')}

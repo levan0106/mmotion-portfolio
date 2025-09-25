@@ -37,7 +37,10 @@
     "migration:test:full": "npm run migration:create-test-data && npm run migration:test",
     "migration:run-schema": "npx ts-node scripts/run-typeorm-migrations.ts",
     "migration:run-data": "npx ts-node scripts/run-production-migration.ts",
-    "migration:run:full": "npm run migration:run-schema && npm run migration:run-data"
+    "migration:run:full": "npm run migration:run-schema && npm run migration:run-data",
+    "migration:verify": "npx ts-node scripts/verify-migration-status.ts",
+    "migration:verify:simple": "powershell -ExecutionPolicy Bypass -File scripts/verify-migration-simple.ps1",
+    "cleanup:fund-data": "npx ts-node scripts/cleanup-fund-data.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

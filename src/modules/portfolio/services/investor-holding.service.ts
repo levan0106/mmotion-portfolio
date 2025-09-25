@@ -9,6 +9,7 @@ import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.en
 import { CashFlowService } from './cash-flow.service';
 import { NavUtilsService } from './nav-utils.service';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
+import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
 import { HoldingDetailDto, FundUnitTransactionWithCashFlow, HoldingSummaryDto } from '../dto/holding-detail.dto';
 
 export interface SubscribeToFundDto {
@@ -58,6 +59,7 @@ export class InvestorHoldingService {
     private readonly cashFlowService: CashFlowService,
     private readonly navUtilsService: NavUtilsService,
     private readonly portfolioCalculationService: PortfolioCalculationService,
+    private readonly depositCalculationService: DepositCalculationService,
   ) {}
 
   /**
@@ -85,7 +87,7 @@ export class InvestorHoldingService {
     }
 
     // 3. Calculate NAV per unit
-    const navPerUnit = await this.calculateNavPerUnit(dto.portfolioId);
+    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId));
     if (navPerUnit <= 0) {
       throw new BadRequestException('Invalid NAV per unit. Fund may not be properly initialized.');
     }
@@ -103,27 +105,38 @@ export class InvestorHoldingService {
       holding = await this.investorHoldingRepository.save({
         accountId: dto.accountId,
         portfolioId: dto.portfolioId,
-        totalUnits: Math.round(unitsIssued * 100000000) / 100000000, // Set to units issued
-        avgCostPerUnit: Math.round(navPerUnit * 100000000) / 100000000, // Set to current NAV per unit
-        totalInvestment: Math.round(dto.amount * 100) / 100, // Set to amount invested
-        currentValue: Math.round(dto.amount * 100) / 100, // Set to amount invested
+        totalUnits: Math.round(unitsIssued * 1000) / 1000, // Set to units issued
+        avgCostPerUnit: Math.round(navPerUnit * 1000) / 1000, // Set to current NAV per unit
+        totalInvestment: Math.round(dto.amount * 1000) / 1000, // Set to amount invested
+        currentValue: Math.round(dto.amount * 1000) / 1000, // Set to amount invested
         unrealizedPnL: 0, // No unrealized P&L initially
         realizedPnL: 0,
       });
     } else {
       // Update existing holding
-      const newTotalUnits = holding.totalUnits + unitsIssued;
-      const newTotalInvestment = holding.totalInvestment + dto.amount;
+      // Handle NaN values by treating them as 0 and ensure proper number conversion
+      const currentTotalUnits = isNaN(Number(holding.totalUnits)) ? 0 : Number(holding.totalUnits);
+      const currentTotalInvestment = isNaN(Number(holding.totalInvestment)) ? 0 : Number(holding.totalInvestment);
+      const currentAvgCostPerUnit = isNaN(Number(holding.avgCostPerUnit)) ? navPerUnit : Number(holding.avgCostPerUnit);
+      
+      const newTotalUnits = currentTotalUnits + unitsIssued;
+      const newTotalInvestment = currentTotalInvestment + dto.amount;
       const newAvgCost = newTotalUnits > 0 ? newTotalInvestment / newTotalUnits : navPerUnit;
       const newCurrentValue = newTotalUnits * navPerUnit;
       const newUnrealizedPnL = newCurrentValue - newTotalInvestment;
+      
+      // Validate calculated values
+      if (isNaN(newTotalUnits) || isNaN(newTotalInvestment) || isNaN(newAvgCost) || isNaN(newCurrentValue) || isNaN(newUnrealizedPnL)) {
+        this.logger.error(`Invalid calculation result for holding ${holding.holdingId}`);
+        throw new BadRequestException('Invalid calculation result. Please contact support.');
+      }
 
       await this.investorHoldingRepository.update(holding.holdingId, {
-        totalUnits: Math.round(newTotalUnits * 100000000) / 100000000, // Round to 8 decimal places
-        avgCostPerUnit: Math.round(newAvgCost * 100000000) / 100000000, // Round to 8 decimal places
-        totalInvestment: Math.round(newTotalInvestment * 100) / 100, // Round to 2 decimal places
-        currentValue: Math.round(newCurrentValue * 100) / 100, // Round to 2 decimal places
-        unrealizedPnL: Math.round(newUnrealizedPnL * 100) / 100, // Round to 2 decimal places
+        totalUnits: Math.round(newTotalUnits * 1000) / 1000, // Round to 3 decimal places
+        avgCostPerUnit: Math.round(newAvgCost * 1000) / 1000, // Round to 3 decimal places
+        totalInvestment: Math.round(newTotalInvestment * 1000) / 1000, // Round to 3 decimal places
+        currentValue: Math.round(newCurrentValue * 1000) / 1000, // Round to 3 decimal places
+        unrealizedPnL: Math.round(newUnrealizedPnL * 1000) / 1000, // Round to 3 decimal places
       });
 
       // Reload holding to get updated values
@@ -136,9 +149,9 @@ export class InvestorHoldingService {
     const transaction = await this.fundUnitTransactionRepository.save({
       holdingId: holding.holdingId,
       holdingType: HoldingType.SUBSCRIBE,
-      units: Math.round(unitsIssued * 100000000) / 100000000, // Round to 8 decimal places
-      navPerUnit: Math.round(navPerUnit * 100000000) / 100000000, // Round to 8 decimal places
-      amount: Math.round(dto.amount * 100) / 100, // Round to 2 decimal places
+      units: Math.round(unitsIssued * 1000) / 1000, // Round to 3 decimal places
+      navPerUnit: Math.round(navPerUnit * 1000) / 1000, // Round to 3 decimal places
+      amount: Math.round(dto.amount * 1000) / 1000, // Round to 3 decimal places
     });
 
     // 7. Create CashFlow record with transaction reference
@@ -146,7 +159,7 @@ export class InvestorHoldingService {
       dto.portfolioId,
       CashFlowType.DEPOSIT,
       dto.amount,
-      `Fund subscription - ${unitsIssued.toFixed(8)} units at ${navPerUnit.toFixed(8)} per unit. ${dto.description}`,
+      `Fund subscription - ${unitsIssued.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
       `${transaction.transactionId}`,
       new Date()
     );
@@ -162,13 +175,13 @@ export class InvestorHoldingService {
     await this.portfolioRepository.increment(
       { portfolioId: dto.portfolioId },
       'totalOutstandingUnits',
-      Math.round(unitsIssued * 100000000) / 100000000 // Round to 8 decimal places
+      Math.round(unitsIssued * 1000) / 1000 // Round to 3 decimal places
     );
 
     // 11. Update Portfolio NAV per unit
     await this.updatePortfolioNavPerUnit(dto.portfolioId);
 
-    this.logger.log(`Fund subscription completed: ${unitsIssued.toFixed(8)} units issued at ${navPerUnit.toFixed(8)} per unit`);
+    this.logger.log(`Fund subscription completed: ${unitsIssued.toFixed(3)} units issued at ${navPerUnit.toFixed(3)} per unit`);
 
     return {
       holding,
@@ -202,7 +215,7 @@ export class InvestorHoldingService {
     }
 
     // 3. Calculate NAV per unit
-    const navPerUnit = await this.calculateNavPerUnit(dto.portfolioId);
+    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId));
     if (navPerUnit <= 0) {
       throw new BadRequestException('Invalid NAV per unit. Fund may not be properly initialized.');
     }
@@ -214,9 +227,9 @@ export class InvestorHoldingService {
     const transaction = await this.fundUnitTransactionRepository.save({
       holdingId: holding.holdingId,
       holdingType: HoldingType.REDEEM,
-      units: Math.round(dto.units * 100000000) / 100000000, // Round to 8 decimal places
-      navPerUnit: Math.round(navPerUnit * 100000000) / 100000000, // Round to 8 decimal places
-      amount: Math.round(amountReceived * 100) / 100, // Round to 2 decimal places
+      units: Math.round(dto.units * 1000) / 1000, // Round to 3 decimal places
+      navPerUnit: Math.round(navPerUnit * 1000) / 1000, // Round to 3 decimal places
+      amount: Math.round(amountReceived * 1000) / 1000, // Round to 3 decimal places
     });
 
     // 6. Create CashFlow record with transaction reference
@@ -224,7 +237,7 @@ export class InvestorHoldingService {
       dto.portfolioId,
       CashFlowType.WITHDRAWAL,
       amountReceived,
-      `Fund redemption - ${dto.units.toFixed(8)} units at ${navPerUnit.toFixed(8)} per unit. ${dto.description}`,
+      `Fund redemption - ${dto.units.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
       `${transaction.transactionId}`,
       new Date()
     );
@@ -236,20 +249,24 @@ export class InvestorHoldingService {
     });
 
     // 8. Update InvestorHolding
-    const newTotalUnits = holding.totalUnits - dto.units;
-    const realizedPnL = (dto.units * navPerUnit) - (dto.units * holding.avgCostPerUnit);
-    const newTotalInvestment = newTotalUnits * holding.avgCostPerUnit;
+    // Handle NaN values by treating them as 0 and ensure proper number conversion
+    const currentTotalUnits = isNaN(Number(holding.totalUnits)) ? 0 : Number(holding.totalUnits);
+    const currentAvgCostPerUnit = isNaN(Number(holding.avgCostPerUnit)) ? navPerUnit : Number(holding.avgCostPerUnit);
+    const currentRealizedPnL = isNaN(Number(holding.realizedPnL)) ? 0 : Number(holding.realizedPnL);
+    
+    const newTotalUnits = currentTotalUnits - dto.units;
+    const realizedPnL = (dto.units * navPerUnit) - (dto.units * currentAvgCostPerUnit);
+    const newTotalInvestment = newTotalUnits * currentAvgCostPerUnit;
     const newCurrentValue = newTotalUnits * navPerUnit;
     const newUnrealizedPnL = newCurrentValue - newTotalInvestment;
-    const currentRealizedPnL = isNaN(holding.realizedPnL) ? 0 : holding.realizedPnL;
     const newRealizedPnL = currentRealizedPnL + realizedPnL;
 
     await this.investorHoldingRepository.update(holding.holdingId, {
-      totalUnits: Math.round(newTotalUnits * 100000000) / 100000000, // Round to 8 decimal places
-      totalInvestment: Math.round(newTotalInvestment * 100) / 100, // Round to 2 decimal places
-      currentValue: Math.round(newCurrentValue * 100) / 100, // Round to 2 decimal places
-      realizedPnL: Math.round(newRealizedPnL * 100) / 100, // Round to 2 decimal places
-      unrealizedPnL: Math.round(newUnrealizedPnL * 100) / 100, // Round to 2 decimal places
+      totalUnits: Math.round(newTotalUnits * 1000) / 1000, // Round to 3 decimal places
+      totalInvestment: Math.round(newTotalInvestment * 1000) / 1000, // Round to 3 decimal places
+      currentValue: Math.round(newCurrentValue * 1000) / 1000, // Round to 3 decimal places
+      realizedPnL: Math.round(newRealizedPnL * 1000) / 1000, // Round to 3 decimal places
+      unrealizedPnL: Math.round(newUnrealizedPnL * 1000) / 1000, // Round to 3 decimal places
     });
 
     // Reload holding to get updated values
@@ -261,13 +278,13 @@ export class InvestorHoldingService {
     await this.portfolioRepository.decrement(
       { portfolioId: dto.portfolioId },
       'totalOutstandingUnits',
-      Math.round(dto.units * 100000000) / 100000000 // Round to 8 decimal places
+      Math.round(dto.units * 1000) / 1000 // Round to 3 decimal places
     );
 
     // 10. Update Portfolio NAV per unit
     await this.updatePortfolioNavPerUnit(dto.portfolioId);
 
-    this.logger.log(`Fund redemption completed: ${dto.units.toFixed(8)} units redeemed at ${navPerUnit.toFixed(8)} per unit`);
+    this.logger.log(`Fund redemption completed: ${dto.units.toFixed(3)} units redeemed at ${navPerUnit.toFixed(3)} per unit`);
 
     return {
       holding: updatedHolding,
@@ -430,16 +447,17 @@ export class InvestorHoldingService {
       return 0;
     }
 
+    // If no outstanding units yet, use the stored NAV per unit (for new funds)
     if (portfolio.totalOutstandingUnits <= 0) {
-      return 0;
+      return Number(portfolio.navPerUnit) || 0;
     }
 
     // Use real-time calculated NAV value instead of stored database value
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId);
     const navPerUnit = realTimeNavValue / portfolio.totalOutstandingUnits;
     
-    // Round to 8 decimal places to avoid precision issues
-    return Math.round(navPerUnit * 100000000) / 100000000;
+    // Round to 3 decimal places to avoid precision issues
+    return Math.round(navPerUnit * 1000) / 1000;
   }
 
   /**
@@ -541,21 +559,32 @@ export class InvestorHoldingService {
 
     // 2. Calculate real-time NAV value
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId);
-    const initialUnits = 1000000; // Start with 1M units
-    const navPerUnit = realTimeNavValue / initialUnits;
+    
+    // Calculate initial units to achieve a reasonable NAV per unit
+    let initialUnits: number;
+    let navPerUnit: number;
+    
+    if (realTimeNavValue > 0) {
+      // Portfolio has value - calculate units to achieve reasonable NAV per unit (target: 10,000 VND per unit)
+      const targetNavPerUnit = 10000; // Target 10,000 VND per unit
+      initialUnits = Math.max(1000, Math.round(realTimeNavValue / targetNavPerUnit)); // Minimum 1000 units
+      navPerUnit = realTimeNavValue / initialUnits;
+    } else {
+      // Portfolio không có value - sử dụng NAV per Unit cố định
+      initialUnits = 0; // Không tạo units ban đầu
+      navPerUnit = 10000; // NAV per Unit cố định 10,000 VND
+    }
 
     // 3. Update portfolio to fund with calculated NAV per unit
     portfolio.isFund = true;
-    // Considering update data in case nav/unit is already set (isfund changes from false to true)
-    if (portfolio.totalOutstandingUnits <= 0) {
-        portfolio.totalOutstandingUnits = initialUnits;
-        portfolio.navPerUnit = navPerUnit;
-        portfolio.lastNavDate = new Date(); // Set current timestamp as last NAV date
-    }
+    // Always update units and NAV when converting to fund (isfund changes from false to true)
+    portfolio.totalOutstandingUnits = initialUnits;
+    portfolio.navPerUnit = navPerUnit;
+    portfolio.lastNavDate = new Date(); // Set current timestamp as last NAV date
     // 4. Save portfolio to DB
     const updatedPortfolio = await this.portfolioRepository.save(portfolio);
 
-    this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(8)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
+    this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(3)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
 
     return updatedPortfolio;
   }
@@ -574,14 +603,21 @@ export class InvestorHoldingService {
       throw new NotFoundException(`Portfolio ${portfolioId} not found`);
     }
 
-    // Calculate real-time portfolio values
+    // Calculate real-time cash balance from cash flows (more accurate than portfolio.cashBalance)
+    const realTimeCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+
+    // Calculate real-time portfolio values using real-time cash balance
     const calculatedValues = await this.portfolioCalculationService.calculatePortfolioValues(
       portfolioId,
-      parseFloat(portfolio.cashBalance.toString())
+      realTimeCashBalance
     );
 
-    const navValue = calculatedValues.totalValue;
-    this.logger.log(`Real-time NAV calculation for ${portfolioId}: ${navValue}`);
+    // Calculate deposit values
+    const depositData = await this.depositCalculationService.calculateDepositData(portfolioId);
+
+    // NAV should include asset value, deposit value, and real-time cash balance
+    const navValue = calculatedValues.totalValue + depositData.totalDepositValue + realTimeCashBalance;
+    this.logger.log(`Real-time NAV calculation for ${portfolioId}: ${navValue} (assets: ${calculatedValues.totalValue}, deposits: ${depositData.totalDepositValue}, cash: ${realTimeCashBalance})`);
     
     // Ensure we return a positive value
     return Math.max(navValue, 0);
@@ -648,7 +684,7 @@ export class InvestorHoldingService {
         navPerUnit: navPerUnit,
         lastNavDate: new Date() // Update last NAV date
       });
-      this.logger.log(`Updated navPerUnit to ${navPerUnit.toFixed(8)} for fund ${portfolioId} (NAV: ${realTimeNavValue})`);
+      this.logger.log(`Updated navPerUnit to ${navPerUnit.toFixed(3)} for fund ${portfolioId} (NAV: ${realTimeNavValue})`);
     }
 
     const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 

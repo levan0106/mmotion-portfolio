@@ -52,6 +52,10 @@ flowchart LR
 - **Holding Detail Pattern**: Comprehensive holding detail view with transaction history and summary statistics (Holding Detail Implementation completed)
 - **Smart Navigation Pattern**: URL parameter-based navigation that preserves context and returns to correct tabs (Navigation Improvements completed)
 - **Format Helper Pattern**: Centralized formatting utilities for consistent number, currency, and percentage display across all components (Format Helper Integration completed)
+- **NAV Holdings Management Pattern**: Enhanced fund management with dual refresh functionality, real-time calculations, and professional UI/UX (NAV Holdings Management Enhancement completed)
+- **Real-time Cash Balance Pattern**: NAV calculations using real-time cash balance from cash flows instead of stored portfolio.cashBalance for data accuracy (Real-time Cash Balance Enhancement completed)
+- **Enhanced Redemption Modal Pattern**: Professional 3-column layout with Fund Information card, real-time calculations, validation warnings, and always-visible summary (Enhanced Redemption Modal completed)
+- **Dual Refresh Pattern**: Single refresh button that updates both holdings data and Fund Summary data simultaneously for better user experience (Dual Refresh Functionality completed)
 - **TWR Integration Pattern**: Portfolio Performance chart with Time-Weighted Return calculations using Performance Snapshots (Portfolio Performance TWR Integration completed)
 - **Dual Selector Pattern**: Separate TWR Period and Timeframe selectors for maximum user flexibility (Portfolio Performance TWR Integration completed)
 - **Performance Snapshot Pattern**: Use PortfolioPerformanceSnapshot entity for accurate TWR data instead of simple cumulative returns (Portfolio Performance TWR Integration completed)
@@ -369,7 +373,28 @@ erDiagram
 - **Table Layout**: Adjusted table width and column alignment after Asset Name removal - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 
-### 26. NAV History Chart Implementation Pattern - **IMPLEMENTED ✅**
+### 26. NAV Holdings Management Pattern - **IMPLEMENTED ✅**
+- **Dual Refresh Functionality**: Single refresh button updates both holdings data and Fund Summary data - **COMPLETED**
+- **Enhanced Redemption Modal**: Professional 3-column layout with Fund Information card and real-time calculations - **COMPLETED**
+- **Real-time Cash Balance Integration**: NAV calculations use `getCurrentCashBalance()` from cash flows for accuracy - **COMPLETED**
+- **Remaining Units Display**: Real-time calculation and display of remaining units after redemption - **COMPLETED**
+- **Validation Warnings**: Smart warnings when attempting to redeem more units than available - **COMPLETED**
+- **Always-Visible Summary**: Redemption Summary always visible with fallback values for better UX - **COMPLETED**
+- **Data Accuracy**: Eliminated discrepancies between portfolio.cashBalance and actual cash flows - **COMPLETED**
+- **Professional UI**: Enhanced modal design with error themes, proper spacing, and clear information hierarchy - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with comprehensive error handling and real-time accuracy - **COMPLETED**
+
+### 27. Real-time Cash Balance Pattern - **IMPLEMENTED ✅**
+- **Cash Flow Source of Truth**: Use cash flows as the authoritative source for cash balance calculations - **COMPLETED**
+- **Real-time Calculation**: Calculate cash balance from all cash flows using `getCurrentCashBalance()` method - **COMPLETED**
+- **Data Consistency**: Ensure NAV calculations use real-time cash balance instead of stored portfolio.cashBalance - **COMPLETED**
+- **Accuracy Priority**: Prioritize accuracy over performance for critical financial calculations - **COMPLETED**
+- **Service Integration**: Integrate with `CashFlowService.getCurrentCashBalance()` for consistent calculations - **COMPLETED**
+- **Error Handling**: Proper fallback mechanisms when cash flow data is unavailable - **COMPLETED**
+- **Performance Optimization**: Efficient cash flow queries with proper indexing and caching - **COMPLETED**
+- **Code Quality**: Clean, maintainable code with proper error handling and transaction management - **COMPLETED**
+
+### 28. NAV History Chart Implementation Pattern - **IMPLEMENTED ✅**
 - **Combo Chart Visualization**: Successfully implemented combo chart with NAV Value line + Portfolio P&L bar - **COMPLETED**
 - **Dual Y-Axis Design**: Left axis for NAV Value (currency), right axis for Portfolio P&L (currency) - **COMPLETED**
 - **Balanced Y-Axis Domains**: Implemented `min - (max - min)/2` formula for optimal chart scaling - **COMPLETED**
@@ -383,7 +408,7 @@ erDiagram
 - **Performance**: Optimized rendering with balanced Y-axis domains - **COMPLETED**
 - **Code Quality**: Clean, maintainable code with no linter errors - **COMPLETED**
 
-### 27. Circuit Breaker Pattern - **PLANNED**
+### 29. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented

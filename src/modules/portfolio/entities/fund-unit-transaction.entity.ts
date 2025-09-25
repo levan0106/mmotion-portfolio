@@ -32,13 +32,13 @@ export class FundUnitTransaction {
   })
   holdingType: HoldingType;
 
-  @Column('decimal', { precision: 20, scale: 8 })
+  @Column('decimal', { precision: 20, scale: 3 })
   units: number;
 
-  @Column('decimal', { precision: 20, scale: 8, name: 'nav_per_unit' })
+  @Column('decimal', { precision: 20, scale: 3, name: 'nav_per_unit' })
   navPerUnit: number;
 
-  @Column('decimal', { precision: 20, scale: 2 })
+  @Column('decimal', { precision: 20, scale: 3 })
   amount: number;
 
   @CreateDateColumn({ name: 'created_at' })

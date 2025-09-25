@@ -55,6 +55,7 @@ interface NAVHoldingsManagementProps {
   portfolio: Portfolio;
   isCompactMode?: boolean;
   getUltraSpacing?: (normal: number, compact: number) => number;
+  onPortfolioUpdate?: () => void;
 }
 
 interface SubscriptionDialogData {
@@ -71,7 +72,8 @@ interface RedemptionDialogData {
 
 const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
   portfolio,
-  getUltraSpacing = (normal) => normal
+  getUltraSpacing = (normal) => normal,
+  onPortfolioUpdate
 }) => {
   const navigate = useNavigate();
   const { holdings, loading, error, refetch, subscribeToFund, redeemFromFund, convertToFund } = useNAVHoldings(
@@ -86,13 +88,47 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
     amount: 0,
     description: ''
   });
+  const [subscriptionErrors, setSubscriptionErrors] = useState<{
+    accountId?: string;
+    amount?: string;
+  }>({});
   const [redemptionData, setRedemptionData] = useState<RedemptionDialogData>({
     accountId: '',
     units: 0,
     description: ''
   });
 
+  // Calculate expected units based on amount and NAV per unit
+  const calculateExpectedUnits = (amount: number): number => {
+    if (!amount || !portfolio.navPerUnit || portfolio.navPerUnit <= 0) {
+      return 0;
+    }
+    return Math.round((amount / portfolio.navPerUnit) * 1000) / 1000; // Round to 3 decimal places
+  };
+
+  // Validate subscription data
+  const validateSubscriptionData = (): boolean => {
+    const errors: { accountId?: string; amount?: string } = {};
+    
+    if (!subscriptionData.accountId.trim()) {
+      errors.accountId = 'Account ID is required';
+    }
+    
+    if (!subscriptionData.amount || subscriptionData.amount <= 0) {
+      errors.amount = 'Amount must be greater than 0';
+    } else if (subscriptionData.amount < 1000) {
+      errors.amount = 'Minimum amount is 1,000 VND';
+    }
+    
+    setSubscriptionErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubscription = async () => {
+    if (!validateSubscriptionData()) {
+      return;
+    }
+
     try {
       const subscriptionDto: SubscribeToFundDto = {
         accountId: subscriptionData.accountId,
@@ -104,6 +140,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       
       setSubscriptionDialogOpen(false);
       setSubscriptionData({ accountId: '', amount: 0, description: '' });
+      setSubscriptionErrors({});
     } catch (err) {
       // Error is handled by the hook
     }
@@ -147,8 +184,10 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             onClick={async () => {
               try {
                 await convertToFund(portfolio.portfolioId);
-                // Refresh the page or update portfolio data
-                window.location.reload();
+                // Refresh portfolio data without reloading page
+                if (onPortfolioUpdate) {
+                  onPortfolioUpdate();
+                }
               } catch (err) {
                 // Error is handled by the hook
               }
@@ -172,8 +211,14 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
               Fund Summary
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title="Refresh Holdings">
-                <IconButton onClick={refetch} disabled={loading}>
+              <Tooltip title="Refresh Holdings & Fund Summary">
+                <IconButton onClick={async () => {
+                  await refetch();
+                  // Also refresh portfolio data (Fund Summary)
+                  if (onPortfolioUpdate) {
+                    onPortfolioUpdate();
+                  }
+                }} disabled={loading}>
                   <RefreshIcon />
                 </IconButton>
               </Tooltip>
@@ -187,7 +232,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                   NAV per Unit
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                  {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency, { precision: 4 })}
+                  {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency)}
                 </Typography>
               </Box>
             </Grid>
@@ -316,10 +361,10 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                           </Box>
                         </TableCell>
                         <TableCell align="right">
-                          {formatNumberWithSeparators(holding.totalUnits, 2)}
+                          {formatNumberWithSeparators(holding.totalUnits, 3)}
                         </TableCell>
                         <TableCell align="right">
-                          {formatCurrency(holding.avgCostPerUnit, portfolio.baseCurrency, { precision: 4 })}
+                          {formatCurrency(holding.avgCostPerUnit, portfolio.baseCurrency)}
                         </TableCell>
                         <TableCell align="right">
                           {formatCurrency(holding.totalInvestment, portfolio.baseCurrency)}
@@ -373,84 +418,281 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       </Card>
 
       {/* Subscription Dialog */}
-      <Dialog open={subscriptionDialogOpen} onClose={() => setSubscriptionDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>New Fund Subscription</DialogTitle>
+      <Dialog open={subscriptionDialogOpen} onClose={() => setSubscriptionDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AddIcon color="primary" />
+            <Typography variant="h6">New Fund Subscription</Typography>
+          </Box>
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Account ID"
-              value={subscriptionData.accountId}
-              onChange={(e) => setSubscriptionData({ ...subscriptionData, accountId: e.target.value })}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Amount"
-              type="number"
-              value={subscriptionData.amount}
-              onChange={(e) => setSubscriptionData({ ...subscriptionData, amount: Number(e.target.value) })}
-              margin="normal"
-              InputProps={{
-                startAdornment: portfolio.baseCurrency + ' '
-              }}
-              helperText={`Minimum: ${formatCurrency(1000, portfolio.baseCurrency)}`}
-            />
-            <TextField
-              fullWidth
-              label="Description"
-              value={subscriptionData.description}
-              onChange={(e) => setSubscriptionData({ ...subscriptionData, description: e.target.value })}
-              margin="normal"
-              multiline
-              rows={2}
-            />
+            {/* Fund Information */}
+            <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Fund Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    NAV per Unit
+                  </Typography>
+                  <Typography variant="h6" color="primary">
+                    {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency, { precision: 3 })}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Outstanding Units
+                  </Typography>
+                  <Typography variant="h6">
+                    {formatNumberWithSeparators(portfolio.totalOutstandingUnits || 0, 0)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Card>
+
+            {/* Subscription Form */}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Account ID"
+                  value={subscriptionData.accountId}
+                  onChange={(e) => {
+                    setSubscriptionData({ ...subscriptionData, accountId: e.target.value });
+                    if (subscriptionErrors.accountId) {
+                      setSubscriptionErrors({ ...subscriptionErrors, accountId: undefined });
+                    }
+                  }}
+                  error={!!subscriptionErrors.accountId}
+                  helperText={subscriptionErrors.accountId}
+                  placeholder="Enter investor account ID"
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Investment Amount"
+                  type="number"
+                  value={subscriptionData.amount || ''}
+                  onChange={(e) => {
+                    const amount = Number(e.target.value);
+                    setSubscriptionData({ ...subscriptionData, amount });
+                    if (subscriptionErrors.amount) {
+                      setSubscriptionErrors({ ...subscriptionErrors, amount: undefined });
+                    }
+                  }}
+                  error={!!subscriptionErrors.amount}
+                  helperText={
+                    subscriptionErrors.amount || 
+                    `Minimum: ${formatCurrency(1000, portfolio.baseCurrency)}. Current NAV: ${formatCurrency(portfolio.navPerUnit, portfolio.baseCurrency)} per unit${subscriptionData.amount > 0 ? `. Note: Subscription fee may apply to amount of ${formatCurrency(subscriptionData.amount, portfolio.baseCurrency)}` : ''}`
+                  }
+                  InputProps={{
+                    startAdornment: <Typography sx={{ mr: 1 }}>{portfolio.baseCurrency}</Typography>
+                  }}
+                  placeholder="Enter investment amount"
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Expected Units to Receive"
+                  value={formatNumberWithSeparators(calculateExpectedUnits(subscriptionData.amount), 3)}
+                  disabled
+                  helperText="Based on current NAV per unit"
+                  InputProps={{
+                    startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>Units</Typography>
+                  }}
+                  sx={{
+                    '& .MuiInputBase-input.Mui-disabled': {
+                      color: 'primary.main',
+                      fontWeight: 600,
+                      fontSize: '1.1rem'
+                    }
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={subscriptionData.description}
+                  onChange={(e) => setSubscriptionData({ ...subscriptionData, description: e.target.value })}
+                  multiline
+                  rows={2}
+                  placeholder="Add a description for this subscription"
+                />
+              </Grid>
+            </Grid>
+
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSubscriptionDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSubscription} variant="contained" disabled={loading}>
-            {loading ? <CircularProgress size={20} /> : 'Subscribe'}
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={() => {
+              setSubscriptionDialogOpen(false);
+              setSubscriptionData({ accountId: '', amount: 0, description: '' });
+              setSubscriptionErrors({});
+            }}
+            size="large"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubscription} 
+            variant="contained" 
+            disabled={loading || !subscriptionData.accountId || !subscriptionData.amount}
+            size="large"
+            startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+          >
+            {loading ? 'Processing...' : 'Subscribe to Fund'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Redemption Dialog */}
-      <Dialog open={redemptionDialogOpen} onClose={() => setRedemptionDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Process Fund Redemption</DialogTitle>
+      <Dialog open={redemptionDialogOpen} onClose={() => setRedemptionDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <RemoveIcon color="error" />
+            <Typography variant="h6">Process Fund Redemption</Typography>
+          </Box>
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Account ID"
-              value={redemptionData.accountId}
-              onChange={(e) => setRedemptionData({ ...redemptionData, accountId: e.target.value })}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Units to Redeem"
-              type="number"
-              value={redemptionData.units}
-              onChange={(e) => setRedemptionData({ ...redemptionData, units: Number(e.target.value) })}
-              margin="normal"
-              helperText={`Current NAV: ${formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency, { precision: 4 })} per unit`}
-            />
-            <TextField
-              fullWidth
-              label="Description"
-              value={redemptionData.description}
-              onChange={(e) => setRedemptionData({ ...redemptionData, description: e.target.value })}
-              margin="normal"
-              multiline
-              rows={2}
-            />
+            {/* Fund Information */}
+            <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Fund Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    NAV per Unit
+                  </Typography>
+                  <Typography variant="h6" color="primary">
+                    {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency, { precision: 3 })}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Outstanding Units
+                  </Typography>
+                  <Typography variant="h6">
+                    {formatNumberWithSeparators(portfolio.totalOutstandingUnits || 0, 0)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Card>
+
+            {/* Redemption Form */}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Account ID"
+                  value={redemptionData.accountId}
+                  onChange={(e) => setRedemptionData({ ...redemptionData, accountId: e.target.value })}
+                  margin="normal"
+                  helperText="Enter the account ID of the investor to redeem from"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Units to Redeem"
+                  type="number"
+                  value={redemptionData.units}
+                  onChange={(e) => setRedemptionData({ ...redemptionData, units: Number(e.target.value) })}
+                  margin="normal"
+                  helperText={`Current NAV: ${formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency, { precision: 3 })} per unit. Expected amount: ${formatCurrency((redemptionData.units || 0) * (portfolio.navPerUnit || 0), portfolio.baseCurrency)}`}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={redemptionData.description}
+                  onChange={(e) => setRedemptionData({ ...redemptionData, description: e.target.value })}
+                  margin="normal"
+                  multiline
+                  rows={2}
+                  helperText="Optional description for this redemption transaction"
+                />
+              </Grid>
+            </Grid>
+
+            {/* Redemption Summary */}
+            <Card variant="outlined" sx={{ mt: 3, p: 2, backgroundColor: 'error.50', borderColor: 'error.200' }}>
+              <Typography variant="subtitle2" color="error.main" gutterBottom>
+                Redemption Summary
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={4}>
+                  <Typography variant="body2" color="text.secondary">
+                    Units to Redeem
+                  </Typography>
+                  <Typography variant="h6" color="error.main">
+                    {redemptionData.units > 0 ? formatNumberWithSeparators(redemptionData.units, 3) : '0.000'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="body2" color="text.secondary">
+                    Expected Amount
+                  </Typography>
+                  <Typography variant="h6" color="error.main">
+                    {redemptionData.units > 0 ? formatCurrency(redemptionData.units * (portfolio.navPerUnit || 0), portfolio.baseCurrency) : formatCurrency(0, portfolio.baseCurrency)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="body2" color="text.secondary">
+                    Remaining Units
+                  </Typography>
+                  <Typography variant="h6" color="text.primary">
+                    {(() => {
+                      const currentHolding = holdings.find(h => h.accountId === redemptionData.accountId);
+                      if (currentHolding) {
+                        const remaining = currentHolding.totalUnits - (redemptionData.units || 0);
+                        return formatNumberWithSeparators(Math.max(0, remaining), 3);
+                      }
+                      return 'N/A';
+                    })()}
+                  </Typography>
+                </Grid>
+              </Grid>
+              {(() => {
+                const currentHolding = holdings.find(h => h.accountId === redemptionData.accountId);
+                if (currentHolding && redemptionData.units > currentHolding.totalUnits) {
+                  return (
+                    <Alert severity="warning" sx={{ mt: 2 }}>
+                      <Typography variant="body2">
+                        Warning: Redeeming {formatNumberWithSeparators(redemptionData.units, 3)} units, but investor only has {formatNumberWithSeparators(currentHolding.totalUnits, 3)} units available.
+                      </Typography>
+                    </Alert>
+                  );
+                }
+                return null;
+              })()}
+            </Card>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRedemptionDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleRedemption} variant="contained" disabled={loading}>
-            {loading ? <CircularProgress size={20} /> : 'Redeem'}
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={() => setRedemptionDialogOpen(false)} size="large">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleRedemption} 
+            variant="contained" 
+            color="error"
+            disabled={loading || !redemptionData.accountId || !redemptionData.units}
+            size="large"
+            startIcon={loading ? <CircularProgress size={20} /> : <RemoveIcon />}
+          >
+            {loading ? 'Processing...' : 'Process Redemption'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -29,56 +29,56 @@ export class PortfolioAnalyticsController {
     private readonly performanceSnapshotService: PerformanceSnapshotService,
   ) {}
 
-  /**
-   * Get detailed performance analytics for a portfolio.
-   */
-  @Get('performance')
-  @ApiOperation({ summary: 'Get detailed performance analytics' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'period', required: false, description: 'Analysis period (1M, 3M, 6M, 1Y)' })
-  @ApiResponse({ status: 200, description: 'Performance analytics retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getPerformanceAnalytics(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('period') period?: string,
-  ): Promise<any> {
-    const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
+  // /**
+  //  * Get detailed performance analytics for a portfolio.
+  //  */
+  // @Get('performance')
+  // @ApiOperation({ summary: 'Get detailed performance analytics' })
+  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  // @ApiQuery({ name: 'period', required: false, description: 'Analysis period (1M, 3M, 6M, 1Y)' })
+  // @ApiResponse({ status: 200, description: 'Performance analytics retrieved successfully' })
+  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  // async getPerformanceAnalytics(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  //   @Query('period') period?: string,
+  // ): Promise<any> {
+  //   const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
     
-    // Add period-specific calculations based on query parameter
-    const now = new Date();
-    let periodStart: Date;
+  //   // Add period-specific calculations based on query parameter
+  //   const now = new Date();
+  //   let periodStart: Date;
     
-    switch (period) {
-      case '1M':
-        periodStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        break;
-      case '3M':
-        periodStart = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-        break;
-      case '6M':
-        periodStart = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-        break;
-      case '1Y':
-        periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        break;
-      default:
-        periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    }
+  //   switch (period) {
+  //     case '1M':
+  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  //       break;
+  //     case '3M':
+  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+  //       break;
+  //     case '6M':
+  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+  //       break;
+  //     case '1Y':
+  //       periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  //       break;
+  //     default:
+  //       periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  //   }
 
-    const periodROE = await this.portfolioAnalyticsService.calculateROE(id, periodStart, now);
-    const periodTWR = await this.portfolioAnalyticsService.calculateTWR(id, periodStart, now);
+  //   const periodROE = await this.portfolioAnalyticsService.calculateROE(id, periodStart, now);
+  //   const periodTWR = await this.portfolioAnalyticsService.calculateTWR(id, periodStart, now);
 
-    return {
-      portfolioId: id,
-      period: period || '1Y',
-      periodStart: periodStart.toISOString(),
-      periodEnd: now.toISOString(),
-      ...performanceSummary,
-      periodRoe: periodROE,
-      periodTwr: periodTWR,
-      calculatedAt: new Date().toISOString(),
-    };
-  }
+  //   return {
+  //     portfolioId: id,
+  //     period: period || '1Y',
+  //     periodStart: periodStart.toISOString(),
+  //     periodEnd: now.toISOString(),
+  //     ...performanceSummary,
+  //     periodRoe: periodROE,
+  //     periodTwr: periodTWR,
+  //     calculatedAt: new Date().toISOString(),
+  //   };
+  // }
 
   /**
    * Get detailed asset allocation analytics.
@@ -135,65 +135,65 @@ export class PortfolioAnalyticsController {
     };
   }
 
-  /**
-   * Get historical performance data.
-   */
-  @Get('history')
-  @ApiOperation({ summary: 'Get historical performance data' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of records' })
-  @ApiResponse({ status: 200, description: 'Historical data retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getHistoricalData(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
-  ): Promise<any> {
-    const end = endDate ? new Date(endDate) : new Date();
-    const start = startDate ? new Date(startDate) : new Date();
-    start.setDate(end.getDate() - 30); // Default to last 30 days
+  // /**
+  //  * Get historical performance data.
+  //  */
+  // @Get('history')
+  // @ApiOperation({ summary: 'Get historical performance data' })
+  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  // @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
+  // @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
+  // @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of records' })
+  // @ApiResponse({ status: 200, description: 'Historical data retrieved successfully' })
+  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  // async getHistoricalData(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  //   @Query('startDate') startDate?: string,
+  //   @Query('endDate') endDate?: string,
+  //   @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  // ): Promise<any> {
+  //   const end = endDate ? new Date(endDate) : new Date();
+  //   const start = startDate ? new Date(startDate) : new Date();
+  //   start.setDate(end.getDate() - 30); // Default to last 30 days
 
-    const returnHistory = await this.portfolioAnalyticsService.calculateReturnHistory(id, start, end);
-    const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
+  //   const returnHistory = await this.portfolioAnalyticsService.calculateReturnHistory(id, start, end);
+  //   const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
 
-    return {
-      portfolioId: id,
-      period: {
-        startDate: start.toISOString(),
-        endDate: end.toISOString(),
-      },
-      returnHistory: returnHistory,
-      performanceSummary: performanceSummary,
-      limit: limit || 30,
-      retrievedAt: new Date().toISOString(),
-    };
-  }
+  //   return {
+  //     portfolioId: id,
+  //     period: {
+  //       startDate: start.toISOString(),
+  //       endDate: end.toISOString(),
+  //     },
+  //     returnHistory: returnHistory,
+  //     performanceSummary: performanceSummary,
+  //     limit: limit || 30,
+  //     retrievedAt: new Date().toISOString(),
+  //   };
+  // }
 
-  /**
-   * Generate NAV snapshot for a portfolio.
-   */
-  @Get('snapshot')
-  @ApiOperation({ summary: 'Generate NAV snapshot for a portfolio' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'date', required: false, description: 'Snapshot date (YYYY-MM-DD)' })
-  @ApiResponse({ status: 200, description: 'NAV snapshot generated successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async generateNavSnapshot(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('date') date?: string,
-  ): Promise<any> {
-    const snapshotDate = date ? new Date(date) : new Date();
-    const navSnapshot = await this.portfolioAnalyticsService.generateNavSnapshot(id, snapshotDate);
+  // /**
+  //  * Generate NAV snapshot for a portfolio.
+  //  */
+  // @Get('snapshot')
+  // @ApiOperation({ summary: 'Generate NAV snapshot for a portfolio' })
+  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  // @ApiQuery({ name: 'date', required: false, description: 'Snapshot date (YYYY-MM-DD)' })
+  // @ApiResponse({ status: 200, description: 'NAV snapshot generated successfully' })
+  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  // async generateNavSnapshot(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  //   @Query('date') date?: string,
+  // ): Promise<any> {
+  //   const snapshotDate = date ? new Date(date) : new Date();
+  //   const navSnapshot = await this.portfolioAnalyticsService.generateNavSnapshot(id, snapshotDate);
 
-    return {
-      portfolioId: id,
-      snapshot: navSnapshot,
-      generatedAt: new Date().toISOString(),
-    };
-  }
+  //   return {
+  //     portfolioId: id,
+  //     snapshot: navSnapshot,
+  //     generatedAt: new Date().toISOString(),
+  //   };
+  // }
 
   /**
    * Get historical performance data for charting.
@@ -1053,43 +1053,43 @@ export class PortfolioAnalyticsController {
     return await this.portfolioAnalyticsService.getAssetDetailSummary(id);
   }
 
-  /**
-   * Get comprehensive portfolio analytics report.
-   */
-  @Get('report')
-  @ApiOperation({ summary: 'Get comprehensive portfolio analytics report' })
-  @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  @ApiResponse({ status: 200, description: 'Analytics report generated successfully' })
-  @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getAnalyticsReport(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    const [
-      performanceSummary,
-      allocation,
-      portfolio,
-    ] = await Promise.all([
-      this.portfolioAnalyticsService.getPerformanceSummary(id),
-      this.portfolioService.getAssetAllocation(id),
-      this.portfolioService.getPortfolioDetails(id),
-    ]);
+  // /**
+  //  * Get comprehensive portfolio analytics report.
+  //  */
+  // @Get('report')
+  // @ApiOperation({ summary: 'Get comprehensive portfolio analytics report' })
+  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  // @ApiResponse({ status: 200, description: 'Analytics report generated successfully' })
+  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  // async getAnalyticsReport(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
+  //   const [
+  //     performanceSummary,
+  //     allocation,
+  //     portfolio,
+  //   ] = await Promise.all([
+  //     this.portfolioAnalyticsService.getPerformanceSummary(id),
+  //     this.portfolioService.getAssetAllocation(id),
+  //     this.portfolioService.getPortfolioDetails(id),
+  //   ]);
 
-    return {
-      portfolioId: id,
-      portfolioName: portfolio.name,
-      reportDate: new Date().toISOString(),
-      performance: performanceSummary,
-      allocation: allocation.reduce((acc, item) => {
-        acc[item.assetType.toLowerCase()] = item.percentage;
-        return acc;
-      }, {}),
-      summary: {
-        totalValue: portfolio.totalValue,
-        cashBalance: portfolio.cashBalance,
-        unrealizedPl: portfolio.unrealizedPl,
-        realizedPl: portfolio.realizedPl,
-        assetCount: allocation.length,
-      },
-    };
-  }
+  //   return {
+  //     portfolioId: id,
+  //     portfolioName: portfolio.name,
+  //     reportDate: new Date().toISOString(),
+  //     performance: performanceSummary,
+  //     allocation: allocation.reduce((acc, item) => {
+  //       acc[item.assetType.toLowerCase()] = item.percentage;
+  //       return acc;
+  //     }, {}),
+  //     summary: {
+  //       totalValue: portfolio.totalValue,
+  //       cashBalance: portfolio.cashBalance,
+  //       unrealizedPl: portfolio.unrealizedPl,
+  //       realizedPl: portfolio.realizedPl,
+  //       assetCount: allocation.length,
+  //     },
+  //   };
+  // }
 
   /**
    * Generate date list based on timeframe

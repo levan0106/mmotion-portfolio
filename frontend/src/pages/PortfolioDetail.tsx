@@ -900,8 +900,8 @@ const PortfolioDetail: React.FC = () => {
               },
             }}
           >
-            <Tab label="Performance Analysis" defaultChecked />
-            <Tab label="Asset Allocation" />
+            <Tab label="Performance" defaultChecked />
+            <Tab label="Allocation" />
             <Tab label="Trading Management" />
             <Tab label="Deposit Management" />
             <Tab label="Cash Flow" />
@@ -1613,6 +1613,7 @@ const PortfolioDetail: React.FC = () => {
                 portfolio={portfolio}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
+                onPortfolioUpdate={refetchPortfolio}
               />
             </SectionWrapper>
           </Box>
