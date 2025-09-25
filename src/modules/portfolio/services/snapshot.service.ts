@@ -360,7 +360,7 @@ export class SnapshotService {
     portfolioId: string,
     startDate: Date,
     endDate: Date,
-    granularity: SnapshotGranularity = SnapshotGranularity.MONTHLY
+    granularity: SnapshotGranularity = SnapshotGranularity.DAILY
   ): Promise<{ date: string; [key: string]: string | number }[]> {
 
     // Step 1: Find the actual min date from snapshots

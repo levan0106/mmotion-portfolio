@@ -461,7 +461,10 @@ export class InvestorHoldingService {
     // Use real-time calculated NAV value instead of stored database value
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId);
     const navPerUnit = realTimeNavValue / portfolio.totalOutstandingUnits;
-    
+
+    this.logger.log(`Calculated NAV per unit for portfolio ${portfolioId}: ${navPerUnit.toFixed(3)} 
+    (Real-time NAV: ${realTimeNavValue}) (Total outstanding units: ${portfolio.totalOutstandingUnits})`);
+
     // Round to 3 decimal places to avoid precision issues
     return Math.round(navPerUnit * 1000) / 1000;
   }
@@ -469,12 +472,14 @@ export class InvestorHoldingService {
   /**
    * Update Portfolio NAV per unit
    */
-  async updatePortfolioNavPerUnit(portfolioId: string): Promise<void> {
+  async updatePortfolioNavPerUnit(portfolioId: string): Promise<number> {
     const navPerUnit = await this.calculateNavPerUnit(portfolioId);
     
     await this.portfolioRepository.update(portfolioId, {
       navPerUnit,
     });
+    
+    return navPerUnit;
   }
 
 
@@ -632,7 +637,7 @@ export class InvestorHoldingService {
   /**
    * Refresh NAV per unit calculation and update database
    */
-  async refreshNavPerUnit(portfolioId: string): Promise<{
+  async refreshNavPerUnit(portfolioId: string, forceRefresh: boolean = false): Promise<{
     portfolioId: string;
     navPerUnit: number;
     totalAllValue: number;
@@ -660,7 +665,7 @@ export class InvestorHoldingService {
     let navPerUnit = portfolio.navPerUnit;
     let realTimeNavValue = 0;
     
-    if (!isNavPerUnitValid || isNavPerUnitStale) {
+    if (!isNavPerUnitValid || isNavPerUnitStale || forceRefresh) {
       // Calculate real-time NAV value
       realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId);
       const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
@@ -685,7 +690,7 @@ export class InvestorHoldingService {
     }
 
     // 4. Update portfolio in database only if we calculated new value
-    if (!isNavPerUnitValid || isNavPerUnitStale) {
+    if (!isNavPerUnitValid || isNavPerUnitStale || forceRefresh) {
       await this.portfolioRepository.update(portfolioId, {
         navPerUnit: navPerUnit,
         lastNavDate: new Date() // Update last NAV date
@@ -708,7 +713,7 @@ export class InvestorHoldingService {
   /**
    * Update numberOfInvestors for a portfolio
    */
-  private async updatePortfolioNumberOfInvestors(portfolioId: string): Promise<void> {
+  async updatePortfolioNumberOfInvestors(portfolioId: string): Promise<number> {
     try {
       const investorCount = await this.investorHoldingRepository
         .createQueryBuilder('holding')
@@ -723,8 +728,11 @@ export class InvestorHoldingService {
       });
 
       this.logger.log(`Updated numberOfInvestors to ${numberOfInvestors} for portfolio ${portfolioId}`);
+
+      return numberOfInvestors;
     } catch (error) {
       this.logger.error(`Error updating numberOfInvestors for portfolio ${portfolioId}:`, error);
+      return 0;
     }
   }
 }

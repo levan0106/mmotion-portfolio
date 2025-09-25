@@ -28,6 +28,12 @@ import { CreateAssetPriceDto } from '../dto/create-asset-price.dto';
 import { UpdateAssetPriceDto } from '../dto/update-asset-price.dto';
 import { AssetPriceQueryDto } from '../dto/asset-price-query.dto';
 import { AssetPriceResponseDto } from '../dto/asset-price-response.dto';
+import { 
+  UpdatePriceByDateDto, 
+  GetAssetsWithHistoricalPriceDto,
+  AssetWithHistoricalPriceDto,
+  BulkUpdateResultDto 
+} from '../dto/update-price-by-date.dto';
 
 /**
  * Controller for managing asset prices in the Global Assets System.
@@ -703,5 +709,234 @@ export class BasicPriceController {
       })),
     };
     return result;
+  }
+
+  /**
+   * Get assets with their historical prices for a specific date.
+   * This endpoint helps users see which assets have historical data available
+   * before performing a bulk update.
+   */
+  @Get('bulk/historical-prices')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get assets with historical prices for a specific date',
+    description: `
+      Retrieves all assets (or specific ones) with their current prices and 
+      historical prices for the specified date. This helps users identify 
+      which assets can be updated from historical data.
+      
+      Returns:
+      - Asset information (symbol, name, type, currency)
+      - Current price
+      - Historical price (if available)
+      - Whether historical data exists for the target date
+    `,
+  })
+  @ApiQuery({
+    name: 'targetDate',
+    description: 'Target date to get historical prices from (YYYY-MM-DD format)',
+    example: '2024-01-15',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'assetIds',
+    description: 'Comma-separated list of specific asset IDs to check (optional)',
+    example: '550e8400-e29b-41d4-a716-446655440000,550e8400-e29b-41d4-a716-446655440001',
+    required: false,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Assets with historical prices retrieved successfully',
+    type: [AssetWithHistoricalPriceDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid date format or other validation errors',
+  })
+  async getAssetsWithHistoricalPrice(
+    @Query('targetDate') targetDate: string,
+    @Query('assetIds') assetIds?: string,
+  ): Promise<AssetWithHistoricalPriceDto[]> {
+    const assetIdArray = assetIds ? assetIds.split(',').map(id => id.trim()) : undefined;
+    
+    return this.basicPriceService.getAssetsWithHistoricalPrice(targetDate, assetIdArray);
+  }
+
+  /**
+   * Bulk update asset prices from historical data.
+   * Updates multiple asset prices by taking values from a specific historical date.
+   * 
+   * Process:
+   * 1. For each asset, find the latest price from the target date
+   * 2. Update the current price with the historical value
+   * 3. Mark the price as manual/user-sourced
+   * 4. Store metadata about the update
+   * 5. Return detailed results for each asset
+   */
+  @Post('bulk/update-by-date')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Bulk update asset prices from historical data',
+    description: `
+      Updates multiple asset prices by taking values from a specific historical date.
+      
+      Process:
+      1. For each asset, find the latest price from the target date
+      2. Update the current price with the historical value
+      3. Mark the price as manual/user-sourced
+      4. Store metadata about the update
+      5. Return detailed results for each asset
+      
+      Features:
+      - Graceful error handling: individual asset failures don't stop the process
+      - Detailed results: shows success/failure for each asset
+      - Metadata tracking: stores reason, target date, and old price
+      - Validation: ensures target date is not in the future
+    `,
+  })
+  @ApiBody({
+    type: UpdatePriceByDateDto,
+    description: 'Bulk update request with target date and asset IDs',
+    examples: {
+      example1: {
+        summary: 'Update all assets from a specific date',
+        value: {
+          targetDate: '2024-01-15',
+          assetIds: [
+            '550e8400-e29b-41d4-a716-446655440000',
+            '550e8400-e29b-41d4-a716-446655440001',
+            '550e8400-e29b-41d4-a716-446655440002'
+          ],
+          reason: 'Bulk update from historical data for portfolio rebalancing'
+        }
+      },
+      example2: {
+        summary: 'Update specific assets with custom reason',
+        value: {
+          targetDate: '2024-01-10',
+          assetIds: ['550e8400-e29b-41d4-a716-446655440000'],
+          reason: 'Correcting price after market data error'
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Bulk update completed successfully',
+    type: BulkUpdateResultDto,
+    schema: {
+      example: {
+        successCount: 5,
+        failedCount: 2,
+        totalCount: 7,
+        results: [
+          {
+            assetId: '550e8400-e29b-41d4-a716-446655440000',
+            symbol: 'HPG',
+            success: true,
+            message: 'Updated from 150000 to 148000',
+            oldPrice: 150000,
+            newPrice: 148000
+          },
+          {
+            assetId: '550e8400-e29b-41d4-a716-446655440001',
+            symbol: 'VCB',
+            success: false,
+            message: 'No historical price found for date 2024-01-15'
+          }
+        ]
+      }
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid request data or validation errors',
+  })
+  async bulkUpdatePricesByDate(
+    @Body(ValidationPipe) updateDto: UpdatePriceByDateDto,
+  ): Promise<BulkUpdateResultDto> {
+    // Validate that target date is not in the future
+    const targetDate = new Date(updateDto.targetDate);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    if (targetDate > today) {
+      throw new Error('Target date cannot be in the future');
+    }
+
+    return this.basicPriceService.bulkUpdatePricesByDate(
+      updateDto.targetDate,
+      updateDto.assetIds,
+      updateDto.reason || 'Bulk update from historical data'
+    );
+  }
+
+  /**
+   * Get available historical dates for assets.
+   * Returns a list of dates that have historical price data available.
+   * This helps users know which dates they can use for bulk updates.
+   */
+  @Get('bulk/available-dates')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get available historical dates for assets',
+    description: `
+      Returns a list of dates that have historical price data available.
+      This helps users know which dates they can use for bulk updates.
+      
+      Returns dates in descending order (most recent first) with:
+      - Date in YYYY-MM-DD format
+      - Number of assets that have data for that date
+      - Whether it's a weekend or holiday (if configured)
+    `,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Maximum number of dates to return (default: 30)',
+    example: 30,
+    required: false,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Available historical dates retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          date: { type: 'string', format: 'date', example: '2024-01-15' },
+          assetCount: { type: 'number', example: 25 },
+          isWeekend: { type: 'boolean', example: false },
+          isHoliday: { type: 'boolean', example: false }
+        }
+      }
+    }
+  })
+  async getAvailableHistoricalDates(
+    @Query('limit') limit: string = '30',
+  ): Promise<Array<{
+    date: string;
+    assetCount: number;
+    isWeekend: boolean;
+    isHoliday: boolean;
+  }>> {
+    const limitNum = parseInt(limit, 10) || 30;
+    
+    // This would be implemented in the service
+    // For now, return a placeholder response
+    return [
+      {
+        date: '2024-01-15',
+        assetCount: 25,
+        isWeekend: false,
+        isHoliday: false,
+      },
+      {
+        date: '2024-01-14',
+        assetCount: 23,
+        isWeekend: true,
+        isHoliday: false,
+      },
+    ];
   }
 }

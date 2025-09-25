@@ -221,64 +221,64 @@ export class PortfolioController {
   //   };
   // }
 
-  // /**
-  //  * Get NAV history for a portfolio.
-  //  */
-  // @Get(':id/nav/history')
-  // @ApiOperation({ summary: 'Get NAV history for a portfolio' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
-  // @ApiQuery({ name: 'granularity', required: false, description: 'Data granularity: DAILY, WEEKLY, MONTHLY (default: DAILY)' })
-  // @ApiResponse({ status: 200, description: 'NAV history retrieved successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async getNavHistory(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Query('months', new ParseIntPipe({ optional: true })) months?: number,
-  //   @Query('granularity') granularity?: string,
-  // ): Promise<any> {
-  //   const monthsToLookBack = months || 12;
-  //   const endDate = new Date();
-  //   const startDate = new Date();
-  //   startDate.setMonth(endDate.getMonth() - monthsToLookBack);
+  /**
+   * Get NAV history for a portfolio.
+   */
+  @Get(':id/nav/history')
+  @ApiOperation({ summary: 'Get NAV history for a portfolio' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12)' })
+  @ApiQuery({ name: 'granularity', required: false, description: 'Data granularity: DAILY, WEEKLY, MONTHLY (default: DAILY)' })
+  @ApiResponse({ status: 200, description: 'NAV history retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async getNavHistory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('months', new ParseIntPipe({ optional: true })) months?: number,
+    @Query('granularity') granularity?: string,
+  ): Promise<any> {
+    const monthsToLookBack = months || 12;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(endDate.getMonth() - monthsToLookBack);
 
-  //   return this.portfolioAnalyticsService.getNavHistory(id, startDate, endDate, granularity);
-  // }
+    return this.portfolioAnalyticsService.getNavHistory(id, startDate, endDate, granularity);
+  }
 
-  // /**
-  //  * Get performance metrics for a portfolio.
-  //  */
-  // @Get(':id/performance')
-  // @ApiOperation({ summary: 'Get performance metrics for a portfolio' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiResponse({ status: 200, description: 'Performance metrics retrieved successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async getPerformanceMetrics(@Param('id', ParseUUIDPipe) id: string): Promise<{
-  //   totalReturn: number;
-  //   annualizedReturn: number;
-  // }> {
-  //   const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
-  //   const portfolio = await this.portfolioService.getPortfolioDetails(id);
+  /**
+   * Get performance metrics for a portfolio.
+   */
+  @Get(':id/performance')
+  @ApiOperation({ summary: 'Get performance metrics for a portfolio' })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ status: 200, description: 'Performance metrics retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async getPerformanceMetrics(@Param('id', ParseUUIDPipe) id: string): Promise<{
+    totalReturn: number;
+    annualizedReturn: number;
+  }> {
+    // const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
+     const portfolio = await this.portfolioService.getPortfolioDetails(id);
     
-  //   // If we have historical data, use it
-  //   if (performanceSummary.twr1Year !== 0) {
-  //     return {
-  //       totalReturn: performanceSummary.twr1Year,
-  //       annualizedReturn: performanceSummary.twr1Year,
-  //     };
-  //   }
+    // // If we have historical data, use it
+    // if (performanceSummary.twr1Year !== 0) {
+    //   return {
+    //     totalReturn: performanceSummary.twr1Year,
+    //     annualizedReturn: performanceSummary.twr1Year,
+    //   };
+    // }
     
-  //   // Fallback: Calculate basic return based on unrealized P&L
-  //   const totalValue = parseFloat(portfolio.totalValue.toString());
-  //   const unrealizedPL = parseFloat(portfolio.unrealizedPl.toString());
+    // Fallback: Calculate basic return based on unrealized P&L
+    const totalValue = parseFloat(portfolio.totalValue.toString());
+    const unrealizedPL = parseFloat(portfolio.unrealizedPl.toString());
     
-  //   // Calculate return as percentage of unrealized P&L vs total value
-  //   const totalReturn = totalValue > 0 ? (unrealizedPL / totalValue) * 100 : 0;
+    // Calculate return as percentage of unrealized P&L vs total value
+    const totalReturn = totalValue > 0 ? (unrealizedPL / totalValue) * 100 : 0;
     
-  //   return {
-  //     totalReturn: totalReturn,
-  //     annualizedReturn: totalReturn, // For now, use same value as total return
-  //   };
-  // }
+    return {
+      totalReturn: totalReturn,
+      annualizedReturn: totalReturn, // For now, use same value as total return
+    };
+  }
 
   /**
    * Get asset allocation for a portfolio.
@@ -645,7 +645,7 @@ export class PortfolioController {
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   @ApiResponse({ status: 400, description: 'Portfolio is not a fund' })
   async refreshNavPerUnit(@Param('id', ParseUUIDPipe) portfolioId: string) {
-    return this.investorHoldingService.refreshNavPerUnit(portfolioId);
+    return this.investorHoldingService.refreshNavPerUnit(portfolioId, true);
   }
 
 }

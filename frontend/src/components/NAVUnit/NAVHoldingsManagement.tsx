@@ -226,7 +226,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           </Box>
 
           <Grid container spacing={getUltraSpacing(2, 1)}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   NAV per Unit
@@ -236,7 +236,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   Total Outstanding Units
@@ -246,7 +246,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   Number of Investors
@@ -256,7 +256,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   Total P&L
@@ -269,6 +269,25 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                   }}
                 >
                   {formatCurrency(totalPnL, portfolio.baseCurrency)}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Box sx={{ textAlign: 'center', p: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Last NAV Update
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                  {portfolio.lastNavDate 
+                    ? new Date(portfolio.lastNavDate).toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'N/A'
+                  }
                 </Typography>
               </Box>
             </Grid>

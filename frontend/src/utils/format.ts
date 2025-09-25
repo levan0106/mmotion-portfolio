@@ -142,6 +142,36 @@ export const formatPercentage = (
 };
 
 /**
+ * Format a number as percentage (for values already in percentage form)
+ * @param value - The value to format as percentage (already in percentage form, e.g., 22.5 for 22.5%)
+ * @param decimals - Number of decimal places (default: 1)
+ * @param locale - The locale for formatting (default: 'en-US')
+ * @returns Formatted percentage string
+ */
+export const formatPercentageValue = (
+  value: string | number | undefined | null,
+  decimals: number = 1,
+  locale: string = 'en-US'
+): string => {
+  locale = 'en-US';
+
+  // Convert string to number if needed
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (numValue === undefined || numValue === null || isNaN(numValue)) {
+    return new Intl.NumberFormat(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(0) + '%';
+  }
+  
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(numValue) + '%';
+};
+
+/**
  * Format a number as percentage with thousand separators
  * @param value - The value to format as percentage (already in percentage form, e.g., 22.5 for 22.5%)
  * @param decimals - Number of decimal places (default: 2)

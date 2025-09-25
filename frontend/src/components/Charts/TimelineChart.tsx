@@ -19,7 +19,7 @@ import {
   Legend,
 } from 'recharts';
 import { Box, Typography, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
+import { formatPercentageValue, formatDateFns as formatDate } from '../../utils/format';
 
 export interface TimelineDataPoint {
   date: string;
@@ -65,12 +65,12 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
   defaultChartType = 'line',
   defaultBarType = 'stacked',
   yAxisDomain = [0, 100],
-  yAxisFormatter = (value) => `${value}%`,
+  yAxisFormatter = (value) => formatPercentageValue(value, 1),
   xAxisFormatter = (value) => {
     const date = new Date(value);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   },
-  tooltipFormatter = formatPercentage,
+  tooltipFormatter = (value) => formatPercentageValue(value, 1),
   className,
   sx,
   showLegend = true,
@@ -276,9 +276,11 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
               size="small"
               sx={{ 
                 '& .MuiToggleButton-root': {
-                  fontSize: compact ? '0.65rem' : '0.7rem',
-                  px: compact ? 0.75 : 1,
-                  py: compact ? 0.25 : 0.5,
+                  fontSize: '0.5rem',
+                  px: compact ? 0.375 : 0.5,
+                  py: compact ? 0.125 : 0.25,
+                  minWidth: compact ? '35px' : '40px',
+                  height: compact ? '20px' : '24px',
                 }
               }}
             >
@@ -299,9 +301,11 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
             size="small"
             sx={{ 
               '& .MuiToggleButton-root': {
-                fontSize: compact ? '0.7rem' : '0.8rem',
-                px: compact ? 1 : 1.5,
-                py: compact ? 0.5 : 0.75,
+                fontSize: '0.5rem',
+                px: compact ? 0.5 : 0.75,
+                py: compact ? 0.25 : 0.375,
+                minWidth: compact ? '30px' : '35px',
+                height: compact ? '20px' : '24px',
               }
             }}
           >

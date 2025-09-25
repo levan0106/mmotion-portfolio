@@ -127,6 +127,7 @@ const PortfolioDetail: React.FC = () => {
   const [riskReturnData, setRiskReturnData] = useState<any>(null);
   const [isRiskReturnLoading, setIsRiskReturnLoading] = useState(false);
   const [riskReturnError, setRiskReturnError] = useState<string | null>(null);
+  const [riskReturnPeriod, setRiskReturnPeriod] = useState<string>('1Y');
   const [riskMetricsData, setRiskMetricsData] = useState<any>(null);
   const [isRiskMetricsLoading, setIsRiskMetricsLoading] = useState(false);
   const [riskMetricsError, setRiskMetricsError] = useState<string | null>(null);
@@ -134,7 +135,7 @@ const PortfolioDetail: React.FC = () => {
   const [isDiversificationLoading, setIsDiversificationLoading] = useState(false);
   const [diversificationError, setDiversificationError] = useState<string | null>(null);
   // Allocation timeline data using new hook - now uses real API with 12 month limit
-  const [allocationTimelineGranularity, setAllocationTimelineGranularity] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('MONTHLY');
+  const [allocationTimelineGranularity, setAllocationTimelineGranularity] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
   const { 
     allocationData: allocationTimelineData, 
     loading: isAllocationTimelineLoading, 
@@ -172,7 +173,7 @@ const PortfolioDetail: React.FC = () => {
 
   const { portfolio, isLoading: isPortfolioLoading, error: portfolioError, refetch: refetchPortfolio } = usePortfolio(portfolioId!);
   const {
-    navData,
+    // navData,
     performanceData,
     allocationData,
     isLoading: isAnalyticsLoading,
@@ -213,7 +214,7 @@ const PortfolioDetail: React.FC = () => {
       try {
         setIsRiskReturnLoading(true);
         setRiskReturnError(null);
-        const response = await apiService.getPortfolioRiskReturn(portfolioId);
+        const response = await apiService.getPortfolioRiskReturn(portfolioId, riskReturnPeriod);
         setRiskReturnData(response);
       } catch (error) {
         console.error('Error fetching risk-return data:', error);
@@ -224,7 +225,7 @@ const PortfolioDetail: React.FC = () => {
     };
 
     fetchRiskReturnData();
-  }, [portfolioId]);
+  }, [portfolioId, riskReturnPeriod]);
 
 
   // Fetch risk metrics data
@@ -436,13 +437,13 @@ const PortfolioDetail: React.FC = () => {
   React.useEffect(() => {
     console.log('Portfolio Detail Debug:', {
       portfolio,
-      navData,
+      // navData,
       performanceData,
       allocationData,
       isAnalyticsLoading,
       analyticsError
     });
-  }, [portfolio, navData, performanceData, allocationData, isAnalyticsLoading, analyticsError]);
+  }, [portfolio, performanceData, allocationData, isAnalyticsLoading, analyticsError]);
 
 
   const handleBack = () => {
@@ -1459,6 +1460,8 @@ const PortfolioDetail: React.FC = () => {
                         baseCurrency={portfolio.baseCurrency}
                         title="Risk-Return Analysis"
                         compact={isCompactMode}
+                        onPeriodChange={setRiskReturnPeriod}
+                        selectedPeriod={riskReturnPeriod}
                       />
                     )}
                   </Box>

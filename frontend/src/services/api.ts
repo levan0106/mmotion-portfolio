@@ -143,10 +143,10 @@ class ApiService {
   }
 
   // Portfolio analytics endpoints
-  async getPortfolioNav(portfolioId: string): Promise<{ navValue: number; totalValue: number }> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav`);
-    return response.data;
-  }
+  // async getPortfolioNav(portfolioId: string): Promise<{ navValue: number; totalValue: number }> {
+  //   const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav`);
+  //   return response.data;
+  // }
 
   async getPortfolioPerformance(portfolioId: string): Promise<PerformanceMetrics> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/performance`);
@@ -164,8 +164,14 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioRiskReturn(portfolioId: string): Promise<any> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/risk-return`);
+  async getPortfolioRiskReturn(portfolioId: string, period?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (period) params.append('period', period);
+    
+    const queryString = params.toString();
+    const url = `/api/v1/portfolios/${portfolioId}/analytics/risk-return${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await this.api.get(url);
     return response.data;
   }
 

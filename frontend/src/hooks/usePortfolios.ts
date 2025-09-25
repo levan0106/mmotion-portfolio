@@ -174,28 +174,28 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
   React.useEffect(() => {
     console.log('usePortfolioAnalytics Debug:', {
       portfolioId,
-      navData,
+      
       performanceData,
       allocationData,
       positionsData,
-      isNavLoading,
+      
       isPerformanceLoading,
       isAllocationLoading,
       isPositionsLoading,
-      navError,
+      
       performanceError,
       allocationError,
       positionsError
     });
-  }, [portfolioId, navData, performanceData, allocationData, positionsData, isNavLoading, isPerformanceLoading, isAllocationLoading, isPositionsLoading, navError, performanceError, allocationError, positionsError]);
+  }, [portfolioId, performanceData, allocationData, positionsData, isPerformanceLoading, isAllocationLoading, isPositionsLoading, performanceError, allocationError, positionsError]);
 
   return {
-    navData,
+    
     performanceData,
     allocationData,
     positionsData,
-    isLoading: isNavLoading || isPerformanceLoading || isAllocationLoading || isPositionsLoading,
-    error: navError || performanceError || allocationError || positionsError,
+    isLoading: isPerformanceLoading || isAllocationLoading || isPositionsLoading,
+    error: performanceError || allocationError || positionsError,
   };
 };
 

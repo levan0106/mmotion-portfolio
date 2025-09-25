@@ -23,6 +23,13 @@ flowchart LR
 ```
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
+
+### Dependency Injection & Module Management
+- **Circular Dependency Resolution**: Use `forwardRef(() => ModuleName)` to resolve circular dependencies between modules
+- **Service Integration**: Import parent modules in child modules to access shared services
+- **Module Configuration**: Proper imports array configuration with forwardRef for complex dependency chains
+- **Service Availability**: Ensure all required services are available in module context before injection
+
 ### 1. Microservices Architecture
 - **Portfolio Service**: Quản lý portfolio, NAV, performance (44 tasks defined)
 - **Trading Service**: Xử lý giao dịch, FIFO/LIFO, trade matching (59 tasks defined)
@@ -412,6 +419,10 @@ erDiagram
 - **Fund Management Integration**: Added isFund field and numberOfInvestors to portfolio snapshots - **COMPLETED**
 - **Database Precision Fixes**: Fixed numeric precision issues in asset performance snapshots - **COMPLETED**
 - **Migration Script Management**: Created 6 new database migrations for fund management features - **COMPLETED**
+- **Dependency Injection Resolution**: Successfully resolved critical dependency injection issue in PortfolioSnapshotService - **COMPLETED**
+- **Module Integration**: Added forwardRef(() => PortfolioModule) to PortfolioSnapshotModule to resolve circular dependencies - **COMPLETED**
+- **Real-time Fund Calculations**: Implemented real-time fund management metrics calculation in portfolio snapshots - **COMPLETED**
+- **Service Method Integration**: Successfully integrated updatePortfolioNavPerUnit, updatePortfolioNumberOfInvestors, and recalculateCashBalanceFromAllFlows - **COMPLETED**
 - **Entity Enhancement**: Enhanced portfolio snapshot entities with fund-specific fields - **COMPLETED**
 - **Service Layer Updates**: Updated portfolio snapshot services with new functionality - **COMPLETED**
 - **Type Safety Enhancement**: Enhanced TypeScript types for snapshot data structures - **COMPLETED**
@@ -422,7 +433,20 @@ erDiagram
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 - **Production Ready**: Enhanced snapshot system ready for production deployment - **COMPLETED**
 
-### 30. Circuit Breaker Pattern - **PLANNED**
+### 30. Asset Price Bulk Update Pattern - **IMPLEMENTED ✅**
+- **Historical Price Lookup**: Get assets with historical prices for specific dates - **COMPLETED**
+- **Bulk Update API**: Update multiple asset prices from historical data - **COMPLETED**
+- **Asset Selection**: Checkbox-based asset selection with data availability indicators - **COMPLETED**
+- **Date Validation**: Allow current date selection and validate date formats - **COMPLETED**
+- **Progress Tracking**: Real-time progress display with success/failure counts - **COMPLETED**
+- **Result Details**: Comprehensive results showing old/new prices and error messages - **COMPLETED**
+- **Professional UI**: Material-UI based modal with multi-step workflow - **COMPLETED**
+- **API Documentation**: Complete Swagger documentation with examples - **COMPLETED**
+- **Testing**: Unit tests for both backend and frontend components - **COMPLETED**
+- **Production Ready**: Clean, maintainable code with comprehensive error handling - **COMPLETED**
+- **Reason Format**: Dynamic reason with date information for better audit trail - **COMPLETED**
+
+### 31. Circuit Breaker Pattern - **PLANNED**
 - External API calls (market data) - Next phase
 - Database connection failures - Infrastructure level
 - Graceful degradation - Error handling implemented

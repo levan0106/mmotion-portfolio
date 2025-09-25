@@ -61,13 +61,14 @@ const GranularitySelector: React.FC<GranularitySelectorProps> = ({
       disabled={disabled}
       sx={{ 
         '& .MuiToggleButton-root': {
-          fontSize: compact ? '0.5rem' : '0.6rem',
-          px: compact ? 0.8 : 1.2,
-          py: compact ? 0.4 : 0.6,
-          minWidth: compact ? 'auto' : '50px',
+          fontSize: compact ? '0.45rem' : '0.55rem',
+          px: compact ? 0.6 : 0.8,
+          py: compact ? 0.3 : 0.4,
+          minWidth: compact ? 'auto' : '40px',
           display: 'flex',
           alignItems: 'center',
-          gap: 0.5,
+          gap: 0.3,
+          height: compact ? '24px' : '28px',
         }
       }}
     >

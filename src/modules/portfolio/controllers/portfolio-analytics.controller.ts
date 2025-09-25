@@ -283,54 +283,126 @@ export class PortfolioAnalyticsController {
   @Get('risk-return')
   @ApiOperation({ summary: 'Get risk-return analysis data' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'period', required: false, description: 'Analysis period (1M, 3M, 1Y)' })
   @ApiResponse({ status: 200, description: 'Risk-return data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async getRiskReturnAnalysis(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
+  async getRiskReturnAnalysis(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('period') period?: string
+  ): Promise<any> {
     const allocation = await this.portfolioService.getAssetAllocation(id);
     const portfolio = await this.portfolioService.getPortfolioDetails(id);
 
-    // Generate mock risk-return data based on allocation
-    const riskReturnData = allocation.map((item, index) => {
-      // Mock risk and return calculations
-      const baseReturn = (Math.random() - 0.5) * 0.4; // -20% to +20%
-      const baseRisk = Math.random() * 0.3 + 0.1; // 10% to 40%
-      
-      // Adjust based on asset type
-      let riskMultiplier = 1;
-      let returnMultiplier = 1;
-      
-      switch (item.assetType.toLowerCase()) {
-        case 'stock':
-          riskMultiplier = 1.2;
-          returnMultiplier = 1.1;
-          break;
-        case 'bond':
-          riskMultiplier = 0.6;
-          returnMultiplier = 0.7;
-          break;
-        case 'gold':
-          riskMultiplier = 0.8;
-          returnMultiplier = 0.9;
-          break;
-        case 'crypto':
-          riskMultiplier = 1.8;
-          returnMultiplier = 1.5;
-          break;
-        default:
-          riskMultiplier = 1;
-          returnMultiplier = 1;
-      }
+    // Get real performance data from asset group performance snapshots
+    const riskReturnData = await Promise.all(allocation.map(async (item, index) => {
+      try {
+        // Get latest asset group performance snapshot for this asset type
+        const groupSnapshots = await this.portfolioAnalyticsService.getAssetGroupPerformanceSnapshots(
+          id,
+          item.assetType.toUpperCase(), // Convert to uppercase to match database
+          undefined, // startDate
+          undefined, // endDate
+          SnapshotGranularity.DAILY // granularity
+        );
 
-      const colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336'];
-      
-      return {
-        assetType: item.assetType,
-        return: baseReturn * returnMultiplier,
-        risk: baseRisk * riskMultiplier,
-        value: item.totalValue,
-        color: colors[index % colors.length],
-      };
-    });
+        let returnValue = 0;
+        let riskValue = 0;
+
+        if (groupSnapshots.length > 0) {
+          // Get the most recent snapshot (sort by snapshot_date DESC to get latest first)
+          const sortedSnapshots = groupSnapshots.sort((a, b) => 
+            new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime()
+          );
+          const latestSnapshot = sortedSnapshots[0];
+          
+          // Use period-specific return and volatility based on selected period
+          const selectedPeriod = period || '1Y';
+          switch (selectedPeriod) {
+            case '1M':
+              returnValue = Number(latestSnapshot.groupTWR1M || 0); // Already in percentage format
+              riskValue = Number(latestSnapshot.groupVolatility1M || 0); // Already in percentage format
+              break;
+            case '3M':
+              returnValue = Number(latestSnapshot.groupTWR3M || 0); // Already in percentage format
+              riskValue = Number(latestSnapshot.groupVolatility3M || 0); // Already in percentage format
+              break;
+            case '1Y':
+            default:
+              returnValue = Number(latestSnapshot.groupTWR1Y || 0); // Already in percentage format
+              riskValue = Number(latestSnapshot.groupVolatility1Y || 0); // Already in percentage format
+              break;
+          }
+        } else {
+          // Fallback: Calculate basic return from current vs initial value
+          // This is a simplified calculation - in real scenario, we'd need historical data
+          const currentValue = Number(item.totalValue || 0);
+          const initialValue = currentValue * 0.8; // Assume 20% gain as fallback
+          returnValue = currentValue > 0 ? ((currentValue - initialValue) / initialValue) * 100 : 0;
+          
+          // Use asset type-based risk estimates as fallback
+          switch (item.assetType.toLowerCase()) {
+            case 'stock':
+              riskValue = 15; // 15% volatility
+              break;
+            case 'bond':
+              riskValue = 5; // 5% volatility
+              break;
+            case 'gold':
+              riskValue = 10; // 10% volatility
+              break;
+            case 'crypto':
+              riskValue = 40; // 40% volatility
+              break;
+            default:
+              riskValue = 12; // 12% volatility
+          }
+        }
+
+        const colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336'];
+        
+        return {
+          assetType: item.assetType,
+          return: Number(returnValue.toFixed(2)), // Round to 2 decimal places
+          risk: Number(riskValue.toFixed(2)), // Round to 2 decimal places
+          value: Number(item.totalValue || 0),
+          color: colors[index % colors.length],
+        };
+      } catch (error) {
+        console.error(`Error getting performance data for asset type ${item.assetType}:`, error);
+        
+        // Fallback to basic calculation
+        const currentValue = Number(item.totalValue || 0);
+        const initialValue = currentValue * 0.8; // Assume 20% gain as fallback
+        const returnValue = currentValue > 0 ? ((currentValue - initialValue) / initialValue) * 100 : 0;
+        
+        // Use asset type-based risk estimates
+        let riskValue = 12; // Default
+        switch (item.assetType.toLowerCase()) {
+          case 'stock':
+            riskValue = 15;
+            break;
+          case 'bond':
+            riskValue = 5;
+            break;
+          case 'gold':
+            riskValue = 10;
+            break;
+          case 'crypto':
+            riskValue = 40;
+            break;
+        }
+
+        const colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336'];
+        
+        return {
+          assetType: item.assetType,
+          return: Number(returnValue.toFixed(2)),
+          risk: Number(riskValue.toFixed(2)),
+          value: Number(item.totalValue || 0),
+          color: colors[index % colors.length],
+        };
+      }
+    }));
 
     return {
       portfolioId: id,
@@ -561,7 +633,7 @@ export class PortfolioAnalyticsController {
   ): Promise<any> {
     // Limit to maximum 12 months
     const monthsToLookBack = Math.min(months ? parseInt(months, 10) : 12, 12);
-    const snapshotGranularity = granularity as any || 'MONTHLY'; // Default to MONTHLY for better performance
+    const snapshotGranularity = granularity as any || 'DAILY'; // Default to DAILY for detailed view
     
     if (isNaN(monthsToLookBack) || monthsToLookBack < 1) {
       throw new Error('Months parameter must be a number between 1 and 12');

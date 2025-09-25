@@ -54,6 +54,7 @@ export interface Portfolio extends BaseEntity {
   isFund?: boolean;
   totalOutstandingUnits?: number;
   navPerUnit?: number;
+  lastNavDate?: string;
   
   account?: Account;
   portfolioAssets?: PortfolioAsset[];

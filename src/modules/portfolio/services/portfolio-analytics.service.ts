@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Portfolio } from '../entities/portfolio.entity';
 import { NavSnapshot } from '../entities/nav-snapshot.entity';
+import { AssetGroupPerformanceSnapshot } from '../entities/asset-group-performance-snapshot.entity';
 import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
 import { AssetDetailSummaryResponseDto, AssetDetailSummaryDto } from '../dto/asset-detail-summary.dto';
@@ -13,6 +14,7 @@ import { Trade } from '../../trading/entities/trade.entity';
 import { SnapshotService } from './snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { PortfolioSnapshotService } from './portfolio-snapshot.service';
+import { PerformanceSnapshotService } from './performance-snapshot.service';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -32,6 +34,7 @@ export class PortfolioAnalyticsService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly snapshotService: SnapshotService,
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
+    private readonly performanceSnapshotService: PerformanceSnapshotService,
   ) {}
 
   // /**
@@ -390,7 +393,7 @@ export class PortfolioAnalyticsService {
     portfolioId: string,
     months: number = 12,
     useSnapshots: boolean = true,
-    granularity: SnapshotGranularity = SnapshotGranularity.MONTHLY,
+    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
   ): Promise<{
     portfolioId: string;
     totalValue: number;
@@ -746,6 +749,25 @@ export class PortfolioAnalyticsService {
       console.error('Error in getNavHistory service:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get asset group performance snapshots
+   */
+  async getAssetGroupPerformanceSnapshots(
+    portfolioId: string,
+    assetType?: string,
+    startDate?: Date,
+    endDate?: Date,
+    granularity?: SnapshotGranularity
+  ): Promise<AssetGroupPerformanceSnapshot[]> {
+    return await this.performanceSnapshotService.getAssetGroupPerformanceSnapshots(
+      portfolioId,
+      assetType,
+      startDate,
+      endDate,
+      granularity
+    );
   }
 }
 

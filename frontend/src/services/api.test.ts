@@ -187,25 +187,25 @@ describe('ApiService', () => {
   })
 
   describe('Portfolio Analytics', () => {
-    describe('getPortfolioNav', () => {
-      it('should fetch portfolio NAV successfully', async () => {
-        const mockNavData = { navValue: 100000, totalValue: 105000 }
-        const mockResponse = { data: mockNavData }
-        mockAxiosInstance.get.mockResolvedValue(mockResponse)
+    // describe('getPortfolioNav', () => {
+    //   it('should fetch portfolio NAV successfully', async () => {
+    //     const mockNavData = { navValue: 100000, totalValue: 105000 }
+    //     const mockResponse = { data: mockNavData }
+    //     mockAxiosInstance.get.mockResolvedValue(mockResponse)
 
-        const result = await apiService.getPortfolioNav('1')
+    //     const result = await apiService.getPortfolioNav('1')
 
-        expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1/nav')
-        expect(result).toEqual(mockNavData)
-      })
+    //     expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1/nav')
+    //     expect(result).toEqual(mockNavData)
+    //   })
 
-      it('should handle getPortfolioNav error', async () => {
-        const error = new Error('Failed to fetch NAV')
-        mockAxiosInstance.get.mockRejectedValue(error)
+    //   it('should handle getPortfolioNav error', async () => {
+    //     const error = new Error('Failed to fetch NAV')
+    //     mockAxiosInstance.get.mockRejectedValue(error)
 
-        await expect(apiService.getPortfolioNav('1')).rejects.toThrow('Failed to fetch NAV')
-      })
-    })
+    //     await expect(apiService.getPortfolioNav('1')).rejects.toThrow('Failed to fetch NAV')
+    //   })
+    // })
 
     describe('getPortfolioPerformance', () => {
       it('should fetch portfolio performance successfully', async () => {

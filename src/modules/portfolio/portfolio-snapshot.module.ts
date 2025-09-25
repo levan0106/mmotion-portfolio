@@ -26,6 +26,7 @@ import { SnapshotController } from './controllers/snapshot.controller';
 import { SnapshotModule } from './snapshot.module';
 import { SharedModule } from '../shared/shared.module';
 import { AssetModule } from '../asset/asset.module';
+import { PortfolioModule } from './portfolio.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AssetModule } from '../asset/asset.module';
       Trade,
     ]),
     forwardRef(() => SnapshotModule),
+    forwardRef(() => PortfolioModule),
     SharedModule,
     AssetModule,
   ],

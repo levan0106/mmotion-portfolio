@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindManyOptions, In } from 'typeorm';
+import { Repository, FindOptionsWhere, FindManyOptions, In, Between } from 'typeorm';
 import { AssetPrice } from '../entities/asset-price.entity';
 import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
@@ -306,11 +306,11 @@ export class BasicPriceService {
           price: updateDto.currentPrice,
           priceType: updateDto.priceType || 'MANUAL',
           priceSource: updateDto.priceSource || 'USER',
-          changeReason: 'Manual price update',
+          changeReason: `Price update ${new Date().toLocaleDateString('vi-VN')}`,
           metadata: {
             source: 'manual_update',
             updateType: 'manual',
-            changeReason: updateDto.metadata?.changeReason || 'Manual price update',
+            changeReason: updateDto.metadata?.changeReason || `Price update ${new Date().toLocaleDateString('vi-VN')}`,
           },
         });
         
@@ -548,6 +548,283 @@ export class BasicPriceService {
     }
     if (!Number.isFinite(price)) {
       throw new BadRequestException('Price must be a finite number');
+    }
+  }
+
+  /**
+   * Get assets with historical prices for a specific date.
+   * @param targetDate - Target date to get historical prices from
+   * @param assetIds - Optional array of specific asset IDs to check
+   * @returns Assets with their historical prices
+   */
+  async getAssetsWithHistoricalPrice(
+    targetDate: string,
+    assetIds?: string[]
+  ): Promise<Array<{
+    assetId: string;
+    symbol: string;
+    name: string;
+    currentPrice: number;
+    historicalPrice?: number;
+    hasHistoricalData: boolean;
+    currency: string;
+    type: string;
+  }>> {
+    this.logger.log(`Getting assets with historical prices for date: ${targetDate}`);
+
+    try {
+      // Get all global assets (or specific ones if assetIds provided)
+      const whereCondition = assetIds ? { id: In(assetIds), isActive: true } : { isActive: true };
+      
+      const assets = await this.globalAssetService['globalAssetRepository'].find({
+        where: whereCondition,
+        relations: ['assetPrice'],
+        order: { symbol: 'ASC' },
+      });
+
+      const result = await Promise.all(
+        assets.map(async (asset) => {
+          // Get current price
+          const currentPrice = asset.assetPrice?.currentPrice || 0;
+
+          // Get historical price for the target date
+          const historicalPrice = await this.getHistoricalPriceForDate(asset.id, targetDate);
+
+          return {
+            assetId: asset.id,
+            symbol: asset.symbol,
+            name: asset.name,
+            currentPrice,
+            historicalPrice: historicalPrice?.price,
+            hasHistoricalData: !!historicalPrice,
+            currency: asset.currency,
+            type: asset.type,
+          };
+        })
+      );
+
+      this.logger.log(`Found ${result.length} assets with historical price data`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to get assets with historical prices: ${error.message}`);
+      throw new BadRequestException(`Failed to get assets with historical prices: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get historical price for a specific asset and date.
+   * @private
+   */
+  private async getHistoricalPriceForDate(assetId: string, targetDate: string): Promise<{ price: number; createdAt: Date } | null> {
+    try {
+      const startDate = new Date(targetDate);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(targetDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      const historicalPrice = await this.priceHistoryRepository.findOne({
+        where: {
+          assetId,
+          createdAt: Between(startDate, endDate),
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      return historicalPrice ? { price: historicalPrice.price, createdAt: historicalPrice.createdAt } : null;
+    } catch (error) {
+      this.logger.error(`Failed to get historical price for asset ${assetId} on ${targetDate}: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Bulk update asset prices from historical data.
+   * @param targetDate - Target date to get historical prices from
+   * @param assetIds - Array of asset IDs to update
+   * @param reason - Reason for the update
+   * @returns Bulk update result
+   */
+  async bulkUpdatePricesByDate(
+    targetDate: string,
+    assetIds: string[],
+    reason: string = 'Bulk update from historical data'
+  ): Promise<{
+    successCount: number;
+    failedCount: number;
+    totalCount: number;
+    results: Array<{
+      assetId: string;
+      symbol: string;
+      success: boolean;
+      message: string;
+      oldPrice?: number;
+      newPrice?: number;
+    }>;
+  }> {
+    this.logger.log(`Bulk updating prices for ${assetIds.length} assets from date: ${targetDate}`);
+
+    const results: Array<{
+      assetId: string;
+      symbol: string;
+      success: boolean;
+      message: string;
+      oldPrice?: number;
+      newPrice?: number;
+    }> = [];
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    // Process each asset individually to handle errors gracefully
+    for (const assetId of assetIds) {
+      try {
+        const result = await this.updateSingleAssetPriceByDate(assetId, targetDate, reason);
+        results.push(result);
+        
+        if (result.success) {
+          successCount++;
+        } else {
+          failedCount++;
+        }
+      } catch (error) {
+        failedCount++;
+        results.push({
+          assetId,
+          symbol: 'Unknown',
+          success: false,
+          message: `Failed to update: ${error.message}`,
+        });
+        this.logger.error(`Failed to update asset ${assetId}: ${error.message}`);
+      }
+    }
+
+    this.logger.log(`Bulk update completed: ${successCount} success, ${failedCount} failed`);
+    
+    return {
+      successCount,
+      failedCount,
+      totalCount: assetIds.length,
+      results,
+    };
+  }
+
+  /**
+   * Update a single asset price from historical data.
+   * @private
+   */
+  private async updateSingleAssetPriceByDate(
+    assetId: string,
+    targetDate: string,
+    reason: string
+  ): Promise<{
+    assetId: string;
+    symbol: string;
+    success: boolean;
+    message: string;
+    oldPrice?: number;
+    newPrice?: number;
+  }> {
+    try {
+      // Get asset info
+      const asset = await this.globalAssetService['globalAssetRepository'].findOne({
+        where: { id: assetId },
+      });
+
+      if (!asset) {
+        return {
+          assetId,
+          symbol: 'Unknown',
+          success: false,
+          message: 'Asset not found',
+        };
+      }
+
+      // Get historical price
+      const historicalPrice = await this.getHistoricalPriceForDate(assetId, targetDate);
+      
+      if (!historicalPrice) {
+        return {
+          assetId,
+          symbol: asset.symbol,
+          success: false,
+          message: `No historical price found for date ${targetDate}`,
+        };
+      }
+
+      // Get current price
+      const currentPrice = await this.assetPriceRepository.findOne({
+        where: { assetId },
+      });
+
+      if (!currentPrice) {
+        return {
+          assetId,
+          symbol: asset.symbol,
+          success: false,
+          message: 'No current price found for asset',
+        };
+      }
+
+      const oldPrice = currentPrice.currentPrice;
+      let newPrice = historicalPrice.price;
+
+      // Convert to number if it's a string
+      if (typeof newPrice === 'string') {
+        newPrice = parseFloat(newPrice);
+      }
+
+      // Log for debugging
+      this.logger.debug(`Price validation - oldPrice: ${oldPrice}, newPrice: ${newPrice}, type: ${typeof newPrice}`);
+
+      // Validate new price
+      if (!newPrice || !isFinite(newPrice) || newPrice <= 0) {
+        return {
+          assetId,
+          symbol: asset.symbol,
+          success: false,
+          message: `Invalid historical price: ${newPrice}. Price must be a positive finite number.`,
+        };
+      }
+
+      // Update the current price
+      try {
+        await this.updateByAssetId(assetId, {
+          currentPrice: newPrice,
+          priceType: PriceType.MANUAL,
+          priceSource: PriceSource.USER,
+          metadata: {
+            reason,
+            targetDate,
+            oldPrice,
+            source: 'historical_update',
+          },
+        });
+      } catch (error) {
+        this.logger.error(`Failed to update asset price: ${error.message}`);
+        return {
+          assetId,
+          symbol: asset.symbol,
+          success: false,
+          message: `Update failed: ${error.message}`,
+        };
+      }
+
+      return {
+        assetId,
+        symbol: asset.symbol,
+        success: true,
+        message: `Updated from ${oldPrice} to ${newPrice}`,
+        oldPrice,
+        newPrice,
+      };
+    } catch (error) {
+      return {
+        assetId,
+        symbol: 'Unknown',
+        success: false,
+        message: `Update failed: ${error.message}`,
+      };
     }
   }
 

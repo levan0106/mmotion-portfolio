@@ -9,6 +9,7 @@ import { Portfolio } from '../entities/portfolio.entity';
 import { CreatePortfolioSnapshotDto, UpdatePortfolioSnapshotDto } from '../dto/portfolio-snapshot.dto';
 import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
 import { CashFlowService } from './cash-flow.service';
+import { InvestorHoldingService } from './investor-holding.service';
 
 
 export interface PortfolioSnapshotTimelineQuery {
@@ -32,6 +33,7 @@ export class PortfolioSnapshotService {
     private readonly portfolioRepository: Repository<Portfolio>,
     private readonly depositCalculationService: DepositCalculationService,
     private readonly cashFlowService: CashFlowService,
+    private readonly investorHoldingService: InvestorHoldingService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -156,16 +158,29 @@ export class PortfolioSnapshotService {
     // Calculate Asset Risk Metrics (Assets Only)
     const assetVolatility = Number(this.calculateVolatility(assetSnapshots).toFixed(4));
     const assetMaxDrawdown = Number(this.calculateMaxDrawdown(assetSnapshots).toFixed(4));
+    
+    this.logger.debug(`Recalculating NAV per unit for portfolio ${portfolioId}`);
+    // To get real-time data for fund management, we need to recalculate the following fields:
+    // 1. Update Portfolio NAV per unit
+    // Recalculate NAV per unit
+    const newNavPerUnit = await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId);
 
-    // Get cash balance from portfolio (if available) and no need to calculate it again
-    const cashBalance = Number((Number(portfolio.cashBalance || 0)).toFixed(8));
-    const totalAssetInvested = Number((totalAssetValue - cashBalance).toFixed(8));
-
+    // 2. Update Portfolio numberOfInvestors
+    // Recalculate number of investors
+    const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId);
+    
+    // 3. Recalculate cash balance
+    const cashFlow = await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolioId);
+    
     // get fund management metrics
     const totalOutstandingUnits = Number((Number(portfolio.totalOutstandingUnits || 0)).toFixed(8));
-    const navPerUnit = Number((Number(portfolio.navPerUnit || 0)).toFixed(8));
-    const numberOfInvestors = Number((Number(portfolio.numberOfInvestors || 0)).toFixed(8));
+    const navPerUnit = Number((Number(newNavPerUnit || 0)).toFixed(8));
+    const numberOfInvestors = Number((Number(newNumberOfInvestors || 0)).toFixed(8));
     const isFund = Boolean(portfolio.isFund || false);
+
+    // Get cash balance from portfolio (if available) and no need to calculate it again
+    const cashBalance = Number((Number(cashFlow.newCashBalance || 0)).toFixed(8));
+    const totalAssetInvested = Number((totalAssetValue - cashBalance).toFixed(8));
 
     // Calculate deposit data
     const depositData = await this.depositCalculationService.calculateDepositData(portfolioId);

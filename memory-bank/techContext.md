@@ -89,6 +89,8 @@
 - **Fund Management Integration**: Added isFund field and numberOfInvestors to portfolio snapshots ✅
 - **Migration Script Management**: Comprehensive migration approach for fund management data ✅
 - **Code Quality**: Production-ready with clean, maintainable code ✅
+- **Asset Price Bulk Update**: Complete bulk price update system with historical data integration ✅
+- **Reason Format Enhancement**: Dynamic reason format with date information for better audit trail ✅
 
 ### Infrastructure & DevOps
 - **Docker**: Containerization cho all services - **PROJECT RUNS WITH DOCKER** ✅

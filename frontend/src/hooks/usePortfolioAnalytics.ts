@@ -7,7 +7,7 @@ import { apiService } from '../services/api';
 export const usePortfolioAllocationTimeline = (
   portfolioId: string,
   months: number = 12,
-  granularity: string = 'MONTHLY'
+  granularity: string = 'DAILY'
 ) => {
   const [allocationData, setAllocationData] = useState<{ date: string; [key: string]: string | number }[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
@@ -52,40 +52,40 @@ export const usePortfolioAllocationTimeline = (
 };
 
 // Hook for portfolio performance analytics
-export const usePortfolioPerformance = (portfolioId: string, months: number = 12) => {
-  const [performanceData, setPerformanceData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// export const usePortfolioPerformance = (portfolioId: string, months: number = 12) => {
+//   const [performanceData, setPerformanceData] = useState<any>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
 
-  const fetchPerformanceData = useCallback(async () => {
-    if (!portfolioId) return;
+//   const fetchPerformanceData = useCallback(async () => {
+//     if (!portfolioId) return;
     
-    setLoading(true);
-    setError(null);
+//     setLoading(true);
+//     setError(null);
     
-    try {
-      const data = await apiService.getPortfolioPerformance(portfolioId);
-      setPerformanceData(data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch performance data');
-    } finally {
-      setLoading(false);
-    }
-  }, [portfolioId, months]);
+//     try {
+//       // const data = await apiService.getPortfolioPerformance(portfolioId);
+//       // setPerformanceData(data);
+//     } catch (error) {
+//       setError(error instanceof Error ? error.message : 'Failed to fetch performance data');
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, [portfolioId, months]);
 
-  useEffect(() => {
-    if (portfolioId) {
-      fetchPerformanceData();
-    }
-  }, [portfolioId, months]);
+//   useEffect(() => {
+//     if (portfolioId) {
+//       fetchPerformanceData();
+//     }
+//   }, [portfolioId, months]);
 
-  return {
-    performanceData,
-    loading,
-    error,
-    refetch: fetchPerformanceData,
-  };
-};
+//   return {
+//     performanceData,
+//     loading,
+//     error,
+//     refetch: fetchPerformanceData,
+//   };
+// };
 
 // Hook for portfolio risk metrics
 export const usePortfolioRiskMetrics = (portfolioId: string) => {

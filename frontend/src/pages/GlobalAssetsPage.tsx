@@ -2,8 +2,10 @@ import React from 'react';
 import { Container, Box, Paper, Typography } from '@mui/material';
 import GlobalAssetManagement from '../components/GlobalAssetManagement';
 import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
+import { UpdatePriceByDateButton } from '../components/AssetPrice';
 import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
+import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
 
 
 const GlobalAssetsPage: React.FC = () => {
@@ -128,6 +130,15 @@ const GlobalAssetsPage: React.FC = () => {
           <Typography variant="h6" component="h2">
             Market Price Auto Sync
           </Typography>
+          <UpdatePriceByDateButton
+            onUpdateSuccess={(result: BulkUpdateResult) => {
+              console.log('Bulk update completed:', result);
+              // Refresh assets after successful update
+              handleRefresh();
+            }}
+            variant="outlined"
+            size="small"
+          />
         </Box>
         <AutoSyncToggle
           onToggle={(enabled) => {

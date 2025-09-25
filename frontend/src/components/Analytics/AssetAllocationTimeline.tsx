@@ -6,6 +6,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import TimelineChart, { TimelineDataPoint } from '../Charts';
 import GranularitySelector, { GranularityType } from './GranularitySelector';
+import { formatPercentageValue } from '../../utils/format';
 
 interface AssetAllocationTimelineProps {
   data: TimelineDataPoint[];
@@ -21,7 +22,7 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
   data,
   title = '',
   compact = false,
-  granularity = 'MONTHLY',
+  granularity = 'DAILY',
   onGranularityChange,
   showGranularitySelector = true,
 }) => {
@@ -37,7 +38,7 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
   return (
     <Box>
       {showGranularitySelector && onGranularityChange && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: compact ? 0.5 : 0.8 }}>
           <GranularitySelector
             value={granularity}
             onChange={onGranularityChange}
@@ -54,8 +55,8 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
         defaultChartType="bar"
         defaultBarType="stacked"
         yAxisDomain={[0, 100]}
-        yAxisFormatter={(value: number) => `${value}%`}
-        tooltipFormatter={(value: number) => `${value.toFixed(1)}%`}
+        yAxisFormatter={(value: number) => formatPercentageValue(value, 1)}
+        tooltipFormatter={(value: number) => formatPercentageValue(value, 1)}
       />
     </Box>
   );

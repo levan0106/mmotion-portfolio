@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Portfolio Snapshot System Enhancement & Fund Management Features - IN PROGRESS**
-**Latest Update: Implementing comprehensive portfolio snapshot system with fund management features, database precision fixes, and enhanced UI components (Current Session)**
+**Phase: Portfolio Snapshot System Enhancement & Fund Management Features - COMPLETED**
+**Latest Update: Successfully resolved dependency injection issues in PortfolioSnapshotService and enhanced fund management features with real-time calculations (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,33 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- 🔄 **PORTFOLIO SNAPSHOT SYSTEM ENHANCEMENT & FUND MANAGEMENT FEATURES - IN PROGRESS** (Current Session - December 25, 2024)
+- ✅ **ASSET PRICE BULK UPDATE BY DATE FEATURE - COMPLETED** (Current Session - December 25, 2024)
+  - **Backend Implementation**: Complete API endpoints for bulk price updates from historical data
+  - **Service Layer**: Enhanced BasicPriceService with historical price lookup and bulk update methods
+  - **DTOs and Validation**: Comprehensive DTOs with proper validation and Swagger documentation
+  - **Frontend Components**: Professional modal workflow with date selection, asset filtering, and result display
+  - **User Experience**: Multi-step workflow with confirmation, progress tracking, and detailed results
+  - **Error Handling**: Graceful error handling with individual asset failure tracking
+  - **Integration**: Seamlessly integrated into Global Assets page with professional UI
+  - **Reason Format Enhancement**: Updated reason format from "Manual price update" to "Price update [Date]" for better audit trail
+  - **Key Features Implemented**:
+    - ✅ **Historical Price Lookup**: Get assets with historical prices for specific dates
+    - ✅ **Bulk Update API**: Update multiple asset prices from historical data
+    - ✅ **Asset Selection**: Checkbox-based asset selection with data availability indicators
+    - ✅ **Date Validation**: Allow current date selection and validate date formats
+    - ✅ **Progress Tracking**: Real-time progress display with success/failure counts
+    - ✅ **Result Details**: Comprehensive results showing old/new prices and error messages
+    - ✅ **Professional UI**: Material-UI based modal with multi-step workflow
+    - ✅ **API Documentation**: Complete Swagger documentation with examples
+    - ✅ **Testing**: Unit tests for both backend and frontend components
+    - ✅ **Production Ready**: Clean, maintainable code with comprehensive error handling
+    - ✅ **Reason Format**: Dynamic reason with date information for better audit trail
+
+- ✅ **PORTFOLIO SNAPSHOT SYSTEM ENHANCEMENT & FUND MANAGEMENT FEATURES - COMPLETED** (Previous Session - December 25, 2024)
+  - **Dependency Injection Resolution**: Successfully resolved critical dependency injection issue in PortfolioSnapshotService
+  - **Module Integration**: Added forwardRef(() => PortfolioModule) to PortfolioSnapshotModule to resolve circular dependencies
+  - **Real-time Fund Calculations**: Implemented real-time fund management metrics calculation in portfolio snapshots
+  - **Service Integration**: Successfully integrated InvestorHoldingService and CashFlowService for real-time data
   - **Database Schema Updates**: Enhanced portfolio snapshot entities with fund management fields
   - **Precision Fixes**: Fixed numeric precision issues in asset performance snapshots
   - **Fund Management Integration**: Added isFund field and numberOfInvestors to portfolio snapshots
@@ -119,15 +145,19 @@
   - **Migration Scripts**: Created 6 new database migrations for fund management features
   - **Service Layer Updates**: Updated portfolio snapshot services with new functionality
   - **Type Definitions**: Enhanced TypeScript types for snapshot data structures
-  - **Key Features in Progress**:
-    - 🔄 **Fund Management Fields**: Adding fund-specific fields to portfolio snapshots
-    - 🔄 **Investor Count Tracking**: Implementing numberOfInvestors field for fund portfolios
-    - 🔄 **Precision Improvements**: Fixing decimal precision in asset performance calculations
-    - 🔄 **UI Enhancements**: Updating snapshot components for better fund data display
-    - 🔄 **Data Migration**: Implementing database migrations for new fund features
-    - 🔄 **Service Integration**: Updating services to handle fund management data
-    - 🔄 **Type Safety**: Enhancing TypeScript definitions for fund-related data
-    - 🔄 **Cleanup Scripts**: Updating fund cleanup and data management scripts
+  - **Key Features Completed**:
+    - ✅ **Dependency Injection Fix**: Resolved PortfolioSnapshotService dependency injection error
+    - ✅ **Module Configuration**: Added PortfolioModule import with forwardRef to avoid circular dependencies
+    - ✅ **Real-time Fund Metrics**: Implemented real-time calculation of fund management metrics
+    - ✅ **Service Method Integration**: Successfully integrated updatePortfolioNavPerUnit, updatePortfolioNumberOfInvestors, and recalculateCashBalanceFromAllFlows
+    - ✅ **Fund Management Fields**: Added fund-specific fields to portfolio snapshots
+    - ✅ **Investor Count Tracking**: Implemented numberOfInvestors field for fund portfolios
+    - ✅ **Precision Improvements**: Fixed decimal precision in asset performance calculations
+    - ✅ **UI Enhancements**: Updated snapshot components for better fund data display
+    - ✅ **Data Migration**: Implemented database migrations for new fund features
+    - ✅ **Service Integration**: Updated services to handle fund management data
+    - ✅ **Type Safety**: Enhanced TypeScript definitions for fund-related data
+    - ✅ **Cleanup Scripts**: Updated fund cleanup and data management scripts
 
 - ✅ **NAV HOLDINGS MANAGEMENT & REAL-TIME CASH BALANCE ENHANCEMENT - COMPLETED** (Previous Session - September 24, 2025)
   - **Refresh Button Enhancement**: Enhanced refresh button to refresh both holdings and Fund Summary data simultaneously

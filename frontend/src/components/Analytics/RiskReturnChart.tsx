@@ -2,7 +2,7 @@
  * Risk-Return Scatter Plot component
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ScatterChart,
   Scatter,
@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, FormControl, Select, MenuItem } from '@mui/material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
 interface RiskReturnDataPoint {
@@ -29,6 +29,8 @@ interface RiskReturnChartProps {
   baseCurrency: string;
   title?: string;
   compact?: boolean;
+  onPeriodChange?: (period: string) => void;
+  selectedPeriod?: string;
 }
 
 const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
@@ -36,7 +38,18 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
   baseCurrency,
   title = 'Risk-Return Analysis',
   compact = false,
+  onPeriodChange,
+  selectedPeriod = '1Y',
 }) => {
+  const [localPeriod, setLocalPeriod] = useState(selectedPeriod);
+
+  const handlePeriodChange = (event: any) => {
+    const newPeriod = event.target.value;
+    setLocalPeriod(newPeriod);
+    if (onPeriodChange) {
+      onPeriodChange(newPeriod);
+    }
+  };
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -112,7 +125,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               mt: 0.5,
               display: 'block'
             }}>
-              Larger bubble = Higher return
+              Larger bubble = Higher return performance (better investment)
             </Typography>
           </Box>
 
@@ -151,6 +164,28 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               color: 'text.primary'
             }}>
               {formatCurrency(data.value, baseCurrency)}
+            </Typography>
+          </Box>
+
+          {/* Performance Rating Section */}
+          <Box sx={{ mb: 1.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ 
+              fontSize: '0.7rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: 500
+            }}>
+              Performance Rating
+            </Typography>
+            <Typography variant="body2" fontWeight="500" sx={{ 
+              mt: 0.5,
+              fontSize: '0.85rem',
+              color: data.return > 0 ? 'success.main' : data.return < -5 ? 'error.main' : 'warning.main'
+            }}>
+              {data.return > 10 ? 'Excellent' : 
+               data.return > 5 ? 'Good' : 
+               data.return > 0 ? 'Positive' : 
+               data.return > -5 ? 'Poor' : 'Very Poor'}
             </Typography>
           </Box>
 
@@ -197,26 +232,92 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
     );
   }
 
+  // Calculate bubble sizes for all data points
+
+  const dataWithBubbleSizes = data.map((entry) => {
+    // Calculate bubble size based on return value for quick performance review
+    const minSize = 15;   // Kích thước tối thiểu
+    const maxSize = 40;  // Kích thước tối đa
+    
+    // Sử dụng return value để bubble size phản ánh hiệu quả (dương = tốt, âm = xấu)
+    const returns = data.map(d => d.return);
+    const minReturn = Math.min(...returns);
+    const maxReturn = Math.max(...returns);
+    const returnRange = maxReturn - minReturn;
+    
+    let bubbleSize = minSize;
+    if (returnRange > 0) {
+      // Normalize return value to 0-1 range
+      const normalizedReturn = (entry.return - minReturn) / returnRange;
+      
+      // Áp dụng power function để tăng contrast và làm nổi bật hiệu quả cao
+      const enhancedNormalized = Math.pow(normalizedReturn, 0.5); // 0.5 để tăng contrast
+      
+      // Scale to bubble size range
+      bubbleSize = minSize + (enhancedNormalized * (maxSize - minSize));
+      
+      // Đảm bảo không vượt quá maxSize
+      bubbleSize = Math.min(bubbleSize, maxSize);
+    } else {
+      // Nếu tất cả return giống nhau, dùng kích thước trung bình
+      bubbleSize = (minSize + maxSize) / 2;
+    }
+    
+    // Đảm bảo bubble size tối thiểu
+    bubbleSize = Math.max(bubbleSize, minSize);
+    
+    return {
+      ...entry,
+      size: bubbleSize
+    };
+  });
+
   return (
     <Box>
-      <Typography variant={compact ? "subtitle1" : "h6"} gutterBottom sx={{ 
-        fontSize: compact ? '0.9rem' : undefined,
-        mb: compact ? 1 : 2
-      }}>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ 
-        mb: compact ? 1 : 2,
-        fontSize: compact ? '0.75rem' : undefined
-      }}>
-        Risk vs Return analysis of portfolio assets
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: compact ? 1 : 2 }}>
+        <Box>
+          <Typography variant={compact ? "subtitle1" : "h6"} gutterBottom sx={{ 
+            fontSize: compact ? '0.9rem' : undefined,
+            mb: 0
+          }}>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ 
+            fontSize: compact ? '0.75rem' : undefined
+          }}>
+            Risk vs Return analysis of portfolio assets
+          </Typography>
+        </Box>
+        
+        {onPeriodChange && (
+          <FormControl size="small" sx={{ minWidth: compact ? 60 : 70 }}>
+            <Select
+              value={localPeriod}
+              onChange={handlePeriodChange}
+              displayEmpty
+              sx={{ 
+                fontSize: compact ? '0.6rem' : '0.7rem',
+                height: compact ? '28px' : '32px',
+                '& .MuiSelect-select': {
+                  py: compact ? 0.3 : 0.5,
+                  px: compact ? 0.8 : 1
+                }
+              }}
+            >
+              <MenuItem value="1M" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>1M</MenuItem>
+              <MenuItem value="3M" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>3M</MenuItem>
+              <MenuItem value="1Y" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>1Y</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      </Box>
+      
       <Typography variant="caption" color="text.secondary" sx={{ 
         mb: compact ? 1 : 2,
         fontSize: compact ? '0.65rem' : '0.7rem',
         fontStyle: 'italic'
       }}>
-        • Bubble size represents return percentage (enhanced contrast for better visibility)
+        • Bubble size represents return performance - larger bubbles indicate higher returns (better performance)
       </Typography>
       <Box sx={{ height: compact ? 167 : 267 }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -254,46 +355,46 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Scatter data={data} fill="#1976d2">
-              {data.map((entry, index) => {
-                // Calculate bubble size based on return percentage with enhanced contrast
-                const minSize = 8;   // Kích thước tối thiểu (tăng từ 6)
-                const maxSize = 35;  // Kích thước tối đa (tăng từ 25)
-                
-                // Tìm min/max return trong dataset
-                const returns = data.map(d => d.return);
-                const minReturn = Math.min(...returns);
-                const maxReturn = Math.max(...returns);
-                const returnRange = maxReturn - minReturn;
-                
-                let bubbleSize = minSize;
-                if (returnRange > 0) {
-                  // Normalize return value to 0-1 range
-                  const normalizedReturn = (entry.return - minReturn) / returnRange;
-                  
-                  // Áp dụng power function để tăng contrast (bubble size khác biệt rõ ràng hơn)
-                  const enhancedNormalized = Math.pow(normalizedReturn, 0.7); // 0.7 để tăng contrast
-                  
-                  // Scale to bubble size range với multiplier để tăng chênh lệch
-                  const sizeMultiplier = 1.5; // Tăng chênh lệch 1.5 lần
-                  bubbleSize = minSize + (enhancedNormalized * (maxSize - minSize) * sizeMultiplier);
-                  
-                  // Đảm bảo không vượt quá maxSize
-                  bubbleSize = Math.min(bubbleSize, maxSize);
-                } else {
-                  // Nếu tất cả return giống nhau, dùng kích thước trung bình
-                  bubbleSize = (minSize + maxSize) / 2;
-                }
-                
+            {dataWithBubbleSizes.map((entry, index) => {
+              // Create custom shape component for each bubble size
+              const CustomShape = (props: any) => {
+                const { cx, cy, fill } = props;
                 return (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    r={bubbleSize}
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={entry.size || 20}
+                    fill={fill}
+                    fillOpacity={0.7}
+                    stroke="#fff"
+                    strokeWidth={2}
+                    strokeOpacity={0.9}
+                    style={{ 
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.setAttribute('fillOpacity', '0.9');
+                      e.currentTarget.setAttribute('strokeWidth', '3');
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.setAttribute('fillOpacity', '0.7');
+                      e.currentTarget.setAttribute('strokeWidth', '2');
+                    }}
                   />
                 );
-              })}
-            </Scatter>
+              };
+
+              return (
+                <Scatter 
+                  key={`scatter-${index}`}
+                  data={[entry]}
+                  shape={CustomShape}
+                >
+                  <Cell fill={entry.color} />
+                </Scatter>
+              );
+            })}
           </ScatterChart>
         </ResponsiveContainer>
       </Box>

@@ -66,7 +66,9 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
   };
 
   const getCorrelationIntensity = (correlation: number) => {
-    return Math.abs(correlation) * 100;
+    // Return opacity value between 0.3 and 1.0 based on absolute correlation
+    const absCorr = Math.abs(correlation);
+    return Math.max(0.4, 0.4 + (absCorr * 0.6)); // Minimum 0.3, maximum 1.0
   };
 
   if (assetTypes.length === 0) {
@@ -88,8 +90,8 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
         Correlation matrix showing diversification between asset types
       </Typography>
       
-      <Box sx={{ overflowX: 'auto' }}>
-        <Box sx={{ minWidth: 400 }}>
+      <Box sx={{ overflowX: 'auto', overflowY: 'hidden' }}>
+        <Box sx={{ minWidth: 400, overflow: 'hidden' }}>
           {/* Header row */}
           <Grid container spacing={0.5} sx={{ mb: 1 }}>
             <Grid item xs={2}>
@@ -149,7 +151,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                         sx={{
                           height: 40,
                           backgroundColor: isDiagonal ? '#e0e0e0' : getCorrelationColor(correlation),
-                          opacity: isDiagonal ? 0.3 : getCorrelationIntensity(correlation) / 100,
+                          opacity: isDiagonal ? 0.3 : getCorrelationIntensity(correlation),
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -157,7 +159,8 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                           transition: 'all 0.2s ease',
                           '&:hover': {
                             opacity: 1,
-                            transform: 'scale(1.05)',
+                            transform: 'scale(1.02)',
+                            zIndex: 1,
                           },
                           borderRadius: 1,
                           border: '1px solid rgba(0,0,0,0.1)',
