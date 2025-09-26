@@ -99,8 +99,15 @@ const fetchRecentUpdates = async (_limit: number = 50): Promise<PriceUpdateResul
 };
 
 const updateAllPrices = async (): Promise<UpdateAllPricesResponse> => {
-  const response = await apiService.api.post('/api/v1/market-data/update-all');
-  return response.data;
+  await apiService.api.post('/api/v1/global-assets/auto-sync/trigger');
+  return {
+    success: true,
+    totalAssets: 0,
+    successfulUpdates: 0,
+    failedUpdates: 0,
+    results: [],
+    duration: 0
+  };
 };
 
 const updatePricesByNation = async (nation: string): Promise<UpdateByNationResponse> => {

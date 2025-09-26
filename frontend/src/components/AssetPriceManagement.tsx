@@ -20,7 +20,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Tabs,
   Tab,
   Dialog,
@@ -35,6 +34,7 @@ import {
   Remove as RemoveIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -263,51 +263,97 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box>
-        {/* Current Price Display */}
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={6}>
-                <Typography variant="h4" component="div">
-                  {formatPrice(asset.assetPrice?.currentPrice || 0, asset.currency)}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+      <Box sx={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        p: 2
+      }}>
+        {/* Enhanced Current Price Display */}
+        <Card sx={{ 
+          mb: 3,
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          overflow: 'hidden'
+        }}>
+          <CardContent sx={{ p: 4 }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h3" sx={{ 
+                    fontWeight: 700,
+                    mb: 1,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {formatPrice(asset.assetPrice?.currentPrice || 0, asset.currency)}
+                  </Typography>
+                  <Typography variant="h6" sx={{ 
+                    opacity: 0.9,
+                    fontWeight: 400,
+                    mb: 2
+                  }}>
+                    {asset.symbol} • {asset.name}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   {getPriceChangeIcon()}
                   <Typography
-                    variant="body2"
-                    color={priceChange > 0 ? 'success.main' : priceChange < 0 ? 'error.main' : 'text.secondary'}
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: priceChange > 0 ? '#4caf50' : priceChange < 0 ? '#f44336' : 'rgba(255,255,255,0.8)'
+                    }}
                   >
                     {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
                     vs previous
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
                   {asset.assetPrice && (
                     <>
                       <Chip
                         label={asset.assetPrice.priceType}
-                        size="small"
-                        sx={{ backgroundColor: getPriceTypeColor(asset.assetPrice.priceType), color: 'white' }}
+                        size="medium"
+                        sx={{ 
+                          backgroundColor: 'rgba(255,255,255,0.2)', 
+                          color: 'white',
+                          fontWeight: 600,
+                          border: '1px solid rgba(255,255,255,0.3)'
+                        }}
                       />
                       <Chip
                         label={asset.assetPrice.priceSource}
-                        size="small"
-                        sx={{ backgroundColor: getPriceSourceColor(asset.assetPrice.priceSource), color: 'white' }}
+                        size="medium"
+                        sx={{ 
+                          backgroundColor: 'rgba(255,255,255,0.2)', 
+                          color: 'white',
+                          fontWeight: 600,
+                          border: '1px solid rgba(255,255,255,0.3)'
+                        }}
                       />
                       <Chip
                         label={getPriceAge(asset.assetPrice.lastPriceUpdate)}
-                        size="small"
-                        color={getPriceAgeColor(asset.assetPrice.lastPriceUpdate) as any}
+                        size="medium"
+                        sx={{
+                          backgroundColor: getPriceAgeColor(asset.assetPrice.lastPriceUpdate) === 'success' ? 'rgba(76,175,80,0.8)' :
+                                         getPriceAgeColor(asset.assetPrice.lastPriceUpdate) === 'warning' ? 'rgba(255,152,0,0.8)' :
+                                         'rgba(244,67,54,0.8)',
+                          color: 'white',
+                          fontWeight: 600
+                        }}
                       />
                     </>
                   )}
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography variant="body1" sx={{ 
+                  opacity: 0.9,
+                  fontWeight: 500
+                }}>
                   Last updated: {asset.assetPrice ? formatDate(asset.assetPrice.lastPriceUpdate) : 'Never'}
                 </Typography>
               </Grid>
@@ -315,154 +361,331 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
           </CardContent>
         </Card>
 
-        {/* Tabs */}
-        <Card>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={tabValue} onChange={handleTabChange}>
-              <Tab label="Price Settings" />
-              <Tab label="Price History" />
+        {/* Enhanced Tabs */}
+        <Card sx={{ 
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
+        }}>
+          <Box sx={{ 
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            borderBottom: '1px solid rgba(0,0,0,0.1)'
+          }}>
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  py: 2,
+                  px: 4,
+                  textTransform: 'none',
+                  minHeight: 64,
+                  '&.Mui-selected': {
+                    color: '#667eea',
+                    fontWeight: 700,
+                  }
+                },
+                '& .MuiTabs-indicator': {
+                  height: 4,
+                  borderRadius: '2px 2px 0 0',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                }
+              }}
+            >
+              <Tab 
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ 
+                      width: 8, 
+                      height: 8, 
+                      borderRadius: '50%', 
+                      backgroundColor: tabValue === 0 ? '#667eea' : '#6c757d' 
+                    }} />
+                    Price History
+                  </Box>
+                } 
+              />
             </Tabs>
           </Box>
 
-          <CardContent>
+          <CardContent sx={{ p: 4 }}>
             {tabValue === 0 && (
               <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Price Management</Typography>
+                {/* Price History Header */}
+                <Box sx={{ 
+                  mb: 4,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
+                }}>
+                  <Box>
+                    <Typography variant="h4" sx={{ 
+                      fontWeight: 700, 
+                      mb: 1,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
+                      Price History
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                      Track all price changes and updates for this asset
+                    </Typography>
+                  </Box>
                   <Button
+                    onClick={() => setUpdateDialogOpen(true)}
                     variant="contained"
                     startIcon={<EditIcon />}
-                    onClick={() => setUpdateDialogOpen(true)}
                     disabled={loading}
+                    sx={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      fontWeight: 600,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 2,
+                      boxShadow: '0 4px 16px rgba(102,126,234,0.3)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 20px rgba(102,126,234,0.4)',
+                      }
+                    }}
                   >
                     Update Price
                   </Button>
                 </Box>
 
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Current Price"
-                      value={formatPrice(asset.assetPrice?.currentPrice || 0, asset.currency)}
-                      fullWidth
-                      disabled
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Price Type"
-                      value={asset.assetPrice?.priceType || 'N/A'}
-                      fullWidth
-                      disabled
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Price Source"
-                      value={asset.assetPrice?.priceSource || 'N/A'}
-                      fullWidth
-                      disabled
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Last Update"
-                      value={asset.assetPrice ? formatDate(asset.assetPrice.lastPriceUpdate) : 'Never'}
-                      fullWidth
-                      disabled
-                    />
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {tabValue === 1 && (
-              <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Price History</Typography>
+                {/* Stats Bar */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 3,
+                  p: 2,
+                  backgroundColor: 'rgba(102,126,234,0.05)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(102,126,234,0.1)'
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
+                    {priceHistory.length} Price Records
+                  </Typography>
                   <Button
                     variant="outlined"
                     startIcon={<RefreshIcon />}
                     onClick={handlePriceHistoryRefresh}
                     disabled={historyLoading}
+                    sx={{
+                      borderColor: '#667eea',
+                      color: '#667eea',
+                      fontWeight: 600,
+                      '&:hover': {
+                        borderColor: '#5a6fd8',
+                        backgroundColor: 'rgba(102,126,234,0.05)'
+                      }
+                    }}
                   >
                     Refresh
                   </Button>
                 </Box>
 
                 {historyError ? (
-                  <Alert severity="error" sx={{ mb: 2 }}>
+                  <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
                     Failed to load price history: {historyError instanceof Error ? historyError.message : 'Unknown error'}
                   </Alert>
                 ) : null}
 
                 {historyLoading ? (
-                  <LinearProgress />
+                  <Box sx={{ mb: 3 }}>
+                    <LinearProgress sx={{ borderRadius: 1, height: 6 }} />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                      Loading price history...
+                    </Typography>
+                  </Box>
                 ) : priceHistory.length === 0 ? (
-                  <Alert severity="info">
-                    No price history available for this asset.
-                  </Alert>
+                  <Card sx={{ 
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid rgba(0,0,0,0.05)'
+                  }}>
+                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                        No Price History Available
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        This asset doesn't have any price history records yet.
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 ) : (
-                  <TableContainer component={Paper}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Price</TableCell>
-                          <TableCell>Type</TableCell>
-                          <TableCell>Source</TableCell>
-                          <TableCell>Reason</TableCell>
-                          <TableCell>Date</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {priceHistory.map((history) => (
-                          <TableRow key={history.id}>
-                            <TableCell>
-                              <Typography variant="body2" fontWeight="medium">
-                                {formatPrice(history.price, asset.currency)}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={history.priceType}
-                                size="small"
-                                sx={{ backgroundColor: getPriceTypeColor(history.priceType), color: 'white' }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={history.priceSource}
-                                size="small"
-                                sx={{ backgroundColor: getPriceSourceColor(history.priceSource), color: 'white' }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {history.changeReason || 'N/A'}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {formatDate(history.createdAt)}
-                              </Typography>
-                            </TableCell>
+                  <Card sx={{ 
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    overflow: 'hidden'
+                  }}>
+                    <TableContainer sx={{ 
+                      '&::-webkit-scrollbar': {
+                        height: 8,
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        borderRadius: 4,
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: 'rgba(102,126,234,0.3)',
+                        borderRadius: 4,
+                        '&:hover': {
+                          backgroundColor: 'rgba(102,126,234,0.5)',
+                        },
+                      },
+                    }}>
+                      <Table sx={{ minWidth: 600 }}>
+                        <TableHead sx={{ backgroundColor: 'rgba(102,126,234,0.05)' }}>
+                          <TableRow>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '18%', fontSize: '0.875rem' }}>Price</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '12%', fontSize: '0.875rem' }}>Type</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '12%', fontSize: '0.875rem' }}>Source</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '28%', fontSize: '0.875rem' }}>Reason</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '30%', fontSize: '0.875rem' }}>Date</TableCell>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                          {priceHistory.map((history) => (
+                            <TableRow 
+                              key={history.id}
+                              sx={{ 
+                                '&:hover': { 
+                                  backgroundColor: 'rgba(102,126,234,0.02)' 
+                                },
+                                '&:nth-of-type(even)': {
+                                  backgroundColor: 'rgba(0,0,0,0.02)'
+                                }
+                              }}
+                            >
+                              <TableCell sx={{ py: 1.5 }}>
+                                <Typography variant="body2" fontWeight="600" sx={{ color: '#667eea', fontSize: '0.875rem' }}>
+                                  {formatPrice(history.price, asset.currency)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell sx={{ py: 1.5 }}>
+                                <Chip
+                                  label={history.priceType}
+                                  size="small"
+                                  sx={{ 
+                                    backgroundColor: getPriceTypeColor(history.priceType), 
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    fontSize: '0.7rem',
+                                    height: 22,
+                                    '& .MuiChip-label': {
+                                      fontSize: '0.7rem',
+                                      padding: '0 8px'
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ py: 1.5 }}>
+                                <Chip
+                                  label={history.priceSource}
+                                  size="small"
+                                  sx={{ 
+                                    backgroundColor: getPriceSourceColor(history.priceSource), 
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    fontSize: '0.7rem',
+                                    height: 22,
+                                    '& .MuiChip-label': {
+                                      fontSize: '0.7rem',
+                                      padding: '0 8px'
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ py: 1.5 }}>
+                                <Typography variant="body2" sx={{ 
+                                  fontSize: '0.7rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '100%'
+                                }}>
+                                  {history.changeReason || 'N/A'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell sx={{ py: 1.5 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ 
+                                  fontSize: '0.7rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {formatDate(history.createdAt)}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Card>
                 )}
               </Box>
             )}
           </CardContent>
         </Card>
 
-        {/* Price Update Dialog */}
-        <Dialog open={updateDialogOpen} onClose={() => setUpdateDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Update Price</DialogTitle>
+        {/* Enhanced Price Update Dialog */}
+        <Dialog 
+          open={updateDialogOpen} 
+          onClose={() => setUpdateDialogOpen(false)} 
+          maxWidth="sm" 
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: '1.5rem',
+            py: 3,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Box>
+              Update Price - {asset.symbol}
+            </Box>
+            <Button
+              onClick={() => setUpdateDialogOpen(false)}
+              sx={{
+                color: 'white',
+                minWidth: 'auto',
+                p: 1,
+                borderRadius: '50%',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }
+              }}
+            >
+              <CloseIcon />
+            </Button>
+          </DialogTitle>
           <form onSubmit={handleSubmit(handlePriceUpdate)}>
-            <DialogContent>
-              <Grid container spacing={2}>
+            <DialogContent sx={{ p: 4 }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Update the current price for <strong>{asset.name}</strong>
+                </Typography>
+              </Box>
+              
+              <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <Controller
                     name="price"
@@ -470,13 +693,25 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Price"
+                        label="New Price"
                         type="number"
                         fullWidth
                         error={!!errors.price}
                         helperText={errors.price?.message}
                         InputProps={{
-                          startAdornment: <Typography sx={{ mr: 1 }}>{asset.currency}</Typography>,
+                          startAdornment: <Typography sx={{ mr: 1, fontWeight: 600, color: '#667eea' }}>{asset.currency}</Typography>,
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                              borderWidth: 2,
+                            },
+                          }
                         }}
                       />
                     )}
@@ -489,15 +724,36 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.priceType}>
                         <InputLabel>Price Type</InputLabel>
-                        <Select {...field} label="Price Type">
+                        <Select 
+                          {...field} 
+                          label="Price Type"
+                          sx={{
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                              borderWidth: 2,
+                            },
+                          }}
+                        >
                           {PRICE_TYPES.map((type) => (
                             <MenuItem key={type.value} value={type.value}>
-                              {type.label}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box sx={{ 
+                                  width: 12, 
+                                  height: 12, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: type.color 
+                                }} />
+                                {type.label}
+                              </Box>
                             </MenuItem>
                           ))}
                         </Select>
                         {errors.priceType && (
-                          <Typography variant="caption" color="error">
+                          <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
                             {errors.priceType.message}
                           </Typography>
                         )}
@@ -512,15 +768,36 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.priceSource}>
                         <InputLabel>Price Source</InputLabel>
-                        <Select {...field} label="Price Source">
+                        <Select 
+                          {...field} 
+                          label="Price Source"
+                          sx={{
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                              borderWidth: 2,
+                            },
+                          }}
+                        >
                           {PRICE_SOURCES.map((source) => (
                             <MenuItem key={source.value} value={source.value}>
-                              {source.label}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box sx={{ 
+                                  width: 12, 
+                                  height: 12, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: source.color 
+                                }} />
+                                {source.label}
+                              </Box>
                             </MenuItem>
                           ))}
                         </Select>
                         {errors.priceSource && (
-                          <Typography variant="caption" color="error">
+                          <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
                             {errors.priceSource.message}
                           </Typography>
                         )}
@@ -535,26 +812,54 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Change Reason"
+                        label="Change Reason (Optional)"
                         fullWidth
                         multiline
-                        rows={2}
+                        rows={3}
                         error={!!errors.changeReason}
                         helperText={errors.changeReason?.message}
-                        placeholder="Optional reason for price change"
+                        placeholder="Enter a reason for this price change..."
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#667eea',
+                              borderWidth: 2,
+                            },
+                          }
+                        }}
                       />
                     )}
                   />
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setUpdateDialogOpen(false)}>Cancel</Button>
+            <DialogActions sx={{ 
+              p: 3, 
+              pt: 2,
+              gap: 2,
+              borderTop: '1px solid rgba(0,0,0,0.1)',
+              justifyContent: 'flex-end'
+            }}>
               <Button
                 type="submit"
                 variant="contained"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : null}
+                startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  fontWeight: 700,
+                  minWidth: 140,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 16px rgba(102,126,234,0.3)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 20px rgba(102,126,234,0.4)',
+                  }
+                }}
               >
                 {loading ? 'Updating...' : 'Update Price'}
               </Button>

@@ -5,8 +5,9 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { AssetPrice } from '../entities/asset-price.entity';
+import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
-import { MarketDataService } from '../../market-data/services/market-data.service';
+import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
 import * as cron from 'node-cron';
 
 export interface AutoSyncConfig {
@@ -29,7 +30,9 @@ export class AutoSyncService {
     private readonly globalAssetRepository: Repository<GlobalAsset>,
     @InjectRepository(AssetPrice)
     private readonly assetPriceRepository: Repository<AssetPrice>,
-    private readonly marketDataService: MarketDataService,
+    @InjectRepository(AssetPriceHistory)
+    private readonly assetPriceHistoryRepository: Repository<AssetPriceHistory>,
+    private readonly externalMarketDataService: ExternalMarketDataService,
     private readonly configService: ConfigService,
   ) {
     // Load auto sync status from environment or database
@@ -178,7 +181,7 @@ export class AutoSyncService {
     
     if (enabled) {
       // Trigger immediate update when enabling
-      await this.marketDataService.updateAllPrices();
+      //await this.externalMarketDataService.fetchAllMarketData();
       await this.triggerManualSync();
     }
   }
@@ -191,15 +194,18 @@ export class AutoSyncService {
     this.logger.log(`[AutoSyncService] Manual sync triggered: ${syncId}`);
     
     try {
-      await this.performSync(syncId);
+      // Step 1: Fetch all market data from external APIs
+      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
+      this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
+      
+      // Step 2: Sync to database
+      await this.performSync(syncId, marketDataResult, true); // true = manual sync
       this.lastSyncTime = new Date();
       return syncId;
     } catch (error) {
       this.logger.error(`[AutoSyncService] Manual sync failed: ${syncId}`, error);
       throw error;
     }
-    
-    return syncId;
   }
 
   /**
@@ -219,11 +225,12 @@ export class AutoSyncService {
     this.logger.log(`[AutoSyncService] Auto sync triggered: ${syncId}`);
     
     try {
-      // Step 1: Update market data cache
-      await this.marketDataService.updateAllPrices();
+      // Step 1: Fetch all market data from external APIs
+      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
+      this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
       // Step 2: Sync to database
-      await this.performSync(syncId);
+      await this.performSync(syncId, marketDataResult, false); // false = auto sync
       
       this.lastSyncTime = new Date();
       this.logger.log(`[AutoSyncService] Auto sync completed: ${syncId}`);
@@ -236,7 +243,7 @@ export class AutoSyncService {
   /**
    * Perform the actual sync operation
    */
-  private async performSync(syncId: string): Promise<void> {
+  private async performSync(syncId: string, marketDataResult?: any, isManual: boolean = false): Promise<void> {
     this.logger.log(`[AutoSyncService] Starting sync operation: ${syncId}`);
     
     try {
@@ -251,34 +258,101 @@ export class AutoSyncService {
       let successCount = 0;
       let errorCount = 0;
 
+      // Create a map of all market data for quick lookup
+      const marketDataMap = new Map<string, any>();
+      
+      if (marketDataResult) {
+        // Map all market data by symbol
+        [...marketDataResult.funds, ...marketDataResult.gold, ...marketDataResult.exchangeRates, ...marketDataResult.stocks, ...marketDataResult.crypto].forEach(item => {
+          marketDataMap.set(item.symbol, item);
+        });
+        this.logger.log(`[AutoSyncService] Created market data map with ${marketDataMap.size} symbols: ${Array.from(marketDataMap.keys()).slice(0, 10).join(', ')}...`);
+      }
+
       // Update prices for each asset
       for (const asset of globalAssets) {
         try {
-          // Get current price from MarketDataService cache
-          const currentPrice = await this.marketDataService.getCurrentPrice(asset.symbol);
+          // Try exact match first
+          let marketData = marketDataMap.get(asset.symbol);
+          this.logger.debug(`[AutoSyncService] Looking for ${asset.symbol}, exact match: ${marketData ? 'found' : 'not found'}`);
+          
+          // If no exact match, try fuzzy matching for common cases
+          if (!marketData) {
+            // Try different symbol variations
+            const symbolVariations = [
+              asset.symbol,
+              asset.symbol.toUpperCase(),
+              asset.symbol.toLowerCase(),
+              // For vàng miếng SJC, code là GOLDSJC
+              ...(asset.symbol.toLowerCase().includes('sjc')? 
+                ['GOLDSJC'] : []),
+              // For vàng 9999, doji, pnj, code là GOLD9999, GOLDPNJ
+              ...(asset.symbol.toLowerCase().includes('gold')  || asset.symbol.toLowerCase().includes('9999')
+                || asset.symbol.toLowerCase().includes('doji') || asset.symbol.toLowerCase().includes('pnj') 
+                || asset.symbol.toLowerCase().includes('vàng') || asset.symbol.toLowerCase().includes('vang') ? 
+                ['GOLD9999', 'GOLDPNJ', '9999', 'PNJ'] : []),
+              // For crypto assets, try common crypto symbols
+              ...(asset.symbol.toLowerCase().includes('btc') || asset.symbol.toLowerCase().includes('bitcoin') ? 
+                ['BTC'] : []),
+              ...(asset.symbol.toLowerCase().includes('eth') || asset.symbol.toLowerCase().includes('ethereum') ? 
+                ['ETH'] : []),
+            ];
+            
+            for (const variation of symbolVariations) {
+              if (marketDataMap.has(variation)) {
+                marketData = marketDataMap.get(variation);
+                this.logger.debug(`[AutoSyncService] Found match for ${asset.symbol} using variation: ${variation}`);
+                break;
+              }
+            }
+            this.logger.debug(`[AutoSyncService] Tried variations for ${asset.symbol}: ${symbolVariations.join(', ')}, found: ${marketData ? 'yes' : 'no'}`);
+          }
+          
+          const currentPrice = marketData?.buyPrice || marketData?.sellPrice;
           
           if (currentPrice && currentPrice > 0) {
+            const now = new Date();
+            const changeReason = isManual 
+              ? `Market manual trigger sync ${now.toLocaleDateString('vi-VN')}`
+              : `Market auto sync ${now.toLocaleDateString('vi-VN')}`;
+            
             // Update or create asset price
             if (asset.assetPrice) {
               await this.assetPriceRepository.update(asset.assetPrice.id, {
                 currentPrice: currentPrice,
-                priceType: PriceType.MARKET_DATA, // Use enum instead of string
-                priceSource: PriceSource.MARKET_DATA_SERVICE, // Use enum instead of string
-                lastPriceUpdate: new Date(),
+                priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
+                priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
+                lastPriceUpdate: now,
               });
             } else {
               const newAssetPrice = this.assetPriceRepository.create({
                 assetId: asset.id,
                 currentPrice: currentPrice,
-                priceType: PriceType.MARKET_DATA, // Use enum instead of string
-                priceSource: PriceSource.MARKET_DATA_SERVICE, // Use enum instead of string
-                lastPriceUpdate: new Date(),
+                priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
+                priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
+                lastPriceUpdate: now,
               });
               await this.assetPriceRepository.save(newAssetPrice);
             }
             
+            // Save to price history for tracking
+            const priceHistory = this.assetPriceHistoryRepository.create({
+              assetId: asset.id,
+              price: currentPrice,
+              priceType: PriceType.EXTERNAL,
+              priceSource: PriceSource.EXTERNAL_API,
+              changeReason: changeReason,
+              createdAt: now,
+              metadata: {
+                source: marketData?.source || 'unknown',
+                type: marketData?.type || 'unknown',
+                syncId: syncId
+              }
+            });
+            await this.assetPriceHistoryRepository.save(priceHistory);
+            
             successCount++;
-            this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice}`);
+            this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
           } else {
             this.logger.warn(`[AutoSyncService] No valid price found for ${asset.symbol}`);
           }

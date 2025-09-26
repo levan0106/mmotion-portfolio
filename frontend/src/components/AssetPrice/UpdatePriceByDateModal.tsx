@@ -5,25 +5,11 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Checkbox,
-  FormControlLabel,
   Box,
   Typography,
   Alert,
   CircularProgress,
-  Chip,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Tooltip,
   Paper,
   Grid,
 } from '@mui/material';
@@ -36,12 +22,8 @@ import { vi } from 'date-fns/locale';
 import {
   CheckCircle,
   Error,
-  Warning,
-  Info,
   Refresh,
   History,
-  TrendingUp,
-  TrendingDown,
 } from '@mui/icons-material';
 import { useAssetPriceBulk, AssetWithHistoricalPrice, BulkUpdateResult } from '../../hooks/useAssetPriceBulk';
 import { formatCurrency, formatNumber } from '../../utils/format';
@@ -529,11 +511,7 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
         );
       
       case 'result':
-        return (
-          <Button variant="contained" onClick={handleClose}>
-            Đóng
-          </Button>
-        );
+        return null; // No actions needed, close button is in header
       
       default:
         return null;
@@ -550,20 +528,28 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
         sx: { minHeight: 500 }
       }}
     >
-      <DialogTitle>
+      <DialogTitle sx={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontWeight: 700,
+        fontSize: '1.25rem',
+        py: 2
+      }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <History sx={{ mr: 1 }} />
+            <History sx={{ mr: 1.5, fontSize: '1.5rem' }} />
             Cập nhật giá theo ngày lịch sử
           </Box>
           <Button
             onClick={handleClose}
             size="small"
             sx={{ 
+              color: 'white',
               minWidth: 'auto',
               p: 1,
+              borderRadius: '50%',
               '&:hover': {
-                backgroundColor: 'action.hover'
+                backgroundColor: 'rgba(255,255,255,0.1)',
               }
             }}
           >

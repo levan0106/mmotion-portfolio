@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MarketDataService } from './services/market-data.service';
+import { ExternalMarketDataService } from './services/external-market-data.service';
 import { MarketDataController } from './controllers/market-data.controller';
 import { ExternalMarketDataController } from './controllers/external-market-data.controller';
 import { MarketDataClientsModule } from './market-data-clients.module';
@@ -20,9 +21,11 @@ import { MarketDataClientsModule } from './market-data-clients.module';
   ],
   providers: [
     MarketDataService,
+    ExternalMarketDataService,
   ],
   exports: [
     MarketDataService,
+    ExternalMarketDataService,
   ],
 })
 export class MarketDataModule {}

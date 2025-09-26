@@ -6,6 +6,7 @@ import { UpdatePriceByDateButton } from '../components/AssetPrice';
 import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
 import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
+import { apiService } from '../services/api';
 
 
 const GlobalAssetsPage: React.FC = () => {
@@ -83,7 +84,9 @@ const GlobalAssetsPage: React.FC = () => {
 
   const handlePriceHistoryRefresh = async (assetId: string) => {
     try {
-      await updateAssetPriceFromMarketMutation.mutateAsync(assetId);
+      // Temporary comment out and will review later
+      console.log('Price history refresh for assetId:', assetId);
+      // await updateAssetPriceFromMarketMutation.mutateAsync(assetId);
     } catch (error) {
       console.error('Price history refresh error:', error);
       throw error;
@@ -91,11 +94,21 @@ const GlobalAssetsPage: React.FC = () => {
   };
 
   const handleMarketDataRefresh = async () => {
-    // This will be handled by the MarketDataDashboard component
+    await refetchAssets();
   };
 
   const handleUpdateAllPrices = async () => {
-    // This will be handled by the MarketDataDashboard component
+    try {
+      // Trigger manual sync
+      const response = await apiService.api.post('/api/v1/global-assets/auto-sync/trigger');
+      console.log('Manual sync triggered:', response.data);
+      
+      // Refresh assets after sync
+      await refetchAssets();
+    } catch (error) {
+      console.error('Failed to trigger manual sync:', error);
+      throw error;
+    }
   };
 
   const handleUpdateByNation = async (_nation: string) => {

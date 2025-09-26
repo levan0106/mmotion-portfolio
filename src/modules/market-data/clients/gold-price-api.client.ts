@@ -175,8 +175,8 @@ export class GoldPriceAPIClient {
               
               goldPrices.push({
                 symbol: symbol,
-                buyPrice,
-                sellPrice,
+                buyPrice: buyPrice * 1000, // Multiply by 1000 for gold prices
+                sellPrice: sellPrice * 1000, // Multiply by 1000 for gold prices
                 lastUpdated: lastUpdated,
                 source: MarketDataSource.DOJI,
                 type: MarketDataType.GOLD,

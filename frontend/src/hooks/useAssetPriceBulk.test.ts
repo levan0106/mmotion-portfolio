@@ -44,7 +44,7 @@ describe('useAssetPriceBulk', () => {
         },
       ];
 
-      mockApiService.api.get.mockResolvedValue({ data: mockAssets });
+      (mockApiService.api.get as jest.Mock).mockResolvedValue({ data: mockAssets });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -63,7 +63,7 @@ describe('useAssetPriceBulk', () => {
 
     it('should handle API errors', async () => {
       const errorMessage = 'Failed to fetch assets';
-      mockApiService.api.get.mockRejectedValue(new Error(errorMessage));
+      (mockApiService.api.get as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -80,8 +80,8 @@ describe('useAssetPriceBulk', () => {
     });
 
     it('should include asset IDs in request when provided', async () => {
-      const mockAssets = [];
-      mockApiService.api.get.mockResolvedValue({ data: mockAssets });
+      const mockAssets: any[] = [];
+      (mockApiService.api.get as jest.Mock).mockResolvedValue({ data: mockAssets });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -113,7 +113,7 @@ describe('useAssetPriceBulk', () => {
         ],
       };
 
-      mockApiService.api.post.mockResolvedValue({ data: mockResult });
+      (mockApiService.api.post as jest.Mock).mockResolvedValue({ data: mockResult });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -144,7 +144,7 @@ describe('useAssetPriceBulk', () => {
         results: [],
       };
 
-      mockApiService.api.post.mockResolvedValue({ data: mockResult });
+      (mockApiService.api.post as jest.Mock).mockResolvedValue({ data: mockResult });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -161,7 +161,7 @@ describe('useAssetPriceBulk', () => {
 
     it('should handle API errors', async () => {
       const errorMessage = 'Failed to update prices';
-      mockApiService.api.post.mockRejectedValue(new Error(errorMessage));
+      (mockApiService.api.post as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -189,7 +189,7 @@ describe('useAssetPriceBulk', () => {
         },
       ];
 
-      mockApiService.api.get.mockResolvedValue({ data: mockDates });
+      (mockApiService.api.get as jest.Mock).mockResolvedValue({ data: mockDates });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 
@@ -206,7 +206,7 @@ describe('useAssetPriceBulk', () => {
 
     it('should use default limit when not provided', async () => {
       const mockDates: any[] = [];
-      mockApiService.api.get.mockResolvedValue({ data: mockDates });
+      (mockApiService.api.get as jest.Mock).mockResolvedValue({ data: mockDates });
 
       const { result } = renderHook(() => useAssetPriceBulk());
 

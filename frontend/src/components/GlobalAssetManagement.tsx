@@ -278,49 +278,178 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   }
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" component="h1">
-            Global Asset Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Showing {assets.length} of {total} assets (Page {page} of {totalPages})
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={onRefresh}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleCreateAsset}
-            disabled={loading}
-          >
-            Add Asset
-          </Button>
-        </Box>
-      </Box>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      p: 3
+    }}>
+      {/* Header Section */}
+      <Card sx={{ 
+        mb: 4,
+        borderRadius: 3,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white'
+      }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="h3" component="h1" sx={{ 
+                fontWeight: 700,
+                mb: 1,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Global Asset Management
+              </Typography>
+              <Typography variant="h6" sx={{ 
+                opacity: 0.9,
+                fontWeight: 400,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                <Chip 
+                  label={`${assets.length} Assets`} 
+                  size="small" 
+                  sx={{ 
+                    backgroundColor: 'rgba(255,255,255,0.2)', 
+                    color: 'white',
+                    fontWeight: 600
+                  }} 
+                />
+                <span>•</span>
+                <span>Page {page} of {totalPages}</span>
+                <span>•</span>
+                <span>{total} Total</span>
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={onRefresh}
+                disabled={loading}
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  color: 'white',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    borderColor: 'rgba(255,255,255,0.5)',
+                  }
+                }}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateAsset}
+                disabled={loading}
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.9)',
+                  color: '#667eea',
+                  fontWeight: 700,
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    backgroundColor: 'white',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+                  }
+                }}
+              >
+                Add Asset
+              </Button>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
 
-      {/* Tabs */}
-      <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="Assets" />
-            <Tab label="Market Data" />
-            <Tab label="Analytics" />
+      {/* Main Content Card */}
+      <Card sx={{ 
+        borderRadius: 3,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        overflow: 'hidden'
+      }}>
+        {/* Enhanced Tabs */}
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          borderBottom: '1px solid rgba(0,0,0,0.1)'
+        }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            sx={{
+              '& .MuiTab-root': {
+                fontWeight: 600,
+                fontSize: '1rem',
+                py: 2,
+                px: 4,
+                textTransform: 'none',
+                minHeight: 64,
+                '&.Mui-selected': {
+                  color: '#667eea',
+                  fontWeight: 700,
+                }
+              },
+              '& .MuiTabs-indicator': {
+                height: 4,
+                borderRadius: '2px 2px 0 0',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              }
+            }}
+          >
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    backgroundColor: tabValue === 0 ? '#667eea' : '#6c757d' 
+                  }} />
+                  Assets
+                </Box>
+              } 
+            />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    backgroundColor: tabValue === 1 ? '#667eea' : '#6c757d' 
+                  }} />
+                  Market Data
+                </Box>
+              } 
+            />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    backgroundColor: tabValue === 2 ? '#667eea' : '#6c757d' 
+                  }} />
+                  Analytics
+                </Box>
+              } 
+            />
           </Tabs>
         </Box>
 
         {/* Tab Content */}
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 4, minHeight: 600 }}>
           {tabValue === 0 && (
             <Box>
               <GlobalAssetList
@@ -355,53 +484,148 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
 
           {tabValue === 2 && (
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Asset Analytics
-              </Typography>
-              <Grid container spacing={3}>
+              {/* Analytics Header */}
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h4" sx={{ 
+                  fontWeight: 700, 
+                  mb: 1,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  Asset Analytics Dashboard
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Comprehensive insights into your asset portfolio
+                </Typography>
+              </Box>
+
+              {/* Key Metrics */}
+              <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={4}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Total Assets
-                      </Typography>
-                      <Typography variant="h4">
-                        {assets.length}
-                      </Typography>
+                  <Card sx={{ 
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: 2, 
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2
+                        }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {assets.length}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                            Total Assets
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Portfolio Size
+                          </Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Active Assets
-                      </Typography>
-                      <Typography variant="h4">
-                        {assets.filter(asset => asset.isActive).length}
-                      </Typography>
+                  <Card sx={{ 
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: 2, 
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2
+                        }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {assets.filter(asset => asset.isActive).length}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                            Active Assets
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Currently Trading
+                          </Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Nations
-                      </Typography>
-                      <Typography variant="h4">
-                        {new Set(assets.map(asset => asset.nation)).size}
-                      </Typography>
+                  <Card sx={{ 
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    color: 'white',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: 2, 
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2
+                        }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {new Set(assets.map(asset => asset.nation)).size}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                            Nations
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Global Coverage
+                          </Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
               </Grid>
 
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="h6" gutterBottom>
+              {/* Asset Distribution by Type */}
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 600, 
+                  mb: 3,
+                  color: 'text.primary'
+                }}>
                   Asset Distribution by Type
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={3}>
                   {Object.entries(
                     assets.reduce((acc, asset) => {
                       acc[asset.type] = (acc[asset.type] || 0) + 1;
@@ -409,16 +633,39 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                     }, {} as Record<string, number>)
                   ).map(([type, count]) => (
                     <Grid item xs={12} sm={6} md={3} key={type}>
-                      <Card variant="outlined">
-                        <CardContent>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Chip
-                              label={type}
-                              size="small"
-                              sx={{ backgroundColor: getAssetTypeColor(type), color: 'white' }}
-                            />
-                            <Typography variant="h6">
+                      <Card sx={{ 
+                        borderRadius: 3,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        }
+                      }}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Box sx={{ 
+                                width: 12, 
+                                height: 12, 
+                                borderRadius: '50%', 
+                                backgroundColor: getAssetTypeColor(type) 
+                              }} />
+                              <Typography variant="body1" fontWeight="600">
+                                {type}
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ 
+                              fontWeight: 700,
+                              color: getAssetTypeColor(type)
+                            }}>
                               {count}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              {((count / assets.length) * 100).toFixed(1)}% of portfolio
                             </Typography>
                           </Box>
                         </CardContent>
@@ -428,11 +675,16 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 </Grid>
               </Box>
 
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Asset Distribution by Nation
+              {/* Asset Distribution by Nation */}
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 600, 
+                  mb: 3,
+                  color: 'text.primary'
+                }}>
+                  Global Coverage by Nation
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={3}>
                   {Object.entries(
                     assets.reduce((acc, asset) => {
                       acc[asset.nation] = (acc[asset.nation] || 0) + 1;
@@ -440,14 +692,36 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                     }, {} as Record<string, number>)
                   ).map(([nation, count]) => (
                     <Grid item xs={12} sm={6} md={3} key={nation}>
-                      <Card variant="outlined">
-                        <CardContent>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" fontWeight="medium">
-                              {getNationDisplayName(nation)}
-                            </Typography>
-                            <Typography variant="h6">
+                      <Card sx={{ 
+                        borderRadius: 3,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        }
+                      }}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box>
+                              <Typography variant="body1" fontWeight="600" sx={{ mb: 0.5 }}>
+                                {getNationDisplayName(nation)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {nation}
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ 
+                              fontWeight: 700,
+                              color: '#667eea'
+                            }}>
                               {count}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              {((count / assets.length) * 100).toFixed(1)}% of portfolio
                             </Typography>
                           </Box>
                         </CardContent>
@@ -713,18 +987,34 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
+      {/* Enhanced Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          }
+        }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ 
+            width: '100%',
+            borderRadius: 3,
+            fontWeight: 600,
+            '& .MuiAlert-icon': {
+              fontSize: 24
+            },
+            '& .MuiAlert-message': {
+              fontSize: '1rem'
+            }
+          }}
           icon={
             snackbar.severity === 'success' ? <CheckCircleIcon /> :
             snackbar.severity === 'error' ? <ErrorIcon /> :

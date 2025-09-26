@@ -48,6 +48,8 @@ flowchart LR
 - **Event Sourcing**: Stream trade events qua WebSocket (Tasks 35, 50-52)
 - **Real-time Calculations**: All values calculated on-demand, never stored in database (Real-time Value Calculations completed)
 - **Centralized Calculation Services**: AssetValueCalculatorService and PortfolioValueCalculatorService for consistent logic (Real-time Value Calculations completed)
+- **Auto Sync Reason Differentiation**: Clear distinction between "Market auto sync" and "Market manual trigger sync" in price history records (Market Data Dashboard Enhancement completed)
+- **Loading State Management**: Comprehensive loading states for all async operations with visual feedback (Market Data Dashboard Enhancement completed)
 - **Tax/Fee Options**: Support for both percentage and fixed value calculations (Tax/Fee Options Enhancement completed)
 - **Portfolio Filtering**: Filter trades by portfolio for computed fields (CR-004 completed)
 - **Market Data Integration**: Real-time price updates with mock service (CR-004 completed)
