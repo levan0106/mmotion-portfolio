@@ -178,7 +178,7 @@ export class AutoSyncService {
     
     if (enabled) {
       // Trigger immediate update when enabling
-      this.marketDataService.updateAllPrices();
+      await this.marketDataService.updateAllPrices();
       await this.triggerManualSync();
     }
   }
@@ -220,7 +220,7 @@ export class AutoSyncService {
     
     try {
       // Step 1: Update market data cache
-      this.marketDataService.updateAllPrices();
+      await this.marketDataService.updateAllPrices();
       
       // Step 2: Sync to database
       await this.performSync(syncId);

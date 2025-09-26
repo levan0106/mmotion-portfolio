@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ExternalMarketDataService } from './external-market-data.service';
+import { MarketDataResult } from '../types/market-data.types';
 
 export interface MarketPrice {
   symbol: string;
@@ -28,9 +30,11 @@ export class MarketDataService {
     volatility: 0.02, // 2% volatility
   };
 
-  constructor() {
+  constructor(
+    private readonly externalMarketDataService: ExternalMarketDataService
+  ) {
     this.initializeBasePrices();
-    this.logger.log('Market Data Service initialized as pure cache');
+    this.logger.log('Market Data Service initialized with external API integration');
   }
 
   /**
@@ -65,7 +69,84 @@ export class MarketDataService {
    * Update all market prices - called by AutoSyncService
    * This replaces the old timer-based update
    */
-  updateAllPrices(): void {
+  async updateAllPrices(): Promise<void> {
+    this.logger.log('Updating all market prices...');
+    
+    try {
+      // Try to fetch real-time data from external APIs
+      const externalData = await this.externalMarketDataService.fetchAllMarketData();
+      
+      if (externalData.success && externalData.errors.length === 0) {
+        this.logger.log('Successfully fetched real-time data from external APIs');
+        await this.updatePricesFromExternalData(externalData);
+      } else {
+        this.logger.warn('External API fetch failed, falling back to mock data');
+        this.logger.warn('External API errors:', externalData.errors);
+        this.updatePricesFromMockData();
+      }
+    } catch (error) {
+      this.logger.error('Failed to fetch external data, using mock data:', error.message);
+      this.updatePricesFromMockData();
+    }
+    
+    this.logger.log(`Updated ${this.marketPrices.size} market prices`);
+
+    this.logger.debug(`Updated market prices for ${this.marketPrices.size} symbols`);
+  }
+
+  /**
+   * Update prices from external API data
+   */
+  private async updatePricesFromExternalData(externalData: MarketDataResult): Promise<void> {
+    // Update fund prices
+    for (const fund of externalData.funds) {
+      this.marketPrices.set(fund.symbol, {
+        symbol: fund.symbol,
+        price: fund.buyPrice,
+        change: 0, // TODO: Will be calculated based on previous price
+        changePercent: 0, // TODO: Will be calculated based on previous price
+        lastUpdated: new Date()
+      });
+    }
+
+    // Update gold prices
+    for (const gold of externalData.gold) {
+      this.marketPrices.set(gold.type, {
+        symbol: gold.type,
+        price: gold.buyPrice,
+        change: 0,
+        changePercent: 0,
+        lastUpdated: new Date()
+      });
+    }
+
+    // Update exchange rates
+    for (const rate of externalData.exchangeRates) {
+      this.marketPrices.set(rate.currency, {
+        symbol: rate.currency,
+        price: rate.buyPrice,
+        change: 0,
+        changePercent: 0,
+        lastUpdated: new Date()
+      });
+    }
+
+    // Update stock prices
+    for (const stock of externalData.stocks) {
+      this.marketPrices.set(stock.symbol, {
+        symbol: stock.symbol,
+        price: stock.buyPrice,
+        change: 0,
+        changePercent: 0,
+        lastUpdated: new Date()
+      });
+    }
+  }
+
+  /**
+   * Update prices from mock data (fallback)
+   */
+  private updatePricesFromMockData(): void {
     for (const [symbol, basePrice] of this.basePrices) {
       const currentData = this.marketPrices.get(symbol);
       if (!currentData) continue;
@@ -88,8 +169,6 @@ export class MarketDataService {
         lastUpdated: new Date(),
       });
     }
-
-    this.logger.debug(`Updated market prices for ${this.marketPrices.size} symbols`);
   }
 
   /**

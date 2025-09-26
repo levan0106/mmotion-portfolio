@@ -433,7 +433,20 @@ erDiagram
 - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 - **Production Ready**: Enhanced snapshot system ready for production deployment - **COMPLETED**
 
-### 30. Asset Price Bulk Update Pattern - **IMPLEMENTED ✅**
+### 30. External Market Data System Pattern - **IMPLEMENTED ✅**
+- **Real-time Market Data Integration**: Successfully integrated 5 external APIs (FMarket, Doji, Tygia/Vietcombank, SSI, CoinGecko) for comprehensive market data fetching - **COMPLETED**
+- **Crypto Price Support**: Implemented cryptocurrency price fetching with TOP 10 crypto by rank in VND currency - **COMPLETED**
+- **Standardized Data Format**: Created common interfaces and enums for consistent market data representation across all external API clients - **COMPLETED**
+- **Web Scraping Implementation**: Overcame HTML parsing library import issues by implementing robust regex-based parsing for external websites - **COMPLETED**
+- **Hybrid Market Data System**: Supporting both real-time external data and mock data with fallback mechanisms - **COMPLETED**
+- **API Client Standardization**: Used generic naming for API clients to allow easy provider swapping - **COMPLETED**
+- **Code Cleanup**: Removed unused packages (cheerio, jsdom, node-html-parser) and debug logs for cleaner codebase - **COMPLETED**
+- **Error Handling**: Comprehensive error handling and logging for all external API calls - **COMPLETED**
+- **Data Validation**: Robust validation for all market data types - **COMPLETED**
+- **Performance Optimization**: Efficient parsing and data processing - **COMPLETED**
+- **Production Ready**: Clean, maintainable code with comprehensive error handling - **COMPLETED**
+
+### 31. Asset Price Bulk Update Pattern - **IMPLEMENTED ✅**
 - **Historical Price Lookup**: Get assets with historical prices for specific dates - **COMPLETED**
 - **Bulk Update API**: Update multiple asset prices from historical data - **COMPLETED**
 - **Asset Selection**: Checkbox-based asset selection with data availability indicators - **COMPLETED**
