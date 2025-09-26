@@ -86,37 +86,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-// Helper component for consistent section structure
-interface SectionWrapperProps {
-  title: string;
-  children: React.ReactNode;
-  isCompactMode: boolean;
-  getUltraSpacing: (normal: number, ultra: number) => number;
-}
-
-function SectionWrapper({ title, children, isCompactMode, getUltraSpacing }: SectionWrapperProps) {
-  return (
-    <Grid item xs={12}>
-      <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
-        fontWeight: 600, 
-        color: '#1a1a1a', 
-        mb: getUltraSpacing(2, 0.5),
-        fontSize: isCompactMode ? '0.9rem' : undefined
-      }}>
-        {title}
-      </Typography>
-      <Box sx={{ 
-        p: getUltraSpacing(2, 1), 
-        backgroundColor: 'white', 
-        borderRadius: 2, 
-        boxShadow: 1,
-        border: '1px solid #e0e0e0'
-      }}>
-        {children}
-      </Box>
-    </Grid>
-  );
-}
 
 const PortfolioDetail: React.FC = () => {
   const { portfolioId } = useParams<{ portfolioId: string }>();
@@ -951,20 +920,8 @@ const PortfolioDetail: React.FC = () => {
             pt: 0,
             px: getUltraSpacing(2, 1)
           }}>
-            {/* Performance Analysis Section */}
-            <Box sx={{ mb: getUltraSpacing(4, 1) }}>
-              <Typography variant="h5" gutterBottom sx={{ 
-                fontWeight: 600, 
-                color: 'text.primary',
-                mb: getUltraSpacing(3, 1),
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}>
-                📊 Performance Analysis
-              </Typography>
-              
-              {/* NAV Summary */}
+            {/* NAV Summary Section */}
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <NAVSummary
                 navValue={portfolio.totalAllValue || portfolio.totalValue || 0}
                 totalValue={portfolio.totalAssetValue || 0}
@@ -974,6 +931,7 @@ const PortfolioDetail: React.FC = () => {
                 navPerUnit={portfolio.navPerUnit || 0}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
+                portfolioId={portfolioId}
               />
 
               {/* NAV History Chart */}
@@ -981,6 +939,8 @@ const PortfolioDetail: React.FC = () => {
                 <NAVHistoryChart
                   portfolioId={portfolioId!}
                   baseCurrency={portfolio.baseCurrency}
+                  compact={isCompactMode}
+                  getUltraSpacing={getUltraSpacing}
                 />
               </Box>
               
@@ -1100,23 +1060,15 @@ const PortfolioDetail: React.FC = () => {
             </Box>
             
             {/* Trading Analysis Section */}
-            <SectionWrapper 
-              title="Trading Analysis (Phân tích giao dịch)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <TradeAnalysisContainer 
                 portfolioId={portfolioId!} 
                 isCompactMode={isCompactMode}
               />
-            </SectionWrapper>
+            </Box>
             
             {/* Risk Metrics Section */}
-            <SectionWrapper 
-              title="Risk Metrics (Chỉ số rủi ro)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               {isRiskMetricsLoading ? (
                 <Box display="flex" justifyContent="center" p={2}>
                   <CircularProgress size={24} />
@@ -1128,9 +1080,10 @@ const PortfolioDetail: React.FC = () => {
                   data={riskMetricsData?.data || {}}
                   baseCurrency={portfolio.baseCurrency}
                   title="Risk Metrics Dashboard"
+                  compact={isCompactMode}
                 />
               )}
-            </SectionWrapper>
+            </Box>
           </Box>
         </TabPanel>
 
@@ -1142,17 +1095,24 @@ const PortfolioDetail: React.FC = () => {
             px: getUltraSpacing(2, 1)
           }}>
             {/* Trading Management Section */}
-            <SectionWrapper 
-              title="Trading Management (Quản lý giao dịch)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
+              fontWeight: 600, 
+              color: '#1a1a1a', 
+              mb: getUltraSpacing(3, 1.5),
+              fontSize: isCompactMode ? '0.9rem' : undefined,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              💼 Trading Management (Quản lý giao dịch)
+            </Typography>
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <TradeListContainer 
                 portfolioId={portfolioId!} 
                 onCreate={() => setShowCreateForm(true)}
                 isCompactMode={isCompactMode}
               />
-            </SectionWrapper>
+            </Box>
           </Box>
         </TabPanel>
 
@@ -1164,91 +1124,315 @@ const PortfolioDetail: React.FC = () => {
             pt: 0,
             px: getUltraSpacing(2, 1)
           }}>
-              {/* Portfolio Overview Section */}
-              <SectionWrapper 
-                title="Portfolio Overview (Tổng quan danh mục)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-                <Grid container spacing={getUltraSpacing(3, 1)}>
+              {/* Professional Portfolio Overview Section */}
+              <Grid container spacing={getUltraSpacing(3, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
+                  {/* Total Investment Value Card */}
                   <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ 
-                      p: getUltraSpacing(3, 1), 
-                      backgroundColor: 'white', 
-                      borderRadius: 2, 
-                      boxShadow: 1,
-                      textAlign: 'center',
-                      border: '1px solid #e0e0e0'
+                    <Card sx={{
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      color: '#212529',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      border: '1px solid #e3f2fd',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        transition: 'all 0.3s ease-in-out'
+                      }
                     }}>
-                      <Typography variant="h4" color="primary" fontWeight="bold">
-                        {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Total Investment Value (Assets + Deposits)
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ 
-                      p: getUltraSpacing(3, 1), 
-                      backgroundColor: 'white', 
-                      borderRadius: 2, 
-                      boxShadow: 1,
-                      textAlign: 'center',
-                      border: '1px solid #e0e0e0'
-                    }}>
-                      <Typography variant="h4" color="success.main" fontWeight="bold">
-                        {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Unrealized P&L (Assets + Deposits)
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ 
-                      p: getUltraSpacing(3, 1), 
-                      backgroundColor: 'white', 
-                      borderRadius: 2, 
-                      boxShadow: 1,
-                      textAlign: 'center',
-                      border: '1px solid #e0e0e0'
-                    }}>
-                      <Typography variant="h4" color="info.main" fontWeight="bold">
-                        {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Cash Balance (Số dư tiền mặt)
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ 
-                      p: getUltraSpacing(3, 1), 
-                      backgroundColor: 'white', 
-                      borderRadius: 2, 
-                      boxShadow: 1,
-                      textAlign: 'center',
-                      border: '1px solid #e0e0e0'
-                    }}>
-                      <Typography variant="h4" color="warning.main" fontWeight="bold">
-                        {formatNumberWithSeparators(Object.keys(allocationData?.allocation || {}).length, 0)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Asset Classes (Loại tài sản)
-                    </Typography>
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        top: -15, 
+                        right: -15, 
+                        width: 80, 
+                        height: 80, 
+                        borderRadius: '50%', 
+                        background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0.1
+                      }}>
+                        <AccountBalance sx={{ fontSize: 35, color: '#1976d2' }} />
                       </Box>
+                      <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
+                          <Box sx={{ 
+                            p: getUltraSpacing(1, 0.5), 
+                            backgroundColor: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)', 
+                            borderRadius: 2,
+                            mr: getUltraSpacing(1.5, 1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
+                          </Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 700, 
+                            fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
+                            color: '#1a1a1a' 
+                          }}>
+                            Total Investment
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 700, 
+                          mb: getUltraSpacing(1, 0.5), 
+                          fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
+                          color: '#212529' 
+                        }}>
+                          {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#6c757d', 
+                          fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
+                        }}>
+                          Assets + Deposits Value
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Unrealized P&L Card */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      background: (portfolio.unrealizedInvestPnL || 0) >= 0 
+                        ? 'linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%)'
+                        : 'linear-gradient(135deg, #ffffff 0%, #ffebee 100%)',
+                      color: '#212529',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      border: (portfolio.unrealizedInvestPnL || 0) >= 0 
+                        ? '1px solid #c8e6c9'
+                        : '1px solid #ffcdd2',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        transition: 'all 0.3s ease-in-out'
+                      }
+                    }}>
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        top: -15, 
+                        right: -15, 
+                        width: 80, 
+                        height: 80, 
+                        borderRadius: '50%', 
+                        background: (portfolio.unrealizedInvestPnL || 0) >= 0 
+                          ? 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)'
+                          : 'linear-gradient(135deg, #f44336 0%, #ff9800 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0.1
+                      }}>
+                        {(portfolio.unrealizedInvestPnL || 0) >= 0 ? 
+                          <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} /> : 
+                          <TrendingDown sx={{ fontSize: 35, color: '#f44336' }} />
+                        }
+                      </Box>
+                      <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
+                          <Box sx={{ 
+                            p: getUltraSpacing(1, 0.5), 
+                            backgroundColor: (portfolio.unrealizedInvestPnL || 0) >= 0 
+                              ? 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)'
+                              : 'linear-gradient(135deg, #f44336 0%, #ff9800 100%)', 
+                            borderRadius: 2,
+                            mr: getUltraSpacing(1.5, 1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            {(portfolio.unrealizedInvestPnL || 0) >= 0 ? 
+                              <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} /> : 
+                              <TrendingDown sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
+                            }
+                          </Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 700, 
+                            fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
+                            color: '#1a1a1a' 
+                          }}>
+                            Unrealized P&L
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 700, 
+                          mb: getUltraSpacing(1, 0.5), 
+                          fontSize: isCompactMode ? '1.4rem' : '1.8rem',
+                          color: (portfolio.unrealizedInvestPnL || 0) >= 0 ? '#28a745' : '#dc3545'
+                        }}>
+                          {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#6c757d', 
+                          fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
+                        }}>
+                          Current Unrealized Profit/Loss
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Cash Balance Card */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
+                      color: '#212529',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      border: '1px solid #e1bee7',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        transition: 'all 0.3s ease-in-out'
+                      }
+                    }}>
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        top: -15, 
+                        right: -15, 
+                        width: 80, 
+                        height: 80, 
+                        borderRadius: '50%', 
+                        background: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0.1
+                      }}>
+                        <AccountBalance sx={{ fontSize: 35, color: '#9c27b0' }} />
+                      </Box>
+                      <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
+                          <Box sx={{ 
+                            p: getUltraSpacing(1, 0.5), 
+                            backgroundColor: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 100%)', 
+                            borderRadius: 2,
+                            mr: getUltraSpacing(1.5, 1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
+                          </Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 700, 
+                            fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
+                            color: '#1a1a1a' 
+                          }}>
+                            Cash Balance
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 700, 
+                          mb: getUltraSpacing(1, 0.5), 
+                          fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
+                          color: '#212529' 
+                        }}>
+                          {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#6c757d', 
+                          fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
+                        }}>
+                          Available Cash (Số dư tiền mặt)
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Asset Classes Card */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      background: 'linear-gradient(135deg, #ffffff 0%, #e8f5e8 100%)',
+                      color: '#212529',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      border: '1px solid #c8e6c9',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                        transition: 'all 0.3s ease-in-out'
+                      }
+                    }}>
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        top: -15, 
+                        right: -15, 
+                        width: 80, 
+                        height: 80, 
+                        borderRadius: '50%', 
+                        background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0.1
+                      }}>
+                        <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} />
+                      </Box>
+                      <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
+                          <Box sx={{ 
+                            p: getUltraSpacing(1, 0.5), 
+                            backgroundColor: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)', 
+                            borderRadius: 2,
+                            mr: getUltraSpacing(1.5, 1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
+                          </Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 700, 
+                            fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
+                            color: '#1a1a1a' 
+                          }}>
+                            Asset Classes
+                          </Typography>
+                        </Box>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 700, 
+                          mb: getUltraSpacing(1, 0.5), 
+                          fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
+                          color: '#212529' 
+                        }}>
+                          {formatNumberWithSeparators(Object.keys(allocationData?.allocation || {}).length, 0)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#6c757d', 
+                          fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
+                        }}>
+                          Different Asset Types (Loại tài sản)
+                        </Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
               </Grid>
-              </SectionWrapper>
 
               {/* Asset Allocation Section */}
-              <SectionWrapper 
-                title="Asset Type Allocation (Phân bổ loại tài sản)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-              <Grid container spacing={getUltraSpacing(2, 1)}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                mb: getUltraSpacing(3, 1),
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                📊 Asset Type Allocation (Phân bổ loại tài sản)
+              </Typography>
+              <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
                 {/* Asset Allocation Pie Chart - Column 1 */}
                 <Grid item xs={12} md={4}>
                   <Box sx={{ 
@@ -1261,7 +1445,7 @@ const PortfolioDetail: React.FC = () => {
                   }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ 
                       mb: getUltraSpacing(1, 0.5),
-                      fontSize: '0.8rem',
+                      fontSize: isCompactMode ? '0.7rem' : '0.8rem',
                       fontWeight: 600,
                       textAlign: 'center'
                     }}>
@@ -1321,7 +1505,7 @@ const PortfolioDetail: React.FC = () => {
                   }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ 
                       mb: getUltraSpacing(1, 0.5),
-                      fontSize: '0.8rem',
+                      fontSize: isCompactMode ? '0.7rem' : '0.8rem',
                       fontWeight: 600,
                       textAlign: 'center'
                     }}>
@@ -1332,10 +1516,10 @@ const PortfolioDetail: React.FC = () => {
                         {Object.entries(allocationData.allocation).map(([assetType, allocation]) => (
                           <Box key={assetType} sx={{ mb: getUltraSpacing(1, 0.5) }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
-                              <Typography variant="body2" fontWeight="medium" sx={{ fontSize: '0.75rem' }}>
+                              <Typography variant="body2" fontWeight="medium" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
                                 {assetType.toUpperCase()}
                               </Typography>
-                              <Typography variant="body2" fontWeight="bold" color="primary" sx={{ fontSize: '0.75rem' }}>
+                              <Typography variant="body2" fontWeight="bold" color="primary" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
                                 {formatNumber(allocation.percentage, 1)}%
                               </Typography>
                             </Box>
@@ -1357,7 +1541,11 @@ const PortfolioDetail: React.FC = () => {
                                 }}
                               />
                             </Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.2, display: 'block', fontSize: '0.65rem' }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ 
+                              mt: 0.2, 
+                              display: 'block', 
+                              fontSize: isCompactMode ? '0.55rem' : '0.65rem' 
+                            }}>
                               {formatCurrency(allocation.value, portfolio.baseCurrency)}
                             </Typography>
                           </Box>
@@ -1373,20 +1561,30 @@ const PortfolioDetail: React.FC = () => {
                           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
                             {/* Total Assets Value Column */}
                             <Box sx={{ flex: 1, textAlign: 'center' }}>
-                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem', display: 'block' }}>
+                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ 
+                                fontSize: isCompactMode ? '0.6rem' : '0.7rem', 
+                                display: 'block' 
+                              }}>
                                 Total Assets Value
                               </Typography>
-                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ 
+                                fontSize: isCompactMode ? '0.8rem' : '0.9rem' 
+                              }}>
                                 {formatCurrency(allocationData?.totalAssetsValue || 0, portfolio.baseCurrency)}
                               </Typography>
                             </Box>
                             
                             {/* Total Deposits Value Column */}
                             <Box sx={{ flex: 1, textAlign: 'center' }}>
-                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ fontSize: '0.7rem', display: 'block' }}>
+                              <Typography variant="caption" color="text.secondary" gutterBottom sx={{ 
+                                fontSize: isCompactMode ? '0.6rem' : '0.7rem', 
+                                display: 'block' 
+                              }}>
                                 Total Deposits Value
                               </Typography>
-                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                              <Typography variant="h6" color="primary" fontWeight="bold" sx={{ 
+                                fontSize: isCompactMode ? '0.8rem' : '0.9rem' 
+                              }}>
                                 {formatCurrency(allocationData?.totalDepositsValue || 0, portfolio.baseCurrency)}
                               </Typography>
                             </Box>
@@ -1394,27 +1592,34 @@ const PortfolioDetail: React.FC = () => {
                         </Box>
                       </Box>
                     ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ 
+                        fontSize: isCompactMode ? '0.65rem' : '0.75rem' 
+                      }}>
                         No allocation data available
                       </Typography>
                     )}
                   </Box>
                 </Grid>
               </Grid>
-              </SectionWrapper>
 
               {/* Asset Detail Summary Section */}
-              <SectionWrapper 
-                title="Asset Detail Summary (Tổng quan tài sản)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                mb: getUltraSpacing(3, 1),
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                📋 Asset Detail Summary (Tổng quan tài sản)
+              </Typography>
               <Box sx={{ 
                 p: getUltraSpacing(2, 1), 
                 backgroundColor: 'white', 
                 borderRadius: 2, 
                 boxShadow: 1,
-                border: '1px solid #e0e0e0'
+                border: '1px solid #e0e0e0',
+                mb: getUltraSpacing(4, 2)
               }}>
                 {isAssetDetailLoading ? (
                   <Box display="flex" justifyContent="center" p={2}>
@@ -1427,18 +1632,23 @@ const PortfolioDetail: React.FC = () => {
                     data={assetDetailData?.data || []} 
                     baseCurrency={portfolio.baseCurrency}
                     title="Individual Asset Holdings"
+                    compact={isCompactMode}
                   />
                 )}
               </Box>
-              </SectionWrapper>
 
               {/* Risk & Performance Analysis Section */}
-              <SectionWrapper 
-                title="Risk & Performance Analysis (Rủi ro và hiệu suất)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-              <Grid container spacing={getUltraSpacing(2, 1)}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                mb: getUltraSpacing(3, 1),
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                📈 Risk & Performance Analysis (Rủi ro và hiệu suất)
+              </Typography>
+              <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
                     p: getUltraSpacing(2, 1), 
@@ -1492,15 +1702,19 @@ const PortfolioDetail: React.FC = () => {
                   </Box>
                 </Grid>
               </Grid>
-              </SectionWrapper>
 
               {/* Diversification & Timeline Section */}
-              <SectionWrapper 
-                title="Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)"
-                isCompactMode={isCompactMode}
-                getUltraSpacing={getUltraSpacing}
-              >
-              <Grid container spacing={getUltraSpacing(2, 1)}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                mb: getUltraSpacing(3, 1),
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                🔄 Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)
+              </Typography>
+              <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
                     p: getUltraSpacing(2, 1), 
@@ -1508,7 +1722,8 @@ const PortfolioDetail: React.FC = () => {
                     borderRadius: 2, 
                     boxShadow: 1,
                     border: '1px solid #e0e0e0',
-                    height: '100%'
+                    height: '100%',
+                    overflow: 'hidden'
                   }}>
                     {isDiversificationLoading ? (
                       <Box display="flex" justifyContent="center" p={2}>
@@ -1520,6 +1735,7 @@ const PortfolioDetail: React.FC = () => {
                       <DiversificationHeatmap 
                         data={diversificationData?.data || []} 
                         title="Diversification Heatmap"
+                        compact={isCompactMode}
                       />
                     )}
                   </Box>
@@ -1553,7 +1769,6 @@ const PortfolioDetail: React.FC = () => {
                   </Box>
                 </Grid>
               </Grid>
-            </SectionWrapper>
           </Box>
         </TabPanel>
 
@@ -1565,13 +1780,20 @@ const PortfolioDetail: React.FC = () => {
             px: getUltraSpacing(2, 1)
           }}>
             {/* Deposit Management Section */}
-            <SectionWrapper 
-              title="Deposit Management (Quản lý tiền gửi)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
+              fontWeight: 600, 
+              color: '#1a1a1a', 
+              mb: getUltraSpacing(3, 1.5),
+              fontSize: isCompactMode ? '0.9rem' : undefined,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              💰 Deposit Management (Quản lý tiền gửi)
+            </Typography>
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <DepositManagementTab portfolioId={portfolioId!} />
-            </SectionWrapper>
+            </Box>
           </Box>
         </TabPanel>
 
@@ -1583,11 +1805,18 @@ const PortfolioDetail: React.FC = () => {
             px: getUltraSpacing(2, 1)
           }}>
             {/* Cash Flow Management Section */}
-            <SectionWrapper 
-              title="Cash Flow Management (Quản lý dòng tiền)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
+              fontWeight: 600, 
+              color: '#1a1a1a', 
+              mb: getUltraSpacing(3, 1.5),
+              fontSize: isCompactMode ? '0.9rem' : undefined,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              💸 Cash Flow Management (Quản lý dòng tiền)
+            </Typography>
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <CashFlowLayout 
                 portfolioId={portfolioId!} 
                 onCashFlowUpdate={() => {
@@ -1595,7 +1824,7 @@ const PortfolioDetail: React.FC = () => {
                   refetchPortfolio();
                 }}
               />
-            </SectionWrapper>
+            </Box>
           </Box>
         </TabPanel>
 
@@ -1607,18 +1836,25 @@ const PortfolioDetail: React.FC = () => {
             px: getUltraSpacing(2, 1)
           }}>
             {/* NAV Holdings Management Section */}
-            <SectionWrapper 
-              title="NAV Holdings Management (Quản lý đơn vị quỹ)"
-              isCompactMode={isCompactMode}
-              getUltraSpacing={getUltraSpacing}
-            >
+            <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
+              fontWeight: 600, 
+              color: '#1a1a1a', 
+              mb: getUltraSpacing(3, 1.5),
+              fontSize: isCompactMode ? '0.9rem' : undefined,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              🏦 NAV Holdings Management (Quản lý đơn vị quỹ)
+            </Typography>
+            <Box sx={{ mb: getUltraSpacing(4, 2) }}>
               <NAVHoldingsManagement 
                 portfolio={portfolio}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
                 onPortfolioUpdate={refetchPortfolio}
               />
-            </SectionWrapper>
+            </Box>
           </Box>
         </TabPanel>
 

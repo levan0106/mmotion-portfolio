@@ -483,15 +483,36 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       <Grid container spacing={isCompactMode ? 1 : 3} mb={isCompactMode ? 2 : 4}>
         {/* Total P&L Card */}
         <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ height: 200, boxShadow: 2 }}>
-            <CardContent sx={{ p: 2 }}>
+          <Card sx={{ 
+            height: isCompactMode ? 120 : 200, 
+            boxShadow: 2,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            border: '1px solid #e3f2fd',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
+                  >
                     Total P&L
                   </Typography>
-                  <Typography variant="h5" color={analysis.pnlSummary.totalPnl >= 0 ? 'success.main' : 'error.main'} fontWeight="bold">
+                  <Typography 
+                    variant="h5" 
+                    color={analysis.pnlSummary.totalPnl >= 0 ? 'success.main' : 'error.main'} 
+                    fontWeight="bold"
+                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
+                  >
                     {formatCurrency(analysis.pnlSummary.totalPnl, currency, {}, locale)}
                   </Typography>
                 </Box>
@@ -502,48 +523,50 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     alignItems: 'center',
                   }}
                 >
-                  <TrendingUpIcon />
+                  <TrendingUpIcon sx={{ fontSize: isCompactMode ? 18 : 24 }} />
                 </Box>
               </Box>
               
               {/* P&L Breakdown */}
-              <Box sx={{ mb: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Realized P&L:
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color={(analysis.pnlSummary as any).totalRealizedPnl >= 0 ? 'success.main' : 'error.main'}
-                    fontWeight="medium"
-                    sx={{ fontSize: '0.875rem' }}
-                  >
-                    {formatCurrency((analysis.pnlSummary as any).totalRealizedPnl, currency, {}, locale)}
-                  </Typography>
+              {!isCompactMode && (
+                <Box sx={{ mb: 2 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Realized P&L:
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color={(analysis.pnlSummary as any).totalRealizedPnl >= 0 ? 'success.main' : 'error.main'}
+                      fontWeight="medium"
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      {formatCurrency((analysis.pnlSummary as any).totalRealizedPnl, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Unrealized P&L:
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color={(analysis.pnlSummary as any).totalUnrealizedPnl >= 0 ? 'success.main' : 'error.main'}
+                      fontWeight="medium"
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      {formatCurrency((analysis.pnlSummary as any).totalUnrealizedPnl, currency, {}, locale)}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Unrealized P&L:
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color={(analysis.pnlSummary as any).totalUnrealizedPnl >= 0 ? 'success.main' : 'error.main'}
-                    fontWeight="medium"
-                    sx={{ fontSize: '0.875rem' }}
-                  >
-                    {formatCurrency((analysis.pnlSummary as any).totalUnrealizedPnl, currency, {}, locale)}
-                  </Typography>
-                </Box>
-              </Box>
+              )}
               
               {/* Win Rate */}
               <Box display="flex" alignItems="center" gap={1}>
                 <Chip
                   label={`${formatPercentage(analysis.pnlSummary.winRate, 1, locale)} Win Rate`}
                   color={analysis.pnlSummary.winRate >= 50 ? 'success' : 'warning'}
-                  size="small"
+                  size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                 />
               </Box>
             </CardContent>
@@ -552,15 +575,36 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
         {/* Trading Statistics Card - Combined Trades & Volume */}
         <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ height: 200, boxShadow: 2 }}>
-            <CardContent sx={{ p: 2 }}>
+          <Card sx={{ 
+            height: isCompactMode ? 120 : 200, 
+            boxShadow: 2,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
+            border: '1px solid #e1bee7',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
+                  >
                     Trading Statistics
                   </Typography>
-                  <Typography variant="h5" color="primary" fontWeight="bold">
+                  <Typography 
+                    variant="h5" 
+                    color="primary" 
+                    fontWeight="bold"
+                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
+                  >
                     {formatNumber(analysis.statistics.totalTrades, 0, locale)} Trades
                   </Typography>
                 </Box>
@@ -568,56 +612,79 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <Chip
                     label={`Avg: ${formatCurrency(analysis.statistics.averagePrice, currency, {}, locale)}`}
                     color="info"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     variant="outlined"
-                    sx={{ fontSize: '0.75rem' }}
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   />
-                  <AssessmentIcon sx={{ color: 'primary.main' }} />
+                  <AssessmentIcon sx={{ color: 'primary.main', fontSize: isCompactMode ? 18 : 24 }} />
                 </Box>
               </Box>
               
               {/* Trades Breakdown */}
-              <Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Buy Trades:
-                  </Typography>
-                  <Typography variant="body2" color="success.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {analysis.statistics.buyTrades}
-                  </Typography>
+              {!isCompactMode && (
+                <Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Buy Trades:
+                    </Typography>
+                    <Typography variant="body2" color="success.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {analysis.statistics.buyTrades}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Sell Trades:
+                    </Typography>
+                    <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {analysis.statistics.sellTrades}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Total Volume:
+                    </Typography>
+                    <Typography variant="body2" color="info.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {formatCurrency(analysis.statistics.totalVolume, currency, {}, locale)}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Sell Trades:
-                  </Typography>
-                  <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {analysis.statistics.sellTrades}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Total Volume:
-                  </Typography>
-                  <Typography variant="body2" color="info.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {formatCurrency(analysis.statistics.totalVolume, currency, {}, locale)}
-                  </Typography>
-                </Box>
-              </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
 
         {/* Risk Metrics Card - Volatility & Max Drawdown */}
         <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ height: 200, boxShadow: 2 }}>
-            <CardContent sx={{ p: 2 }}>
+          <Card sx={{ 
+            height: isCompactMode ? 120 : 200, 
+            boxShadow: 2,
+            background: 'linear-gradient(135deg, #ffffff 0%, #fff3e0 100%)',
+            border: '1px solid #ffcc02',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
+                  >
                     Risk Metrics
                   </Typography>
-                  <Typography variant="h5" color="warning.main" fontWeight="bold">
+                  <Typography 
+                    variant="h5" 
+                    color="warning.main" 
+                    fontWeight="bold"
+                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
+                  >
                     {analysis.riskMetrics.volatility?.toFixed(2) || 'N/A'}%
                   </Typography>
                 </Box>
@@ -625,77 +692,102 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <Chip
                     label={`Risk Level: ${analysis.riskMetrics.volatility > 20 ? 'High' : analysis.riskMetrics.volatility > 10 ? 'Medium' : 'Low'}`}
                     color={analysis.riskMetrics.volatility > 20 ? 'error' : analysis.riskMetrics.volatility > 10 ? 'warning' : 'success'}
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     variant="outlined"
-                    sx={{ fontSize: '0.75rem' }}
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   />
-                  <ShowChartIcon sx={{ color: 'warning.main' }} />
+                  <ShowChartIcon sx={{ color: 'warning.main', fontSize: isCompactMode ? 18 : 24 }} />
                 </Box>
               </Box>
               
               {/* Risk Breakdown */}
-              <Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Max Drawdown:
-                  </Typography>
-                  <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {formatCurrency(analysis.riskMetrics.maxDrawdown || 0, currency, {}, locale)}
-                  </Typography>
+              {!isCompactMode && (
+                <Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Max Drawdown:
+                    </Typography>
+                    <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {formatCurrency(analysis.riskMetrics.maxDrawdown || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      VaR 95%:
+                    </Typography>
+                    <Typography variant="body2" color="warning.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {formatCurrency(analysis.riskMetrics.var95 || 0, currency, {}, locale)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      Sharpe Ratio:
+                    </Typography>
+                    <Typography variant="body2" color="primary.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                      {analysis.riskMetrics.sharpeRatio?.toFixed(2) || 'N/A'}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    VaR 95%:
-                  </Typography>
-                  <Typography variant="body2" color="warning.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {formatCurrency(analysis.riskMetrics.var95 || 0, currency, {}, locale)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Sharpe Ratio:
-                  </Typography>
-                  <Typography variant="body2" color="primary.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
-                    {analysis.riskMetrics.sharpeRatio?.toFixed(2) || 'N/A'}
-                  </Typography>
-                </Box>
-              </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       {/* Charts Section */}
-      <Grid container spacing={3} mb={4}>
+      <Grid container spacing={isCompactMode ? 1 : 3} mb={isCompactMode ? 2 : 4}>
         {/* Monthly Performance Chart */}
         <Grid item xs={12} lg={8}>
-          <Card sx={{ boxShadow: 2, height: 400 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-                <Typography variant="h6">
+          <Card sx={{ 
+            boxShadow: 2, 
+            height: isCompactMode ? 250 : 400,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            border: '1px solid #e3f2fd',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
+                <Typography 
+                  variant="h6"
+                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
+                >
                   Monthly Performance
                 </Typography>
-                <Box display="flex" gap={1}>
+                <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
                     label="Total P&L"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.total ? 'primary' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, total: !prev.total }))}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                    }}
                   />
                   <Chip
                     label="Realized P&L"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.realized ? 'success' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, realized: !prev.realized }))}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                    }}
                   />
                   <Chip
                     label="Unrealized P&L"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.unrealized ? 'warning' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, unrealized: !prev.unrealized }))}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                    }}
                   />
                 </Box>
               </Box>
@@ -705,11 +797,11 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: isCompactMode ? 9 : 12 }}
                     axisLine={{ stroke: '#e0e0e0' }}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: isCompactMode ? 9 : 12 }}
                     axisLine={{ stroke: '#e0e0e0' }}
                     tickFormatter={(value) => formatCurrency(value, currency, {}, locale)}
                   />
@@ -719,7 +811,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       backgroundColor: 'white',
                       border: '1px solid #e0e0e0',
                       borderRadius: 8,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      fontSize: isCompactMode ? '0.75rem' : '0.875rem'
                     }}
                   />
                   
@@ -729,9 +822,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       type="monotone"
                       dataKey="pnl"
                       stroke="#1976d2"
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: 6, stroke: '#1976d2', strokeWidth: 2 }}
+                      strokeWidth={isCompactMode ? 2 : 3}
+                      dot={{ r: isCompactMode ? 3 : 4, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: isCompactMode ? 4 : 6, stroke: '#1976d2', strokeWidth: 2 }}
                       name="Total P&L"
                     />
                   )}
@@ -742,9 +835,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       type="monotone"
                       dataKey="realizedPnl"
                       stroke="#00C49F"
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: '#00C49F', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: 5, stroke: '#00C49F', strokeWidth: 2 }}
+                      strokeWidth={isCompactMode ? 1.5 : 2}
+                      dot={{ r: isCompactMode ? 2 : 3, fill: '#00C49F', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#00C49F', strokeWidth: 2 }}
                       name="Realized P&L"
                     />
                   )}
@@ -755,9 +848,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       type="monotone"
                       dataKey="unrealizedPnl"
                       stroke="#FF8042"
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: '#FF8042', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: 5, stroke: '#FF8042', strokeWidth: 2 }}
+                      strokeWidth={isCompactMode ? 1.5 : 2}
+                      dot={{ r: isCompactMode ? 2 : 3, fill: '#FF8042', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#FF8042', strokeWidth: 2 }}
                       name="Unrealized P&L"
                     />
                   )}
@@ -770,33 +863,57 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
         {/* Asset Performance Pie Chart */}
         <Grid item xs={12} lg={4}>
-          <Card sx={{ boxShadow: 2, height: 400 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ 
+            boxShadow: 2, 
+            height: isCompactMode ? 250 : 400,
+            background: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               {/* Header with Toggle Controls */}
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 1.5 : 3}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    color: 'text.primary',
+                    fontSize: isCompactMode ? '0.9rem' : '1.25rem'
+                  }}
+                >
                   Asset Performance
                 </Typography>
-                <Box display="flex" gap={1}>
+                <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
                     label="Pie Chart"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     color={chartView === 'pie' ? 'primary' : 'default'}
                     onClick={() => setChartView('pie')}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                    }}
                   />
                   <Chip
                     label="Compact List"
-                    size="small"
+                    size={isCompactMode ? "small" : "medium"}
                     color={chartView === 'compact' ? 'primary' : 'default'}
                     onClick={() => setChartView('compact')}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                    }}
                   />
                 </Box>
               </Box>
               
               {assetChartData && assetChartData.length > 0 ? (
-                <Box sx={{ height: 350, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ height: isCompactMode ? 200 : 350, display: 'flex', flexDirection: 'column' }}>
 
                   {chartView === 'pie' ? (
                     <Box sx={{ 
@@ -805,7 +922,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       '& .recharts-pie-label-text': {
-                        fontSize: '10px !important',
+                        fontSize: isCompactMode ? '8px !important' : '10px !important',
                         fontWeight: 'bold !important',
                         fill: '#333 !important',
                         textShadow: '1px 1px 2px rgba(255,255,255,0.8) !important'
@@ -819,8 +936,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             cy="50%"
                             labelLine={false}
                             label={renderCustomLabel}
-                            outerRadius={90}
-                            innerRadius={35}
+                            outerRadius={isCompactMode ? 60 : 90}
+                            innerRadius={isCompactMode ? 25 : 35}
                             fill="#8884d8"
                             dataKey="value"
                             minAngle={1}
@@ -850,9 +967,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       borderColor: 'grey.200',
                       borderRadius: 1,
                       backgroundColor: 'grey.50',
-                      p: 2
+                      p: isCompactMode ? 1 : 2
                     }}>
-                      <Box display="flex" flexWrap="wrap" gap={1}>
+                      <Box display="flex" flexWrap="wrap" gap={isCompactMode ? 0.5 : 1}>
                         {assetChartData.map((entry, index) => {
                           const totalValue = assetChartData.reduce((sum, item) => sum + item.value, 0);
                           const percentage = totalValue > 0 ? (entry.value / totalValue) * 100 : 0;
@@ -860,11 +977,12 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           return (
                             <Chip
                               key={index}
+                              size={isCompactMode ? "small" : "medium"}
                               icon={
                                 <Box
                                   sx={{
-                                    width: 8,
-                                    height: 8,
+                                    width: isCompactMode ? 6 : 8,
+                                    height: isCompactMode ? 6 : 8,
                                     borderRadius: '50%',
                                     backgroundColor: entry.color || COLORS[index % COLORS.length],
                                     border: '1px solid white',
@@ -874,24 +992,34 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                               }
                               label={
                                 <Box display="flex" alignItems="center" gap={0.5}>
-                                  <Typography variant="caption" fontWeight="bold">
+                                  <Typography 
+                                    variant="caption" 
+                                    fontWeight="bold"
+                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                                  >
                                     {entry.name}
                                   </Typography>
                                   <Typography 
                                     variant="caption" 
                                     fontWeight="bold"
+                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                                     color={entry.originalValue >= 0 ? 'success.main' : 'error.main'}
                                   >
                                     {entry.formattedValue}
                                   </Typography>
-                                  <Typography variant="caption" color="primary" fontWeight="bold">
+                                  <Typography 
+                                    variant="caption" 
+                                    color="primary" 
+                                    fontWeight="bold"
+                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                                  >
                                     ({formatPercentage(percentage, 1, locale)})
                                   </Typography>
                                 </Box>
                               }
                               variant="outlined"
                               sx={{
-                                height: 32,
+                                height: isCompactMode ? 24 : 32,
                                 backgroundColor: entry.originalValue >= 0 ? 'success.50' : 'error.50',
                                 borderColor: 'grey.300',
                                 borderWidth: 1,
@@ -910,20 +1038,40 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   )}
                 </Box>
               ) : (
-                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={300}>
-                  <Typography color="text.secondary" gutterBottom>
+                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={isCompactMode ? 200 : 300}>
+                  <Typography 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontSize: isCompactMode ? '0.75rem' : '0.875rem' }}
+                  >
                     No asset performance data available
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                  >
                     Debug: assetChartData length = {assetChartData?.length || 0}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                  >
                     Analysis has assetPerformance: {analysis?.assetPerformance ? 'Yes' : 'No'}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                  >
                     Has positive values: {assetChartData?.some(item => item.value > 0) ? 'Yes' : 'No'}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                  >
                     Values: {assetChartData?.map(item => `${item.name}: ${item.value}`).join(', ')}
                   </Typography>
                 </Box>
@@ -934,56 +1082,113 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       </Grid>
 
       {/* Top and Worst Trades Tables */}
-      <Grid container spacing={3} mb={4}>
+      <Grid container spacing={isCompactMode ? 1 : 3} mb={isCompactMode ? 2 : 4}>
         {/* Top Trades */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ boxShadow: 2, height: 500 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-                <Typography variant="h6">
+          <Card sx={{ 
+            boxShadow: 2, 
+            height: isCompactMode ? 300 : 500,
+            background: 'white',
+            border: '1px solid #c8e6c9',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
+                <Typography 
+                  variant="h6"
+                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
+                >
                   Top Performing Trades
                 </Typography>
                 <Chip
                   label="Best"
                   color="success"
-                  size="small"
+                  size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
+                  sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                 />
               </Box>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                <Table size="small" stickyHeader>
+                <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
-                      <TableCell sx={{ fontWeight: 600 }}>Asset</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Side</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>P&L</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Asset
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Side
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        P&L
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Date
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {analysis.topTrades.slice(0, 5).map((trade) => (
                       <TableRow key={trade.tradeId}>
-                        <TableCell>
+                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Box>
-                            <Typography variant="body2" fontWeight="medium">
+                            <Typography 
+                              variant="body2" 
+                              fontWeight="medium"
+                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
+                            >
                               {trade.assetSymbol}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography 
+                              variant="caption" 
+                              color="text.secondary"
+                              sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                            >
                               {trade.assetName}
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Chip
                             label={trade.side}
                             color={trade.side === 'BUY' ? 'success' : 'error'}
-                            size="small"
+                            size={isCompactMode ? "small" : "medium"}
+                            sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                           />
                         </TableCell>
-                        <TableCell color={trade.realizedPl >= 0 ? 'success.main' : 'error.main'}>
+                        <TableCell 
+                          sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                            color: trade.realizedPl >= 0 ? 'success.main' : 'error.main'
+                          }}
+                        >
                           {formatCurrency(Number(trade.realizedPl) || 0, currency, {}, locale)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ 
+                          py: isCompactMode ? 0.5 : 1,
+                          fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                        }}>
                           {new Date(trade.tradeDate).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
@@ -997,53 +1202,110 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
         {/* Worst Trades */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ boxShadow: 2, height: 500 }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-                <Typography variant="h6">
+          <Card sx={{ 
+            boxShadow: 2, 
+            height: isCompactMode ? 300 : 500,
+            background: 'white',
+            border: '1px solid #ffcdd2',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
+                <Typography 
+                  variant="h6"
+                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
+                >
                   Worst Performing Trades
                 </Typography>
                 <Chip
                   label="Worst"
                   color="error"
-                  size="small"
+                  size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
+                  sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                 />
               </Box>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                <Table size="small" stickyHeader>
+                <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
-                      <TableCell sx={{ fontWeight: 600 }}>Asset</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Side</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>P&L</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Asset
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Side
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        P&L
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Date
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {analysis.worstTrades.slice(0, 5).map((trade) => (
                       <TableRow key={trade.tradeId}>
-                        <TableCell>
+                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Box>
-                            <Typography variant="body2" fontWeight="medium">
+                            <Typography 
+                              variant="body2" 
+                              fontWeight="medium"
+                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
+                            >
                               {trade.assetSymbol}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography 
+                              variant="caption" 
+                              color="text.secondary"
+                              sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                            >
                               {trade.assetName}
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Chip
                             label={trade.side}
                             color={trade.side === 'BUY' ? 'success' : 'error'}
-                            size="small"
+                            size={isCompactMode ? "small" : "medium"}
+                            sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                           />
                         </TableCell>
-                        <TableCell color={trade.realizedPl >= 0 ? 'success.main' : 'error.main'}>
+                        <TableCell 
+                          sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                            color: trade.realizedPl >= 0 ? 'success.main' : 'error.main'
+                          }}
+                        >
                           {formatCurrency(Number(trade.realizedPl) || 0, currency, {}, locale)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ 
+                          py: isCompactMode ? 0.5 : 1,
+                          fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                        }}>
                           {new Date(trade.tradeDate).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
@@ -1057,79 +1319,170 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       </Grid>
 
       {/* Asset Performance Table */}
-      <Grid container spacing={3}>
+      <Grid container spacing={isCompactMode ? 1 : 3}>
         <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+          <Card sx={{ 
+            boxShadow: 2,
+            background: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
+              <Typography 
+                variant="h6" 
+                gutterBottom
+                sx={{ 
+                  fontSize: isCompactMode ? '0.9rem' : '1.25rem',
+                  mb: isCompactMode ? 1.5 : 2
+                }}
+              >
                 Asset Performance Details
               </Typography>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                <Table stickyHeader>
+                <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
-                    <TableRow>
-                      <TableCell>Asset</TableCell>
-                      <TableCell>Quantity</TableCell>
-                      <TableCell>Avg Cost</TableCell>
-                      <TableCell>Market Value</TableCell>
-                      <TableCell>P&L</TableCell>
-                      <TableCell>Trades</TableCell>
-                      <TableCell>Win Rate</TableCell>
+                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Asset
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Quantity
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Avg Cost
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Market Value
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        P&L
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Trades
+                      </TableCell>
+                      <TableCell sx={{ 
+                        fontWeight: 600,
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1
+                      }}>
+                        Win Rate
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {assetChartData && assetChartData.length > 0 ? (
                       assetChartData.map((asset) => (
                         <TableRow key={asset.assetId || asset.name} hover>
-                          <TableCell>
+                          <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box>
-                              <Typography variant="body2" fontWeight="bold">
+                              <Typography 
+                                variant="body2" 
+                                fontWeight="bold"
+                                sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
+                              >
                                 {asset.name}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography 
+                                variant="caption" 
+                                color="text.secondary"
+                                sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
+                              >
                                 {asset.fullName}
                               </Typography>
                             </Box>
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          }}>
                             <Typography variant="body2">
                               {formatNumber(asset.quantity, 2, locale)}
                             </Typography>
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          }}>
                             <Typography variant="body2">
                               {formatCurrency(asset.avgCost, currency, {}, locale)}
                             </Typography>
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          }}>
                             <Typography variant="body2">
                               {formatCurrency(asset.marketValue, currency, {}, locale)}
                             </Typography>
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          }}>
                             <Typography 
                               variant="body2" 
                               fontWeight="bold"
                               color={asset.value >= 0 ? 'success.main' : 'error.main'}
+                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
                             >
                               {asset.formattedValue}
                             </Typography>
                           </TableCell>
-                          <TableCell>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Typography variant="body2">
+                          <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                            <Box display="flex" alignItems="center" gap={isCompactMode ? 0.5 : 1}>
+                              <Typography 
+                                variant="body2"
+                                sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
+                              >
                                 {asset.trades}
                               </Typography>
                               <Chip
                                 label={asset.winRate >= 50 ? 'Win' : 'Loss'}
-                                size="small"
+                                size={isCompactMode ? "small" : "medium"}
                                 color={asset.winRate >= 50 ? 'success' : 'error'}
                                 variant="outlined"
+                                sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                               />
                             </Box>
                           </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight="bold">
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          }}>
+                            <Typography 
+                              variant="body2" 
+                              fontWeight="bold"
+                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
+                            >
                               {asset.formattedWinRate}
                             </Typography>
                           </TableCell>
@@ -1137,8 +1490,11 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                          <Typography color="text.secondary">
+                        <TableCell colSpan={7} align="center" sx={{ py: isCompactMode ? 2 : 4 }}>
+                          <Typography 
+                            color="text.secondary"
+                            sx={{ fontSize: isCompactMode ? '0.75rem' : '0.875rem' }}
+                          >
                             No asset performance data available
                           </Typography>
                         </TableCell>

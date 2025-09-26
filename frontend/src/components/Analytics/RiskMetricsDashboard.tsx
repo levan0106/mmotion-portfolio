@@ -34,17 +34,23 @@ interface RiskMetricsDashboardProps {
   data: RiskMetrics;
   baseCurrency?: string;
   title?: string;
+  compact?: boolean;
 }
 
 const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
   data,
   title = 'Risk Metrics Dashboard',
+  compact = false,
 }) => {
   // Add null checks and default values
   if (!data) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+      <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
+        <Typography 
+          variant="h6" 
+          color="text.secondary"
+          sx={{ fontSize: compact ? '0.9rem' : '1.25rem' }}
+        >
           No risk metrics data available
         </Typography>
       </Box>
@@ -108,32 +114,64 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography 
+        variant="h6" 
+        gutterBottom
+        sx={{ fontSize: compact ? '0.9rem' : '1.25rem' }}
+      >
         {title}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Comprehensive risk analysis and portfolio health metrics
-      </Typography>
+      {!compact && (
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ mb: 3 }}
+        >
+          Comprehensive risk analysis and portfolio health metrics
+        </Typography>
+      )}
       
-      <Grid container spacing={3}>
+      <Grid container spacing={compact ? 1 : 3}>
         {/* VaR Metrics */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Typography variant="subtitle2" color="text.secondary">
+          <Card sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            border: '1px solid #e3f2fd',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary"
+                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
+                >
                   Value at Risk (95%)
                 </Typography>
                 {getRiskIcon(varLevel)}
               </Box>
-              <Typography variant="h4" color="primary" fontWeight="bold">
+              <Typography 
+                variant="h4" 
+                color="primary" 
+                fontWeight="bold"
+                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
+              >
                 {formatPercentage(data.var95)}
               </Typography>
               <Chip 
                 label={varLevel.toUpperCase()} 
                 color={getRiskColor(varLevel) as any}
-                size="small"
-                sx={{ mt: 1 }}
+                size={compact ? "small" : "medium"}
+                sx={{ 
+                  mt: 1,
+                  fontSize: compact ? '0.65rem' : '0.75rem'
+                }}
               />
             </CardContent>
           </Card>
@@ -141,22 +179,44 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
 
         {/* Sharpe Ratio */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Typography variant="subtitle2" color="text.secondary">
+          <Card sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
+            border: '1px solid #e1bee7',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary"
+                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
+                >
                   Sharpe Ratio
                 </Typography>
                 {getRiskIcon(sharpeLevel)}
               </Box>
-              <Typography variant="h4" color="primary" fontWeight="bold">
+              <Typography 
+                variant="h4" 
+                color="primary" 
+                fontWeight="bold"
+                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
+              >
                 {(data.sharpeRatio || 0).toFixed(2)}
               </Typography>
               <Chip 
                 label={sharpeLevel.toUpperCase()} 
                 color={getRiskColor(sharpeLevel) as any}
-                size="small"
-                sx={{ mt: 1 }}
+                size={compact ? "small" : "medium"}
+                sx={{ 
+                  mt: 1,
+                  fontSize: compact ? '0.65rem' : '0.75rem'
+                }}
               />
             </CardContent>
           </Card>
@@ -164,22 +224,44 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
 
         {/* Volatility */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Typography variant="subtitle2" color="text.secondary">
+          <Card sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #fff3e0 100%)',
+            border: '1px solid #ffcc02',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary"
+                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
+                >
                   Volatility
                 </Typography>
                 {getRiskIcon(volatilityLevel)}
               </Box>
-              <Typography variant="h4" color="primary" fontWeight="bold">
+              <Typography 
+                variant="h4" 
+                color="primary" 
+                fontWeight="bold"
+                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
+              >
                 {formatPercentage(data.volatility)}
               </Typography>
               <Chip 
                 label={volatilityLevel.toUpperCase()} 
                 color={getRiskColor(volatilityLevel) as any}
-                size="small"
-                sx={{ mt: 1 }}
+                size={compact ? "small" : "medium"}
+                sx={{ 
+                  mt: 1,
+                  fontSize: compact ? '0.65rem' : '0.75rem'
+                }}
               />
             </CardContent>
           </Card>
@@ -187,79 +269,148 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
 
         {/* Max Drawdown */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Typography variant="subtitle2" color="text.secondary">
+          <Card sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #ffebee 100%)',
+            border: '1px solid #ffcdd2',
+            borderRadius: 2,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}>
+            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary"
+                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
+                >
                   Max Drawdown
                 </Typography>
                 {getRiskIcon(drawdownLevel)}
               </Box>
-              <Typography variant="h4" color="primary" fontWeight="bold">
+              <Typography 
+                variant="h4" 
+                color="primary" 
+                fontWeight="bold"
+                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
+              >
                 {formatPercentage(data.maxDrawdown)}
               </Typography>
               <Chip 
                 label={drawdownLevel.toUpperCase()} 
                 color={getRiskColor(drawdownLevel) as any}
-                size="small"
-                sx={{ mt: 1 }}
+                size={compact ? "small" : "medium"}
+                sx={{ 
+                  mt: 1,
+                  fontSize: compact ? '0.65rem' : '0.75rem'
+                }}
               />
             </CardContent>
           </Card>
         </Grid>
 
         {/* Additional Metrics */}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Additional Risk Metrics
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      VaR (99%)
-                    </Typography>
-                    <Typography variant="h6">
-                      {formatPercentage(data.var99)}
-                    </Typography>
-                  </Box>
+        {!compact && (
+          <Grid item xs={12}>
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
+              border: '1px solid #e0e0e0',
+              borderRadius: 2,
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease-in-out'
+              }
+            }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ fontSize: '1.25rem' }}
+                >
+                  Additional Risk Metrics
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        VaR (99%)
+                      </Typography>
+                      <Typography 
+                        variant="h6"
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {formatPercentage(data.var99)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        Beta
+                      </Typography>
+                      <Typography 
+                        variant="h6"
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {(data.beta || 0).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        Calmar Ratio
+                      </Typography>
+                      <Typography 
+                        variant="h6"
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {(data.calmarRatio || 0).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        Sortino Ratio
+                      </Typography>
+                      <Typography 
+                        variant="h6"
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {(data.sortinoRatio || 0).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Beta
-                    </Typography>
-                    <Typography variant="h6">
-                      {(data.beta || 0).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Calmar Ratio
-                    </Typography>
-                    <Typography variant="h6">
-                      {(data.calmarRatio || 0).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Sortino Ratio
-                    </Typography>
-                    <Typography variant="h6">
-                      {(data.sortinoRatio || 0).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

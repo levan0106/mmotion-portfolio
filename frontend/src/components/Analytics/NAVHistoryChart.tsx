@@ -62,11 +62,15 @@ interface NAVHistoryResponse {
 interface NAVHistoryChartProps {
   portfolioId: string;
   baseCurrency: string;
+  compact?: boolean;
+  getUltraSpacing?: (normal: number, compact: number) => number;
 }
 
 const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   portfolioId,
-  baseCurrency
+  baseCurrency,
+  compact = false,
+  getUltraSpacing = (normal) => normal
 }) => {
   const [data, setData] = useState<NAVHistoryData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -191,55 +195,122 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   });
 
   return (
-    <Card>
-      <CardContent>
-        {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AccountBalance color="primary" />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              NAV History
-            </Typography>
-            <Tooltip title="Net Asset Value history showing portfolio growth over time">
-              <IconButton size="small">
-                <InfoOutlined fontSize="small" />
+    <Card sx={{ 
+      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+      borderRadius: 3,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+      border: '1px solid #e3f2fd',
+      '&:hover': {
+        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+        transform: 'translateY(-2px)',
+        transition: 'all 0.3s ease-in-out'
+      }
+    }}>
+      <CardContent sx={{ p: getUltraSpacing(3, 1.5) }}>
+        {/* Professional Header */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: getUltraSpacing(3, 1.5),
+          pb: getUltraSpacing(2, 1),
+          borderBottom: '2px solid #f1f3f4'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: compact ? 1 : 1.5 }}>
+            <Box sx={{ 
+              p: compact ? 0.75 : 1, 
+              borderRadius: 2, 
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <AccountBalance sx={{ color: 'white', fontSize: compact ? 18 : 20 }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 700, 
+                color: '#1a1a1a',
+                fontSize: compact ? '1rem' : '1.1rem'
+              }}>
+                NAV Performance History
+              </Typography>
+              {!compact && (
+                <Typography variant="body2" sx={{ 
+                  color: '#666',
+                  fontSize: '0.8rem',
+                  mt: -0.5
+                }}>
+                  Net Asset Value evolution over time
+                </Typography>
+              )}
+            </Box>
+            <Tooltip title="Track portfolio value changes and performance metrics">
+              <IconButton size="small" sx={{ ml: 1 }}>
+                <InfoOutlined fontSize="small" sx={{ color: '#666' }} />
               </IconButton>
             </Tooltip>
           </Box>
 
-          {/* Controls */}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {/* Professional Controls */}
+          <Box sx={{ display: 'flex', gap: compact ? 1 : 1.5, alignItems: 'center' }}>
             <Chip
               label={showReturn ? "Return %" : "NAV Value"}
               onClick={() => setShowReturn(!showReturn)}
-              color={showReturn ? "secondary" : "primary"}
+              color={showReturn ? "primary" : "default"}
               variant={showReturn ? "filled" : "outlined"}
-              size="small"
-              sx={{ cursor: 'pointer' }}
+              size={compact ? "small" : "medium"}
+              sx={{ 
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: compact ? '0.7rem' : '0.8rem',
+                '&:hover': {
+                  backgroundColor: showReturn ? 'primary.dark' : 'primary.light',
+                  color: showReturn ? 'white' : 'primary.main'
+                }
+              }}
             />
             
-            <FormControl size="small" sx={{ minWidth: 80 }}>
+            <FormControl size="small" sx={{ minWidth: compact ? 70 : 85 }}>
               <Select
                 value={timeframe}
                 onChange={handleTimeframeChange}
                 displayEmpty
+                sx={{
+                  fontSize: compact ? '0.7rem' : '0.8rem',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#1976d2'
+                  }
+                }}
               >
                 {timeframeOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
+                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: compact ? '0.7rem' : '0.8rem' }}>
                     {option.label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 90 }}>
+            <FormControl size="small" sx={{ minWidth: compact ? 80 : 95 }}>
               <Select
                 value={granularity}
                 onChange={handleGranularityChange}
                 displayEmpty
+                sx={{
+                  fontSize: compact ? '0.7rem' : '0.8rem',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#1976d2'
+                  }
+                }}
               >
                 {granularityOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
+                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: compact ? '0.7rem' : '0.8rem' }}>
                     {option.label}
                   </MenuItem>
                 ))}
@@ -248,15 +319,27 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           </Box>
         </Box>
 
-        {/* Summary Cards */}
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
+        {/* Professional Summary Cards */}
+        <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(3, 1.5) }}>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="body1" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+            <Card sx={{ 
+              height: compact ? 70 : 90, 
+              display: 'flex', 
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+              border: '1px solid #e1f5fe',
+              borderRadius: 2,
+              '&:hover': {
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)',
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }}>
+              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+                <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
                   {formatCurrency(currentNAV, baseCurrency)}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
                   Current NAV
                 </Typography>
               </CardContent>
@@ -264,21 +347,37 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
-                  {isPositive && <TrendingUp color="success" sx={{ fontSize: 16 }} />}
-                  {!isPositive && <TrendingDown color="error" sx={{ fontSize: 16 }} />}
+            <Card sx={{ 
+              height: compact ? 70 : 90, 
+              display: 'flex', 
+              alignItems: 'center',
+              background: isPositive 
+                ? 'linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%)'
+                : 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
+              border: isPositive ? '1px solid #c8e6c9' : '1px solid #ffcdd2',
+              borderRadius: 2,
+              '&:hover': {
+                boxShadow: isPositive 
+                  ? '0 4px 12px rgba(76, 175, 80, 0.15)'
+                  : '0 4px 12px rgba(244, 67, 54, 0.15)',
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }}>
+              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: compact ? 0.25 : 0.5 }}>
+                  {isPositive && <TrendingUp color="success" sx={{ fontSize: compact ? 16 : 18 }} />}
+                  {!isPositive && <TrendingDown color="error" sx={{ fontSize: compact ? 16 : 18 }} />}
                   <Typography
-                    variant="body1"
+                    variant="h6"
                     color={isPositive ? 'success.main' : 'error.main'}
                     fontWeight="bold"
-                    sx={{ fontSize: '0.9rem' }}
+                    sx={{ fontSize: compact ? '0.85rem' : '1rem' }}
                   >
                     {formatPercentage(totalReturn)}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
                   Total Return
                 </Typography>
               </CardContent>
@@ -286,12 +385,24 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="body1" color="warning.main" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+            <Card sx={{ 
+              height: compact ? 70 : 90, 
+              display: 'flex', 
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)',
+              border: '1px solid #ffccbc',
+              borderRadius: 2,
+              '&:hover': {
+                boxShadow: '0 4px 12px rgba(255, 152, 0, 0.15)',
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }}>
+              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+                <Typography variant="h6" color="warning.main" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
                   {formatPercentage(maxDrawdown)}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
                   Max Drawdown
                 </Typography>
               </CardContent>
@@ -299,12 +410,24 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="body1" color="info.main" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+            <Card sx={{ 
+              height: compact ? 70 : 90, 
+              display: 'flex', 
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, #e0f2f1 0%, #f1f8e9 100%)',
+              border: '1px solid #b2dfdb',
+              borderRadius: 2,
+              '&:hover': {
+                boxShadow: '0 4px 12px rgba(0, 150, 136, 0.15)',
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }}>
+              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+                <Typography variant="h6" color="info.main" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
                   {data.length}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
                   Data Points
                 </Typography>
               </CardContent>
@@ -312,59 +435,96 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           </Grid>
         </Grid>
 
-        {/* Chart */}
+        {/* Professional Chart */}
         {loading ? (
-          <Box display="flex" justifyContent="center" p={4}>
-            <CircularProgress size={24} />
+          <Box display="flex" justifyContent="center" alignItems="center" p={getUltraSpacing(6, 3)}>
+            <Box sx={{ textAlign: 'center' }}>
+              <CircularProgress size={compact ? 24 : 32} sx={{ color: '#1976d2', mb: getUltraSpacing(2, 1) }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: compact ? '0.75rem' : '0.875rem' }}>
+                Loading NAV history data...
+              </Typography>
+            </Box>
           </Box>
         ) : error ? (
-          <Typography color="error" variant="body2" textAlign="center" p={2}>
-            {error}
-          </Typography>
+          <Box sx={{ 
+            textAlign: 'center', 
+            p: getUltraSpacing(4, 2),
+            background: 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
+            borderRadius: 2,
+            border: '1px solid #ffcdd2'
+          }}>
+            <Typography color="error" variant="body1" sx={{ fontWeight: 500, fontSize: compact ? '0.85rem' : '1rem' }}>
+              {error}
+            </Typography>
+            <Typography color="error" variant="body2" sx={{ mt: 1, fontSize: compact ? '0.7rem' : '0.875rem' }}>
+              Unable to load NAV history data
+            </Typography>
+          </Box>
         ) : data.length === 0 ? (
-          <Typography color="text.secondary" variant="body2" textAlign="center" p={2}>
-            No NAV history data available
-          </Typography>
+          <Box sx={{ 
+            textAlign: 'center', 
+            p: getUltraSpacing(4, 2),
+            background: 'linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%)',
+            borderRadius: 2,
+            border: '1px solid #e0e0e0'
+          }}>
+            <Typography color="text.secondary" variant="body1" sx={{ fontWeight: 500, fontSize: compact ? '0.85rem' : '1rem' }}>
+              No NAV history data available
+            </Typography>
+            <Typography color="text.secondary" variant="body2" sx={{ mt: 1, fontSize: compact ? '0.7rem' : '0.875rem' }}>
+              Historical data will appear here once available
+            </Typography>
+          </Box>
         ) : (
-          <Box sx={{ height: 300 }}>
+          <Box sx={{ 
+            height: compact ? 250 : 350,
+            background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
+            borderRadius: 2,
+            p: getUltraSpacing(2, 1),
+            border: '1px solid #e0e0e0'
+          }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={processedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <ComposedChart data={processedData} margin={{ top: compact ? 15 : 20, right: compact ? 20 : 30, left: compact ? 15 : 20, bottom: compact ? 15 : 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.6} />
                 <XAxis
                   dataKey="date"
                   tickFormatter={formatXAxisLabel}
                   stroke="#666"
-                  fontSize={12}
+                  fontSize={compact ? 9 : 11}
                   tickLine={false}
                   axisLine={false}
+                  tick={{ fill: '#666' }}
                 />
                 <YAxis
                   yAxisId="nav"
                   tickFormatter={(value) => formatCurrency(value, baseCurrency)}
                   stroke="#1976d2"
-                  fontSize={12}
+                  fontSize={compact ? 9 : 11}
                   tickLine={false}
                   axisLine={false}
                   domain={[navDomainMin, navDomainMax]}
+                  tick={{ fill: '#1976d2' }}
                 />
                 <YAxis
                   yAxisId="pnl"
                   orientation="right"
                   tickFormatter={(value) => formatCurrency(value, baseCurrency)}
                   stroke="#ff9800"
-                  fontSize={12}
+                  fontSize={compact ? 9 : 11}
                   tickLine={false}
                   axisLine={false}
                   domain={[pnlDomainMin, pnlDomainMax]}
+                  tick={{ fill: '#ff9800' }}
                 />
                 <Legend 
                   verticalAlign="top" 
-                  height={36}
+                  height={compact ? 30 : 40}
                   formatter={(value) => {
                     if (value === 'navValue') return 'NAV Value';
                     if (value === 'portfolioPnL') return 'Portfolio P&L';
                     return value;
                   }}
+                  wrapperStyle={{ fontSize: compact ? '10px' : '12px', fontWeight: 500 }}
                 />
                 <RechartsTooltip
                   formatter={(value, name) => {
@@ -382,7 +542,8 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                     backgroundColor: 'white',
                     border: '1px solid #e0e0e0',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    fontSize: compact ? '10px' : '12px'
                   }}
                 />
                 
@@ -392,9 +553,9 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   type="monotone"
                   dataKey="navValue"
                   stroke="#1976d2"
-                  strokeWidth={2}
+                  strokeWidth={compact ? 2 : 3}
                   dot={false}
-                  activeDot={{ r: 4, fill: '#1976d2' }}
+                  activeDot={{ r: compact ? 4 : 5, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
                   connectNulls={false}
                 />
                 
@@ -403,8 +564,8 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   yAxisId="pnl"
                   dataKey="portfolioPnL"
                   fill="#ff9800"
-                  fillOpacity={0.6}
-                  radius={[2, 2, 0, 0]}
+                  fillOpacity={0.7}
+                  radius={[compact ? 2 : 3, compact ? 2 : 3, 0, 0]}
                 />
                 
                 {firstNAV > 0 && (
@@ -412,8 +573,9 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                     yAxisId="nav"
                     y={firstNAV}
                     stroke="#666"
-                    strokeDasharray="2 2"
-                    strokeOpacity={0.5}
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    strokeWidth={1}
                   />
                 )}
                 
@@ -423,7 +585,8 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   y={0}
                   stroke="#666"
                   strokeDasharray="2 2"
-                  strokeOpacity={0.3}
+                  strokeOpacity={0.4}
+                  strokeWidth={1}
                 />
               </ComposedChart>
             </ResponsiveContainer>

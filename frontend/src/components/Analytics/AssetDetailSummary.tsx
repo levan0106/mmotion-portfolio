@@ -32,6 +32,7 @@ interface AssetDetailSummaryProps {
   data: AssetDetail[];
   baseCurrency: string;
   title?: string;
+  compact?: boolean;
 }
 
 const COLORS = [
@@ -44,12 +45,13 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   data,
   baseCurrency,
   title = 'Asset Detail Summary',
+  compact = false,
 }) => {
   // Add null checks
   if (!data || data.length === 0) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+      <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
+        <Typography variant={compact ? "body1" : "h6"} color="text.secondary">
           No asset detail data available
         </Typography>
       </Box>
@@ -168,34 +170,41 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Individual asset holdings with values and performance
-      </Typography>
+      {!compact && (
+        <>
+          <Typography variant="h6" gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Individual asset holdings with values and performance
+          </Typography>
+        </>
+      )}
       
       {/* Charts */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={compact ? 1.5 : 3} sx={{ mb: compact ? 1.5 : 3 }}>
         {/* Allocation Chart */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" gutterBottom sx={{ 
+            fontWeight: 600,
+            fontSize: compact ? '0.9rem' : '1rem'
+          }}>
             Asset Allocation (%)
           </Typography>
-          <Box sx={{ height: 300 }}>
+          <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="symbol" 
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: compact ? 10 : 12 }}
                   angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={compact ? 60 : 80}
                 />
                 <YAxis
                   tickFormatter={(value) => formatPercentage(value)}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: compact ? 10 : 12 }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
@@ -210,23 +219,26 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
         {/* P&L Chart */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" gutterBottom sx={{ 
+            fontWeight: 600,
+            fontSize: compact ? '0.9rem' : '1rem'
+          }}>
             Unrealized P&L ({baseCurrency})
           </Typography>
-          <Box sx={{ height: 300 }}>
+          <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="symbol" 
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: compact ? 10 : 12 }}
                   angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={compact ? 60 : 80}
                 />
                 <YAxis
                   tickFormatter={(value) => formatCurrency(value, baseCurrency)}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: compact ? 10 : 12 }}
                 />
                 <Tooltip 
                   content={({ active, payload }) => {
@@ -323,25 +335,35 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
       {/* P&L Summary */}
       <Box sx={{ 
-        mb: 3, 
-        p: 2, 
+        mb: compact ? 1.5 : 3, 
+        p: compact ? 1.5 : 2, 
         backgroundColor: 'rgba(25, 118, 210, 0.04)', 
         borderRadius: 2,
         border: '1px solid rgba(25, 118, 210, 0.12)'
       }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ 
+          fontWeight: 600, 
+          mb: compact ? 1 : 2,
+          fontSize: compact ? '0.9rem' : '1rem'
+        }}>
           Portfolio Performance Summary
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={compact ? 1 : 2}>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ 
+                fontSize: compact ? '0.65rem' : '0.75rem' 
+              }}>
                 Total Unrealized P&L
               </Typography>
               <Typography 
                 variant="h6" 
                 color={chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0) >= 0 ? "success.main" : "error.main"}
-                sx={{ fontWeight: 'bold', display: 'block' }}
+                sx={{ 
+                  fontWeight: 'bold', 
+                  display: 'block',
+                  fontSize: compact ? '0.9rem' : '1.25rem'
+                }}
               >
                 {formatCurrency(
                   chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0), 
@@ -352,20 +374,32 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           </Grid>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ 
+                fontSize: compact ? '0.65rem' : '0.75rem' 
+              }}>
                 Profitable Assets
               </Typography>
-              <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', display: 'block' }}>
+              <Typography variant="h6" color="success.main" sx={{ 
+                fontWeight: 'bold', 
+                display: 'block',
+                fontSize: compact ? '0.9rem' : '1.25rem'
+              }}>
                 {chartData.filter(asset => asset.unrealizedPl > 0).length} / {chartData.length}
               </Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ 
+                fontSize: compact ? '0.65rem' : '0.75rem' 
+              }}>
                 Best Performer
               </Typography>
-              <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold', display: 'block' }}>
+              <Typography variant="body2" color="primary" sx={{ 
+                fontWeight: 'bold', 
+                display: 'block',
+                fontSize: compact ? '0.8rem' : '0.875rem'
+              }}>
                 {chartData.length > 0 ? 
                   chartData.reduce((best, asset) => 
                     asset.unrealizedPlPercentage > best.unrealizedPlPercentage ? asset : best
@@ -378,7 +412,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
       </Box>
 
       {/* Asset Detail Cards */}
-      <Grid container spacing={1.5}>
+      <Grid container spacing={compact ? 1 : 1.5}>
         {chartData.map((asset, index) => (
           <Grid item xs={12} sm={6} md={4} lg={2.4} xl={2} key={index}>
             <Card 
@@ -391,7 +425,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                 }
               }}
             >
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: compact ? 1 : 1.5, '&:last-child': { pb: compact ? 1 : 1.5 } }}>
                 {/* Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>

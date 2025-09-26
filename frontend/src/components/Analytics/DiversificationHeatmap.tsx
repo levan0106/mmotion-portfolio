@@ -20,11 +20,13 @@ interface HeatmapData {
 interface DiversificationHeatmapProps {
   data: HeatmapData[];
   title?: string;
+  compact?: boolean;
 }
 
 const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
   data,
   title = 'Diversification Heatmap',
+  compact = false,
 }) => {
   // Get unique asset types
   const assetTypes = Array.from(new Set(data.flatMap(d => [d.asset1, d.asset2])));
@@ -73,8 +75,8 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
 
   if (assetTypes.length === 0) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+      <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
+        <Typography variant={compact ? "body1" : "h6"} color="text.secondary">
           No diversification data available
         </Typography>
       </Box>
@@ -83,29 +85,33 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Correlation matrix showing diversification between asset types
-      </Typography>
+      {!compact && (
+        <>
+          <Typography variant="h6" gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Correlation matrix showing diversification between asset types
+          </Typography>
+        </>
+      )}
       
       <Box sx={{ overflowX: 'auto', overflowY: 'hidden' }}>
-        <Box sx={{ minWidth: 400, overflow: 'hidden' }}>
+        <Box sx={{ minWidth: compact ? 300 : 400, overflow: 'hidden' }}>
           {/* Header row */}
-          <Grid container spacing={0.5} sx={{ mb: 1 }}>
+          <Grid container spacing={compact ? 0.25 : 0.5} sx={{ mb: compact ? 0.5 : 1 }}>
             <Grid item xs={2}>
-              <Box sx={{ height: 40 }} />
+              <Box sx={{ height: compact ? 30 : 40 }} />
             </Grid>
             {assetTypes.map(asset => (
               <Grid item xs={2} key={asset}>
                 <Box 
                   sx={{ 
-                    height: 40, 
+                    height: compact ? 30 : 40, 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.65rem' : '0.75rem',
                     fontWeight: 'bold',
                     color: 'text.secondary'
                   }}
@@ -118,16 +124,16 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
 
           {/* Correlation matrix */}
           {assetTypes.map(asset1 => (
-            <Grid container spacing={0.5} key={asset1} sx={{ mb: 0.5 }}>
+            <Grid container spacing={compact ? 0.25 : 0.5} key={asset1} sx={{ mb: compact ? 0.25 : 0.5 }}>
               {/* Asset label */}
               <Grid item xs={2}>
                 <Box 
                   sx={{ 
-                    height: 40, 
+                    height: compact ? 30 : 40, 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.65rem' : '0.75rem',
                     fontWeight: 'bold',
                     color: 'text.secondary'
                   }}
@@ -149,7 +155,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                     >
                       <Box
                         sx={{
-                          height: 40,
+                          height: compact ? 30 : 40,
                           backgroundColor: isDiagonal ? '#e0e0e0' : getCorrelationColor(correlation),
                           opacity: isDiagonal ? 0.3 : getCorrelationIntensity(correlation),
                           display: 'flex',
@@ -162,7 +168,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                             transform: 'scale(1.02)',
                             zIndex: 1,
                           },
-                          borderRadius: 1,
+                          borderRadius: compact ? 0.5 : 1,
                           border: '1px solid rgba(0,0,0,0.1)',
                         }}
                       >
@@ -172,7 +178,8 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                             sx={{ 
                               color: 'white', 
                               fontWeight: 'bold',
-                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                              fontSize: compact ? '0.6rem' : '0.75rem'
                             }}
                           >
                             {formatPercentage(correlation)}
@@ -189,10 +196,11 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
       </Box>
 
       {/* Legend */}
-      <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="body2" color="text.secondary">
-          Correlation Level:
-        </Typography>
+      {!compact && (
+        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+            Correlation Level:
+          </Typography>
         {[
           { label: 'High (≥0.8)', color: '#d32f2f' },
           { label: 'Medium-High (0.6-0.8)', color: '#f57c00' },
@@ -200,22 +208,23 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
           { label: 'Low (0.2-0.4)', color: '#689f38' },
           { label: 'Very Low (<0.2)', color: '#388e3c' },
         ].map((item, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
             <Box 
               sx={{ 
-                width: 16, 
-                height: 16, 
+                width: 12, 
+                height: 12, 
                 backgroundColor: item.color,
-                borderRadius: 0.5,
+                borderRadius: 0.25,
                 border: '1px solid rgba(0,0,0,0.1)'
               }} 
             />
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
               {item.label}
             </Typography>
           </Box>
         ))}
-      </Box>
+        </Box>
+      )}
     </Box>
   );
 };
