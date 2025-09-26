@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AssetType, AssetFilters as AssetFiltersType } from '../../types/asset.types';
 import { AssetTypeLabels } from '../../types/asset.types';
+import { usePortfolios } from '../../hooks/usePortfolios';
+import { useAccount } from '../../hooks/useAccount';
 import './AssetFilters.styles.css';
 
 export interface AssetFiltersProps {
@@ -25,28 +27,36 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
   showAdvanced = false,
   onToggleAdvanced,
 }) => {
+  // Get account and portfolios
+  const { accountId } = useAccount();
+  const { portfolios, isLoading: portfoliosLoading } = usePortfolios(accountId);
+
   // Local state for form inputs
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const [selectedType, setSelectedType] = useState<AssetType | 'ALL'>(filters.type || 'ALL');
+  const [selectedPortfolio, setSelectedPortfolio] = useState<string | 'ALL'>(filters.portfolioId || 'ALL');
   const [sortBy, setSortBy] = useState(filters.sortBy || 'name');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>(filters.sortOrder || 'ASC');
   const [valueRange, setValueRange] = useState({
     min: filters.minValue?.toString() || '',
     max: filters.maxValue?.toString() || '',
   });
-  const [limit, setLimit] = useState(filters.limit || 25);
+  const [limit, setLimit] = useState(filters.limit || 10);
+  const [hasTrades, setHasTrades] = useState<boolean | undefined>(filters.hasTrades);
 
   // Update local state when filters prop changes
   useEffect(() => {
     setSearchTerm(filters.search || '');
     setSelectedType(filters.type || 'ALL');
+    setSelectedPortfolio(filters.portfolioId || 'ALL');
     setSortBy(filters.sortBy || 'name');
     setSortOrder(filters.sortOrder || 'ASC');
     setValueRange({
       min: filters.minValue?.toString() || '',
       max: filters.maxValue?.toString() || '',
     });
-    setLimit(filters.limit || 25);
+    setLimit(filters.limit || 10);
+    setHasTrades(filters.hasTrades);
   }, [filters]);
 
   // Handle search input with immediate update
@@ -67,6 +77,28 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
       type: type === 'ALL' ? undefined : type,
     });
   }, [filters, onFiltersChange]);
+
+  // Handle portfolio filter
+  const handlePortfolioChange = useCallback((portfolioId: string | 'ALL') => {
+    setSelectedPortfolio(portfolioId);
+    onFiltersChange({
+      ...filters,
+      portfolioId: portfolioId === 'ALL' ? undefined : portfolioId,
+    });
+  }, [filters, onFiltersChange]);
+
+  // Handle has trades filter
+  const handleHasTradesChange = useCallback((value: boolean | undefined) => {
+    console.log('handleHasTradesChange called with:', value);
+    console.log('Current hasTrades state:', hasTrades);
+    setHasTrades(value);
+    const newFilters = {
+      ...filters,
+      hasTrades: value,
+    };
+    console.log('Calling onFiltersChange with:', newFilters);
+    onFiltersChange(newFilters);
+  }, [filters, onFiltersChange, hasTrades]);
 
 
   // Handle value range changes
@@ -97,10 +129,12 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
   const handleClearFilters = useCallback(() => {
     setSearchTerm('');
     setSelectedType('ALL');
+    setSelectedPortfolio('ALL');
+    setHasTrades(undefined);
     setSortBy('name');
     setSortOrder('ASC');
     setValueRange({ min: '', max: '' });
-    setLimit(25);
+    setLimit(10);
     onClearFilters();
   }, [onClearFilters]);
 
@@ -110,7 +144,7 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
   }, [showAdvanced, onToggleAdvanced]);
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || selectedType !== 'ALL' || valueRange.min || valueRange.max;
+  const hasActiveFilters = searchTerm || selectedType !== 'ALL' || selectedPortfolio !== 'ALL' || hasTrades !== undefined || valueRange.min || valueRange.max;
 
   return (
     <div className={`asset-filters ${className}`}>
@@ -148,6 +182,34 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="asset-filters__portfolio">
+          <select
+            value={selectedPortfolio}
+            onChange={(e) => handlePortfolioChange(e.target.value)}
+            className="select"
+            disabled={portfoliosLoading}
+          >
+            <option value="ALL">All Portfolios</option>
+            {portfolios?.map((portfolio) => (
+              <option key={portfolio.portfolioId} value={portfolio.portfolioId}>
+                {portfolio.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="asset-filters__has-trades">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={hasTrades === true}
+              onChange={(e) => handleHasTradesChange(e.target.checked ? true : undefined)}
+              className="checkbox"
+            />
+            <span className="checkbox-text">Has Trades</span>
+          </label>
         </div>
 
         <div className="asset-filters__sort">
@@ -326,6 +388,28 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
                   Type: {AssetTypeLabels[selectedType]}
                   <button
                     onClick={() => handleTypeChange('ALL')}
+                    className="filter-tag__remove"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedPortfolio !== 'ALL' && (
+                <span className="filter-tag">
+                  Portfolio: {portfolios?.find(p => p.id === selectedPortfolio)?.name || selectedPortfolio}
+                  <button
+                    onClick={() => handlePortfolioChange('ALL')}
+                    className="filter-tag__remove"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {hasTrades !== undefined && (
+                <span className="filter-tag">
+                  Has Trades: {hasTrades ? 'Yes' : 'No'}
+                  <button
+                    onClick={() => handleHasTradesChange(undefined)}
                     className="filter-tag__remove"
                   >
                     ✕

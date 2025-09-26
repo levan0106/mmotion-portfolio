@@ -119,7 +119,7 @@ describe('Asset Management Performance Tests', () => {
     error: null,
     pagination: {
       page: 1,
-    limit: 25,
+    limit: 10,
       total: 0,
     },
     setFilters: vi.fn(),

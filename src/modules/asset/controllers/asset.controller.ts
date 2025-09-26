@@ -108,6 +108,9 @@ export class AssetController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'], description: 'Sort order' })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of items per page' })
   @ApiQuery({ name: 'offset', required: false, description: 'Number of items to skip' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (1-based)' })
+  @ApiQuery({ name: 'portfolioId', required: false, description: 'Filter by portfolio ID' })
+  @ApiQuery({ name: 'hasTrades', required: false, description: 'Filter by assets with/without trades' })
   @ApiResponse({
     status: 200,
     description: 'Assets retrieved successfully',
@@ -115,7 +118,9 @@ export class AssetController {
   })
   async findAll(@Query() filters: AssetFilters): Promise<PaginatedAssetResponseDto> {
     console.log('Asset filters received:', filters);
+    console.log('hasTrades filter:', filters.hasTrades);
     const result = await this.assetService.findAll(filters);
+    console.log('Controller result:', { total: result.total, dataCount: result.data.length });
     
     // Map assets with computed fields
     const mappedAssets = await Promise.all(
@@ -193,6 +198,9 @@ export class AssetController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'], description: 'Sort order' })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of items per page' })
   @ApiQuery({ name: 'offset', required: false, description: 'Number of items to skip' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (1-based)' })
+  @ApiQuery({ name: 'portfolioId', required: false, description: 'Filter by portfolio ID' })
+  @ApiQuery({ name: 'hasTrades', required: false, description: 'Filter by assets with/without trades' })
   @ApiResponse({
     status: 200,
     description: 'Assets retrieved successfully',
@@ -236,6 +244,7 @@ export class AssetController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'], description: 'Sort order' })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of items per page' })
   @ApiQuery({ name: 'offset', required: false, description: 'Number of items to skip' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (1-based)' })
   @ApiResponse({
     status: 200,
     description: 'Assets retrieved successfully',

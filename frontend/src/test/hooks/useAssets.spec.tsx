@@ -56,7 +56,7 @@ describe('useAssets Hook', () => {
     mockAssetService.deleteAsset.mockResolvedValue(undefined);
 
     const { result } = renderHook(() => useAssets({ 
-      initialFilters: { limit: 25, page: 1 },
+      initialFilters: { limit: 10, page: 1 },
       autoFetch: true 
     }));
 
@@ -87,7 +87,7 @@ describe('useAssets Hook', () => {
 
   it('should have forceRefresh function available', () => {
     const { result } = renderHook(() => useAssets({ 
-      initialFilters: { limit: 25, page: 1 },
+      initialFilters: { limit: 10, page: 1 },
       autoFetch: false 
     }));
 
@@ -100,7 +100,7 @@ describe('useAssets Hook', () => {
     mockAssetService.deleteAsset.mockRejectedValue(new Error('Delete failed'));
 
     const { result } = renderHook(() => useAssets({ 
-      initialFilters: { limit: 25, page: 1 },
+      initialFilters: { limit: 10, page: 1 },
       autoFetch: true 
     }));
 

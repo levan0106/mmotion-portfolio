@@ -364,47 +364,7 @@
   justify-content: center;
 }
 
-/* Pagination */
-.asset-list__pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.pagination-info {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.pagination-pages {
-  display: flex;
-  gap: 0.25rem;
-  align-items: center;
-}
-
-.pagination-pages span {
-  color: #6b7280;
-  padding: 0 0.5rem;
-}
-
-.pagination-size {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
+/* Pagination removed - handled by parent component */
 
 /* Buttons */
 .btn {
@@ -532,15 +492,7 @@
     grid-template-columns: 1fr;
   }
 
-  .asset-list__pagination {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
-
-  .pagination-controls {
-    justify-content: center;
-  }
+  /* Pagination styles removed - handled by parent component */
 
   .asset-list__table {
     font-size: 0.75rem;
@@ -575,12 +527,5 @@
     font-size: 1.25rem;
   }
 
-  .asset-list__pagination {
-    padding: 1rem;
-  }
-
-  .pagination-pages {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  /* Pagination styles removed - handled by parent component */
 }

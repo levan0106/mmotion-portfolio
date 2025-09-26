@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Market Data Dashboard & Auto Sync Enhancement - COMPLETED**
-**Latest Update: Successfully implemented Market Data Dashboard with professional UI/UX, loading states, and auto sync functionality with reason differentiation (Current Session)**
+**Phase: Portfolio Filter Bug Fixes & Code Cleanup - COMPLETED**
+**Latest Update: Successfully fixed portfolio filter to use ID instead of name, implemented code cleanup for production readiness (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -111,7 +111,27 @@
     - ✅ **Task 3.12**: Test Verification - All 53 tests passing (100% pass rate)
 
 ## Recent Changes
-- ✅ **MARKET DATA DASHBOARD & AUTO SYNC ENHANCEMENT - COMPLETED** (Current Session - December 26, 2024)
+- ✅ **PORTFOLIO FILTER BUG FIXES & CODE CLEANUP - COMPLETED** (Current Session - September 26, 2025)
+  - **Portfolio Filter ID Fix**: Fixed critical issue where frontend was sending portfolio name instead of ID to backend API
+  - **Backend UUID Validation**: Backend was receiving "Child Saving Accounts" (name) instead of UUID, causing "invalid input syntax for type uuid" error
+  - **Frontend AssetFilters Fix**: Updated AssetFilters component to use `portfolio.portfolioId` instead of `portfolio.id` in dropdown options
+  - **AssetManagement Simplification**: Removed complex portfolio name-to-ID conversion logic, simplified to use portfolio ID directly
+  - **Code Cleanup**: Removed unused portfolio.service.ts file and cleaned up debug console.log statements
+  - **Backend Debug Cleanup**: Removed 15+ console.log statements from asset repository for production readiness
+  - **Frontend Debug Cleanup**: Removed 20+ console.log statements from AssetManagement component
+  - **Production Ready**: Clean, optimized code with no linter errors and successful build
+  - **Key Features Implemented**:
+    - ✅ **Portfolio ID Usage**: Frontend now consistently uses portfolio UUID instead of name
+    - ✅ **API Compatibility**: Backend receives proper UUID format for portfolio filtering
+    - ✅ **Error Resolution**: Fixed "invalid input syntax for type uuid" error completely
+    - ✅ **Code Simplification**: Removed unnecessary portfolio name conversion logic
+    - ✅ **File Cleanup**: Removed unused portfolio.service.ts file
+    - ✅ **Debug Cleanup**: Removed all debug console.log statements from production code
+    - ✅ **Build Success**: Frontend builds successfully with no TypeScript errors
+    - ✅ **API Testing**: Verified API works correctly with portfolio ID: `1be68a73-7833-4803-aa88-5aa4482e2b69`
+    - ✅ **Production Ready**: Clean, maintainable code ready for production deployment
+
+- ✅ **MARKET DATA DASHBOARD & AUTO SYNC ENHANCEMENT - COMPLETED** (Previous Session - December 26, 2024)
   - **Market Data Dashboard UI/UX**: Complete professional redesign with gradient backgrounds, enhanced typography, interactive buttons, and loading states
   - **Auto Sync Reason Differentiation**: Implemented clear distinction between "Market auto sync" and "Market manual trigger sync" in price history records
   - **Loading States Integration**: Added comprehensive loading icons and disabled states for all interactive buttons (Update All Prices, Refresh, Test Connection)

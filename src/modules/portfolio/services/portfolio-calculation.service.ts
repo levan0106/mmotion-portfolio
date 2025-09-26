@@ -65,7 +65,7 @@ export class PortfolioCalculationService {
 
     if (trades.length === 0) {
       return {
-        totalValue: currentCashBalance,
+        totalValue: 0,
         unrealizedPl: 0,
         realizedPl: 0,
         cashBalance: currentCashBalance,

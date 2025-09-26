@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Asset, AssetType, AssetFilters } from '../types/asset.types';
 import { useAssets } from '../hooks/useAssets';
 import { AssetList } from '../components/Asset/AssetList';
@@ -29,6 +30,11 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
   className = '',
 }) => {
   const { baseCurrency, accountId } = useAccount();
+  const [searchParams] = useSearchParams();
+  
+  // Get portfolioId from URL query parameters - should always be UUID
+  const urlPortfolioId = searchParams.get('portfolioId');
+  const resolvedPortfolioId = urlPortfolioId || portfolioId || null;
   // View state
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showFilters, setShowFilters] = useState(false);
@@ -50,18 +56,18 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
 
   // Filters state
   const initialFilters = useMemo(() => ({
-    portfolioId,
-    limit: 25,
+    portfolioId: resolvedPortfolioId || undefined,
+    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC' as const,
-  }), [portfolioId]);
+  }), [resolvedPortfolioId]);
   
   const [filters, setFilters] = useState<AssetFilters>(initialFilters);
 
   // Use assets hook
   const {
     assets,
-    loading,
+    loading: assetsLoading,
     error,
     pagination,
     setFilters: setApiFilters,
@@ -74,8 +80,12 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
     createAsset,
   } = useAssets({ 
     initialFilters, 
-    autoFetch: false 
+    autoFetch: true 
   });
+
+  // Combined loading state
+  const loading = assetsLoading;
+
 
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: AssetFilters) => {
@@ -169,17 +179,11 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
     setFormError(null);
     
     try {
-      console.log('Form submitted with data:', assetData);
-      console.log('Editing asset:', editingAsset);
 
       // Validate symbol uniqueness for create mode
       if (!editingAsset && assetData.symbol) {
-        console.log('Checking symbol uniqueness for:', assetData.symbol);
-        console.log('Current assets:', assets.map(a => ({ symbol: a.symbol, id: a.id })));
         const symbolExists = await checkSymbolExists(assetData.symbol);
-        console.log('Symbol exists:', symbolExists);
         if (symbolExists) {
-          console.log('Setting form error: Symbol already exists');
           setFormError('Mã tài sản này đã tồn tại. Vui lòng chọn mã khác.');
           setIsSubmitting(false);
           return;
@@ -210,8 +214,7 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
           }
         });
         
-        const result = await updateAsset(editingAsset.id, updateData);
-        console.log('Update result:', result);
+        await updateAsset(editingAsset.id, updateData);
       } else {
         // Create new asset - exclude computed fields
         const createData: any = {
@@ -230,10 +233,7 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
           }
         });
         
-        console.log('Creating new asset');
-        console.log('Create data:', createData);
-        const result = await createAsset(createData);
-        console.log('Create result:', result);
+        await createAsset(createData);
       }
       
       // Close dialog
@@ -368,7 +368,7 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
   }
 
   return (
-    <div className={`asset-management ${className}`}>
+    <div className={`asset-management asset-management--compact ${className}`}>
       {/* Header */}
       <div className="asset-management__header">
         <div className="asset-management__title">
@@ -379,15 +379,15 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
         <div className="asset-management__actions">
           <button
             onClick={handleAnalyticsToggle}
-            className={`btn btn--secondary ${showAnalytics ? 'btn--active' : ''}`}
+            className={`btn btn--outline ${showAnalytics ? 'btn--active' : ''}`}
           >
-            📊 Analytics
+            Analytics
           </button>
           <button
             onClick={handleCreateFormToggle}
             className="btn btn--primary"
           >
-            ➕ Add Asset
+            Add Asset
           </button>
         </div>
       </div>
@@ -438,22 +438,29 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
         <div className="asset-management__view-controls">
           <button
             onClick={handleViewModeToggle}
-            className={`btn btn--secondary ${viewMode === 'list' ? 'btn--active' : ''}`}
+            className={`btn btn--outline ${viewMode === 'list' ? 'btn--active' : ''}`}
           >
-            📋 List
+            List
           </button>
           <button
             onClick={handleViewModeToggle}
-            className={`btn btn--secondary ${viewMode === 'grid' ? 'btn--active' : ''}`}
+            className={`btn btn--outline ${viewMode === 'grid' ? 'btn--active' : ''}`}
           >
-            🔲 Grid
+            Grid
           </button>
         </div>
 
         <div className="asset-management__pagination-info">
-          Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-          {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-          {pagination.total} assets
+          <div className="pagination-summary">
+            <span className="pagination-summary__text">
+              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+              <strong>{pagination.total}</strong> assets
+            </span>
+            <span className="pagination-summary__page">
+              Page {pagination.page} of {Math.ceil(pagination.total / Number(pagination.limit))}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -463,6 +470,9 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
           <AssetList
             portfolioId={portfolioId}
             initialFilters={filters}
+            assets={assets}
+            loading={loading}
+            error={error}
             onAssetSelect={handleAssetSelect}
             onAssetEdit={handleAssetEdit}
             onAssetDelete={handleAssetDelete}
@@ -506,25 +516,25 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
         <div className="asset-management__pagination">
           <div className="pagination-controls">
             <button
-              onClick={() => goToPage(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="btn btn--secondary"
+              onClick={() => goToPage(Number(pagination.page) - 1)}
+              disabled={Number(pagination.page) <= 1}
+              className="btn btn--outline"
             >
               Previous
             </button>
 
             <div className="pagination-pages">
-              {Array.from({ length: Math.ceil(pagination.total / pagination.limit) }, (_, i) => i + 1)
+              {Array.from({ length: Math.ceil(pagination.total / Number(pagination.limit)) }, (_, i) => i + 1)
                 .filter(page => {
-                  const current = pagination.page;
-                  return page === 1 || page === current || page === current - 1 || page === current + 1 || page === Math.ceil(pagination.total / pagination.limit);
+                  const current = Number(pagination.page);
+                  return page === 1 || page === current || page === current - 1 || page === current + 1 || page === Math.ceil(pagination.total / Number(pagination.limit));
                 })
                 .map((page, index, array) => (
                   <React.Fragment key={page}>
-                    {index > 0 && array[index - 1] !== page - 1 && <span>...</span>}
+                    {index > 0 && array[index - 1] !== page - 1 && <span style={{ padding: '0 8px', color: '#666' }}>...</span>}
                     <button
-                      onClick={() => goToPage(page)}
-                      className={`btn ${page === pagination.page ? 'btn--primary' : 'btn--secondary'}`}
+                      onClick={() => goToPage(Number(page))}
+                      className={`btn ${page === Number(pagination.page) ? 'btn--primary' : 'btn--outline'}`}
                     >
                       {page}
                     </button>
@@ -534,9 +544,9 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
             </div>
 
             <button
-              onClick={() => goToPage(pagination.page + 1)}
-              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-              className="btn btn--secondary"
+              onClick={() => goToPage(Number(pagination.page) + 1)}
+              disabled={Number(pagination.page) >= Math.ceil(pagination.total / Number(pagination.limit))}
+              className="btn btn--outline"
             >
               Next
             </button>
@@ -606,8 +616,6 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
                   createdBy: editingAsset.createdBy || accountId,
                   updatedBy: editingAsset.updatedBy || accountId,
                 };
-                console.log('Initial data for AssetForm:', initialData);
-                console.log('Editing asset:', editingAsset);
                 return initialData;
               })() : undefined}
               submitText={editingAsset ? 'Update Asset' : 'Create Asset'}

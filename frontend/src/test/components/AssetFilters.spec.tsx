@@ -15,7 +15,7 @@ const mockFilters: AssetFiltersType = {
   type: undefined,
   sortBy: 'name',
   sortOrder: 'ASC',
-  limit: 25,
+  limit: 10,
 };
 
 const mockFiltersWithValues: AssetFiltersType = {
@@ -344,7 +344,7 @@ describe('AssetFilters', () => {
         />
       );
 
-      const limitSelect = screen.getByDisplayValue('25 per page');
+      const limitSelect = screen.getByDisplayValue('10 per page');
       fireEvent.change(limitSelect, { target: { value: '50' } });
 
       expect(mockOnFiltersChange).toHaveBeenCalledWith({

@@ -52,7 +52,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
     type: undefined,
     minValue: undefined,
     maxValue: undefined,
-    limit: 25,
+    limit: 10,
     page: 1,
     sortBy: 'name',
     sortOrder: 'ASC',
@@ -61,7 +61,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 25,
+    limit: 10,
     total: 0,
     totalPages: 0,
   });
@@ -75,8 +75,15 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       const queryParams = new URLSearchParams();
       
       Object.entries(currentFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
+        // Special handling for hasTrades boolean - always send if defined
+        if (key === 'hasTrades' && value !== undefined) {
           queryParams.append(key, value.toString());
+        } else if (value !== undefined && value !== null && value !== '') {
+          if (key === 'limit' || key === 'page') {
+            queryParams.append(key, value.toString());
+          } else {
+            queryParams.append(key, value.toString());
+          }
         }
       });
 
@@ -85,6 +92,10 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         ? `/api/v1/assets/user/${currentFilters.createdBy}`
         : '/api/v1/assets';
       const url = `${baseUrl}?${queryParams.toString()}`;
+      
+      console.log('Fetching assets with filters:', currentFilters);
+      console.log('API URL:', url);
+      console.log('hasTrades value:', currentFilters.hasTrades);
       
       try {
         const response = await apiService.api.get(url);
@@ -161,12 +172,19 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       } else {
         const mappedAssets = (data.data || []).map(mapAsset);
         setAssets(mappedAssets);
-        setPagination({
-          page: data.page || 1,
-          limit: data.limit || 25,
-          total: data.total || 0,
-          totalPages: data.totalPages || 0,
-        });
+        
+        const total = data.total || 0;
+        const limit = data.limit || 10;
+        const totalPages = data.totalPages || Math.ceil(total / limit);
+        
+        const paginationData = {
+          page: data.page || currentFilters.page || 1,
+          limit: limit,
+          total: total,
+          totalPages: totalPages,
+        };
+        
+        setPagination(paginationData);
       }
       } catch (apiError) {
         console.error('Error fetching assets from API:', apiError);
@@ -179,22 +197,28 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       setAssets([]);
       setPagination({
         page: 1,
-        limit: 25,
+        limit: 10,
         total: 0,
         totalPages: 0,
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accountId]);
 
   // Set filters and trigger fetch
   const setFilters = useCallback((newFilters: AssetFilters) => {
+    console.log('setFilters called with:', newFilters);
+    console.log('Current filters state:', filters);
+    console.log('autoFetch:', autoFetch);
     setFiltersState(newFilters);
     if (autoFetch) {
+      console.log('Auto-fetching assets with new filters');
       fetchAssets(newFilters);
+    } else {
+      console.log('autoFetch is false, not fetching assets');
     }
-  }, [autoFetch]);
+  }, [autoFetch, fetchAssets, filters]);
 
   // Update a single filter
   const updateFilter = useCallback((key: keyof AssetFilters, value: any) => {
@@ -211,7 +235,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       type: undefined,
       minValue: undefined,
       maxValue: undefined,
-      limit: 25,
+      limit: 10,
       page: 1,
       sortBy: 'name',
       sortOrder: 'ASC' as const,
@@ -241,20 +265,21 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
 
   // Go to specific page
   const goToPage = useCallback((page: number) => {
-    updateFilter('page', page);
-  }, [updateFilter]);
+    const newFilters = { ...filters, page };
+    setFilters(newFilters);
+  }, [filters, setFilters]);
 
   // Set page size
   const setPageSize = useCallback((size: number) => {
-    updateFilter('limit', size);
-    updateFilter('page', 1); // Reset to first page
-  }, [updateFilter]);
+    const newFilters = { ...filters, limit: size, page: 1 };
+    setFilters(newFilters);
+  }, [filters, setFilters]);
 
   // Set sorting
   const setSorting = useCallback((sortBy: string, sortOrder: 'ASC' | 'DESC') => {
-    updateFilter('sortBy', sortBy);
-    updateFilter('sortOrder', sortOrder);
-  }, [updateFilter]);
+    const newFilters = { ...filters, sortBy, sortOrder };
+    setFilters(newFilters);
+  }, [filters, setFilters]);
 
   // Update asset
   const updateAsset = useCallback(async (id: string, data: UpdateAssetRequest): Promise<Asset> => {

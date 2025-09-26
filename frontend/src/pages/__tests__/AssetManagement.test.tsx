@@ -59,7 +59,7 @@ vi.mock('../../hooks/useAssets', () => ({
     error: null,
     pagination: {
       page: 1,
-      limit: 25,
+      limit: 10,
       total: 3,
       totalPages: 1,
     },

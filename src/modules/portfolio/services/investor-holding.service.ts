@@ -474,11 +474,13 @@ export class InvestorHoldingService {
    */
   async updatePortfolioNavPerUnit(portfolioId: string): Promise<number> {
     const navPerUnit = await this.calculateNavPerUnit(portfolioId);
-    
+    const lastNavDate = new Date();
+
     await this.portfolioRepository.update(portfolioId, {
       navPerUnit,
+      lastNavDate,
     });
-    
+
     return navPerUnit;
   }
 
@@ -578,13 +580,16 @@ export class InvestorHoldingService {
     if (realTimeNavValue > 0) {
       // Portfolio has value - calculate units to achieve reasonable NAV per unit (target: 10,000 VND per unit)
       const targetNavPerUnit = 10000; // Target 10,000 VND per unit
-      initialUnits = Math.max(1000, Math.round(realTimeNavValue / targetNavPerUnit)); // Minimum 1000 units
+      initialUnits = Math.max(1000,  Number((realTimeNavValue / targetNavPerUnit).toFixed(2))); // Minimum 1000 units
       navPerUnit = realTimeNavValue / initialUnits;
     } else {
       // Portfolio không có value - sử dụng NAV per Unit cố định
       initialUnits = 0; // Không tạo units ban đầu
       navPerUnit = 10000; // NAV per Unit cố định 10,000 VND
     }
+
+    this.logger.debug(`Initial units for portfolio ${portfolioId}: ${initialUnits} (Real-time NAV: ${realTimeNavValue})`);
+    this.logger.debug(`Nav per unit for portfolio ${portfolioId}: ${navPerUnit} (Real-time NAV: ${realTimeNavValue})`);
 
     // 3. Update portfolio to fund with calculated NAV per unit
     portfolio.isFund = true;

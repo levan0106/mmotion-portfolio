@@ -15,7 +15,7 @@
 /* Basic Filters */
 .asset-filters__basic {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
   gap: 1rem;
   align-items: end;
   flex-wrap: wrap;
@@ -481,4 +481,32 @@
 .asset-filters--success .input,
 .asset-filters--success .select {
   border-color: #059669;
+}
+
+/* Has Trades Checkbox */
+.asset-filters__has-trades {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  user-select: none;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #1976d2;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  font-weight: 500;
+  color: #374151;
 }

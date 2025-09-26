@@ -84,10 +84,12 @@ export interface UpdateAssetRequest {
 
 export interface AssetFilters {
   createdBy?: string;
+  portfolioId?: string;
   type?: AssetType;
   search?: string;
   minValue?: number;
   maxValue?: number;
+  hasTrades?: boolean;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
   limit?: number;

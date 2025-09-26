@@ -39,6 +39,7 @@ import {
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   AccountBalanceWallet as DepositIcon,
+  Wallet as HoldingsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -63,32 +64,18 @@ const menuItems = [
     description: 'Manage investment portfolios',
     badge: null
   },
+  {
+    text: 'Holdings',
+    icon: <HoldingsIcon />,
+    path: '/holdings',
+    description: 'Manage holdings',
+    badge: 'NEW'
+  },
   { 
     text: 'Assets', 
     icon: <AssetIcon />, 
     path: '/assets', 
     description: 'Track individual assets',
-    badge: null
-  },
-  { 
-    text: 'Global Assets', 
-    icon: <GlobalAssetIcon />, 
-    path: '/global-assets', 
-    description: 'Global market data',
-    badge: null
-  },
-  { 
-    text: 'Snapshots', 
-    icon: <SnapshotIcon />, 
-    path: '/snapshots', 
-    description: 'Portfolio snapshots & analysis',
-    badge: 'NEW'
-  },
-  { 
-    text: 'Analytics', 
-    icon: <AnalyticsIcon />, 
-    path: '/analytics', 
-    description: 'Advanced analytics',
     badge: null
   },
   { 
@@ -104,6 +91,20 @@ const menuItems = [
     path: '/reports', 
     description: 'Generate reports',
     badge: null
+  },
+  { 
+    text: 'Global Assets', 
+    icon: <GlobalAssetIcon />, 
+    path: '/global-assets', 
+    description: 'Global market data',
+    badge: null
+  },
+  { 
+    text: 'Snapshots', 
+    icon: <SnapshotIcon />, 
+    path: '/snapshots', 
+    description: 'Portfolio snapshots & analysis',
+    badge: 'NEW'
   },
   { 
     text: 'Settings', 

@@ -12,7 +12,6 @@ import {
 } from '../../utils/format';
 import { AssetTypeLabels } from '../../types/asset.types';
 import { useAccount } from '../../hooks/useAccount';
-import { AssetPerformance } from './AssetPerformance';
 import './AssetCard.styles.css';
 
 export interface AssetCardProps {
@@ -64,10 +63,10 @@ export const AssetCard: React.FC<AssetCardProps> = ({
       {/* Header */}
       <div className="asset-card__header">
         <div className="asset-card__title">
-          <h3 className="asset-card__name">{asset.name}</h3>
           {asset.symbol && (
             <span className="asset-card__code">{asset.symbol}</span>
           )}
+          <h3 className="asset-card__name">{asset.name}</h3>
         </div>
         
         <div className="asset-card__type">
@@ -77,27 +76,16 @@ export const AssetCard: React.FC<AssetCardProps> = ({
         </div>
       </div>
 
-      {/* Description */}
-      {asset.description && !compact && (
-        <div className="asset-card__description">
-          <p>{asset.description}</p>
-        </div>
-      )}
 
       {/* Content */}
       <div className="asset-card__content">
-        {/* Value Information */}
+        {/* Value Information - Original Layout */}
         <div className="asset-card__value">
-          <div className="value-item">
+          <div className="value-item value-item--primary">
             <label>Total Value</label>
             <span className="value-item__primary">
               {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
             </span>
-            {asset.currentValue && asset.currentValue !== asset.initialValue && (
-              <span className="value-item__secondary">
-                Initial: {formatCurrency(asset.initialValue || 0, baseCurrency)}
-              </span>
-            )}
           </div>
 
           <div className="value-item">
@@ -105,11 +93,6 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             <span className="value-item__primary">
               {formatCurrency(asset.currentPrice || 0, baseCurrency)}
             </span>
-            {asset.currentPrice && (
-              <span className="value-item__secondary">
-                Market Price
-              </span>
-            )}
           </div>
 
           <div className="value-item">
@@ -117,11 +100,6 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             <span className="value-item__primary">
               {formatNumber(Number(asset.totalQuantity) || 0, 2)}
             </span>
-            {asset.currentQuantity && asset.currentQuantity !== asset.initialQuantity && (
-              <span className="value-item__secondary">
-                Initial: {formatNumber(asset.initialQuantity || 0, 2)}
-              </span>
-            )}
           </div>
         </div>
 
@@ -138,33 +116,17 @@ export const AssetCard: React.FC<AssetCardProps> = ({
               </span>
             </div>
           </div>
-          
-          {/* Real-time Performance Metrics */}
-          {asset.performance && (
-            <div className="performance-metrics">
-              <AssetPerformance 
-                performance={asset.performance} 
-                compact={true}
-                showLabels={true}
-                className="mt-2"
-              />
-            </div>
-          )}
         </div>
 
-        {/* Additional Info */}
+        {/* Additional Info - Compact */}
         {!compact && (
           <div className="asset-card__info">
-            <div className="info-item">
-              <label>Created</label>
-              <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
-            </div>
             <div className="info-item">
               <label>Updated</label>
               <span>{new Date(asset.updatedAt).toLocaleDateString()}</span>
             </div>
             <div className="info-item">
-              <label>Has Trades</label>
+              <label>Trades</label>
               <span className={asset.hasTrades ? 'status status--active' : 'status status--inactive'}>
                 {asset.hasTrades ? 'Yes' : 'No'}
               </span>
@@ -181,14 +143,14 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             className="btn btn--small btn--secondary"
             title="Edit Asset"
           >
-            ✏️ Edit
+            Edit
           </button>
           <button
             onClick={handleDeleteClick}
             className="btn btn--small btn--danger"
             title="Delete Asset"
           >
-            🗑️ Delete
+            Delete
           </button>
         </div>
       )}
@@ -197,17 +159,22 @@ export const AssetCard: React.FC<AssetCardProps> = ({
       <div className="asset-card__indicators">
         {asset.hasTrades && (
           <span className="indicator indicator--trades" title="Has trading activity">
-            📈
+            ●
           </span>
         )}
         {performance.isGaining && (
           <span className="indicator indicator--gaining" title="Positive performance">
-            📈
+            ▲
           </span>
         )}
         {performance.isLosing && (
           <span className="indicator indicator--losing" title="Negative performance">
-            📉
+            ▼
+          </span>
+        )}
+        {!performance.isGaining && !performance.isLosing && (
+          <span className="indicator indicator--neutral" title="Neutral performance">
+            ●
           </span>
         )}
       </div>

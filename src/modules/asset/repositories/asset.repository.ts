@@ -12,13 +12,16 @@ import { TradeDetail } from '../../trading/entities/trade-detail.entity';
  */
 export interface AssetFilters {
   createdBy?: string;
+  portfolioId?: string;
   symbol?: string;
   type?: AssetType;
   search?: string;
+  hasTrades?: boolean;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
   limit?: number;
   offset?: number;
+  page?: number;
 }
 
 /**
@@ -63,7 +66,12 @@ export class AssetRepository implements IAssetRepository {
    */
   async findAll(filters: AssetFilters = {}): Promise<[Asset[], number]> {
     const queryBuilder = this.createQueryBuilder(filters);
-    queryBuilder.leftJoinAndSelect('asset.trades', 'trades');
+    
+    // Only add trades join if not already handled by filters
+    if (!filters.hasTrades && !filters.portfolioId) {
+      queryBuilder.leftJoinAndSelect('asset.trades', 'trades');
+    }
+    
     return await queryBuilder.getManyAndCount();
   }
 
@@ -73,12 +81,32 @@ export class AssetRepository implements IAssetRepository {
    * @returns Paginated response
    */
   async findWithPagination(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
-    const [assets, total] = await this.findAll(filters);
-    const page = Math.floor((filters.offset || 0) / (filters.limit || 10)) + 1;
+    // First, get total count with filters but without pagination
+    const countQueryBuilder = this.createCountQueryBuilder(filters);
+    const total = await countQueryBuilder.getCount();
+    
+    // Get ALL data first (without pagination) to apply filters correctly
+    const dataQueryBuilder = this.createQueryBuilder(filters);
+    const allAssets = await dataQueryBuilder.getMany();
+    
+    // Load trades separately for each asset to avoid duplicate rows
+    for (const asset of allAssets) {
+      const trades = await this.tradeRepository.find({
+        where: { assetId: asset.id },
+        order: { tradeDate: 'ASC', createdAt: 'ASC' }
+      });
+      asset.trades = trades;
+    }
+    
+    // Apply pagination AFTER loading trades and applying all filters
     const limit = filters.limit || 10;
-
+    const page = filters.page || 1;
+    const offset = (page - 1) * limit;
+    
+    const paginatedAssets = allAssets.slice(offset, offset + limit);
+    
     return {
-      data: assets,
+      data: paginatedAssets,
       total,
       page,
       limit,
@@ -385,6 +413,34 @@ export class AssetRepository implements IAssetRepository {
       );
     }
 
+    // Handle both portfolioId and hasTrades filters together
+    if (filters.portfolioId && filters.hasTrades !== undefined) {
+      if (filters.hasTrades) {
+        // Filter assets that have trades in specific portfolio
+        queryBuilder
+          .innerJoin('asset.trades', 'trade')
+          .andWhere('trade.portfolioId = :portfolioId', { portfolioId: filters.portfolioId });
+      } else {
+        // Filter assets that don't have trades in specific portfolio
+        queryBuilder
+          .andWhere('NOT EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id AND t.portfolio_id = :portfolioId)', { portfolioId: filters.portfolioId });
+      }
+    } else if (filters.portfolioId) {
+      // Filter assets by portfolio through trades
+      queryBuilder
+        .andWhere('EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id AND t.portfolio_id = :portfolioId)', { portfolioId: filters.portfolioId });
+    } else if (filters.hasTrades !== undefined) {
+      if (filters.hasTrades === true || String(filters.hasTrades) === 'true') {
+        // Filter assets that have trades
+        queryBuilder
+          .innerJoin('asset.trades', 'trade');
+      } else {
+        // Filter assets that don't have trades
+        queryBuilder
+          .andWhere('NOT EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id)');
+      }
+    }
+
     // Apply sorting
     if (filters.sortBy) {
       const sortOrder = filters.sortOrder || 'ASC';
@@ -393,13 +449,71 @@ export class AssetRepository implements IAssetRepository {
       queryBuilder.orderBy('asset.createdAt', 'DESC');
     }
 
-    // Apply pagination
-    if (filters.limit) {
-      queryBuilder.limit(filters.limit);
+    // Note: Pagination is handled in findWithPagination method
+    // Don't apply pagination here to avoid conflicts
+    
+    return queryBuilder;
+  }
+
+  /**
+   * Create count query builder with filters (for counting only)
+   * @param filters - Filter criteria
+   * @returns Query builder for counting
+   */
+  private createCountQueryBuilder(filters: AssetFilters): SelectQueryBuilder<Asset> {
+    const queryBuilder = this.assetRepository
+      .createQueryBuilder('asset');
+
+    // Apply filters
+    if (filters.createdBy) {
+      queryBuilder.andWhere('asset.createdBy = :createdBy', { 
+        createdBy: filters.createdBy 
+      });
     }
 
-    if (filters.offset) {
-      queryBuilder.offset(filters.offset);
+    if (filters.symbol) {
+      queryBuilder.andWhere('LOWER(asset.symbol) = LOWER(:symbol)', { 
+        symbol: filters.symbol 
+      });
+    }
+
+    if (filters.type) {
+      queryBuilder.andWhere('asset.type = :type', { type: filters.type });
+    }
+
+    if (filters.search) {
+      queryBuilder.andWhere(
+        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
+        { search: `%${filters.search}%` }
+      );
+    }
+
+    // Handle both portfolioId and hasTrades filters together
+    if (filters.portfolioId && filters.hasTrades !== undefined) {
+      if (filters.hasTrades) {
+        // Filter assets that have trades in specific portfolio
+        queryBuilder
+          .innerJoin('asset.trades', 'trade')
+          .andWhere('trade.portfolioId = :portfolioId', { portfolioId: filters.portfolioId });
+      } else {
+        // Filter assets that don't have trades in specific portfolio
+        queryBuilder
+          .andWhere('NOT EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id AND t.portfolio_id = :portfolioId)', { portfolioId: filters.portfolioId });
+      }
+    } else if (filters.portfolioId) {
+      // Filter assets by portfolio through trades
+      queryBuilder
+        .andWhere('EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id AND t.portfolio_id = :portfolioId)', { portfolioId: filters.portfolioId });
+    } else if (filters.hasTrades !== undefined) {
+      if (filters.hasTrades === true || String(filters.hasTrades) === 'true') {
+        // Filter assets that have trades
+        queryBuilder
+          .innerJoin('asset.trades', 'trade');
+      } else {
+        // Filter assets that don't have trades
+        queryBuilder
+          .andWhere('NOT EXISTS (SELECT 1 FROM trades t WHERE t.asset_id = asset.id)');
+      }
     }
 
     return queryBuilder;
@@ -427,76 +541,14 @@ export class AssetRepository implements IAssetRepository {
     userId: string,
     filters: Omit<AssetFilters, 'createdBy'> = {}
   ): Promise<PaginatedResponse<Asset>> {
-    // First get the asset IDs with pagination
-    const assetQueryBuilder = this.assetRepository
-      .createQueryBuilder('asset')
-      .select('asset.id')
-      .where('asset.createdBy = :userId', { userId });
-
-    // Apply additional filters
-    if (filters.type) {
-      assetQueryBuilder.andWhere('asset.type = :type', { type: filters.type });
-    }
-
-    if (filters.search) {
-      assetQueryBuilder.andWhere(
-        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
-        { search: `%${filters.search}%` }
-      );
-    }
-
-    // Apply sorting
-    const sortBy = filters.sortBy || 'createdAt';
-    const sortOrder = filters.sortOrder || 'DESC';
-    assetQueryBuilder.orderBy(`asset.${sortBy}`, sortOrder);
-
-    // Apply pagination
-    const limit = filters.limit || 25;
-    const offset = filters.offset || 0;
-    assetQueryBuilder.limit(limit).offset(offset);
-
-    const assetIds = await assetQueryBuilder.getMany();
-    const assetIdList = assetIds.map(asset => asset.id);
-
-    let assets: Asset[] = [];
-    let total = 0;
-
-    if (assetIdList.length > 0) {
-      // Now get the full assets with trades
-      const queryBuilder = this.assetRepository
-        .createQueryBuilder('asset')
-        .leftJoinAndSelect('asset.trades', 'trades')
-        .where('asset.id IN (:...assetIds)', { assetIds: assetIdList })
-        .orderBy(`asset.${sortBy}`, sortOrder);
-
-      assets = await queryBuilder.getMany();
-    }
-
-    // Get total count with the same filters
-    const countQueryBuilder = this.assetRepository
-      .createQueryBuilder('asset')
-      .where('asset.createdBy = :userId', { userId });
-
-    // Apply the same filters for count
-    if (filters.type) {
-      countQueryBuilder.andWhere('asset.type = :type', { type: filters.type });
-    }
-
-    if (filters.search) {
-      countQueryBuilder.andWhere(
-        '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
-        { search: `%${filters.search}%` }
-      );
-    }
-
-    total = await countQueryBuilder.getCount();
-
-    return {
-      data: assets,
-      total,
-      page: Math.floor(offset / limit) + 1,
-      limit,
+    // Create filters with userId
+    const fullFilters: AssetFilters = {
+      ...filters,
+      createdBy: userId,
     };
+    
+    // Use the main findWithPagination method
+    return await this.findWithPagination(fullFilters);
   }
 
 
@@ -533,7 +585,7 @@ export class AssetRepository implements IAssetRepository {
     queryBuilder.orderBy(`asset.${sortBy}`, sortOrder);
 
     // Apply pagination
-    const limit = filters.limit || 25;
+    const limit = filters.limit || 10;
     const offset = filters.offset || 0;
     queryBuilder.limit(limit).offset(offset);
 
@@ -605,14 +657,12 @@ export class AssetRepository implements IAssetRepository {
    * @returns Promise<Trade[]> - Array of trades
    */
   async getTradesForAsset(assetId: string): Promise<Trade[]> {
-    console.log(`[DEBUG] getTradesForAsset called with assetId: ${assetId}`);
     const trades = await this.tradeRepository
       .createQueryBuilder('trade')
       .where('trade.assetId = :assetId', { assetId })
       .orderBy('trade.tradeDate', 'ASC')
       .addOrderBy('trade.createdAt', 'ASC')
       .getMany();
-    console.log(`[DEBUG] getTradesForAsset found ${trades.length} trades for assetId: ${assetId}`);
     return trades;
   }
 

@@ -103,7 +103,10 @@ export class AssetService {
    * @returns Paginated assets
    */
   async findAll(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
-    return await this.assetRepository.findWithPagination(filters);
+    console.log('AssetService.findAll called with filters:', filters);
+    const result = await this.assetRepository.findWithPagination(filters);
+    console.log('AssetService.findAll result:', { total: result.total, dataCount: result.data.length });
+    return result;
   }
 
   /**

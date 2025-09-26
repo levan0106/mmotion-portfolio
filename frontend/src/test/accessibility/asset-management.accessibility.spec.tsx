@@ -190,7 +190,7 @@ const mockUseAssets = {
   error: null,
   pagination: {
     page: 1,
-    limit: 25,
+    limit: 10,
     total: 2,
   },
   setFilters: vi.fn(),

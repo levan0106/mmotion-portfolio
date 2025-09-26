@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Asset, AssetFilters, AssetType } from '../../types/asset.types';
+import { Asset, AssetFilters } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
 import { useAccount } from '../../hooks/useAccount';
@@ -15,9 +15,6 @@ import {
 } from '../../utils/format';
 import { 
   sortAssets, 
-  filterAssetsBySearch, 
-  filterAssetsByType,
-  filterAssetsByValueRange,
   calculateAssetPerformance 
 } from '../../utils/asset.utils';
 import './AssetList.styles.css';
@@ -25,6 +22,9 @@ import './AssetList.styles.css';
 export interface AssetListProps {
   portfolioId?: string;
   initialFilters?: AssetFilters;
+  assets?: Asset[];
+  loading?: boolean;
+  error?: string | null;
   onAssetSelect?: (asset: Asset) => void;
   onAssetEdit?: (asset: Asset) => void;
   onAssetDelete?: (asset: Asset) => void;
@@ -33,8 +33,11 @@ export interface AssetListProps {
 }
 
 export const AssetList: React.FC<AssetListProps> = ({
-  portfolioId,
+  portfolioId, // Keep for future use
   initialFilters = {},
+  assets: propAssets = [],
+  loading: propLoading = false,
+  error: propError = null,
   onAssetSelect,
   onAssetEdit,
   onAssetDelete,
@@ -42,70 +45,39 @@ export const AssetList: React.FC<AssetListProps> = ({
   className = '',
 }) => {
   const { baseCurrency } = useAccount();
-  // Initialize filters with portfolioId if provided
-  const filters = useMemo(() => ({
-    ...initialFilters,
-    ...(portfolioId && { portfolioId }),
-  }), [portfolioId, initialFilters]);
-
-  // Use assets hook
+  
+  // Use assets from props or fallback to hook
   const {
-    assets,
-    loading,
-    error,
-    pagination,
-    clearFilters,
+    assets: hookAssets,
+    loading: hookLoading,
+    error: hookError,
     refresh,
-    goToPage,
-    setPageSize,
-    setSorting,
-  } = useAssets({ initialFilters: filters || {}, autoFetch: true });
+  } = useAssets({ 
+    initialFilters: { 
+      ...initialFilters, 
+      ...(portfolioId && { portfolioId }) 
+    }, 
+    autoFetch: false
+  });
+  
+  // Use props if provided, otherwise use hook
+  const assets = propAssets.length > 0 ? propAssets : hookAssets;
+  const loading = propLoading || hookLoading;
+  const error = propError || hookError;
+  
 
   // Use asset types hook
   const { assetTypes } = useAssetTypes();
 
   // Local state for UI
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string | 'ALL'>('ALL');
+  // Local state for sorting only
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
-  const [showFilters, setShowFilters] = useState(false);
-  const [valueRange, setValueRange] = useState({ min: '', max: '' });
 
-  // Process assets with local filtering and sorting
+  // Process assets with local sorting only
   const processedAssets = useMemo(() => {
-    let filtered = assets;
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filterAssetsBySearch(filtered, searchTerm);
-    }
-
-    // Apply type filter
-    if (selectedType !== 'ALL') {
-      filtered = filterAssetsByType(filtered, selectedType as AssetType);
-    }
-
-    // Apply value range filter
-    if (valueRange.min || valueRange.max) {
-      const minValue = valueRange.min ? parseFloat(valueRange.min) : 0;
-      const maxValue = valueRange.max ? parseFloat(valueRange.max) : Infinity;
-      filtered = filterAssetsByValueRange(filtered, minValue, maxValue);
-    }
-
-    // Apply sorting
-    return sortAssets(filtered, sortBy, sortOrder);
-  }, [assets, searchTerm, selectedType, valueRange, sortBy, sortOrder]);
-
-  // Handle search
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
-  // Handle type filter
-  const handleTypeFilter = (type: string | 'ALL') => {
-    setSelectedType(type);
-  };
+    return sortAssets(assets, sortBy, sortOrder);
+  }, [assets, sortBy, sortOrder]);
 
   // Handle sorting
   const handleSort = (field: string) => {
@@ -115,31 +87,10 @@ export const AssetList: React.FC<AssetListProps> = ({
       setSortBy(field);
       setSortOrder('ASC');
     }
-    setSorting(field, sortOrder);
+    // Note: Sorting is handled locally, not via API
   };
 
-  // Handle value range filter
-  const handleValueRangeChange = (field: 'min' | 'max', value: string) => {
-    setValueRange(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedType('ALL');
-    setValueRange({ min: '', max: '' });
-    clearFilters();
-  };
-
-  // Handle pagination
-  const handlePageChange = (page: number) => {
-    goToPage(page);
-  };
-
-  // Handle page size change
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-  };
+  // Pagination functions removed - handled by parent component
 
   // Handle refresh
   const handleRefresh = () => {
@@ -177,7 +128,7 @@ export const AssetList: React.FC<AssetListProps> = ({
       {/* Header */}
       <div className="asset-list__header">
         <div className="asset-list__title">
-          <h2>Assets ({pagination.total})</h2>
+          <h2>Assets ({assets.length})</h2>
           <button 
             onClick={handleRefresh} 
             className="btn btn--secondary btn--icon"
@@ -188,73 +139,6 @@ export const AssetList: React.FC<AssetListProps> = ({
           </button>
         </div>
 
-        {/* Search and Filters */}
-        <div className="asset-list__controls">
-          <div className="asset-list__search">
-            <input
-              type="text"
-              placeholder="Search assets..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          <div className="asset-list__filters">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="btn btn--secondary"
-            >
-              Filters {showFilters ? '▲' : '▼'}
-            </button>
-          </div>
-        </div>
-
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div className="asset-list__advanced-filters">
-            <div className="filter-group">
-              <label>Type:</label>
-              <select
-                value={selectedType}
-                onChange={(e) => handleTypeFilter(e.target.value as string | 'ALL')}
-                className="select"
-              >
-                <option value="ALL">All Types</option>
-                {assetTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>Value Range:</label>
-              <div className="value-range">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={valueRange.min}
-                  onChange={(e) => handleValueRangeChange('min', e.target.value)}
-                  className="input input--small"
-                />
-                <span>to</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={valueRange.max}
-                  onChange={(e) => handleValueRangeChange('max', e.target.value)}
-                  className="input input--small"
-                />
-              </div>
-            </div>
-
-            <button onClick={handleClearFilters} className="btn btn--outline">
-              Clear Filters
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Table */}
@@ -414,68 +298,7 @@ export const AssetList: React.FC<AssetListProps> = ({
         </table>
       </div>
 
-      {/* Pagination */}
-      {pagination.total > 0 && (
-        <div className="asset-list__pagination">
-          <div className="pagination-info">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-            {pagination.total} assets
-          </div>
-
-          <div className="pagination-controls">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="btn btn--secondary"
-            >
-              Previous
-            </button>
-
-            <div className="pagination-pages">
-              {Array.from({ length: Math.ceil(pagination.total / pagination.limit) }, (_, i) => i + 1)
-                .filter(page => {
-                  const current = pagination.page;
-                  return page === 1 || page === current || page === current - 1 || page === current + 1 || page === Math.ceil(pagination.total / pagination.limit);
-                })
-                .map((page, index, array) => (
-                  <React.Fragment key={page}>
-                    {index > 0 && array[index - 1] !== page - 1 && <span>...</span>}
-                    <button
-                      onClick={() => handlePageChange(page)}
-                      className={`btn ${page === pagination.page ? 'btn--primary' : 'btn--secondary'}`}
-                    >
-                      {page}
-                    </button>
-                  </React.Fragment>
-                ))
-              }
-            </div>
-
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-              className="btn btn--secondary"
-            >
-              Next
-            </button>
-          </div>
-
-          <div className="pagination-size">
-            <label>Show:</label>
-            <select
-              value={pagination.limit}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="select select--small"
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-        </div>
-      )}
+      {/* Pagination removed - handled by parent component */}
     </div>
   );
 };
