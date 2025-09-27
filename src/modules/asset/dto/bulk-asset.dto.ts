@@ -62,8 +62,8 @@ export class BulkAssetItemDto {
   currency: string;
 
   @ApiPropertyOptional({ 
-    description: 'Custom creation date (ISO string, MM/DD/YYYY, or DD/MM/YYYY format). If null, uses current date',
-    example: '08/24/2025'
+    description: 'Custom creation date (ISO string with time, MM/DD/YYYY, or DD/MM/YYYY format). If null, uses current date. When using MM/DD/YYYY format, current time will be used for the time component.',
+    example: '2025-08-24T10:30:00.000Z'
   })
   @IsOptional()
   @IsString()
@@ -77,6 +77,9 @@ export class BulkAssetItemDto {
         // Assume MM/DD/YYYY format
         const [month, day, year] = parts;
         const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        // Set time to current time to preserve datetime information
+        const now = new Date();
+        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
         return date.toISOString();
       }
     }

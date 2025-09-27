@@ -208,13 +208,13 @@ export class GlobalAssetQueryDto {
     description: 'Number of items per page',
     example: 10,
     minimum: 1,
-    maximum: 100,
+    maximum: 1000,
   })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
-  @Max(100)
+  @Max(1000)
   limit?: number;
 
   /**

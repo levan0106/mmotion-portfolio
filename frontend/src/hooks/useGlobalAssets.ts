@@ -98,6 +98,33 @@ const fetchGlobalAssets = async (query: GlobalAssetQueryDto = {}): Promise<Globa
   return response.data;
 };
 
+// Fetch all global assets (no pagination)
+const fetchAllGlobalAssets = async (): Promise<GlobalAsset[]> => {
+  const params = new URLSearchParams();
+  params.append('limit', '1000'); // Set to max allowed limit
+  params.append('isActive', 'true'); // Only get active assets
+  
+  const response = await apiService.api.get(`/api/v1/global-assets?${params.toString()}`);
+  
+  // Fetch prices for each asset
+  const assetsWithPrices = await Promise.all(
+    response.data.data.map(async (asset: GlobalAsset) => {
+      try {
+        const priceResponse = await apiService.api.get(`/api/v1/asset-prices/asset/${asset.id}`);
+        return {
+          ...asset,
+          assetPrice: priceResponse.data,
+        };
+      } catch (error) {
+        // If no price found, return asset without price
+        return asset;
+      }
+    })
+  );
+  
+  return assetsWithPrices;
+};
+
 const fetchGlobalAssetById = async (id: string): Promise<GlobalAsset> => {
   const response = await apiService.api.get(`/api/v1/global-assets/${id}`);
   return response.data;
@@ -169,6 +196,13 @@ export const useGlobalAssets = (query: GlobalAssetQueryDto = {}) => {
     limit: result.data?.limit || 10,
     totalPages: result.data?.totalPages || 1,
   };
+};
+
+// Hook to fetch all global assets (no pagination)
+export const useAllGlobalAssets = () => {
+  return useQuery(['allGlobalAssets'], fetchAllGlobalAssets, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 };
 
 export const useGlobalAsset = (id: string) => {

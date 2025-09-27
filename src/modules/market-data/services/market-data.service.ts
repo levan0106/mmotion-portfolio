@@ -29,6 +29,8 @@ export interface MarketDataPoint {
   changePercent: number;
   volume: number;
   value: number;
+  source: string;
+  metadata?: any;
 }
 
 export interface MarketDataApiResponse {
@@ -61,15 +63,17 @@ export interface MarketDataApiResponse {
 export class MarketDataService {
   private readonly logger = new Logger(MarketDataService.name);
   private marketPrices = new Map<string, MarketPrice>();
+  private coinGeckoIdCache = new Map<string, string>(); // Cache for CoinGecko IDs
   private config: MarketDataConfig = {
     symbols: ['VFF', 'VESAF', 'DOJI', '9999', 'HPG', 'VCB', 'VIC', 'VHM', 'SSISCA'],
   };
 
   private readonly stockHistoricalDataUrl = 'https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx';
-  private readonly fundHistoricalDataUrl = 'https://api.fmarket.vn';
-  private readonly goldHistoricalDataUrl = 'https://doji.vn/api/gold/historical';
+  private readonly fundHistoricalDataUrl = 'https://api.fmarket.vn/res/product/get-nav-history';
+  private readonly fundListUrl = 'https://api.fmarket.vn/res/products/filter';
+  private readonly goldHistoricalDataUrl = 'https://cafef.vn/du-lieu';
   private readonly exchangeRateHistoricalDataUrl = 'https://api.vietcombank.com.vn/exchange-rate';
-  private readonly cryptoHistoricalDataUrl = 'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=1619827200&to=1620432000'; // TODO: Implement CoinGecko API integration
+  private readonly cryptoHistoricalDataUrl = 'https://api.coingecko.com/api/v3';
 
   constructor(
     private readonly externalMarketDataService: ExternalMarketDataService,
@@ -219,7 +223,7 @@ export class MarketDataService {
     pageIndex: number = 1,
     pageSize: number = 20
   ): Promise<MarketDataPoint[]> {
-    
+
     const multiplyBy = 1000; //due to CAFEF API returns price in VND
 
     try {
@@ -270,32 +274,239 @@ export class MarketDataService {
   /**
    * Get fund historical data from FMarket API
    */
-  private async getFundHistoricalDataFromFMarket(
+  private async getHistoricalDataFromFMarket(
     symbol: string,
     startDate: string,
     endDate: string,
     pageIndex: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
+    assetType: string = 'FUND'
   ): Promise<MarketDataPoint[]> {
     try {
       this.logger.log(`Fetching fund data from FMarket for ${symbol}`);
       
-      // TODO: Implement FMarket API integration
-      // This would call the fund-price-api.client.ts
-      this.logger.warn(`FMarket historical data not yet implemented for ${symbol}`);
+      // Step 1: Find fund ID by symbol
+      const fundId = await this.findFundIdBySymbol(symbol);
+      if (!fundId) {
+        this.logger.warn(`Fund ID not found for symbol ${symbol}`);
+        return [];
+      }
       
-      // Placeholder implementation
-      return [];
+      this.logger.log(`Using fund ID ${fundId} for symbol ${symbol}`);
+      
+      const url = this.fundHistoricalDataUrl;
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      // Convert date format from YYYY-MM-DD to yyyyMMdd for FMarket API
+      const formatDateForFMarket = (dateStr: string) => {
+        this.logger.debug(`Formatting date: ${dateStr}`);
+        try {
+          const date = new Date(dateStr); // tạo Date object
+
+          const yyyy = date.getFullYear();
+          const mm = String(date.getMonth() + 1).padStart(2, '0');
+          const dd = String(date.getDate()).padStart(2, '0');
+
+          const result = `${yyyy}${mm}${dd}`;
+          this.logger.debug(`Formatted date: ${result}`);
+          return result;
+        } catch (error) {
+          this.logger.warn(`Invalid date format: ${dateStr}`);
+          return dateStr; // Return original if can't format
+        }
+        
+      };
+
+      const body = {
+        isAllData: false,
+        productId: fundId, // Use fund ID from lookup
+        fromDate: formatDateForFMarket(startDate),
+        toDate: formatDateForFMarket(endDate),
+        pageIndex: 1,
+        pageSize: 100,
+        assetType: 'FUND'
+      };
+
+      this.logger.debug(`FMarket API Request for FUND: ${JSON.stringify(body)}`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(url, body, {
+          headers,
+          timeout: 10000,
+        })
+      );
+
+      // Check if API call was successful
+      if (response.data.status !== 200 || response.data.code !== 200) {
+        this.logger.warn(`FMarket API error for FUND ${symbol}: ${response.data.message || 'Unknown error'}`);
+        this.logger.warn(`FMarket API response: ${JSON.stringify(response.data)}`);
+        return [];
+      }
+
+      // Check if response.data is directly an array (correct structure)
+      const fmarketData = response.data.data || [];
+      this.logger.log(`Got ${fmarketData.length} records from FMarket for FUND ${symbol}`);
+      
+      // Convert FMarket data to MarketDataPoint format
+      return fmarketData.map((item: any) => ({
+        symbol: symbol,
+        date: item.navDate, // Use navDate field from FMarket response
+        closePrice: parseFloat(item.nav) || 0,
+        change: parseFloat(item.change) || 0,
+        source: 'FMARKET_API',
+        metadata: {
+          productId: item.productId,
+          nav: item.nav,
+          assetType: assetType,
+          originalData: item
+        }
+      }));
+
     } catch (error) {
       this.logger.error(`Error fetching fund data from FMarket for ${symbol}: ${error.message}`);
       return []; // Return empty array instead of throwing error
     }
   }
 
+  // Cache for fund list to avoid repeated API calls
+  private fundListCache: { data: any[], timestamp: number } | null = null;
+  private readonly FUND_LIST_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+  /**
+   * Get fund list from FMarket API with caching
+   */
+  private async getFundListFromFMarket(): Promise<any[]> {
+    try {
+      // Check cache first
+      if (this.fundListCache && 
+          (Date.now() - this.fundListCache.timestamp) < this.FUND_LIST_CACHE_TTL) {
+        this.logger.log(`Using cached fund list (${this.fundListCache.data.length} funds)`);
+        return this.fundListCache.data;
+      }
+
+      this.logger.log('Fetching fund list from FMarket (cache miss or expired)');
+      
+      const url = this.fundListUrl;
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      const bodies = [{
+        types: ["NEW_FUND", "TRADING_FUND"],
+        page: 1,
+        pageSize: 1000,
+        sortOrder: "DESC",
+        sortField: "navTo12Months",
+        isIpo: false,
+        fundAssetTypes: ["STOCK","BOND","BALANCED"]
+      },{
+        types: ["NEW_FUND", "TRADING_FUND"],
+        page: 1,
+        pageSize: 1000,
+        sortOrder: "DESC",
+        sortField: "navTo12Months",
+        isIpo: false,
+        isMMFFund: true
+      }];
+
+      // Try body first
+      let response;
+      let fundList: any[] = [];
+      for (const body of bodies) {
+          this.logger.log(`Trying body ${body.isMMFFund ? 'with' : 'without'} isMMFFund`);
+          response = await this.httpService.post(url, body, { headers }).toPromise();
+          fundList.push(...this.parseFundListResponse(response));
+          
+          if (fundList.length > 0) {
+            this.logger.log(`Body ${body.isMMFFund ? 'with' : 'without'} isMMFFund successful: Found ${fundList.length} funds`);
+          } else {
+            throw new Error(`No funds found in body ${body.isMMFFund ? 'with' : 'without'} isMMFFund response`);
+          }        
+      }
+
+      // Cache the result
+      this.fundListCache = {
+        data: fundList,
+        timestamp: Date.now()
+      };
+
+      this.logger.log(`Cached ${fundList.length} funds from FMarket`);
+      return fundList;
+      
+    } catch (error) {
+      this.logger.error(`Error fetching fund list from FMarket: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Parse fund list response from FMarket API
+   */
+  private parseFundListResponse(response: any): any[] {
+    // Check if response.data.data.rows is an array (nested structure) - CORRECT STRUCTURE
+    if (response.data && response.data.data && response.data.data.rows && Array.isArray(response.data.data.rows)) {
+      this.logger.log(`Found ${response.data.data.rows.length} funds from FMarket`);
+      return response.data.data.rows;
+    } 
+    // Check if response.data.rows is an array (alternative structure)
+    else if (response.data && response.data.rows && Array.isArray(response.data.rows)) {
+      this.logger.log(`Found ${response.data.rows.length} funds from FMarket`);
+      return response.data.rows;
+    } 
+    // Check if response.data is directly an array
+    else if (response.data && Array.isArray(response.data)) {
+      this.logger.log(`Found ${response.data.length} funds from FMarket`);
+      return response.data;
+    } 
+    // Check if response.data.data is an array
+    else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      this.logger.log(`Found ${response.data.data.length} funds from FMarket`);
+      return response.data.data;
+    } else {
+      this.logger.warn(`Invalid response format from FMarket fund list API. Response: ${JSON.stringify(response.data)}`);
+      return [];
+    }
+  }
+
+  /**
+   * Find fund ID by symbol from FMarket fund list
+   */
+  private async findFundIdBySymbol(symbol: string): Promise<string | null> {
+    try {
+      const fundList = await this.getFundListFromFMarket();
+      
+      if (fundList.length === 0) {
+        this.logger.warn('No funds found in FMarket list');
+        return null;
+      }
+
+      // Search for fund by shortName (symbol)
+      const fund = fundList.find(f => 
+        f.shortName && f.shortName.toUpperCase() === symbol.toUpperCase()
+      );
+
+      if (fund) {
+        this.logger.log(`Found fund ID ${fund.id} for symbol ${symbol}`);
+        return fund.id;
+      }
+      
+      // Fallback: try using symbol directly as fund ID
+      this.logger.log(`Trying symbol ${symbol} directly as fund ID`);
+      return symbol;
+    } catch (error) {
+      this.logger.error(`Error finding fund ID for symbol ${symbol}: ${error.message}`);
+      // Fallback: try using symbol directly as fund ID
+      this.logger.log(`Fallback: trying symbol ${symbol} directly as fund ID`);
+      return symbol;
+    }
+  }
+
   /**
    * Get gold historical data from Doji API
    */
-  private async getGoldHistoricalDataFromDoji(
+  private async getGoldHistoricalDataFromCAFEF(
     symbol: string,
     startDate: string,
     endDate: string,
@@ -303,16 +514,76 @@ export class MarketDataService {
     pageSize: number = 20
   ): Promise<MarketDataPoint[]> {
     try {
-      this.logger.log(`Fetching gold data from Doji for ${symbol}`);
+      this.logger.log(`Fetching gold data from CAFEF for ${symbol}`);
       
-      // TODO: Implement Doji API integration
-      // This would call the gold-price-api.client.ts
-      this.logger.warn(`Doji historical data not yet implemented for ${symbol}`);
-      
-      // Placeholder implementation
-      return [];
+      const url = `${this.goldHistoricalDataUrl}/Ajax/AjaxGoldPriceRing.ashx?time=1y&zone=11`;
+      const url2 = `${this.goldHistoricalDataUrl}/Ajax/ajaxgoldpricehistory.ashx?index=1y`;
+
+      const response1 = await firstValueFrom(
+        this.httpService.get(url)
+      );
+
+      const response2 = await firstValueFrom(
+        this.httpService.get(url2)
+      );
+
+
+       // Parse response based on symbol type
+       let goldData: any[] = [];
+       
+        if (symbol.includes('SJC')) {
+          // SJC uses response2 with goldPriceWorldHistories array
+          if (response2.data && response2.data.Data && response2.data.Data.goldPriceWorldHistories 
+           && Array.isArray(response2.data.Data.goldPriceWorldHistories)) {
+            goldData = response2.data.Data.goldPriceWorldHistories.map((item: any) => ({
+              ...item,
+              date: item.createdAt?.split('T')[0],
+              price: parseFloat(item.buyPrice) * 100000 // multiply by 100000 for SJC
+            }));
+          } else {
+            this.logger.warn(`No SJC data found in CAFEF response2`);
+            return [];
+          }
+        } else {
+          // Other gold symbols use response1 with goldPriceWorlds (single object)
+          if (response1.data && response1.data.Data && response1.data.Data.goldPriceWorldHistories 
+           && Array.isArray(response1.data.Data.goldPriceWorldHistories)) {
+            goldData = response1.data.Data.goldPriceWorldHistories.map((item: any) => ({
+              ...item,
+              date: item.lastUpdated?.split(' ')[0], // Use lastUpdated instead of lastUpdate
+              price: parseFloat(item.buyPrice)
+            }));
+          } else {
+            this.logger.warn(`No ${symbol} data found in CAFEF response1`);
+            return [];
+          }
+        }
+
+        // filter goldData by date between startDate and endDate
+        goldData = goldData.filter((item: any) => {
+          return new Date(item.date) >= new Date(startDate) && new Date(item.date) <= new Date(endDate) && item.date !== 'Invalid Date';
+        });
+
+       // Convert CAFEF data to MarketDataPoint format
+       return goldData.map((item: any) => {
+
+         return {
+           symbol: symbol,
+           date: item.date,
+           closePrice: item.price,
+           value: item.price, // Use price as value for gold
+           change:  0,
+           changePercent: 0,
+           volume: 0, // Gold doesn't have volume
+           source: 'CAFEF_API',
+           metadata: {
+             originalData: item,
+             assetType: 'GOLD'
+           }
+         };
+       });
     } catch (error) {
-      this.logger.error(`Error fetching gold data from Doji for ${symbol}: ${error.message}`);
+      this.logger.error(`Error fetching gold data from CAFEF for ${symbol}: ${error.message}`);
       return []; // Return empty array instead of throwing error
     }
   }
@@ -355,15 +626,262 @@ export class MarketDataService {
     try {
       this.logger.log(`Fetching crypto data from CoinGecko for ${symbol}`);
       
-      // TODO: Implement CoinGecko API integration
-      // This would call the crypto-price-api.client.ts
-      this.logger.warn(`CoinGecko historical data not yet implemented for ${symbol}`);
+      // Convert dates to Unix timestamps
+      const fromTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+      const toTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
       
-      // Placeholder implementation
-      return [];
+      // Map common crypto symbols to CoinGecko IDs
+      const coinGeckoId = await this.getCoinGeckoId(symbol);
+      
+      const url = `${this.cryptoHistoricalDataUrl}/coins/${coinGeckoId}/market_chart/range`;
+      const params = {
+        vs_currency: 'vnd',
+        from: fromTimestamp.toString(),
+        to: toTimestamp.toString(),
+      };
+
+      this.logger.log(`CoinGecko API Request: ${url}?${new URLSearchParams(params).toString()}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          params,
+          timeout: 15000,
+        })
+      );
+
+      if (!response.data || !response.data.prices) {
+        this.logger.warn(`No price data received from CoinGecko for ${symbol}`);
+        return [];
+      }
+
+      const priceData = response.data.prices || [];
+      const marketCapData = response.data.market_caps || [];
+      const volumeData = response.data.total_volumes || [];
+
+      this.logger.log(`Got ${priceData.length} price records from CoinGecko for ${symbol}`);
+      
+      // Debug: Log sample data format
+      if (priceData.length > 0) {
+        this.logger.debug(`Sample price data format: ${JSON.stringify(priceData[0])}`);
+        this.logger.debug(`Sample market cap data format: ${JSON.stringify(marketCapData[0] || 'N/A')}`);
+        this.logger.debug(`Sample volume data format: ${JSON.stringify(volumeData[0] || 'N/A')}`);
+      }
+
+      // Convert CoinGecko data to MarketDataPoint format
+      const marketDataPoints: MarketDataPoint[] = [];
+      
+      // Group data by date to avoid multiple records per day
+      const dailyDataMap = new Map<string, any>();
+      
+      for (let i = 0; i < priceData.length; i++) {
+        const priceEntry = priceData[i];
+        if (!Array.isArray(priceEntry) || priceEntry.length < 2) {
+          this.logger.warn(`Invalid price data format at index ${i}: ${JSON.stringify(priceEntry)}`);
+          continue;
+        }
+        
+        const [timestamp, price] = priceEntry;
+        
+        // Validate timestamp and price
+        if (typeof timestamp !== 'number' || typeof price !== 'number' || 
+            isNaN(timestamp) || isNaN(price) || price <= 0) {
+          this.logger.warn(`Invalid timestamp or price at index ${i}: timestamp=${timestamp}, price=${price}`);
+          continue;
+        }
+        
+        const marketCap = marketCapData[i] && Array.isArray(marketCapData[i]) ? marketCapData[i][1] : 0;
+        const volume = volumeData[i] && Array.isArray(volumeData[i]) ? volumeData[i][1] : 0;
+        
+        // Convert timestamp to proper date - CoinGecko returns milliseconds
+        let dateString: string;
+        try {
+          // Check if timestamp is in milliseconds (13 digits) or seconds (10 digits)
+          const timestampStr = timestamp.toString();
+          let date: Date;
+          
+          this.logger.debug(`Processing timestamp ${timestamp} (${timestampStr.length} digits) for ${symbol}`);
+          
+          if (timestampStr.length === 13) {
+            // Already in milliseconds
+            date = new Date(timestamp);
+            this.logger.debug(`Using timestamp as milliseconds: ${timestamp}`);
+          } else if (timestampStr.length === 10) {
+            // In seconds, convert to milliseconds
+            date = new Date(timestamp * 1000);
+            this.logger.debug(`Converting seconds to milliseconds: ${timestamp} -> ${timestamp * 1000}`);
+          } else {
+            this.logger.warn(`Invalid timestamp format for ${symbol}: ${timestamp} (${timestampStr.length} digits)`);
+            continue;
+          }
+          
+          if (isNaN(date.getTime())) {
+            this.logger.warn(`Invalid date created from timestamp ${timestamp} for ${symbol}`);
+            continue;
+          }
+          
+          dateString = date.toISOString();
+          this.logger.debug(`Converted timestamp ${timestamp} to date: ${dateString}`);
+        } catch (error) {
+          this.logger.warn(`Error converting timestamp ${timestamp} for ${symbol}: ${error.message}`);
+          continue;
+        }
+
+        // Group by date (YYYY-MM-DD) to keep only the latest record per day
+        const dateKey = dateString.split('T')[0]; // Get YYYY-MM-DD part
+        
+        // Keep the latest record for each day (highest timestamp)
+        if (!dailyDataMap.has(dateKey) || timestamp > dailyDataMap.get(dateKey).originalTimestamp) {
+          dailyDataMap.set(dateKey, {
+            date: dateString, // Keep original API date - localtime processing will be handled in savePriceHistoryToDB
+            closePrice: price,
+            volume: volume,
+            value: marketCap,
+            originalTimestamp: timestamp,
+            marketCap: marketCap,
+            totalVolume: volume
+          });
+        }
+      }
+
+      // Convert grouped data to MarketDataPoint format
+      const sortedDates = Array.from(dailyDataMap.keys()).sort();
+      let previousPrice = 0;
+      
+      for (const dateKey of sortedDates) {
+        const dayData = dailyDataMap.get(dateKey);
+        
+        // Calculate change from previous day
+        let change = 0;
+        let changePercent = 0;
+        
+        if (previousPrice > 0) {
+          change = dayData.closePrice - previousPrice;
+          changePercent = (change / previousPrice) * 100;
+        }
+        
+        previousPrice = dayData.closePrice;
+        
+        const newDate = dayData.date.split('T')[0]; // get YYYY-MM-DD from ISO string
+
+        marketDataPoints.push({
+          date: newDate, // Original API date - localtime processing handled in savePriceHistoryToDB
+          closePrice: dayData.closePrice,
+          change: change,
+          changePercent: changePercent,
+          volume: dayData.volume,
+          value: dayData.value, // Use market cap as value for crypto
+          source: 'COINGECKO_API',
+          metadata: {
+            symbol: symbol,
+            coinGeckoId: coinGeckoId,
+            marketCap: dayData.marketCap,
+            totalVolume: dayData.totalVolume,
+            originalTimestamp: dayData.originalTimestamp,
+            assetType: 'CRYPTO'
+          }
+        });
+      }
+      
+      this.logger.log(`Grouped ${priceData.length} hourly records into ${marketDataPoints.length} daily records for ${symbol}`);
+
+      // Apply pagination
+      const startIndex = (pageIndex - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = marketDataPoints.slice(startIndex, endIndex);
+
+      this.logger.log(`Returning ${paginatedData.length} paginated records for ${symbol}`);
+      return paginatedData;
+
     } catch (error) {
       this.logger.error(`Error fetching crypto data from CoinGecko for ${symbol}: ${error.message}`);
       return []; // Return empty array instead of throwing error
+    }
+  }
+
+  /**
+   * Map crypto symbols to CoinGecko IDs with automatic lookup and caching
+   */
+  private async getCoinGeckoId(symbol: string): Promise<string> {
+    const symbolMap: Record<string, string> = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'BNB': 'binancecoin',
+      'ADA': 'cardano',
+      'SOL': 'solana',
+      'XRP': 'ripple',
+      'DOT': 'polkadot',
+      'DOGE': 'dogecoin',
+      'AVAX': 'avalanche-2',
+      'MATIC': 'matic-network',
+      'LINK': 'chainlink',
+      'UNI': 'uniswap',
+      'LTC': 'litecoin',
+      'BCH': 'bitcoin-cash',
+      'ATOM': 'cosmos',
+      'FTM': 'fantom',
+      'NEAR': 'near',
+      'ALGO': 'algorand',
+      'VET': 'vechain',
+      'ICP': 'internet-computer',
+      'FIL': 'filecoin',
+      'TRX': 'tron',
+      'ETC': 'ethereum-classic',
+      'XLM': 'stellar',
+      'MANA': 'decentraland',
+      'SAND': 'the-sandbox',
+      'AXS': 'axie-infinity',
+      'CHZ': 'chiliz',
+      'ENJ': 'enjincoin',
+    };
+
+    const upperSymbol = symbol.toUpperCase();
+    
+    // Check cache first
+    if (this.coinGeckoIdCache.has(upperSymbol)) {
+      const cachedId = this.coinGeckoIdCache.get(upperSymbol);
+      this.logger.debug(`Using cached CoinGecko ID for ${symbol}: ${cachedId}`);
+      return cachedId;
+    }
+    
+    // Return mapped ID if exists
+    if (symbolMap[upperSymbol]) {
+      const mappedId = symbolMap[upperSymbol];
+      this.coinGeckoIdCache.set(upperSymbol, mappedId); // Cache it
+      return mappedId;
+    }
+
+    // Try to find automatically from CoinGecko API
+    try {
+      this.logger.log(`Looking up CoinGecko ID for symbol: ${symbol}`);
+      
+      const searchUrl = `${this.cryptoHistoricalDataUrl}/search`;
+      const response = await firstValueFrom(
+        this.httpService.get(searchUrl, {
+          params: { query: symbol },
+          timeout: 10000,
+        })
+      );
+
+      if (response.data && response.data.coins && response.data.coins.length > 0) {
+        const coin = response.data.coins[0];
+        const coinId = coin.id;
+        this.logger.log(`Found CoinGecko ID for ${symbol}: ${coinId}`);
+        
+        // Cache the result
+        this.coinGeckoIdCache.set(upperSymbol, coinId);
+        return coinId;
+      }
+
+      this.logger.warn(`No CoinGecko ID found for symbol: ${symbol}`);
+      const fallbackId = symbol.toLowerCase();
+      this.coinGeckoIdCache.set(upperSymbol, fallbackId); // Cache fallback too
+      return fallbackId;
+
+    } catch (error) {
+      this.logger.error(`Failed to lookup CoinGecko ID for ${symbol}: ${error.message}`);
+      const fallbackId = symbol.toLowerCase();
+      this.coinGeckoIdCache.set(upperSymbol, fallbackId); // Cache fallback too
+      return fallbackId;
     }
   }
 
@@ -394,23 +912,70 @@ export class MarketDataService {
       switch (assetType.toUpperCase()) {
         case 'STOCK':
         case 'ETF':
-          return this.getStockHistoricalDataFromCAFEF(symbol, startDate, endDate, pageIndex, pageSize);
+          // Thử CAFEF trước, nếu không có dữ liệu thì fallback sang FMarket
+          try {
+            const cafefData = await this.getStockHistoricalDataFromCAFEF(symbol, startDate, endDate, pageIndex, pageSize);
+            if (cafefData && cafefData.length > 0) {
+              this.logger.log(`Got ${cafefData.length} records from CAFEF for ${symbol}`);
+              return cafefData;
+            }
+          } catch (error) {
+            this.logger.warn(`CAFEF failed for ${symbol}, trying FMarket: ${error.message}`);
+          }
+          
+          // Fallback to FMarket for STOCK
+          this.logger.log(`Trying FMarket API for STOCK ${symbol}`);
+          const stockData = await this.getHistoricalDataFromFMarket(symbol, startDate, endDate, pageIndex, pageSize, assetType);
+          if (stockData && stockData.length > 0) {
+            this.logger.log(`Got ${stockData.length} records from FMarket for ${symbol}`);
+            return stockData;
+          }
+          this.logger.warn(`FMarket failed for ${symbol}`);
+          return [];
+        
+        case 'BOND':
+          // BOND thường không có trên CAFEF, sử dụng FMarket trực tiếp
+          this.logger.log(`Using FMarket API for BOND ${symbol}`);
+          const bondData = await this.getHistoricalDataFromFMarket(symbol, startDate, endDate, pageIndex, pageSize, assetType);
+          if (bondData && bondData.length > 0) {
+            this.logger.log(`Got ${bondData.length} records from FMarket for ${symbol}`);
+            return bondData;
+          }
+          this.logger.warn(`FMarket failed for ${symbol}`);
+          return [];
         
         case 'FUND':
-          return this.getFundHistoricalDataFromFMarket(symbol, startDate, endDate, pageIndex, pageSize);
+          const fundData = await this.getHistoricalDataFromFMarket(symbol, startDate, endDate, pageIndex, pageSize, assetType);
+          if (fundData && fundData.length > 0) {
+            this.logger.log(`Got ${fundData.length} records from FMarket for ${symbol}`);
+            return fundData;
+          }
+          this.logger.warn(`FMarket failed for ${symbol}`);
+          return [];
         
         case 'GOLD':
-          return this.getGoldHistoricalDataFromDoji(symbol, startDate, endDate, pageIndex, pageSize);
+          const goldData = await this.getGoldHistoricalDataFromCAFEF(symbol, startDate, endDate, pageIndex, pageSize);
+          if (goldData && goldData.length > 0) {
+            this.logger.log(`Got ${goldData.length} records from CAFEF for ${symbol}`);
+            return goldData;
+          }
+          this.logger.warn(`Gold CAFEF failed for ${symbol}`);
+          return [];
         
         case 'EXCHANGE_RATE':
           return this.getExchangeRateHistoricalDataFromVietcombank(symbol, startDate, endDate, pageIndex, pageSize);
         
         case 'CRYPTO':
-          return this.getCryptoHistoricalDataFromCoinGecko(symbol, startDate, endDate, pageIndex, pageSize);
+          const cryptoData = await this.getCryptoHistoricalDataFromCoinGecko(symbol, startDate, endDate, pageIndex, pageSize);
+          if (cryptoData && cryptoData.length > 0) {
+            this.logger.log(`Got ${cryptoData.length} records from CoinGecko for ${symbol}`);
+            return cryptoData;
+          }
+          return [];
         
         default:
-          this.logger.warn(`Unknown asset type: ${assetType}, falling back to CAFEF API`);
-          return this.getStockHistoricalDataFromCAFEF(symbol, startDate, endDate, pageIndex, pageSize);
+          this.logger.warn(`Unknown asset type: ${assetType}, returning empty array`);
+          return [];
       }
     } catch (error) {
       this.logger.error(`Error fetching ${symbol} (${assetType}) data: ${error.message}`, error.stack);
@@ -542,7 +1107,11 @@ export class MarketDataService {
       change: change,
       changePercent: changePercent,
       volume: item.KhoiLuongKhopLenh || 0,
-      value: item.GiaTriKhopLenh || 0
+      value: item.GiaTriKhopLenh || 0,
+      source: 'CAFEF_API',
+      metadata: {
+        originalData: item
+      }
     };
   }
 
@@ -922,9 +1491,31 @@ export class MarketDataService {
           // Store the market date from API + current UTC time
           // This ensures created_at reflects the market date but with accurate UTC timestamp
           const now = new Date();
-          const marketDateStr = dataPoint.date; // e.g., "2025-09-25"
+          const marketDateStr = dataPoint.date; // Could be ISO string or date string
           const timeStr = now.toISOString().split('T')[1]; // e.g., "05:43:48.450Z"
-          record.createdAt = new Date(marketDateStr + 'T' + timeStr);
+          
+          // Handle both ISO string format and date-only format
+          let createdAt: Date;
+          this.logger.debug(`Processing marketDateStr: ${marketDateStr} for ${symbol}`);
+          
+          if (marketDateStr.includes('T')) {
+            // Already a full ISO string, use it directly
+            createdAt = new Date(marketDateStr);
+            this.logger.debug(`Using full ISO string: ${marketDateStr}`);
+          } else {
+            // Date-only string, concatenate with current time
+            createdAt = new Date(marketDateStr + 'T' + timeStr);
+            this.logger.debug(`Concatenating date and time: ${marketDateStr} + T + ${timeStr}`);
+          }
+          
+          // Validate the date before using it
+          if (isNaN(createdAt.getTime())) {
+            this.logger.warn(`Invalid date created from marketDateStr: ${marketDateStr} for ${symbol}`);
+            // Fallback to current date
+            createdAt = new Date();
+          }
+          
+          record.createdAt = createdAt;
           return record;
         });
 

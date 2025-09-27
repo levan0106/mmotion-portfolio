@@ -92,5 +92,39 @@ let
 in
     #"Expanded Column2"
 
-GET PRICE HISTORY
+GET STOCK PRICE HISTORY
 https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx?Symbol=VNIndex&StartDate=08/01/2025&EndDate=08/31/2025&PageIndex=1&PageSize=20
+
+GET FUND PRICE HISTORY
+url = "https://api.fmarket.vn/res/product/get-nav-history",
+        headers = [#"Content-Type"="application/json"],
+        body = "{
+            ""isAllData"":0,
+            ""productId"":" & symbol & ",
+            ""fromDate"":""" & FromDate &""",
+            ""toDate"":""" & ToDate &"""
+        }",
+        response = Json.Document(Web.Contents(url,
+            [
+                Headers = headers,
+                Content = Text.ToBinary((body))
+            ])),
+            
+GET GOLD HISTORY
+URL 1: https://cafef.vn/du-lieu/Ajax/AjaxGoldPriceRing.ashx?time=1y&zone=11
+URL 2: https://cafef.vn/du-lieu/Ajax/ajaxgoldpricehistory.ashx?index=1y
+Respone:
+{
+"Data": {
+"goldPriceWorldHistories": [
+{
+"id": "68d7452d61efe8faf052325c",
+"name": "SJC",
+"buyPrice": 133,
+"sellPrice": 135,
+"createdAt": "2025-09-27T11:45:13.737Z"
+}]
+},
+"Message": null,
+"Success": true
+}

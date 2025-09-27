@@ -37,7 +37,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { vi } from 'date-fns/locale';
-import { useGlobalAssets } from '../../hooks/useGlobalAssets';
+import { useAllGlobalAssets } from '../../hooks/useGlobalAssets';
 import { useHistoricalPrices } from '../../hooks/useHistoricalPrices';
 import { formatCurrency } from '../../utils/format';
 
@@ -93,7 +93,7 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
     data: globalAssetsData,
     isLoading: assetsLoading,
     error: assetsError
-  } = useGlobalAssets();
+  } = useAllGlobalAssets();
 
   // Load global assets when dialog opens
   useEffect(() => {
