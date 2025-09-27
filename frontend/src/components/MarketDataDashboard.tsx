@@ -52,6 +52,7 @@ import {
 } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { formatNumber, formatPercentage } from '@/utils/format';
 
 // Types
 interface MarketDataStats {
@@ -408,7 +409,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  {stats.totalAssets}
+                  {formatNumber(stats.totalAssets || 0,0)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
                   Active market assets
@@ -449,7 +450,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  {stats.successRate.toFixed(1)}%
+                  {formatPercentage(stats.successRate.toFixed(1),1)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
                   Update success rate

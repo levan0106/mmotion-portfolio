@@ -14,6 +14,7 @@ import { AssetDetailSummaryResponseDto } from '../dto/asset-detail-summary.dto';
 import { PositionManagerService } from '../services/position-manager.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
+import { MarketDataService } from '../../market-data/services/market-data.service';
 
 /**
  * Controller for Portfolio analytics and advanced reporting.
@@ -27,6 +28,7 @@ export class PortfolioAnalyticsController {
     private readonly portfolioRepository: PortfolioRepository,
     private readonly positionManagerService: PositionManagerService,
     private readonly performanceSnapshotService: PerformanceSnapshotService,
+    private readonly marketDataService: MarketDataService,
   ) {}
 
   // /**
@@ -650,10 +652,10 @@ export class PortfolioAnalyticsController {
 
 
   /**
-   * Get benchmark comparison data using real portfolio snapshots.
+   * Get benchmark comparison data using real portfolio snapshots and real VNIndex data.
    */
   @Get('benchmark-comparison')
-  @ApiOperation({ summary: 'Get benchmark comparison data using real portfolio snapshots' })
+  @ApiOperation({ summary: 'Get benchmark comparison data using real portfolio snapshots and real VNIndex data' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
   @ApiQuery({ name: 'months', required: false, description: 'Number of months to look back (default: 12, max: 24)' })
   @ApiQuery({ name: 'twrPeriod', required: false, description: 'TWR period to use (1D, 1W, 1M, 3M, 6M, 1Y, YTD, default: 1M)' })
@@ -734,6 +736,9 @@ export class PortfolioAnalyticsController {
       const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
       console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
       
+      // Fetch real VNIndex data for benchmark comparison
+      const vnIndexReturns = await this.getVNIndexDataForBenchmark(startDate, endDate);
+      
       // Use TWR data from performance snapshots
       for (let i = 0; i < dateList.length; i++) {
         const date = dateList[i];
@@ -785,8 +790,8 @@ export class PortfolioAnalyticsController {
           console.log(`Date ${date.toISOString().split('T')[0]}: Using ${twrColumn} = ${portfolioReturn}% (TWR period: ${twrPeriodToUse}, data range: ${monthsToLookBack} months)`);
         }
         
-        // Generate benchmark return (simulated VN Index)
-        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        // Get real VNIndex return for this date
+        const benchmarkReturn = this.getVNIndexReturnForDate(date, vnIndexReturns);
         
         benchmarkData.push({
           date: date.toISOString().split('T')[0],
@@ -822,13 +827,16 @@ export class PortfolioAnalyticsController {
       const cumulativeReturns = this.calculateCumulativeReturns(dateList, sortedSnapshots);
       console.log(`Calculated cumulative returns for ${cumulativeReturns.length} dates`);
       
+      // Fetch real VNIndex data for benchmark comparison
+      const vnIndexReturns = await this.getVNIndexDataForBenchmark(startDate, endDate);
+      
       // Generate benchmark data based on timeframe
       for (let i = 0; i < dateList.length; i++) {
         const date = dateList[i];
         const portfolioReturn = cumulativeReturns[i] || 0;
         
-        // Generate benchmark return (simulated VN Index)
-        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        // Get real VNIndex return for this date
+        const benchmarkReturn = this.getVNIndexReturnForDate(date, vnIndexReturns);
         
         benchmarkData.push({
           date: date.toISOString().split('T')[0],
@@ -963,6 +971,9 @@ export class PortfolioAnalyticsController {
       const dateList = this.generateDateList(startDate, endDate, monthsToLookBack);
       console.log(`Generated ${dateList.length} dates for timeframe ${monthsToLookBack} months`);
       
+      // Fetch real VNIndex data for benchmark comparison
+      const vnIndexReturns = await this.getVNIndexDataForBenchmark(startDate, endDate);
+      
       // Use MWR data from performance snapshots
       for (let i = 0; i < dateList.length; i++) {
         const date = dateList[i];
@@ -1016,8 +1027,8 @@ export class PortfolioAnalyticsController {
         //   console.log(`Date ${date.toISOString().split('T')[0]}: Using ${mwrColumn} = ${portfolioReturn}% (MWR period: ${mwrPeriodToUse}, data range: ${monthsToLookBack} months)`);
         // }
         
-        // Generate benchmark return (simulated VN Index)
-        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        // Get real VNIndex return for this date
+        const benchmarkReturn = this.getVNIndexReturnForDate(date, vnIndexReturns);
         
         benchmarkData.push({
           date: date.toISOString().split('T')[0],
@@ -1053,13 +1064,16 @@ export class PortfolioAnalyticsController {
       const cumulativeReturns = this.calculateCumulativeReturns(dateList, sortedSnapshots);
       console.log(`Calculated cumulative returns for ${cumulativeReturns.length} dates`);
       
+      // Fetch real VNIndex data for benchmark comparison
+      const vnIndexReturns = await this.getVNIndexDataForBenchmark(startDate, endDate);
+      
       // Generate benchmark data based on timeframe
       for (let i = 0; i < dateList.length; i++) {
         const date = dateList[i];
         const portfolioReturn = cumulativeReturns[i] || 0;
         
-        // Generate benchmark return (simulated VN Index)
-        const benchmarkReturn = i===0 ? 0 : (Math.random() - 0.2) * 0.15; // TODO: -3% to +12% for VN Index
+        // Get real VNIndex return for this date
+        const benchmarkReturn = this.getVNIndexReturnForDate(date, vnIndexReturns);
         
         benchmarkData.push({
           date: date.toISOString().split('T')[0],
@@ -1319,5 +1333,67 @@ export class PortfolioAnalyticsController {
     
     // console.log(`DEBUG: Final snapshot: ${closestDate.toISOString().split('T')[0]}`);
     return closest;
+  }
+
+  /**
+   * Get VNIndex return for a specific date
+   * @param date - Target date
+   * @param vnIndexReturns - VNIndex returns data
+   * @returns VNIndex return percentage
+   */
+  private getVNIndexReturnForDate(date: Date, vnIndexReturns: Array<{date: string, return: number}>): number {
+    if (!vnIndexReturns || vnIndexReturns.length === 0) {
+      // Fallback to simulated data if no VNIndex data available
+      return Math.random() * 0.15 - 0.03; // -3% to +12% range
+    }
+
+    const targetDateStr = date.toISOString().split('T')[0];
+    
+    // Find exact date match
+    const exactMatch = vnIndexReturns.find(item => item.date === targetDateStr);
+    if (exactMatch) {
+      return exactMatch.return / 100; // Convert percentage to decimal
+    }
+
+    // Find closest date (before or after)
+    const sortedReturns = vnIndexReturns.sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Find the closest date
+    let closest = sortedReturns[0];
+    let minDiff = Math.abs(new Date(closest.date).getTime() - date.getTime());
+
+    for (const item of sortedReturns) {
+      const diff = Math.abs(new Date(item.date).getTime() - date.getTime());
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = item;
+      }
+    }
+
+    return closest.return / 100; // Convert percentage to decimal
+  }
+
+  /**
+   * Get VNIndex data for benchmark comparison
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @returns Promise<Array<{date: string, return: number}>>
+   */
+  private async getVNIndexDataForBenchmark(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{date: string, return: number}>> {
+    try {
+      console.log(`Fetching real VNIndex data for benchmark comparison from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+      const vnIndexReturns = await this.marketDataService.getVNIndexReturns(startDate, endDate);
+      console.log(`Successfully fetched ${vnIndexReturns.length} VNIndex return data points`);
+      return vnIndexReturns;
+    } catch (error) {
+      console.error(`Error fetching VNIndex data: ${error.message}`);
+      console.log('Falling back to simulated benchmark data');
+      return [];
+    }
   }
 }

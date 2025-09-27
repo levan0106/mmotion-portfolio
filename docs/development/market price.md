@@ -91,3 +91,6 @@ let
     #"Expanded Column2" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"stockSymbol", "expectedMatchedPrice"}, {"Symbols", "Price"})
 in
     #"Expanded Column2"
+
+GET PRICE HISTORY
+https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx?Symbol=VNIndex&StartDate=08/01/2025&EndDate=08/31/2025&PageIndex=1&PageSize=20

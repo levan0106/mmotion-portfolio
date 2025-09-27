@@ -24,6 +24,31 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Frontend Component Architecture - **RECENTLY UPDATED**
+- **Component Separation Pattern**: Large components should be split into smaller, focused components for better maintainability
+- **Tab Component Pattern**: Each major functionality should have its own component with clear props interface
+- **State Management**: Each component manages its own state and data fetching independently
+- **Props Interface**: Clear TypeScript interfaces for all component props to ensure type safety
+- **Import Organization**: Use named exports for better tree-shaking and clear import paths
+- **Build Optimization**: Regular TypeScript compilation checks to catch errors early
+
+### PortfolioDetail.tsx Refactoring Pattern - **NEW**
+- **Tab Components Structure**:
+  ```
+  frontend/src/components/PortfolioTabs/
+  ├── index.ts                    # Export all components
+  ├── PerformanceTab.tsx          # Tab 0: Performance analytics
+  ├── AllocationTab.tsx           # Tab 1: Asset allocation
+  ├── TradingManagementTab.tsx    # Tab 2: Trading management
+  ├── DepositManagementTab.tsx    # Tab 3: Deposit management
+  ├── CashFlowTab.tsx             # Tab 4: Cash flow management
+  └── NAVHoldingsTab.tsx          # Tab 5: NAV holdings management
+  ```
+- **Component Props Pattern**: Each tab component receives only necessary props (portfolioId, portfolio, isCompactMode, getUltraSpacing)
+- **State Isolation**: Each component manages its own data fetching and state
+- **Error Handling**: Individual error states for each component's data sources
+- **Loading States**: Granular loading indicators for different data sources
+
 ### Dependency Injection & Module Management
 - **Circular Dependency Resolution**: Use `forwardRef(() => ModuleName)` to resolve circular dependencies between modules
 - **Service Integration**: Import parent modules in child modules to access shared services

@@ -1,4 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { format } from 'date-fns';
 import { ExternalMarketDataService } from './external-market-data.service';
 import { MarketDataResult } from '../types/market-data.types';
 
@@ -13,6 +16,36 @@ export interface MarketPrice {
 export interface MarketDataConfig {
   symbols: string[];
   volatility: number; // 0-1, affects price fluctuation
+}
+
+export interface MarketDataPoint {
+  date: string;
+  closePrice: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  value: number;
+}
+
+export interface CafefApiResponse {
+  Data: {
+    TotalCount: number;
+    Data: Array<{
+      Ngay: string; // Date in DD/MM/YYYY format
+      GiaDieuChinh: number; // Adjusted Price
+      GiaDongCua: number; // Closing Price
+      ThayDoi: string; // Change (e.g., "1.35(0.08 %)")
+      KhoiLuongKhopLenh: number;
+      GiaTriKhopLenh: number;
+      KLThoaThuan: number;
+      GtThoaThuan: number;
+      GiaMoCua: number;
+      GiaCaoNhat: number;
+      GiaThapNhat: number;
+    }>;
+  };
+  Message: string | null;
+  Success: boolean;
 }
 
 /**
@@ -30,8 +63,11 @@ export class MarketDataService {
     volatility: 0.02, // 2% volatility
   };
 
+  private readonly baseUrl = 'https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx';
+
   constructor(
-    private readonly externalMarketDataService: ExternalMarketDataService
+    private readonly externalMarketDataService: ExternalMarketDataService,
+    private readonly httpService: HttpService
   ) {
     this.initializeBasePrices();
     this.logger.log('Market Data Service initialized with external API integration');
@@ -307,5 +343,185 @@ export class MarketDataService {
       '1Y': 24 * 60 * 60 * 1000, // 1 day
     };
     return intervalMap[period] || 24 * 60 * 60 * 1000;
+  }
+
+  // ==================== CAFEF API METHODS ====================
+
+  /**
+   * Fetch market data from CAFEF API for any symbol
+   * @param symbol - Market symbol (e.g., VNIndex, HNXIndex, etc.)
+   * @param startDate - Start date in MM/DD/YYYY format
+   * @param endDate - End date in MM/DD/YYYY format
+   * @param pageIndex - Page index (default: 1)
+   * @param pageSize - Page size (default: 20)
+   * @returns Promise<MarketDataPoint[]>
+   */
+  async getCafefMarketData(
+    symbol: string,
+    startDate: string,
+    endDate: string,
+    pageIndex: number = 1,
+    pageSize: number = 20
+  ): Promise<MarketDataPoint[]> {
+    try {
+      this.logger.log(`Fetching ${symbol} data from ${startDate} to ${endDate}`);
+
+      const url = `${this.baseUrl}?Symbol=${symbol}&StartDate=${startDate}&EndDate=${endDate}&PageIndex=${pageIndex}&PageSize=${pageSize}`;
+
+      const response = await firstValueFrom(
+        this.httpService.get<CafefApiResponse>(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+            'Referer': 'https://cafef.vn/',
+          },
+        })
+      );
+
+      if (!response.data.Success) {
+        throw new Error(`${symbol} API error: ${response.data.Message || 'Unknown error'}`);
+      }
+
+      const marketData = response.data.Data.Data.map(item => this.transformCafefData(item));
+
+      this.logger.log(`Successfully fetched ${marketData.length} ${symbol} data points`);
+      return marketData;
+    } catch (error) {
+      this.logger.error(`Error fetching ${symbol} data: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Get market data for a specific date range
+   * @param symbol - Market symbol
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @returns Promise<MarketDataPoint[]>
+   */
+  async getCafefMarketDataForDateRange(
+    symbol: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<MarketDataPoint[]> {
+    const startDateStr = this.formatDateForCafefAPI(startDate);
+    const endDateStr = this.formatDateForCafefAPI(endDate);
+
+    return this.getCafefMarketData(symbol, startDateStr, endDateStr, 1, 100);
+  }
+
+  /**
+   * Get market data for the last N months
+   * @param symbol - Market symbol
+   * @param months - Number of months to look back
+   * @returns Promise<MarketDataPoint[]>
+   */
+  async getCafefMarketDataForLastMonths(symbol: string, months: number): Promise<MarketDataPoint[]> {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(endDate.getMonth() - months);
+
+    return this.getCafefMarketDataForDateRange(symbol, startDate, endDate);
+  }
+
+  /**
+   * Calculate market returns for benchmark comparison
+   * @param symbol - Market symbol
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @returns Promise<Array<{date: string, return: number}>>
+   */
+  async getCafefMarketReturns(
+    symbol: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{date: string, return: number}>> {
+    try {
+      const marketData = await this.getCafefMarketDataForDateRange(symbol, startDate, endDate);
+
+      if (marketData.length < 2) {
+        this.logger.warn(`Insufficient ${symbol} data for return calculation`);
+        return [];
+      }
+
+      // Sort by date
+      const sortedData = marketData.sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      const returns = [];
+      const basePrice = sortedData[0].closePrice;
+
+      for (let i = 0; i < sortedData.length; i++) {
+        const currentPrice = sortedData[i].closePrice;
+        const returnPercent = ((currentPrice - basePrice) / basePrice) * 100;
+
+        returns.push({
+          date: sortedData[i].date,
+          return: Number(returnPercent.toFixed(4))
+        });
+      }
+
+      this.logger.log(`Calculated ${symbol} returns for ${returns.length} dates`);
+      return returns;
+    } catch (error) {
+      this.logger.error(`Error calculating ${symbol} returns: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Get VNIndex returns for benchmark comparison (convenience method)
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @returns Promise<Array<{date: string, return: number}>>
+   */
+  async getVNIndexReturns(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{date: string, return: number}>> {
+    return this.getCafefMarketReturns('VNIndex', startDate, endDate);
+  }
+
+  /**
+   * Transform CAFEF API data to our format
+   * @param item - Raw data from CAFEF API
+   * @returns MarketDataPoint
+   */
+  private transformCafefData(item: any): MarketDataPoint {
+    // Parse change string (e.g., "1.35(0.08 %)")
+    const changeMatch = item.ThayDoi.match(/(-?\d+\.?\d*)\s*\((-?\d+\.?\d*)\s*%\)/);
+    const change = changeMatch ? parseFloat(changeMatch[1]) : 0;
+    const changePercent = changeMatch ? parseFloat(changeMatch[2]) : 0;
+
+    return {
+      date: this.parseVietnameseDate(item.Ngay),
+      closePrice: item.GiaDongCua,
+      change: change,
+      changePercent: changePercent,
+      volume: item.KhoiLuongKhopLenh || 0,
+      value: item.GiaTriKhopLenh || 0
+    };
+  }
+
+  /**
+   * Parse Vietnamese date format (DD/MM/YYYY) to ISO format
+   * @param dateStr - Date string in DD/MM/YYYY format
+   * @returns ISO date string
+   */
+  private parseVietnameseDate(dateStr: string): string {
+    const [day, month, year] = dateStr.split('/');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toISOString().split('T')[0];
+  }
+
+  /**
+   * Format date for CAFEF API (MM/DD/YYYY)
+   * @param date - Date object
+   * @returns Formatted date string
+   */
+  private formatDateForCafefAPI(date: Date): string {
+    return format(date, 'MM/dd/yyyy');
   }
 }

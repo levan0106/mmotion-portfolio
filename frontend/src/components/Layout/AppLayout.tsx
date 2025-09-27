@@ -32,7 +32,6 @@ import {
   Inventory as AssetIcon,
   Public as GlobalAssetIcon,
   CameraAlt as SnapshotIcon,
-  TrendingUp as AnalyticsIcon,
   Settings as SettingsIcon,
   Assessment as ReportsIcon,
   Notifications as NotificationsIcon,
