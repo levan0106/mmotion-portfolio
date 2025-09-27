@@ -506,6 +506,52 @@ erDiagram
 - **Code Quality**: Clean, maintainable code with proper TypeScript interfaces - **COMPLETED**
 - **Production Ready**: Fully tested compact mode implementation across all dashboard components - **COMPLETED**
 
+## MarketDataService Architecture Patterns - **IMPLEMENTED** ✅
+
+### Service Refactoring Patterns - **COMPLETED**
+- **Method Naming Convention**: Generic, provider-agnostic method names - **COMPLETED**
+  - ✅ **Interface Renaming**: `CafefApiResponse` → `MarketDataApiResponse`
+  - ✅ **Method Renaming**: All Cafef-specific methods renamed to generic market data methods
+  - ✅ **User Refinements**: Additional method name improvements for better clarity
+    - `getMarketReturns()` → `getMarketDataReturns()` (more specific naming)
+    - `getIndexReturns()` → `getDataReturnsHistoryForBenchmark()` (more descriptive naming)
+  - ✅ **Provider Agnostic**: Methods work with any market data provider, not just Cafef
+  - ✅ **Future-Proof**: Easy to switch providers without changing method names
+
+### Code Duplication Elimination Patterns - **COMPLETED**
+- **Helper Method Pattern**: Extract common logic into reusable helper methods - **COMPLETED**
+  - ✅ **Price Calculation Helper**: `calculatePriceChange(oldPrice, newPrice)` for consistent price change calculations
+  - ✅ **MarketPrice Creation Helper**: `createMarketPrice(symbol, price, previousPrice?)` for consistent object creation
+  - ✅ **Generic Data Update Helper**: `updatePricesFromDataArray<T>()` for updating prices from any data array
+  - ✅ **Return Calculation Helper**: `calculateReturnPercentage(currentPrice, basePrice)` for return calculations
+  - ✅ **Data Transformation Helper**: `transformMarketData(item)` for consistent API data transformation
+  - ✅ **Date Parsing Helper**: `parseVietnameseDate(dateStr)` for Vietnamese date format parsing
+  - ✅ **Date Formatting Helper**: `formatDateForMarketAPI(date)` for market API date formatting
+  - ✅ **DRY Principle**: Eliminated all duplicate logic across the service
+
+### Production-Ready Architecture - **COMPLETED**
+- **Real Data Only**: Service only uses external API data, no mock fallbacks - **COMPLETED**
+  - ✅ **No Mock Data**: Completely removed all mock data, base prices, and simulation logic
+  - ✅ **Fail Fast Pattern**: Service throws errors when external APIs fail instead of falling back to mock data
+  - ✅ **Clear Error Handling**: Specific error messages for debugging and monitoring
+  - ✅ **Exception Propagation**: Errors properly bubble up to calling services
+  - ✅ **Production Focus**: Service designed for production use with real market data
+
+### API Cleanliness Patterns - **COMPLETED**
+- **Testing Endpoint Removal**: Removed all simulation and testing endpoints - **COMPLETED**
+  - ✅ **Removed Simulation Endpoints**: `POST /simulate/:symbol` endpoint removed
+  - ✅ **Removed Mock History Endpoints**: `GET /history/:symbol` endpoint removed
+  - ✅ **Removed Reset Endpoints**: `POST /reset` endpoint removed
+  - ✅ **Production-Only API**: API only exposes production functionality
+  - ✅ **Clean Interface**: Simplified service interface focused on real market data
+
+### Code Quality Patterns - **COMPLETED**
+- **Single Responsibility**: Each helper method has one clear purpose - **COMPLETED**
+- **Type Safety**: Generic helper methods with proper TypeScript typing - **COMPLETED**
+- **Maintainability**: Changes to logic only need to be made in one place - **COMPLETED**
+- **Testability**: Helper methods can be tested independently - **COMPLETED**
+- **Reusability**: Helper methods can be reused across different data sources - **COMPLETED**
+
 ## Scalability Considerations
 ### Environments Strategy - **IMPLEMENTED WITH DOCKER** ✅
 - **Local (Dev)**: ✅ **DOCKER-BASED DEVELOPMENT** - Complete containerized setup

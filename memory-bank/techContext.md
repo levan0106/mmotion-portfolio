@@ -308,6 +308,42 @@ VNDIRECT_API_URL=https://api.vndirect.com.vn
 - **Vietcombank**: Exchange rates (VietcombankAPIClient - Task 8)
 - **Manual Input**: Fallback cho missing data (PriceInputForm - Task 33)
 
+## MarketDataService Refactoring - **COMPLETED** ✅
+### Service Architecture Improvements - **COMPLETED**
+- **Generic Method Naming**: Provider-agnostic method names for easy provider switching - **COMPLETED**
+  - ✅ **Method Renaming**: All Cafef-specific methods renamed to generic market data methods
+  - ✅ **Interface Updates**: `CafefApiResponse` → `MarketDataApiResponse`
+  - ✅ **User Refinements**: Additional method name improvements for better clarity
+    - `getMarketReturns()` → `getMarketDataReturns()` (more specific naming)
+    - `getIndexReturns()` → `getDataReturnsHistoryForBenchmark()` (more descriptive naming)
+  - ✅ **Provider Agnostic**: Methods work with any market data provider
+  - ✅ **Future-Proof**: Easy to switch providers without changing method names
+
+### Code Quality Improvements - **COMPLETED**
+- **DRY Principle Implementation**: Eliminated code duplication through helper methods - **COMPLETED**
+  - ✅ **Helper Methods**: Created reusable helper methods for common operations
+  - ✅ **Price Calculations**: `calculatePriceChange()` for consistent price change calculations
+  - ✅ **Object Creation**: `createMarketPrice()` for consistent MarketPrice object creation
+  - ✅ **Generic Updates**: `updatePricesFromDataArray<T>()` for updating prices from any data array
+  - ✅ **Return Calculations**: `calculateReturnPercentage()` for return percentage calculations
+  - ✅ **Data Transformation**: `transformMarketData()` for consistent API data transformation
+  - ✅ **Date Parsing**: `parseVietnameseDate()` for Vietnamese date format parsing
+  - ✅ **Date Formatting**: `formatDateForMarketAPI()` for market API date formatting
+
+### Production Readiness - **COMPLETED**
+- **Real Data Only**: Removed all mock data and fallback logic - **COMPLETED**
+  - ✅ **Mock Data Removal**: Completely removed all mock data, base prices, and simulation logic
+  - ✅ **Fail Fast Pattern**: Service throws errors when external APIs fail
+  - ✅ **Clear Error Handling**: Specific error messages for debugging and monitoring
+  - ✅ **Production Focus**: Service designed for production use with real market data
+
+### API Cleanliness - **COMPLETED**
+- **Testing Endpoint Removal**: Removed all simulation and testing endpoints - **COMPLETED**
+  - ✅ **Removed Simulation Endpoints**: `POST /simulate/:symbol` endpoint removed
+  - ✅ **Removed Mock History Endpoints**: `GET /history/:symbol` endpoint removed
+  - ✅ **Removed Reset Endpoints**: `POST /reset` endpoint removed
+  - ✅ **Production-Only API**: API only exposes production functionality
+
 ### Third-party Services - **Tasks 6-9, 29-38 in Market Data Module**
 - **Email Service**: SendGrid/AWS SES cho notifications (AlertManager - Task 13)
 - **File Storage**: AWS S3 cho document storage (Future implementation)

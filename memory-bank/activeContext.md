@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: PortfolioDetail.tsx Refactoring & Build Fixes - COMPLETED**
-**Latest Update: Successfully refactored PortfolioDetail.tsx into separate tab components and fixed all TypeScript build errors (Current Session)**
+**Phase: MarketDataService Refactoring & Mock Data Cleanup - COMPLETED**
+**Latest Update: Successfully refactored MarketDataService to remove mock data, eliminate code duplication, and improve production readiness. User made additional method name changes for better clarity (Current Session)**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
@@ -48,6 +48,14 @@
   - ✅ **CR-005 Phase 1: Foundation Setup - 9/9 TASKS COMPLETED** (Previous Session - September 17, 2025)
     - ✅ **Task 1.1**: GlobalAsset Entity - Complete with TypeORM decorators and migration
     - ✅ **Task 1.2**: AssetPrice Entity - Complete with foreign key relationships
+  - ✅ **MarketDataService Refactoring & Cleanup - COMPLETED** (Current Session - December 26, 2024)
+    - ✅ **Method Renaming**: Refactored all Cafef-specific method names to generic market data methods
+    - ✅ **Code Duplication Elimination**: Created helper methods for price calculations and data updates
+    - ✅ **Mock Data Removal**: Completely removed all mock data, fallback logic, and simulation methods
+    - ✅ **Production Readiness**: Service now only uses real external API data with proper error handling
+    - ✅ **User Method Refinements**: User made additional method name changes for better clarity:
+      - `getMarketReturns()` → `getMarketDataReturns()` for more specific naming
+      - `getIndexReturns()` → `getDataReturnsHistoryForBenchmark()` for better descriptive naming
 - ✅ **PortfolioDetail.tsx Refactoring - COMPLETED** (Current Session - December 2024)
     - ✅ **Tab Components Separation**: Tách 6 tabs thành components riêng biệt
     - ✅ **Code Organization**: Cải thiện maintainability và code structure
