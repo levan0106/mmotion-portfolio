@@ -41,7 +41,7 @@ export class InvalidPriceValueException extends AssetPriceException {
  */
 export class InvalidPriceTypeException extends AssetPriceException {
   constructor(priceType: string) {
-    super(`Invalid price type: ${priceType}. Must be one of: MANUAL, MARKET_DATA, EXTERNAL, CALCULATED`, HttpStatus.BAD_REQUEST);
+    super(`Invalid price type: ${priceType}. Must be one of: MANUAL, EXTERNAL`, HttpStatus.BAD_REQUEST);
   }
 }
 
@@ -50,7 +50,7 @@ export class InvalidPriceTypeException extends AssetPriceException {
  */
 export class InvalidPriceSourceException extends AssetPriceException {
   constructor(priceSource: string) {
-    super(`Invalid price source: ${priceSource}. Must be one of: USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED`, HttpStatus.BAD_REQUEST);
+    super(`Invalid price source: ${priceSource}. Must be one of: USER_INPUT, EXTERNAL_API`, HttpStatus.BAD_REQUEST);
   }
 }
 

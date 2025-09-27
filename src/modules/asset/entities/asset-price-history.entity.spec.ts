@@ -40,7 +40,7 @@ describe('AssetPriceHistory Entity', () => {
       assetPriceHistory.assetId = 'asset-id';
       assetPriceHistory.price = 100.50;
       assetPriceHistory.priceType = PriceType.MANUAL;
-      assetPriceHistory.priceSource = PriceSource.USER;
+      assetPriceHistory.priceSource = PriceSource.USER_INPUT;
       assetPriceHistory.changeReason = 'Manual update';
       assetPriceHistory.createdAt = new Date();
 
@@ -49,7 +49,7 @@ describe('AssetPriceHistory Entity', () => {
       expect(assetPriceHistory.assetId).toBe('asset-id');
       expect(assetPriceHistory.price).toBe(100.50);
       expect(assetPriceHistory.priceType).toBe(PriceType.MANUAL);
-      expect(assetPriceHistory.priceSource).toBe(PriceSource.USER);
+      expect(assetPriceHistory.priceSource).toBe(PriceSource.USER_INPUT);
       expect(assetPriceHistory.changeReason).toBe('Manual update');
     });
 
@@ -95,7 +95,7 @@ describe('AssetPriceHistory Entity', () => {
       });
 
       it('should return false for USER source', () => {
-        assetPriceHistory.priceSource = PriceSource.USER;
+        assetPriceHistory.priceSource = PriceSource.USER_INPUT;
         expect(assetPriceHistory.isMarketDataChange()).toBe(false);
       });
 
@@ -107,7 +107,7 @@ describe('AssetPriceHistory Entity', () => {
 
     describe('isManualChange', () => {
       it('should return true for USER source', () => {
-        assetPriceHistory.priceSource = PriceSource.USER;
+        assetPriceHistory.priceSource = PriceSource.USER_INPUT;
         expect(assetPriceHistory.isManualChange()).toBe(true);
       });
 
@@ -138,7 +138,7 @@ describe('AssetPriceHistory Entity', () => {
 
       it('should return default reason when changeReason is null', () => {
         assetPriceHistory.changeReason = null;
-        assetPriceHistory.priceSource = PriceSource.USER;
+        assetPriceHistory.priceSource = PriceSource.USER_INPUT;
         
         const description = assetPriceHistory.getChangeDescription();
         expect(description).toBe('No reason provided (user)');
@@ -222,8 +222,8 @@ describe('AssetPriceHistory Entity', () => {
     it('should accept valid price sources', () => {
       const assetPriceHistory = new AssetPriceHistory();
       
-      assetPriceHistory.priceSource = PriceSource.USER;
-      expect(assetPriceHistory.priceSource).toBe(PriceSource.USER);
+      assetPriceHistory.priceSource = PriceSource.USER_INPUT;
+      expect(assetPriceHistory.priceSource).toBe(PriceSource.USER_INPUT);
       
       assetPriceHistory.priceSource = PriceSource.MARKET_DATA_SERVICE;
       expect(assetPriceHistory.priceSource).toBe(PriceSource.MARKET_DATA_SERVICE);

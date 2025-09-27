@@ -29,30 +29,30 @@ export class UpdateAssetPriceDto {
   currentPrice?: number;
 
   /**
-   * Type of the price (MANUAL, MARKET_DATA, EXTERNAL, CALCULATED).
+   * Type of the price (MANUAL, EXTERNAL).
    */
   @ApiPropertyOptional({
     description: 'Type of the price',
     enum: PriceType,
-    example: PriceType.MARKET_DATA,
+    example: PriceType.EXTERNAL,
   })
   @IsOptional()
   @IsEnum(PriceType, {
-    message: 'Price type must be one of: MANUAL, MARKET_DATA, EXTERNAL, CALCULATED',
+    message: 'Price type must be one of: MANUAL, EXTERNAL',
   })
   priceType?: PriceType;
 
   /**
-   * Source of the price (USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED).
+   * Source of the price (USER_INPUT, EXTERNAL_API).
    */
   @ApiPropertyOptional({
     description: 'Source of the price',
     enum: PriceSource,
-    example: PriceSource.MARKET_DATA_SERVICE,
+    example: PriceSource.EXTERNAL_API,
   })
   @IsOptional()
   @IsEnum(PriceSource, {
-    message: 'Price source must be one of: USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED',
+    message: 'Price source must be one of: USER_INPUT, EXTERNAL_API',
   })
   priceSource?: PriceSource;
 

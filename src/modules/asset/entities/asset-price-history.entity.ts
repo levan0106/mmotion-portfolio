@@ -22,8 +22,8 @@ import { PriceType, PriceSource } from '../enums/price-type.enum';
 @Index('IDX_ASSET_PRICE_HISTORY_PRICE_TYPE', ['priceType'])
 @Index('IDX_ASSET_PRICE_HISTORY_PRICE_SOURCE', ['priceSource'])
 @Check('CHK_ASSET_PRICE_HISTORY_POSITIVE', 'price > 0')
-@Check('CHK_ASSET_PRICE_HISTORY_TYPE_VALID', 'price_type IN (\'MANUAL\', \'MARKET_DATA\', \'EXTERNAL\', \'CALCULATED\')')
-@Check('CHK_ASSET_PRICE_HISTORY_SOURCE_VALID', 'price_source IN (\'USER\', \'MARKET_DATA_SERVICE\', \'EXTERNAL_API\', \'CALCULATED\')')
+@Check('CHK_ASSET_PRICE_HISTORY_TYPE_VALID', 'price_type IN (\'MANUAL\', \'EXTERNAL\')')
+@Check('CHK_ASSET_PRICE_HISTORY_SOURCE_VALID', 'price_source IN (\'USER_INPUT\', \'EXTERNAL_API\')')
 export class AssetPriceHistory {
   @ApiProperty({
     description: 'Unique identifier for the price history record',
@@ -49,7 +49,7 @@ export class AssetPriceHistory {
   @ApiProperty({
     description: 'Type of the price (e.g., MANUAL, MARKET_DATA)',
     enum: PriceType,
-    example: PriceType.MARKET_DATA,
+    example: PriceType.EXTERNAL,
   })
   @Column({
     type: 'varchar',
@@ -60,9 +60,9 @@ export class AssetPriceHistory {
   priceType: string;
 
   @ApiProperty({
-    description: 'Source of the price (e.g., USER, MARKET_DATA_SERVICE)',
+    description: 'Source of the price (e.g., USER_INPUT, EXTERNAL_API)',
     enum: PriceSource,
-    example: PriceSource.MARKET_DATA_SERVICE,
+    example: PriceSource.EXTERNAL_API,
   })
   @Column({
     type: 'varchar',
@@ -109,7 +109,7 @@ export class AssetPriceHistory {
    * @returns True if market data, false otherwise
    */
   isMarketDataChange(): boolean {
-    return this.priceSource === 'MARKET_DATA_SERVICE' || this.priceSource === 'EXTERNAL_API';
+    return this.priceSource === 'EXTERNAL_API';
   }
 
   /**

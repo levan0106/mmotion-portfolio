@@ -5,14 +5,8 @@ export enum PriceType {
   /** Manual price set by user */
   MANUAL = 'MANUAL',
   
-  /** Price from market data API */
-  MARKET_DATA = 'MARKET_DATA',
-  
   /** Price from external data source */
-  EXTERNAL = 'EXTERNAL',
-  
-  /** Price calculated from other sources */
-  CALCULATED = 'CALCULATED'
+  EXTERNAL = 'EXTERNAL'
 }
 
 /**
@@ -20,14 +14,8 @@ export enum PriceType {
  */
 export enum PriceSource {
   /** User manually entered price */
-  USER = 'USER',
+  USER_INPUT = 'USER_INPUT',
   
-  /** Market data service */
-  MARKET_DATA_SERVICE = 'MARKET_DATA_SERVICE',
-  
-  /** External API (e.g., Yahoo Finance, Alpha Vantage) */
-  EXTERNAL_API = 'EXTERNAL_API',
-  
-  /** Calculated from other prices */
-  CALCULATED = 'CALCULATED'
+  /** External API (e.g., Yahoo Finance, Alpha Vantage, CAFEF, FMarket) */
+  EXTERNAL_API = 'EXTERNAL_API'
 }

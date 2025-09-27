@@ -278,7 +278,7 @@ describe('BasicPriceService', () => {
     const updateDto: UpdateAssetPriceDto = {
       currentPrice: 160000,
       priceType: PriceType.MANUAL,
-      priceSource: PriceSource.USER,
+      priceSource: PriceSource.USER_INPUT,
     };
 
     it('should update an asset price', async () => {

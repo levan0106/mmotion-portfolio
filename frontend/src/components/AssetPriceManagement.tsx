@@ -27,6 +27,7 @@ import {
   DialogContent,
   DialogActions,
   LinearProgress,
+  Pagination,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -42,7 +43,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useQueryClient } from 'react-query';
-import { usePriceHistory } from '../hooks/useAssetPrices';
+import { usePriceHistory } from '../hooks/usePriceHistory';
 
 // Types
 interface AssetPrice {
@@ -86,11 +87,11 @@ const validationSchema = yup.object({
   priceType: yup
     .string()
     .required('Price type is required')
-    .oneOf(['MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED'], 'Invalid price type'),
+    .oneOf(['MANUAL', 'EXTERNAL'], 'Invalid price type'),
   priceSource: yup
     .string()
     .required('Price source is required')
-    .oneOf(['USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED'], 'Invalid price source'),
+    .oneOf(['USER_INPUT', 'EXTERNAL_API'], 'Invalid price source'),
   changeReason: yup
     .string()
     .max(200, 'Change reason must be at most 200 characters'),
@@ -99,17 +100,13 @@ const validationSchema = yup.object({
 // Price types
 const PRICE_TYPES = [
   { value: 'MANUAL', label: 'Manual Entry', color: '#1976d2' },
-  { value: 'MARKET_DATA', label: 'Market Data', color: '#388e3c' },
   { value: 'EXTERNAL', label: 'External Source', color: '#f57c00' },
-  { value: 'CALCULATED', label: 'Calculated', color: '#7b1fa2' },
 ];
 
 // Price sources
 const PRICE_SOURCES = [
-  { value: 'USER', label: 'User Input', color: '#1976d2' },
-  { value: 'MARKET_DATA_SERVICE', label: 'Market Data Service', color: '#388e3c' },
+  { value: 'USER_INPUT', label: 'User Input', color: '#1976d2' },
   { value: 'EXTERNAL_API', label: 'External API', color: '#f57c00' },
-  { value: 'CALCULATED', label: 'Calculated', color: '#7b1fa2' },
 ];
 
 
@@ -122,18 +119,27 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
 }) => {
   const [tabValue, setTabValue] = useState(0);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const queryClient = useQueryClient();
   
-  // Use real API hook for price history
+  // Use new pagination-enabled hook for price history
   const { 
     data: priceHistoryData, 
     isLoading: historyLoading, 
     error: historyError,
-    refetch: refetchPriceHistory 
-  } = usePriceHistory(asset.id, {
-    limit: 50,
-    sortBy: 'createdAt',
-    sortOrder: 'DESC'
+    refetch: refetchPriceHistory,
+    goToPage,
+    totalPages,
+    totalRecords
+  } = usePriceHistory({
+    assetId: asset.id,
+    query: {
+      limit: pageSize,
+      offset: (currentPage - 1) * pageSize,
+      sortBy: 'createdAt',
+      sortOrder: 'DESC'
+    }
   });
   
   const priceHistory = priceHistoryData?.data || [];
@@ -148,7 +154,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
     defaultValues: {
       price: asset.assetPrice?.currentPrice || 0,
       priceType: asset.assetPrice?.priceType || 'MANUAL',
-      priceSource: asset.assetPrice?.priceSource || 'USER',
+      priceSource: asset.assetPrice?.priceSource || 'USER_INPUT',
       changeReason: '',
     },
   });
@@ -230,6 +236,17 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
       queryClient.invalidateQueries(['priceHistory', asset.id]);
       refetchPriceHistory();
     }
+  };
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    goToPage(page);
+  };
+
+  const handlePageSizeChange = (event: any) => {
+    const newPageSize = event.target.value as number;
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   const getPriceAge = (lastUpdate: string) => {
@@ -629,6 +646,62 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                         </TableBody>
                       </Table>
                     </TableContainer>
+                    
+                    {/* Pagination Controls */}
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      mt: 2, 
+                      mb: 1, 
+                      px: 2,
+                      py: 1,
+                      backgroundColor: 'grey.50',
+                      borderRadius: 1
+                    }}>
+                      {/* Page Info */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Showing {priceHistory.length} of {totalRecords || 0} records
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Page {currentPage} of {totalPages || 1}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Page Size Dropdown */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Rows per page:
+                        </Typography>
+                        <FormControl size="small" sx={{ minWidth: 80 }}>
+                          <Select
+                            value={pageSize}
+                            onChange={handlePageSizeChange}
+                            variant="outlined"
+                          >
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={20}>20</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Box>
+                    
+                    {/* Pagination Navigation */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 2 }}>
+                      <Pagination
+                        count={totalPages || 1}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        color="primary"
+                        size="small"
+                        showFirstButton
+                        showLastButton
+                        disabled={totalPages <= 1}
+                      />
+                    </Box>
                   </Card>
                 )}
               </Box>

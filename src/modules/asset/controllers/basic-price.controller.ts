@@ -71,15 +71,15 @@ export class BasicPriceController {
     name: 'priceType',
     required: false,
     description: 'Filter by price type',
-    enum: ['MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED'],
+    enum: ['MANUAL', 'EXTERNAL'],
     example: 'MARKET_DATA',
   })
   @ApiQuery({
     name: 'priceSource',
     required: false,
     description: 'Filter by price source',
-    enum: ['USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED'],
-    example: 'MARKET_DATA_SERVICE',
+    enum: ['USER_INPUT', 'EXTERNAL_API'],
+    example: 'EXTERNAL_API',
   })
   @ApiQuery({
     name: 'limit',
@@ -233,7 +233,7 @@ export class BasicPriceController {
           assetId: '550e8400-e29b-41d4-a716-446655440000',
           currentPrice: 152.30,
           priceType: 'MARKET_DATA',
-          priceSource: 'MARKET_DATA_SERVICE',
+          priceSource: 'EXTERNAL_API',
           lastPriceUpdate: '2024-01-15T10:30:00.000Z',
           metadata: { changeReason: 'Market data update' },
         },
@@ -451,15 +451,15 @@ export class BasicPriceController {
     name: 'priceType',
     required: false,
     description: 'Filter by price type',
-    enum: ['MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED'],
+    enum: ['MANUAL', 'EXTERNAL'],
     example: 'MARKET_DATA',
   })
   @ApiQuery({
     name: 'priceSource',
     required: false,
     description: 'Filter by price source',
-    enum: ['USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED'],
-    example: 'MARKET_DATA_SERVICE',
+    enum: ['USER_INPUT', 'EXTERNAL_API'],
+    example: 'EXTERNAL_API',
   })
   @ApiResponse({
     status: 200,
@@ -640,7 +640,7 @@ export class BasicPriceController {
             { assetId: '660f9511-f3c7-52e5-b827-667766551111', currentPrice: 75.25 },
           ],
           priceType: 'MARKET_DATA',
-          priceSource: 'MARKET_DATA_SERVICE',
+          priceSource: 'EXTERNAL_API',
           changeReason: 'End of day market data update',
         },
       },

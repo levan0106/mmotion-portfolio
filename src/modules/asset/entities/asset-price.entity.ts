@@ -36,8 +36,8 @@ export { PriceType, PriceSource };
 @Index('IDX_ASSET_PRICE_UPDATE', ['lastPriceUpdate'])
 @Unique('UQ_ASSET_PRICE_ASSET_ID', ['assetId'])
 @Check('CHK_ASSET_PRICE_POSITIVE', 'current_price > 0')
-@Check('CHK_ASSET_PRICE_TYPE_VALID', "price_type IN ('MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED')")
-@Check('CHK_ASSET_PRICE_SOURCE_VALID', "price_source IN ('USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED')")
+@Check('CHK_ASSET_PRICE_TYPE_VALID', "price_type IN ('MANUAL', 'EXTERNAL')")
+@Check('CHK_ASSET_PRICE_SOURCE_VALID', "price_source IN ('USER_INPUT', 'EXTERNAL_API')")
 export class AssetPrice {
   /**
    * Unique identifier for the asset price record.
@@ -83,12 +83,12 @@ export class AssetPrice {
   currentPrice: number;
 
   /**
-   * Type of the price (MANUAL, MARKET_DATA, EXTERNAL, CALCULATED).
+   * Type of the price (MANUAL, EXTERNAL).
    */
   @ApiProperty({
     description: 'Type of the price',
     enum: PriceType,
-    example: PriceType.MARKET_DATA,
+    example: PriceType.EXTERNAL,
   })
   @Column({ 
     type: 'varchar', 
@@ -100,12 +100,12 @@ export class AssetPrice {
   priceType: string;
 
   /**
-   * Source of the price (USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED).
+   * Source of the price (USER_INPUT, EXTERNAL_API).
    */
   @ApiProperty({
     description: 'Source of the price',
     enum: PriceSource,
-    example: PriceSource.MARKET_DATA_SERVICE,
+    example: PriceSource.EXTERNAL_API,
   })
   @Column({ 
     type: 'varchar', 

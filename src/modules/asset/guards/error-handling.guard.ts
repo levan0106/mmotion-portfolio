@@ -147,12 +147,12 @@ export class ErrorHandlingGuard implements CanActivate {
   }
 
   private isValidPriceType(priceType: string): boolean {
-    const validTypes = ['MANUAL', 'MARKET_DATA', 'EXTERNAL', 'CALCULATED'];
+    const validTypes = ['MANUAL', 'EXTERNAL'];
     return validTypes.includes(priceType);
   }
 
   private isValidPriceSource(priceSource: string): boolean {
-    const validSources = ['USER', 'MARKET_DATA_SERVICE', 'EXTERNAL_API', 'CALCULATED'];
+    const validSources = ['USER_INPUT', 'EXTERNAL_API'];
     return validSources.includes(priceSource);
   }
 

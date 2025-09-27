@@ -117,12 +117,18 @@ export class PriceHistoryService {
   }
 
   /**
-   * Get price history for a specific asset.
+   * Get price history for a specific asset with pagination info.
    * @param assetId - Asset ID
    * @param query - Query parameters
-   * @returns Array of price history records
+   * @returns Object with records and pagination info
    */
-  async getPriceHistory(assetId: string, query: PriceHistoryQueryDto = {}): Promise<AssetPriceHistory[]> {
+  async getPriceHistory(assetId: string, query: PriceHistoryQueryDto = {}): Promise<{
+    records: AssetPriceHistory[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     this.logger.log(`Getting price history for asset ${assetId}`);
 
     // Validate asset exists
@@ -155,24 +161,40 @@ export class PriceHistoryService {
       queryBuilder.andWhere('priceHistory.priceSource = :priceSource', { priceSource: query.priceSource });
     }
 
+    // Get total count first (without pagination)
+    const total = await queryBuilder.getCount();
+
     // Apply ordering
     const orderBy = query.sortBy || 'createdAt';
     const orderDirection = query.sortOrder || 'DESC';
     queryBuilder.orderBy(`priceHistory.${orderBy}`, orderDirection);
 
     // Apply pagination
+    const limit = query.limit || 10;
+    const offset = query.offset || 0;
+    
     if (query.limit) {
-      queryBuilder.limit(query.limit);
+      queryBuilder.limit(limit);
     }
 
     if (query.offset) {
-      queryBuilder.offset(query.offset);
+      queryBuilder.offset(offset);
     }
 
     const records = await queryBuilder.getMany();
 
-    this.logger.log(`Found ${records.length} price history records for asset ${assetId}`);
-    return records;
+    // Calculate pagination info
+    const page = Math.floor(offset / limit) + 1;
+    const totalPages = Math.ceil(total / limit);
+
+    this.logger.log(`Found ${records.length} price history records for asset ${assetId} (total: ${total})`);
+    return {
+      records,
+      total,
+      page,
+      limit,
+      totalPages
+    };
   }
 
   /**
@@ -189,12 +211,13 @@ export class PriceHistoryService {
   ): Promise<AssetPriceHistory[]> {
     this.logger.log(`Getting price history for asset ${assetId} from ${startDate} to ${endDate}`);
 
-    return this.getPriceHistory(assetId, {
+    const result = await this.getPriceHistory(assetId, {
       startDate,
       endDate,
       sortBy: 'createdAt',
       sortOrder: 'ASC',
     });
+    return result.records;
   }
 
   /**
@@ -206,11 +229,12 @@ export class PriceHistoryService {
   async getLatestPriceHistory(assetId: string, limit: number = 10): Promise<AssetPriceHistory[]> {
     this.logger.log(`Getting latest ${limit} price history records for asset ${assetId}`);
 
-    return this.getPriceHistory(assetId, {
+    const result = await this.getPriceHistory(assetId, {
       limit,
       sortBy: 'createdAt',
       sortOrder: 'DESC',
     });
+    return result.records;
   }
 
   /**
@@ -345,11 +369,12 @@ export class PriceHistoryService {
   async getPriceHistoryByType(assetId: string, priceType: string): Promise<AssetPriceHistory[]> {
     this.logger.log(`Getting price history for asset ${assetId} with type ${priceType}`);
 
-    return this.getPriceHistory(assetId, {
+    const result = await this.getPriceHistory(assetId, {
       priceType,
       sortBy: 'createdAt',
       sortOrder: 'DESC',
     });
+    return result.records;
   }
 
   /**
@@ -361,11 +386,12 @@ export class PriceHistoryService {
   async getPriceHistoryBySource(assetId: string, priceSource: string): Promise<AssetPriceHistory[]> {
     this.logger.log(`Getting price history for asset ${assetId} with source ${priceSource}`);
 
-    return this.getPriceHistory(assetId, {
+    const result = await this.getPriceHistory(assetId, {
       priceSource,
       sortBy: 'createdAt',
       sortOrder: 'DESC',
     });
+    return result.records;
   }
 
   /**

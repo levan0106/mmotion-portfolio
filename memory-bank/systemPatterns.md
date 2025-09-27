@@ -24,6 +24,13 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Price History System Patterns - **RECENTLY UPDATED**
+- **Price Multiplication Pattern**: Stock/ETF prices multiplied by 1000 for display consistency
+- **Asset Type Routing**: Different multiplication factors based on asset type (STOCK/ETF vs others)
+- **Default Page Size Pattern**: Consistent 10 records per page across backend and frontend
+- **Foreign Key Constraint Pattern**: Always delete child records before parent records
+- **Enum Cleanup Pattern**: Remove unused enum values with proper database migrations
+
 ### Frontend Component Architecture - **RECENTLY UPDATED**
 - **Component Separation Pattern**: Large components should be split into smaller, focused components for better maintainability
 - **Tab Component Pattern**: Each major functionality should have its own component with clear props interface

@@ -631,7 +631,7 @@ export class GlobalAssetService {
         assetId,
         currentPrice: price,
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         lastPriceUpdate: createdAt || new Date().toISOString(),
       };
       await this.basicPriceService.create(createDto);
@@ -662,7 +662,7 @@ export class GlobalAssetService {
         assetId,
         price: newPrice,
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         changeReason,
         createdAt: createdAt || new Date().toISOString(),
         metadata: {

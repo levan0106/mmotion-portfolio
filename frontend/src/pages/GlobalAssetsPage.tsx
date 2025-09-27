@@ -1,8 +1,9 @@
 import React from 'react';
-import { Container, Box, Paper, Typography } from '@mui/material';
+import { Container, Box, Paper, Typography, Stack } from '@mui/material';
 import GlobalAssetManagement from '../components/GlobalAssetManagement';
 import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
 import { UpdatePriceByDateButton } from '../components/AssetPrice';
+import { HistoricalPricesButton } from '../components/HistoricalPrices';
 import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
 import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
@@ -143,15 +144,27 @@ const GlobalAssetsPage: React.FC = () => {
           <Typography variant="h6" component="h2">
             Market Price Auto Sync
           </Typography>
-          <UpdatePriceByDateButton
-            onUpdateSuccess={(result: BulkUpdateResult) => {
-              console.log('Bulk update completed:', result);
-              // Refresh assets after successful update
-              handleRefresh();
-            }}
-            variant="outlined"
-            size="small"
-          />
+          <Stack direction="row" spacing={1}>
+            <UpdatePriceByDateButton
+              onUpdateSuccess={(result: BulkUpdateResult) => {
+                console.log('Bulk update completed:', result);
+                // Refresh assets after successful update
+                handleRefresh();
+              }}
+              variant="outlined"
+              size="small"
+            />
+            <HistoricalPricesButton
+              variant="button"
+              size="small"
+              color="secondary"
+              onSuccess={(result) => {
+                console.log('Historical prices update completed:', result);
+                // Refresh assets after successful update
+                handleRefresh();
+              }}
+            />
+          </Stack>
         </Box>
         <AutoSyncToggle
           onToggle={(enabled) => {

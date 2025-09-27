@@ -30,7 +30,7 @@ export class AssetPriceQueryDto {
   @ApiPropertyOptional({
     description: 'Filter by price type',
     enum: PriceType,
-    example: PriceType.MARKET_DATA,
+    example: PriceType.EXTERNAL,
   })
   @IsOptional()
   @IsEnum(PriceType)
@@ -42,7 +42,7 @@ export class AssetPriceQueryDto {
   @ApiPropertyOptional({
     description: 'Filter by price source',
     enum: PriceSource,
-    example: PriceSource.MARKET_DATA_SERVICE,
+    example: PriceSource.EXTERNAL_API,
   })
   @IsOptional()
   @IsEnum(PriceSource)
@@ -53,7 +53,7 @@ export class AssetPriceQueryDto {
    */
   @ApiPropertyOptional({
     description: 'Filter by multiple price types',
-    example: [PriceType.MARKET_DATA, PriceType.MANUAL],
+    example: [PriceType.EXTERNAL, PriceType.MANUAL],
     enum: PriceType,
     isArray: true,
   })
@@ -72,7 +72,7 @@ export class AssetPriceQueryDto {
    */
   @ApiPropertyOptional({
     description: 'Filter by multiple price sources',
-    example: [PriceSource.MARKET_DATA_SERVICE, PriceSource.USER],
+    example: [PriceSource.EXTERNAL_API, PriceSource.USER_INPUT],
     enum: PriceSource,
     isArray: true,
   })

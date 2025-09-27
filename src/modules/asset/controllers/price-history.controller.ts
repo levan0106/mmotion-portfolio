@@ -52,8 +52,8 @@ export class PriceHistoryController {
       properties: {
         assetId: { type: 'string', format: 'uuid', description: 'Asset ID' },
         price: { type: 'number', description: 'Price value' },
-        priceType: { type: 'string', description: 'Price type (MANUAL, MARKET_DATA, EXTERNAL, CALCULATED)' },
-        priceSource: { type: 'string', description: 'Price source (USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED)' },
+        priceType: { type: 'string', description: 'Price type (MANUAL, EXTERNAL)' },
+        priceSource: { type: 'string', description: 'Price source (USER_INPUT, EXTERNAL_API)' },
         changeReason: { type: 'string', description: 'Reason for price change' },
         metadata: { type: 'object', description: 'Additional metadata' },
       },
@@ -195,18 +195,14 @@ export class PriceHistoryController {
     @Param('assetId', ParseUUIDPipe) assetId: string,
     @Query(ValidationPipe) query: PriceHistoryQueryDto,
   ): Promise<{ data: AssetPriceHistory[]; total: number; page: number; limit: number; totalPages: number }> {
-    const records = await this.priceHistoryService.getPriceHistory(assetId, query);
-    const total = records.length;
-    const page = Math.floor((query.offset || 0) / (query.limit || 10)) + 1;
-    const limit = query.limit || 10;
-    const totalPages = Math.ceil(total / limit);
+    const result = await this.priceHistoryService.getPriceHistory(assetId, query);
     
     return {
-      data: records,
-      total,
-      page,
-      limit,
-      totalPages,
+      data: result.records,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     };
   }
 

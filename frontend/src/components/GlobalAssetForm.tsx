@@ -121,7 +121,7 @@ const NATION_CONFIG: NationConfig[] = [
       { code: 'HNX', name: 'Hanoi Stock Exchange' },
       { code: 'UPCOM', name: 'Unlisted Public Company Market' },
     ],
-    defaultPriceSource: 'MARKET_DATA_SERVICE',
+    defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
       STOCK: '^[A-Z]{3,4}$',
       BOND: '^[A-Z]{2,4}[0-9]{2,4}$',
@@ -147,7 +147,7 @@ const NATION_CONFIG: NationConfig[] = [
       { code: 'NASDAQ', name: 'NASDAQ' },
       { code: 'AMEX', name: 'American Stock Exchange' },
     ],
-    defaultPriceSource: 'MARKET_DATA_SERVICE',
+    defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
       STOCK: '^[A-Z]{1,5}$',
       BOND: '^[A-Z]{2,4}[0-9]{2,4}$',
@@ -172,7 +172,7 @@ const NATION_CONFIG: NationConfig[] = [
       { code: 'LSE', name: 'London Stock Exchange' },
       { code: 'AIM', name: 'Alternative Investment Market' },
     ],
-    defaultPriceSource: 'MARKET_DATA_SERVICE',
+    defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
       STOCK: '^[A-Z]{2,4}$',
       BOND: '^[A-Z]{2,4}[0-9]{2,4}$',

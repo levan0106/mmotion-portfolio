@@ -1387,7 +1387,7 @@ export class PortfolioAnalyticsController {
   ): Promise<Array<{date: string, return: number}>> {
     try {
       console.log(`Fetching real VNIndex data for benchmark comparison from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
-      const dataReturns = await this.marketDataService.getDataReturnsHistoryForBenchmark('VN30INDEX', startDate, endDate);
+      const dataReturns = await this.marketDataService.getMarketDataReturnsHistoryForBenchmarkFromAPI('VN30INDEX', 'STOCK', startDate, endDate);
       console.log(`Successfully fetched ${dataReturns.length} data return data points`);
       return dataReturns;
     } catch (error) {

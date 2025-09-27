@@ -127,7 +127,7 @@ export class AssetGlobalSyncService {
         assetId: globalAssetId,
         currentPrice: 1, // Default price is 1 for all asset types
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         lastPriceUpdate: new Date().toISOString(),
         metadata: {
           created_by: userId || 'asset_creation',

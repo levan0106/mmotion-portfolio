@@ -16,7 +16,7 @@ describe('BasicPriceController', () => {
     assetId: 'test-asset-id',
     currentPrice: 150.75,
     priceType: PriceType.MANUAL,
-    priceSource: PriceSource.USER,
+    priceSource: PriceSource.USER_INPUT,
     lastPriceUpdate: new Date(),
     metadata: null,
     createdAt: new Date(),
@@ -133,7 +133,7 @@ describe('BasicPriceController', () => {
         assetId: 'test-asset-id',
         currentPrice: 150.75,
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         lastPriceUpdate: new Date().toISOString(),
       };
 
@@ -150,7 +150,7 @@ describe('BasicPriceController', () => {
         assetId: 'test-asset-id',
         currentPrice: 150.75,
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         lastPriceUpdate: new Date().toISOString(),
       };
 
@@ -166,7 +166,7 @@ describe('BasicPriceController', () => {
         assetId: 'test-asset-id',
         currentPrice: -10, // Invalid negative price
         priceType: PriceType.MANUAL,
-        priceSource: PriceSource.USER,
+        priceSource: PriceSource.USER_INPUT,
         lastPriceUpdate: new Date().toISOString(),
       };
 

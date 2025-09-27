@@ -792,7 +792,7 @@ export class BasicPriceService {
         await this.updateByAssetId(assetId, {
           currentPrice: newPrice,
           priceType: PriceType.MANUAL,
-          priceSource: PriceSource.USER,
+          priceSource: PriceSource.USER_INPUT,
           metadata: {
             reason,
             targetDate,

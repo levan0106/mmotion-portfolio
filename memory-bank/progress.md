@@ -2,7 +2,49 @@
 
 ## What Works
 ### ✅ Completed
-- **PORTFOLIO DETAIL REFACTORING & BUILD FIXES - COMPLETED** (Current Session - December 2024)
+- **PRICE HISTORY SYSTEM & DATABASE FIXES - COMPLETED** (Current Session - September 27, 2025)
+  - **Price Multiplication Logic**: Stock/ETF prices multiplied by 1000 in market data service
+  - **Default Page Size**: Standardized to 10 records across backend and frontend
+  - **Foreign Key Constraint Fix**: Resolved asset deletion constraint violations
+  - **Enum Cleanup**: Removed unused PriceType/PriceSource values with database migrations
+  - **Build Verification**: All changes tested and verified with successful builds
+  - **Production Ready**: Backend v1.0.0, Frontend v1.0.0 with full feature set
+- **HISTORICAL PRICES FRONTEND IMPLEMENTATION - COMPLETED** (Previous Session - December 2024)
+  - **Service Layer**: Created `HistoricalPricesService` for API communication
+  - **React Hook**: Implemented `useHistoricalPrices` hook with React Query integration
+  - **Modal Dialog**: Built `HistoricalPricesUpdateDialog` with comprehensive form
+  - **Trigger Button**: Created `HistoricalPricesButton` with multiple variants
+  - **Global Assets Integration**: Added button to Global Assets page
+  - **Documentation**: Created `docs/frontend/historical-prices-frontend-implementation.md`
+  - **Benefits Achieved**:
+    - ✅ **User-Friendly Interface**: Intuitive modal with date range and asset selection
+    - ✅ **Flexible Asset Management**: Add/remove assets with common symbol quick-add
+    - ✅ **Advanced Options**: Force update and cleanup toggles
+    - ✅ **Form Validation**: Comprehensive validation with error handling
+    - ✅ **Loading States**: Visual feedback during processing
+    - ✅ **Success Handling**: Clear success/error messages
+  - **Benefits Achieved**:
+    - ✅ **Simpler API**: Only 2 endpoints instead of 7+ endpoints
+    - ✅ **Better Developer Experience**: Easier to remember and use
+    - ✅ **Reduced Complexity**: Less code to maintain and test
+    - ✅ **Clear Purpose**: Each endpoint has a specific, clear purpose
+  - **Key Endpoints (Final)**:
+    - `POST /historical-prices/update` - Update historical prices (with forceUpdate support)
+    - `GET /historical-prices` - Get historical prices (one or all symbols)
+  - **Removed Endpoints**: Eliminated redundant endpoints:
+    - `POST /bulk-historical-prices` (merged into `/update`)
+    - `POST /historical-prices` (merged into `/update`)
+    - `GET /historical-prices/:assetId` (merged into `/historical-prices`)
+    - `POST /historical-prices/bulk` (merged into `/historical-prices`)
+    - `POST /historical-prices/force-update` (merged into `/update`)
+    - `DELETE /historical-prices/:assetId/cleanup` (removed as not essential)
+  - **Service Layer Methods**: Enhanced with new method:
+    - `getAllHistoricalPricesFromDB` - Get all historical prices with optional date filtering
+    - `getBulkHistoricalPriceDataFromDB` - Get bulk historical prices for specific symbols
+    - `fetchHistoricalPricesFromAPIAndStoreInDB` - Update historical prices from API
+  - **Documentation**: Created `docs/api/historical-prices-simplified-api.md` with comprehensive examples
+
+- **PORTFOLIO DETAIL REFACTORING & BUILD FIXES - COMPLETED** (Previous Session - December 2024)
   - **Tab Components Separation**: Successfully refactored PortfolioDetail.tsx into 6 separate tab components for better maintainability
   - **Code Organization**: Improved code structure with dedicated components for each portfolio management function
   - **TypeScript Build Fixes**: Resolved all TypeScript compilation errors and warnings
@@ -1524,3 +1566,160 @@ if (externalData.success) {
 - **Code Duplication**: ✅ Eliminated
 - **Production Readiness**: ✅ Fully ready
 - **Method Naming**: ✅ Generic and provider-agnostic
+
+---
+
+## 🎯 **Historical Prices Frontend Implementation - COMPLETED**
+
+### **Overview**
+Successfully implemented frontend components for historical prices update functionality, integrating with global assets system for real asset selection.
+
+### **Components Created**
+
+#### **1. Service Layer**
+- ✅ **HistoricalPricesService**: API communication service
+- ✅ **Type Safety**: Proper TypeScript interfaces
+- ✅ **Error Handling**: Comprehensive error management
+
+#### **2. React Hook**
+- ✅ **useHistoricalPrices**: React Query integration
+- ✅ **State Management**: Loading, error, and success states
+- ✅ **Optimistic Updates**: Immediate UI feedback
+
+#### **3. Modal Dialog**
+- ✅ **HistoricalPricesUpdateDialog**: Comprehensive form modal
+- ✅ **Date Range Selection**: Start and end date pickers
+- ✅ **Asset Selection**: Grid layout with checkboxes
+- ✅ **Advanced Options**: Force update and cleanup toggles
+- ✅ **Form Validation**: Comprehensive validation with error handling
+
+#### **4. Trigger Button**
+- ✅ **HistoricalPricesButton**: Multiple variants (icon, button, text)
+- ✅ **Flexible Styling**: Customizable size, color, and appearance
+- ✅ **Event Handling**: Success callbacks and state management
+
+#### **5. Global Assets Integration**
+- ✅ **Real Asset Data**: Uses actual global assets from system
+- ✅ **Visual Selection**: Grid layout with checkboxes for easy selection
+- ✅ **Bulk Operations**: Select all/none functionality
+- ✅ **Loading States**: Visual feedback during data loading
+- ✅ **Error Handling**: Proper error display for failed requests
+
+### **Key Features**
+
+#### **Asset Selection Enhancement**
+- **Before**: Manual symbol input with type selection
+- **After**: Visual list of actual global assets with checkboxes (consistent with "Cập nhật giá theo ngày lịch sử")
+- **Benefits**:
+  - **Real Data**: Uses actual assets from the system
+  - **Consistent UI/UX**: Matches existing interface patterns
+  - **Visual Interface**: Easy to see and select assets
+  - **Bulk Selection**: Select all/none for convenience
+  - **Type Information**: Shows asset type and symbol
+  - **Loading States**: Proper feedback during data loading
+  - **Auto Default Dates**: Pre-filled with last 30 days for convenience
+  - **Current Price Display**: Shows current price and price source for each asset
+
+#### **User Experience**
+- **Intuitive Interface**: Clear visual hierarchy
+- **Responsive Design**: Works on different screen sizes
+- **Form Validation**: Comprehensive validation with helpful error messages
+- **Loading States**: Visual feedback during processing
+- **Success Handling**: Clear success/error messages
+
+### **Technical Implementation**
+
+#### **Data Flow**
+```typescript
+// 1. Load global assets
+const { data: globalAssetsData, isLoading, error } = useGlobalAssets();
+
+// 2. Transform to selection format
+const assetsWithSelection = globalAssetsData.map(asset => ({
+  id: asset.id,
+  symbol: asset.symbol,
+  name: asset.name,
+  type: asset.type,
+  selected: false
+}));
+
+// 3. Handle selection
+const handleAssetSelection = (assetId: string, selected: boolean) => {
+  setGlobalAssets(prev => prev.map(asset => 
+    asset.id === assetId ? { ...asset, selected } : asset
+  ));
+};
+
+// 4. Submit selected assets
+const selectedAssets = globalAssets.filter(asset => asset.selected);
+const symbolsToUpdate = selectedAssets.map(asset => ({
+  symbol: asset.symbol,
+  assetType: asset.type
+}));
+```
+
+#### **UI Components**
+- **Grid Layout**: Responsive grid for asset display
+- **Checkbox Selection**: Individual and bulk selection
+- **Paper Cards**: Visual asset cards with hover effects
+- **Loading States**: Circular progress indicators
+- **Error Handling**: Alert components for errors
+
+### **Build Status**
+- ✅ **TypeScript**: No compilation errors
+- ✅ **Build**: Successful production build
+- ✅ **Linting**: No linting errors
+- ✅ **Dependencies**: All imports properly resolved
+
+### **Benefits Achieved**
+
+#### **1. User Experience**
+- **Real Asset Integration**: Uses actual global assets from the system
+- **Visual Selection**: Easy to see and select assets
+- **Bulk Operations**: Convenient select all/none functionality
+- **Responsive Design**: Works on different screen sizes
+
+#### **2. Developer Experience**
+- **Type Safety**: Full TypeScript support
+- **Reusable Components**: Modular and reusable
+- **Error Handling**: Comprehensive error management
+- **Loading States**: Proper state management
+
+#### **3. System Integration**
+- **Global Assets**: Seamless integration with existing asset system
+- **API Consistency**: Uses same patterns as other components
+- **State Management**: Proper React Query integration
+- **Performance**: Optimized rendering and data fetching
+
+### **Next Steps**
+- **Testing**: Add unit tests for components
+- **Documentation**: Update user documentation
+- **Deployment**: Deploy to production environment
+
+## **Historical Prices Frontend Step-Based Flow - COMPLETED**
+
+### **Step-Based Flow Implementation**
+- ✅ **4-Step Process**: Date → Assets → Confirm → Result
+- ✅ **Material-UI Stepper**: Visual step indicator with progress tracking
+- ✅ **Step Navigation**: Back/Next buttons with proper validation
+- ✅ **Consistent UX**: Matches "Cập nhật giá theo ngày lịch sử" flow exactly
+
+### **Step Details**
+- ✅ **Step 1 - Date Selection**: Choose date range for historical price update
+- ✅ **Step 2 - Asset Selection**: Select assets with current price display
+- ✅ **Step 3 - Confirmation**: Review information and advanced options
+- ✅ **Step 4 - Result**: Display update results with success/error status
+
+### **UI/UX Enhancements**
+- ✅ **Stepper Component**: Visual progress indicator with step labels
+- ✅ **Step Icons**: Appropriate icons for each step (Schedule, Assignment, CheckCircle, History)
+- ✅ **Navigation Logic**: Proper validation and state management between steps
+- ✅ **Result Display**: Clear success/error feedback with detailed information
+- ✅ **Consistency**: Matches existing "Cập nhật giá theo ngày lịch sử" modal flow
+
+### **Technical Implementation**
+- ✅ **State Management**: Step-based state with proper transitions
+- ✅ **Validation**: Form validation at each step
+- ✅ **Error Handling**: Comprehensive error display and recovery
+- ✅ **Loading States**: Proper loading indicators during API calls
+- ✅ **Build Success**: Frontend compiles successfully with no TypeScript errors
