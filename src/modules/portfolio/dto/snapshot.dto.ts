@@ -224,6 +224,9 @@ export class SnapshotResponseDto {
   @ApiProperty({ description: 'Asset symbol', example: 'HPG' })
   assetSymbol: string;
 
+  @ApiProperty({ description: 'Asset type', example: 'STOCK' })
+  assetType: string;
+
   @ApiProperty({ description: 'Snapshot date', example: '2024-12-19' })
   snapshotDate: string;
 

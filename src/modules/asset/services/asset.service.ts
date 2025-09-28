@@ -590,7 +590,7 @@ export class AssetService {
     let trades: any[];
     if (portfolioId) {
       // Filter by portfolio
-      trades = await this.assetRepository.getTradesForAssetByPortfolio(assetId, portfolioId);
+      trades = await this.assetRepository.getAssetTradesByPortfolioFinal(assetId, portfolioId);
     } else {
       // No filtering - get all trades (when no portfolioId specified)
       trades = await this.assetRepository.getTradesForAsset(assetId);

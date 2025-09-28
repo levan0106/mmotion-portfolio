@@ -162,12 +162,16 @@ export class AssetRepository implements IAssetRepository {
    * @returns Array of assets
    */
   async findByPortfolioId(portfolioId: string): Promise<Asset[]> {
+    // FIXED: Get all assets that have trades in the portfolio with trade date
+    // This method is specifically for assets that have been traded in the portfolio
     return await this.assetRepository
       .createQueryBuilder('asset')
-      .leftJoin('asset.trades', 'trade')
+      .leftJoinAndSelect('asset.trades', 'trade')
       .where('trade.portfolioId = :portfolioId', { portfolioId })
+      .distinct(true)
       .getMany();
   }
+
 
 
   /**
@@ -670,13 +674,21 @@ export class AssetRepository implements IAssetRepository {
    * Get all trades for a specific asset and portfolio
    * @param assetId - Asset ID
    * @param portfolioId - Portfolio ID
+   * @param snapshotDate - Optional snapshot date to filter trades
    * @returns Promise<Trade[]> - Array of trades
    */
-  async getTradesForAssetByPortfolio(assetId: string, portfolioId: string): Promise<Trade[]> {
-    return await this.tradeRepository
+  async getAssetTradesByPortfolioFinal(assetId: string, portfolioId: string, snapshotDate?: Date): Promise<Trade[]> {
+    const queryBuilder = this.tradeRepository
       .createQueryBuilder('trade')
       .where('trade.assetId = :assetId', { assetId })
-      .andWhere('trade.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('trade.portfolioId = :portfolioId', { portfolioId });
+
+    // Filter trades by snapshot date if provided
+    if (snapshotDate) {
+      queryBuilder.andWhere('DATE(trade.tradeDate) <= DATE(:snapshotDate)', { snapshotDate });
+    }
+
+    return await queryBuilder
       .orderBy('trade.tradeDate', 'ASC')
       .addOrderBy('trade.createdAt', 'ASC')
       .getMany();

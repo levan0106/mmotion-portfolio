@@ -13,15 +13,21 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { formatPercentage, formatDate } from '../../../../utils/format';
+import { PaginationControls } from '../../../Common/PaginationControls';
+import { PaginatedResponse } from '../../../../hooks/usePagination';
 
 interface SnapshotAssetGroupPerformanceTabProps {
-  assetGroupPerformanceData: any[];
+  assetGroupPerformanceData: PaginatedResponse<any>;
   performanceLoading: boolean;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
 const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTabProps> = ({
   assetGroupPerformanceData,
   performanceLoading,
+  onPageChange,
+  onLimitChange,
 }) => {
   return (
     <Box>
@@ -35,9 +41,9 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
         </Box>
       )}
       
-      {assetGroupPerformanceData.length > 0 ? (
+      {assetGroupPerformanceData.data.length > 0 ? (
         <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider', overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 1500 }}>
+          <Table size="small" sx={{ minWidth: 1000 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }}>Date</TableCell>
@@ -50,12 +56,6 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 6M</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1Y</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR YTD</TableCell>
-                {/* MWR Metrics */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">MWR 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">MWR 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">MWR 6M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">MWR 1Y</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">MWR YTD</TableCell>
                 {/* IRR Metrics */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 1M</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 3M</TableCell>
@@ -68,12 +68,12 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 6M</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 1Y</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha YTD</TableCell>
-                {/* Beta Metrics */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 6M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1Y</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta YTD</TableCell>
+        {/* Beta Metrics - REMOVED due to calculation issues */}
+        {/* <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1M</TableCell>
+        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 3M</TableCell>
+        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 6M</TableCell>
+        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1Y</TableCell>
+        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta YTD</TableCell> */}
                 {/* Sharpe Ratio */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Sharpe 1M</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Sharpe 3M</TableCell>
@@ -95,7 +95,7 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
               </TableRow>
             </TableHead>
             <TableBody>
-              {assetGroupPerformanceData
+              {assetGroupPerformanceData.data
                 .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime())
                 .map((snapshot) => (
                 <TableRow key={snapshot.id} hover>
@@ -178,57 +178,6 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                     >
                       {snapshot.groupTWRYTD && Number(snapshot.groupTWRYTD) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.groupTWRYTD)}
-                    </Typography>
-                  </TableCell>
-                  {/* MWR Values */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.groupMWR1M && Number(snapshot.groupMWR1M) >= 0 ? 'success.main' : 'error.main'}
-                    >
-                      {snapshot.groupMWR1M && Number(snapshot.groupMWR1M) >= 0 ? '+' : ''}
-                      {formatPercentage(snapshot.groupMWR1M)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.groupMWR3M && Number(snapshot.groupMWR3M) >= 0 ? 'success.main' : 'error.main'}
-                    >
-                      {snapshot.groupMWR3M && Number(snapshot.groupMWR3M) >= 0 ? '+' : ''}
-                      {formatPercentage(snapshot.groupMWR3M)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.groupMWR6M && Number(snapshot.groupMWR6M) >= 0 ? 'success.main' : 'error.main'}
-                    >
-                      {snapshot.groupMWR6M && Number(snapshot.groupMWR6M) >= 0 ? '+' : ''}
-                      {formatPercentage(snapshot.groupMWR6M)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.groupMWR1Y && Number(snapshot.groupMWR1Y) >= 0 ? 'success.main' : 'error.main'}
-                    >
-                      {snapshot.groupMWR1Y && Number(snapshot.groupMWR1Y) >= 0 ? '+' : ''}
-                      {formatPercentage(snapshot.groupMWR1Y)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.groupMWRYTD && Number(snapshot.groupMWRYTD) >= 0 ? 'success.main' : 'error.main'}
-                    >
-                      {snapshot.groupMWRYTD && Number(snapshot.groupMWRYTD) >= 0 ? '+' : ''}
-                      {formatPercentage(snapshot.groupMWRYTD)}
                     </Typography>
                   </TableCell>
                   {/* IRR Values */}
@@ -334,7 +283,8 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                     </Typography>
                   </TableCell>
                   {/* Beta Values */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
+                  {/* Beta Metrics - REMOVED due to calculation issues */}
+                  {/* <TableCell align="right" sx={{ py: 0.5 }}>
                     <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.groupBeta1M) || 0).toFixed(2)}
                     </Typography>
@@ -358,7 +308,7 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                     <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.groupBetaYTD) || 0).toFixed(2)}
                     </Typography>
-                  </TableCell>
+                  </TableCell> */}
                   {/* Sharpe Ratio Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
                     <Typography 
@@ -483,6 +433,21 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
             No asset group performance snapshots available
           </Typography>
         </Box>
+      )}
+      
+      {/* Pagination Controls */}
+      {assetGroupPerformanceData.data.length > 0 && (
+        <PaginationControls
+          page={assetGroupPerformanceData.page}
+          limit={assetGroupPerformanceData.limit}
+          total={assetGroupPerformanceData.total}
+          totalPages={assetGroupPerformanceData.totalPages}
+          hasNext={assetGroupPerformanceData.hasNext}
+          hasPrev={assetGroupPerformanceData.hasPrev}
+          onPageChange={onPageChange}
+          onLimitChange={onLimitChange}
+          limitOptions={[5, 10, 20, 50]}
+        />
       )}
     </Box>
   );

@@ -10,6 +10,7 @@ import { CreatePortfolioSnapshotDto, UpdatePortfolioSnapshotDto } from '../dto/p
 import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
 import { CashFlowService } from './cash-flow.service';
 import { InvestorHoldingService } from './investor-holding.service';
+import { normalizeDateToString } from '../utils/date-normalization.util';
 
 
 export interface PortfolioSnapshotTimelineQuery {
@@ -40,7 +41,7 @@ export class PortfolioSnapshotService {
   /**
    * Create a new portfolio snapshot
    */
-  async createPortfolioSnapshot(createDto: CreatePortfolioSnapshotDto): Promise<PortfolioSnapshot> {
+  async savePortfolioSnapshotToDB(createDto: CreatePortfolioSnapshotDto): Promise<PortfolioSnapshot> {
     // Convert snapshotDate to Date if it's a string
     const snapshotDate = typeof createDto.snapshotDate === 'string' 
       ? new Date(createDto.snapshotDate) 
@@ -56,17 +57,26 @@ export class PortfolioSnapshotService {
       throw new NotFoundException(`Portfolio with ID ${createDto.portfolioId} not found`);
     }
 
-    // Check if snapshot already exists and delete it to avoid duplicates
-    const existingSnapshot = await this.portfolioSnapshotRepo.findByUniqueKey(
-      createDto.portfolioId,
-      snapshotDate,
+    // Delete existing portfolio snapshots for the same date first to avoid duplicates
+    // This ensures we only have one portfolio snapshot per day per portfolio
+    this.logger.log(`🔍 About to delete existing portfolio snapshots for portfolio ${createDto.portfolioId} on ${snapshotDate.toISOString().split('T')[0]} with granularity ${createDto.granularity}`);
+    
+    // Try to delete all existing snapshots for this portfolio and date
+    // Use deleteByPortfolioAndDateRange to delete all snapshots for the date
+    const startDate = new Date(snapshotDate);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
+    
+    const deletedCount = await this.portfolioSnapshotRepo.deleteByPortfolioAndDateRange(
+      createDto.portfolioId, 
+      startDate, 
+      endDate, 
       createDto.granularity
     );
+    
+    this.logger.log(`🗑️ Delete operation completed. Deleted ${deletedCount} existing portfolio snapshots for portfolio ${createDto.portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
 
-    if (existingSnapshot) {
-      this.logger.warn(`Portfolio snapshot already exists for portfolio ${createDto.portfolioId} on ${snapshotDate.toISOString().split('T')[0]}. Deleting old snapshot and creating new one.`);
-      await this.portfolioSnapshotRepo.delete(existingSnapshot.id);
-    }
 
     // Create snapshot
     const snapshot = await this.portfolioSnapshotRepo.create({
@@ -82,9 +92,9 @@ export class PortfolioSnapshotService {
   /**
    * Create portfolio snapshot from asset snapshots
    */
-  async createPortfolioSnapshotFromAssetSnapshots(
+  async createPortfolioSnapshot(
     portfolioId: string,
-    snapshotDate: Date | string,
+    snapshotDate: Date,
     granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
     createdBy?: string
   ): Promise<PortfolioSnapshot> {
@@ -101,6 +111,26 @@ export class PortfolioSnapshotService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
+    // // Delete existing portfolio snapshots for the same date first
+    // // This ensures we only have one portfolio snapshot per day per portfolio
+    // this.logger.log(`🔍 About to delete existing portfolio snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]} with granularity ${granularity}`);
+    
+    // // Try to delete all existing snapshots for this portfolio and date
+    // // Use deleteByPortfolioAndDateRange to delete all snapshots for the date
+    // const startDate = new Date(date);
+    // startDate.setHours(0, 0, 0, 0);
+    // const endDate = new Date(date);
+    // endDate.setHours(23, 59, 59, 999);
+    
+    // const deletedCount = await this.portfolioSnapshotRepo.deleteByPortfolioAndDateRange(
+    //   portfolioId, 
+    //   startDate, 
+    //   endDate, 
+    //   granularity
+    // );
+    
+    //this.logger.log(`🗑️ Delete operation completed. Deleted ${deletedCount} existing portfolio snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}`);
+
     // Get asset snapshots for this portfolio and date
     const assetSnapshots = await this.assetSnapshotRepository.find({
       where: {
@@ -111,8 +141,81 @@ export class PortfolioSnapshotService {
       },
     });
 
+    // Calculate cash balance and deposit data (common for both scenarios)
+    const cashBalance = await this.cashFlowService.getCashBalance(portfolioId, date);
+    const depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId, date);
+
     if (assetSnapshots.length === 0) {
-      throw new BadRequestException(`No asset snapshots found for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}`);
+      this.logger.warn(`No asset snapshots found for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}. 
+      Creating portfolio snapshot with zero asset values but calculating cash ${cashBalance} and deposits ${depositData.totalDepositValue}.`);
+      
+      // Calculate portfolio values with cash and deposits only
+      const totalPortfolioValue = Number((depositData.totalDepositValue + cashBalance).toFixed(8));
+      const totalPortfolioInvested = Number((depositData.totalDepositPrincipal).toFixed(8));
+      const totalPortfolioPl = Number((depositData.totalDepositInterest).toFixed(8));
+      const unrealizedPortfolioPl = Number((depositData.unrealizedDepositPnL).toFixed(8));
+      const realizedPortfolioPl = Number((depositData.realizedDepositPnL).toFixed(8));
+      
+      // Create portfolio snapshot with zero asset values but real cash and deposit values
+      const portfolioSnapshotDto:CreatePortfolioSnapshotDto = {
+        portfolioId,
+        portfolioName: portfolio.name,
+        snapshotDate: date.toISOString().split('T')[0],
+        granularity,
+        // Asset values (zero)
+        totalAssetValue: 0,
+        totalAssetInvested: 0,
+        totalAssetPl: 0,
+        unrealizedAssetPl: 0,
+        realizedAssetPl: 0,
+        // Portfolio values (cash + deposits)
+        totalPortfolioPl,
+        unrealizedPortfolioPl,
+        realizedPortfolioPl,
+        totalReturn: 0,
+        cashBalance,
+        totalPortfolioValue,
+        totalPortfolioInvested,
+        // Deposit data
+        totalDepositPrincipal: depositData.totalDepositPrincipal,
+        totalDepositInterest: depositData.totalDepositInterest,
+        totalDepositValue: depositData.totalDepositValue,
+        totalDepositCount: depositData.totalDepositCount,
+        totalOutstandingUnits: portfolio.totalOutstandingUnits || 0,
+        navPerUnit: portfolio.navPerUnit || 0,
+        numberOfInvestors: portfolio.numberOfInvestors || 0,
+        isFund: portfolio.isFund || false,
+        unrealizedDepositPnL: depositData.unrealizedDepositPnL,
+        realizedDepositPnL: depositData.realizedDepositPnL,
+        // Performance metrics (zero for assets)
+        assetDailyReturn: 0,
+        assetWeeklyReturn: 0,
+        assetMonthlyReturn: 0,
+        assetYtdReturn: 0,
+        assetVolatility: 0,
+        assetMaxDrawdown: 0,
+        portfolioDailyReturn: 0,
+        portfolioWeeklyReturn: 0,
+        portfolioMonthlyReturn: 0,
+        portfolioYtdReturn: 0,
+        portfolioVolatility: 0,
+        portfolioMaxDrawdown: 0,
+        dailyReturn: 0,
+        weeklyReturn: 0,
+        monthlyReturn: 0,
+        ytdReturn: 0,
+        volatility: 0,
+        maxDrawdown: 0,
+        assetAllocation: {},
+        assetCount: 0,
+        activeAssetCount: 0,
+        isActive: true,
+        createdBy,
+        notes: `Portfolio snapshot with no assets but cash balance ${cashBalance} and deposits ${depositData.totalDepositValue} for ${date.toISOString().split('T')[0]}`,
+      };
+
+      // Save portfolio snapshot to DB
+      return await this.savePortfolioSnapshotToDB(portfolioSnapshotDto);
     }
 
     // Calculate portfolio-level metrics
@@ -132,12 +235,13 @@ export class PortfolioSnapshotService {
     // TODO: Implement this when we have historical data
     const totalReturn = 0; // Set to 0 for now to avoid SQL errors
 
-    // Calculate asset allocation
+    // Calculate asset allocation from asset snapshots
     const assetAllocation: { [assetType: string]: { percentage: number; value: number; count: number } } = {};
     const assetTypeMap = new Map<string, { value: number; count: number }>();
 
+    // Calculate grouped asset value and count from asset snapshots
     assetSnapshots.forEach(snapshot => {
-      const assetType = this.getAssetTypeFromSymbol(snapshot.assetSymbol);
+      const assetType = snapshot.assetType;
       if (!assetTypeMap.has(assetType)) {
         assetTypeMap.set(assetType, { value: 0, count: 0 });
       }
@@ -146,7 +250,7 @@ export class PortfolioSnapshotService {
       current.count += 1;
     });
 
-    // Convert to percentage
+    // Convert to percentage from grouped asset value and count
     assetTypeMap.forEach((data, assetType) => {
       assetAllocation[assetType] = {
         percentage: totalAssetValue > 0 ? Number(((data.value / totalAssetValue) * 100).toFixed(4)) : 0,
@@ -155,7 +259,7 @@ export class PortfolioSnapshotService {
       };
     });
 
-    // Calculate Asset Risk Metrics (Assets Only)
+    // Calculate asset risk metrics from asset snapshots
     const assetVolatility = Number(this.calculateVolatility(assetSnapshots).toFixed(4));
     const assetMaxDrawdown = Number(this.calculateMaxDrawdown(assetSnapshots).toFixed(4));
     
@@ -163,14 +267,18 @@ export class PortfolioSnapshotService {
     // To get real-time data for fund management, we need to recalculate the following fields:
     // 1. Update Portfolio NAV per unit
     // Recalculate NAV per unit
-    const newNavPerUnit = await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId);
+    const newNavPerUnit = snapshotDate ?
+     await this.investorHoldingService.calculateNavPerUnit(portfolioId, snapshotDate) :
+     await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId); // calculate and update navPerUnit to DB for daily snapshot
 
     // 2. Update Portfolio numberOfInvestors
     // Recalculate number of investors
-    const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId);
+    const newNumberOfInvestors = snapshotDate ?
+     await this.investorHoldingService.calculateNumberOfInvestors(portfolioId, snapshotDate) :
+     await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId); // calculate and update numberOfInvestors to DB for daily snapshot
     
     // 3. Recalculate cash balance
-    const cashFlow = await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolioId);
+    const cashFlow = await this.cashFlowService.recalculateCashBalance(portfolioId, snapshotDate);
     
     // get fund management metrics
     const totalOutstandingUnits = Number((Number(portfolio.totalOutstandingUnits || 0)).toFixed(8));
@@ -178,18 +286,15 @@ export class PortfolioSnapshotService {
     const numberOfInvestors = Number((Number(newNumberOfInvestors || 0)).toFixed(8));
     const isFund = Boolean(portfolio.isFund || false);
 
-    // Get cash balance from portfolio (if available) and no need to calculate it again
-    const cashBalance = Number((Number(cashFlow.newCashBalance || 0)).toFixed(8));
-    const totalAssetInvested = Number((totalAssetValue - cashBalance).toFixed(8));
+    // FIXED: Total asset invested should be total asset value, not total asset value minus cash
+    // Cash balance is part of the portfolio, not a deduction from investment
+    const totalAssetInvested = Number(totalAssetValue.toFixed(8));
 
-    // Calculate deposit data
-    const depositData = await this.depositCalculationService.calculateDepositData(portfolioId);
-
-    // Calculate Portfolio Value Fields (Assets + Deposits)
-    const totalPortfolioValue = Number((totalAssetValue + depositData.totalDepositValue).toFixed(8));
+    // Calculate Portfolio Value Fields (Assets + Deposits + Cash)
+    const totalPortfolioValue = Number((totalAssetValue + depositData.totalDepositValue + cashBalance).toFixed(8));
     const totalPortfolioInvested = Number((totalAssetInvested + depositData.totalDepositPrincipal).toFixed(8));
 
-    // Calculate Portfolio P&L (Assets + Deposits)
+    // Calculate Portfolio P&L (Assets + Deposits + Cash)
     const totalPortfolioPl = Number((totalAssetPl + depositData.totalDepositInterest).toFixed(8));
     const unrealizedPortfolioPl = Number((unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
     const realizedPortfolioPl = Number((realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
@@ -200,7 +305,7 @@ export class PortfolioSnapshotService {
     const assetMonthlyReturn = 0; // TODO: Implement proper monthly return calculation
     const assetYtdReturn = Number(this.calculateYtdReturn(assetSnapshots).toFixed(4));
 
-    // Calculate Portfolio Performance Metrics (Assets + Deposits)
+    // Calculate Portfolio Performance Metrics (Assets + Deposits + Cash)
     const portfolioDailyReturn = Number(this.calculatePortfolioDailyReturn(
       totalPortfolioValue, 
       totalAssetValue, 
@@ -219,7 +324,7 @@ export class PortfolioSnapshotService {
       depositData.totalDepositInterest
     ).toFixed(4));
 
-    // Calculate Portfolio Risk Metrics (Assets + Deposits)
+    // Calculate Portfolio Risk Metrics (Assets + Deposits + Cash)
     const portfolioVolatility = Number(this.calculatePortfolioVolatility(
       totalPortfolioValue,
       totalAssetValue,
@@ -277,10 +382,10 @@ export class PortfolioSnapshotService {
       totalAssetPl,
       unrealizedAssetPl,
       realizedAssetPl,
-      // Portfolio Value Fields (Assets + Deposits)
+      // Portfolio Value Fields (Assets + Deposits + Cash)
       totalPortfolioValue,
       totalPortfolioInvested,
-      // Portfolio P&L Fields (Assets + Deposits)
+      // Portfolio P&L Fields (Assets + Deposits + Cash)
       totalPortfolioPl,
       unrealizedPortfolioPl,
       realizedPortfolioPl,
@@ -299,12 +404,12 @@ export class PortfolioSnapshotService {
       // Asset Risk Metrics (Assets Only)
       assetVolatility,
       assetMaxDrawdown,
-      // Portfolio Performance Metrics (Assets + Deposits)
+      // Portfolio Performance Metrics (Assets + Deposits + Cash)
       portfolioDailyReturn,
       portfolioWeeklyReturn,
       portfolioMonthlyReturn,
       portfolioYtdReturn,
-      // Portfolio Risk Metrics (Assets + Deposits)
+      // Portfolio Risk Metrics (Assets + Deposits + Cash)
       portfolioVolatility,
       portfolioMaxDrawdown,
       // Legacy fields for backward compatibility
@@ -326,17 +431,9 @@ export class PortfolioSnapshotService {
       createdBy,
       notes: `Portfolio snapshot created from ${assetSnapshots.length} asset snapshots`,
     };
-
-    // Delete existing portfolio snapshots for the same date first
-    // This ensures we only have one portfolio snapshot per day per portfolio
-    const deletedCount = await this.portfolioSnapshotRepo.deleteByPortfolioDateAndGranularity(
-      portfolioId, 
-      date, 
-      granularity
-    );
     
     // Create new snapshot
-    return await this.createPortfolioSnapshot(createDto);
+    return await this.savePortfolioSnapshotToDB(createDto);
   }
 
   /**
@@ -364,92 +461,92 @@ export class PortfolioSnapshotService {
     return await this.portfolioSnapshotRepo.findManyWithPagination(options);
   }
 
-  /**
-   * Update deposit fields in portfolio snapshot
-   */
-  async updateDepositFields(portfolioId: string, depositData?: {
-    totalDepositPrincipal: number;
-    totalDepositInterest: number;
-    totalDepositValue: number;
-    totalDepositCount: number;
-    unrealizedDepositPnL: number;
-    realizedDepositPnL: number;
-  }): Promise<void> {
-    this.logger.log(`Updating deposit fields for portfolio ${portfolioId}`);
+  // /**
+  //  * Update deposit fields in portfolio snapshot
+  //  */
+  // async updateDepositFields(portfolioId: string, depositData?: {
+  //   totalDepositPrincipal: number;
+  //   totalDepositInterest: number;
+  //   totalDepositValue: number;
+  //   totalDepositCount: number;
+  //   unrealizedDepositPnL: number;
+  //   realizedDepositPnL: number;
+  // }): Promise<void> {
+  //   this.logger.log(`Updating deposit fields for portfolio ${portfolioId}`);
 
-    // If no deposit data provided, calculate it
-    if (!depositData) {
-      depositData = await this.depositCalculationService.calculateDepositData(portfolioId);
-    }
+  //   // If no deposit data provided, calculate it
+  //   if (!depositData) {
+  //     depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId);
+  //   }
 
-    // Get the latest snapshot for the portfolio
-    const latestSnapshot = await this.portfolioSnapshotRepository.findOne({
-      where: { portfolioId },
-      order: { snapshotDate: 'DESC' }
-    });
+  //   // Get the latest snapshot for the portfolio
+  //   const latestSnapshot = await this.portfolioSnapshotRepository.findOne({
+  //     where: { portfolioId },
+  //     order: { snapshotDate: 'DESC' }
+  //   });
 
-    if (latestSnapshot) {
-      // Update the latest snapshot
-      latestSnapshot.totalDepositPrincipal = depositData.totalDepositPrincipal;
-      latestSnapshot.totalDepositInterest = depositData.totalDepositInterest;
-      latestSnapshot.totalDepositValue = depositData.totalDepositValue;
-      latestSnapshot.totalDepositCount = depositData.totalDepositCount;
-      latestSnapshot.unrealizedDepositPnL = depositData.unrealizedDepositPnL;
-      latestSnapshot.realizedDepositPnL = depositData.realizedDepositPnL;
+  //   if (latestSnapshot) {
+  //     // Update the latest snapshot
+  //     latestSnapshot.totalDepositPrincipal = depositData.totalDepositPrincipal;
+  //     latestSnapshot.totalDepositInterest = depositData.totalDepositInterest;
+  //     latestSnapshot.totalDepositValue = depositData.totalDepositValue;
+  //     latestSnapshot.totalDepositCount = depositData.totalDepositCount;
+  //     latestSnapshot.unrealizedDepositPnL = depositData.unrealizedDepositPnL;
+  //     latestSnapshot.realizedDepositPnL = depositData.realizedDepositPnL;
 
-      // Recalculate Portfolio Value Fields (Assets + Deposits)
-      latestSnapshot.totalPortfolioValue = Number((latestSnapshot.totalAssetValue + depositData.totalDepositValue).toFixed(8));
-      latestSnapshot.totalPortfolioInvested = Number((latestSnapshot.totalAssetInvested + depositData.totalDepositPrincipal).toFixed(8));
+  //     // Recalculate Portfolio Value Fields (Assets + Deposits + Cash)
+  //     latestSnapshot.totalPortfolioValue = Number((latestSnapshot.totalAssetValue + depositData.totalDepositValue + latestSnapshot.cashBalance).toFixed(8));
+  //     latestSnapshot.totalPortfolioInvested = Number((latestSnapshot.totalAssetInvested + depositData.totalDepositPrincipal).toFixed(8));
 
-      // Recalculate Portfolio P&L Fields (Assets + Deposits)
-      latestSnapshot.totalPortfolioPl = Number((latestSnapshot.totalAssetPl + depositData.totalDepositInterest).toFixed(8));
-      latestSnapshot.unrealizedPortfolioPl = Number((latestSnapshot.unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
-      latestSnapshot.realizedPortfolioPl = Number((latestSnapshot.realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
+  //     // Recalculate Portfolio P&L Fields (Assets + Deposits + Cash)
+  //     latestSnapshot.totalPortfolioPl = Number((latestSnapshot.totalAssetPl + depositData.totalDepositInterest).toFixed(8));
+  //     latestSnapshot.unrealizedPortfolioPl = Number((latestSnapshot.unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
+  //     latestSnapshot.realizedPortfolioPl = Number((latestSnapshot.realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
 
-      await this.portfolioSnapshotRepository.save(latestSnapshot);
-      this.logger.log(`Updated deposit fields in latest snapshot for portfolio ${portfolioId}`);
-    } else {
-      this.logger.warn(`No snapshot found for portfolio ${portfolioId}, creating new one`);
+  //     await this.portfolioSnapshotRepository.save(latestSnapshot);
+  //     this.logger.log(`Updated deposit fields in latest snapshot for portfolio ${portfolioId}`);
+  //   } else {
+  //     this.logger.warn(`No snapshot found for portfolio ${portfolioId}, creating new one`);
       
-      // Create a new snapshot with deposit data
-      const portfolio = await this.portfolioRepository.findOne({
-        where: { portfolioId }
-      });
+  //     // Create a new snapshot with deposit data
+  //     const portfolio = await this.portfolioRepository.findOne({
+  //       where: { portfolioId }
+  //     });
 
-      if (portfolio) {
-        const newSnapshot = this.portfolioSnapshotRepository.create({
-          portfolioId,
-          portfolioName: portfolio.name,
-          snapshotDate: new Date(),
-          granularity: SnapshotGranularity.DAILY,
-          totalAssetValue: portfolio.totalValue,
-          totalAssetInvested: portfolio.totalValue - (portfolio.cashBalance || 0),
-          // Asset P&L Fields (Assets Only)
-          totalAssetPl: portfolio.unrealizedPl + portfolio.realizedPl,
-          unrealizedAssetPl: portfolio.unrealizedPl,
-          realizedAssetPl: portfolio.realizedPl,
-          // Portfolio Value Fields (Assets + Deposits)
-          totalPortfolioValue: portfolio.totalValue + depositData.totalDepositValue,
-          totalPortfolioInvested: (portfolio.totalValue - portfolio.cashBalance) + depositData.totalDepositPrincipal,
-          // Portfolio P&L Fields (Assets + Deposits)
-          totalPortfolioPl: (portfolio.unrealizedPl + portfolio.realizedPl) + depositData.totalDepositInterest,
-          unrealizedPortfolioPl: portfolio.unrealizedPl + depositData.unrealizedDepositPnL,
-          realizedPortfolioPl: portfolio.realizedPl + depositData.realizedDepositPnL,
-          cashBalance: portfolio.cashBalance,
-          totalDepositPrincipal: depositData.totalDepositPrincipal,
-          totalDepositInterest: depositData.totalDepositInterest,
-          totalDepositValue: depositData.totalDepositValue,
-          totalDepositCount: depositData.totalDepositCount,
-          unrealizedDepositPnL: depositData.unrealizedDepositPnL,
-          realizedDepositPnL: depositData.realizedDepositPnL,
-          isActive: true,
-        });
+  //     if (portfolio) {
+  //       const newSnapshot = this.portfolioSnapshotRepository.create({
+  //         portfolioId,
+  //         portfolioName: portfolio.name,
+  //         snapshotDate: new Date(),
+  //         granularity: SnapshotGranularity.DAILY,
+  //         totalAssetValue: portfolio.totalValue,
+  //         totalAssetInvested: portfolio.totalValue - (portfolio.cashBalance || 0),
+  //         // Asset P&L Fields (Assets Only)
+  //         totalAssetPl: portfolio.unrealizedPl + portfolio.realizedPl,
+  //         unrealizedAssetPl: portfolio.unrealizedPl,
+  //         realizedAssetPl: portfolio.realizedPl,
+  //         // Portfolio Value Fields (Assets + Deposits + Cash)
+  //         totalPortfolioValue: portfolio.totalValue + depositData.totalDepositValue + portfolio.cashBalance,
+  //         totalPortfolioInvested: (portfolio.totalValue - portfolio.cashBalance) + depositData.totalDepositPrincipal,
+  //         // Portfolio P&L Fields (Assets + Deposits + Cash)
+  //         totalPortfolioPl: (portfolio.unrealizedPl + portfolio.realizedPl) + depositData.totalDepositInterest,
+  //         unrealizedPortfolioPl: portfolio.unrealizedPl + depositData.unrealizedDepositPnL,
+  //         realizedPortfolioPl: portfolio.realizedPl + depositData.realizedDepositPnL,
+  //         cashBalance: portfolio.cashBalance,
+  //         totalDepositPrincipal: depositData.totalDepositPrincipal,
+  //         totalDepositInterest: depositData.totalDepositInterest,
+  //         totalDepositValue: depositData.totalDepositValue,
+  //         totalDepositCount: depositData.totalDepositCount,
+  //         unrealizedDepositPnL: depositData.unrealizedDepositPnL,
+  //         realizedDepositPnL: depositData.realizedDepositPnL,
+  //         isActive: true,
+  //       });
 
-        await this.portfolioSnapshotRepository.save(newSnapshot);
-        this.logger.log(`Created new snapshot with deposit data for portfolio ${portfolioId}`);
-      }
-    }
-  }
+  //       await this.portfolioSnapshotRepository.save(newSnapshot);
+  //       this.logger.log(`Created new snapshot with deposit data for portfolio ${portfolioId}`);
+  //     }
+  //   }
+  // }
 
   /**
    * Get timeline data for portfolio
@@ -628,43 +725,58 @@ export class PortfolioSnapshotService {
     return { deletedCount, message };
   }
 
-  /**
-   * Helper method to get asset type from symbol (simplified)
-   */
-  private getAssetTypeFromSymbol(symbol: string): string {
-    // This is a simplified mapping - in real implementation, you'd query the asset table
-    const cryptoPattern = /^(BTC|ETH|ADA|DOT|LINK|UNI|AAVE|COMP|MKR|SNX|YFI|SUSHI|CRV|1INCH|ALPHA|BAND|REN|KNC|LRC|ZRX|BAT|ZEC|XRP|LTC|BCH|EOS|TRX|XLM|NEO|IOTA|VET|ICX|ONT|QTUM|ZIL|OMG|REP|GNT|FUN|SNT|MCO|STORJ|DASH|DOGE|DGB|SC|PIVX|NAV|MONA|DCR|DGB|SC|PIVX|NAV|MONA|DCR)$/i;
-    const stockPattern = /^[A-Z]{1,5}$/;
+  // /**
+  //  * Helper method to get asset type from symbol (simplified)
+  //  */
+  // private getAssetTypeFromSymbol(symbol: string): string {
+  //   // This is a simplified mapping - in real implementation, you'd query the asset table
+  //   const cryptoPattern = /^(BTC|ETH|ADA|DOT|LINK|UNI|AAVE|COMP|MKR|SNX|YFI|SUSHI|CRV|1INCH|ALPHA|BAND|REN|KNC|LRC|ZRX|BAT|ZEC|XRP|LTC|BCH|EOS|TRX|XLM|NEO|IOTA|VET|ICX|ONT|QTUM|ZIL|OMG|REP|GNT|FUN|SNT|MCO|STORJ|DASH|DOGE|DGB|SC|PIVX|NAV|MONA|DCR|DGB|SC|PIVX|NAV|MONA|DCR)$/i;
+  //   const stockPattern = /^[A-Z]{1,5}$/;
     
-    if (cryptoPattern.test(symbol)) {
-      return 'Crypto';
-    } else if (stockPattern.test(symbol)) {
-      return 'Stock';
-    } else {
-      return 'Other';
-    }
-  }
+  //   if (cryptoPattern.test(symbol)) {
+  //     return 'Crypto';
+  //   } else if (stockPattern.test(symbol)) {
+  //     return 'Stock';
+  //   } else {
+  //     return 'Other';
+  //   }
+  // }
 
   /**
    * Calculate volatility (simplified)
    */
+  /**
+   * Calculate volatility using weighted standard deviation based on asset values
+   * FIXED: Use weighted calculation instead of simple average
+   */
   private calculateVolatility(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length < 2) return 0;
     
-    const returns = snapshots.map(s => s.returnPercentage);
-    let mean = 0;
-    returns.forEach(r => {
-      mean = Number((mean + Number(r || 0)).toFixed(8));
-    });
-    mean = Number((mean / returns.length).toFixed(8));
+    // Calculate weighted mean
+    let totalWeightedReturn = 0;
+    let totalValue = 0;
     
-    let variance = 0;
-    returns.forEach(r => {
-      variance = Number((variance + Math.pow(Number(r || 0) - mean, 2)).toFixed(8));
+    snapshots.forEach(s => {
+      const assetValue = Number(s.currentValue || 0);
+      const returnPercentage = Number(s.returnPercentage || 0);
+      
+      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
+      totalValue = Number((totalValue + assetValue).toFixed(8));
     });
-    variance = Number((variance / returns.length).toFixed(8));
     
-    return Number(Math.sqrt(variance).toFixed(8));
+    const weightedMean = totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
+    
+    // Calculate weighted variance
+    let weightedVariance = 0;
+    snapshots.forEach(s => {
+      const assetValue = Number(s.currentValue || 0);
+      const returnPercentage = Number(s.returnPercentage || 0);
+      const weight = totalValue > 0 ? assetValue / totalValue : 0;
+      
+      weightedVariance = Number((weightedVariance + weight * Math.pow(returnPercentage - weightedMean, 2)).toFixed(8));
+    });
+    
+    return Number(Math.sqrt(weightedVariance).toFixed(8));
   }
 
   /**
@@ -692,18 +804,33 @@ export class PortfolioSnapshotService {
   /**
    * Calculate daily return (simplified)
    */
+  /**
+   * Calculate daily return using weighted average based on asset values
+   * FIXED: Use weighted average instead of simple average
+   */
   private calculateDailyReturn(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length === 0) return 0;
     
-    let totalReturn = 0;
+    let totalWeightedReturn = 0;
+    let totalValue = 0;
+    
     snapshots.forEach(s => {
-      totalReturn = Number((totalReturn + Number(s.returnPercentage || 0)).toFixed(8));
+      const assetValue = Number(s.currentValue || 0);
+      const returnPercentage = Number(s.returnPercentage || 0);
+      
+      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
+      totalValue = Number((totalValue + assetValue).toFixed(8));
     });
-    return Number((totalReturn / snapshots.length).toFixed(8));
+    
+    return totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
   }
 
   /**
    * Calculate YTD return (simplified)
+   */
+  /**
+   * Calculate YTD return using weighted average based on asset values
+   * FIXED: Use weighted average and proper YTD calculation logic
    */
   private calculateYtdReturn(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length === 0) return 0;
@@ -715,11 +842,18 @@ export class PortfolioSnapshotService {
     
     if (ytdSnapshots.length === 0) return 0;
     
-    let totalReturn = 0;
+    let totalWeightedReturn = 0;
+    let totalValue = 0;
+    
     ytdSnapshots.forEach(s => {
-      totalReturn = Number((totalReturn + Number(s.returnPercentage || 0)).toFixed(8));
+      const assetValue = Number(s.currentValue || 0);
+      const returnPercentage = Number(s.returnPercentage || 0);
+      
+      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
+      totalValue = Number((totalValue + assetValue).toFixed(8));
     });
-    return Number((totalReturn / ytdSnapshots.length).toFixed(8));
+    
+    return totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
   }
 
   /**

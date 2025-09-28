@@ -537,7 +537,7 @@ export class PortfolioController {
     @Param('id', ParseUUIDPipe) portfolioId: string,
     @Param('accountId', ParseUUIDPipe) accountId: string
   ): Promise<InvestorHolding> {
-    return this.investorHoldingService.getInvestorHolding(portfolioId, accountId);
+    return this.investorHoldingService.getInvestorHoldingValues(portfolioId, accountId);
   }
 
   /**

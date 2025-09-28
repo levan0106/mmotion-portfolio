@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { BenchmarkData } from '../entities/benchmark-data.entity';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
@@ -41,6 +41,8 @@ export class AlphaBetaCalculationService {
     
     @InjectRepository(BenchmarkData)
     private readonly benchmarkDataRepo: Repository<BenchmarkData>,
+    
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -50,6 +52,7 @@ export class AlphaBetaCalculationService {
     const { portfolioId, benchmarkId, snapshotDate, granularity = SnapshotGranularity.DAILY } = options;
     
     const date = snapshotDate instanceof Date ? snapshotDate : new Date(snapshotDate);
+    console.log(`🔍 AlphaBetaCalculationService: Calculating portfolio Alpha/Beta for ${portfolioId} vs ${benchmarkId} on ${date.toISOString().split('T')[0]}`);
     this.logger.log(`Calculating portfolio Alpha/Beta for ${portfolioId} vs ${benchmarkId} on ${date.toISOString().split('T')[0]}`);
 
     try {
@@ -155,6 +158,8 @@ export class AlphaBetaCalculationService {
     // Get benchmark returns
     const benchmarkReturns = await this.getBenchmarkReturnsForPeriod(benchmarkId, startDate, snapshotDate, granularity);
 
+    this.logger.log(`Portfolio returns: ${portfolioReturns.length}, Benchmark returns: ${benchmarkReturns.length}`);
+    
     if (portfolioReturns.length < 2 || benchmarkReturns.length < 2) {
       this.logger.warn(`Insufficient data for Alpha/Beta calculation: ${portfolioReturns.length} portfolio returns, ${benchmarkReturns.length} benchmark returns`);
       return {
@@ -164,6 +169,9 @@ export class AlphaBetaCalculationService {
         trackingError: 0,
       };
     }
+    
+    this.logger.log(`Portfolio returns sample:`, portfolioReturns.slice(0, 3));
+    this.logger.log(`Benchmark returns sample:`, benchmarkReturns.slice(0, 3));
 
     // Align returns by date
     const alignedReturns = this.alignReturnsByDate(portfolioReturns, benchmarkReturns);
@@ -222,6 +230,8 @@ export class AlphaBetaCalculationService {
 
     const returns: Array<{ date: Date; return: number }> = [];
 
+    this.logger.log(`Found ${snapshots.length} portfolio snapshots for period`);
+    
     for (let i = 1; i < snapshots.length; i++) {
       const prevValue = Number(snapshots[i - 1].totalPortfolioValue || 0);
       const currValue = Number(snapshots[i].totalPortfolioValue || 0);
@@ -235,11 +245,13 @@ export class AlphaBetaCalculationService {
       }
     }
 
+    this.logger.log(`Calculated ${returns.length} portfolio returns`);
     return returns;
   }
 
   /**
-   * Get benchmark returns for period
+   * Get benchmark returns for period from price history
+   * FIXED: Get data from price history table, if multiple records per day, get the latest one
    */
   private async getBenchmarkReturnsForPeriod(
     benchmarkId: string,
@@ -247,31 +259,93 @@ export class AlphaBetaCalculationService {
     endDate: Date,
     granularity: SnapshotGranularity
   ): Promise<Array<{ date: Date; return: number }>> {
-    const benchmarkData = await this.benchmarkDataRepo
-      .createQueryBuilder('benchmark')
-      .where('benchmark.benchmarkId = :benchmarkId', { benchmarkId })
-      .andWhere('benchmark.snapshotDate >= :startDate', { startDate })
-      .andWhere('benchmark.snapshotDate <= :endDate', { endDate })
-      .andWhere('benchmark.granularity = :granularity', { granularity })
-      .andWhere('benchmark.isActive = :isActive', { isActive: true })
-      .orderBy('benchmark.snapshotDate', 'ASC')
-      .getMany();
+    // Get price history data for the benchmark asset
+    // SIMPLIFIED: Use simple query first, then group by date in code
+    const priceHistoryData = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'DATE(aph.created_at) as date',
+        'aph.price',
+        'aph.created_at'
+      ])
+      .from('asset_price_history', 'aph')
+      .where('aph.asset_id = :benchmarkId', { benchmarkId })
+      .andWhere('DATE(aph.created_at) >= :startDate', { startDate })
+      .andWhere('DATE(aph.created_at) <= :endDate', { endDate })
+      .orderBy('aph.created_at', 'ASC')
+      .getRawMany();
+
+    // If no price history data, try to get from benchmark data as fallback
+    let benchmarkData = [];
+    if (priceHistoryData.length === 0) {
+      this.logger.warn(`No price history data found for benchmark ${benchmarkId}, falling back to benchmark data`);
+      benchmarkData = await this.benchmarkDataRepo
+        .createQueryBuilder('benchmark')
+        .where('benchmark.benchmarkId = :benchmarkId', { benchmarkId })
+        .andWhere('benchmark.snapshotDate >= :startDate', { startDate })
+        .andWhere('benchmark.snapshotDate <= :endDate', { endDate })
+        .andWhere('benchmark.granularity = :granularity', { granularity })
+        .andWhere('benchmark.isActive = :isActive', { isActive: true })
+        .orderBy('benchmark.snapshotDate', 'ASC')
+        .getMany();
+    }
 
     const returns: Array<{ date: Date; return: number }> = [];
 
-    for (let i = 1; i < benchmarkData.length; i++) {
-      const prevValue = Number(benchmarkData[i - 1].benchmarkValue || 0);
-      const currValue = Number(benchmarkData[i].benchmarkValue || 0);
+    this.logger.log(`Found ${priceHistoryData.length} price history records, ${benchmarkData.length} benchmark data records`);
+
+    // Process price history data
+    if (priceHistoryData.length > 0) {
+      console.log('📊 First few price history records:', priceHistoryData.slice(0, 3));
       
-      if (prevValue > 0) {
-        const returnValue = (currValue - prevValue) / prevValue;
-        returns.push({
-          date: benchmarkData[i].snapshotDate instanceof Date ? benchmarkData[i].snapshotDate : new Date(benchmarkData[i].snapshotDate),
-          return: returnValue
-        });
+      // Group by date and get latest record per day
+      const groupedByDate = new Map<string, any>();
+      priceHistoryData.forEach(record => {
+        const dateKey = record.date;
+        if (!groupedByDate.has(dateKey) || new Date(record.created_at) > new Date(groupedByDate.get(dateKey).created_at)) {
+          groupedByDate.set(dateKey, record);
+        }
+      });
+      
+      const dailyRecords = Array.from(groupedByDate.values()).sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      
+      console.log(`📊 Grouped to ${dailyRecords.length} daily records`);
+      
+      for (let i = 1; i < dailyRecords.length; i++) {
+        const prevValue = Number(dailyRecords[i - 1].price || 0);
+        const currValue = Number(dailyRecords[i].price || 0);
+        
+        if (i <= 3) {
+          console.log(`📊 Price comparison [${i}]: prev=${prevValue}, curr=${currValue}`);
+        }
+        
+        if (prevValue > 0) {
+          const returnValue = (currValue - prevValue) / prevValue;
+          returns.push({
+            date: new Date(dailyRecords[i].date),
+            return: returnValue
+          });
+        }
+      }
+    } else {
+      // Fallback to benchmark data
+      for (let i = 1; i < benchmarkData.length; i++) {
+        const prevValue = Number(benchmarkData[i - 1].benchmarkValue || 0);
+        const currValue = Number(benchmarkData[i].benchmarkValue || 0);
+        
+        if (prevValue > 0) {
+          const returnValue = (currValue - prevValue) / prevValue;
+          returns.push({
+            date: benchmarkData[i].snapshotDate instanceof Date ? benchmarkData[i].snapshotDate : new Date(benchmarkData[i].snapshotDate),
+            return: returnValue
+          });
+        }
       }
     }
 
+    this.logger.log(`Calculated ${returns.length} benchmark returns`);
     return returns;
   }
 

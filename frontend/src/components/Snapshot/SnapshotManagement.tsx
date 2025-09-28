@@ -269,6 +269,14 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             showActions={true}
             pageSize={25}
             refreshTrigger={refreshTrigger}
+            onPortfolioRefresh={(portfolioId) => {
+              // Auto-refresh portfolio data when snapshot is created
+              console.log(`Auto-refreshing portfolio data for: ${portfolioId}`);
+              // Trigger refresh of all portfolio-related data
+              setRefreshTrigger(prev => prev + 1);
+              refreshSnapshots();
+              refreshPortfolioSnapshots();
+            }}
           />
         );
       
@@ -532,12 +540,29 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       <BulkSnapshotModal
         open={bulkCreateModalOpen}
         onClose={() => setBulkCreateModalOpen(false)}
-        onSuccess={(_portfolioId, snapshotDate) => {
+        onSuccess={(portfolioId, snapshotDate) => {
+          console.log(`🎉 Snapshot created successfully for portfolio: ${portfolioId} on ${snapshotDate}`);
           showSnackbar(`Snapshot created successfully for portfolio on ${snapshotDate}`, 'success');
+          
+          // Refresh all snapshot-related data
+          console.log(`🔄 Refreshing snapshot data for portfolio: ${portfolioId}`);
           refreshSnapshots();
+          refreshPortfolioSnapshots();
+          
+          // Trigger refresh trigger for UI updates
+          console.log(`🔄 Triggering UI refresh for portfolio: ${portfolioId}`);
+          setRefreshTrigger(prev => prev + 1);
         }}
         onError={(error) => {
           showSnackbar(`Failed to create snapshot: ${error}`, 'error');
+        }}
+        onPortfolioRefresh={(portfolioId) => {
+          // Auto-refresh portfolio data when snapshot is created
+          console.log(`🔄 Custom portfolio refresh callback triggered for: ${portfolioId}`);
+          
+          // Additional refresh actions if needed
+          console.log(`🔄 Triggering additional UI refresh for: ${portfolioId}`);
+          setRefreshTrigger(prev => prev + 1);
         }}
       />
 

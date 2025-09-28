@@ -41,6 +41,7 @@ import {
   SnapshotAggregationDto,
 } from '../dto/snapshot.dto';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
+import { normalizeDateToString } from '../utils/date-normalization.util';
 
 @ApiTags('Snapshots')
 @Controller('api/v1/snapshots')
@@ -55,21 +56,21 @@ export class SnapshotController {
     private readonly performanceSnapshotService: PerformanceSnapshotService,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create a new snapshot' })
-  @ApiCreatedResponse({
-    description: 'Snapshot created successfully',
-    type: SnapshotResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid input data or snapshot already exists' })
-  @ApiNotFoundResponse({ description: 'Portfolio or asset not found' })
-  async createSnapshot(@Body() createDto: CreateSnapshotDto): Promise<SnapshotResponseDto> {
-    const snapshot = await this.snapshotService.createSnapshot({
-      ...createDto,
-      snapshotDate: new Date(createDto.snapshotDate),
-    });
-    return this.mapToResponseDto(snapshot);
-  }
+  // @Post()
+  // @ApiOperation({ summary: 'Create a new snapshot' })
+  // @ApiCreatedResponse({
+  //   description: 'Snapshot created successfully',
+  //   type: SnapshotResponseDto,
+  // })
+  // @ApiBadRequestResponse({ description: 'Invalid input data or snapshot already exists' })
+  // @ApiNotFoundResponse({ description: 'Portfolio or asset not found' })
+  // async createSnapshot(@Body() createDto: CreateSnapshotDto): Promise<SnapshotResponseDto> {
+  //   const snapshot = await this.snapshotService.createSnapshot({
+  //     ...createDto,
+  //     snapshotDate: new Date(createDto.snapshotDate),
+  //   });
+  //   return this.mapToResponseDto(snapshot);
+  // }
 
   @Post('portfolio/:portfolioId')
   @ApiOperation({ summary: 'Create snapshots for all assets in a portfolio and portfolio snapshot' })
@@ -102,23 +103,25 @@ export class SnapshotController {
   }> {
     const date = body.snapshotDate ? new Date(body.snapshotDate) : new Date();
     const granularityValue = body.granularity || SnapshotGranularity.DAILY;
+
+    const snapshotDate = normalizeDateToString(date);
     
-    // Create asset snapshots first
+    // step 1: Create portfolio and asset snapshots first
     const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
       portfolioId,
-      date,
+      snapshotDate,
       granularityValue,
       body.createdBy,
     );
     
-    // Create performance snapshots if basic snapshots were created successfully
+    // step 2: Create performance snapshots, it not depends on portfolio and asset snapshots
     let performanceSnapshots = null;
     if (assetSnapshots.length > 0) {
       try {
-        this.logger.log(`Creating performance snapshots for portfolio ${portfolioId}`);
+        this.logger.log(`Start creating performance snapshots for portfolio ${portfolioId}`);
         performanceSnapshots = await this.performanceSnapshotService.createPerformanceSnapshots(
           portfolioId,
-          date,
+          snapshotDate,
           granularityValue,
           body.createdBy,
         );
@@ -126,7 +129,7 @@ export class SnapshotController {
       } catch (error) {
         this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioId}:`, error);
         // Don't fail the entire operation if performance snapshots fail
-        // Basic snapshots are more critical
+        // Performance snapshots are not critical, so we don't need to fail the entire operation if performance snapshots fail
       }
     }
     
@@ -135,7 +138,7 @@ export class SnapshotController {
         ? `Successfully created ${assetSnapshots.length} asset snapshots, portfolio snapshot${performanceSnapshots ? ' and performance snapshots' : ''} for portfolio ${portfolioId}`
         : `No assets found in portfolio ${portfolioId}. No snapshots created.`,
       assetSnapshots: assetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
-      portfolioSnapshot: null, // Portfolio snapshot is created internally by createPortfolioSnapshot
+      portfolioSnapshot: null, // Portfolio snapshot is created internally by createPortfolioSnapshot, do not need to return it
       performanceSnapshots: performanceSnapshots,
       assetCount: assetSnapshots.length,
     };
@@ -234,36 +237,36 @@ export class SnapshotController {
     return snapshots.map(snapshot => this.mapToResponseDto(snapshot));
   }
 
-  @Get('timeline/aggregated')
-  @ApiOperation({ summary: 'Get aggregated timeline data for portfolio' })
-  @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID' })
-  @ApiQuery({ name: 'startDate', description: 'Start date' })
-  @ApiQuery({ name: 'endDate', description: 'End date' })
-  @ApiQuery({ name: 'granularity', enum: SnapshotGranularity, description: 'Snapshot granularity', required: false })
-  @ApiOkResponse({
-    description: 'Aggregated timeline data retrieved successfully',
-    type: [SnapshotAggregationDto],
-  })
-  async getAggregatedTimelineData(
-    @Query('portfolioId', ParseUUIDPipe) portfolioId: string,
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-    @Query('granularity') granularity?: SnapshotGranularity,
-  ): Promise<SnapshotAggregationDto[]> {
-    const results = await this.snapshotService.getAggregatedTimelineData(
-      portfolioId,
-      new Date(startDate),
-      new Date(endDate),
-      granularity || SnapshotGranularity.DAILY,
-    );
+  // @Get('timeline/aggregated')
+  // @ApiOperation({ summary: 'Get aggregated timeline data for portfolio' })
+  // @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID' })
+  // @ApiQuery({ name: 'startDate', description: 'Start date' })
+  // @ApiQuery({ name: 'endDate', description: 'End date' })
+  // @ApiQuery({ name: 'granularity', enum: SnapshotGranularity, description: 'Snapshot granularity', required: false })
+  // @ApiOkResponse({
+  //   description: 'Aggregated timeline data retrieved successfully',
+  //   type: [SnapshotAggregationDto],
+  // })
+  // async getAggregatedTimelineData(
+  //   @Query('portfolioId', ParseUUIDPipe) portfolioId: string,
+  //   @Query('startDate') startDate: string,
+  //   @Query('endDate') endDate: string,
+  //   @Query('granularity') granularity?: SnapshotGranularity,
+  // ): Promise<SnapshotAggregationDto[]> {
+  //   const results = await this.snapshotService.getAggregatedTimelineData(
+  //     portfolioId,
+  //     new Date(startDate),
+  //     new Date(endDate),
+  //     granularity || SnapshotGranularity.DAILY,
+  //   );
     
-    return results.map(result => ({
-      ...result,
-      snapshotDate: result.snapshotDate instanceof Date 
-        ? result.snapshotDate.toISOString().split('T')[0]
-        : result.snapshotDate,
-    }));
-  }
+  //   return results.map(result => ({
+  //     ...result,
+  //     snapshotDate: result.snapshotDate instanceof Date 
+  //       ? result.snapshotDate.toISOString().split('T')[0]
+  //       : result.snapshotDate,
+  //   }));
+  // }
 
   @Get('latest/:portfolioId')
   @ApiOperation({ summary: 'Get latest snapshot for portfolio' })
@@ -309,7 +312,7 @@ export class SnapshotController {
   @Get('portfolios')
   @ApiOperation({ summary: 'Get portfolios that have snapshots' })
   @ApiOkResponse({
-    description: 'Portfolios with snapshots retrieved successfully',
+    description: 'Portfolio snapshots retrieved successfully',
     schema: {
       type: 'array',
       items: {
@@ -325,7 +328,7 @@ export class SnapshotController {
     },
   })
   async getPortfoliosWithSnapshots() {
-    return await this.snapshotService.getPortfoliosWithSnapshots();
+    return await this.portfolioSnapshotService.getPortfoliosWithSnapshots();
   }
 
   @Get(':id')
@@ -452,6 +455,7 @@ export class SnapshotController {
       portfolioId: snapshot.portfolioId,
       assetId: snapshot.assetId,
       assetSymbol: snapshot.assetSymbol,
+      assetType: snapshot.assetType,
       snapshotDate: snapshotDate,
       granularity: snapshot.granularity,
       quantity: parseFloat(snapshot.quantity) || 0,

@@ -322,7 +322,7 @@ export class PortfolioAnalyticsService {
    * @param portfolioId - Portfolio ID
    * @returns Promise<AssetDetailSummaryResponseDto>
    */
-  async getAssetDetailSummary(portfolioId: string): Promise<AssetDetailSummaryResponseDto> {
+  async getAssetDetailSummary(portfolioId: string, snapshotDate?: Date): Promise<AssetDetailSummaryResponseDto> {
     // Get portfolio details
     const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
     if (!portfolio) {
@@ -330,9 +330,9 @@ export class PortfolioAnalyticsService {
     }
 
     // Use PortfolioCalculationService to get consistent positions and calculations
-    const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
+    const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(
       portfolioId,
-      parseFloat(portfolio.cashBalance.toString()),
+      snapshotDate
     );
 
     // Get asset names and types from database
@@ -461,10 +461,7 @@ export class PortfolioAnalyticsService {
       }
 
       // Fallback to original trade-based calculation (should not be used with real data)
-      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
-        portfolioId,
-        parseFloat(portfolio.cashBalance.toString()),
-      );
+      const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
 
       // Get asset types from database
       const assetInfoQuery = `

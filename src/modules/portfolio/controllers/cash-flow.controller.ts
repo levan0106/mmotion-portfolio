@@ -114,7 +114,7 @@ export class CashFlowController {
   async getCurrentCashBalance(
     @Param('id', ParseUUIDPipe) portfolioId: string,
   ): Promise<{ portfolioId: string; cashBalance: number }> {
-    const cashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+    const cashBalance = await this.cashFlowService.getCashBalance(portfolioId);
     return { portfolioId, cashBalance };
   }
 
@@ -129,7 +129,7 @@ export class CashFlowController {
   async recalculateCashBalance(
     @Param('id', ParseUUIDPipe) portfolioId: string,
   ): Promise<CashBalanceUpdateResultDto> {
-    return await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolioId);
+    return await this.cashFlowService.recalculateCashBalance(portfolioId);
   }
 
   /**
@@ -146,7 +146,7 @@ export class CashFlowController {
     @Body() updateCashBalanceDto: UpdateCashBalanceDto,
   ): Promise<CashBalanceUpdateResultDto> {
     // Calculate the difference to create a cash flow record
-    const currentBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+    const currentBalance = await this.cashFlowService.getCashBalance(portfolioId);
     const difference = updateCashBalanceDto.cashBalance - currentBalance;
 
     if (difference === 0) {

@@ -119,7 +119,7 @@ export class PortfolioService {
       const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
       
       // Calculate correct cash balance from cash flows
-      const correctCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+      const correctCashBalance = await this.cashFlowService.getCashBalance(portfolioId);
       
       // Calculate new portfolio fields
       const newFields = await this.calculateNewPortfolioFields(portfolioId);
@@ -249,12 +249,11 @@ export class PortfolioService {
       portfolios.map(async (portfolio) => {
         try {
           // Calculate correct cash balance from cash flows
-          const correctCashBalance = await this.cashFlowService.getCurrentCashBalance(portfolio.portfolioId);
+          const correctCashBalance = await this.cashFlowService.getCashBalance(portfolio.portfolioId);
           
           // Use PortfolioCalculationService to get real-time calculations
-          const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
-            portfolio.portfolioId,
-            correctCashBalance
+          const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(
+            portfolio.portfolioId
           );
 
           // Calculate total unrealized P&L from all asset positions
@@ -358,7 +357,7 @@ export class PortfolioService {
   async calculatePortfolioValue(portfolio: Portfolio): Promise<void> {
     try {
       // First, recalculate cash balance from all cash flows to ensure accuracy
-      await this.cashFlowService.recalculateCashBalanceFromAllFlows(portfolio.portfolioId);
+      await this.cashFlowService.recalculateCashBalance(portfolio.portfolioId);
       
       // Get updated portfolio with correct cash balance
       const updatedPortfolio = await this.portfolioEntityRepository.findOne({
@@ -370,9 +369,8 @@ export class PortfolioService {
       }
 
       // Calculate portfolio values from trades with correct cash balance
-      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
-        portfolio.portfolioId,
-        parseFloat(updatedPortfolio.cashBalance.toString()),
+      const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(
+        portfolio.portfolioId
       );
 
       // Calculate new portfolio fields
@@ -720,7 +718,7 @@ export class PortfolioService {
     // Get asset values and P&L
     const calculatedValues = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
     const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
-    const cashBalance = await this.cashFlowService.getCurrentCashBalance(portfolioId);
+    const cashBalance = await this.cashFlowService.getCashBalance(portfolioId);
     
     // Get realized P&L directly to ensure accuracy
     const realizedAssetPnL = await this.portfolioValueCalculator.calculateRealizedPL(portfolioId);

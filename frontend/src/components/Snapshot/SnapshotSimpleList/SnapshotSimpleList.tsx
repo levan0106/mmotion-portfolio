@@ -26,8 +26,10 @@ import { usePortfolios } from '../../../hooks/usePortfolios';
 import { useAssets } from '../../../hooks/useAssets';
 import { useAccount } from '../../../hooks/useAccount';
 import { usePortfolioSnapshots } from '../../../hooks/usePortfolioSnapshots';
+import { usePagination } from '../../../hooks/usePagination';
 import { SnapshotResponse, SnapshotQueryParams, SnapshotGranularity } from '../../../types/snapshot.types';
 import { snapshotService } from '../../../services/snapshot.service';
+import { useQueryClient } from 'react-query';
 
 // Import tab components
 import SnapshotPortfolioSummaryTab from './tabs/PortfolioSummaryTab';
@@ -44,6 +46,7 @@ interface SnapshotSimpleListProps {
   showActions?: boolean;
   pageSize?: number;
   refreshTrigger?: number; // Add refresh trigger prop
+  onPortfolioRefresh?: (portfolioId: string) => void; // Add portfolio refresh callback
 }
 
 export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
@@ -54,16 +57,51 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   showActions = true,
   pageSize = 25,
   refreshTrigger,
+  onPortfolioRefresh,
 }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [expandedAssetTypes, setExpandedAssetTypes] = useState<Set<string>>(new Set());
   const [allExpanded, setAllExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const [portfolioPerformanceData, setPortfolioPerformanceData] = useState<any[]>([]);
-  const [assetGroupPerformanceData, setAssetGroupPerformanceData] = useState<any[]>([]);
-  const [assetPerformanceData, setAssetPerformanceData] = useState<any[]>([]);
+  const [portfolioPerformanceData, setPortfolioPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+  const [assetGroupPerformanceData, setAssetGroupPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+  const [assetPerformanceData, setAssetPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
   const [performanceLoading, setPerformanceLoading] = useState(false);
+  
+  // Pagination hooks for each performance tab
+  const portfolioPagination = usePagination(10);
+  const assetGroupPagination = usePagination(10);
+  const assetPagination = usePagination(10);
+  
+  const queryClient = useQueryClient();
+
+  // Function to refresh portfolio data after snapshot creation
+  const refreshPortfolioData = async (portfolioId: string) => {
+    try {
+      // Invalidate React Query cache for portfolio-related data
+      const invalidationPromises = [
+        queryClient.invalidateQueries(['portfolio', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-analytics', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-snapshots', portfolioId]),
+        queryClient.invalidateQueries(['snapshots', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-performance', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-allocation', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-positions', portfolioId]),
+      ];
+      
+      await Promise.all(invalidationPromises);
+      console.log(`✅ React Query cache invalidated for portfolio: ${portfolioId}`);
+      
+      // Reload performance data (this is critical since it uses direct service calls)
+      console.log(`🔄 Reloading performance data for: ${portfolioId}`);
+      await loadPerformanceData();
+      
+      console.log(`✅ Portfolio data refresh completed for: ${portfolioId}`);
+    } catch (error) {
+      console.error('❌ Error refreshing portfolio data:', error);
+    }
+  };
 
   // Load performance data
   const loadPerformanceData = async () => {
@@ -72,14 +110,60 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
     setPerformanceLoading(true);
     try {
       const [portfolioPerf, assetGroupPerf, assetPerf] = await Promise.all([
-        snapshotService.getPortfolioPerformanceSnapshots(portfolioId, { granularity: SnapshotGranularity.DAILY }),
-        snapshotService.getAssetGroupPerformanceSnapshots(portfolioId, { granularity: SnapshotGranularity.DAILY }),
-        snapshotService.getAssetPerformanceSnapshots(portfolioId, { granularity: SnapshotGranularity.DAILY }),
+        snapshotService.getPortfolioPerformanceSnapshotsPaginated(portfolioId, { 
+          granularity: SnapshotGranularity.DAILY,
+          page: portfolioPagination.pagination.page,
+          limit: portfolioPagination.pagination.limit
+        }),
+        snapshotService.getAssetGroupPerformanceSnapshotsPaginated(portfolioId, { 
+          granularity: SnapshotGranularity.DAILY,
+          page: assetGroupPagination.pagination.page,
+          limit: assetGroupPagination.pagination.limit
+        }),
+        snapshotService.getAssetPerformanceSnapshotsPaginated(portfolioId, { 
+          granularity: SnapshotGranularity.DAILY,
+          page: assetPagination.pagination.page,
+          limit: assetPagination.pagination.limit
+        }),
       ]);
 
-      setPortfolioPerformanceData(portfolioPerf || []);
-      setAssetGroupPerformanceData(assetGroupPerf || []);
-      setAssetPerformanceData(assetPerf || []);
+      setPortfolioPerformanceData(portfolioPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      setAssetGroupPerformanceData(assetGroupPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      setAssetPerformanceData(assetPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      
+      // Update pagination state
+      if (portfolioPerf) {
+        portfolioPagination.updatePagination({
+          page: portfolioPerf.page,
+          limit: portfolioPerf.limit,
+          total: portfolioPerf.total,
+          totalPages: portfolioPerf.totalPages,
+          hasNext: portfolioPerf.hasNext,
+          hasPrev: portfolioPerf.hasPrev
+        });
+      }
+      
+      if (assetGroupPerf) {
+        assetGroupPagination.updatePagination({
+          page: assetGroupPerf.page,
+          limit: assetGroupPerf.limit,
+          total: assetGroupPerf.total,
+          totalPages: assetGroupPerf.totalPages,
+          hasNext: assetGroupPerf.hasNext,
+          hasPrev: assetGroupPerf.hasPrev
+        });
+      }
+      
+      if (assetPerf) {
+        assetPagination.updatePagination({
+          page: assetPerf.page,
+          limit: assetPerf.limit,
+          total: assetPerf.total,
+          totalPages: assetPerf.totalPages,
+          hasNext: assetPerf.hasNext,
+          hasPrev: assetPerf.hasPrev
+        });
+      }
     } catch (error) {
       console.error('Error loading performance data:', error);
     } finally {
@@ -89,8 +173,33 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
 
   // Load performance data when portfolioId changes
   useEffect(() => {
+    if (portfolioId) {
+      console.log('🔄 SnapshotSimpleList: Loading performance data for portfolio:', portfolioId);
+      loadPerformanceData();
+    }
+  }, [portfolioId]); // Removed refreshTrigger to avoid infinite loop
+
+  // Pagination handlers
+
+  const handleAssetGroupPageChange = (page: number) => {
+    assetGroupPagination.setPage(page);
     loadPerformanceData();
-  }, [portfolioId, refreshTrigger]);
+  };
+
+  const handleAssetGroupLimitChange = (limit: number) => {
+    assetGroupPagination.setLimit(limit);
+    loadPerformanceData();
+  };
+
+  const handleAssetPageChange = (page: number) => {
+    assetPagination.setPage(page);
+    loadPerformanceData();
+  };
+
+  const handleAssetLimitChange = (limit: number) => {
+    assetPagination.setLimit(limit);
+    loadPerformanceData();
+  };
 
   // Helper functions
   const toggleAssetType = (assetType: string) => {
@@ -226,10 +335,18 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   // Trigger refresh when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger !== undefined) {
-      console.log('SnapshotSimpleList: refreshTrigger changed, refreshing data');
+      console.log('🔄 SnapshotSimpleList: refreshTrigger changed, refreshing data');
       handleRefresh();
     }
   }, [refreshTrigger]);
+
+  // Handle portfolio refresh callback - this will be called from parent components
+  useEffect(() => {
+    if (onPortfolioRefresh && portfolioId) {
+      console.log('🔄 SnapshotSimpleList: Portfolio refresh callback available for:', portfolioId);
+      // The callback will be called from BulkSnapshotModal when snapshot is created
+    }
+  }, [onPortfolioRefresh, portfolioId]);
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -240,24 +357,32 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
     setPage(0);
   };
 
-  const handleRefresh = () => {
-    console.log('handleRefresh called');
+  const handleRefresh = async () => {
+    console.log('🔄 handleRefresh called');
     console.log('refreshSnapshots:', refreshSnapshots);
     console.log('refreshPortfolioSnapshots:', refreshPortfolioSnapshots);
     
     if (refreshSnapshots) {
+      console.log('🔄 Calling refreshSnapshots');
       refreshSnapshots();
     } else {
-      console.error('refreshSnapshots is not available');
+      console.error('❌ refreshSnapshots is not available');
     }
     
     if (refreshPortfolioSnapshots) {
+      console.log('🔄 Calling refreshPortfolioSnapshots');
       refreshPortfolioSnapshots();
     } else {
-      console.error('refreshPortfolioSnapshots is not available');
+      console.error('❌ refreshPortfolioSnapshots is not available');
     }
     
-    // Note: portfolios and assets will refresh automatically due to their hooks
+    // Use refreshPortfolioData for comprehensive refresh
+    if (portfolioId) {
+      console.log('🔄 Calling refreshPortfolioData for comprehensive refresh');
+      await refreshPortfolioData(portfolioId);
+    }
+    
+    console.log('✅ handleRefresh completed');
   };
 
   // Transform snapshots based on view mode
@@ -271,7 +396,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
       .map((snapshot) => ({
         ...snapshot,
         displayName: snapshot.assetSymbol,
-        displayType: assets.find(a => a.symbol === snapshot.assetSymbol)?.type || 'Unknown',
+        displayType: snapshot.assetType || assets.find(a => a.symbol === snapshot.assetSymbol)?.type || 'Unknown',
         displayIcon: <TrendingUpIcon fontSize="small" />,
       }))
       .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime());
@@ -356,6 +481,8 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
             <SnapshotAssetGroupPerformanceTab 
               assetGroupPerformanceData={assetGroupPerformanceData}
               performanceLoading={performanceLoading}
+              onPageChange={handleAssetGroupPageChange}
+              onLimitChange={handleAssetGroupLimitChange}
             />
           )}
 
@@ -363,7 +490,8 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
             <SnapshotAssetPerformanceTab 
               assetPerformanceData={assetPerformanceData}
               performanceLoading={performanceLoading}
-              baseCurrency={baseCurrency}
+              onPageChange={handleAssetPageChange}
+              onLimitChange={handleAssetLimitChange}
             />
           )}
 

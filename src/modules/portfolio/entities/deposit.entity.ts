@@ -66,17 +66,25 @@ export class Deposit {
   @JoinColumn({ name: 'portfolio_id' })
   portfolio: Portfolio;
 
+  isSettled(snapshotDate?: Date): boolean {
+    const isSettled = this.status === 'SETTLED' && this.actualInterest !== null && this.actualInterest !== undefined;
+    if (snapshotDate) {
+      return isSettled && this.settledAt < snapshotDate;
+    }
+    return isSettled;
+  }
+
   // Business Logic Methods
   /**
    * Calculate accrued interest using simple interest formula
    * Interest = Principal × Interest Rate × (Days / 365)
    */
-  calculateAccruedInterest(): number {
-    if (this.status === 'SETTLED') {
+  calculateAccruedInterest(snapshotDate?: Date): number {
+    if (this.isSettled(snapshotDate)) {
       return this.actualInterest || 0;
     }
 
-    const currentDate = new Date();
+    const currentDate = snapshotDate || new Date();
     const startDate = this.startDate instanceof Date ? this.startDate : new Date(this.startDate);
     const endDate = this.endDate instanceof Date ? this.endDate : new Date(this.endDate);
     
@@ -103,17 +111,17 @@ export class Deposit {
   /**
    * Calculate total value (principal + accrued interest for active, principal + actual interest for settled)
    */
-  calculateTotalValue(): number {
+  calculateTotalValue(snapshotDate?: Date): number {
     const principal = typeof this.principal === 'string' ? parseFloat(this.principal) : this.principal;
     
     // If deposit is settled, use actual interest received
-    if (this.status === 'SETTLED' && this.actualInterest !== null && this.actualInterest !== undefined) {
+    if (this.isSettled(snapshotDate)) {
       const actualInterest = typeof this.actualInterest === 'string' ? parseFloat(this.actualInterest) : this.actualInterest;
       return principal + actualInterest;
     }
     
     // For active deposits, use accrued interest
-    const accruedInterest = this.calculateAccruedInterest();
+    const accruedInterest = this.calculateAccruedInterest(snapshotDate);
     return principal + accruedInterest;
   }
 

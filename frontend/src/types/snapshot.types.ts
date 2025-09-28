@@ -34,6 +34,7 @@ export interface SnapshotResponse {
   portfolioId: string;
   assetId: string;
   assetSymbol: string;
+  assetType: string;
   snapshotDate: string;
   granularity: SnapshotGranularity;
   quantity: number;
@@ -60,6 +61,7 @@ export interface CreateSnapshotRequest {
   portfolioId: string;
   assetId: string;
   assetSymbol: string;
+  assetType: string;
   snapshotDate: string;
   granularity: SnapshotGranularity;
   quantity: number;

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GlobalAsset } from './entities/global-asset.entity';
 import { AssetPrice } from './entities/asset-price.entity';
@@ -59,7 +59,7 @@ import { LoggingModule } from '../logging/logging.module';
       TradeDetail,
     ]),
     MarketDataModule,
-    TradingModule,
+    forwardRef(() => TradingModule),
     LoggingModule,
   ],
   controllers: [

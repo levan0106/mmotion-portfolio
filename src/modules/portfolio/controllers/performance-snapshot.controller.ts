@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PerformanceSnapshotService, PerformanceSnapshotResult } from '../services/performance-snapshot.service';
+import { PaginationDto, PaginatedResponseDto } from '../dto/pagination.dto';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { PortfolioPerformanceSnapshot } from '../entities/portfolio-performance-snapshot.entity';
 import { AssetPerformanceSnapshot } from '../entities/asset-performance-snapshot.entity';
@@ -58,71 +59,83 @@ export class PerformanceSnapshotController {
   }
 
   @Get('portfolio/:portfolioId')
-  @ApiOperation({ summary: 'Get portfolio performance snapshots' })
+  @ApiOperation({ summary: 'Get portfolio performance snapshots with pagination' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'granularity', required: false, enum: SnapshotGranularity })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10, max: 100)' })
   @ApiResponse({ status: 200, description: 'Portfolio performance snapshots retrieved successfully' })
   async getPortfolioPerformanceSnapshots(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('granularity') granularity?: SnapshotGranularity
-  ): Promise<PortfolioPerformanceSnapshot[]> {
-    return await this.performanceSnapshotService.getPortfolioPerformanceSnapshots(
+    @Query('granularity') granularity?: SnapshotGranularity,
+    @Query() pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<PortfolioPerformanceSnapshot>> {
+    return await this.performanceSnapshotService.getPortfolioPerformanceSnapshotsPaginated(
       portfolioId,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
-      granularity
+      granularity,
+      pagination
     );
   }
 
   @Get('asset/:portfolioId')
-  @ApiOperation({ summary: 'Get asset performance snapshots' })
+  @ApiOperation({ summary: 'Get asset performance snapshots with pagination' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'assetId', required: false, description: 'Asset ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'granularity', required: false, enum: SnapshotGranularity })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10, max: 100)' })
   @ApiResponse({ status: 200, description: 'Asset performance snapshots retrieved successfully' })
   async getAssetPerformanceSnapshots(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Query('assetId') assetId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('granularity') granularity?: SnapshotGranularity
-  ): Promise<AssetPerformanceSnapshot[]> {
-    return await this.performanceSnapshotService.getAssetPerformanceSnapshots(
+    @Query('granularity') granularity?: SnapshotGranularity,
+    @Query() pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<AssetPerformanceSnapshot>> {
+    return await this.performanceSnapshotService.getAssetPerformanceSnapshotsPaginated(
       portfolioId,
       assetId,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
-      granularity
+      granularity,
+      pagination
     );
   }
 
   @Get('group/:portfolioId')
-  @ApiOperation({ summary: 'Get asset group performance snapshots' })
+  @ApiOperation({ summary: 'Get asset group performance snapshots with pagination' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'assetType', required: false, description: 'Asset type (Stock, Bond, Crypto, etc.)' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'granularity', required: false, enum: SnapshotGranularity })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10, max: 100)' })
   @ApiResponse({ status: 200, description: 'Asset group performance snapshots retrieved successfully' })
   async getAssetGroupPerformanceSnapshots(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Query('assetType') assetType?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('granularity') granularity?: SnapshotGranularity
-  ): Promise<AssetGroupPerformanceSnapshot[]> {
-    return await this.performanceSnapshotService.getAssetGroupPerformanceSnapshots(
+    @Query('granularity') granularity?: SnapshotGranularity,
+    @Query() pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<AssetGroupPerformanceSnapshot>> {
+    return await this.performanceSnapshotService.getAssetGroupPerformanceSnapshotsPaginated(
       portfolioId,
       assetType,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
-      granularity
+      granularity,
+      pagination
     );
   }
 

@@ -23,22 +23,19 @@ export class DepositCalculationService {
     private readonly depositRepository: Repository<Deposit>,
   ) {}
 
-  /**
-   * Calculate deposit data for a portfolio
-   * @param portfolioId - Portfolio ID
-   * @returns DepositCalculationData
-   */
-  async calculateDepositData(portfolioId: string): Promise<DepositCalculationData> {
-    const deposits = await this.depositRepository.find({
-      where: { portfolioId },
-    });
-
+  private async calculateDepositsData(deposits: Deposit[], snapshotDate?: Date): Promise<DepositCalculationData> {
+    
     let totalDepositPrincipal = 0;
     let totalDepositInterest = 0;
     let totalDepositValue = 0;
-    let totalDepositCount = deposits.length;
+    let totalDepositCount = 0;
     let unrealizedDepositPnL = 0;
     let realizedDepositPnL = 0;
+    
+    // Chỉ lấy deposit active trong khoảng thời gian snapshotDate và chưa tất toán
+    if (snapshotDate) {
+      deposits = deposits.filter(deposit => deposit.startDate <= snapshotDate && deposit.settledAt < snapshotDate);
+    }
 
     deposits.forEach(deposit => {
       const principal = typeof deposit.principal === 'string' 
@@ -49,33 +46,32 @@ export class DepositCalculationService {
         ? parseFloat(deposit.interestRate) 
         : (deposit.interestRate || 0);
 
-      if (deposit.status === 'ACTIVE') {
+      if (deposit.status === 'ACTIVE' || deposit.status === 'SETTLED') {
         // Only count principal for active deposits
         totalDepositPrincipal += principal;
-        // For active deposits, calculate accrued interest
-        const accruedInterest = deposit.calculateAccruedInterest();
+
+        // For active deposits, calculate accrued interest unrealizedPnL
+        const accruedInterest = deposit.calculateAccruedInterest(snapshotDate);
         const parsedAccruedInterest = typeof accruedInterest === 'string' 
           ? parseFloat(accruedInterest) 
           : (accruedInterest || 0);
         
-        totalDepositInterest += parsedAccruedInterest;
-        unrealizedDepositPnL += parsedAccruedInterest;
+        totalDepositInterest += parsedAccruedInterest
+        unrealizedDepositPnL += deposit.isSettled(snapshotDate) ? 0 : parsedAccruedInterest;
+        realizedDepositPnL += deposit.isSettled(snapshotDate) ? parsedAccruedInterest : 0;
         
-        const totalValue = deposit.calculateTotalValue();
+        const totalValue = deposit.calculateTotalValue(snapshotDate);
         const parsedTotalValue = typeof totalValue === 'string' 
           ? parseFloat(totalValue) 
           : (totalValue || 0);
         
-        totalDepositValue += parsedTotalValue;
-      } else if (deposit.status === 'SETTLED') {
-        // For settled deposits, use actual interest
-        const actualInterest = typeof deposit.actualInterest === 'string' 
-          ? parseFloat(deposit.actualInterest) 
-          : (deposit.actualInterest || 0);
-        
-        totalDepositInterest += actualInterest;
-        realizedDepositPnL += actualInterest;
-        // Don't add to totalDepositValue for settled deposits
+        totalDepositValue += deposit.isSettled(snapshotDate) ? 0 : parsedTotalValue; // Don't add to totalDepositValue for settled deposits
+      } else {
+        // For inactive deposits, don't add to totalDepositInterest, unrealizedDepositPnL, and realizedDepositPnL
+        totalDepositInterest += 0;
+        unrealizedDepositPnL += 0;
+        realizedDepositPnL += 0;
+        totalDepositValue += 0; 
       }
     });
 
@@ -83,66 +79,35 @@ export class DepositCalculationService {
       totalDepositPrincipal: Number(totalDepositPrincipal.toFixed(8)),
       totalDepositInterest: Number(totalDepositInterest.toFixed(8)),
       totalDepositValue: Number(totalDepositValue.toFixed(8)),
-      totalDepositCount,
+      totalDepositCount: deposits.length,
       unrealizedDepositPnL: Number(unrealizedDepositPnL.toFixed(8)),
       realizedDepositPnL: Number(realizedDepositPnL.toFixed(8)),
     };
   }
+  /**
+   * Calculate deposit data for a portfolio
+   * @param portfolioId - Portfolio ID
+   * @param snapshotDate - Snapshot date
+   * @returns DepositCalculationData
+   */
+  async calculateDepositDataByPortfolioId(portfolioId: string, snapshotDate?: Date): Promise<DepositCalculationData> {
+    let deposits = await this.depositRepository.find({
+      where: { portfolioId },
+    });
+
+    // All logic should be done in calculateDepositsData
+    return this.calculateDepositsData(deposits, snapshotDate);
+  }
 
   /**
    * Calculate deposit data for all portfolios (global)
+   * @param snapshotDate - Snapshot date
    * @returns DepositCalculationData
    */
-  async calculateGlobalDepositData(): Promise<DepositCalculationData> {
+  async calculateGlobalDepositData(snapshotDate?: Date): Promise<DepositCalculationData> {
     const deposits = await this.depositRepository.find();
 
-    let totalDepositPrincipal = 0;
-    let totalDepositInterest = 0;
-    let totalDepositValue = 0;
-    let totalDepositCount = deposits.length;
-    let unrealizedDepositPnL = 0;
-    let realizedDepositPnL = 0;
-
-    deposits.forEach(deposit => {
-      const principal = typeof deposit.principal === 'string' 
-        ? parseFloat(deposit.principal) 
-        : (deposit.principal || 0);
-      
-      if (deposit.status === 'ACTIVE') {
-        // Only count principal for active deposits
-        totalDepositPrincipal += principal;
-        const accruedInterest = deposit.calculateAccruedInterest();
-        const parsedAccruedInterest = typeof accruedInterest === 'string' 
-          ? parseFloat(accruedInterest) 
-          : (accruedInterest || 0);
-        
-        totalDepositInterest += parsedAccruedInterest;
-        unrealizedDepositPnL += parsedAccruedInterest;
-        
-        const totalValue = deposit.calculateTotalValue();
-        const parsedTotalValue = typeof totalValue === 'string' 
-          ? parseFloat(totalValue) 
-          : (totalValue || 0);
-        
-        totalDepositValue += parsedTotalValue;
-      } else if (deposit.status === 'SETTLED') {
-        const actualInterest = typeof deposit.actualInterest === 'string' 
-          ? parseFloat(deposit.actualInterest) 
-          : (deposit.actualInterest || 0);
-        
-        totalDepositInterest += actualInterest;
-        realizedDepositPnL += actualInterest;
-        // Don't add to totalDepositValue for settled deposits
-      }
-    });
-
-    return {
-      totalDepositPrincipal: Number(totalDepositPrincipal.toFixed(8)),
-      totalDepositInterest: Number(totalDepositInterest.toFixed(8)),
-      totalDepositValue: Number(totalDepositValue.toFixed(8)),
-      totalDepositCount,
-      unrealizedDepositPnL: Number(unrealizedDepositPnL.toFixed(8)),
-      realizedDepositPnL: Number(realizedDepositPnL.toFixed(8)),
-    };
+    // All logic should be done in calculateDepositsData
+    return this.calculateDepositsData(deposits, snapshotDate);
   }
 }

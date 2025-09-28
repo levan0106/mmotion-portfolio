@@ -33,6 +33,7 @@ import {
 import { apiService } from '../../services/api';
 import { useAccount } from '../../hooks/useAccount';
 import { SnapshotGranularity } from '../../types/snapshot.types';
+import { useQueryClient } from 'react-query';
 
 interface Portfolio {
   portfolioId: string;
@@ -47,6 +48,7 @@ interface BulkSnapshotModalProps {
   onClose: () => void;
   onSuccess?: (portfolioId: string, snapshotDate: string) => void;
   onError?: (error: string) => void;
+  onPortfolioRefresh?: (portfolioId: string) => void; // Add portfolio refresh callback
 }
 
 export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
@@ -54,9 +56,11 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   onClose,
   onSuccess,
   onError,
+  onPortfolioRefresh,
 }) => {
   const { accountId } = useAccount();
   const theme = useTheme();
+  const queryClient = useQueryClient();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [snapshotDate, setSnapshotDate] = useState<string>(
@@ -71,6 +75,37 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   }>({ type: null, message: '' });
 
   const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+
+  // Function to refresh portfolio data after snapshot creation
+  const refreshPortfolioData = async (portfolioId: string) => {
+    try {
+      console.log(`🔄 Starting portfolio data refresh for: ${portfolioId}`);
+      
+      // Invalidate React Query cache for portfolio-related data
+      const invalidationPromises = [
+        queryClient.invalidateQueries(['portfolio', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-analytics', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-snapshots', portfolioId]),
+        queryClient.invalidateQueries(['snapshots', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-performance', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-allocation', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-positions', portfolioId]),
+      ];
+      
+      await Promise.all(invalidationPromises);
+      console.log(`✅ React Query cache invalidated for portfolio: ${portfolioId}`);
+      
+      // Call custom refresh callback if provided
+      if (onPortfolioRefresh) {
+        console.log(`🔄 Calling custom refresh callback for: ${portfolioId}`);
+        onPortfolioRefresh(portfolioId);
+      }
+      
+      console.log(`✅ Portfolio data refresh completed for: ${portfolioId}`);
+    } catch (error) {
+      console.error('❌ Error refreshing portfolio data:', error);
+    }
+  };
 
   // Load portfolios from portfolio table
   useEffect(() => {
@@ -138,18 +173,27 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
           
           // Call success callback
           onSuccess?.(selectedPortfolioId, snapshotDate);
+          
+          // Auto-refresh portfolio data after successful snapshot creation
+          await refreshPortfolioData(selectedPortfolioId);
+          
+          // Close modal after refresh is complete
+          setTimeout(() => {
+            handleReset();
+            onClose();
+          }, 400); // Reduced delay since refresh is already complete
         } else {
           setStatus({
             type: 'info',
             message: responseData.message || `No assets found in portfolio ${selectedPortfolio?.name || 'portfolio'}. No snapshots created.`
           });
+          
+          // Close modal for info case too
+          setTimeout(() => {
+            handleReset();
+            onClose();
+          }, 500);
         }
-
-        // Reset form after a short delay
-        setTimeout(() => {
-          handleReset();
-          onClose();
-        }, 3000);
       } else {
         throw new Error('Invalid response from server');
       }

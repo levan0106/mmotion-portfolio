@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, SelectQueryBuilder } from 'typeorm';
+import { normalizeDateToString } from '../utils/date-normalization.util';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
@@ -234,11 +235,18 @@ export class PortfolioSnapshotRepository {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const result = await this.repository.delete({
-      portfolioId,
-      snapshotDate,
-      granularity,
-    });
+    const normalizedDate = normalizeDateToString(snapshotDate);
+    console.log(`🗑️ Deleting portfolio snapshots for portfolio ${portfolioId}, date ${normalizedDate}, granularity ${granularity}`);
+    
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .where('portfolioId = :portfolioId', { portfolioId })
+      .andWhere('DATE(snapshotDate) = :snapshotDate', { snapshotDate: normalizedDate })
+      .andWhere('granularity = :granularity', { granularity })
+      .execute();
+    
+    console.log(`🗑️ Deleted ${result.affected || 0} portfolio snapshots`);
     return result.affected || 0;
   }
 
@@ -277,7 +285,7 @@ export class PortfolioSnapshotRepository {
       .createQueryBuilder()
       .delete()
       .where('portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshotDate = :snapshotDate', { snapshotDate });
+      .andWhere('DATE(snapshotDate) = :snapshotDate', { snapshotDate: normalizeDateToString(snapshotDate) });
 
     if (granularity) {
       queryBuilder.andWhere('granularity = :granularity', { granularity });

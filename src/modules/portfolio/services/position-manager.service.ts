@@ -33,10 +33,7 @@ export class PositionManagerService {
       }
 
       // Use PortfolioCalculationService to calculate positions
-      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
-        portfolioId,
-        parseFloat(portfolio.cashBalance.toString())
-      );
+      const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
 
       return calculation.assetPositions || [];
     } catch (error) {
@@ -68,10 +65,7 @@ export class PositionManagerService {
       }
 
       // Use PortfolioCalculationService to calculate positions
-      const calculation = await this.portfolioCalculationService.calculatePortfolioValues(
-        portfolioId,
-        parseFloat(portfolio.cashBalance.toString())
-      );
+      const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
 
       const positions = calculation.assetPositions || [];
       

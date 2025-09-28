@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TradingController } from './controllers/trading.controller';
@@ -29,6 +29,7 @@ import { GlobalAsset } from '../asset/entities/global-asset.entity';
 import { AssetPrice } from '../asset/entities/asset-price.entity';
 import { AssetValueCalculatorService } from '../asset/services/asset-value-calculator.service';
 import { MarketDataModule } from '../market-data/market-data.module';
+import { AssetModule } from '../asset/asset.module';
 import { SharedModule } from '../shared/shared.module';
 
 /**
@@ -50,6 +51,7 @@ import { SharedModule } from '../shared/shared.module';
       AssetPrice,
     ]),
     MarketDataModule,
+    forwardRef(() => AssetModule),
     SharedModule,
     // Import CacheModule conditionally
     ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({

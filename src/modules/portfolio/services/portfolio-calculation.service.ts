@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, LessThanOrEqual, Repository } from 'typeorm';
 import { Trade } from '../../trading/entities/trade.entity';
 import { TradeDetail } from '../../trading/entities/trade-detail.entity';
 import { Asset } from '../../asset/entities/asset.entity';
@@ -8,12 +8,12 @@ import { MarketDataService } from '../../market-data/services/market-data.servic
 import { GlobalAsset } from '../../asset/entities/global-asset.entity';
 import { AssetPrice } from '../../asset/entities/asset-price.entity';
 import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
+import { PriceHistoryService } from '../../asset/services/price-history.service';
 
-export interface PortfolioCalculationResult {
+export interface PortfolioAssetsCalculationResult {
   totalValue: number;
   unrealizedPl: number;
   realizedPl: number;
-  cashBalance: number;
   assetPositions: Array<{
     assetId: string;
     symbol: string;
@@ -44,6 +44,7 @@ export class PortfolioCalculationService {
     private readonly assetPriceRepository: Repository<AssetPrice>,
     private readonly marketDataService: MarketDataService,
     private readonly assetValueCalculator: AssetValueCalculatorService,
+    private readonly priceHistoryService: PriceHistoryService,
   ) {}
 
   /**
@@ -52,13 +53,18 @@ export class PortfolioCalculationService {
    * @param currentCashBalance - Current cash balance
    * @returns Promise<PortfolioCalculationResult>
    */
-  async calculatePortfolioValues(
+  async calculatePortfolioAssetValues(
     portfolioId: string,
-    currentCashBalance: number = 0,
-  ): Promise<PortfolioCalculationResult> {
-    // Get all trades for this portfolio
+    snapshotDate?: Date,
+  ): Promise<PortfolioAssetsCalculationResult> {
+    // Get all trades for this portfolio up to snapshot date
+    const whereCondition: any = { portfolioId };
+    if (snapshotDate) {
+      whereCondition.tradeDate = LessThanOrEqual(snapshotDate);
+    }
+    
     const trades = await this.tradeRepository.find({
-      where: { portfolioId },
+      where: whereCondition,
       relations: ['asset'],
       order: { tradeDate: 'ASC' },
     });
@@ -68,16 +74,16 @@ export class PortfolioCalculationService {
         totalValue: 0,
         unrealizedPl: 0,
         realizedPl: 0,
-        cashBalance: currentCashBalance,
         assetPositions: [],
       };
     }
 
+
     // Calculate realized P&L from trade details
-    const realizedPl = await this.calculateRealizedPl(portfolioId);
+    const realizedPl = await this.calculateRealizedPl(portfolioId, snapshotDate);
 
     // Calculate current positions and unrealized P&L
-    const positions = await this.calculateCurrentPositions(portfolioId, trades);
+    const positions = await this.calculateCurrentPositions(portfolioId, trades, snapshotDate);
 
     // Calculate total value (only asset positions, excluding cash balance)
     const totalValue = positions.reduce((sum, pos) => sum + parseFloat(pos.currentValue.toString()), 0);
@@ -89,9 +95,7 @@ export class PortfolioCalculationService {
       totalValue,
       unrealizedPl,
       realizedPl,
-      cashBalance: currentCashBalance,
-      assetPositions: positions,
-
+      assetPositions: positions
     };
   }
 
@@ -100,11 +104,17 @@ export class PortfolioCalculationService {
    * @param portfolioId - Portfolio ID
    * @returns Promise<number>
    */
-  private async calculateRealizedPl(portfolioId: string): Promise<number> {
-    const result = await this.tradeDetailRepository
+  private async calculateRealizedPl(portfolioId: string, snapshotDate?: Date): Promise<number> {
+    const queryBuilder = this.tradeDetailRepository
       .createQueryBuilder('td')
       .innerJoin('trades', 't', 'td.sellTradeId = t.tradeId')
-      .where('t.portfolio_id = :portfolioId', { portfolioId })
+      .where('t.portfolio_id = :portfolioId', { portfolioId });
+    
+    if (snapshotDate) {
+      queryBuilder.andWhere('t.tradeDate <= :snapshotDate', { snapshotDate });
+    }
+    
+    const result = await queryBuilder
       .select('COALESCE(SUM(td.pnl), 0)', 'totalRealizedPl')
       .getRawOne();
 
@@ -120,6 +130,7 @@ export class PortfolioCalculationService {
   private async calculateCurrentPositions(
     portfolioId: string,
     trades: Trade[],
+    snapshotDate?: Date,
   ): Promise<Array<{
     assetId: string;
     symbol: string;
@@ -142,7 +153,7 @@ export class PortfolioCalculationService {
     const positions = [];
 
     for (const [assetId, assetTradesList] of assetTrades) {
-      const position = await this.calculateAssetPosition(assetId, assetTradesList);
+      const position = await this.calculateAssetPosition(assetId, assetTradesList, snapshotDate);
       if (position.quantity > 0) {
         positions.push(position);
       }
@@ -160,6 +171,7 @@ export class PortfolioCalculationService {
   private async calculateAssetPosition(
     assetId: string,
     trades: Trade[],
+    snapshotDate?: Date,
   ): Promise<{
     assetId: string;
     symbol: string;
@@ -178,30 +190,10 @@ export class PortfolioCalculationService {
       assetType = trade.asset?.type || 'UNKNOWN';
     }
 
-    // Get current price from global assets (new logic)
-    // Fallback to latest trade price if global asset price is not available
-    let currentPrice: number;
-    try {
-      // Try to get price from global assets first
-      const globalAssetPrice = await this.getCurrentPriceFromGlobalAsset(symbol);
-      if (globalAssetPrice && globalAssetPrice > 0) {
-        currentPrice = globalAssetPrice;
-      } else {
-        // Fallback to market data service
-        currentPrice = await this.marketDataService.getCurrentPrice(symbol);
-        if (currentPrice === 0) {
-          // Final fallback to latest trade price
-          const latestTrade = trades[trades.length - 1];
-          currentPrice = parseFloat(latestTrade.price.toString());
-        }
-      }
-    } catch (error) {
-      // Fallback to latest trade price if all services fail
-      const latestTrade = trades[trades.length - 1];
-      currentPrice = parseFloat(latestTrade.price.toString());
-    }
+    // Get price for snapshot date (use endDate as snapshot date if not provided)
+    let currentPrice: number = await this.getAssetPriceFinal(symbol, snapshotDate, trades);
     
-    const position = this.assetValueCalculator.calculateAssetPositionFIFO( trades, currentPrice);
+    const position = this.assetValueCalculator.calculateAssetPositionFIFOFinal( trades, currentPrice);
 
     return {
       assetId,
@@ -214,20 +206,58 @@ export class PortfolioCalculationService {
       currentPrice: currentPrice,
     };
   }
+  
 
+  private async getAssetPriceFinal(symbol: string, snapshotDate?: Date, trades?: Trade[]): Promise<number> {
+    const targetDate = snapshotDate || new Date();
+    let currentPrice: number;
 
-  /**
-   * Calculate NAV for a portfolio (cash + assets)
-   * @param portfolioId - Portfolio ID
-   * @param currentCashBalance - Current cash balance
-   * @returns Promise<number>
-   */
-  async calculateNAV(portfolioId: string, currentCashBalance: number = 0): Promise<number> {
-    const result = await this.calculatePortfolioValues(portfolioId, currentCashBalance);
-    // NAV = cash balance + asset positions value
-    const assetValue = result.assetPositions.reduce((sum, pos) => sum + pos.currentValue, 0);
-    return currentCashBalance + assetValue;
+    try {
+
+      // consider snapshotDate if not provided use price from global asset
+      // if snapshotDate is provided, use price from price history
+
+      // PRIORITY 1: Get price from price history for the snapshot date
+      const historicalPrice = await this.priceHistoryService.getPriceByDate(symbol, targetDate);
+      if (historicalPrice !== null && historicalPrice > 0) {
+        currentPrice = historicalPrice;
+      } else {
+        // PRIORITY 2: Fallback to current global asset price
+        const globalAssetPrice = await this.getCurrentPriceFromGlobalAsset(symbol);
+        if (globalAssetPrice && globalAssetPrice > 0) {
+          currentPrice = globalAssetPrice;
+        } else {
+          // PRIORITY 3: Fallback to market data service
+          currentPrice = await this.marketDataService.getCurrentPrice(symbol);
+          if (currentPrice === 0) {
+            // PRIORITY 4: Final fallback to latest trade price
+            if (trades && trades.length > 0) {
+              const latestTrade = trades[trades.length - 1];
+              currentPrice = parseFloat(latestTrade.price.toString());
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Fallback to latest trade price if all services fail
+      const latestTrade = trades[trades.length - 1];
+      currentPrice = parseFloat(latestTrade.price.toString());
+    }
+    return currentPrice;
   }
+
+  // /**
+  //  * Calculate NAV for a portfolio (cash + assets)
+  //  * @param portfolioId - Portfolio ID
+  //  * @param currentCashBalance - Current cash balance
+  //  * @returns Promise<number>
+  //  */
+  // async calculateNAV(portfolioId: string, currentCashBalance: number = 0, snapshotDate?: Date): Promise<number> {
+  //   const result = await this.calculatePortfolioAssetValues(portfolioId, snapshotDate);
+  //   // NAV = cash balance + asset positions value
+  //   const assetValue = result.assetPositions.reduce((sum, pos) => sum + pos.currentValue, 0);
+  //   return currentCashBalance + assetValue;
+  // }
 
   /**
    * Get current price from global assets

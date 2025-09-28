@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, Between, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { normalizeDateToString, getDateCondition, getDateRangeConditionSQL } from '../utils/date-normalization.util';
 import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.entity';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 
@@ -143,45 +144,48 @@ export class SnapshotRepository {
     });
   }
 
-  /**
-   * Find snapshots by date range with aggregation
-   */
-  async findAggregatedByDate(
-    portfolioId: string,
-    startDate: Date,
-    endDate: Date,
-    granularity: SnapshotGranularity = SnapshotGranularity.DAILY
-  ): Promise<SnapshotAggregationResult[]> {
-    const queryBuilder = this.repository
-      .createQueryBuilder('snapshot')
-      .select([
-        'snapshot.portfolioId as "portfolioId"',
-        'snapshot.snapshotDate as "snapshotDate"',
-        'snapshot.granularity as "granularity"',
-        'SUM(snapshot.currentValue) as "totalValue"',
-        'SUM(snapshot.totalPl) as "totalPl"',
-        'AVG(snapshot.returnPercentage) as "totalReturn"',
-        'COUNT(DISTINCT snapshot.assetId) as "assetCount"',
-      ])
-      .where('snapshot.portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshot.snapshotDate BETWEEN :startDate AND :endDate', { startDate, endDate })
-      .andWhere('snapshot.granularity = :granularity', { granularity })
-      .andWhere('snapshot.isActive = :isActive', { isActive: true })
-      .groupBy('snapshot.portfolioId, snapshot.snapshotDate, snapshot.granularity')
-      .orderBy('snapshot.snapshotDate', 'ASC');
+  // /**
+  //  * Find snapshots by date range with aggregation
+  //  */
+  // async findAggregatedByDate(
+  //   portfolioId: string,
+  //   startDate: Date,
+  //   endDate: Date,
+  //   granularity: SnapshotGranularity = SnapshotGranularity.DAILY
+  // ): Promise<SnapshotAggregationResult[]> {
+  //   const queryBuilder = this.repository
+  //     .createQueryBuilder('snapshot')
+  //     .select([
+  //       'snapshot.portfolioId as "portfolioId"',
+  //       'snapshot.snapshotDate as "snapshotDate"',
+  //       'snapshot.granularity as "granularity"',
+  //       'SUM(snapshot.currentValue) as "totalValue"',
+  //       'SUM(snapshot.totalPl) as "totalPl"',
+  //       'AVG(snapshot.returnPercentage) as "totalReturn"',
+  //       'COUNT(DISTINCT snapshot.assetId) as "assetCount"',
+  //     ])
+  //     .where('snapshot.portfolioId = :portfolioId', { portfolioId })
+  //     .andWhere('DATE(snapshot.snapshotDate) BETWEEN :startDate AND :endDate', { 
+  //       startDate: normalizeDateToString(startDate), 
+  //       endDate: normalizeDateToString(endDate) 
+  //     })
+  //     .andWhere('snapshot.granularity = :granularity', { granularity })
+  //     .andWhere('snapshot.isActive = :isActive', { isActive: true })
+  //     .groupBy('snapshot.portfolioId, snapshot.snapshotDate, snapshot.granularity')
+  //     .orderBy('snapshot.snapshotDate', 'ASC');
 
-    const results = await queryBuilder.getRawMany();
+  //   const results = await queryBuilder.getRawMany();
     
-    return results.map(result => ({
-      portfolioId: result.portfolioId,
-      snapshotDate: new Date(result.snapshotDate),
-      granularity: result.granularity,
-      totalValue: parseFloat(result.totalValue) || 0,
-      totalPl: parseFloat(result.totalPl) || 0,
-      totalReturn: parseFloat(result.totalReturn) || 0,
-      assetCount: parseInt(result.assetCount) || 0,
-    }));
-  }
+  //   return results.map(result => ({
+  //     portfolioId: result.portfolioId,
+  //     snapshotDate: new Date(result.snapshotDate),
+  //     granularity: result.granularity,
+  //     totalValue: parseFloat(result.totalValue) || 0,
+  //     totalPl: parseFloat(result.totalPl) || 0,
+  //     totalReturn: parseFloat(result.totalReturn) || 0,
+  //     assetCount: parseInt(result.assetCount) || 0,
+  //   }));
+  // }
 
   /**
    * Find snapshots by asset symbol
@@ -198,11 +202,11 @@ export class SnapshotRepository {
       .andWhere('snapshot.isActive = :isActive', { isActive: true });
 
     if (startDate) {
-      queryBuilder.andWhere('snapshot.snapshotDate >= :startDate', { startDate });
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) >= :startDate', { startDate: normalizeDateToString(startDate) });
     }
 
     if (endDate) {
-      queryBuilder.andWhere('snapshot.snapshotDate <= :endDate', { endDate });
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) <= :endDate', { endDate: normalizeDateToString(endDate) });
     }
 
     if (granularity) {
@@ -387,11 +391,11 @@ export class SnapshotRepository {
     }
 
     if (options.startDate) {
-      queryBuilder.andWhere('snapshot.snapshotDate >= :startDate', { startDate: options.startDate });
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) >= :startDate', { startDate: normalizeDateToString(options.startDate) });
     }
 
     if (options.endDate) {
-      queryBuilder.andWhere('snapshot.snapshotDate <= :endDate', { endDate: options.endDate });
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) <= :endDate', { endDate: normalizeDateToString(options.endDate) });
     }
 
     // Default to only active snapshots if isActive is not explicitly set
@@ -413,16 +417,18 @@ export class SnapshotRepository {
    * Delete snapshots by portfolio, date, and granularity
    * This is used to ensure only one snapshot per day per portfolio
    */
-  async deleteByPortfolioDateAndGranularity(
+  async deleteAssetAllocationSnapshots(
     portfolioId: string,
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const result = await this.repository.delete({
-      portfolioId,
-      snapshotDate,
-      granularity,
-    });
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .where('portfolioId = :portfolioId', { portfolioId })
+      .andWhere('DATE(snapshotDate) = :snapshotDate', { snapshotDate: normalizeDateToString(snapshotDate) })
+      .andWhere('granularity = :granularity', { granularity })
+      .execute();
     return result.affected || 0;
   }
 
@@ -430,7 +436,7 @@ export class SnapshotRepository {
    * Delete snapshots by portfolio and date range
    * This is used to delete snapshots for a specific period
    */
-  async deleteByPortfolioAndDateRange(
+  async deleteAssetAllocationByPortfolioAndDateRange(
     portfolioId: string,
     startDate: Date,
     endDate: Date,
@@ -439,8 +445,8 @@ export class SnapshotRepository {
     const queryBuilder = this.repository.createQueryBuilder()
       .delete()
       .where('portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshotDate >= :startDate', { startDate })
-      .andWhere('snapshotDate <= :endDate', { endDate });
+      .andWhere('DATE(snapshotDate) >= :startDate', { startDate: normalizeDateToString(startDate) })
+      .andWhere('DATE(snapshotDate) <= :endDate', { endDate: normalizeDateToString(endDate) });
 
     if (granularity) {
       queryBuilder.andWhere('granularity = :granularity', { granularity });
@@ -462,7 +468,7 @@ export class SnapshotRepository {
     const queryBuilder = this.repository.createQueryBuilder()
       .delete()
       .where('portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshotDate = :snapshotDate', { snapshotDate });
+      .andWhere('DATE(snapshotDate) = :snapshotDate', { snapshotDate: normalizeDateToString(snapshotDate) });
 
     if (granularity) {
       queryBuilder.andWhere('granularity = :granularity', { granularity });

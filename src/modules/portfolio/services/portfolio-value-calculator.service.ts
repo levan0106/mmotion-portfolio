@@ -133,12 +133,12 @@ export class PortfolioValueCalculatorService {
    * @param portfolioId - Portfolio ID
    * @returns Array of asset positions
    */
-  private async getAssetPositions(portfolioId: string): Promise<AssetPosition[]> {
+  private async getAssetPositions(portfolioId: string, snapshotDate?: Date): Promise<AssetPosition[]> {
     try {
       // Use the existing logic from PortfolioCalculationService
-      const result = await this.portfolioCalculationService.calculatePortfolioValues(
+      const result = await this.portfolioCalculationService.calculatePortfolioAssetValues(
         portfolioId,
-        0 // We don't need cash balance here as we'll get it separately
+        snapshotDate
       );
 
       // Transform to AssetPosition format

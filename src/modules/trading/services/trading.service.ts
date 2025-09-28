@@ -649,7 +649,7 @@ export class TradingService {
     // Use PortfolioCalculationService for consistent P&L calculations
     let portfolioCalculation;
     try {
-      portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+      portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
     } catch (error) {
       console.error('Error getting portfolio calculation:', error);
       portfolioCalculation = { assetPositions: [], totalValue: 0 };
@@ -904,7 +904,7 @@ export class TradingService {
       console.error('Error calculating unrealized P&L from NAV snapshots:', error);
       // Fallback: use current portfolio calculation
       try {
-        const portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+        const portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
         const currentUnrealizedPl = portfolioCalculation.assetPositions.reduce(
           (sum, position) => sum + (parseFloat(position.unrealizedPl?.toString() || '0') || 0),
           0
@@ -974,7 +974,7 @@ export class TradingService {
       // Get portfolio calculation for unrealized P&L
       let portfolioCalculation;
       try {
-        portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioValues(portfolioId, 0);
+        portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
       } catch (error) {
         console.error('Error getting portfolio calculation for asset performance:', error);
         portfolioCalculation = { assetPositions: [] };

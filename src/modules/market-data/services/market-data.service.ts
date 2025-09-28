@@ -551,7 +551,7 @@ export class MarketDataService {
             goldData = response1.data.Data.goldPriceWorldHistories.map((item: any) => ({
               ...item,
               date: item.lastUpdated?.split(' ')[0], // Use lastUpdated instead of lastUpdate
-              price: parseFloat(item.buyPrice)
+              price: parseFloat(item.buyPrice) * 1000 // multiply by 1000 for DOJI
             }));
           } else {
             this.logger.warn(`No ${symbol} data found in CAFEF response1`);
@@ -1075,12 +1075,12 @@ export class MarketDataService {
    * @returns Promise<Array<{date: string, return: number}>>
    */
   async getMarketDataReturnsHistoryForBenchmarkFromAPI(
-    symbol: string,
-    assetType: string,
+    symbol: string = 'VN30INDEX',
+    assetType: string = 'STOCK',
     startDate: Date,
     endDate: Date
   ): Promise<Array<{date: string, return: number}>> {
-    return this.getMarketDataReturnsFromAPI(symbol, assetType, startDate, endDate);
+    return this.getMarketDataReturnsFromAPI(symbol, assetType, startDate, endDate); // use default values if not provided
   }
 
   /**
@@ -1096,7 +1096,7 @@ export class MarketDataService {
     const changePercent = changeMatch ? parseFloat(changeMatch[2]) : 0;
 
     // Use GiaDieuChinh if GiaDongCua is 0 (no trading day)
-    let closePrice = item.GiaDongCua === 0 ? (item.GiaDieuChinh || 0) : item.GiaDongCua;
+    let closePrice = item.GiaDieuChinh || item.GiaDongCua || 0;
     
     // Apply multiplication factor based on asset type
     closePrice = closePrice * multiplyBy;

@@ -238,6 +238,75 @@ export class PriceHistoryService {
   }
 
   /**
+   * Get price for a specific date (for snapshot creation).
+   * If multiple prices exist for the same date, returns the latest one.
+   * @param symbol - Asset symbol
+   * @param targetDate - Target date for the price
+   * @returns Price at the target date or null if not found
+   */
+  async getPriceByDate(symbol: string, targetDate: Date): Promise<number | null> {
+    this.logger.log(`Getting price for symbol ${symbol} on date ${targetDate.toISOString()}`);
+
+    try {
+      // Find the global asset by symbol
+      const globalAsset = await this.globalAssetRepository.findOne({
+        where: { symbol }
+      });
+
+      if (!globalAsset) {
+        this.logger.warn(`Global asset not found for symbol: ${symbol}`);
+        return null;
+      }
+
+      // Get the start and end of the target date
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Find the latest price record for the target date
+      const priceRecord = await this.priceHistoryRepository.findOne({
+        where: {
+          assetId: globalAsset.id,
+          createdAt: Between(startOfDay, endOfDay)
+        },
+        order: {
+          createdAt: 'DESC' // Get the latest price if multiple exist on same date
+        }
+      });
+
+      if (priceRecord) {
+        this.logger.debug(`Found price for ${symbol} on ${targetDate.toISOString()}: ${priceRecord.price}`);
+        return priceRecord.price;
+      }
+
+      // If no price found for exact date, try to find the latest price before the target date
+      const latestPriceBefore = await this.priceHistoryRepository.findOne({
+        where: {
+          assetId: globalAsset.id,
+          createdAt: LessThan(startOfDay)
+        },
+        order: {
+          createdAt: 'DESC'
+        }
+      });
+
+      if (latestPriceBefore) {
+        this.logger.debug(`Using latest price before ${targetDate.toISOString()} for ${symbol}: ${latestPriceBefore.price}`);
+        return latestPriceBefore.price;
+      }
+
+      this.logger.warn(`No price found for symbol ${symbol} on or before ${targetDate.toISOString()}`);
+      return null;
+
+    } catch (error) {
+      this.logger.error(`Error getting price by date for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Get price history statistics for an asset.
    * @param assetId - Asset ID
    * @param startDate - Optional start date

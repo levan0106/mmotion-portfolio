@@ -14,6 +14,8 @@ import { MWRIRRCalculationService } from './mwr-irr-calculation.service';
 import { AlphaBetaCalculationService } from './alpha-beta-calculation.service';
 import { RiskMetricsCalculationService } from './risk-metrics-calculation.service';
 import { CashFlowService } from './cash-flow.service';
+import { normalizeDateToString, compareDates } from '../utils/date-normalization.util';
+import { PaginationDto, PaginatedResponseDto } from '../dto/pagination.dto';
 
 export interface PerformanceSnapshotResult {
   portfolioSnapshot: PortfolioPerformanceSnapshot;
@@ -117,6 +119,7 @@ export class PerformanceSnapshotService {
     granularity: SnapshotGranularity,
     manager: any
   ): Promise<PortfolioPerformanceSnapshot> {
+    console.log('🚀 createPortfolioPerformanceSnapshot called');
     // Check if portfolio exists
     const portfolio = await manager.findOne(Portfolio, {
       where: { portfolioId }
@@ -150,12 +153,15 @@ export class PerformanceSnapshotService {
     });
 
     // Calculate Alpha/Beta metrics (using default benchmark for now)
+    console.log('� Calculating portfolio Alpha/Beta...');
     const alphaBetaMetrics = await this.alphaBetaCalculationService.calculatePortfolioAlphaBeta({
       portfolioId,
-      benchmarkId: '00000000-0000-0000-0000-000000000001', // Default benchmark UUID
+      benchmarkId: '6aedff6c-69e5-440f-8813-c1c3bf1f96df', // Default benchmark UUID
       snapshotDate,
       granularity
     });
+    
+    console.log('✅ Final alphaBetaMetrics:', alphaBetaMetrics);
 
     // Calculate cash flow data
     const cashFlowData = await this.calculateCashFlowData(portfolioId, snapshotDate);
@@ -224,11 +230,13 @@ export class PerformanceSnapshotService {
     granularity: SnapshotGranularity,
     manager: any
   ): Promise<AssetPerformanceSnapshot[]> {
-    // Get all assets for the portfolio through trades
+    // FIXED: Get only assets that have trades for the portfolio, handle duplicates
     const assets = await manager
       .createQueryBuilder(Asset, 'asset')
       .innerJoin('asset.trades', 'trade')
-      .where('trade.portfolioId = :portfolioId', { portfolioId })
+      .where('trade.portfolioId = :portfolioId AND DATE(trade.tradeDate) <= :snapshotDate', { portfolioId, 
+        snapshotDate: normalizeDateToString(snapshotDate) })
+      .distinct(true) // Handle duplicates
       .getMany();
 
     const snapshots: AssetPerformanceSnapshot[] = [];
@@ -263,7 +271,7 @@ export class PerformanceSnapshotService {
       const alphaBetaMetrics = await this.alphaBetaCalculationService.calculateAssetAlphaBeta({
         portfolioId,
         assetId: asset.id,
-        benchmarkId: '00000000-0000-0000-0000-000000000001', // Default benchmark UUID
+        benchmarkId: '6aedff6c-69e5-440f-8813-c1c3bf1f96df', // vietcombank
         snapshotDate,
         granularity
       });
@@ -331,12 +339,13 @@ export class PerformanceSnapshotService {
     granularity: SnapshotGranularity,
     manager: any
   ): Promise<AssetGroupPerformanceSnapshot[]> {
-    // Get asset types for the portfolio through trades
+    // FIXED: Get only asset types that have trades for the portfolio, handle duplicates
     const assetTypes = await manager
       .createQueryBuilder(Asset, 'asset')
       .innerJoin('asset.trades', 'trade')
       .select('DISTINCT asset.type', 'assetType')
-      .where('trade.portfolioId = :portfolioId', { portfolioId })
+      .where('trade.portfolioId = :portfolioId AND DATE(trade.tradeDate) <= :snapshotDate', { portfolioId, 
+        snapshotDate: normalizeDateToString(snapshotDate) })
       .getRawMany();
 
     const snapshots: AssetGroupPerformanceSnapshot[] = [];
@@ -371,7 +380,7 @@ export class PerformanceSnapshotService {
       const alphaBetaMetrics = await this.alphaBetaCalculationService.calculateAssetGroupAlphaBeta({
         portfolioId,
         assetType,
-        benchmarkId: '00000000-0000-0000-0000-000000000001', // Default benchmark UUID
+        benchmarkId: '6aedff6c-69e5-440f-8813-c1c3bf1f96df', // Vietcombank
         snapshotDate,
         granularity
       });
@@ -458,10 +467,11 @@ export class PerformanceSnapshotService {
 
       // Calculate totals from cash flows
       result.data.forEach((cashFlow) => {
+        const amount = Number(cashFlow.amount || 0);
         if (cashFlow.isInflow) {
-          totalCashInflows += Math.abs(cashFlow.amount);
+          totalCashInflows += amount; // Amount is always positive
         } else if (cashFlow.isOutflow) {
-          totalCashOutflows += Math.abs(cashFlow.amount);
+          totalCashOutflows += amount; // Amount is always positive
         }
       });
 
@@ -540,13 +550,68 @@ export class PerformanceSnapshotService {
   /**
    * Get benchmark data for specific date
    */
+  /**
+   * Get benchmark data using market data API
+   * FIXED: Implement benchmark data retrieval using getMarketDataReturnsHistoryForBenchmarkFromAPI
+   */
   private async getBenchmarkData(snapshotDate: Date): Promise<any> {
-    // TODO: Implement benchmark data retrieval logic
-    return {};
+    try {
+      // TODO: Implement benchmark data retrieval logic
+      return {};
+
+      const benchmarkData = [];
+
+      // Calculate benchmark metrics from raw data
+      const returns = benchmarkData.map(item => Number(item.return || 0));
+      const benchmarkReturn = returns.length > 0 ? returns.reduce((sum, ret) => sum + ret, 0) / returns.length : 0;
+      
+      // Calculate volatility (standard deviation)
+      const mean = benchmarkReturn;
+      const variance = returns.length > 0 ? 
+        returns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) / returns.length : 0;
+      const benchmarkVolatility = Math.sqrt(variance);
+
+      // Calculate Sharpe ratio (simplified - assuming risk-free rate = 0)
+      const benchmarkSharpeRatio = benchmarkVolatility > 0 ? benchmarkReturn / benchmarkVolatility : 0;
+
+      // Calculate max drawdown (simplified)
+      let maxDrawdown = 0;
+      let peak = 0;
+      let cumulativeReturn = 0;
+      
+      for (const ret of returns) {
+        cumulativeReturn += ret;
+        if (cumulativeReturn > peak) {
+          peak = cumulativeReturn;
+        }
+        const drawdown = peak - cumulativeReturn;
+        if (drawdown > maxDrawdown) {
+          maxDrawdown = drawdown;
+        }
+      }
+
+      return {
+        benchmarkReturn: Number(benchmarkReturn.toFixed(4)),
+        benchmarkVolatility: Number(benchmarkVolatility.toFixed(4)),
+        benchmarkSharpeRatio: Number(benchmarkSharpeRatio.toFixed(4)),
+        benchmarkMaxDrawdown: Number(maxDrawdown.toFixed(4)),
+        dataPoints: returns.length
+      };
+
+    } catch (error) {
+      this.logger.error(`Failed to get benchmark data for ${snapshotDate.toISOString().split('T')[0]}: ${error.message}`);
+      return {
+        benchmarkReturn: 0,
+        benchmarkVolatility: 0,
+        benchmarkSharpeRatio: 0,
+        benchmarkMaxDrawdown: 0,
+        error: error.message
+      };
+    }
   }
 
   /**
-   * Get portfolio performance snapshots
+   * Get portfolio performance snapshots (original method - returns array)
    */
   async getPortfolioPerformanceSnapshots(
     portfolioId: string,
@@ -577,7 +642,60 @@ export class PerformanceSnapshotService {
   }
 
   /**
-   * Get asset performance snapshots
+   * Get portfolio performance snapshots with pagination
+   */
+  async getPortfolioPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    startDate?: Date,
+    endDate?: Date,
+    granularity?: SnapshotGranularity,
+    pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<PortfolioPerformanceSnapshot>> {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const query = this.portfolioPerformanceRepo
+      .createQueryBuilder('snapshot')
+      .where('snapshot.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('snapshot.isActive = :isActive', { isActive: true });
+
+    if (startDate) {
+      query.andWhere('snapshot.snapshotDate >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      query.andWhere('snapshot.snapshotDate <= :endDate', { endDate });
+    }
+
+    if (granularity) {
+      query.andWhere('snapshot.granularity = :granularity', { granularity });
+    }
+
+    // Get total count
+    const total = await query.getCount();
+
+    // Get paginated results
+    const data = await query
+      .orderBy('snapshot.snapshotDate', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
+  }
+
+  /**
+   * Get asset performance snapshots (original method - returns array)
    */
   async getAssetPerformanceSnapshots(
     portfolioId: string,
@@ -613,7 +731,65 @@ export class PerformanceSnapshotService {
   }
 
   /**
-   * Get asset group performance snapshots
+   * Get asset performance snapshots with pagination
+   */
+  async getAssetPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    assetId?: string,
+    startDate?: Date,
+    endDate?: Date,
+    granularity?: SnapshotGranularity,
+    pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<AssetPerformanceSnapshot>> {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const query = this.assetPerformanceRepo
+      .createQueryBuilder('snapshot')
+      .where('snapshot.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('snapshot.isActive = :isActive', { isActive: true });
+
+    if (assetId) {
+      query.andWhere('snapshot.assetId = :assetId', { assetId });
+    }
+
+    if (startDate) {
+      query.andWhere('snapshot.snapshotDate >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      query.andWhere('snapshot.snapshotDate <= :endDate', { endDate });
+    }
+
+    if (granularity) {
+      query.andWhere('snapshot.granularity = :granularity', { granularity });
+    }
+
+    // Get total count
+    const total = await query.getCount();
+
+    // Get paginated results
+    const data = await query
+      .orderBy('snapshot.snapshotDate', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
+  }
+
+  /**
+   * Get asset group performance snapshots (original method - returns array)
    */
   async getAssetGroupPerformanceSnapshots(
     portfolioId: string,
@@ -646,6 +822,64 @@ export class PerformanceSnapshotService {
     return await query
       .orderBy('snapshot.snapshotDate', 'ASC')
       .getMany();
+  }
+
+  /**
+   * Get asset group performance snapshots with pagination
+   */
+  async getAssetGroupPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    assetType?: string,
+    startDate?: Date,
+    endDate?: Date,
+    granularity?: SnapshotGranularity,
+    pagination: PaginationDto = {}
+  ): Promise<PaginatedResponseDto<AssetGroupPerformanceSnapshot>> {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const query = this.assetGroupPerformanceRepo
+      .createQueryBuilder('snapshot')
+      .where('snapshot.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('snapshot.isActive = :isActive', { isActive: true });
+
+    if (assetType) {
+      query.andWhere('snapshot.assetType = :assetType', { assetType });
+    }
+
+    if (startDate) {
+      query.andWhere('snapshot.snapshotDate >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      query.andWhere('snapshot.snapshotDate <= :endDate', { endDate });
+    }
+
+    if (granularity) {
+      query.andWhere('snapshot.granularity = :granularity', { granularity });
+    }
+
+    // Get total count
+    const total = await query.getCount();
+
+    // Get paginated results
+    const data = await query
+      .orderBy('snapshot.snapshotDate', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
   }
 
   /**

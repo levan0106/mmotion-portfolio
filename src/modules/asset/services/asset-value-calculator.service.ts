@@ -299,7 +299,7 @@ export class AssetValueCalculatorService {
    * @param options - Additional calculation options
    * @returns Return percentage
    */
-  calculateReturnPercentage(
+  calculateReturnPercentageLater(
     quantity: number,
     currentPrice: number,
     avgCost: number,
@@ -325,8 +325,8 @@ export class AssetValueCalculatorService {
    * @param currentPrice - Current price of the asset
    * @returns Promise<AssetPosition>
    */
-  calculateAssetPositionFIFO(
-    trades: AssetPosition[],
+  calculateAssetPositionFIFOFinal(
+    trades: any[],
     currentPrice: number,
   ): {
     quantity: number;

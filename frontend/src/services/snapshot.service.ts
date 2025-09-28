@@ -335,6 +335,37 @@ export class UnifiedSnapshotService {
   }
 
   /**
+   * Get portfolio performance snapshots with pagination
+   */
+  async getPortfolioPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto & { page?: number; limit?: number }
+  ): Promise<{ data: PortfolioPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
+    const params = new URLSearchParams();
+    
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+    if (query?.page) {
+      params.append('page', query.page.toString());
+    }
+    if (query?.limit) {
+      params.append('limit', query.limit.toString());
+    }
+
+    const response: AxiosResponse<{ data: PortfolioPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
+      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
    * Get asset performance snapshots
    */
   async getAssetPerformanceSnapshots(
@@ -363,6 +394,40 @@ export class UnifiedSnapshotService {
   }
 
   /**
+   * Get asset performance snapshots with pagination
+   */
+  async getAssetPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto & { page?: number; limit?: number }
+  ): Promise<{ data: AssetPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetId) {
+      params.append('assetId', query.assetId);
+    }
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+    if (query?.page) {
+      params.append('page', query.page.toString());
+    }
+    if (query?.limit) {
+      params.append('limit', query.limit.toString());
+    }
+
+    const response: AxiosResponse<{ data: AssetPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
+      `${this.performanceSnapshotUrl}/asset/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
    * Get asset group performance snapshots
    */
   async getAssetGroupPerformanceSnapshots(
@@ -385,6 +450,40 @@ export class UnifiedSnapshotService {
     }
 
     const response: AxiosResponse<AssetGroupPerformanceSnapshot[]> = await axios.get(
+      `${this.performanceSnapshotUrl}/group/${portfolioId}?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get asset group performance snapshots with pagination
+   */
+  async getAssetGroupPerformanceSnapshotsPaginated(
+    portfolioId: string,
+    query?: PerformanceSnapshotQueryDto & { page?: number; limit?: number }
+  ): Promise<{ data: AssetGroupPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetType) {
+      params.append('assetType', query.assetType);
+    }
+    if (query?.startDate) {
+      params.append('startDate', query.startDate);
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate);
+    }
+    if (query?.granularity) {
+      params.append('granularity', query.granularity);
+    }
+    if (query?.page) {
+      params.append('page', query.page.toString());
+    }
+    if (query?.limit) {
+      params.append('limit', query.limit.toString());
+    }
+
+    const response: AxiosResponse<{ data: AssetGroupPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
       `${this.performanceSnapshotUrl}/group/${portfolioId}?${params.toString()}`
     );
     return response.data;

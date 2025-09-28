@@ -8,7 +8,10 @@ import { AssetService } from '../../asset/services/asset.service';
 import { AssetGlobalSyncService } from '../../asset/services/asset-global-sync.service';
 import { MarketDataService } from '../../asset/services/market-data.service';
 import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
+import { PriceHistoryService } from '../../asset/services/price-history.service';
 import { AssetRepository } from '../../asset/repositories/asset.repository';
+import { Asset } from '../../asset/entities/asset.entity';
+import { normalizeDateToString, compareDates, getDateCondition, getDateRangeConditionSQL } from '../utils/date-normalization.util';
 import { Trade } from '../../trading/entities/trade.entity';
 import { PortfolioSnapshotService } from './portfolio-snapshot.service';
 
@@ -80,83 +83,113 @@ export class SnapshotService {
     private readonly tradeRepository: Repository<Trade>,
     @Inject(forwardRef(() => PortfolioSnapshotService))
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
+    private readonly priceHistoryService: PriceHistoryService,
   ) {}
 
   /**
    * Create a new snapshot
    */
-  async createSnapshot(createDto: CreateSnapshotDto): Promise<AssetAllocationSnapshot> {
+  // async createSnapshot(createDto: CreateSnapshotDto): Promise<AssetAllocationSnapshot> {
 
-    // Validate asset exists
-    const asset = await this.assetService.findById(createDto.assetId);
-    if (!asset) {
-      throw new NotFoundException(`Asset with ID ${createDto.assetId} not found`);
-    }
+  //   // Validate asset exists
+  //   const asset = await this.assetService.findById(createDto.assetId);
+  //   if (!asset) {
+  //     throw new NotFoundException(`Asset with ID ${createDto.assetId} not found`);
+  //   }
 
-    // Check if snapshot already exists and delete it to avoid duplicates
-    const existingSnapshot = await this.snapshotRepo.findByUniqueKey(
-      createDto.portfolioId,
-      createDto.assetId,
-      new Date(createDto.snapshotDate),
-      createDto.granularity
-    );
+  //   // Check if snapshot already exists and delete it to avoid duplicates
+  //   const existingSnapshot = await this.snapshotRepo.findByUniqueKey(
+  //     createDto.portfolioId,
+  //     createDto.assetId,
+  //     new Date(createDto.snapshotDate),
+  //     createDto.granularity
+  //   );
 
-    if (existingSnapshot) {
-      this.logger.warn(`Snapshot already exists for portfolio ${createDto.portfolioId}, asset ${createDto.assetSymbol} on ${createDto.snapshotDate}. Deleting old snapshot and creating new one.`);
-      await this.snapshotRepo.delete(existingSnapshot.id);
-    }
+  //   if (existingSnapshot) {
+  //     this.logger.warn(`Snapshot already exists for portfolio ${createDto.portfolioId}, asset ${createDto.assetSymbol} on ${createDto.snapshotDate}. Deleting old snapshot and creating new one.`);
+  //     await this.snapshotRepo.delete(existingSnapshot.id);
+  //   }
 
-    // Create snapshot
-    const snapshot = await this.snapshotRepo.create({
-      ...createDto,
-      snapshotDate: new Date(createDto.snapshotDate),
-      isActive: createDto.isActive ?? true,
-    });
+  //   // Create snapshot
+  //   const snapshot = await this.snapshotRepo.create({
+  //     ...createDto,
+  //     snapshotDate: new Date(createDto.snapshotDate),
+  //     isActive: createDto.isActive ?? true,
+  //   });
 
-    // Portfolio snapshots are now only created from bulk operations (createPortfolioSnapshot)
-    // to avoid duplicate calls and ensure consistency
+  //   // Portfolio snapshots are now only created from bulk operations (createPortfolioSnapshot)
+  //   // to avoid duplicate calls and ensure consistency
 
-    return snapshot;
-  }
+  //   return snapshot;
+  // }
 
-  /**
-   * Create snapshots for all assets in a portfolio
-   */
-  async createPortfolioSnapshot(
-    portfolioId: string,
-    snapshotDate: Date,
-    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
-    createdBy?: string
-  ): Promise<AssetAllocationSnapshot[]> {
-    this.logger.log(`Creating portfolio snapshot for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
+  async prepareAssetSnapshots(portfolioId: string, snapshotDate: Date, 
+    granularity: SnapshotGranularity, createdBy?: string): Promise<AssetAllocationSnapshot[]> {
     
-    // Get all assets in portfolio
-    const assets = await this.assetService.findByPortfolioId(portfolioId);
+    this.logger.log(`Preparing asset snapshots for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
+    
+    // Get all assets in portfolio that have trades
+    let assets = await this.assetService.findByPortfolioId(portfolioId);
+    
+    this.logger.log(`Found ${assets.length} assets with trades in portfolio ${portfolioId}`);
     
     if (assets.length === 0) {
-      this.logger.warn(`No assets found in portfolio ${portfolioId}. Cannot create snapshots.`);
+      this.logger.warn(`No assets with trades found in portfolio ${portfolioId}. Returning empty snapshots.`);
       return [];
     }
+
+    if (snapshotDate) {
+      const originalCount = assets.length;
+      
+      // Normalize dates to avoid timezone issues
+      const snapshotDateStr = normalizeDateToString(snapshotDate);
+      
+      assets = assets.filter(asset => {
+        return asset.trades.some(trade => {
+          const tradeDateStr = normalizeDateToString(trade.tradeDate);
+          this.logger.debug(`Comparing trade date ${tradeDateStr} with snapshot date ${snapshotDateStr}`);
+          // Check if trade is on or before snapshot date (compare by date only, not time)
+          const tradeDate = new Date(trade.tradeDate);
+          tradeDate.setHours(0, 0, 0, 0);
+          const snapshotDateOnly = new Date(snapshotDate);
+          snapshotDateOnly.setHours(0, 0, 0, 0);
+          return tradeDate <= snapshotDateOnly;
+        });
+      });
+      
+      this.logger.log(`Filtered assets by date: ${originalCount} -> ${assets.length} (snapshot date: ${snapshotDateStr})`);
+      
+      if (assets.length === 0) {
+        this.logger.warn(`All assets filtered out by snapshot date ${snapshotDateStr}. Returning empty snapshots.`);
+        return [];
+      }
+    }
     
-    const snapshots: Partial<AssetAllocationSnapshot>[] = [];
+    const assetSnapshots: AssetAllocationSnapshot[] = [];
 
     // First pass: collect all current values to calculate total portfolio value
     const assetData: Array<{
-      asset: any;
+      asset: Asset;
       currentValue: number;
       positionData: any;
       currentPrice: number;
     }> = [];
 
+    // First, prepare all data for all assets
     for (const asset of assets) {
-      // Get real current price
-      const currentPrice = await this.getCurrentPrice(asset.symbol);
+      this.logger.log(`Processing asset ${asset.symbol} (${asset.id}) for portfolio ${portfolioId}`);
       
-      // Get trades for this asset in this portfolio
-      const trades = await this.assetRepository.getTradesForAssetByPortfolio(asset.id, portfolioId);
+      // Get price for snapshot date
+      const currentPrice = await this.getCurrentPriceLater(asset.symbol, snapshotDate);
+      this.logger.log(`Current price for ${asset.symbol} on ${snapshotDate.toISOString().split('T')[0]}: ${currentPrice}`);
+      
+      // Get trades for this asset in this portfolio up to snapshot date
+      const trades = await this.assetRepository.getAssetTradesByPortfolioFinal(asset.id, portfolioId, snapshotDate);
+      this.logger.log(`Found ${trades.length} trades for asset ${asset.symbol}`);
       
       // Use FIFO calculation to get all values at once
-      const positionData = this.assetValueCalculator.calculateAssetPositionFIFO(trades, currentPrice);
+      const positionData = this.assetValueCalculator.calculateAssetPositionFIFOFinal(trades, currentPrice);
+      this.logger.log(`Position data for ${asset.symbol}: currentValue=${positionData.currentValue}, quantity=${positionData.quantity}`);
       
       assetData.push({
         asset,
@@ -169,12 +202,16 @@ export class SnapshotService {
     // Calculate total portfolio value (NAV) -> need to check include deposits or not
     const totalPortfolioValue = assetData.reduce((sum, data) => sum + data.currentValue, 0);
 
-    // Second pass: create snapshots with calculated values
+    // Second, create snapshots with calculated values
+    this.logger.log(`Creating asset snapshots for ${assetData.length} assets`);
+    
     for (const data of assetData) {
       const { asset, currentValue, positionData, currentPrice } = data;
       const { quantity, avgCost, unrealizedPl, realizedPl, totalPnl } = positionData;
       const costBasis = quantity * avgCost;
-      const returnPercentage = this.assetValueCalculator.calculateReturnPercentage(quantity, currentPrice, avgCost);
+      const returnPercentage = this.assetValueCalculator.calculateReturnPercentageLater(quantity, currentPrice, avgCost);
+      
+      this.logger.log(`Creating snapshot for ${asset.symbol}: quantity=${quantity}, currentValue=${currentValue}, costBasis=${costBasis}`);
       
       // Calculate allocation percentage
       // we should include deposits in the total portfolio value
@@ -183,17 +220,18 @@ export class SnapshotService {
         : 0;
 
       // Calculate daily return and cumulative return
-      const { dailyReturn, cumulativeReturn } = await this.calculateReturnsForAsset(
+      const { dailyReturn, cumulativeReturn } = await this.calculateReturnsForAssetLater(
         asset.id, 
         portfolioId, 
         snapshotDate, 
         currentValue
       );
       
-      const snapshot: Partial<AssetAllocationSnapshot> = {
+      const assetSnapshot: Partial<AssetAllocationSnapshot> = {
         portfolioId,
         assetId: asset.id,
         assetSymbol: asset.symbol,
+        assetType: asset.type,
         snapshotDate,
         granularity,
         quantity,
@@ -214,24 +252,60 @@ export class SnapshotService {
         notes: `Portfolio snapshot for ${snapshotDate.toISOString().split('T')[0]}`,
       };
 
-      snapshots.push(snapshot);
+      assetSnapshots.push(assetSnapshot as AssetAllocationSnapshot);
+      this.logger.log(`Added snapshot for ${asset.symbol} to array`);
+    }
+    
+    this.logger.log(`Created ${assetSnapshots.length} asset snapshots in memory`);
+
+    return assetSnapshots;
+  }
+
+  /**
+   * Create snapshots for all assets in a portfolio
+   */
+  async createPortfolioSnapshot(
+    portfolioId: string,
+    snapshotDate: Date | string,
+    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
+    createdBy?: string
+  ): Promise<AssetAllocationSnapshot[]> {
+    snapshotDate = typeof snapshotDate === 'string' ? new Date(snapshotDate) : snapshotDate;
+
+    this.logger.log(`Creating portfolio snapshot for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
+    
+    // Step 0: Prepare asset allocation snapshots
+    const assetSnapshots = await this.prepareAssetSnapshots(portfolioId, snapshotDate, granularity, createdBy);
+
+    // Step 1: Delete existing ASSET snapshots for the same portfolio, date, and granularity
+    // This ensures we only have one snapshot per day per portfolio
+    const deletedAssetCount = await this.snapshotRepo.deleteAssetAllocationSnapshots(portfolioId, snapshotDate, granularity);
+
+    // Step 2: Create all ASSET ALLOCATION SNAPSHOTS in batch (all fields are already calculated, so we can create them in batch)
+    let createdSnapshots: AssetAllocationSnapshot[] = [];
+    
+    if (assetSnapshots.length > 0) {
+      createdSnapshots = await this.snapshotRepo.createMany(assetSnapshots);
+      this.logger.log(`Created ${createdSnapshots.length} asset snapshots for portfolio ${portfolioId}`);
+    } else {
+      this.logger.warn(`No asset snapshots to create for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}. Skipping asset snapshot creation.`);
     }
 
-    // First, delete existing snapshots for the same portfolio, date, and granularity
-    // This ensures we only have one snapshot per day per portfolio
-    const deletedAssetCount = await this.snapshotRepo.deleteByPortfolioDateAndGranularity(portfolioId, snapshotDate, granularity);
-
-    // Create all snapshots in batch (all fields are already calculated)
-    const createdSnapshots = await this.snapshotRepo.createMany(snapshots);
-
-    // Create portfolio snapshot after asset snapshots are created
+    // Step 3: Create PORTFOLIO snapshot after asset snapshots are created
+    // We need to create portfolio snapshot after asset snapshots are created because we need to use the asset snapshots to calculate the portfolio snapshot
+    // Portfolio snapshot is not dependent on asset snapshots, so we can create it after asset snapshots are created
     try {
-      const portfolioSnapshot = await this.portfolioSnapshotService.createPortfolioSnapshotFromAssetSnapshots(
+      // Add a small delay to ensure asset snapshots are committed to database
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const portfolioSnapshot = await this.portfolioSnapshotService.createPortfolioSnapshot(
         portfolioId,
         snapshotDate,
         granularity,
         createdBy ? `${createdBy}-portfolio-snapshot` : 'portfolio-snapshot'
       );
+      
+      this.logger.log(`Successfully created portfolio snapshot for portfolio ${portfolioId}`);
     } catch (error) {
       this.logger.error(`Failed to create portfolio snapshot for portfolio ${portfolioId}:`, error);
       // Don't throw error here to avoid breaking asset snapshot creation
@@ -245,7 +319,7 @@ export class SnapshotService {
   /**
    * Calculate daily return and cumulative return for a specific asset
    */
-  private async calculateReturnsForAsset(
+  private async calculateReturnsForAssetLater(
     assetId: string,
     portfolioId: string,
     snapshotDate: Date,
@@ -338,18 +412,18 @@ export class SnapshotService {
     return await this.snapshotRepo.findMany(options);
   }
 
-  /**
-   * Get aggregated timeline data
-   */
-  async getAggregatedTimelineData(
-    portfolioId: string,
-    startDate: Date,
-    endDate: Date,
-    granularity: SnapshotGranularity = SnapshotGranularity.DAILY
-  ): Promise<SnapshotAggregationResult[]> {
+  // /**
+  //  * Get aggregated timeline data
+  //  */
+  // async getAggregatedTimelineData(
+  //   portfolioId: string,
+  //   startDate: Date,
+  //   endDate: Date,
+  //   granularity: SnapshotGranularity = SnapshotGranularity.DAILY
+  // ): Promise<SnapshotAggregationResult[]> {
 
-    return await this.snapshotRepo.findAggregatedByDate(portfolioId, startDate, endDate, granularity);
-  }
+  //   return await this.snapshotRepo.findAggregatedByDate(portfolioId, startDate, endDate, granularity);
+  // }
 
 
 
@@ -795,7 +869,7 @@ export class SnapshotService {
         if (!asset) {
           this.logger.warn(`Asset not found for ID: ${snapshot.assetId}, using symbol mapping as fallback`);
           // Fallback to symbol mapping if asset not found
-          const assetType = this.getAnalyticsAssetTypeFromSymbol(snapshot.assetSymbol);
+          const assetType = "TODO"; // TODO: Get asset type from symbol
           if (!assetTypeMap.has(assetType)) {
             assetTypeMap.set(assetType, { value: 0, count: 0 });
           }
@@ -815,10 +889,12 @@ export class SnapshotService {
         // Use snapshot values instead of real-time calculations
         current.value += Number(snapshot.currentValue || 0);
         current.count += 1;
-      } catch (error) {
+      } catch (error) 
+      // error: Asset not found for ID, using symbol mapping as fallback
+      {
         this.logger.error(`Error getting asset type for snapshot ${snapshot.id}:`, error);
         // Fallback to symbol mapping
-        const assetType = this.getAnalyticsAssetTypeFromSymbol(snapshot.assetSymbol);
+        const assetType = "TODO"; // TODO: Get asset type from symbol
         if (!assetTypeMap.has(assetType)) {
           assetTypeMap.set(assetType, { value: 0, count: 0 });
         }
@@ -906,43 +982,6 @@ export class SnapshotService {
     }
     
     return allDates.slice(startIndex);
-  }
-
-  /**
-   * Get asset type from symbol for analytics (internal method)
-   */
-  // MUST review this method again. Có nhiều lỗi về logic và không chính xác.
-  private getAnalyticsAssetTypeFromSymbol(symbol: string): string {
-    // Enhanced mapping based on actual portfolio data
-    const symbolUpper = symbol.toUpperCase();
-    
-    this.logger.debug(`Mapping symbol: ${symbol} -> ${symbolUpper}`);
-    
-    // Gold symbols (based on actual data: DOJI = 71,390,000 ₫)
-    if (symbolUpper.includes('GOLD') || symbolUpper.includes('AU') || symbolUpper === 'DOJI') {
-      this.logger.debug(`Symbol ${symbol} mapped to GOLD`);
-      return 'GOLD';
-    } 
-    // Bond symbols (based on actual data: SSIBF = 39,722,165 ₫)
-    else if (symbolUpper.includes('BOND') || symbolUpper.includes('TP') || symbolUpper === 'SSIBF') {
-      this.logger.debug(`Symbol ${symbol} mapped to BOND`);
-      return 'BOND';
-    } 
-    // Cash symbols
-    else if (symbolUpper.includes('CASH') || symbolUpper.includes('VND')) {
-      this.logger.debug(`Symbol ${symbol} mapped to CASH`);
-      return 'CASH';
-    } 
-    // Deposit symbols
-    else if (symbolUpper.includes('DEPOSIT') || symbolUpper.includes('TG')) {
-      this.logger.debug(`Symbol ${symbol} mapped to DEPOSIT`);
-      return 'DEPOSIT';
-    } 
-    // All other symbols are treated as STOCK (SSISCA, FPT, DWG, 9999, VEOF, etc.)
-    else {
-      this.logger.debug(`Symbol ${symbol} mapped to STOCK (default)`);
-      return 'STOCK';
-    }
   }
 
   /**
@@ -1055,43 +1094,43 @@ export class SnapshotService {
   }
 
   /**
-   * Get current price for an asset symbol
+   * Get current price for an asset symbol at a specific date
    */
-  private async getCurrentPrice(symbol: string): Promise<number> {
+  private async getCurrentPriceLater(symbol: string, snapshotDate: Date): Promise<number> {
     try {
-      // // Check if this is a mapped symbol that doesn't exist in database
-      // const mappedType = this.getAnalyticsAssetTypeFromSymbol(symbol);
-      // if (mappedType === 'DEPOSIT' || mappedType === 'CASH') {
-      //   // For DEPOSIT and CASH, return 1 as they are typically 1:1 with base currency
-      //   this.logger.debug(`Using mapped price for ${symbol} (${mappedType}): 1`);
-      //   return 1;
-      // }
 
-      // Try to get current price from global asset first
+      // PRIORITY 1: Get price from price history for the snapshot date
+      const historicalPrice = await this.priceHistoryService.getPriceByDate(symbol, snapshotDate);
+      if (historicalPrice !== null && historicalPrice > 0) {
+        this.logger.debug(`Using historical price for ${symbol} on ${snapshotDate.toISOString()}: ${historicalPrice}`);
+        return historicalPrice;
+      }
+
+      // PRIORITY 2: Fallback to current global asset price
       const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(symbol);
       if (globalAssetPrice !== null && globalAssetPrice > 0) {
-        this.logger.debug(`Using global asset price for ${symbol}: ${globalAssetPrice}`);
+        this.logger.debug(`Using current global asset price for ${symbol}: ${globalAssetPrice}`);
         return globalAssetPrice;
       }
 
-      // Fallback: try to get from market data service
+      // PRIORITY 3: Fallback to market data service
       const marketPrice = await this.marketDataService.getCurrentPrice(symbol);
       if (marketPrice > 0) {
         this.logger.debug(`Using market data price for ${symbol}: ${marketPrice}`);
         return marketPrice;
       }
 
-      // Final fallback: get latest trade price
+      // PRIORITY 4: Final fallback to latest trade price
       const latestTradePrice = await this.getLatestTradePrice(symbol);
       if (latestTradePrice > 0) {
         this.logger.debug(`Using latest trade price for ${symbol}: ${latestTradePrice}`);
         return latestTradePrice;
       }
 
-      this.logger.warn(`No price found for symbol ${symbol}, using 0`);
+      this.logger.warn(`No price found for symbol ${symbol} on ${snapshotDate.toISOString()}, using 0`);
       return 0;
     } catch (error) {
-      this.logger.error(`Error getting current price for ${symbol}:`, error);
+      this.logger.error(`Error getting price for ${symbol} on ${snapshotDate.toISOString()}:`, error);
       return 0;
     }
   }
@@ -1191,7 +1230,7 @@ export class SnapshotService {
     granularity?: SnapshotGranularity
   ): Promise<{ deletedCount: number; message: string }> {
 
-    const deletedCount = await this.snapshotRepo.deleteByPortfolioAndDateRange(
+    const deletedCount = await this.snapshotRepo.deleteAssetAllocationByPortfolioAndDateRange(
       portfolioId,
       startDate,
       endDate,
@@ -1266,7 +1305,7 @@ export class SnapshotService {
       granularity,
     });
 
-    const deletedCount = await this.snapshotRepo.deleteByPortfolioAndDateRange(
+    const deletedCount = await this.snapshotRepo.deleteAssetAllocationByPortfolioAndDateRange(
       portfolioId,
       new Date('1900-01-01'), // Very old date
       new Date('2100-12-31'), // Very future date

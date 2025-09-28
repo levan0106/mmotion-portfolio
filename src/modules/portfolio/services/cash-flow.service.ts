@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, LessThanOrEqual } from 'typeorm';
 import { Portfolio } from '../entities/portfolio.entity';
+import { normalizeDateToString, compareDates } from '../utils/date-normalization.util';
 import { CashFlow, CashFlowType, CashFlowStatus } from '../entities/cash-flow.entity';
 import { Trade, TradeSide } from '../../trading/entities/trade.entity';
 import { Asset } from '../../asset/entities/asset.entity';
@@ -104,9 +105,10 @@ export class CashFlowService {
   /**
    * Recalculate cash balance from all cash flows (including deposits, trades, etc.)
    * @param portfolioId Portfolio ID
+   * @param snapshotDate Snapshot date
    * @returns Promise<CashFlowUpdateResult>
    */
-  async recalculateCashBalanceFromAllFlows(portfolioId: string): Promise<CashFlowUpdateResult> {
+  async recalculateCashBalance(portfolioId: string, snapshotDate?: Date): Promise<CashFlowUpdateResult> {
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId }
     });
@@ -118,10 +120,17 @@ export class CashFlowService {
     const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
 
     // Get all cash flows for this portfolio (including deposits, trades, etc.)
-    const allCashFlows = await this.cashFlowRepository.find({
+    let allCashFlows = await this.cashFlowRepository.find({
       where: { portfolioId },
       order: { flowDate: 'ASC' }
     });
+
+    // Filter cash flows by snapshot date if provided
+    if (snapshotDate) {
+      allCashFlows = allCashFlows.filter(cashFlow => 
+        compareDates(cashFlow.flowDate, snapshotDate)
+      );
+    }
 
     // Filter only completed cash flows
     const completedCashFlows = allCashFlows.filter(cashFlow => 
@@ -155,7 +164,7 @@ export class CashFlowService {
     portfolio.cashBalance = formattedCashBalance;
     await this.portfolioRepository.save(portfolio);
 
-    console.log(`[CashFlowService] recalculateCashBalanceFromAllFlows called for portfolioId: ${portfolioId}, 
+    console.log(`[CashFlowService] recalculateCashBalance called for portfolioId: ${portfolioId}, 
       oldCashBalance: ${oldCashBalance}, newCashBalance: ${formattedCashBalance}`); 
 
     return {
@@ -163,64 +172,64 @@ export class CashFlowService {
       oldCashBalance,
       newCashBalance: formattedCashBalance,
       cashFlowAmount: Number((formattedCashBalance - oldCashBalance).toFixed(2)),
-      cashFlowType: 'RECALCULATION_ALL_FLOWS',
-    };
-  }
-
-  /**
-   * Recalculate cash balance from all trades only
-   * @param portfolioId Portfolio ID
-   * @returns Promise<CashFlowUpdateResult>
-   */
-  async recalculateCashBalanceFromTrades(portfolioId: string): Promise<CashFlowUpdateResult> {
-    const portfolio = await this.portfolioRepository.findOne({
-      where: { portfolioId }
-    });
-
-    if (!portfolio) {
-      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
-    }
-
-    const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
-
-    // Get all trades for this portfolio
-    const trades = await this.tradeRepository.find({
-      where: { portfolioId },
-      order: { tradeDate: 'ASC' }
-    });
-
-    // Start with current cash balance instead of 0
-    let calculatedCashBalance = parseFloat(portfolio.cashBalance.toString());
-
-    // Process each trade to calculate correct cash balance
-    for (const trade of trades) {
-      const tradeAmount = parseFloat(trade.totalAmount.toString());
-      const fee = parseFloat(trade.fee.toString()) || 0;
-      const tax = parseFloat(trade.tax.toString()) || 0;
-      const totalCost = tradeAmount + fee + tax;
-
-      if (trade.side === TradeSide.BUY) {
-        // Buy trade: reduce cash balance
-        calculatedCashBalance -= totalCost;
-      } else {
-        // Sell trade: increase cash balance (after fees and taxes)
-        const netProceeds = tradeAmount - fee - tax;
-        calculatedCashBalance += netProceeds;
-      }
-    }
-
-    // Update portfolio cash balance
-    portfolio.cashBalance = calculatedCashBalance;
-    await this.portfolioRepository.save(portfolio);
-
-    return {
-      portfolioId,
-      oldCashBalance,
-      newCashBalance: calculatedCashBalance,
-      cashFlowAmount: calculatedCashBalance - oldCashBalance,
       cashFlowType: 'RECALCULATION',
     };
   }
+
+  // /**
+  //  * Recalculate cash balance from all trades only
+  //  * @param portfolioId Portfolio ID
+  //  * @returns Promise<CashFlowUpdateResult>
+  //  */
+  // async recalculateCashBalanceFromTrades(portfolioId: string): Promise<CashFlowUpdateResult> {
+  //   const portfolio = await this.portfolioRepository.findOne({
+  //     where: { portfolioId }
+  //   });
+
+  //   if (!portfolio) {
+  //     throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+  //   }
+
+  //   const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
+
+  //   // Get all trades for this portfolio
+  //   const trades = await this.tradeRepository.find({
+  //     where: { portfolioId },
+  //     order: { tradeDate: 'ASC' }
+  //   });
+
+  //   // Start with current cash balance instead of 0
+  //   let calculatedCashBalance = parseFloat(portfolio.cashBalance.toString());
+
+  //   // Process each trade to calculate correct cash balance
+  //   for (const trade of trades) {
+  //     const tradeAmount = parseFloat(trade.totalAmount.toString());
+  //     const fee = parseFloat(trade.fee.toString()) || 0;
+  //     const tax = parseFloat(trade.tax.toString()) || 0;
+  //     const totalCost = tradeAmount + fee + tax;
+
+  //     if (trade.side === TradeSide.BUY) {
+  //       // Buy trade: reduce cash balance
+  //       calculatedCashBalance -= totalCost;
+  //     } else {
+  //       // Sell trade: increase cash balance (after fees and taxes)
+  //       const netProceeds = tradeAmount - fee - tax;
+  //       calculatedCashBalance += netProceeds;
+  //     }
+  //   }
+
+  //   // Update portfolio cash balance
+  //   portfolio.cashBalance = calculatedCashBalance;
+  //   await this.portfolioRepository.save(portfolio);
+
+  //   return {
+  //     portfolioId,
+  //     oldCashBalance,
+  //     newCashBalance: calculatedCashBalance,
+  //     cashFlowAmount: calculatedCashBalance - oldCashBalance,
+  //     cashFlowType: 'RECALCULATION',
+  //   };
+  // }
 
   /**
    * Add manual cash flow (deposit, withdrawal, dividend, etc.)
@@ -265,7 +274,7 @@ export class CashFlowService {
     await this.cashFlowRepository.save(cashFlow);
 
     // implement get cashbalance from all cash flows
-    const cashBalance = await this.recalculateCashBalanceFromAllFlows(portfolioId);
+    const cashBalance = await this.recalculateCashBalance(portfolioId);
 
     const oldCashBalance = parseFloat(cashBalance.oldCashBalance.toString());
     const newCashBalance = parseFloat(cashBalance.newCashBalance.toString());
@@ -371,9 +380,10 @@ export class CashFlowService {
   /**
    * Get current cash balance for a portfolio
    * @param portfolioId Portfolio ID
+   * @param snapshotDate Snapshot date
    * @returns Promise<number>
    */
-  async getCurrentCashBalance(portfolioId: string): Promise<number> {
+  async getCashBalance(portfolioId: string, snapshotDate?: Date): Promise<number> {
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId }
     });
@@ -383,10 +393,18 @@ export class CashFlowService {
     }
 
     // Calculate cash balance from all cash flows instead of using database value
-    const cashFlows = await this.cashFlowRepository.find({
-      where: { portfolioId },
-      order: { flowDate: 'ASC' }
-    });
+    const queryBuilder = this.cashFlowRepository
+      .createQueryBuilder('cashFlow')
+      .where('cashFlow.portfolioId = :portfolioId', { portfolioId })
+      .orderBy('cashFlow.flowDate', 'ASC');
+    
+    if (snapshotDate) {
+      snapshotDate = new Date(snapshotDate);
+      snapshotDate.setHours(23, 59, 59, 999); // Set to end of day
+      queryBuilder.andWhere('DATE(cashFlow.flowDate) <= :snapshotDate', { snapshotDate: normalizeDateToString(snapshotDate) });
+    }
+    
+    const cashFlows = await queryBuilder.getMany();
 
     const totalCashFlow = cashFlows.reduce((sum, flow) => {
       // Use netAmount which applies correct sign based on cash flow type
@@ -594,7 +612,7 @@ export class CashFlowService {
       );
 
       // Recalculate portfolio balance
-      const result = await this.recalculateCashBalanceFromTrades(cashFlow.portfolioId);
+      const result = await this.recalculateCashBalance(cashFlow.portfolioId);
 
       return {
         cashFlow: { ...cashFlow, status: CashFlowStatus.CANCELLED } as CashFlow,
@@ -644,7 +662,7 @@ export class CashFlowService {
       );
 
       // Recalculate portfolio balance from all cash flows
-      await this.recalculateCashBalanceFromAllFlows(portfolioId);
+      await this.recalculateCashBalance(portfolioId);
 
       // Return updated cash flow
       return await manager.findOne(CashFlow, { where: { cashFlowId } });
@@ -672,7 +690,7 @@ export class CashFlowService {
       await manager.delete(CashFlow, { cashFlowId });
 
       // Recalculate portfolio balance from all cash flows
-      await this.recalculateCashBalanceFromAllFlows(portfolioId);
+      await this.recalculateCashBalance(portfolioId);
     });
   }
 
@@ -702,7 +720,7 @@ export class CashFlowService {
     
     // If cash flows were deleted, recalculate balance
     if (portfolioId) {
-      await this.recalculateCashBalanceFromAllFlows(portfolioId);
+      await this.recalculateCashBalance(portfolioId);
       console.log(`[CashFlowService] Recalculated cash balance after deletion for portfolioId: ${portfolioId}`);
     }
   }

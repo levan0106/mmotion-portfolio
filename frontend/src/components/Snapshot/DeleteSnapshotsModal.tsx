@@ -138,7 +138,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
       // Close modal after a short delay
       setTimeout(() => {
         handleClose();
-      }, 2000);
+      }, 500);
 
     } catch (error: any) {
       console.error('Failed to delete snapshots:', error);

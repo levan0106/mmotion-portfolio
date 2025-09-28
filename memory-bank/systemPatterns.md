@@ -24,10 +24,17 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
-### Price History System Patterns - **RECENTLY UPDATED**
+### Performance Snapshots Pagination Patterns - **RECENTLY UPDATED**
+- **Standardized Pagination DTOs**: PaginationDto and PaginatedResponseDto for consistent pagination across all APIs
+- **Backward Compatibility Pattern**: Original methods maintained alongside new paginated versions
+- **Frontend Pagination Hook**: usePagination hook for centralized pagination state management
+- **Reusable UI Components**: PaginationControls component for consistent pagination UI
+- **API Response Standardization**: All paginated APIs return consistent response format with data, page, limit, total, totalPages, hasNext, hasPrev
+- **Default Page Size Pattern**: Consistent 10 records per page across backend and frontend
+
+### Price History System Patterns
 - **Price Multiplication Pattern**: Stock/ETF prices multiplied by 1000 for display consistency
 - **Asset Type Routing**: Different multiplication factors based on asset type (STOCK/ETF vs others)
-- **Default Page Size Pattern**: Consistent 10 records per page across backend and frontend
 - **Foreign Key Constraint Pattern**: Always delete child records before parent records
 - **Enum Cleanup Pattern**: Remove unused enum values with proper database migrations
 

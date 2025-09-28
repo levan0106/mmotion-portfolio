@@ -223,7 +223,7 @@ export interface IAssetRepository {
    * @param portfolioId - Portfolio ID
    * @returns Promise<Trade[]> - Array of trades
    */
-  getTradesForAssetByPortfolio(assetId: string, portfolioId: string): Promise<any[]>;
+  getAssetTradesByPortfolioFinal(assetId: string, portfolioId: string): Promise<any[]>;
 
 
   /**

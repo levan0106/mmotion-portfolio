@@ -42,6 +42,9 @@ export class AssetAllocationSnapshot {
   @Column({ name: 'asset_symbol', type: 'varchar', length: 50 })
   assetSymbol: string;
 
+  @Column({ name: 'asset_type', type: 'varchar', length: 50 })
+  assetType: string;
+
   @Column({ name: 'snapshot_date', type: 'date' })
   snapshotDate: Date;
 

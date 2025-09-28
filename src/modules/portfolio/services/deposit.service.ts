@@ -151,7 +151,7 @@ export class DepositService {
     const referenceIdSettlement = this.cashFlowService.formatReferenceId(deposit.depositId, "SETTLED");
     await this.cashFlowService.deleteCashFlowByReferenceIdSilent(referenceIdSettlement);
     // step3: recalculate balance
-    await this.cashFlowService.recalculateCashBalanceFromAllFlows(deposit.portfolioId);
+    await this.cashFlowService.recalculateCashBalance(deposit.portfolioId);
     
     await this.depositRepository.delete(id);
     

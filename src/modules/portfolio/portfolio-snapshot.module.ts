@@ -27,6 +27,9 @@ import { SnapshotModule } from './snapshot.module';
 import { SharedModule } from '../shared/shared.module';
 import { AssetModule } from '../asset/asset.module';
 import { PortfolioModule } from './portfolio.module';
+import { MarketDataService } from '../market-data/services/market-data.service';
+import { MarketDataModule } from '../market-data/market-data.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -46,6 +49,8 @@ import { PortfolioModule } from './portfolio.module';
     forwardRef(() => PortfolioModule),
     SharedModule,
     AssetModule,
+    MarketDataModule,
+    HttpModule,
   ],
   providers: [
     PortfolioSnapshotRepository,
@@ -58,6 +63,7 @@ import { PortfolioModule } from './portfolio.module';
     RiskMetricsCalculationService,
     CashFlowService,
     BenchmarkMockService,
+    MarketDataService,
   ],
   controllers: [PortfolioSnapshotController, SnapshotController, BenchmarkMockController],
   exports: [
