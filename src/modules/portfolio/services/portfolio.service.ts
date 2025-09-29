@@ -806,4 +806,189 @@ export class PortfolioService {
       return [];
     }
   }
+
+  /**
+   * Copy a portfolio with all its data
+   * @param sourcePortfolioId - Source portfolio ID to copy from
+   * @param newName - Name for the new portfolio
+   * @returns Promise<Portfolio> - The new copied portfolio
+   */
+  async copyPortfolio(sourcePortfolioId: string, newName: string): Promise<Portfolio> {
+    // Get source portfolio with all related data
+    const sourcePortfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId: sourcePortfolioId },
+      relations: ['trades', 'trades.sellDetails', 'trades.buyDetails', 'cashFlows', 'deposits', 'investorHoldings']
+    });
+
+    if (!sourcePortfolio) {
+      throw new NotFoundException(`Source portfolio with ID ${sourcePortfolioId} not found`);
+    }
+
+    // Check if portfolio with same name already exists for this account
+    const existingPortfolio = await this.portfolioRepository.findOne({
+      where: { accountId: sourcePortfolio.accountId, name: newName },
+    });
+
+    if (existingPortfolio) {
+      throw new BadRequestException(
+        `Portfolio with name "${newName}" already exists for this account`,
+      );
+    }
+
+    // Create new portfolio with same properties but new name
+    const newPortfolio = this.portfolioEntityRepository.create({
+      accountId: sourcePortfolio.accountId,
+      name: newName,
+      baseCurrency: sourcePortfolio.baseCurrency,
+      // Copy all values from source portfolio
+      totalValue: sourcePortfolio.totalValue || 0,
+      cashBalance: sourcePortfolio.cashBalance || 0,
+      unrealizedPl: sourcePortfolio.unrealizedPl || 0,
+      realizedPl: sourcePortfolio.realizedPl || 0,
+      // Copy fund-related fields if source is a fund
+      isFund: sourcePortfolio.isFund,
+      totalOutstandingUnits: sourcePortfolio.isFund ? 0 : sourcePortfolio.totalOutstandingUnits,
+      navPerUnit: sourcePortfolio.isFund ? 0 : sourcePortfolio.navPerUnit,
+      numberOfInvestors: sourcePortfolio.isFund ? 0 : sourcePortfolio.numberOfInvestors,
+      lastNavDate: sourcePortfolio.isFund ? null : sourcePortfolio.lastNavDate,
+      // Copy all P&L fields from source portfolio
+      totalAssetValue: sourcePortfolio.totalAssetValue || 0,
+      totalInvestValue: sourcePortfolio.totalInvestValue || 0,
+      totalAllValue: sourcePortfolio.totalAllValue || 0,
+      realizedAssetPnL: sourcePortfolio.realizedAssetPnL || 0,
+      realizedInvestPnL: sourcePortfolio.realizedInvestPnL || 0,
+      realizedAllPnL: sourcePortfolio.realizedAllPnL || 0,
+      unrealizedAssetPnL: sourcePortfolio.unrealizedAssetPnL || 0,
+      unrealizedInvestPnL: sourcePortfolio.unrealizedInvestPnL || 0,
+      unrealizedAllPnL: sourcePortfolio.unrealizedAllPnL || 0,
+    });
+
+    const savedPortfolio = await this.portfolioEntityRepository.save(newPortfolio);
+
+    // Copy all trades from source portfolio
+    if (sourcePortfolio.trades && sourcePortfolio.trades.length > 0) {
+      const { Trade } = await import('../../trading/entities/trade.entity');
+      const { TradeDetail } = await import('../../trading/entities/trade-detail.entity');
+      
+      // Create a mapping of old trade IDs to new trade IDs
+      const tradeIdMapping = new Map<string, string>();
+      
+      // First pass: create all trades and build ID mapping
+      for (const sourceTrade of sourcePortfolio.trades) {
+        // Create new trade
+        const newTrade = this.portfolioEntityRepository.manager.create(Trade, {
+          portfolioId: savedPortfolio.portfolioId,
+          assetId: sourceTrade.assetId,
+          side: sourceTrade.side,
+          quantity: sourceTrade.quantity,
+          price: sourceTrade.price,
+          fee: sourceTrade.fee,
+          tax: sourceTrade.tax,
+          tradeDate: sourceTrade.tradeDate,
+          notes: sourceTrade.notes,
+          tradeType: sourceTrade.tradeType,
+          source: sourceTrade.source,
+          exchange: sourceTrade.exchange,
+          fundingSource: sourceTrade.fundingSource,
+          createdAt: sourceTrade.createdAt, // Copy creation timestamp
+          updatedAt: sourceTrade.updatedAt, // Copy update timestamp
+        });
+
+        const savedTrade = await this.portfolioEntityRepository.manager.save(newTrade);
+        
+        // Map old trade ID to new trade ID
+        tradeIdMapping.set(sourceTrade.tradeId, savedTrade.tradeId);
+      }
+      
+      // Second pass: copy trade details with correct trade ID mappings
+      // Use a Set to track already copied trade details to avoid duplicates
+      const copiedTradeDetails = new Set<string>();
+      
+      for (const sourceTrade of sourcePortfolio.trades) {
+        const newTradeId = tradeIdMapping.get(sourceTrade.tradeId);
+        
+        // Copy sell details (where this trade is the sell trade)
+        if (sourceTrade.sellDetails && sourceTrade.sellDetails.length > 0) {
+          for (const sourceTradeDetail of sourceTrade.sellDetails) {
+            const newBuyTradeId = tradeIdMapping.get(sourceTradeDetail.buyTradeId);
+            
+            if (newBuyTradeId) {
+              // Create a unique key to avoid duplicates
+              const detailKey = `${newBuyTradeId}-${newTradeId}-${sourceTradeDetail.assetId}`;
+              
+              if (!copiedTradeDetails.has(detailKey)) {
+                const newTradeDetail = this.portfolioEntityRepository.manager.create(TradeDetail, {
+                  buyTradeId: newBuyTradeId, // Use mapped buy trade ID
+                  sellTradeId: newTradeId, // Use mapped sell trade ID
+                  assetId: sourceTradeDetail.assetId,
+                  matchedQty: sourceTradeDetail.matchedQty,
+                  buyPrice: sourceTradeDetail.buyPrice,
+                  sellPrice: sourceTradeDetail.sellPrice,
+                  feeTax: sourceTradeDetail.feeTax,
+                  pnl: sourceTradeDetail.pnl,
+                  createdAt: sourceTradeDetail.createdAt, // Copy creation timestamp
+                });
+
+                await this.portfolioEntityRepository.manager.save(newTradeDetail);
+                copiedTradeDetails.add(detailKey);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Copy cash flows from source portfolio
+    if (sourcePortfolio.cashFlows && sourcePortfolio.cashFlows.length > 0) {
+      const { CashFlow } = await import('../entities/cash-flow.entity');
+      
+      for (const sourceCashFlow of sourcePortfolio.cashFlows) {
+        const newCashFlow = this.portfolioEntityRepository.manager.create(CashFlow, {
+          portfolioId: savedPortfolio.portfolioId,
+          amount: sourceCashFlow.amount,
+          type: sourceCashFlow.type,
+          description: sourceCashFlow.description,
+          flowDate: sourceCashFlow.flowDate,
+          reference: sourceCashFlow.reference,
+          currency: sourceCashFlow.currency,
+          status: sourceCashFlow.status,
+          effectiveDate: sourceCashFlow.effectiveDate,
+          tradeId: sourceCashFlow.tradeId,
+          fundingSource: sourceCashFlow.fundingSource,
+        });
+
+        await this.portfolioEntityRepository.manager.save(newCashFlow);
+      }
+    }
+
+    // Copy deposits from source portfolio
+    if (sourcePortfolio.deposits && sourcePortfolio.deposits.length > 0) {
+      const { Deposit } = await import('../entities/deposit.entity');
+      
+      for (const sourceDeposit of sourcePortfolio.deposits) {
+        const newDeposit = this.portfolioEntityRepository.manager.create(Deposit, {
+          portfolioId: savedPortfolio.portfolioId,
+          bankName: sourceDeposit.bankName, // Copy bank name (required field)
+          accountNumber: sourceDeposit.accountNumber, // Copy account number
+          principal: sourceDeposit.principal,
+          interestRate: sourceDeposit.interestRate,
+          startDate: sourceDeposit.startDate,
+          endDate: sourceDeposit.endDate,
+          termMonths: sourceDeposit.termMonths, // Copy term months
+          status: 'ACTIVE', // Reset status to active for new portfolio
+          actualInterest: 0, // Reset actual interest
+          notes: sourceDeposit.notes, // Copy notes
+        });
+
+        await this.portfolioEntityRepository.manager.save(newDeposit);
+      }
+    }
+
+    // Clear cache for account
+    await this.clearAccountCache(sourcePortfolio.accountId);
+    
+    this.logger.log(`Portfolio copied successfully: ${sourcePortfolioId} -> ${savedPortfolio.portfolioId}`);
+    
+    return savedPortfolio;
+  }
 }

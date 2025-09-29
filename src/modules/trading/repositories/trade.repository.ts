@@ -222,13 +222,15 @@ export class TradeRepository extends Repository<Trade> {
     assetId: string,
     portfolioId: string,
   ): Promise<Trade[]> {
+    // Use a more efficient query to find BUY trades with remaining quantity
     return this.tradeRepository
       .createQueryBuilder('trade')
       .leftJoin('trade.buyDetails', 'detail')
       .where('trade.assetId = :assetId', { assetId })
       .andWhere('trade.portfolioId = :portfolioId', { portfolioId })
       .andWhere('trade.side = :side', { side: TradeSide.BUY })
-      .andWhere('detail.detailId IS NULL')
+      .groupBy('trade.tradeId, trade.quantity')
+      .having('trade.quantity > COALESCE(SUM(detail.matchedQty), 0)')
       .orderBy('trade.tradeDate', 'ASC')
       .getMany();
   }

@@ -69,6 +69,8 @@ export class Deposit {
   isSettled(snapshotDate?: Date): boolean {
     const isSettled = this.status === 'SETTLED' && this.actualInterest !== null && this.actualInterest !== undefined;
     if (snapshotDate) {
+      snapshotDate = new Date(snapshotDate);
+      snapshotDate.setHours(23, 59, 59, 999);
       return isSettled && this.settledAt < snapshotDate;
     }
     return isSettled;

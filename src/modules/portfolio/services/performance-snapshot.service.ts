@@ -231,11 +231,13 @@ export class PerformanceSnapshotService {
     manager: any
   ): Promise<AssetPerformanceSnapshot[]> {
     // FIXED: Get only assets that have trades for the portfolio, handle duplicates
+    const endOfDay = new Date(snapshotDate);
+    endOfDay.setHours(23, 59, 59, 999);
     const assets = await manager
       .createQueryBuilder(Asset, 'asset')
       .innerJoin('asset.trades', 'trade')
-      .where('trade.portfolioId = :portfolioId AND DATE(trade.tradeDate) <= :snapshotDate', { portfolioId, 
-        snapshotDate: normalizeDateToString(snapshotDate) })
+      .where('trade.portfolioId = :portfolioId AND trade.tradeDate <= :snapshotDate', { portfolioId, 
+        snapshotDate: endOfDay })
       .distinct(true) // Handle duplicates
       .getMany();
 
@@ -340,12 +342,14 @@ export class PerformanceSnapshotService {
     manager: any
   ): Promise<AssetGroupPerformanceSnapshot[]> {
     // FIXED: Get only asset types that have trades for the portfolio, handle duplicates
+    const endOfDay = new Date(snapshotDate);
+    endOfDay.setHours(23, 59, 59, 999);
     const assetTypes = await manager
       .createQueryBuilder(Asset, 'asset')
       .innerJoin('asset.trades', 'trade')
       .select('DISTINCT asset.type', 'assetType')
-      .where('trade.portfolioId = :portfolioId AND DATE(trade.tradeDate) <= :snapshotDate', { portfolioId, 
-        snapshotDate: normalizeDateToString(snapshotDate) })
+      .where('trade.portfolioId = :portfolioId AND trade.tradeDate <= :snapshotDate', { portfolioId, 
+        snapshotDate: endOfDay })
       .getRawMany();
 
     const snapshots: AssetGroupPerformanceSnapshot[] = [];

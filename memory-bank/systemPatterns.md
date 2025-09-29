@@ -24,6 +24,21 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Cash Flow Logic Patterns - **RECENTLY UPDATED**
+- **Centralized Calculation Pattern**: All cash flow calculations centralized in getCashBalance method to avoid code duplication
+- **Method Delegation Pattern**: recalculateCashBalance delegates to getCashBalance for consistent logic
+- **QueryBuilder Consistency Pattern**: All cash flow queries use QueryBuilder with same filters (COMPLETED status, endOfDay logic)
+- **Single Source of Truth Pattern**: getCashBalance is the single source of truth for cash balance calculations
+- **DRY Principle Pattern**: Eliminate code duplication by reusing existing methods instead of duplicating logic
+- **Debug Cleanup Pattern**: Remove all debug logs and files after bug fixes for production-ready code
+
+### NAV Calculation Patterns - **RECENTLY UPDATED**
+- **Timezone Handling Pattern**: Always use end-of-day timestamps for date filtering to include all records on the snapshot date
+- **Service Layer Pattern**: Each service handles its own date filtering logic consistently
+- **Real-time Calculation Pattern**: Use calculated values instead of stored database values for accuracy
+- **Deposit Filtering Pattern**: Include deposits that started on or before snapshot date and are either not settled or settled after snapshot date
+- **Portfolio Snapshot Pattern**: Always call calculateNavPerUnit for snapshot creation instead of using stored values
+
 ### Performance Snapshots Pagination Patterns - **RECENTLY UPDATED**
 - **Standardized Pagination DTOs**: PaginationDto and PaginatedResponseDto for consistent pagination across all APIs
 - **Backward Compatibility Pattern**: Original methods maintained alongside new paginated versions

@@ -50,6 +50,7 @@ import {
   Portfolio 
 } from '../../types';
 import { useNAVHoldings } from '../../hooks/useNAVHoldings';
+import { ConvertToFundModal } from '../Portfolio/ConvertToFundModal';
 
 interface NAVHoldingsManagementProps {
   portfolio: Portfolio;
@@ -97,6 +98,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
     units: 0,
     description: ''
   });
+  const [convertModalOpen, setConvertModalOpen] = useState(false);
 
   // Calculate expected units based on amount and NAV per unit
   const calculateExpectedUnits = (amount: number): number => {
@@ -163,41 +165,55 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
     }
   };
 
+  const handleConvertToFund = async (snapshotDate?: string) => {
+    try {
+      await convertToFund(portfolio.portfolioId, snapshotDate);
+      // Refresh portfolio data without reloading page
+      if (onPortfolioUpdate) {
+        onPortfolioUpdate();
+      }
+    } catch (err) {
+      // Error is handled by the hook
+      throw err; // Re-throw to let the modal handle the error display
+    }
+  };
+
   const totalInvestment = holdings.reduce((sum, holding) => sum + holding.totalInvestment, 0);
   const totalCurrentValue = holdings.reduce((sum, holding) => sum + holding.currentValue, 0);
   const totalPnL = totalCurrentValue - totalInvestment;
 
   if (!portfolio.isFund) {
     return (
-      <Card sx={{ mb: getUltraSpacing(3, 1) }}>
-        <CardContent sx={{ p: getUltraSpacing(2, 1.5), textAlign: 'center' }}>
-          <AccountBalanceIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            Portfolio is not a Fund
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.
-          </Typography>
-          <Button 
-            variant="contained" 
-            startIcon={<AccountBalanceIcon />}
-            onClick={async () => {
-              try {
-                await convertToFund(portfolio.portfolioId);
-                // Refresh portfolio data without reloading page
-                if (onPortfolioUpdate) {
-                  onPortfolioUpdate();
-                }
-              } catch (err) {
-                // Error is handled by the hook
-              }
-            }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Convert to Fund'}
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card sx={{ mb: getUltraSpacing(3, 1) }}>
+          <CardContent sx={{ p: getUltraSpacing(2, 1.5), textAlign: 'center' }}>
+            <AccountBalanceIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Portfolio is not a Fund
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.
+            </Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<AccountBalanceIcon />}
+              onClick={() => setConvertModalOpen(true)}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={20} /> : 'Convert to Fund'}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Convert to Fund Modal */}
+        <ConvertToFundModal
+          open={convertModalOpen}
+          onClose={() => setConvertModalOpen(false)}
+          portfolio={portfolio}
+          onConvert={handleConvertToFund}
+          loading={loading}
+        />
+      </>
     );
   }
 

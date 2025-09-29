@@ -75,7 +75,7 @@ export class SnapshotRepository {
    */
   async findManyWithPagination(
     options: SnapshotQueryOptions
-  ): Promise<{ data: AssetAllocationSnapshot[]; total: number; page: number; limit: number }> {
+  ): Promise<{ data: AssetAllocationSnapshot[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
     const queryBuilder = this.createQueryBuilder(options);
     
     const page = Math.max(1, options.offset ? Math.floor(options.offset / (options.limit || 10)) + 1 : 1);
@@ -86,11 +86,18 @@ export class SnapshotRepository {
 
     const [data, total] = await queryBuilder.getManyAndCount();
 
+    const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
     return {
       data,
       total,
       page,
       limit,
+      totalPages,
+      hasNext,
+      hasPrev,
     };
   }
 

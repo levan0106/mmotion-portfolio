@@ -142,6 +142,11 @@ class ApiService {
     await this.api.delete(`/api/v1/portfolios/${id}`);
   }
 
+  async copyPortfolio(data: { sourcePortfolioId: string; name: string }): Promise<Portfolio> {
+    const response = await this.api.post('/api/v1/portfolios/copy', data);
+    return response.data;
+  }
+
   // Portfolio analytics endpoints
   // async getPortfolioNav(portfolioId: string): Promise<{ navValue: number; totalValue: number }> {
   //   const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav`);
@@ -417,8 +422,9 @@ class ApiService {
     return response.data;
   }
 
-  async convertPortfolioToFund(portfolioId: string): Promise<Portfolio> {
-    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-fund`);
+  async convertPortfolioToFund(portfolioId: string, snapshotDate?: string): Promise<Portfolio> {
+    const params = snapshotDate ? { snapshotDate } : {};
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-fund`, {}, { params });
     return response.data;
   }
 

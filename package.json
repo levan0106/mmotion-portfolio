@@ -40,7 +40,10 @@
     "migration:run:full": "npm run migration:run-schema && npm run migration:run-data",
     "migration:verify": "npx ts-node scripts/verify-migration-status.ts",
     "migration:verify:simple": "powershell -ExecutionPolicy Bypass -File scripts/verify-migration-simple.ps1",
-    "cleanup:fund-data": "npx ts-node scripts/cleanup-fund-data.ts"
+    "cleanup:fund-data": "npx ts-node scripts/cleanup-fund-data.ts",
+    "portfolio:list": "npx ts-node scripts/list-portfolios.ts",
+    "portfolio:cleanup": "npx ts-node scripts/portfolio-cleanup-wrapper.ts",
+    "portfolio:cleanup:help": "npx ts-node -e \"console.log('Usage: npm run portfolio:cleanup <portfolioId>'); console.log('Example: npm run portfolio:cleanup 550e8400-e29b-41d4-a716-446655440001'); console.log(''); console.log('To list all portfolios first:'); console.log('  npm run portfolio:list');\""
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

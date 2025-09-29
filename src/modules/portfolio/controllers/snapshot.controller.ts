@@ -198,6 +198,9 @@ export class SnapshotController {
         total: { type: 'number' },
         page: { type: 'number' },
         limit: { type: 'number' },
+        totalPages: { type: 'number' },
+        hasNext: { type: 'boolean' },
+        hasPrev: { type: 'boolean' },
       },
     },
   })

@@ -529,7 +529,7 @@ export class InvestorHoldingService {
    */
   async calculateNavPerUnit(portfolioId: string, snapshotDate?: Date): Promise<number> {
     const portfolio = await this.portfolioRepository.findOne({
-      where: { portfolioId, createdAt: LessThanOrEqual(snapshotDate) }
+      where: { portfolioId }
     });
 
     if (!portfolio || !portfolio.isFund) {
@@ -544,9 +544,6 @@ export class InvestorHoldingService {
     // Use real-time calculated NAV value instead of stored database value
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId, snapshotDate);
     const navPerUnit = realTimeNavValue / portfolio.totalOutstandingUnits;
-
-    this.logger.log(`Calculated NAV per unit for portfolio ${portfolioId}: ${navPerUnit.toFixed(3)} 
-    (Real-time NAV: ${realTimeNavValue}) (Total outstanding units: ${portfolio.totalOutstandingUnits})`);
 
     // Round to 3 decimal places to avoid precision issues
     return Math.round(navPerUnit * 1000) / 1000;
@@ -651,8 +648,8 @@ export class InvestorHoldingService {
   /**
    * Convert portfolio to fund
    */
-  async convertPortfolioToFund(portfolioId: string): Promise<Portfolio> {
-    this.logger.log(`Converting portfolio ${portfolioId} to fund`);
+  async convertPortfolioToFund(portfolioId: string, snapshotDate?: Date): Promise<Portfolio> {
+    this.logger.log(`Converting portfolio ${portfolioId} to fund${snapshotDate ? ` at snapshot date ${snapshotDate.toISOString()}` : ''}`);
 
     // 1. Get portfolio
     const portfolio = await this.portfolioRepository.findOne({
@@ -668,7 +665,7 @@ export class InvestorHoldingService {
     }
 
     // 2. Calculate real-time NAV value
-    const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId);
+    const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId, snapshotDate);
     
     // Calculate initial units to achieve a reasonable NAV per unit
     let initialUnits: number;
@@ -727,7 +724,6 @@ export class InvestorHoldingService {
 
     // NAV should include asset value, deposit value, and real-time cash balance
     const navValue = calculatedValues.totalValue + depositData.totalDepositValue + realTimeCashBalance;
-    this.logger.log(`Real-time NAV calculation for ${portfolioId}: ${navValue} (assets: ${calculatedValues.totalValue}, deposits: ${depositData.totalDepositValue}, cash: ${realTimeCashBalance})`);
     
     // Ensure we return a positive value
     return Math.max(navValue, 0);

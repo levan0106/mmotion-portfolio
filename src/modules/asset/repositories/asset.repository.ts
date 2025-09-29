@@ -685,7 +685,10 @@ export class AssetRepository implements IAssetRepository {
 
     // Filter trades by snapshot date if provided
     if (snapshotDate) {
-      queryBuilder.andWhere('DATE(trade.tradeDate) <= DATE(:snapshotDate)', { snapshotDate });
+      // Use consistent date comparison - set to end of day to include all trades on that date
+      const endOfDay = new Date(snapshotDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      queryBuilder.andWhere('trade.tradeDate <= :snapshotDate', { snapshotDate: endOfDay });
     }
 
     return await queryBuilder

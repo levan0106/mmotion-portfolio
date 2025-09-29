@@ -2,30 +2,38 @@
  * Portfolio card component for displaying portfolio summary
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
   AccountBalance,
   Visibility,
+  ContentCopy,
+  AccountBalanceWallet,
+  Business,
 } from '@mui/icons-material';
 import { Portfolio } from '../../types';
 import { formatCurrency } from '../../utils/format';
+import { CopyPortfolioModal } from './CopyPortfolioModal';
 import './PortfolioCard.styles.css';
 
 interface PortfolioCardProps {
   portfolio: Portfolio;
   onView: (portfolioId: string) => void;
   onEdit?: (portfolioId: string) => void;
+  onPortfolioCopied?: (newPortfolio: Portfolio) => void;
 }
 
 const PortfolioCard: React.FC<PortfolioCardProps> = ({
   portfolio,
   onView,
   onEdit,
+  onPortfolioCopied,
 }) => {
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
   const isPositivePL = (Number(portfolio.unrealizedInvestPnL) || 0) >= 0;
   const isPositiveRealizedPL = (Number(portfolio.realizedInvestPnL) || 0) >= 0;
+  const isFund = portfolio.isFund || false;
 
   const handleView = () => {
     onView(portfolio.portfolioId);
@@ -43,11 +51,41 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
     handleView();
   };
 
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation(); // Prevent event bubbling
+    setCopyModalOpen(true);
+  };
+
+  const handleCopyModalClose = () => {
+    setCopyModalOpen(false);
+  };
+
+  const handlePortfolioCopied = (newPortfolio: Portfolio) => {
+    if (onPortfolioCopied) {
+      onPortfolioCopied(newPortfolio);
+    }
+    // Don't close modal here - let CopyPortfolioModal handle it
+    // setCopyModalOpen(false);
+  };
+
   return (
-    <div className="portfolio-card" onClick={handleView}>
+    <div className={`portfolio-card ${isFund ? 'portfolio-card--fund' : 'portfolio-card--individual'}`} onClick={handleView}>
       <div className="portfolio-card__content">
         <div className="portfolio-card__header">
-          <h2 className="portfolio-card__title">{portfolio.name}</h2>
+          <div className="portfolio-card__title-section">
+            <div className="portfolio-card__title-wrapper">
+              {isFund ? (
+                <Business className="portfolio-card__type-icon portfolio-card__type-icon--fund" />
+              ) : (
+                <AccountBalanceWallet className="portfolio-card__type-icon portfolio-card__type-icon--individual" />
+              )}
+              <h2 className="portfolio-card__title">{portfolio.name}</h2>
+            </div>
+            <div className="portfolio-card__type-badge">
+              {isFund ? 'Fund' : 'Individual'}
+            </div>
+          </div>
           <span className={`portfolio-card__currency ${portfolio.baseCurrency === 'USD' ? 'portfolio-card__currency--primary' : ''}`}>
             {portfolio.baseCurrency}
           </span>
@@ -119,7 +157,26 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             Edit
           </button>
         )}
+        <button
+          className="portfolio-card__copy-btn"
+          onClick={handleCopy}
+          onMouseDown={(e) => e.preventDefault()}
+          onMouseUp={(e) => e.preventDefault()}
+          title="Copy Portfolio"
+          type="button"
+        >
+          <ContentCopy />
+          Copy
+        </button>
       </div>
+
+      <CopyPortfolioModal
+        open={copyModalOpen}
+        onClose={handleCopyModalClose}
+        sourcePortfolio={portfolio}
+        onPortfolioCopied={handlePortfolioCopied}
+        onModalClose={handleCopyModalClose}
+      />
     </div>
   );
 };

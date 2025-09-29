@@ -385,9 +385,9 @@ export class SnapshotService {
     return await this.snapshotRepo.findMany(options);
   }
 
-  /**
-   * Get snapshots with pagination
-   */
+  // /**
+  //  * Get snapshots with pagination
+  //  */
   async getSnapshotsWithPagination(options: SnapshotQueryOptions) {
     return await this.snapshotRepo.findManyWithPagination(options);
   }

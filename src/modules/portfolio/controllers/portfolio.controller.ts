@@ -23,6 +23,7 @@ import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
 import { RedeemFromFundDto } from '../dto/redeem-from-fund.dto';
+import { CopyPortfolioDto } from '../dto/copy-portfolio.dto';
 import { Portfolio } from '../entities/portfolio.entity';
 import { InvestorHolding } from '../entities/investor-holding.entity';
 
@@ -141,6 +142,72 @@ export class PortfolioController {
   })
   async createPortfolio(@Body() createPortfolioDto: CreatePortfolioDto): Promise<Portfolio> {
     return this.portfolioService.createPortfolio(createPortfolioDto);
+  }
+
+  /**
+   * Copy a portfolio with all its data.
+   */
+  @Post('copy')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ 
+    summary: 'Copy a portfolio',
+    description: 'Creates a new portfolio by copying all data (trades, cash flows, deposits) from an existing portfolio.',
+  })
+  @ApiBody({ type: CopyPortfolioDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Portfolio copied successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        portfolioId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440004' },
+        accountId: { type: 'string', example: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5' },
+        name: { type: 'string', example: 'Growth Portfolio Copy' },
+        baseCurrency: { type: 'string', example: 'VND' },
+        totalValue: { type: 'number', example: 0 },
+        cashBalance: { type: 'number', example: 0 },
+        unrealizedPl: { type: 'number', example: 0 },
+        realizedPl: { type: 'number', example: 0 },
+        createdAt: { type: 'string', example: '2024-12-19T10:30:00.000Z' },
+        updatedAt: { type: 'string', example: '2024-12-19T10:30:00.000Z' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Bad request - validation failed or portfolio name already exists',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { 
+          type: 'string',
+          example: 'Portfolio with name "Growth Portfolio Copy" already exists for this account'
+        },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Source portfolio not found',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { 
+          type: 'string',
+          example: 'Source portfolio with ID 550e8400-e29b-41d4-a716-446655440000 not found'
+        },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async copyPortfolio(@Body() copyPortfolioDto: CopyPortfolioDto): Promise<Portfolio> {
+    return this.portfolioService.copyPortfolio(
+      copyPortfolioDto.sourcePortfolioId,
+      copyPortfolioDto.name
+    );
   }
 
   /**
@@ -468,9 +535,15 @@ export class PortfolioController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ 
     summary: 'Convert portfolio to fund',
-    description: 'Converts a regular portfolio to a fund, enabling NAV/Unit management',
+    description: 'Converts a regular portfolio to a fund, enabling NAV/Unit management. Optionally specify a snapshot date for historical conversion.',
   })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ 
+    name: 'snapshotDate', 
+    description: 'Optional snapshot date for historical conversion (ISO 8601 format)', 
+    required: false,
+    example: '2024-01-15T00:00:00.000Z'
+  })
   @ApiResponse({ 
     status: 200, 
     description: 'Portfolio converted to fund successfully',
@@ -482,10 +555,22 @@ export class PortfolioController {
   })
   @ApiResponse({ 
     status: 400, 
-    description: 'Portfolio is already a fund' 
+    description: 'Portfolio is already a fund or invalid snapshot date' 
   })
-  async convertToFund(@Param('id', ParseUUIDPipe) portfolioId: string): Promise<Portfolio> {
-    return this.investorHoldingService.convertPortfolioToFund(portfolioId);
+  async convertToFund(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Query('snapshotDate') snapshotDate?: string
+  ): Promise<Portfolio> {
+    let parsedSnapshotDate: Date | undefined;
+    
+    if (snapshotDate) {
+      parsedSnapshotDate = new Date(snapshotDate);
+      if (isNaN(parsedSnapshotDate.getTime())) {
+        throw new BadRequestException('Invalid snapshot date format. Please use ISO 8601 format (e.g., 2024-01-15T00:00:00.000Z)');
+      }
+    }
+    
+    return this.investorHoldingService.convertPortfolioToFund(portfolioId, parsedSnapshotDate);
   }
 
   /**

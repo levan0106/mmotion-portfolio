@@ -57,10 +57,14 @@ export class PortfolioCalculationService {
     portfolioId: string,
     snapshotDate?: Date,
   ): Promise<PortfolioAssetsCalculationResult> {
+    
     // Get all trades for this portfolio up to snapshot date
     const whereCondition: any = { portfolioId };
     if (snapshotDate) {
-      whereCondition.tradeDate = LessThanOrEqual(snapshotDate);
+      // Set to end of day to include all trades on the snapshot date
+      const endOfDay = new Date(snapshotDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      whereCondition.tradeDate = LessThanOrEqual(endOfDay);
     }
     
     const trades = await this.tradeRepository.find({
@@ -68,6 +72,7 @@ export class PortfolioCalculationService {
       relations: ['asset'],
       order: { tradeDate: 'ASC' },
     });
+
 
     if (trades.length === 0) {
       return {
@@ -91,12 +96,14 @@ export class PortfolioCalculationService {
     // Calculate total unrealized P&L
     const unrealizedPl = positions.reduce((sum, pos) => sum + parseFloat(pos.unrealizedPl.toString()), 0);
 
-    return {
+    const result = {
       totalValue,
       unrealizedPl,
       realizedPl,
       assetPositions: positions
     };
+    
+    return result;
   }
 
   /**

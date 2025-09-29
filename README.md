@@ -18,6 +18,8 @@ A comprehensive portfolio management system built with NestJS, TypeORM, and Post
 - **Performance Analytics**: Historical performance analysis and reporting
 - **Risk Management**: Portfolio risk assessment and monitoring
 - **Asset Management**: Complete asset entity with TypeORM decorators
+- **Portfolio Copy**: Complete portfolio duplication with all related data
+- **Data Cleanup**: Automated cleanup scripts for test data management
 
 ### Logging System - **COMPLETED ✅**
 - **Application Logging**: Error, warning, info, debug logging with context
@@ -93,6 +95,8 @@ mmotion-portfolio/
 │   │   └── types/               # TypeScript types
 │   └── package.json
 ├── scripts/                     # Utility scripts
+│   ├── cleanup-portfolio.ts    # Portfolio cleanup script
+│   └── list-portfolios.ts      # Portfolio listing script
 ├── logs/                        # Application logs
 ├── grafana/                     # Grafana dashboards
 ├── prometheus/                  # Prometheus configuration
@@ -203,6 +207,13 @@ GET /api/v1/portfolios/{id}/positions
 # Get portfolio analytics
 GET /api/v1/portfolios/{id}/analytics/performance
 GET /api/v1/portfolios/{id}/analytics/allocation
+
+# Copy portfolio
+POST /api/v1/portfolios/copy
+{
+  "sourcePortfolioId": "uuid",
+  "name": "New Portfolio Name"
+}
 ```
 
 ### Trade Management
@@ -271,6 +282,21 @@ npx ts-node scripts/create-sample-sell-trades.ts
 
 # Database seeding (comprehensive test data)
 npm run seed:dev
+```
+
+### Portfolio Management Scripts - **COMPLETED ✅**
+```bash
+# List all portfolios
+npm run portfolio:list
+
+# Cleanup specific portfolio
+npm run portfolio:cleanup <portfolioId>
+
+# Get help for portfolio cleanup
+npm run portfolio:cleanup:help
+
+# Example cleanup
+npm run portfolio:cleanup 550e8400-e29b-41d4-a716-446655440001
 ```
 
 ## 📚 Documentation - **COMPREHENSIVE DOCUMENTATION COMPLETED ✅**

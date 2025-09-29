@@ -111,26 +111,6 @@ export class PortfolioSnapshotService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    // // Delete existing portfolio snapshots for the same date first
-    // // This ensures we only have one portfolio snapshot per day per portfolio
-    // this.logger.log(`🔍 About to delete existing portfolio snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]} with granularity ${granularity}`);
-    
-    // // Try to delete all existing snapshots for this portfolio and date
-    // // Use deleteByPortfolioAndDateRange to delete all snapshots for the date
-    // const startDate = new Date(date);
-    // startDate.setHours(0, 0, 0, 0);
-    // const endDate = new Date(date);
-    // endDate.setHours(23, 59, 59, 999);
-    
-    // const deletedCount = await this.portfolioSnapshotRepo.deleteByPortfolioAndDateRange(
-    //   portfolioId, 
-    //   startDate, 
-    //   endDate, 
-    //   granularity
-    // );
-    
-    //this.logger.log(`🗑️ Delete operation completed. Deleted ${deletedCount} existing portfolio snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}`);
-
     // Get asset snapshots for this portfolio and date
     const assetSnapshots = await this.assetSnapshotRepository.find({
       where: {
@@ -144,6 +124,20 @@ export class PortfolioSnapshotService {
     // Calculate cash balance and deposit data (common for both scenarios)
     const cashBalance = await this.cashFlowService.getCashBalance(portfolioId, date);
     const depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId, date);
+    
+    this.logger.debug(`Recalculating NAV per unit for portfolio ${portfolioId}`);
+    // To get real-time data for fund management, we need to recalculate the following fields:
+    // 1. Update Portfolio NAV per unit
+    // Recalculate NAV per unit
+    const newNavPerUnit = await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId); // calculate and update navPerUnit to DB for daily snapshot
+
+    // 2. Update Portfolio numberOfInvestors
+    // Recalculate number of investors
+    const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId); // calculate and update numberOfInvestors to DB for daily snapshot
+    
+    // // 3. Recalculate cash balance
+    // const cashFlow = await this.cashFlowService.recalculateCashBalance(portfolioId, snapshotDate);
+    
 
     if (assetSnapshots.length === 0) {
       this.logger.warn(`No asset snapshots found for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}. 
@@ -182,7 +176,7 @@ export class PortfolioSnapshotService {
         totalDepositValue: depositData.totalDepositValue,
         totalDepositCount: depositData.totalDepositCount,
         totalOutstandingUnits: portfolio.totalOutstandingUnits || 0,
-        navPerUnit: portfolio.navPerUnit || 0,
+        navPerUnit: portfolio.navPerUnit|| 0, // only use portfolio.navPerUnit for daily snapshot because it's already calculated in the portfolio service
         numberOfInvestors: portfolio.numberOfInvestors || 0,
         isFund: portfolio.isFund || false,
         unrealizedDepositPnL: depositData.unrealizedDepositPnL,
@@ -262,23 +256,6 @@ export class PortfolioSnapshotService {
     // Calculate asset risk metrics from asset snapshots
     const assetVolatility = Number(this.calculateVolatility(assetSnapshots).toFixed(4));
     const assetMaxDrawdown = Number(this.calculateMaxDrawdown(assetSnapshots).toFixed(4));
-    
-    this.logger.debug(`Recalculating NAV per unit for portfolio ${portfolioId}`);
-    // To get real-time data for fund management, we need to recalculate the following fields:
-    // 1. Update Portfolio NAV per unit
-    // Recalculate NAV per unit
-    const newNavPerUnit = snapshotDate ?
-     await this.investorHoldingService.calculateNavPerUnit(portfolioId, snapshotDate) :
-     await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId); // calculate and update navPerUnit to DB for daily snapshot
-
-    // 2. Update Portfolio numberOfInvestors
-    // Recalculate number of investors
-    const newNumberOfInvestors = snapshotDate ?
-     await this.investorHoldingService.calculateNumberOfInvestors(portfolioId, snapshotDate) :
-     await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId); // calculate and update numberOfInvestors to DB for daily snapshot
-    
-    // 3. Recalculate cash balance
-    const cashFlow = await this.cashFlowService.recalculateCashBalance(portfolioId, snapshotDate);
     
     // get fund management metrics
     const totalOutstandingUnits = Number((Number(portfolio.totalOutstandingUnits || 0)).toFixed(8));

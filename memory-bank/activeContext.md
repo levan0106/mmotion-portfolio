@@ -1,10 +1,17 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Snapshot Management System Optimization - COMPLETED**
-**Latest Update: Successfully fixed tab refresh issues, pagination bugs, and cleaned debug code (Current Session)**
+**Phase: Cash Flow Logic Unification & Production Cleanup - COMPLETED**
+**Latest Update: Successfully unified cash flow logic and cleaned up all debug files (Current Session)**
 **Code Version: Backend v1.0.0, Frontend v1.0.0 - Production Ready**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
+- ✅ **NAV Calculation Bug Fix** (Fixed critical bug in snapshot NAV calculation for historical dates)
+- ✅ **Convert to Fund Feature Enhancement** (Added snapshot date parameter for historical conversion)
+- ✅ **Cash Flow Logic Unification** (Centralized cash flow calculation logic in getCashBalance method)
+- ✅ **Code Cleanup & Debug Removal** (Removed all debug files and logs for production-ready code)
+- ✅ **Portfolio Copy Functionality Implementation** (Complete backend API + frontend UI)
+- ✅ **Data Cleanup Scripts Creation** (Automated cleanup tools for test data management)
+- ✅ **Documentation Updates** (README.md updated with new features and scripts)
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
 - ✅ Thiết lập Memory Bank cho project tracking
@@ -1407,6 +1414,24 @@
 - **Type Safety**: Maintained TypeScript type safety throughout changes
 - **Build Verification**: All changes tested with successful builds
 
+### NAV Calculation Bug Fix (Current Session)
+- **Issue Identified**: NAV per Unit calculation was incorrect for snapshot dates (20/7 showing 2,085 VND instead of expected 10,015 VND)
+- **Root Cause Analysis**: 
+  - Timezone filtering issues in multiple services
+  - Incorrect deposit filtering logic excluding active deposits
+  - Portfolio calculation service only working with trades, not asset positions
+- **Services Fixed**:
+  - `cash-flow.service.ts`: Fixed timezone handling for cash flow filtering
+  - `asset.repository.ts`: Fixed timezone handling for trade filtering
+  - `performance-snapshot.service.ts`: Fixed timezone handling for snapshot creation
+  - `deposit-calculation.service.ts`: Fixed deposit filtering logic for active deposits
+  - `portfolio-calculation.service.ts`: Fixed timezone handling for trade filtering
+  - `portfolio-snapshot.service.ts`: Fixed to use calculated NAV per unit instead of stored value
+- **Convert to Fund Enhancement**: Added snapshot date parameter for historical portfolio conversion
+- **Code Cleanup**: Removed all debug files (25+ files) and debug logs for production-ready code
+- **Build Status**: ✅ All TypeScript errors fixed, ✅ Build successful
+- **Testing Status**: ✅ NAV calculation now works correctly for snapshot dates
+
 ### Current Code Status
 - **Backend Version**: v1.0.0 (Production Ready)
 - **Frontend Version**: v1.0.0 (Production Ready)
@@ -1416,3 +1441,4 @@
 - **Build Status**: ✅ Backend build successful, ✅ Frontend build successful
 - **Docker Status**: ✅ Containerized deployment ready
 - **Testing Status**: ✅ All critical paths tested and verified
+- **NAV Calculation**: ✅ Fixed and working correctly for all snapshot dates

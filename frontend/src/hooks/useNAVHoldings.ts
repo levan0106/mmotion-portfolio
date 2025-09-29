@@ -13,7 +13,7 @@ interface UseNAVHoldingsReturn {
   refetch: () => Promise<void>;
   subscribeToFund: (dto: SubscribeToFundDto) => Promise<SubscriptionResult>;
   redeemFromFund: (dto: RedeemFromFundDto) => Promise<RedemptionResult>;
-  convertToFund: (portfolioId: string) => Promise<void>;
+  convertToFund: (portfolioId: string, snapshotDate?: string) => Promise<void>;
 }
 
 export const useNAVHoldings = (portfolioId: string | undefined, isFund: boolean = false): UseNAVHoldingsReturn => {
@@ -75,12 +75,12 @@ export const useNAVHoldings = (portfolioId: string | undefined, isFund: boolean 
     }
   };
 
-  const convertToFund = async (portfolioId: string): Promise<void> => {
+  const convertToFund = async (portfolioId: string, snapshotDate?: string): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
-      await apiService.convertPortfolioToFund(portfolioId);
+      await apiService.convertPortfolioToFund(portfolioId, snapshotDate);
       // Portfolio will be refreshed by parent component
     } catch (err) {
       setError('Failed to convert portfolio to fund');

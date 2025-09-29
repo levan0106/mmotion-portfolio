@@ -2,7 +2,20 @@
 
 ## What Works
 ### ✅ Completed
-- **SNAPSHOT MANAGEMENT SYSTEM OPTIMIZATION - COMPLETED** (Current Session - September 28, 2025)
+- **CASH FLOW LOGIC UNIFICATION & PRODUCTION CLEANUP - COMPLETED** (Current Session - September 29, 2025)
+  - **Critical Bug Fixed**: NAV per Unit calculation was incorrect for snapshot dates (20/7 showing 1,952 VND instead of expected 9,999 VND)
+  - **Root Cause Analysis**: Identified inconsistent cash flow logic between recalculateCashBalance and getCashBalance methods
+  - **Services Fixed**: 
+    - `cash-flow.service.ts`: Unified cash flow logic by centralizing calculation in getCashBalance method
+    - `investor-holding.service.ts`: Fixed portfolio creation date filtering in calculateNavPerUnit method
+    - **Logic Unification**: Both methods now use same QueryBuilder, COMPLETED filter, and endOfDay logic
+    - **Code Refactoring**: recalculateCashBalance now calls getCashBalance internally to avoid code duplication
+  - **Code Cleanup**: Removed all debug files (4+ JavaScript files) and debug logs for production-ready code
+  - **Build Status**: All TypeScript errors fixed, build successful
+  - **Testing Status**: NAV calculation now works correctly with consistent cash flow logic
+  - **Production Ready**: Clean, maintainable code with centralized logic and no debug artifacts
+
+- **SNAPSHOT MANAGEMENT SYSTEM OPTIMIZATION - COMPLETED** (Previous Session - September 28, 2025)
   - **Tab Refresh Issues Fixed**: Portfolio Summary và Asset Snapshots tabs now refresh data when switching between tabs
   - **Pagination Navigation Fixed**: All pagination controls (next/previous page) working correctly across all tabs
   - **Page Size Change Fixed**: Limit changes now properly trigger API calls with correct parameters (no more default limit=25)

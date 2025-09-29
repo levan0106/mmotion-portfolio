@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, LessThanOrEqual } from 'typeorm';
 import { Portfolio } from '../entities/portfolio.entity';
@@ -30,6 +30,8 @@ export interface CashFlowCreateResult {
  */
 @Injectable()
 export class CashFlowService {
+  private readonly logger = new Logger(CashFlowService.name);
+
   constructor(
     @InjectRepository(Portfolio)
     private readonly portfolioRepository: Repository<Portfolio>,
@@ -119,43 +121,8 @@ export class CashFlowService {
 
     const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
 
-    // Get all cash flows for this portfolio (including deposits, trades, etc.)
-    let allCashFlows = await this.cashFlowRepository.find({
-      where: { portfolioId },
-      order: { flowDate: 'ASC' }
-    });
-
-    // Filter cash flows by snapshot date if provided
-    if (snapshotDate) {
-      allCashFlows = allCashFlows.filter(cashFlow => 
-        compareDates(cashFlow.flowDate, snapshotDate)
-      );
-    }
-
-    // Filter only completed cash flows
-    const completedCashFlows = allCashFlows.filter(cashFlow => 
-      cashFlow.status === CashFlowStatus.COMPLETED
-    );
-
-    // If no cash flows exist, preserve current cash balance
-    if (completedCashFlows.length === 0) {
-      return {
-        portfolioId,
-        oldCashBalance,
-        newCashBalance: 0,
-        cashFlowAmount: 0,
-        cashFlowType: 'NO_CASH_FLOWS',
-      };
-    }
-
-    let calculatedCashBalance = 0; // Start with 0 for complete recalculation
-
-
-    // Process each cash flow
-    for (const cashFlow of completedCashFlows) {
-      // Use netAmount which applies correct sign based on cash flow type
-      calculatedCashBalance += cashFlow.netAmount;
-    }
+    // Use getCashBalance to calculate the new balance (centralized logic)
+    const calculatedCashBalance = await this.getCashBalance(portfolioId, snapshotDate);
 
     // Format calculated cash balance
     const formattedCashBalance = Number(calculatedCashBalance.toFixed(2));
@@ -167,12 +134,15 @@ export class CashFlowService {
     console.log(`[CashFlowService] recalculateCashBalance called for portfolioId: ${portfolioId}, 
       oldCashBalance: ${oldCashBalance}, newCashBalance: ${formattedCashBalance}`); 
 
+    // Determine cash flow type based on whether there are any cash flows
+    const cashFlowType = formattedCashBalance === 0 ? 'NO_CASH_FLOWS' : 'RECALCULATION';
+
     return {
       portfolioId,
       oldCashBalance,
       newCashBalance: formattedCashBalance,
       cashFlowAmount: Number((formattedCashBalance - oldCashBalance).toFixed(2)),
-      cashFlowType: 'RECALCULATION',
+      cashFlowType,
     };
   }
 
@@ -392,16 +362,18 @@ export class CashFlowService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    // Calculate cash balance from all cash flows instead of using database value
+    // Calculate cash balance from completed cash flows only
     const queryBuilder = this.cashFlowRepository
       .createQueryBuilder('cashFlow')
       .where('cashFlow.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('cashFlow.status = :status', { status: CashFlowStatus.COMPLETED })
       .orderBy('cashFlow.flowDate', 'ASC');
     
     if (snapshotDate) {
-      snapshotDate = new Date(snapshotDate);
-      snapshotDate.setHours(23, 59, 59, 999); // Set to end of day
-      queryBuilder.andWhere('DATE(cashFlow.flowDate) <= :snapshotDate', { snapshotDate: normalizeDateToString(snapshotDate) });
+      // Use consistent date comparison - set to end of day to include all flows on that date
+      const endOfDay = new Date(snapshotDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      queryBuilder.andWhere('cashFlow.flowDate <= :snapshotDate', { snapshotDate: endOfDay });
     }
     
     const cashFlows = await queryBuilder.getMany();

@@ -75,6 +75,11 @@ const Dashboard: React.FC = () => {
     navigate('/portfolios/new');
   };
 
+  const handlePortfolioCopied = (newPortfolio: any) => {
+    // Navigate to the new portfolio detail page
+    navigate(`/portfolios/${newPortfolio.portfolioId}`);
+  };
+
   const summaryCards = [
     {
       title: 'Total Portfolios',
@@ -238,6 +243,7 @@ const Dashboard: React.FC = () => {
                   portfolio={portfolio}
                   onView={handlePortfolioView}
                   onEdit={handlePortfolioEdit}
+                  onPortfolioCopied={handlePortfolioCopied}
                 />
               </Grid>
             ))}

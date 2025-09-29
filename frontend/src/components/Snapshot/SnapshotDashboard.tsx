@@ -82,9 +82,6 @@ export const SnapshotDashboard: React.FC<SnapshotDashboardProps> = ({
     error: portfolioSnapshotsError 
   } = usePortfolioSnapshots({
     portfolioId,
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-    granularity: selectedGranularity,
     autoFetch: true,
   });
 
@@ -416,7 +413,7 @@ export const SnapshotDashboard: React.FC<SnapshotDashboardProps> = ({
                   </TableRow>
                 </TableHead>
               <TableBody>
-                {portfolioSnapshots.map((snapshot) => (
+                {(portfolioSnapshots as any[]).map((snapshot: any) => (
                   <TableRow key={snapshot.id} hover>
                     {/* Date */}
                     <TableCell sx={{ py: 0.5 }}>

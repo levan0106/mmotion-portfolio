@@ -2,6 +2,28 @@
 
 ## Latest Updates
 
+### September 29, 2025 - Cash Flow Logic Unification & Production Cleanup
+**Status**: ✅ COMPLETED
+**Impact**: Critical Bug Fix + Code Quality Enhancement
+
+#### Key Achievements
+- **Cash Flow Logic Unification**: Centralized cash flow calculation logic in getCashBalance method
+- **Method Delegation**: recalculateCashBalance now delegates to getCashBalance for consistency
+- **QueryBuilder Standardization**: All cash flow queries use same QueryBuilder pattern
+- **Filter Consistency**: COMPLETED status and endOfDay logic applied consistently
+- **Code Cleanup**: Removed all debug files and logs for production-ready code
+- **DRY Principle**: Eliminated code duplication between methods
+
+#### Technical Details
+- **Backend Refactoring**: Unified cash flow logic in CashFlowService
+- **Code Quality**: Single source of truth for cash balance calculations
+- **Production Ready**: Clean, maintainable code with no debug artifacts
+- **Testing**: Verified consistency between recalculateCashBalance and getCashBalance methods
+
+#### Files Modified
+- `src/modules/portfolio/services/cash-flow.service.ts`: Unified logic
+- Removed debug files: `check-database-snapshot.js`, `test-new-snapshot.js`, `debug-deposit-logic.js`, `check-nav-16aug.js`
+
 ### September 28, 2025 - Snapshot Management System Optimization
 **Status**: ✅ COMPLETED
 **Impact**: Major Enhancement

@@ -32,10 +32,28 @@ export class DepositCalculationService {
     let unrealizedDepositPnL = 0;
     let realizedDepositPnL = 0;
     
-    // Chỉ lấy deposit active trong khoảng thời gian snapshotDate và chưa tất toán
+    const originalCount = deposits.length;
+    console.log(`🔍 DEBUG: Snapshot date:`, snapshotDate);
+
+    // Filter deposits that were active on or before snapshot date
     if (snapshotDate) {
-      deposits = deposits.filter(deposit => deposit.startDate <= snapshotDate && deposit.settledAt < snapshotDate);
+      const startDate = new Date(snapshotDate);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(snapshotDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      deposits = deposits.filter(deposit => {
+        // Include deposits that started on or before snapshot date
+        const startedOnOrBefore = new Date(deposit.startDate) <= endDate;
+        // Include deposits that are either not settled yet OR were settled after snapshot date
+        const isActiveOnSnapshotDate = !deposit.settledAt || new Date(deposit.settledAt) > startDate;
+        console.log(`🔍 DEBUG: Deposit ${deposit.depositId}:`, deposit.startDate, startedOnOrBefore, deposit.settledAt, isActiveOnSnapshotDate);
+        return startedOnOrBefore && isActiveOnSnapshotDate;
+      });
+      totalDepositCount = deposits.length;
     }
+
+    console.log(`🔍 DEBUG: Deposits after filtering:${originalCount} -> ${deposits.length}`);
 
     deposits.forEach(deposit => {
       const principal = typeof deposit.principal === 'string' 
@@ -75,14 +93,18 @@ export class DepositCalculationService {
       }
     });
 
-    return {
+    const result = {
       totalDepositPrincipal: Number(totalDepositPrincipal.toFixed(8)),
       totalDepositInterest: Number(totalDepositInterest.toFixed(8)),
       totalDepositValue: Number(totalDepositValue.toFixed(8)),
-      totalDepositCount: deposits.length,
+      totalDepositCount: totalDepositCount,
       unrealizedDepositPnL: Number(unrealizedDepositPnL.toFixed(8)),
       realizedDepositPnL: Number(realizedDepositPnL.toFixed(8)),
     };
+    
+    console.log(`🔍 DEBUG: Deposit calculation result:`, result);
+
+    return result;
   }
   /**
    * Calculate deposit data for a portfolio
