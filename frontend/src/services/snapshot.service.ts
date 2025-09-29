@@ -79,6 +79,29 @@ export class UnifiedSnapshotService {
   }
 
   /**
+   * Get portfolio snapshots with pagination
+   */
+  async getPortfolioSnapshotsPaginated(
+    portfolioId: string,
+    options?: { page?: number; limit?: number; startDate?: string; endDate?: string; granularity?: string; isActive?: boolean; orderBy?: string; orderDirection?: 'ASC' | 'DESC' }
+  ): Promise<{ success: boolean; data: SnapshotResponse[]; count: number; page?: number; limit?: number; total?: number; totalPages?: number; hasNext?: boolean; hasPrev?: boolean }> {
+    const params = new URLSearchParams();
+    params.append('portfolioId', portfolioId);
+    
+    if (options?.page) params.append('page', options.page.toString());
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.startDate) params.append('startDate', options.startDate);
+    if (options?.endDate) params.append('endDate', options.endDate);
+    if (options?.granularity) params.append('granularity', options.granularity);
+    if (options?.isActive !== undefined) params.append('isActive', options.isActive.toString());
+    if (options?.orderBy) params.append('orderBy', options.orderBy);
+    if (options?.orderDirection) params.append('orderDirection', options.orderDirection);
+
+    const response = await apiService.api.get(`/api/v1/portfolio-snapshots?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
    * Get snapshot by ID
    */
   async getSnapshotById(id: string): Promise<SnapshotResponse> {

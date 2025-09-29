@@ -38,7 +38,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
   hasPrev,
   onPageChange,
   onLimitChange,
-  limitOptions = [5, 10, 20, 50],
+  limitOptions = [5, 10, 25, 50, 100],
   showLimitSelector = true,
   showPageInfo = true,
 }) => {

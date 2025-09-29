@@ -14,19 +14,31 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { formatCurrency, formatPercentage, formatDate } from '../../../../utils/format';
+import { PaginationControls } from '../../../Common/PaginationControls';
 
 interface PortfolioSummaryTabProps {
   portfolioSnapshots: any[];
   portfolioSnapshotsLoading: boolean;
   portfolioSnapshotsError: string | null;
+  portfolioSnapshotsPagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  } | null;
   baseCurrency: string;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
 const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
   portfolioSnapshots,
   portfolioSnapshotsLoading,
   portfolioSnapshotsError,
+  portfolioSnapshotsPagination,
   baseCurrency,
+  onPageChange,
+  onLimitChange,
 }) => {
   return (
     <Box>
@@ -494,6 +506,22 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
           <Typography variant="body2">
             No portfolio snapshots available
           </Typography>
+        </Box>
+      )}
+      
+      {/* Pagination Controls */}
+      {portfolioSnapshots && portfolioSnapshots.length > 0 && portfolioSnapshotsPagination && (
+        <Box sx={{ mt: 2 }}>
+          <PaginationControls
+            page={portfolioSnapshotsPagination.page}
+            limit={portfolioSnapshotsPagination.limit}
+            total={portfolioSnapshotsPagination.total}
+            totalPages={portfolioSnapshotsPagination.totalPages}
+            hasNext={portfolioSnapshotsPagination.page < portfolioSnapshotsPagination.totalPages}
+            hasPrev={portfolioSnapshotsPagination.page > 1}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+          />
         </Box>
       )}
     </Box>

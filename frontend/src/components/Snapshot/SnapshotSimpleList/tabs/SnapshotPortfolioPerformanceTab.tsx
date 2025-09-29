@@ -13,17 +13,30 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { formatCurrency, formatPercentage, formatDate } from '../../../../utils/format';
+import { PaginationControls } from '../../../Common/PaginationControls';
 
 interface SnapshotPortfolioPerformanceTabProps {
-  portfolioPerformanceData: any[];
+  portfolioPerformanceData: {
+    data: any[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
   performanceLoading: boolean;
   baseCurrency: string;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
 const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabProps> = ({
   portfolioPerformanceData,
   performanceLoading,
   baseCurrency,
+  onPageChange,
+  onLimitChange,
 }) => {
   return (
     <Box>
@@ -40,7 +53,7 @@ const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabP
         </Box>
       )}
       
-      {portfolioPerformanceData.length > 0 ? (
+      {portfolioPerformanceData.data && portfolioPerformanceData.data.length > 0 ? (
         <TableContainer component={Paper} elevation={0} sx={{ border: 1, borderColor: 'divider', overflowX: 'auto' }}>
           <Table size="small" sx={{ minWidth: 2000 }}>
             <TableHead>
@@ -95,7 +108,7 @@ const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabP
               </TableRow>
             </TableHead>
             <TableBody>
-              {portfolioPerformanceData
+              {portfolioPerformanceData.data
                 .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime())
                 .map((snapshot) => (
                 <TableRow key={snapshot.id} hover>
@@ -439,6 +452,22 @@ const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabP
           <Typography variant="body2">
             No portfolio performance snapshots available
           </Typography>
+        </Box>
+      )}
+      
+      {/* Pagination Controls */}
+      {portfolioPerformanceData.data && portfolioPerformanceData.data.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <PaginationControls
+            page={portfolioPerformanceData.page}
+            limit={portfolioPerformanceData.limit}
+            total={portfolioPerformanceData.total}
+            totalPages={portfolioPerformanceData.totalPages}
+            hasNext={portfolioPerformanceData.hasNext}
+            hasPrev={portfolioPerformanceData.hasPrev}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+          />
         </Box>
       )}
     </Box>

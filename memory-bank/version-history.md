@@ -2,6 +2,29 @@
 
 ## Latest Updates
 
+### September 28, 2025 - Snapshot Management System Optimization
+**Status**: ✅ COMPLETED
+**Impact**: Major Enhancement
+
+#### Key Achievements
+- **Tab Refresh Issues Fixed**: Portfolio Summary và Asset Snapshots tabs now refresh data when switching
+- **Pagination Navigation Fixed**: All pagination controls working correctly across all tabs
+- **Page Size Change Fixed**: Limit changes now properly trigger API calls with correct parameters
+- **Infinite Loop Prevention**: Separated logic for each tab to prevent circular dependencies
+- **Performance Data Sorting Fixed**: Backend now returns newest data first (DESC order) instead of oldest
+- **Refresh Button Implementation**: Added refresh functionality for all tabs
+- **Code Cleanup**: Removed all debug console.log statements and unnecessary comments
+
+#### Technical Details
+- **Frontend Optimization**: Fixed tab refresh logic, pagination controls, and page size changes
+- **Backend Optimization**: Fixed data sorting from ASC to DESC for all performance snapshots
+- **Code Quality**: Clean, production-ready code with comprehensive error handling
+- **User Experience**: Consistent behavior across all tabs with proper data refresh
+
+#### Files Modified
+- **Frontend**: SnapshotSimpleList.tsx, usePortfolioSnapshots.ts, PaginationControls.tsx, all tab components
+- **Backend**: performance-snapshot.service.ts
+
 ### September 27, 2025 - CAFEF Gold Data Integration
 **Status**: ✅ COMPLETED
 **Impact**: Major Enhancement

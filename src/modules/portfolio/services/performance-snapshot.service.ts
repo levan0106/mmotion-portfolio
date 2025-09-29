@@ -637,7 +637,7 @@ export class PerformanceSnapshotService {
     }
 
     return await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .getMany();
   }
 
@@ -676,7 +676,7 @@ export class PerformanceSnapshotService {
 
     // Get paginated results
     const data = await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .skip(skip)
       .take(limit)
       .getMany();
@@ -726,7 +726,7 @@ export class PerformanceSnapshotService {
     }
 
     return await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .getMany();
   }
 
@@ -770,7 +770,7 @@ export class PerformanceSnapshotService {
 
     // Get paginated results
     const data = await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .skip(skip)
       .take(limit)
       .getMany();
@@ -820,7 +820,7 @@ export class PerformanceSnapshotService {
     }
 
     return await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .getMany();
   }
 
@@ -864,7 +864,7 @@ export class PerformanceSnapshotService {
 
     // Get paginated results
     const data = await query
-      .orderBy('snapshot.snapshotDate', 'ASC')
+      .orderBy('snapshot.snapshotDate', 'DESC')
       .skip(skip)
       .take(limit)
       .getMany();

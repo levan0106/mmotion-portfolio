@@ -2,7 +2,18 @@
 
 ## What Works
 ### ✅ Completed
-- **PERFORMANCE SNAPSHOTS PAGINATION IMPLEMENTATION - COMPLETED** (Current Session - September 28, 2025)
+- **SNAPSHOT MANAGEMENT SYSTEM OPTIMIZATION - COMPLETED** (Current Session - September 28, 2025)
+  - **Tab Refresh Issues Fixed**: Portfolio Summary và Asset Snapshots tabs now refresh data when switching between tabs
+  - **Pagination Navigation Fixed**: All pagination controls (next/previous page) working correctly across all tabs
+  - **Page Size Change Fixed**: Limit changes now properly trigger API calls with correct parameters (no more default limit=25)
+  - **Infinite Loop Prevention**: Separated logic for each tab to prevent circular dependencies and infinite API calls
+  - **Performance Data Sorting Fixed**: Backend now returns newest data first (DESC order) instead of oldest (ASC order)
+  - **Refresh Button Implementation**: Added refresh functionality for all tabs with proper error handling
+  - **Code Cleanup**: Removed all debug console.log statements and unnecessary comments for production-ready code
+  - **Production Ready**: Clean, maintainable code with consistent behavior across all tabs
+  - **User Experience**: All tabs now have consistent refresh behavior and proper pagination controls
+
+- **PERFORMANCE SNAPSHOTS PAGINATION IMPLEMENTATION - COMPLETED** (Previous Session - September 28, 2025)
   - **Backend Pagination System**: Successfully implemented pagination for all 3 performance snapshot APIs
   - **Pagination DTOs**: Created PaginationDto and PaginatedResponseDto for standardized pagination
   - **Controller Updates**: Updated performance-snapshot controller to accept page/limit parameters

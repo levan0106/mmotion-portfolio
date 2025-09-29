@@ -446,7 +446,7 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
           hasPrev={assetPerformanceData.hasPrev}
           onPageChange={onPageChange}
           onLimitChange={onLimitChange}
-          limitOptions={[5, 10, 20, 50]}
+          limitOptions={[5, 10, 25, 50, 100]}
         />
       )}
     </Box>

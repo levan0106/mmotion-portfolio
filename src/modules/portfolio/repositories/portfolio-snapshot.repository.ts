@@ -89,12 +89,16 @@ export class PortfolioSnapshotRepository {
       .take(limit)
       .getManyAndCount();
 
+    const totalPages = Math.ceil(total / limit);
+
     return {
       data,
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
     };
   }
 

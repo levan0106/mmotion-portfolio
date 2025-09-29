@@ -104,11 +104,16 @@ export class PortfolioSnapshotController {
       options[key] === undefined && delete options[key]
     );
 
-    const snapshots = await this.portfolioSnapshotService.getPortfolioSnapshots(options);
+    const result = await this.portfolioSnapshotService.getPortfolioSnapshotsWithPagination(options);
     return {
       success: true,
-      data: snapshots,
-      count: snapshots.length,
+      data: result.data,
+      count: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      hasNext: result.hasNext,
+      hasPrev: result.hasPrev,
     };
   }
 

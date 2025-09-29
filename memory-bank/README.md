@@ -22,6 +22,7 @@ Contains detailed documentation of specific technical fixes and solutions:
 
 - **`database-naming-convention-fix.md`** - Database naming convention standardization (September 15, 2025)
 - **`cash-flow-pagination-implementation.md`** - Cash flow pagination and chart API format update (September 19, 2025)
+- **`snapshot-management-optimization-2024-09-28.md`** - Snapshot Management System optimization with tab refresh fixes and code cleanup (September 28, 2025)
 
 #### `modules/` - Module-Specific Progress
 Contains detailed progress documentation for specific modules:
