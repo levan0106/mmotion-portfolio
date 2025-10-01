@@ -34,6 +34,7 @@ import {
   Refresh as RefreshIcon,
   Visibility as VisibilityIcon,
   Calculate as CalculateIcon,
+  Transform as ConvertIcon,
 } from '@mui/icons-material';
 import { 
   formatCurrency, 
@@ -45,7 +46,9 @@ import {
   Portfolio 
 } from '../../types';
 import { useNAVHoldings } from '../../hooks/useNAVHoldings';
+import { useAccount } from '../../contexts/AccountContext';
 import { ConvertToFundModal } from '../Portfolio/ConvertToFundModal';
+import ConvertToPortfolioModal from '../Portfolio/ConvertToPortfolioModal';
 import SubscriptionModal from './SubscriptionModal';
 import RedemptionModal from './RedemptionModal';
 
@@ -63,6 +66,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
   onPortfolioUpdate
 }) => {
   const navigate = useNavigate();
+  const { accountId } = useAccount();
   const { holdings, loading, error, refetch, convertToFund } = useNAVHoldings(
     portfolio.portfolioId,
     portfolio.isFund || false
@@ -71,6 +75,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [redemptionModalOpen, setRedemptionModalOpen] = useState(false);
   const [convertModalOpen, setConvertModalOpen] = useState(false);
+  const [convertToPortfolioModalOpen, setConvertToPortfolioModalOpen] = useState(false);
   const [recalculateLoading, setRecalculateLoading] = useState(false);
 
   const handleRecalculateNav = async () => {
@@ -111,6 +116,21 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
     } catch (err) {
       // Error is handled by the hook
       throw err; // Re-throw to let the modal handle the error display
+    }
+  };
+
+  const handleConvertToPortfolio = async () => {
+    try {
+      await apiService.convertFundToPortfolio(portfolio.portfolioId, accountId);
+      // Refresh portfolio data without reloading page
+      if (onPortfolioUpdate) {
+        onPortfolioUpdate();
+      }
+      setConvertToPortfolioModalOpen(false);
+    } catch (err) {
+      console.error('Error converting fund to portfolio:', err);
+      // Error handling can be added here
+      throw err;
     }
   };
 
@@ -265,22 +285,33 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       {/* Action Buttons */}
       <Card sx={{ mb: getUltraSpacing(3, 1) }}>
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setSubscriptionModalOpen(true)}
-              sx={{ minWidth: 150 }}
-            >
-              New Subscription
-            </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setSubscriptionModalOpen(true)}
+                sx={{ minWidth: 150 }}
+              >
+                New Subscription
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<RemoveIcon />}
+                onClick={() => setRedemptionModalOpen(true)}
+                sx={{ minWidth: 150 }}
+              >
+                Process Redemption
+              </Button>
+            </Box>
             <Button
               variant="outlined"
-              startIcon={<RemoveIcon />}
-              onClick={() => setRedemptionModalOpen(true)}
+              color="warning"
+              startIcon={<ConvertIcon />}
+              onClick={() => setConvertToPortfolioModalOpen(true)}
               sx={{ minWidth: 150 }}
             >
-              Process Redemption
+              Convert to Portfolio
             </Button>
           </Box>
         </CardContent>
@@ -425,6 +456,14 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           refetch();
           onPortfolioUpdate?.();
         }}
+      />
+
+      {/* Convert to Portfolio Modal */}
+      <ConvertToPortfolioModal
+        open={convertToPortfolioModalOpen}
+        onClose={() => setConvertToPortfolioModalOpen(false)}
+        portfolio={portfolio}
+        onConvert={handleConvertToPortfolio}
       />
     </Box>
   );

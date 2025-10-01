@@ -34,6 +34,7 @@ const Portfolios: React.FC = () => {
     portfolios,
     createPortfolio,
     updatePortfolio,
+    deletePortfolio,
     isCreating,
     isUpdating,
     isDeleting,
@@ -58,6 +59,17 @@ const Portfolios: React.FC = () => {
     setIsFormOpen(false);
     setEditingPortfolio(null);
     setFormError('');
+  };
+
+  const handleDeletePortfolio = async (portfolioId: string) => {
+    try {
+      await deletePortfolio(portfolioId);
+      // Clear any form errors on successful deletion
+      setFormError('');
+    } catch (error: any) {
+      console.error('Failed to delete portfolio:', error);
+      setFormError(error.response?.data?.message || 'Failed to delete portfolio. Please try again.');
+    }
   };
 
   const handleSubmitForm = async (data: CreatePortfolioDto | UpdatePortfolioDto) => {
@@ -106,6 +118,7 @@ const Portfolios: React.FC = () => {
       <PortfolioList
         onViewPortfolio={handleViewPortfolio}
         onEditPortfolio={handleEditPortfolio}
+        onDeletePortfolio={handleDeletePortfolio}
         onCreatePortfolio={handleCreatePortfolio}
       />
 

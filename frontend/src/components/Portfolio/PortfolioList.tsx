@@ -28,12 +28,14 @@ import './PortfolioList.styles.css';
 interface PortfolioListProps {
   onViewPortfolio: (portfolioId: string) => void;
   onEditPortfolio?: (portfolioId: string) => void;
+  onDeletePortfolio?: (portfolioId: string) => void;
   onCreatePortfolio?: () => void;
 }
 
 const PortfolioList: React.FC<PortfolioListProps> = ({
   onViewPortfolio,
   onEditPortfolio,
+  onDeletePortfolio,
   onCreatePortfolio,
 }) => {
   const { accountId } = useAccount();
@@ -194,6 +196,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
               portfolio={portfolio}
               onView={onViewPortfolio}
               onEdit={onEditPortfolio}
+              onDelete={onDeletePortfolio}
             />
           ))}
         </div>

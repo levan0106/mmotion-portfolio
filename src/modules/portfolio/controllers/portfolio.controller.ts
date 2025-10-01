@@ -266,16 +266,53 @@ export class PortfolioController {
   }
 
   /**
-   * Delete a portfolio.
+   * Delete a portfolio and all related data.
+   * 
+   * This endpoint performs a comprehensive deletion that removes:
+   * - All trades and trade details
+   * - All cash flows and deposits
+   * - All investor holdings (if portfolio is a fund)
+   * - All NAV snapshots and performance data
+   * - All portfolio snapshots and analytics data
+   * - All asset allocation snapshots
+   * 
+   * WARNING: This action cannot be undone!
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete a portfolio' })
+  @ApiOperation({ 
+    summary: 'Delete a portfolio and all related data',
+    description: 'Comprehensively deletes a portfolio and all associated data including trades, cash flows, deposits, snapshots, and analytics. This action cannot be undone.'
+  })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
   @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
-  @ApiResponse({ status: 204, description: 'Portfolio deleted successfully' })
+  @ApiResponse({ 
+    status: 204, 
+    description: 'Portfolio and all related data deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { 
+          type: 'string', 
+          example: 'Portfolio and all related data deleted successfully' 
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Internal server error during deletion',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 500 },
+        message: { type: 'string', example: 'Failed to delete portfolio: [error details]' },
+        error: { type: 'string', example: 'Internal Server Error' }
+      }
+    }
+  })
   async deletePortfolio(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('accountId') accountId: string,
@@ -768,6 +805,48 @@ export class PortfolioController {
   @ApiResponse({ status: 400, description: 'Portfolio is not a fund' })
   async refreshNavPerUnit(@Param('id', ParseUUIDPipe) portfolioId: string) {
     return this.investorHoldingService.refreshNavPerUnit(portfolioId, true);
+  }
+
+  @Post(':id/convert-to-portfolio')
+  @ApiOperation({ 
+    summary: 'Convert fund to portfolio',
+    description: 'Convert a fund back to a regular portfolio by cleaning up all fund-related data including investor holdings, fund unit transactions, and related cash flows. This operation will reset the portfolio to non-fund status and recalculate cash balance from remaining cash flows.'
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', description: 'Account ID for ownership validation', required: true })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Fund successfully converted to portfolio',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        portfolioId: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 400, description: 'Portfolio is not a fund or accountId is missing' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Portfolio does not belong to the account' })
+  @ApiResponse({ status: 500, description: 'Internal server error during conversion' })
+  async convertFundToPortfolio(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Query('accountId') accountId: string
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
+    await this.portfolioService.convertFundToPortfolio(portfolioId);
+    return {
+      success: true,
+      message: 'Fund successfully converted to portfolio',
+      portfolioId: portfolioId
+    };
   }
 
 }

@@ -24,6 +24,12 @@ Contains detailed documentation of specific technical fixes and solutions:
 - **`cash-flow-pagination-implementation.md`** - Cash flow pagination and chart API format update (September 19, 2025)
 - **`snapshot-management-optimization-2024-09-28.md`** - Snapshot Management System optimization with tab refresh fixes and code cleanup (September 28, 2025)
 
+#### `implementations/` - Feature Implementations
+Contains detailed documentation of major feature implementations:
+
+- **`portfolio-deletion-enhanced-safety.md`** - Portfolio deletion with enhanced safety features and double confirmation system (October 1, 2025)
+- **`account-validation-requirement.md`** - AccountId validation requirement for all API calls to ensure data security and isolation (October 1, 2025)
+
 #### `modules/` - Module-Specific Progress
 Contains detailed progress documentation for specific modules:
 

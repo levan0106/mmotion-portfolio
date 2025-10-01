@@ -462,7 +462,7 @@ describe('ApiService', () => {
         const mockResponse = { data: mockCashFlow }
         mockAxiosInstance.post.mockResolvedValue(mockResponse)
 
-        const result = await apiService.createCashFlow('1', 'test-account-id', cashFlowData)
+        const result = await apiService.createCashFlow('1', 'test-account-id', 'DEPOSIT', cashFlowData)
 
         expect(mockAxiosInstance.post).toHaveBeenCalledWith('/api/v1/portfolios/1/cash-flows', cashFlowData)
         expect(result).toEqual(mockCashFlow)
@@ -473,7 +473,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to create cash flow')
         mockAxiosInstance.post.mockRejectedValue(error)
 
-        await expect(apiService.createCashFlow('1', 'test-account-id', cashFlowData)).rejects.toThrow('Failed to create cash flow')
+        await expect(apiService.createCashFlow('1', 'test-account-id', 'DEPOSIT', cashFlowData)).rejects.toThrow('Failed to create cash flow')
       })
     })
   })

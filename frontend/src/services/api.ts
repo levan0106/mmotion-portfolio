@@ -426,6 +426,11 @@ class ApiService {
     return response.data;
   }
 
+  async convertFundToPortfolio(portfolioId: string, accountId: string): Promise<{ success: boolean; message: string; portfolioId: string }> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-portfolio?accountId=${accountId}`);
+    return response.data;
+  }
+
   async getHoldingDetail(holdingId: string): Promise<HoldingDetail> {
     const response = await this.api.get(`/api/v1/investor-holdings/${holdingId}/detail`);
     return response.data;

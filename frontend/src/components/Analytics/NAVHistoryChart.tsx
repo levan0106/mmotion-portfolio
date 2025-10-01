@@ -103,7 +103,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
     setError(null);
 
     try {
-      const result: NAVHistoryResponse = await apiService.getPortfolioNAVHistory(portfolioId, accountId, { months: timeframe, granularity });
+      const result: NAVHistoryResponse = await apiService.getPortfolioNAVHistory(portfolioId, accountId, { months: parseInt(timeframe), granularity });
       setData(result.data || []);
     } catch (err) {
       console.error('Error fetching NAV history:', err);

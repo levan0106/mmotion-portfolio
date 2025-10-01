@@ -15,6 +15,17 @@ import { PortfolioValueCalculatorService } from './portfolio-value-calculator.se
 import { CashFlowService } from './cash-flow.service';
 import { DepositRepository } from '../repositories/deposit.repository';
 import { NavUtilsService } from './nav-utils.service';
+// Additional imports for comprehensive deletion
+import { Trade } from '../../trading/entities/trade.entity';
+import { TradeDetail } from '../../trading/entities/trade-detail.entity';
+import { CashFlow } from '../entities/cash-flow.entity';
+import { Deposit } from '../entities/deposit.entity';
+import { InvestorHolding } from '../entities/investor-holding.entity';
+import { FundUnitTransaction } from '../entities/fund-unit-transaction.entity';
+import { NavSnapshot } from '../entities/nav-snapshot.entity';
+import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
+import { PortfolioPerformanceSnapshot } from '../entities/portfolio-performance-snapshot.entity';
+import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.entity';
 
 /**
  * Service class for Portfolio business logic.
@@ -41,6 +52,27 @@ export class PortfolioService {
     private readonly cashFlowService: CashFlowService,
     private readonly depositRepository: DepositRepository,
     private readonly navUtilsService: NavUtilsService,
+    // Additional repositories for comprehensive deletion
+    @InjectRepository(Trade)
+    private readonly tradeRepository: Repository<Trade>,
+    @InjectRepository(TradeDetail)
+    private readonly tradeDetailRepository: Repository<TradeDetail>,
+    @InjectRepository(CashFlow)
+    private readonly cashFlowRepository: Repository<CashFlow>,
+    @InjectRepository(Deposit)
+    private readonly depositEntityRepository: Repository<Deposit>,
+    @InjectRepository(InvestorHolding)
+    private readonly investorHoldingRepository: Repository<InvestorHolding>,
+    @InjectRepository(FundUnitTransaction)
+    private readonly fundUnitTransactionRepository: Repository<FundUnitTransaction>,
+    @InjectRepository(NavSnapshot)
+    private readonly navSnapshotRepository: Repository<NavSnapshot>,
+    @InjectRepository(PortfolioSnapshot)
+    private readonly portfolioSnapshotRepository: Repository<PortfolioSnapshot>,
+    @InjectRepository(PortfolioPerformanceSnapshot)
+    private readonly portfolioPerformanceSnapshotRepository: Repository<PortfolioPerformanceSnapshot>,
+    @InjectRepository(AssetAllocationSnapshot)
+    private readonly assetAllocationSnapshotRepository: Repository<AssetAllocationSnapshot>,
   ) {}
 
   /**
@@ -218,12 +250,201 @@ export class PortfolioService {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
 
-    // Delete portfolio (cascade will handle related data)
-    await this.portfolioEntityRepository.remove(portfolio);
+    this.logger.log(`Starting comprehensive deletion of portfolio ${portfolioId}`);
 
-    // Clear cache
-    await this.clearPortfolioCache(portfolioId);
-    await this.clearAccountCache(portfolio.accountId);
+    try {
+      // 1. Delete all trades and their details first (to avoid foreign key constraints)
+      await this.deleteAllTradesForPortfolio(portfolioId);
+
+      // 2. Delete all cash flows
+      await this.deleteAllCashFlowsForPortfolio(portfolioId);
+
+      // 3. Delete all deposits
+      await this.deleteAllDepositsForPortfolio(portfolioId);
+
+      // 4. Delete all investor holdings (if portfolio is a fund)
+      await this.deleteAllInvestorHoldingsForPortfolio(portfolioId);
+
+      // 5. Delete all NAV snapshots
+      await this.deleteAllNavSnapshotsForPortfolio(portfolioId);
+
+      // 6. Delete all portfolio snapshots
+      await this.deleteAllPortfolioSnapshotsForPortfolio(portfolioId);
+
+      // 7. Delete all performance snapshots
+      await this.deleteAllPerformanceSnapshotsForPortfolio(portfolioId);
+
+      // 8. Delete all asset snapshots
+      await this.deleteAllAssetSnapshotsForPortfolio(portfolioId);
+
+      // 9. Finally delete the portfolio itself
+      await this.portfolioEntityRepository.remove(portfolio);
+
+      // 10. Clear all caches
+      await this.clearPortfolioCache(portfolioId);
+      await this.clearAccountCache(portfolio.accountId);
+
+      this.logger.log(`Successfully deleted portfolio ${portfolioId} and all related data`);
+    } catch (error) {
+      this.logger.error(`Failed to delete portfolio ${portfolioId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all trades for a portfolio
+   */
+  private async deleteAllTradesForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all trades for portfolio ${portfolioId}`);
+    
+    const trades = await this.tradeRepository.find({
+      where: { portfolioId },
+      relations: ['sellDetails', 'buyDetails']
+    });
+
+    for (const trade of trades) {
+      // Delete trade details first
+      if (trade.sellDetails && trade.sellDetails.length > 0) {
+        await this.tradeDetailRepository.remove(trade.sellDetails);
+      }
+      if (trade.buyDetails && trade.buyDetails.length > 0) {
+        await this.tradeDetailRepository.remove(trade.buyDetails);
+      }
+      
+      // Delete the trade
+      await this.tradeRepository.remove(trade);
+    }
+
+    this.logger.log(`Deleted ${trades.length} trades for portfolio ${portfolioId}`);
+  }
+
+  /**
+   * Delete all cash flows for a portfolio
+   */
+  private async deleteAllCashFlowsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all cash flows for portfolio ${portfolioId}`);
+    
+    const cashFlows = await this.cashFlowRepository.find({
+      where: { portfolioId }
+    });
+
+    if (cashFlows.length > 0) {
+      await this.cashFlowRepository.remove(cashFlows);
+      this.logger.log(`Deleted ${cashFlows.length} cash flows for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all deposits for a portfolio
+   */
+  private async deleteAllDepositsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all deposits for portfolio ${portfolioId}`);
+    
+    const deposits = await this.depositEntityRepository.find({
+      where: { portfolioId }
+    });
+
+    for (const deposit of deposits) {
+      // Delete associated cash flows first
+      const referenceId = this.cashFlowService.formatReferenceId(deposit.depositId, "ACTIVE");
+      await this.cashFlowService.deleteCashFlowByReferenceIdSilent(referenceId);
+      
+      const referenceIdSettlement = this.cashFlowService.formatReferenceId(deposit.depositId, "SETTLED");
+      await this.cashFlowService.deleteCashFlowByReferenceIdSilent(referenceIdSettlement);
+    }
+
+    if (deposits.length > 0) {
+      await this.depositEntityRepository.remove(deposits);
+      this.logger.log(`Deleted ${deposits.length} deposits for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all investor holdings for a portfolio
+   */
+  private async deleteAllInvestorHoldingsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all investor holdings for portfolio ${portfolioId}`);
+    
+    const holdings = await this.investorHoldingRepository.find({
+      where: { portfolioId },
+      relations: ['transactions']
+    });
+
+    for (const holding of holdings) {
+      // Delete all fund unit transactions first
+      if (holding.transactions && holding.transactions.length > 0) {
+        await this.fundUnitTransactionRepository.remove(holding.transactions);
+      }
+    }
+
+    if (holdings.length > 0) {
+      await this.investorHoldingRepository.remove(holdings);
+      this.logger.log(`Deleted ${holdings.length} investor holdings for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all NAV snapshots for a portfolio
+   */
+  private async deleteAllNavSnapshotsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all NAV snapshots for portfolio ${portfolioId}`);
+    
+    const navSnapshots = await this.navSnapshotRepository.find({
+      where: { portfolioId }
+    });
+
+    if (navSnapshots.length > 0) {
+      await this.navSnapshotRepository.remove(navSnapshots);
+      this.logger.log(`Deleted ${navSnapshots.length} NAV snapshots for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all portfolio snapshots for a portfolio
+   */
+  private async deleteAllPortfolioSnapshotsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all portfolio snapshots for portfolio ${portfolioId}`);
+    
+    const portfolioSnapshots = await this.portfolioSnapshotRepository.find({
+      where: { portfolioId }
+    });
+
+    if (portfolioSnapshots.length > 0) {
+      await this.portfolioSnapshotRepository.remove(portfolioSnapshots);
+      this.logger.log(`Deleted ${portfolioSnapshots.length} portfolio snapshots for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all performance snapshots for a portfolio
+   */
+  private async deleteAllPerformanceSnapshotsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all performance snapshots for portfolio ${portfolioId}`);
+    
+    const performanceSnapshots = await this.portfolioPerformanceSnapshotRepository.find({
+      where: { portfolioId }
+    });
+
+    if (performanceSnapshots.length > 0) {
+      await this.portfolioPerformanceSnapshotRepository.remove(performanceSnapshots);
+      this.logger.log(`Deleted ${performanceSnapshots.length} performance snapshots for portfolio ${portfolioId}`);
+    }
+  }
+
+  /**
+   * Delete all asset snapshots for a portfolio
+   */
+  private async deleteAllAssetSnapshotsForPortfolio(portfolioId: string): Promise<void> {
+    this.logger.log(`Deleting all asset snapshots for portfolio ${portfolioId}`);
+    
+    const assetSnapshots = await this.assetAllocationSnapshotRepository.find({
+      where: { portfolioId }
+    });
+
+    if (assetSnapshots.length > 0) {
+      await this.assetAllocationSnapshotRepository.remove(assetSnapshots);
+      this.logger.log(`Deleted ${assetSnapshots.length} asset snapshots for portfolio ${portfolioId}`);
+    }
   }
 
   /**
@@ -990,5 +1211,125 @@ export class PortfolioService {
     this.logger.log(`Portfolio copied successfully: ${sourcePortfolioId} -> ${savedPortfolio.portfolioId}`);
     
     return savedPortfolio;
+  }
+
+  /**
+   * Convert fund to portfolio by cleaning up all fund-related data
+   * This is the reverse of convertToFund operation
+   */
+  async convertFundToPortfolio(portfolioId: string): Promise<void> {
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId: portfolioId },
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    if (!portfolio.isFund) {
+      throw new BadRequestException(`Portfolio ${portfolioId} is not a fund`);
+    }
+
+    this.logger.log(`Starting conversion of fund ${portfolioId} to portfolio`);
+
+    try {
+      // 1. Delete cash flows related to fund unit transactions
+      await this.deleteCashFlowsForFundUnitTransactions(portfolioId);
+
+      // 2. Delete fund unit transactions
+      await this.deleteFundUnitTransactions(portfolioId);
+
+      // 3. Delete investor holdings
+      await this.deleteInvestorHoldings(portfolioId);
+
+      // 4. Recalculate cash balance from remaining cash flows
+      const newCashBalance = await this.recalculateCashBalance(portfolioId);
+
+      // 5. Reset portfolio to non-fund status
+      await this.portfolioEntityRepository.update(
+        { portfolioId: portfolioId },
+        {
+          isFund: false,
+          totalOutstandingUnits: 0,
+          navPerUnit: 0,
+          lastNavDate: null,
+          cashBalance: newCashBalance,
+          numberOfInvestors: 0,
+        }
+      );
+
+      // 6. Clear all caches
+      await this.clearPortfolioCache(portfolioId);
+      await this.clearAccountCache(portfolio.accountId);
+
+      this.logger.log(`Successfully converted fund ${portfolioId} to portfolio`);
+    } catch (error) {
+      this.logger.error(`Failed to convert fund ${portfolioId} to portfolio: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete cash flows related to fund unit transactions for a portfolio
+   */
+  private async deleteCashFlowsForFundUnitTransactions(portfolioId: string): Promise<void> {
+    const cashFlows = await this.cashFlowRepository
+      .createQueryBuilder('cf')
+      .innerJoin('fund_unit_transactions', 'fut', 'cf.cash_flow_id = fut.cash_flow_id')
+      .innerJoin('investor_holdings', 'ih', 'fut.holding_id = ih.holding_id')
+      .where('ih.portfolio_id = :portfolioId', { portfolioId })
+      .getMany();
+
+    if (cashFlows.length > 0) {
+      await this.cashFlowRepository.remove(cashFlows);
+      this.logger.log(`Deleted ${cashFlows.length} cash flows related to fund unit transactions`);
+    }
+  }
+
+  /**
+   * Delete fund unit transactions for a portfolio
+   */
+  private async deleteFundUnitTransactions(portfolioId: string): Promise<void> {
+    const transactions = await this.fundUnitTransactionRepository
+      .createQueryBuilder('fut')
+      .innerJoin('investor_holdings', 'ih', 'fut.holding_id = ih.holding_id')
+      .where('ih.portfolio_id = :portfolioId', { portfolioId })
+      .getMany();
+
+    if (transactions.length > 0) {
+      await this.fundUnitTransactionRepository.remove(transactions);
+      this.logger.log(`Deleted ${transactions.length} fund unit transactions`);
+    }
+  }
+
+  /**
+   * Delete investor holdings for a portfolio
+   */
+  private async deleteInvestorHoldings(portfolioId: string): Promise<void> {
+    const holdings = await this.investorHoldingRepository.find({
+      where: { portfolioId: portfolioId },
+    });
+
+    if (holdings.length > 0) {
+      await this.investorHoldingRepository.remove(holdings);
+      this.logger.log(`Deleted ${holdings.length} investor holdings`);
+    }
+  }
+
+  /**
+   * Recalculate cash balance from remaining cash flows
+   */
+  private async recalculateCashBalance(portfolioId: string): Promise<number> {
+    const cashFlows = await this.cashFlowRepository.find({
+      where: { portfolioId: portfolioId },
+    });
+
+    const totalCashBalance = cashFlows.reduce((sum, cf) => {
+      const inflowTypes = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'];
+      return sum + (inflowTypes.includes(cf.type) ? cf.amount : -cf.amount);
+    }, 0);
+
+    this.logger.log(`Recalculated cash balance: ${totalCashBalance}`);
+    return totalCashBalance;
   }
 }

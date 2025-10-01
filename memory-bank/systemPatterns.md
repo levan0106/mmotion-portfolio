@@ -45,6 +45,26 @@ flowchart LR
 - **DRY Principle Pattern**: Eliminate code duplication by reusing existing methods instead of duplicating logic
 - **Debug Cleanup Pattern**: Remove all debug logs and files after bug fixes for production-ready code
 
+### Portfolio Deletion Patterns - **RECENTLY IMPLEMENTED**
+- **Systematic Deletion Pattern**: Delete related entities in correct order to avoid foreign key constraints
+- **Comprehensive Cleanup Pattern**: Delete all related data (trades, cash flows, deposits, snapshots, holdings) before deleting main entity
+- **Double Confirmation Pattern**: Require explicit user confirmation through checkbox before enabling destructive actions
+- **State Management Pattern**: Use multiple states (isDeleting, isDeleted, modalJustClosed) to prevent UI inconsistencies
+- **Event Bubbling Prevention Pattern**: Prevent modal close events from triggering unintended navigation
+- **Cache Invalidation Pattern**: Clear all relevant caches after successful deletion to maintain data consistency
+- **Error Handling Pattern**: Comprehensive error handling with detailed logging for each deletion step
+- **Visual Feedback Pattern**: Clear loading states, disabled states, and deleted states for user feedback
+
+### AccountId Validation Patterns - **CRITICAL SECURITY REQUIREMENT**
+- **Mandatory AccountId Pattern**: ALL API endpoints MUST require accountId parameter for data isolation
+- **Ownership Validation Pattern**: Use AccountValidationService to verify entity ownership before operations
+- **Query Parameter Pattern**: Pass accountId as query parameter for GET/DELETE operations
+- **Request Body Pattern**: Include accountId in request body for POST/PUT operations
+- **Frontend Context Pattern**: Use useAccount hook to automatically provide accountId to all API calls
+- **Error Response Pattern**: Return 400 for missing accountId, 403 for unauthorized access
+- **Swagger Documentation Pattern**: Document accountId as required parameter in all API endpoints
+- **Type Safety Pattern**: TypeScript enforces accountId parameter in all API service methods
+
 ### NAV Calculation Patterns - **RECENTLY UPDATED**
 - **Timezone Handling Pattern**: Always use end-of-day timestamps for date filtering to include all records on the snapshot date
 - **Service Layer Pattern**: Each service handles its own date filtering logic consistently
