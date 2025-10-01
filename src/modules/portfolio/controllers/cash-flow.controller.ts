@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CashFlowService } from '../services/cash-flow.service';
+import { AccountValidationService } from '../../shared/services/account-validation.service';
 import { 
   CreateCashFlowDto, 
   UpdateCashBalanceDto, 
   CashFlowResponseDto, 
   CashBalanceUpdateResultDto,
-  CashFlowType 
+  CashFlowType,
+  TransferCashDto
 } from '../dto/cash-flow.dto';
 
 /**
@@ -17,6 +19,7 @@ import {
 export class CashFlowController {
   constructor(
     private readonly cashFlowService: CashFlowService,
+    private readonly accountValidationService: AccountValidationService,
   ) {}
 
   /**
@@ -26,13 +29,22 @@ export class CashFlowController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add manual cash flow to portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({ status: 201, description: 'Cash flow added successfully', type: CashBalanceUpdateResultDto })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   async addCashFlow(
     @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Query('accountId') accountId: string,
     @Body() createCashFlowDto: CreateCashFlowDto,
   ): Promise<CashBalanceUpdateResultDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
     // Override portfolioId from URL parameter
     createCashFlowDto.portfolioId = portfolioId;
 
@@ -55,14 +67,17 @@ export class CashFlowController {
   @Get('history')
   @ApiOperation({ summary: 'Get cash flow history for portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO string)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO string)' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10)', example: 10 })
   @ApiResponse({ status: 200, description: 'Cash flow history retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   async getCashFlowHistory(
     @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Query('accountId') accountId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('page') page?: number,
@@ -76,6 +91,13 @@ export class CashFlowController {
       totalPages: number;
     };
   }> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
     const pageNum = page || 1;
@@ -109,11 +131,21 @@ export class CashFlowController {
   @Get('balance')
   @ApiOperation({ summary: 'Get current cash balance for portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({ status: 200, description: 'Cash balance retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   async getCurrentCashBalance(
     @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Query('accountId') accountId: string,
   ): Promise<{ portfolioId: string; cashBalance: number }> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
     const cashBalance = await this.cashFlowService.getCashBalance(portfolioId);
     return { portfolioId, cashBalance };
   }
@@ -280,6 +312,50 @@ export class CashFlowController {
     @Param('cashFlowId', ParseUUIDPipe) cashFlowId: string,
   ) {
     await this.cashFlowService.deleteCashFlow(portfolioId, cashFlowId);
+  }
+
+  /**
+   * Transfer cash between funding sources.
+   */
+  @Post('transfer')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ 
+    summary: 'Transfer cash between funding sources',
+    description: 'Creates two cash flows: one withdrawal from source and one deposit to destination'
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Cash transfer completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        withdrawalCashFlow: { $ref: '#/components/schemas/CashFlowResponseDto' },
+        depositCashFlow: { $ref: '#/components/schemas/CashFlowResponseDto' },
+        oldCashBalance: { type: 'number' },
+        newCashBalance: { type: 'number' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data or same source/destination' })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async transferCash(
+    @Param('id', ParseUUIDPipe) portfolioId: string,
+    @Body() transferCashDto: TransferCashDto,
+  ) {
+    // Override portfolioId from URL parameter
+    transferCashDto.portfolioId = portfolioId;
+
+    const transferDate = transferCashDto.transferDate ? new Date(transferCashDto.transferDate) : new Date();
+
+    return await this.cashFlowService.transferCash(
+      portfolioId,
+      transferCashDto.fromSource,
+      transferCashDto.toSource,
+      transferCashDto.amount,
+      transferCashDto.description,
+      transferDate,
+    );
   }
 
 }

@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { Asset, CreateAssetRequest } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import { AssetForm } from './AssetForm';
 
 export interface AssetSelectorProps {

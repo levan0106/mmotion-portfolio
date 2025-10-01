@@ -206,8 +206,8 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
     <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5" fontWeight="bold">
-          Quản lý tiền gửi
+        <Typography variant="h4" fontWeight="bold">
+          Quản Lý Tiền Gửi
         </Typography>
         <Button
           variant="contained"

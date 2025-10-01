@@ -15,6 +15,9 @@ import {
   Avatar,
   Paper,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   AccountBalance as BankIcon,
   TrendingUp as InterestIcon,
@@ -25,6 +28,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { formatCurrency, formatDate } from '../../utils/format';
+import MoneyInput from '../Common/MoneyInput';
 
 interface Deposit {
   depositId: string;
@@ -60,6 +64,7 @@ interface DepositSettlementModalProps {
 
 interface SettleDepositDto {
   actualInterest: number;
+  settlementDate: string;
   notes?: string;
 }
 
@@ -68,6 +73,9 @@ const validationSchema = yup.object({
     .number()
     .required('Số tiền lãi thực tế là bắt buộc')
     .min(0, 'Số tiền lãi phải lớn hơn hoặc bằng 0'),
+  settlementDate: yup
+    .string()
+    .required('Ngày tất toán là bắt buộc'),
   notes: yup.string().max(500, 'Ghi chú không được quá 500 ký tự'),
 });
 
@@ -89,6 +97,7 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       actualInterest: 0,
+      settlementDate: new Date().toISOString().split('T')[0],
       notes: '',
     },
   });
@@ -100,6 +109,7 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
     if (open && deposit) {
       reset({
         actualInterest: deposit.accruedInterest || 0,
+        settlementDate: new Date().toISOString().split('T')[0],
         notes: '',
       });
       setError('');
@@ -183,121 +193,181 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                 <Grid container spacing={2}>
                   {/* Deposit Info - Compact */}
                   <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2 }}>
+                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                       <Typography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
                         Thông tin tiền gửi
                       </Typography>
                       
-                      <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                          <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                            <BankIcon fontSize="small" color="primary" />
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {deposit.bankName || 'N/A'}
-                            </Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" fontFamily="monospace" sx={{ fontSize: '0.65rem' }}>
-                            {deposit.accountNumber || 'N/A'}
-                          </Typography>
-                        </Grid>
+                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
+                        {/* Bank & Term Information */}
+                        <Box sx={{ mb: 2 }}>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <BankIcon fontSize="small" color="primary" />
+                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {deposit.bankName || 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Typography variant="body2" color="text.secondary" fontFamily="monospace" sx={{ fontSize: '0.75rem', ml: 3, mb: 1 }}>
+                                {deposit.accountNumber || 'N/A'}
+                              </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <ScheduleIcon fontSize="small" color="primary" />
+                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {deposit.termDescription || 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', ml: 3 }}>
+                                {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
                         
-                        <Grid item xs={6}>
-                          <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                            <ScheduleIcon fontSize="small" color="primary" />
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {deposit.termDescription || 'N/A'}
-                            </Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                      
-                      <Grid container spacing={1} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            Gốc: {formatCurrency(Number(deposit.principal) || 0)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            Lãi suất: {deposit.interestRate ? `${deposit.interestRate}%/năm` : 'N/A'}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            Lãi tích lũy: {formatCurrency(Number(deposit.accruedInterest) || 0)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            Tổng: {formatCurrency(Number(deposit.totalValue) || 0)}
-                          </Typography>
-                        </Grid>
-                      </Grid>
+                        {/* Financial Information */}
+                        <Box>
+                          <Grid container spacing={1.5}>
+                            <Grid item xs={6}>
+                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                  Gốc
+                                </Typography>
+                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {formatCurrency(Number(deposit.principal) || 0)}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                  Lãi suất
+                                </Typography>
+                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {deposit.interestRate ? `${deposit.interestRate}%/năm` : 'N/A'}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                  Lãi tích lũy
+                                </Typography>
+                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {formatCurrency(Number(deposit.accruedInterest) || 0)}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Box sx={{ p: 1, bgcolor: 'success.light', borderRadius: 1, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                  Tổng
+                                </Typography>
+                                <Typography variant="body2" color="success.dark" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                                  {formatCurrency(Number(deposit.totalValue) || 0)}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </Box>
                     </Paper>
                   </Grid>
                   
                   {/* Settlement Form - Compact */}
                   <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2 }}>
+                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                       <Typography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
                         Thông tin tất toán
                       </Typography>
                       
-                      <Grid container spacing={1}>
-                        <Grid item xs={12}>
-                          <Controller
-                            name="actualInterest"
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                fullWidth
-                                label="Lãi thực tế (VND)"
-                                type="number"
-                                error={!!errors.actualInterest}
-                                helperText={errors.actualInterest?.message}
-                                required
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                                size="small"
-                                sx={{
-                                  '& .MuiOutlinedInput-root': {
-                                    borderRadius: 1,
-                                    bgcolor: 'white'
-                                  }
-                                }}
-                              />
-                            )}
-                          />
+                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <Controller
+                              name="actualInterest"
+                              control={control}
+                              render={({ field }) => (
+                                <MoneyInput
+                                  value={field.value || 0}
+                                  onChange={(value) => field.onChange(value)}
+                                  label="Lãi thực tế"
+                                  placeholder="Nhập số tiền lãi thực tế"
+                                  helperText={errors.actualInterest?.message}
+                                  error={!!errors.actualInterest}
+                                  currency="VND"
+                                  showCurrency={true}
+                                  align="right"
+                                  required
+                                  disabled={isSubmitting}
+                                />
+                              )}
+                            />
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Controller
+                              name="settlementDate"
+                              control={control}
+                              render={({ field }) => (
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                  <DatePicker
+                                    label="Ngày tất toán"
+                                    value={field.value ? new Date(field.value) : null}
+                                    onChange={(date) => {
+                                      const dateString = date ? date.toISOString().split('T')[0] : '';
+                                      field.onChange(dateString);
+                                    }}
+                                    slotProps={{
+                                      textField: {
+                                        fullWidth: true,
+                                        size: 'small',
+                                        error: !!errors.settlementDate,
+                                        helperText: errors.settlementDate?.message || 'Chọn ngày tất toán',
+                                        required: true,
+                                        sx: {
+                                          '& .MuiOutlinedInput-root': {
+                                            borderRadius: 1,
+                                            bgcolor: 'white'
+                                          }
+                                        }
+                                      },
+                                    }}
+                                  />
+                                </LocalizationProvider>
+                              )}
+                            />
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Controller
+                              name="notes"
+                              control={control}
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  fullWidth
+                                  label="Ghi chú"
+                                  multiline
+                                  rows={2}
+                                  error={!!errors.notes}
+                                  helperText={errors.notes?.message}
+                                  size="small"
+                                  sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                      borderRadius: 1,
+                                      bgcolor: 'white'
+                                    }
+                                  }}
+                                />
+                              )}
+                            />
+                          </Grid>
                         </Grid>
-                        
-                        <Grid item xs={12}>
-                          <Controller
-                            name="notes"
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                fullWidth
-                                label="Ghi chú"
-                                multiline
-                                rows={1}
-                                error={!!errors.notes}
-                                helperText={errors.notes?.message}
-                                size="small"
-                                sx={{
-                                  '& .MuiOutlinedInput-root': {
-                                    borderRadius: 1,
-                                    bgcolor: 'white'
-                                  }
-                                }}
-                              />
-                            )}
-                          />
-                        </Grid>
-                      </Grid>
+                      </Box>
                     </Paper>
                   </Grid>
                 </Grid>

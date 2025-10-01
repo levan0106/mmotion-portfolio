@@ -221,6 +221,7 @@ export class TradeRepository extends Repository<Trade> {
   async findUnmatchedBuyTrades(
     assetId: string,
     portfolioId: string,
+    tradeDate?: Date,
   ): Promise<Trade[]> {
     // Use a more efficient query to find BUY trades with remaining quantity
     return this.tradeRepository
@@ -229,6 +230,7 @@ export class TradeRepository extends Repository<Trade> {
       .where('trade.assetId = :assetId', { assetId })
       .andWhere('trade.portfolioId = :portfolioId', { portfolioId })
       .andWhere('trade.side = :side', { side: TradeSide.BUY })
+      .andWhere('trade.tradeDate <= :tradeDate', { tradeDate: tradeDate })
       .groupBy('trade.tradeId, trade.quantity')
       .having('trade.quantity > COALESCE(SUM(detail.matchedQty), 0)')
       .orderBy('trade.tradeDate', 'ASC')
@@ -239,16 +241,19 @@ export class TradeRepository extends Repository<Trade> {
    * Find unmatched sell trades (for FIFO/LIFO matching)
    * @param assetId Asset ID
    * @param portfolioId Portfolio ID
+   * @param tradeDate Trade date
    * @returns Array of unmatched sell trades
    */
   async findUnmatchedSellTrades(
     assetId: string,
     portfolioId: string,
+    tradeDate?: Date,
   ): Promise<Trade[]> {
     return this.tradeRepository
       .createQueryBuilder('trade')
       .leftJoin('trade.sellDetails', 'detail')
       .where('trade.assetId = :assetId', { assetId })
+      .andWhere('trade.tradeDate <= :tradeDate', { tradeDate: tradeDate })
       .andWhere('trade.portfolioId = :portfolioId', { portfolioId })
       .andWhere('trade.side = :side', { side: TradeSide.SELL })
       .andWhere('detail.detailId IS NULL')

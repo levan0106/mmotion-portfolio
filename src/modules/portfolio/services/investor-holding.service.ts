@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { In, LessThanOrEqual, Repository } from 'typeorm';
 import { InvestorHolding } from '../entities/investor-holding.entity';
 import { FundUnitTransaction, HoldingType } from '../entities/fund-unit-transaction.entity';
 import { Portfolio } from '../entities/portfolio.entity';
@@ -18,6 +18,7 @@ export interface SubscribeToFundDto {
   portfolioId: string;
   amount: number;
   description?: string;
+  subscriptionDate?: string;
 }
 
 export interface RedeemFromFundDto {
@@ -25,6 +26,7 @@ export interface RedeemFromFundDto {
   portfolioId: string;
   units: number;
   description?: string;
+  redemptionDate?: string;
 }
 
 export interface SubscriptionResult {
@@ -67,8 +69,10 @@ export class InvestorHoldingService {
    * Subscribe to a fund (buy fund units)
    * FIXED: Removed double update, fixed average cost calculation, added transaction wrapper
    */
-  async subscribeToFund(dto: SubscribeToFundDto): Promise<SubscriptionResult> {
+  async subscribeToFund(dto: SubscribeToFundDto, subscriptionDate?: string): Promise<SubscriptionResult> {
     this.logger.log(`Processing fund subscription: ${dto.accountId} -> ${dto.portfolioId}, amount: ${dto.amount}`);
+
+    const subDate = subscriptionDate ? new Date(subscriptionDate) : new Date();
 
     // 1. Validate inputs
     await this.validateSubscription(dto);
@@ -89,7 +93,7 @@ export class InvestorHoldingService {
     }
 
     // 3. Calculate NAV per unit
-    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId));
+    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId, subDate));
     if (navPerUnit <= 0) {
       throw new BadRequestException('Invalid NAV per unit. Fund may not be properly initialized.');
     }
@@ -163,16 +167,19 @@ export class InvestorHoldingService {
         units: Math.round(unitsIssued * 1000) / 1000,
         navPerUnit: Math.round(navPerUnit * 1000) / 1000,
         amount: Math.round(dto.amount * 1000) / 1000,
+        createdAt: subDate ? new Date(subDate) : new Date(),
+        updatedAt: subDate ? new Date(subDate) : new Date(),
       });
 
       // 7. Create CashFlow record with transaction reference
+      const subscriptionDate = dto.subscriptionDate ? new Date(dto.subscriptionDate) : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.DEPOSIT,
         dto.amount,
         `Fund subscription - ${unitsIssued.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
         `${transaction.transactionId}`,
-        new Date()
+        subscriptionDate
       );
       cashFlow = cashFlowResult.cashFlow;
 
@@ -182,9 +189,9 @@ export class InvestorHoldingService {
       });
 
       // 9. Update Portfolio metrics (removed redundant holding update)
-      await this.updateTotalOutstandingUnits(dto.portfolioId);
-      await this.updatePortfolioNavPerUnit(dto.portfolioId);
-      await this.updatePortfolioNumberOfInvestors(dto.portfolioId);
+      await this.updateTotalOutstandingUnits(dto.portfolioId, subDate); // calculate and update total outstanding units to DB for daily snapshot
+      await this.updatePortfolioNavPerUnit(dto.portfolioId, subDate);
+      await this.updatePortfolioNumberOfInvestors(dto.portfolioId, subDate);
 
       this.logger.log(`Fund subscription completed: ${unitsIssued.toFixed(3)} units issued at ${navPerUnit.toFixed(3)} per unit`);
 
@@ -224,8 +231,10 @@ export class InvestorHoldingService {
    * Redeem from a fund (sell fund units)
    * FIXED: Corrected total investment calculation, added transaction wrapper, fixed P&L logic
    */
-  async redeemFromFund(dto: RedeemFromFundDto): Promise<RedemptionResult> {
+  async redeemFromFund(dto: RedeemFromFundDto, redemptionDate?: string): Promise<RedemptionResult> {
     this.logger.log(`Processing fund redemption: ${dto.accountId} -> ${dto.portfolioId}, units: ${dto.units}`);
+
+    const rdDate = redemptionDate ? new Date(redemptionDate) : new Date();
 
     // 1. Validate inputs
     await this.validateRedemption(dto);
@@ -244,7 +253,7 @@ export class InvestorHoldingService {
     }
 
     // 3. Calculate NAV per unit
-    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId));
+    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId, rdDate));
     if (navPerUnit <= 0) {
       throw new BadRequestException('Invalid NAV per unit. Fund may not be properly initialized.');
     }
@@ -263,16 +272,19 @@ export class InvestorHoldingService {
         units: Math.round(dto.units * 1000) / 1000,
         navPerUnit: Math.round(navPerUnit * 1000) / 1000,
         amount: Math.round(amountReceived * 1000) / 1000,
+        createdAt: rdDate ? new Date(rdDate) : new Date(),
+        updatedAt: rdDate ? new Date(rdDate) : new Date(),
       });
 
       // 6. Create CashFlow record with transaction reference
+      const redemptionDate = dto.redemptionDate ? new Date(dto.redemptionDate) : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.WITHDRAWAL,
         amountReceived,
         `Fund redemption - ${dto.units.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
         `${transaction.transactionId}`,
-        new Date()
+        redemptionDate
       );
       cashFlow = cashFlowResult.cashFlow;
 
@@ -320,9 +332,9 @@ export class InvestorHoldingService {
       });
 
       // 9. Update Portfolio metrics
-      await this.updateTotalOutstandingUnits(dto.portfolioId);
-      await this.updatePortfolioNavPerUnit(dto.portfolioId);
-      await this.updatePortfolioNumberOfInvestors(dto.portfolioId);
+      await this.updateTotalOutstandingUnits(dto.portfolioId, rdDate);
+      await this.updatePortfolioNavPerUnit(dto.portfolioId, rdDate);
+      await this.updatePortfolioNumberOfInvestors(dto.portfolioId, rdDate);
 
       this.logger.log(`Fund redemption completed: ${dto.units.toFixed(3)} units redeemed at ${navPerUnit.toFixed(3)} per unit`);
 
@@ -543,17 +555,46 @@ export class InvestorHoldingService {
 
     // Use real-time calculated NAV value instead of stored database value
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId, snapshotDate);
-    const navPerUnit = realTimeNavValue / portfolio.totalOutstandingUnits;
+    const navPerUnit = realTimeNavValue / Number(portfolio.totalOutstandingUnits);
+
+    this.logger.debug(`Nav per unit for portfolio ${portfolioId} at snapshot date ${snapshotDate ? snapshotDate.toISOString() : new Date().toISOString()} :
+    ${navPerUnit} (Real-time NAV: ${realTimeNavValue} / Total outstanding units: ${portfolio.totalOutstandingUnits})`);
 
     // Round to 3 decimal places to avoid precision issues
     return Math.round(navPerUnit * 1000) / 1000;
   }
 
   /**
+   * Update all investor holdings with current NAV
+   */
+  async updateAllHoldingsWithCurrentNav(portfolioId: string, navPerUnit: number): Promise<void> {
+    this.logger.log(`Updating all holdings for portfolio ${portfolioId} with NAV ${navPerUnit}`);
+    
+    // Get all holdings for this portfolio
+    const holdings = await this.investorHoldingRepository.find({
+      where: { portfolioId }
+    });
+    
+    for (const holding of holdings) {
+      const currentValue = holding.totalUnits * navPerUnit;
+      const unrealizedPnL = currentValue - holding.totalInvestment;
+      
+      await this.investorHoldingRepository.update(holding.holdingId, {
+        currentValue: Math.round(currentValue * 1000) / 1000,
+        unrealizedPnL: Math.round(unrealizedPnL * 1000) / 1000,
+      });
+      
+      this.logger.debug(`Updated holding ${holding.holdingId}: currentValue=${currentValue}, unrealizedPnL=${unrealizedPnL}`);
+    }
+    
+    this.logger.log(`Updated ${holdings.length} holdings for portfolio ${portfolioId}`);
+  }
+
+  /**
    * Update Portfolio NAV per unit
    */
-  async updatePortfolioNavPerUnit(portfolioId: string): Promise<number> {
-    const navPerUnit = await this.calculateNavPerUnit(portfolioId);
+  async updatePortfolioNavPerUnit(portfolioId: string, snapshotDate?: Date): Promise<number> {
+    const navPerUnit = await this.calculateNavPerUnit(portfolioId, snapshotDate);
     const lastNavDate = new Date();
 
     await this.portfolioRepository.update(portfolioId, {
@@ -561,14 +602,17 @@ export class InvestorHoldingService {
       lastNavDate,
     });
 
+    // Update all investor holdings with the new NAV
+    //await this.updateAllHoldingsWithCurrentNav(portfolioId, navPerUnit);
+
     return navPerUnit;
   }
 
   /**
    * Update Portfolio total outstanding units
    */
-  async updateTotalOutstandingUnits(portfolioId: string): Promise<number> {
-    const totalOutstandingUnits = await this.calculateTotalOutstandingUnits(portfolioId); // calculate and update total outstanding units to DB for daily snapshot
+  async updateTotalOutstandingUnits(portfolioId: string, snapshotDate?: Date): Promise<number> {
+    const totalOutstandingUnits = await this.calculateTotalOutstandingUnits(portfolioId, snapshotDate); // calculate and update total outstanding units to DB for daily snapshot
     await this.portfolioRepository.update(
       { portfolioId: portfolioId },
       {
@@ -696,6 +740,35 @@ export class InvestorHoldingService {
 
     this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(3)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
 
+
+    // 5. Create initial investor holding
+    const initialInvestorHolding = await this.investorHoldingRepository.save({
+      portfolioId: portfolioId,
+      accountId: portfolio.accountId,
+      totalUnits: initialUnits,
+      avgCostPerUnit: navPerUnit,
+      totalInvestment: realTimeNavValue,
+      currentValue: realTimeNavValue,
+      unrealizedPnL: 0,
+      realizedPnL: 0,
+      createdAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+    });
+
+    // 6. Create FundUnitTransaction record
+    const transaction = await this.fundUnitTransactionRepository.save({
+      holdingId: initialInvestorHolding.holdingId,
+      holdingType: HoldingType.SUBSCRIBE,
+      units: Math.round(initialUnits * 1000) / 1000,
+      navPerUnit: Math.round(navPerUnit * 1000) / 1000,
+      amount: Math.round(realTimeNavValue * 1000) / 1000,
+      createdAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+      description: `Initial investment for portfolio.`,
+    });
+    
+    // 7. Don't add cash flow for initial investment
+
     return updatedPortfolio;
   }
 
@@ -723,8 +796,12 @@ export class InvestorHoldingService {
     const depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId, snapshotDate);
 
     // NAV should include asset value, deposit value, and real-time cash balance
-    const navValue = calculatedValues.totalValue + depositData.totalDepositValue + realTimeCashBalance;
+    const navValue = Number(calculatedValues.totalValue) + Number(depositData.totalDepositValue) + Number(realTimeCashBalance);
     
+    this.logger.debug(`Real-time NAV value for portfolio ${portfolioId} at snapshot date ${snapshotDate ? snapshotDate.toISOString() : new Date().toISOString()} :
+    ${navValue} (Asset value: ${calculatedValues.totalValue}, Deposit value: ${depositData.totalDepositValue}, Real-time cash balance: ${realTimeCashBalance})`);
+
+
     // Ensure we return a positive value
     return Math.max(navValue, 0);
   }
@@ -806,6 +883,48 @@ export class InvestorHoldingService {
   }
 
   /**
+   * Recalculate all investor holdings for a portfolio after NAV update
+   */
+  async recalculateAllHoldings(portfolioId: string): Promise<{
+    portfolioId: string;
+    updatedHoldingsCount: number;
+  }> {
+    this.logger.log(`Recalculating all holdings for portfolio ${portfolioId}`);
+
+    // Get all holdings for this portfolio
+    const holdings = await this.investorHoldingRepository.find({
+      where: { portfolioId }
+    });
+
+    if (holdings.length === 0) {
+      this.logger.log(`No holdings found for portfolio ${portfolioId}`);
+      return {
+        portfolioId,
+        updatedHoldingsCount: 0
+      };
+    }
+
+    // Recalculate each holding
+    let updatedCount = 0;
+    for (const holding of holdings) {
+      try {
+        await this.recalculateHoldingMetrics(holding.holdingId);
+        updatedCount++;
+        this.logger.log(`Recalculated holding ${holding.holdingId} for portfolio ${portfolioId}`);
+      } catch (error) {
+        this.logger.error(`Failed to recalculate holding ${holding.holdingId}: ${error.message}`);
+        // Continue with other holdings even if one fails
+      }
+    }
+
+    this.logger.log(`Recalculated ${updatedCount} holdings for portfolio ${portfolioId}`);
+    return {
+      portfolioId,
+      updatedHoldingsCount: updatedCount
+    };
+  }
+
+  /**
    * Calculate number of investors for a portfolio
    * @param portfolioId - Portfolio ID
    * @param snapshotDate - Snapshot date
@@ -821,9 +940,9 @@ export class InvestorHoldingService {
    * @param portfolioId - Portfolio ID
    * @returns number
    */
-  async updatePortfolioNumberOfInvestors(portfolioId: string): Promise<number> {
+  async updatePortfolioNumberOfInvestors(portfolioId: string, snapshotDate?: Date): Promise<number> {
     try {
-      const numberOfInvestors = await this.calculateNumberOfInvestors(portfolioId);
+      const numberOfInvestors = await this.calculateNumberOfInvestors(portfolioId, snapshotDate);
       
       await this.portfolioRepository.update(portfolioId, {
         numberOfInvestors: numberOfInvestors
@@ -845,16 +964,233 @@ export class InvestorHoldingService {
    * @returns number
    */
   async calculateTotalOutstandingUnits(portfolioId: string, snapshotDate?: Date): Promise<number> {
+    // lấy danh sách tất cả holdings thuộc portfolio
     let holdings = await this.investorHoldingRepository.find({
       where: { portfolioId },
       relations: ['account']
     });
-    // Get only holdings created before snapshot date
-    if (snapshotDate) {
-      holdings = holdings.filter(holding => compareDates(holding.createdAt, snapshotDate));
+
+    if (snapshotDate < new Date()) {
+      // lấy danh sách tất cả transactions thuộc holdings để tính toán total outstanding units
+      let transactions = await this.fundUnitTransactionRepository.find({
+        where: { holdingId: In(holdings.map(holding => holding.holdingId)) },
+        relations: ['holding']
+      });
+
+      console.log(`🔍 DEBUG: holdings:`, holdings.map(holding => holding.createdAt));
+      console.log(`🔍 DEBUG: Transactions before filtering: ${transactions.length} (snapshot date: ${snapshotDate ? snapshotDate.toISOString() : new Date().toISOString()})`);
+      console.log(`🔍 DEBUG: transactions:`, transactions.map(transaction => transaction.createdAt));
+
+      // lấy danh sách transactions thuộc holdings được tạo trước snapshot date
+      snapshotDate = new Date(snapshotDate);
+      snapshotDate.setHours(23, 59, 59, 999);
+      transactions = transactions.filter(transaction => new Date(transaction.createdAt) <= snapshotDate);
+
+      console.log(`🔍 DEBUG: Transactions after filtering:`, transactions);
+      
+      const outstandingUnits = transactions.reduce((acc, transaction) => acc + Number(transaction.units), 0);
+      console.log(`🔍 DEBUG: Outstanding units: ${snapshotDate.toISOString()}:`, outstandingUnits);
+      return outstandingUnits;
+    }else {      
+      // lấy tất cả holdings tối ưu performance để tính toán total outstanding units
+      // Calculate total outstanding units
+      console.log(`🔍 DEBUG: holdings:`, holdings.map(holding => holding.createdAt));
+      const outstandingUnits = holdings.reduce((acc, holding) => acc + Number(holding.totalUnits), 0);
+      return outstandingUnits;
     }
-    // Calculate total outstanding units
-    const outstandingUnits = holdings.reduce((acc, holding) => acc + holding.totalUnits, 0);
-    return outstandingUnits;
+
+  }
+
+  /**
+   * Update a fund unit transaction
+   */
+  async updateHoldingTransaction(
+    transactionId: string,
+    updateData: {
+      units?: number;
+      amount?: number;
+      description?: string;
+      transactionDate?: string;
+    }
+  ): Promise<FundUnitTransaction> {
+    const transaction = await this.fundUnitTransactionRepository.findOne({
+      where: { transactionId }
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Fund unit transaction with ID ${transactionId} not found`);
+    }
+
+    // Update transaction fields
+    if (updateData.units !== undefined) {
+      transaction.units = updateData.units;
+    }
+    if (updateData.amount !== undefined) {
+      transaction.amount = updateData.amount;
+    }
+
+    // Update cash flow if it exists and we have updates for it
+    if (transaction.cashFlowId && (updateData.description !== undefined || updateData.transactionDate !== undefined)) {
+      const cashFlow = await this.cashFlowService.getCashFlowById(transaction.cashFlowId);
+
+      if (cashFlow) {
+        if (updateData.description !== undefined) {
+          cashFlow.description = updateData.description;
+        }
+        if (updateData.transactionDate !== undefined) {
+          cashFlow.flowDate = new Date(updateData.transactionDate);
+        }
+        await this.cashFlowService.updateCashFlow(cashFlow.portfolioId, cashFlow.cashFlowId, {
+          portfolioId: cashFlow.portfolioId,
+          amount: cashFlow.amount,
+          type: cashFlow.type as any,
+          description: cashFlow.description,
+          flowDate: cashFlow.flowDate.toISOString().split('T')[0]
+        });
+      }
+    }
+
+    // Save the updated transaction
+    const updatedTransaction = await this.fundUnitTransactionRepository.save(transaction);
+
+    // Update portfolio metrics after transaction changes
+    if (transaction.holdingId) {
+      const holding = await this.investorHoldingRepository.findOne({
+        where: { holdingId: transaction.holdingId }
+      });
+      
+      if (holding) {
+        const transactionDate = updateData.transactionDate ? new Date(updateData.transactionDate) : new Date();
+        
+        // Update portfolio metrics first
+        await this.updateTotalOutstandingUnits(holding.portfolioId, transactionDate);
+        await this.updatePortfolioNavPerUnit(holding.portfolioId, transactionDate);
+        await this.updatePortfolioNumberOfInvestors(holding.portfolioId, transactionDate);
+        
+        // Then recalculate holding metrics with updated NAV
+        await this.recalculateHoldingMetrics(transaction.holdingId);
+        
+        this.logger.log(`Updated portfolio metrics after transaction ${transactionId} edit`);
+      }
+    }
+
+    this.logger.log(`Updated fund unit transaction ${transactionId}`);
+    return updatedTransaction;
+  }
+
+  /**
+   * Delete a fund unit transaction
+   */
+  async deleteHoldingTransaction(transactionId: string): Promise<void> {
+    const transaction = await this.fundUnitTransactionRepository.findOne({
+      where: { transactionId },
+      relations: ['holding']
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Fund unit transaction with ID ${transactionId} not found`);
+    }
+
+    // Delete associated cash flow if it exists
+    if (transaction.cashFlowId) {
+      try {
+        await this.cashFlowService.deleteCashFlow(transaction.holding.portfolioId, transaction.cashFlowId);
+      } catch (error) {
+        this.logger.warn(`Failed to delete associated cash flow ${transaction.cashFlowId}: ${error.message}`);
+        // Continue with transaction deletion even if cash flow deletion fails
+      }
+    }
+
+    // Store portfolio ID before deletion for metrics update
+    const portfolioId = transaction.holding.portfolioId;
+    const transactionDate = transaction.createdAt;
+
+    // Delete the transaction
+    await this.fundUnitTransactionRepository.delete(transactionId);
+
+    // Update portfolio metrics after transaction deletion
+    await this.updateTotalOutstandingUnits(portfolioId, transactionDate);
+    await this.updatePortfolioNavPerUnit(portfolioId, transactionDate);
+    await this.updatePortfolioNumberOfInvestors(portfolioId, transactionDate);
+
+    // Recalculate holding metrics after transaction deletion
+    await this.recalculateHoldingMetrics(transaction.holdingId);
+
+    this.logger.log(`Updated portfolio metrics after transaction ${transactionId} deletion`);
+    this.logger.log(`Deleted fund unit transaction ${transactionId}`);
+  }
+
+  /**
+   * Recalculate holding metrics after transaction changes
+   */
+  private async recalculateHoldingMetrics(holdingId: string): Promise<void> {
+    try {
+      // Get all transactions for this holding
+      const transactions = await this.fundUnitTransactionRepository.find({
+        where: { holdingId },
+        order: { createdAt: 'ASC' }
+      });
+
+      if (transactions.length === 0) {
+        // No transactions, reset holding to zero
+        await this.investorHoldingRepository.update(holdingId, {
+          totalUnits: 0,
+          avgCostPerUnit: 0,
+          totalInvestment: 0,
+          currentValue: 0,
+          unrealizedPnL: 0,
+          realizedPnL: 0,
+        });
+        return;
+      }
+
+      // Recalculate metrics from scratch
+      let totalUnits = 0;
+      let totalInvestment = 0;
+      let realizedPnL = 0;
+
+      for (const transaction of transactions) {
+        if (transaction.holdingType === HoldingType.SUBSCRIBE) {
+          totalUnits += Number(transaction.units);
+          totalInvestment += Number(transaction.amount);
+        } else if (transaction.holdingType === HoldingType.REDEEM) {
+          const avgCostPerUnit = totalInvestment / totalUnits;
+          const costBasis = Number(transaction.units) * avgCostPerUnit;
+          const proceeds = transaction.amount;
+          const realizedGain = proceeds - costBasis;
+          
+          totalUnits -= Number(transaction.units);
+          totalInvestment -= costBasis;
+          realizedPnL += realizedGain;
+        }
+      }
+
+      const avgCostPerUnit = totalUnits > 0 ? totalInvestment / totalUnits : 0;
+      
+      // Get current NAV per unit for current value calculation
+      const holding = await this.investorHoldingRepository.findOne({
+        where: { holdingId }
+      });
+      
+      if (holding) {
+        const navPerUnit = await this.calculateNavPerUnit(holding.portfolioId);
+        const currentValue = totalUnits * navPerUnit;
+        const unrealizedPnL = currentValue - totalInvestment;
+
+        await this.investorHoldingRepository.update(holdingId, {
+          totalUnits: Math.round(totalUnits * 1000) / 1000,
+          avgCostPerUnit: Math.round(avgCostPerUnit * 1000) / 1000,
+          totalInvestment: Math.round(totalInvestment * 1000) / 1000,
+          currentValue: Math.round(currentValue * 1000) / 1000,
+          unrealizedPnL: Math.round(unrealizedPnL * 1000) / 1000,
+          realizedPnL: Math.round(realizedPnL * 1000) / 1000,
+        });
+
+        this.logger.log(`Recalculated holding metrics for holding ${holdingId}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to recalculate holding metrics for holding ${holdingId}: ${error.message}`);
+      throw error;
+    }
   }
 }

@@ -2,22 +2,34 @@
  * Portfolios page component
  */
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Alert } from '@mui/material';
 import PortfolioList from '../components/Portfolio/PortfolioList';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
-import { useAccount } from '../hooks/useAccount';
+import { useAccount } from '../contexts/AccountContext';
 
 const Portfolios: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPortfolio, setEditingPortfolio] = useState<string | null>(null);
   const [formError, setFormError] = useState<string>('');
 
   const { accountId } = useAccount();
+
+  // Auto-open form when navigating to /portfolios/new
+  useEffect(() => {
+    if (location.pathname === '/portfolios/new') {
+      setEditingPortfolio(null);
+      setFormError('');
+      setIsFormOpen(true);
+      // Navigate back to /portfolios to clean up URL
+      navigate('/portfolios', { replace: true });
+    }
+  }, [location.pathname, navigate]);
   const {
     portfolios,
     createPortfolio,

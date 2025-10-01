@@ -5,6 +5,7 @@
 - **React.js 18**: UI framework với hooks và functional components
 - **TypeScript**: Type safety và better developer experience
 - **Material-UI (MUI)**: Component library cho consistent UI
+- **Material Design Icons**: Professional icon system với consistent design language
 - **Recharts**: Data visualization cho portfolio analytics
 - **React Query**: Data fetching và caching
 - **React Router**: Client-side routing
@@ -362,3 +363,65 @@ VNDIRECT_API_URL=https://api.vndirect.com.vn
 - **File Storage**: AWS S3 cho document storage (Future implementation)
 - **Monitoring**: Prometheus + Grafana (Tasks 33-35, 48-49)
 - **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana) (Tasks 36-37, 51-52, 53-54)
+
+## Material Design Icons Usage - **IMPLEMENTED** ✅
+
+### Icon Design System
+- **Style**: Material Design Icons (Material-UI Icons)
+- **Characteristics**: Geometric, minimalist, consistent design language
+- **Scalability**: Vector-based, responsive across all screen sizes
+- **Color System**: Semantic colors for different actions and states
+
+### Icon Usage Patterns
+```typescript
+// Import Material-UI icons
+import { 
+  AccountBalance as PortfolioIcon,
+  TrendingUp as TrendingUpIcon,
+  MonetizationOn as MonetizationOnIcon,
+  Assessment as AssessmentIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
+
+// Usage in components
+<PortfolioIcon sx={{ fontSize: 60, color: '#3b82f6' }} />
+<TrendingUpIcon sx={{ fontSize: 24, color: '#10b981' }} />
+<MonetizationOnIcon sx={{ fontSize: 24, color: '#f59e0b' }} />
+<AssessmentIcon sx={{ fontSize: 24, color: '#8b5cf6' }} />
+```
+
+### Color System for Icons
+- **Primary Blue (#3b82f6)**: Main actions, portfolio management
+- **Success Green (#10b981)**: Positive actions, performance tracking
+- **Warning Orange (#f59e0b)**: Value/monetary actions, returns
+- **Info Purple (#8b5cf6)**: Analytics, data analysis, trends
+
+### Implementation Examples
+1. **Portfolio Empty State**: Professional empty state with Material Design icons
+   - Main icon: `AccountBalance` (Portfolio management)
+   - Feature icons: `TrendingUp`, `MonetizationOn`, `Assessment`
+   - Consistent sizing and color scheme
+
+2. **Navigation Icons**: Dashboard sidebar navigation
+   - `DashboardIcon`, `PortfolioIcon`, `AssetIcon`
+   - Consistent sizing and hover states
+
+3. **Action Icons**: Buttons and interactive elements
+   - `AddIcon` for create actions
+   - `SearchIcon` for search functionality
+   - Consistent with Material Design guidelines
+
+### Best Practices
+- **Consistent Sizing**: Use standardized sizes (24px, 48px, 60px)
+- **Semantic Colors**: Use colors that convey meaning
+- **Accessibility**: Ensure proper contrast ratios
+- **Responsive**: Icons scale appropriately on different screen sizes
+- **Professional**: Maintain consistent design language throughout the application
+
+### Benefits for Financial System
+- **Professional Appearance**: Clean, trustworthy design
+- **User Recognition**: Familiar icons improve usability
+- **Consistency**: Unified design language across all components
+- **Scalability**: Vector-based icons work on all devices
+- **Accessibility**: Clear, recognizable symbols for all users

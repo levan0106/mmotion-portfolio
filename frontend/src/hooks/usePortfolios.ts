@@ -4,11 +4,32 @@
 
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useEffect } from 'react';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
 import apiService from '../services/api';
+import { useAccount } from '../contexts/AccountContext';
 
 export const usePortfolios = (accountId?: string) => {
   const queryClient = useQueryClient();
+  const { loading: accountLoading, accountId: contextAccountId } = useAccount(); // Get both loading state and accountId from context
+  
+  // Use context accountId if provided, otherwise use passed accountId
+  const currentAccountId = contextAccountId || accountId;
+  
+  console.log('🔍 usePortfolios: accountId param:', accountId);
+  console.log('🔍 usePortfolios: contextAccountId:', contextAccountId);
+  console.log('🔍 usePortfolios: currentAccountId:', currentAccountId);
+  console.log('🔍 usePortfolios: accountLoading:', accountLoading);
+
+  // Invalidate all queries when account changes
+  useEffect(() => {
+    if (currentAccountId) {
+      console.log('🔍 usePortfolios: Invalidating queries for account:', currentAccountId);
+      queryClient.invalidateQueries(['portfolios']);
+      queryClient.invalidateQueries(['trades']);
+      queryClient.invalidateQueries(['portfolio-analytics']);
+    }
+  }, [currentAccountId, queryClient]);
 
   // Fetch all portfolios
   const {
@@ -17,10 +38,10 @@ export const usePortfolios = (accountId?: string) => {
     error,
     refetch,
   } = useQuery(
-    ['portfolios', accountId],
-    () => accountId ? apiService.getPortfolios(accountId) : Promise.resolve([]),
+    ['portfolios', currentAccountId],
+    () => currentAccountId ? apiService.getPortfolios(currentAccountId) : Promise.resolve([]),
     {
-      enabled: !!accountId, // Only run query if accountId is provided
+      enabled: !!currentAccountId && !accountLoading, // Only run query if accountId is provided and account is not loading
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
     }
@@ -28,10 +49,11 @@ export const usePortfolios = (accountId?: string) => {
 
   // Create portfolio mutation
   const createPortfolioMutation = useMutation(
-    (data: CreatePortfolioDto) => apiService.createPortfolio(data),
+    (data: CreatePortfolioDto) => apiService.createPortfolio(data, currentAccountId!),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['portfolios', accountId]);
+        queryClient.invalidateQueries(['portfolios', currentAccountId]);
+        refetch(); // Force refetch
       },
     }
   );
@@ -39,20 +61,22 @@ export const usePortfolios = (accountId?: string) => {
   // Update portfolio mutation
   const updatePortfolioMutation = useMutation(
     ({ id, data }: { id: string; data: UpdatePortfolioDto }) =>
-      apiService.updatePortfolio(id, data),
+      apiService.updatePortfolio(id, currentAccountId!, data),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['portfolios', accountId]);
+        queryClient.invalidateQueries(['portfolios', currentAccountId]);
+        refetch(); // Force refetch
       },
     }
   );
 
   // Delete portfolio mutation
   const deletePortfolioMutation = useMutation(
-    (id: string) => apiService.deletePortfolio(id),
+    (id: string) => apiService.deletePortfolio(id, currentAccountId!),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['portfolios', accountId]);
+        queryClient.invalidateQueries(['portfolios', currentAccountId]);
+        refetch(); // Force refetch
       },
     }
   );
@@ -73,6 +97,15 @@ export const usePortfolios = (accountId?: string) => {
 
 export const usePortfolio = (portfolioId: string) => {
   const queryClient = useQueryClient();
+  const { accountId, loading: accountLoading } = useAccount();
+
+  // Invalidate portfolio queries when account changes
+  useEffect(() => {
+    if (accountId) {
+      console.log('🔍 usePortfolio: Invalidating portfolio queries for account:', accountId);
+      queryClient.invalidateQueries(['portfolio', portfolioId]);
+    }
+  }, [accountId, queryClient, portfolioId]);
 
   // Fetch single portfolio
   const {
@@ -81,10 +114,10 @@ export const usePortfolio = (portfolioId: string) => {
     error,
     refetch,
   } = useQuery(
-    ['portfolio', portfolioId],
-    () => apiService.getPortfolio(portfolioId),
+    ['portfolio', portfolioId, accountId],
+    () => apiService.getPortfolio(portfolioId, accountId),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId && !accountLoading,
       staleTime: 2 * 60 * 1000, // 2 minutes
       cacheTime: 5 * 60 * 1000, // 5 minutes
     }
@@ -92,7 +125,7 @@ export const usePortfolio = (portfolioId: string) => {
 
   // Update portfolio mutation
   const updatePortfolioMutation = useMutation(
-    (data: UpdatePortfolioDto) => apiService.updatePortfolio(portfolioId, data),
+    (data: UpdatePortfolioDto) => apiService.updatePortfolio(portfolioId, accountId, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['portfolio', portfolioId]);
@@ -112,16 +145,29 @@ export const usePortfolio = (portfolioId: string) => {
 };
 
 export const usePortfolioAnalytics = (portfolioId: string) => {
+  const { accountId, loading: accountLoading } = useAccount();
+  const queryClient = useQueryClient();
+  
+  // Invalidate analytics queries when account changes
+  useEffect(() => {
+    if (accountId) {
+      console.log('🔍 usePortfolioAnalytics: Invalidating analytics queries for account:', accountId);
+      queryClient.invalidateQueries(['portfolio-performance', portfolioId]);
+      queryClient.invalidateQueries(['portfolio-allocation', portfolioId]);
+      queryClient.invalidateQueries(['portfolio-positions', portfolioId]);
+    }
+  }, [accountId, queryClient, portfolioId]);
+  
   // Fetch portfolio NAV
   // const {
   //   data: navData,
   //   isLoading: isNavLoading,
   //   error: navError,
   // } = useQuery(
-  //   ['portfolio-nav', portfolioId],
+  //   ['portfolio-nav', portfolioId, accountId],
   //   () => apiService.getPortfolioNav(portfolioId),
   //   {
-  //     enabled: !!portfolioId,
+  //     enabled: !!portfolioId && !!accountId && !accountLoading,
   //     staleTime: 1 * 60 * 1000, // 1 minute
   //     refetchInterval: false, // Disabled auto refresh
   //   }
@@ -133,10 +179,10 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     isLoading: isPerformanceLoading,
     error: performanceError,
   } = useQuery(
-    ['portfolio-performance', portfolioId],
+    ['portfolio-performance', portfolioId, accountId],
     () => apiService.getPortfolioPerformance(portfolioId),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId && !accountLoading,
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
@@ -147,10 +193,10 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     isLoading: isAllocationLoading,
     error: allocationError,
   } = useQuery(
-    ['portfolio-allocation', portfolioId],
+    ['portfolio-allocation', portfolioId, accountId],
     () => apiService.getPortfolioAllocation(portfolioId),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId && !accountLoading,
       staleTime: 30 * 1000, // 30 seconds - reduced for testing
       refetchInterval: false, // Disabled auto refresh
     }
@@ -162,10 +208,10 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     isLoading: isPositionsLoading,
     error: positionsError,
   } = useQuery(
-    ['portfolio-positions', portfolioId],
+    ['portfolio-positions', portfolioId, accountId],
     () => apiService.getPortfolioPositions(portfolioId),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId && !accountLoading,
       staleTime: 2 * 60 * 1000, // 2 minutes
     }
   );

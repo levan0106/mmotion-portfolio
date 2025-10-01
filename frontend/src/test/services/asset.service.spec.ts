@@ -69,7 +69,7 @@ describe('AssetService', () => {
         data: mockAsset,
       });
 
-      const result = await assetService.createAsset(createData);
+      const result = await assetService.createAsset(createData, 'test-account-id');
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'POST',
@@ -100,7 +100,7 @@ describe('AssetService', () => {
         data: mockResponse,
       });
 
-      const result = await assetService.getAssets(filters);
+      const result = await assetService.getAssets(filters, 'test-account-id');
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'GET',
@@ -142,7 +142,7 @@ describe('AssetService', () => {
         data: updatedAsset,
       });
 
-      const result = await assetService.updateAsset('test-asset-id', updateData);
+      const result = await assetService.updateAsset('test-asset-id', updateData, 'test-account-id');
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'PUT',
@@ -159,7 +159,7 @@ describe('AssetService', () => {
         data: undefined,
       });
 
-      await assetService.deleteAsset('test-asset-id');
+      await assetService.deleteAsset('test-asset-id', 'test-account-id');
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'DELETE',
@@ -232,7 +232,7 @@ describe('AssetService', () => {
       const error = new Error('API Error');
       mockRequest.mockRejectedValueOnce(error);
 
-      await expect(assetService.getAssets()).rejects.toThrow('API Error');
+      await expect(assetService.getAssets({}, 'test-account-id')).rejects.toThrow('API Error');
     });
   });
 });

@@ -24,7 +24,20 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
-### Cash Flow Logic Patterns - **RECENTLY UPDATED**
+### Material Design Icons Pattern - **IMPLEMENTED** ✅
+- **Consistent Icon System**: Use Material-UI icons throughout the application for unified design language
+- **Semantic Color Coding**: Icons use meaningful colors (blue for primary, green for success, orange for value, purple for analytics)
+- **Responsive Sizing**: Standardized icon sizes (24px, 48px, 60px) that scale appropriately
+- **Professional Appearance**: Clean, geometric icons that convey trust and professionalism
+- **Accessibility**: High contrast ratios and clear visual hierarchy for all users
+
+### Snapshot Date Range Patterns - **RECENTLY UPDATED**
+- **Unified Date Range Pattern**: All date inputs normalized to startDate/endDate format for consistent processing
+- **Single Date Normalization Pattern**: Single date requests normalized to startDate = endDate for unified logic
+- **Dynamic Timeout Pattern**: Timeout calculation based on date range size (3 seconds per day, minimum 60 seconds)
+- **Progress Indicator Pattern**: User feedback for large date ranges with progress messages
+
+### Cash Flow Logic Patterns - **PREVIOUSLY UPDATED**
 - **Centralized Calculation Pattern**: All cash flow calculations centralized in getCashBalance method to avoid code duplication
 - **Method Delegation Pattern**: recalculateCashBalance delegates to getCashBalance for consistent logic
 - **QueryBuilder Consistency Pattern**: All cash flow queries use QueryBuilder with same filters (COMPLETED status, endOfDay logic)

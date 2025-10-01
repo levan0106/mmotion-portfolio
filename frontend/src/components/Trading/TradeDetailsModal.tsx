@@ -102,7 +102,7 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
             </Box>
           </Box>
         ) : (
-          <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
+          <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(70vh - 120px)' }}>
             <TradeDetails
               trade={trade}
               tradeDetails={tradeDetails}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
+import { useAccount } from '../contexts/AccountContext';
 
 // Hook for portfolio analytics allocation timeline (now uses real snapshot data with 12 month limit)
 export const usePortfolioAllocationTimeline = (
@@ -164,9 +165,10 @@ export const usePortfolioCashFlow = (portfolioId: string, months: number = 12) =
   const [cashFlowData, setCashFlowData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { accountId, loading: accountLoading } = useAccount();
 
   const fetchCashFlowData = useCallback(async () => {
-    if (!portfolioId) return;
+    if (!portfolioId || !accountId) return;
     
     setLoading(true);
     setError(null);
@@ -179,13 +181,13 @@ export const usePortfolioCashFlow = (portfolioId: string, months: number = 12) =
     } finally {
       setLoading(false);
     }
-  }, [portfolioId, months]);
+  }, [portfolioId, accountId, months]);
 
   useEffect(() => {
-    if (portfolioId) {
+    if (portfolioId && accountId && !accountLoading) {
       fetchCashFlowData();
     }
-  }, [portfolioId, months]);
+  }, [portfolioId, accountId, accountLoading, months, fetchCashFlowData]);
 
   return {
     cashFlowData,

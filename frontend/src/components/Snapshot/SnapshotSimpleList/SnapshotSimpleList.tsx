@@ -27,7 +27,7 @@ import { useSnapshots } from '../../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../../hooks/usePortfolioSnapshots';
 import { usePortfolios } from '../../../hooks/usePortfolios';
 import { useAssets } from '../../../hooks/useAssets';
-import { useAccount } from '../../../hooks/useAccount';
+import { useAccount } from '../../../contexts/AccountContext';
 import { usePagination } from '../../../hooks/usePagination';
 import { SnapshotResponse, SnapshotQueryParams, SnapshotGranularity } from '../../../types/snapshot.types';
 import { snapshotService } from '../../../services/snapshot.service';

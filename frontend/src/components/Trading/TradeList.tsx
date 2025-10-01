@@ -25,6 +25,8 @@ import {
   ListItemText,
   CircularProgress,
   Alert,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -34,7 +36,16 @@ import {
   Add as AddIcon,
   FilterList as FilterIcon,
   Search as SearchIcon,
+  ViewModule as GridViewIcon,
+  ViewList as ListViewIcon,
+  AccountBalance as ExchangeIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Assessment as AssessmentIcon,
+  ShowChart as ChartIcon,
+  AccountBalanceWallet as WalletIcon,
 } from '@mui/icons-material';
+import { FIFOTooltip } from '../Common';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types';
 import { useTrades, useDeleteTrade, useTradeDetails, useUpdateTrade } from '../../hooks/useTrading';
@@ -90,7 +101,6 @@ export interface TradeListProps {
   filters?: any;
   currentPage?: number;
   totalPages?: number;
-  totalTrades?: number;
 }
 
 /**
@@ -107,7 +117,6 @@ export const TradeList: React.FC<TradeListProps> = ({
   onPageChange,
   currentPage = 1,
   totalPages = 1,
-  totalTrades = 0,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sideFilter, setSideFilter] = useState<TradeSide | 'ALL'>('ALL');
@@ -115,6 +124,7 @@ export const TradeList: React.FC<TradeListProps> = ({
   const [sourceFilter, setSourceFilter] = useState<TradeSource | 'ALL'>('ALL');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+  const [exchangeViewMode, setExchangeViewMode] = useState<'grid' | 'list'>('grid');
 
   // Filter and search trades
   const filteredTrades = useMemo(() => {
@@ -165,9 +175,10 @@ export const TradeList: React.FC<TradeListProps> = ({
   };
 
   const getSideIcon = (side: TradeSide) => {
-    return side === TradeSide.BUY ? '↗' : '↘';
+    return side === TradeSide.BUY ? 
+      <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} /> : 
+      <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />;
   };
-
 
 
   return (
@@ -175,37 +186,532 @@ export const TradeList: React.FC<TradeListProps> = ({
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Trade History
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" component="h2">
+              Trade Summary
+            </Typography>
+            <FIFOTooltip 
+              placement="top" 
+              size="small" 
+              color="primary"
+            />
+          </Box>
+          <Typography variant="body1" color="text.secondary">
             Manage and track all your trading activities
           </Typography>
         </Box>
-        <Box display="flex" gap={2}>
+        <Box display="flex" gap={1}>
           <Button
-            variant="outlined"
-            startIcon={<FilterIcon />}
-            onClick={() => {
-              // Toggle filter visibility
-            }}
+            variant={exchangeViewMode === 'grid' ? 'contained' : 'outlined'}
+            size="small"
+            startIcon={<GridViewIcon />}
+            onClick={() => setExchangeViewMode('grid')}
             sx={{ textTransform: 'none' }}
           >
-            Filters
+            Grid
           </Button>
           <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={onCreate}
+            variant={exchangeViewMode === 'list' ? 'contained' : 'outlined'}
+            size="small"
+            startIcon={<ListViewIcon />}
+            onClick={() => setExchangeViewMode('list')}
             sx={{ textTransform: 'none' }}
           >
-            New Trade
+            List
           </Button>
         </Box>
       </Box>
 
+      {/* Exchange Summary Section */}
+      <Box sx={{ mb: 4 }}>
+        
+        {/* Calculate exchange statistics */}
+        {(() => {
+          const exchangeStats = filteredTrades.reduce((acc, trade) => {
+            const exchange = trade.exchange || 'Unknown';
+            if (!acc[exchange]) {
+              acc[exchange] = {
+                exchange,
+                totalTrades: 0,
+                totalVolume: 0,
+                totalFees: 0,
+                totalRealizedPL: 0,
+                buyVolume: 0,
+                sellVolume: 0,
+                buyTrades: 0,
+                sellTrades: 0,
+              };
+            }
+            
+            const tradeValue = Number(trade.totalValue) || 0;
+            const tradeFees = (Number(trade.fee) || 0) + (Number(trade.tax) || 0);
+            const tradePL = Number(trade.realizedPl) || 0;
+            
+            acc[exchange].totalTrades += 1;
+            acc[exchange].totalVolume += tradeValue;
+            acc[exchange].totalFees += tradeFees;
+            acc[exchange].totalRealizedPL += tradePL;
+            
+            if (trade.side === TradeSide.BUY) {
+              acc[exchange].buyVolume += tradeValue;
+              acc[exchange].buyTrades += 1;
+            } else {
+              acc[exchange].sellVolume += tradeValue;
+              acc[exchange].sellTrades += 1;
+            }
+            
+            return acc;
+          }, {} as Record<string, any>);
+          
+          const exchangeList = Object.values(exchangeStats).sort((a, b) => b.totalVolume - a.totalVolume);
+          
+          return exchangeViewMode === 'grid' ? (
+            // Grid View
+            <Grid container spacing={3}>
+              {exchangeList.map((exchange: any) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={exchange.exchange}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      height: '100%',
+                      background: 'rgba(255, 255, 255, 0.6)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: 'text.primary',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(15px)',
+                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                      },
+                      transition: 'all 0.3s ease-in-out',
+                    }}
+                  >
+                    <CardContent sx={{ p: 2 }}>
+                      {/* Exchange Name */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                        <ExchangeIcon sx={{ 
+                          mr: 1, 
+                          color: '#1e40af',
+                          fontSize: 22,
+                          filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+                        }} />
+                        <Typography variant="h6" fontWeight="600" sx={{ 
+                          color: '#1e293b',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                          letterSpacing: '0.025em'
+                        }}>
+                          {exchange.exchange}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Total Volume */}
+                      <Box sx={{ mb: 2, textAlign: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                          <Typography variant="h5" fontWeight="700" sx={{ 
+                            color: '#1e293b',
+                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                            letterSpacing: '-0.025em'
+                          }}>
+                            {formatCurrency(exchange.totalVolume)}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ 
+                          color: '#64748b',
+                          fontWeight: 500,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          fontSize: '0.75rem'
+                        }}>
+                          Total Volume
+                        </Typography>
+                      </Box>
+                      
+                      {/* Stats Grid - Compact */}
+                      <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {/* Row 1: Trades & Fees */}
+                        <Box sx={{ display: 'flex', gap: 1.5 }}>
+                          {/* Trades */}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            p: 1.5,
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            backdropFilter: 'blur(5px)',
+                            borderRadius: 2,
+                            flex: 1,
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <AssessmentIcon sx={{ color: '#3b82f6', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                            <Box>
+                              <Typography variant="caption" sx={{ 
+                                color: '#64748b',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontSize: '0.7rem',
+                                lineHeight: 1.2
+                              }}>
+                                Trades
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                color: '#1e293b',
+                                fontWeight: 700,
+                                lineHeight: 1.2,
+                                textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                {exchange.totalTrades}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          {/* Fees */}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            p: 1.5,
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            backdropFilter: 'blur(5px)',
+                            borderRadius: 2,
+                            flex: 1,
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <WalletIcon sx={{ color: '#f59e0b', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                            <Box>
+                              <Typography variant="caption" sx={{ 
+                                color: '#64748b',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontSize: '0.7rem',
+                                lineHeight: 1.2
+                              }}>
+                                Fees
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                color: '#1e293b',
+                                fontWeight: 700,
+                                lineHeight: 1.2,
+                                textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                {formatCurrency(exchange.totalFees)}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        {/* Row 2: P&L & Return */}
+                        <Box sx={{ display: 'flex', gap: 1.5 }}>
+                          {/* P&L */}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            p: 1.5,
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            backdropFilter: 'blur(5px)',
+                            borderRadius: 2,
+                            flex: 1,
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            {exchange.totalRealizedPL >= 0 ? (
+                              <TrendingUpIcon sx={{ color: '#16a34a', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                            ) : (
+                              <TrendingDownIcon sx={{ color: '#dc2626', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                            )}
+                            <Box>
+                              <Typography variant="caption" sx={{ 
+                                color: '#64748b',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontSize: '0.7rem',
+                                lineHeight: 1.2
+                              }}>
+                                P&L
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                color: exchange.totalRealizedPL >= 0 ? '#16a34a' : '#dc2626',
+                                fontWeight: 700,
+                                lineHeight: 1.2,
+                                textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                {formatCurrency(exchange.totalRealizedPL)}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          {/* Return */}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            p: 1.5,
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            backdropFilter: 'blur(5px)',
+                            borderRadius: 2,
+                            flex: 1,
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <ChartIcon sx={{ color: '#8b5cf6', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                            <Box>
+                              <Typography variant="caption" sx={{ 
+                                color: '#64748b',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontSize: '0.7rem',
+                                lineHeight: 1.2
+                              }}>
+                                Return
+                              </Typography>
+                              <Typography variant="body2" sx={{ 
+                                color: '#1e293b',
+                                fontWeight: 700,
+                                lineHeight: 1.2,
+                                textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                {exchange.totalVolume > 0 ? (exchange.totalRealizedPL / exchange.totalVolume * 100).toFixed(1) : 0}%
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
+                      
+                      {/* Buy/Sell Breakdown - Compact */}
+                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                        {/* Buy Section */}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 1,
+                          p: 1.5,
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: 2,
+                          flex: 1,
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                        }}>
+                          <TrendingUpIcon sx={{ color: '#16a34a', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                          <Box>
+                            <Typography variant="body2" sx={{ 
+                              color: '#16a34a',
+                              fontWeight: 700,
+                              lineHeight: 1.2,
+                              textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                            }}>
+                              {exchange.buyTrades} Buy
+                            </Typography>
+                            <Typography variant="caption" sx={{ 
+                              color: '#64748b',
+                              fontWeight: 500,
+                              fontSize: '0.7rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              {formatCurrency(exchange.buyVolume)}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        {/* Sell Section */}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 1,
+                          p: 1.5,
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: 2,
+                          flex: 1,
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                        }}>
+                          <TrendingDownIcon sx={{ color: '#dc2626', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
+                          <Box>
+                            <Typography variant="body2" sx={{ 
+                              color: '#dc2626',
+                              fontWeight: 700,
+                              lineHeight: 1.2,
+                              textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
+                            }}>
+                              {exchange.sellTrades} Sell
+                            </Typography>
+                            <Typography variant="caption" sx={{ 
+                              color: '#64748b',
+                              fontWeight: 500,
+                              fontSize: '0.7rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              {formatCurrency(exchange.sellVolume)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+              
+              {/* No exchanges message */}
+              {exchangeList.length === 0 && (
+                <Grid item xs={12}>
+                  <Card variant="outlined" sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      No exchange data available
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Exchange information will appear here when trades are recorded
+                    </Typography>
+                  </Card>
+                </Grid>
+              )}
+            </Grid>
+          ) : (
+            // List View
+            <Box>
+              {exchangeList.length === 0 ? (
+                <Card variant="outlined" sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="h6" color="text.secondary">
+                    No exchange data available
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Exchange information will appear here when trades are recorded
+                  </Typography>
+                </Card>
+              ) : (
+                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Exchange</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Total Volume</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Trades</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Fees</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>P&L</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Return %</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>Buy</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>Sell</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {exchangeList.map((exchange: any) => (
+                        <TableRow 
+                          key={exchange.exchange} 
+                          hover
+                          sx={{ 
+                            '&:hover': { 
+                              bgcolor: 'action.hover',
+                            },
+                            '&:last-child td': { borderBottom: 0 }
+                          }}
+                        >
+                          <TableCell>
+                            <Box>
+                              <Typography variant="body1" fontWeight="medium">
+                                {exchange.exchange}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight="medium">
+                              {formatCurrency(exchange.totalVolume)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1">
+                              {exchange.totalTrades}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1">
+                              {formatCurrency(exchange.totalFees)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography 
+                              variant="body1" 
+                              fontWeight="medium"
+                              color={exchange.totalRealizedPL >= 0 ? 'success.main' : 'error.main'}
+                            >
+                              {formatCurrency(exchange.totalRealizedPL)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight="medium">
+                              {exchange.totalVolume > 0 ? (exchange.totalRealizedPL / exchange.totalVolume * 100).toFixed(1) : 0}%
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ textAlign: 'center' }}>
+                              <Typography variant="body2" fontWeight="medium">
+                                {exchange.buyTrades}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatCurrency(exchange.buyVolume)}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box sx={{ textAlign: 'center' }}>
+                              <Typography variant="body2" fontWeight="medium">
+                                {exchange.sellTrades}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatCurrency(exchange.sellVolume)}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Box>
+          );
+        })()}
+      </Box>
+
       {/* Search and Filters */}
       <Box sx={{ mb: 3 }}>
+        {/* Title and Action Buttons */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h5" fontWeight="600" color="text.primary">
+            Trade List
+          </Typography>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={<FilterIcon />}
+              onClick={() => {
+                // Toggle filter visibility
+              }}
+              sx={{ textTransform: 'none' }}
+            >
+              Filters
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={onCreate}
+              sx={{ textTransform: 'none' }}
+            >
+              New Trade
+            </Button>
+          </Box>
+        </Box>
+        
         <Grid container spacing={2} mb={3}>
           <Grid item xs={12} md={4}>
             <TextField
@@ -273,7 +779,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           <Grid item xs={12} md={2}>
             <Box display="flex" alignItems="center" height="100%">
               <Chip
-                label={`${filteredTrades.length} of ${totalTrades} trades`}
+                label={`${filteredTrades.length} trades`}
                 color="primary"
                 variant="outlined"
                 size="small"
@@ -610,7 +1116,6 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
         onCreate={handleCreate}
         onFiltersChange={handleFiltersChange}
         filters={filters}
-        totalTrades={trades?.length || 0}
       />
       
       {/* Edit Trade Modal */}

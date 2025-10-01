@@ -6,7 +6,7 @@
 import React from 'react';
 import { Asset } from '../../types/asset.types';
 import { formatCurrency, formatNumber, formatPercentage } from '../../utils/format';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './AssetDialogs.styles.css';
 
 export interface AssetDialogsProps {

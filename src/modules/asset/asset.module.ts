@@ -30,6 +30,7 @@ import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { TradingModule } from '../trading/trading.module';
 import { LoggingModule } from '../logging/logging.module';
+import { SharedModule } from '../shared/shared.module';
 
 /**
  * Asset Module for the Global Assets System.
@@ -61,6 +62,7 @@ import { LoggingModule } from '../logging/logging.module';
     MarketDataModule,
     forwardRef(() => TradingModule),
     LoggingModule,
+    SharedModule,
   ],
   controllers: [
     GlobalAssetController,

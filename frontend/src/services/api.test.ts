@@ -112,7 +112,7 @@ describe('ApiService', () => {
         const mockResponse = { data: mockPortfolio }
         mockAxiosInstance.get.mockResolvedValue(mockResponse)
 
-        const result = await apiService.getPortfolio('1')
+        const result = await apiService.getPortfolio('1', 'test-account-id')
 
         expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1')
         expect(result).toEqual(mockPortfolio)
@@ -122,7 +122,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to fetch portfolio')
         mockAxiosInstance.get.mockRejectedValue(error)
 
-        await expect(apiService.getPortfolio('1')).rejects.toThrow('Failed to fetch portfolio')
+        await expect(apiService.getPortfolio('1', 'test-account-id')).rejects.toThrow('Failed to fetch portfolio')
       })
     })
 
@@ -132,7 +132,7 @@ describe('ApiService', () => {
         const mockResponse = { data: mockPortfolio }
         mockAxiosInstance.post.mockResolvedValue(mockResponse)
 
-        const result = await apiService.createPortfolio(createData)
+        const result = await apiService.createPortfolio(createData, 'test-account-id')
 
         expect(mockAxiosInstance.post).toHaveBeenCalledWith('/api/v1/portfolios', createData)
         expect(result).toEqual(mockPortfolio)
@@ -143,7 +143,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to create portfolio')
         mockAxiosInstance.post.mockRejectedValue(error)
 
-        await expect(apiService.createPortfolio(createData)).rejects.toThrow('Failed to create portfolio')
+        await expect(apiService.createPortfolio(createData, 'test-account-id')).rejects.toThrow('Failed to create portfolio')
       })
     })
 
@@ -153,7 +153,7 @@ describe('ApiService', () => {
         const mockResponse = { data: { ...mockPortfolio, name: 'Updated Portfolio' } }
         mockAxiosInstance.put.mockResolvedValue(mockResponse)
 
-        const result = await apiService.updatePortfolio('1', updateData)
+        const result = await apiService.updatePortfolio('1', 'test-account-id', updateData)
 
         expect(mockAxiosInstance.put).toHaveBeenCalledWith('/api/v1/portfolios/1', updateData)
         expect(result).toEqual({ ...mockPortfolio, name: 'Updated Portfolio' })
@@ -164,7 +164,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to update portfolio')
         mockAxiosInstance.put.mockRejectedValue(error)
 
-        await expect(apiService.updatePortfolio('1', updateData)).rejects.toThrow('Failed to update portfolio')
+        await expect(apiService.updatePortfolio('1', 'test-account-id', updateData)).rejects.toThrow('Failed to update portfolio')
       })
     })
 
@@ -172,7 +172,7 @@ describe('ApiService', () => {
       it('should delete portfolio successfully', async () => {
         mockAxiosInstance.delete.mockResolvedValue({})
 
-        await apiService.deletePortfolio('1')
+        await apiService.deletePortfolio('1', 'test-account-id')
 
         expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/api/v1/portfolios/1')
       })
@@ -181,7 +181,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to delete portfolio')
         mockAxiosInstance.delete.mockRejectedValue(error)
 
-        await expect(apiService.deletePortfolio('1')).rejects.toThrow('Failed to delete portfolio')
+        await expect(apiService.deletePortfolio('1', 'test-account-id')).rejects.toThrow('Failed to delete portfolio')
       })
     })
   })
@@ -441,7 +441,7 @@ describe('ApiService', () => {
         const mockResponse = { data: mockCashFlows }
         mockAxiosInstance.get.mockResolvedValue(mockResponse)
 
-        const result = await apiService.getPortfolioCashFlows('1')
+        const result = await apiService.getPortfolioCashFlows('1', 'test-account-id')
 
         expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1/cash-flows')
         expect(result).toEqual(mockCashFlows)
@@ -451,7 +451,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to fetch cash flows')
         mockAxiosInstance.get.mockRejectedValue(error)
 
-        await expect(apiService.getPortfolioCashFlows('1')).rejects.toThrow('Failed to fetch cash flows')
+        await expect(apiService.getPortfolioCashFlows('1', 'test-account-id')).rejects.toThrow('Failed to fetch cash flows')
       })
     })
 
@@ -462,7 +462,7 @@ describe('ApiService', () => {
         const mockResponse = { data: mockCashFlow }
         mockAxiosInstance.post.mockResolvedValue(mockResponse)
 
-        const result = await apiService.createCashFlow('1', cashFlowData)
+        const result = await apiService.createCashFlow('1', 'test-account-id', cashFlowData)
 
         expect(mockAxiosInstance.post).toHaveBeenCalledWith('/api/v1/portfolios/1/cash-flows', cashFlowData)
         expect(result).toEqual(mockCashFlow)
@@ -473,7 +473,7 @@ describe('ApiService', () => {
         const error = new Error('Failed to create cash flow')
         mockAxiosInstance.post.mockRejectedValue(error)
 
-        await expect(apiService.createCashFlow('1', cashFlowData)).rejects.toThrow('Failed to create cash flow')
+        await expect(apiService.createCashFlow('1', 'test-account-id', cashFlowData)).rejects.toThrow('Failed to create cash flow')
       })
     })
   })

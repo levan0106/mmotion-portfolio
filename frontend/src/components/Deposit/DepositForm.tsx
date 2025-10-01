@@ -13,6 +13,8 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import MoneyInput from '../Common/MoneyInput';
+import NumberInput from '../Common/NumberInput';
 
 interface DepositFormProps {
   open: boolean;
@@ -278,15 +280,18 @@ const DepositForm: React.FC<DepositFormProps> = ({
                 name="principal"
                 control={control}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Số tiền gốc (VND)"
-                    type="number"
-                    error={!!errors.principal}
+                  <MoneyInput
+                    value={field.value || 0}
+                    onChange={(value) => field.onChange(value)}
+                    label="Số tiền gốc"
+                    placeholder="Nhập số tiền gốc"
                     helperText={errors.principal?.message}
+                    error={!!errors.principal}
+                    currency="VND"
+                    showCurrency={true}
+                    align="right"
                     required
-                    onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                    disabled={isSubmitting}
                   />
                 )}
               />
@@ -297,15 +302,21 @@ const DepositForm: React.FC<DepositFormProps> = ({
                 name="interestRate"
                 control={control}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
+                  <NumberInput
+                    value={field.value || 0}
+                    onChange={(value) => field.onChange(value)}
                     label="Lãi suất (%/năm)"
-                    type="number"
-                    error={!!errors.interestRate}
+                    placeholder="Nhập lãi suất"
                     helperText={errors.interestRate?.message}
+                    error={!!errors.interestRate}
+                    decimalPlaces={2}
+                    min={0}
+                    max={100}
+                    step={0.01}
+                    showThousandsSeparator={false}
+                    align="right"
                     required
-                    onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                    disabled={isSubmitting}
                   />
                 )}
               />

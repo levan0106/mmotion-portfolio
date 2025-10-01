@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Asset, CreateAssetRequest, UpdateAssetRequest } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
+import { useAccount } from '../contexts/AccountContext';
 
 export interface UseAssetOptions {
   assetId?: string;
@@ -34,6 +35,7 @@ export interface UseAssetReturn {
 
 export const useAsset = (options: UseAssetOptions = {}): UseAssetReturn => {
   const { assetId, autoFetch = true } = options;
+  const { accountId } = useAccount();
 
   // State
   const [asset, setAsset] = useState<Asset | null>(null);
@@ -62,7 +64,7 @@ export const useAsset = (options: UseAssetOptions = {}): UseAssetReturn => {
       setLoading(true);
       setError(null);
 
-      const newAsset = await assetService.createAsset(data);
+      const newAsset = await assetService.createAsset(data, accountId);
       setAsset(newAsset);
       return newAsset;
     } catch (err: any) {
@@ -79,7 +81,7 @@ export const useAsset = (options: UseAssetOptions = {}): UseAssetReturn => {
       setLoading(true);
       setError(null);
 
-      const updatedAsset = await assetService.updateAsset(id, data);
+      const updatedAsset = await assetService.updateAsset(id, data, accountId);
       setAsset(updatedAsset);
       return updatedAsset;
     } catch (err: any) {
@@ -96,7 +98,7 @@ export const useAsset = (options: UseAssetOptions = {}): UseAssetReturn => {
       setLoading(true);
       setError(null);
 
-      await assetService.deleteAsset(id);
+      await assetService.deleteAsset(id, accountId);
       setAsset(null);
     } catch (err: any) {
       setError(err.message || 'Failed to delete asset');

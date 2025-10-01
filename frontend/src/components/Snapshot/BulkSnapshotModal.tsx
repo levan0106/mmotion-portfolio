@@ -31,7 +31,7 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import { apiService } from '../../services/api';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import { SnapshotGranularity } from '../../types/snapshot.types';
 import { useQueryClient } from 'react-query';
 
@@ -63,9 +63,6 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   const queryClient = useQueryClient();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
-  const [snapshotDate, setSnapshotDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
   const [granularity, setGranularity] = useState<SnapshotGranularity>(SnapshotGranularity.DAILY);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
@@ -73,6 +70,15 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     type: 'success' | 'error' | 'info' | null;
     message: string;
   }>({ type: null, message: '' });
+  
+  // Date range mode state
+  const [useDateRange, setUseDateRange] = useState(false);
+  const [startDate, setStartDate] = useState<string>(
+    new Date().toISOString().split('T')[0] // today
+  );
+  const [endDate, setEndDate] = useState<string>(
+    new Date().toISOString().split('T')[0] // today
+  );
 
   const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
 
@@ -135,10 +141,42 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   };
 
   const handleCreateSnapshot = async () => {
-    if (!selectedPortfolioId || !snapshotDate || !granularity) {
+    if (!selectedPortfolioId || !granularity) {
       setStatus({
         type: 'error',
-        message: 'Please select a portfolio, snapshot date, and granularity'
+        message: 'Please select a portfolio and granularity'
+      });
+      return;
+    }
+
+    if (!startDate) {
+      setStatus({
+        type: 'error',
+        message: 'Please select a start date'
+      });
+      return;
+    }
+
+    if (useDateRange && !endDate) {
+      setStatus({
+        type: 'error',
+        message: 'Please select an end date'
+      });
+      return;
+    }
+
+    if (useDateRange && new Date(startDate) > new Date(endDate)) {
+      setStatus({
+        type: 'error',
+        message: 'Start date must be before end date'
+      });
+      return;
+    }
+
+    if (new Date(startDate) > new Date()) {
+      setStatus({
+        type: 'error',
+        message: 'Start date cannot be in the future'
       });
       return;
     }
@@ -147,15 +185,37 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     setStatus({ type: null, message: '' });
 
     try {
-      const apiUrl = `/api/v1/snapshots/portfolio/${selectedPortfolioId}`;
-      const requestBody = {
-        snapshotDate: snapshotDate,
-        granularity: granularity,
-        createdBy: accountId
-      };
-            
-      // Create snapshot using the bulk creation endpoint for portfolio
-      const response = await apiService.api.post(apiUrl, requestBody);
+      // Use unified endpoint for both single date and date range
+      // Calculate timeout based on date range size
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+      const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const timeoutMs = Math.max(60000, daysDiff * 3000); // 3 seconds per day, minimum 60 seconds
+      
+      // Show progress message for large date ranges
+      if (daysDiff > 7) {
+        setStatus({
+          type: 'info',
+          message: `Processing ${daysDiff} days of snapshots... This may take a few minutes.`
+        });
+      }
+      
+      const response = await apiService.api.post(
+        `/api/v1/snapshots/portfolio/${selectedPortfolioId}`,
+        useDateRange 
+          ? {
+              startDate: startDate,
+              endDate: endDate,
+              granularity: granularity,
+              createdBy: accountId
+            }
+          : {
+              startDate: startDate,
+              granularity: granularity,
+              createdBy: accountId
+            },
+        { timeout: timeoutMs }
+      );
       
       console.log('Bulk snapshot creation response:', response);
       console.log('Response status:', response.status);
@@ -165,14 +225,14 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       if (response && response.status >= 200 && response.status < 300) {
         const responseData = response.data;
         
-        if (responseData.count > 0) {
+        if (responseData.totalSnapshots > 0) {
           setStatus({
             type: 'success',
-            message: responseData.message || `Successfully created ${responseData.count} snapshots for ${selectedPortfolio?.name || 'portfolio'} on ${snapshotDate}`
+            message: responseData.message || `Successfully created ${responseData.totalSnapshots} snapshots for ${selectedPortfolio?.name || 'portfolio'}`
           });
           
           // Call success callback
-          onSuccess?.(selectedPortfolioId, snapshotDate);
+          onSuccess?.(selectedPortfolioId, startDate);
           
           // Auto-refresh portfolio data after successful snapshot creation
           await refreshPortfolioData(selectedPortfolioId);
@@ -181,11 +241,11 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
           setTimeout(() => {
             handleReset();
             onClose();
-          }, 400); // Reduced delay since refresh is already complete
+          }, 400);
         } else {
           setStatus({
             type: 'info',
-            message: responseData.message || `No assets found in portfolio ${selectedPortfolio?.name || 'portfolio'}. No snapshots created.`
+            message: responseData.message || `No snapshots created for portfolio ${selectedPortfolio?.name || 'portfolio'}.`
           });
           
           // Close modal for info case too
@@ -227,8 +287,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
 
   const handleReset = () => {
     setSelectedPortfolioId('');
-    setSnapshotDate(new Date().toISOString().split('T')[0]);
     setGranularity(SnapshotGranularity.DAILY);
+    setUseDateRange(false);
+    setStartDate(new Date().toISOString().split('T')[0]);
+    setEndDate(new Date().toISOString().split('T')[0]);
     setStatus({ type: null, message: '' });
   };
 
@@ -313,17 +375,58 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
             </Select>
           </FormControl>
 
-          {/* Date Selection */}
-          <TextField
-            fullWidth
-            type="date"
-            label="Snapshot Date"
-            value={snapshotDate}
-            onChange={(e) => setSnapshotDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            disabled={isCreating}
-            helperText="Select the date for the snapshot"
-          />
+          {/* Date Range Mode Toggle */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Button
+              variant={useDateRange ? 'contained' : 'outlined'}
+              onClick={() => setUseDateRange(!useDateRange)}
+              disabled={isCreating}
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              {useDateRange ? 'Date Range Mode' : 'Single Date Mode'}
+            </Button>
+            <Typography variant="body2" color="text.secondary">
+              {useDateRange ? 'Create snapshots for multiple dates' : 'Create snapshot for a single date'}
+            </Typography>
+          </Box>
+
+          {/* Date Selection - Conditional based on mode */}
+          {!useDateRange ? (
+            <TextField
+              fullWidth
+              type="date"
+              label="Snapshot Date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              disabled={isCreating}
+              helperText="Select the date for the snapshot"
+            />
+          ) : (
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <TextField
+                type="date"
+                label="Start Date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                disabled={isCreating}
+                helperText="Start date for snapshot range"
+                sx={{ flex: 1, minWidth: 200 }}
+              />
+              <TextField
+                type="date"
+                label="End Date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                disabled={isCreating}
+                helperText="End date for snapshot range"
+                sx={{ flex: 1, minWidth: 200 }}
+              />
+            </Box>
+          )}
 
           {/* Granularity Selection */}
           <FormControl fullWidth>
@@ -407,7 +510,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
           variant="contained"
           startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
           onClick={handleCreateSnapshot}
-          disabled={!selectedPortfolioId || !snapshotDate || !granularity || isCreating || isLoadingPortfolios}
+          disabled={!selectedPortfolioId || !startDate || !granularity || isCreating || isLoadingPortfolios}
           sx={{ textTransform: 'none', minWidth: 140 }}
         >
           {isCreating ? 'Creating...' : 'Create Snapshot'}

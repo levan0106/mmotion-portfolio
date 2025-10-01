@@ -19,6 +19,7 @@ import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { PositionManagerService } from '../services/position-manager.service';
 import { InvestorHoldingService } from '../services/investor-holding.service';
+import { AccountValidationService } from '../../shared/services/account-validation.service';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
@@ -38,6 +39,7 @@ export class PortfolioController {
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly positionManagerService: PositionManagerService,
     private readonly investorHoldingService: InvestorHoldingService,
+    private readonly accountValidationService: AccountValidationService,
   ) {}
 
   /**
@@ -141,6 +143,9 @@ export class PortfolioController {
     }
   })
   async createPortfolio(@Body() createPortfolioDto: CreatePortfolioDto): Promise<Portfolio> {
+    // Validate account ownership for the accountId in the DTO
+    await this.accountValidationService.validateAccountOwnership(createPortfolioDto.accountId, createPortfolioDto.accountId);
+    
     return this.portfolioService.createPortfolio(createPortfolioDto);
   }
 
@@ -216,11 +221,21 @@ export class PortfolioController {
   @Get(':id')
   @ApiOperation({ summary: 'Get portfolio details by ID' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({ status: 200, description: 'Portfolio details retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   async getPortfolioById(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
   ): Promise<Portfolio> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(id, accountId);
+    
     return this.portfolioService.getPortfolioDetails(id);
   }
 
@@ -230,13 +245,23 @@ export class PortfolioController {
   @Put(':id')
   @ApiOperation({ summary: 'Update portfolio information' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({ status: 200, description: 'Portfolio updated successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
   async updatePortfolio(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
     @Body() updatePortfolioDto: UpdatePortfolioDto,
   ): Promise<Portfolio> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(id, accountId);
+    
     return this.portfolioService.updatePortfolio(id, updatePortfolioDto);
   }
 
@@ -247,9 +272,21 @@ export class PortfolioController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a portfolio' })
   @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({ status: 204, description: 'Portfolio deleted successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  async deletePortfolio(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  async deletePortfolio(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<void> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(id, accountId);
+    
     return this.portfolioService.deletePortfolio(id);
   }
 
@@ -664,7 +701,7 @@ export class PortfolioController {
     return this.investorHoldingService.subscribeToFund({
       ...subscribeDto,
       portfolioId
-    });
+    }, subscribeDto.subscriptionDate);
   }
 
   /**
@@ -707,7 +744,7 @@ export class PortfolioController {
     return this.investorHoldingService.redeemFromFund({
       ...redeemDto,
       portfolioId
-    });
+    }, redeemDto.redemptionDate);
   }
 
   @Post(':id/refresh-nav-per-unit')

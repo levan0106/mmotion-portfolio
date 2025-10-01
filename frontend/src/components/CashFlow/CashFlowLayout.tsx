@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 import {
   Box,
   Card,
@@ -27,7 +29,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  InputAdornment,
   Fab,
   Tooltip,
   LinearProgress,
@@ -52,9 +53,13 @@ import {
   TableChart as TableIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  SwapHoriz as TransferIcon,
 } from '@mui/icons-material';
 import { formatCurrency, formatDate } from '../../utils/format';
 import CashFlowChart from './CashFlowChart';
+import FundingSourceSummary from './FundingSourceSummary';
+import MoneyInput from '../Common/MoneyInput';
+import FundingSourceInput from '../Common/FundingSourceInput';
 
 interface CashFlow {
   cashflowId: string;
@@ -71,6 +76,14 @@ interface CashFlow {
   updatedAt: string;
 }
 
+interface TransferCashData {
+  fromSource: string;
+  toSource: string;
+  amount: number;
+  description: string;
+  transferDate: string;
+}
+
 interface CashFlowLayoutProps {
   portfolioId: string;
   onCashFlowUpdate?: () => void;
@@ -80,6 +93,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   portfolioId,
   onCashFlowUpdate,
 }) => {
+  const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [allCashFlows, setAllCashFlows] = useState<CashFlow[]>([]); // All cash flows for summary calculations
   const [loading, setLoading] = useState(false);
@@ -90,6 +104,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cashFlowToDelete, setCashFlowToDelete] = useState<CashFlow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [transferData, setTransferData] = useState<TransferCashData>({
+    fromSource: '',
+    toSource: '',
+    amount: 0,
+    description: '',
+    transferDate: '',
+  });
   const [formData, setFormData] = useState({
     amount: '',
     description: '',
@@ -100,7 +122,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     status: 'COMPLETED',
     fundingSource: '',
   });
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(1);
   const [filterTypes, setFilterTypes] = useState<string[]>(['ALL']);
   
   // Pagination state
@@ -121,13 +143,22 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
+  // Get unique funding sources from cash flows
+  const getFundingSources = () => {
+    const sources = new Set<string>();
+    allCashFlows.forEach(cf => {
+      if (cf.fundingSource && cf.fundingSource.trim()) {
+        sources.add(cf.fundingSource);
+      }
+    });
+    return Array.from(sources).sort();
+  };
+
   // Load all cash flows for summary calculations
   const loadAllCashFlows = async () => {
     try {
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?limit=100000`);
-      if (!response.ok) throw new Error('Failed to load all cash flows');
-      const result = await response.json();
-      setAllCashFlows(result.data || []);
+      const response = await apiService.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?accountId=${accountId}&limit=100000`);
+      setAllCashFlows(response.data || []);
     } catch (err) {
       console.error('Failed to load all cash flows:', err);
     }
@@ -137,11 +168,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 50) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?page=${page}&limit=${limit}`);
-      if (!response.ok) throw new Error('Failed to load cash flows');
-      const result = await response.json();
-      setCashFlows(result.data);
-      setPagination(result.pagination);
+      const response = await apiService.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?accountId=${accountId}&page=${page}&limit=${limit}`);
+      setCashFlows(response.data);
+      setPagination(response.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load cash flows');
     } finally {
@@ -163,6 +192,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     loadCashFlows();
     loadAllCashFlows();
   }, [portfolioId]);
+
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -318,19 +348,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   };
 
   // Calculate summary stats using all cash flows (not paginated data)
-  const totalDeposits = (allCashFlows || [])
-    .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT') && cf.status === 'COMPLETED')
+  let totalDeposits = (allCashFlows || [])
+    .filter(cf => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE' || cf.type === 'DEPOSIT_SETTLEMENT' || cf.type === 'DIVIDEND') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
   const totalWithdrawals = (allCashFlows || [])
     .filter(cf => (cf.type === 'WITHDRAWAL' || cf.type === 'BUY_TRADE' || cf.type === 'DEPOSIT_CREATION') && cf.status === 'COMPLETED')
     .reduce((sum, cf) => sum + Math.abs(cf.amount), 0);
 
-  const totalDividends = (allCashFlows || [])
-    .filter(cf => cf.type === 'DIVIDEND' && cf.status === 'COMPLETED')
-    .reduce((sum, cf) => sum + cf.amount, 0);
-
-  const netCashFlow = totalDeposits + totalDividends - totalWithdrawals;
+  const netCashFlow = totalDeposits - totalWithdrawals;
 
   // Filter cash flows
   const filteredCashFlows = (cashFlows || []).filter(cf => 
@@ -375,6 +401,80 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setEditingCashFlow(null);
     resetFormWithAutoFlowDate();
     setDialogOpen(true);
+  };
+
+  // Handle transfer cash
+  const handleTransferCash = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (!transferData.fromSource || !transferData.toSource) {
+        throw new Error('Please select both source and destination funding sources');
+      }
+
+      if (transferData.fromSource === transferData.toSource) {
+        throw new Error('Source and destination cannot be the same');
+      }
+
+      if (transferData.amount <= 0) {
+        throw new Error('Transfer amount must be greater than 0');
+      }
+
+      const payload = {
+        portfolioId: portfolioId,
+        fromSource: transferData.fromSource,
+        toSource: transferData.toSource,
+        amount: transferData.amount,
+        description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
+        transferDate: new Date(transferData.transferDate).toISOString(),
+      };
+
+      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/transfer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = 'Failed to transfer cash';
+        
+        if (errorData.message) {
+          if (Array.isArray(errorData.message)) {
+            errorMessage = errorData.message.join(', ');
+          } else {
+            errorMessage = errorData.message;
+          }
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // Reset form and close dialog
+      setTransferData({
+        fromSource: '',
+        toSource: '',
+        amount: 0,
+        description: '',
+        transferDate: getCurrentLocalDateTime(),
+      });
+      setTransferDialogOpen(false);
+      setError(null);
+      
+      // Reload data
+      await loadCashFlows();
+      await loadAllCashFlows();
+      onCashFlowUpdate?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to transfer cash');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditCashFlow = (cashFlow: CashFlow) => {
@@ -492,7 +592,24 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     <Box>
       {/* Header Section */}
       <Box sx={{ mb: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box 
+          display="flex" 
+          justifyContent="space-between" 
+          alignItems="center" 
+          mb={2}
+          sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1000,
+            backgroundColor: 'background.paper',
+            borderBottom: 1,
+            borderColor: 'divider',
+            px: 3,
+            py: 2,
+            boxShadow: 2,
+            transition: 'all 0.3s ease-in-out'
+          }}
+        >
           <Typography variant="h4" fontWeight="bold" color="primary">
             Cash Flow Management
           </Typography>
@@ -504,11 +621,48 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             </Tooltip>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
+              color="success"
+              startIcon={<DepositIcon />}
               onClick={() => handleCreateCashFlow('deposit')}
+              sx={{ borderRadius: 2, mr: 1 }}
+            >
+              Create Deposit
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<WithdrawIcon />}
+              onClick={() => handleCreateCashFlow('withdrawal')}
+              sx={{ borderRadius: 2, mr: 1 }}
+            >
+              Create Withdrawal
+            </Button>
+            <Button
+              variant="contained"
+              color="info"
+              startIcon={<DividendIcon />}
+              onClick={() => handleCreateCashFlow('dividend')}
+              sx={{ borderRadius: 2, mr: 1 }}
+            >
+              Create Dividend
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<TransferIcon />}
+              onClick={() => {
+                setTransferData({
+                  fromSource: '',
+                  toSource: '',
+                  amount: 0,
+                  description: '',
+                  transferDate: getCurrentLocalDateTime(),
+                });
+                setTransferDialogOpen(true);
+              }}
               sx={{ borderRadius: 2 }}
             >
-              Add Transaction
+              Transfer Cash
             </Button>
           </Box>
         </Box>
@@ -520,85 +674,222 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         )}
       </Box>
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="white" variant="body2" gutterBottom>
+      {/* Soft & Gentle Financial Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ 
+            height: '100%', 
+            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%)',
+            boxShadow: '0 2px 12px rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.1)',
+            borderRadius: 3,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(59, 130, 246, 0.12)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+                  width: 48,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <DepositIcon sx={{ color: 'white', fontSize: 24 }} />
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography color="#1e40af" variant="caption" sx={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
                     Total Inflows
                   </Typography>
-                  <Typography variant="h5" color="white" fontWeight="bold">
-                    {formatCurrency(totalDeposits + totalDividends)}
+                  <Typography variant="h4" color="#1e40af" fontWeight="600" sx={{ 
+                    fontSize: '1.5rem',
+                    mt: 0.5
+                  }}>
+                    {formatCurrency(totalDeposits)}
                   </Typography>
                 </Box>
-                <DepositIcon sx={{ color: 'white', fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f44336 0%, #ef5350 100%)' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="white" variant="body2" gutterBottom>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ 
+            height: '100%', 
+            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 50%, #fecaca 100%)',
+            boxShadow: '0 2px 12px rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.1)',
+            borderRadius: 3,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(239, 68, 68, 0.12)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
+                  width: 48,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <WithdrawIcon sx={{ color: 'white', fontSize: 24 }} />
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography color="#dc2626" variant="caption" sx={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
                     Total Outflows
                   </Typography>
-                  <Typography variant="h5" color="white" fontWeight="bold">
+                  <Typography variant="h4" color="#dc2626" fontWeight="600" sx={{ 
+                    fontSize: '1.5rem',
+                    mt: 0.5
+                  }}>
                     {formatCurrency(totalWithdrawals)}
                   </Typography>
                 </Box>
-                <WithdrawIcon sx={{ color: 'white', fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="white" variant="body2" gutterBottom>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ 
+            height: '100%', 
+            background: netCashFlow >= 0 
+              ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%)'
+              : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 50%, #fecaca 100%)',
+            boxShadow: netCashFlow >= 0 
+              ? '0 2px 12px rgba(34, 197, 94, 0.08)'
+              : '0 2px 12px rgba(239, 68, 68, 0.08)',
+            border: netCashFlow >= 0 
+              ? '1px solid rgba(34, 197, 94, 0.1)'
+              : '1px solid rgba(239, 68, 68, 0.1)',
+            borderRadius: 3,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: netCashFlow >= 0 
+                ? '0 4px 20px rgba(34, 197, 94, 0.12)'
+                : '0 4px 20px rgba(239, 68, 68, 0.12)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: '50%', 
+                  background: netCashFlow >= 0 
+                    ? 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)'
+                    : 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+                  boxShadow: netCashFlow >= 0 
+                    ? '0 2px 8px rgba(34, 197, 94, 0.2)'
+                    : '0 2px 8px rgba(239, 68, 68, 0.2)',
+                  width: 48,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <BalanceIcon sx={{ color: 'white', fontSize: 24 }} />
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} variant="caption" sx={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
                     Net Cash Flow
                   </Typography>
-                  <Typography 
-                    variant="h5" 
-                    color="white" 
-                    fontWeight="bold"
-                    sx={{ color: netCashFlow >= 0 ? 'white' : '#ffcdd2' }}
-                  >
+                  <Typography variant="h4" color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} fontWeight="600" sx={{ 
+                    fontSize: '1.5rem',
+                    mt: 0.5
+                  }}>
                     {formatCurrency(netCashFlow)}
                   </Typography>
                 </Box>
-                <BalanceIcon sx={{ color: 'white', fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%)' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="white" variant="body2" gutterBottom>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ 
+            height: '100%', 
+            background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)',
+            boxShadow: '0 2px 12px rgba(168, 85, 247, 0.08)',
+            border: '1px solid rgba(168, 85, 247, 0.1)',
+            borderRadius: 3,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(168, 85, 247, 0.12)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #a855f7 0%, #c084fc 100%)',
+                  boxShadow: '0 2px 8px rgba(168, 85, 247, 0.2)',
+                  width: 48,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <TimelineIcon sx={{ color: 'white', fontSize: 24 }} />
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography color="#7c3aed" variant="caption" sx={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
                     Total Transactions
                   </Typography>
-                  <Typography variant="h5" color="white" fontWeight="bold">
+                  <Typography variant="h4" color="#7c3aed" fontWeight="600" sx={{ 
+                    fontSize: '1.5rem',
+                    mt: 0.5
+                  }}>
                     {allCashFlows?.length || 0}
                   </Typography>
                 </Box>
-                <TimelineIcon sx={{ color: 'white', fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Funding Source Summary */}
+      <FundingSourceSummary 
+        cashFlows={allCashFlows}
+        loading={loading}
+      />
 
       {/* Main Content Tabs */}
       <Card>
@@ -612,7 +903,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             />
             <Tab 
               icon={<TableIcon />} 
-              label="Transaction History" 
+              label="Cash Flow History" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 600 }}
             />
@@ -632,7 +923,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <Box>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6" fontWeight="600">
-                  Transaction History
+                  Cash Flow History
                 </Typography>
                 <Box display="flex" gap={2} alignItems="center">
                   <FormControl size="small" sx={{ minWidth: 200, maxWidth: 400 }}>
@@ -813,10 +1104,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           </TableCell>
                           <TableCell>
                             <Typography
-                              color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'}
-                              fontWeight="bold"
+                              color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'}
+                              
                             >
-                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
+                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -1087,25 +1378,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <Grid container spacing={2}>
               {/* Left Column */}
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
+                <MoneyInput
+                  value={parseFloat(formData.amount) || 0}
+                  onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
                   label="Amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, amount: value });
-                  }}
-                  margin="normal"
+                  placeholder="Enter amount (e.g., 1,000,000)"
                   required
-                  placeholder="0"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        {formData.currency}
-                      </InputAdornment>
-                    ),
-                  }}
+                  currency={formData.currency}
                   helperText={
                     editingCashFlow 
                       ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
@@ -1199,17 +1478,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 
                 <TextField
                   fullWidth
-                  label="Description"
+                  label="Description (Optional)"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   margin="normal"
-                  required
                   multiline
                   rows={3}
                   helperText={
                     editingCashFlow 
                       ? `Original: "${editingCashFlow.description}"`
-                      : 'Enter a description for this cash flow'
+                      : 'Enter a description for this cash flow (optional)'
                   }
                 />
               </Grid>
@@ -1226,7 +1504,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={loading || !formData.amount || !formData.description || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
+            disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
             startIcon={editingCashFlow ? <EditIcon /> : <AddIcon />}
           >
             {loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
@@ -1302,6 +1580,156 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             startIcon={loading ? null : <DeleteIcon />}
           >
             {loading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Transfer Cash Dialog */}
+      <Dialog open={transferDialogOpen} onClose={() => {
+        setTransferDialogOpen(false);
+        setError(null);
+      }} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TransferIcon color="secondary" />
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Typography variant="h6">Transfer Cash Between Sources</Typography>
+                <Chip
+                  icon={<TransferIcon />}
+                  label="Internal Transfer"
+                  color="secondary"
+                  size="small"
+                  variant="filled"
+                />
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Move cash from one funding source to another
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  <strong>Error:</strong> {error}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  Please check your input and try again.
+                </Typography>
+              </Alert>
+            )}
+            
+            <Grid container spacing={2}>
+              {/* Left Column */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>From Source</InputLabel>
+                  <Select
+                    value={transferData.fromSource}
+                    label="From Source"
+                    onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
+                  >
+                    {getFundingSources().map((source) => (
+                      <MenuItem key={source} value={source}>
+                        {source}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                    Select the source to transfer from
+                  </Typography>
+                </FormControl>
+                
+                <FundingSourceInput
+                  value={transferData.toSource}
+                  onChange={(toSource) => setTransferData({ ...transferData, toSource })}
+                  existingSources={getFundingSources()}
+                  label="To Source"
+                  placeholder="Type or select funding source..."
+                  required
+                  allowNew={true}
+                />
+                
+                <MoneyInput
+                  value={transferData.amount}
+                  onChange={(amount) => setTransferData({ ...transferData, amount })}
+                  label="Transfer Amount"
+                  placeholder="Enter amount (e.g., 1,000,000)"
+                  required
+                  error={!!(transferData.amount && transferData.amount <= 0)}
+                  helperText={
+                    transferData.amount > 0 
+                      ? `Transferring ${formatCurrency(transferData.amount)}` 
+                      : 'Enter the amount to transfer'
+                  }
+                />
+              </Grid>
+              
+              {/* Right Column */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Transfer Date"
+                  type="datetime-local"
+                  value={transferData.transferDate}
+                  onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  helperText="When this transfer occurred"
+                />
+                
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={transferData.description}
+                  onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
+                  margin="normal"
+                  multiline
+                  rows={3}
+                  placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
+                  helperText="Enter a description for this transfer (optional)"
+                />
+              </Grid>
+            </Grid>
+
+            {/* Transfer Summary */}
+            {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                <Typography variant="body2" fontWeight="bold">
+                  Transfer Summary:
+                </Typography>
+                <Typography variant="body2">
+                  Moving <strong>{formatCurrency(transferData.amount)}</strong> from <strong>{transferData.fromSource}</strong> to <strong>{transferData.toSource}</strong>
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  This will create two cash flow records: one withdrawal from source and one deposit to destination.
+                </Typography>
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTransferDialogOpen(false);
+            setError(null);
+          }}>Cancel</Button>
+          <Button
+            onClick={handleTransferCash}
+            variant="contained"
+            color="secondary"
+            disabled={
+              loading || 
+              !transferData.fromSource || 
+              !transferData.toSource ||
+              transferData.amount <= 0 || 
+              transferData.fromSource === transferData.toSource
+            }
+            startIcon={<TransferIcon />}
+          >
+            {loading ? 'Transferring...' : 'Transfer Cash'}
           </Button>
         </DialogActions>
       </Dialog>

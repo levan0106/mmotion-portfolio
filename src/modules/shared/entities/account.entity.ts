@@ -46,6 +46,12 @@ export class Account {
   isInvestor: boolean;
 
   /**
+   * Whether this is the main account (cannot be deleted)
+   */
+  @Column({ type: 'boolean', default: false, name: 'is_main_account' })
+  isMainAccount: boolean;
+
+  /**
    * Timestamp when the account was created.
    */
   @CreateDateColumn({ name: 'created_at' })

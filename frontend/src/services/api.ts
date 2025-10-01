@@ -3,6 +3,7 @@
  */
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { logApiCall } from '../utils/apiLogger';
 import {
   Portfolio,
   CreatePortfolioDto,
@@ -30,7 +31,7 @@ class ApiService {
   constructor() {
     this.api = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
-      timeout: 10000,
+      timeout: 60000, // Increased to 60 seconds for long-running operations
       headers: {
         'Content-Type': 'application/json',
       },
@@ -75,6 +76,7 @@ class ApiService {
 
   // Generic GET method
   async get<T = any>(url: string, config?: any): Promise<T> {
+    logApiCall(url);
     const response = await this.api.get(url, config);
     return response.data;
   }
@@ -98,23 +100,23 @@ class ApiService {
   }
 
   // Asset endpoints
-  async getAssets(): Promise<Asset[]> {
-    const response = await this.api.get('/api/v1/assets');
+  async getAssets(accountId: string): Promise<Asset[]> {
+    const response = await this.api.get(`/api/v1/assets?accountId=${accountId}`);
     return response.data;
   }
 
-  async createAsset(data: any): Promise<Asset> {
-    const response = await this.api.post('/api/v1/assets', data);
+  async createAsset(data: any, accountId: string): Promise<Asset> {
+    const response = await this.api.post(`/api/v1/assets?accountId=${accountId}`, data);
     return response.data;
   }
 
-  async updateAsset(id: string, data: any): Promise<Asset> {
-    const response = await this.api.put(`/api/v1/assets/${id}`, data);
+  async updateAsset(id: string, accountId: string, data: any): Promise<Asset> {
+    const response = await this.api.put(`/api/v1/assets/${id}?accountId=${accountId}`, data);
     return response.data;
   }
 
-  async deleteAsset(id: string): Promise<void> {
-    await this.api.delete(`/api/v1/assets/${id}`);
+  async deleteAsset(id: string, accountId: string): Promise<void> {
+    await this.api.delete(`/api/v1/assets/${id}?accountId=${accountId}`);
   }
 
   // Portfolio endpoints
@@ -123,23 +125,24 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolio(id: string): Promise<Portfolio> {
-    const response = await this.api.get(`/api/v1/portfolios/${id}`);
+  async getPortfolio(id: string, accountId: string): Promise<Portfolio> {
+    const response = await this.api.get(`/api/v1/portfolios/${id}?accountId=${accountId}`);
     return response.data;
   }
 
-  async createPortfolio(data: CreatePortfolioDto): Promise<Portfolio> {
-    const response = await this.api.post('/api/v1/portfolios', data);
+  async createPortfolio(data: CreatePortfolioDto, accountId: string): Promise<Portfolio> {
+    const requestData = { ...data, accountId };
+    const response = await this.api.post(`/api/v1/portfolios`, requestData);
     return response.data;
   }
 
-  async updatePortfolio(id: string, data: UpdatePortfolioDto): Promise<Portfolio> {
-    const response = await this.api.put(`/api/v1/portfolios/${id}`, data);
+  async updatePortfolio(id: string, accountId: string, data: UpdatePortfolioDto): Promise<Portfolio> {
+    const response = await this.api.put(`/api/v1/portfolios/${id}?accountId=${accountId}`, data);
     return response.data;
   }
 
-  async deletePortfolio(id: string): Promise<void> {
-    await this.api.delete(`/api/v1/portfolios/${id}`);
+  async deletePortfolio(id: string, accountId: string): Promise<void> {
+    await this.api.delete(`/api/v1/portfolios/${id}?accountId=${accountId}`);
   }
 
   async copyPortfolio(data: { sourcePortfolioId: string; name: string }): Promise<Portfolio> {
@@ -264,29 +267,29 @@ class ApiService {
   }
 
   // Cash flow endpoints
-  async getPortfolioCashFlows(portfolioId: string): Promise<CashFlow[]> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/cash-flows`);
+  async getPortfolioCashFlows(portfolioId: string, accountId: string): Promise<CashFlow[]> {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/cash-flows?accountId=${accountId}`);
     return response.data;
   }
 
-  async createCashFlow(portfolioId: string, data: CashFlowFormData): Promise<CashFlow> {
-    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/cash-flows`, data);
+  async createCashFlow(portfolioId: string, accountId: string, data: CashFlowFormData): Promise<CashFlow> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/cash-flows?accountId=${accountId}`, data);
     return response.data;
   }
 
   // Trading endpoints
-  async createTrade(data: any): Promise<any> {
-    const response = await this.api.post('/api/v1/trades', data);
+  async createTrade(data: any, accountId: string): Promise<any> {
+    const response = await this.api.post(`/api/v1/trades?accountId=${accountId}`, data);
     return response.data;
   }
 
-  async getTrades(portfolioId: string, filters?: {
+  async getTrades(portfolioId: string, accountId: string, filters?: {
     assetId?: string;
     side?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<any[]> {
-    const params = new URLSearchParams({ portfolioId });
+    const params = new URLSearchParams({ portfolioId, accountId });
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
@@ -296,18 +299,18 @@ class ApiService {
     return response.data;
   }
 
-  async getTrade(id: string): Promise<any> {
-    const response = await this.api.get(`/api/v1/trades/${id}`);
+  async getTrade(id: string, accountId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/trades/${id}?accountId=${accountId}`);
     return response.data;
   }
 
-  async updateTrade(id: string, data: any): Promise<Trade> {
-    const response = await this.api.put(`/api/v1/trades/${id}`, data);
+  async updateTrade(id: string, accountId: string, data: any): Promise<Trade> {
+    const response = await this.api.put(`/api/v1/trades/${id}?accountId=${accountId}`, data);
     return response.data;
   }
 
-  async deleteTrade(id: string): Promise<void> {
-    await this.api.delete(`/api/v1/trades/${id}`);
+  async deleteTrade(id: string, accountId: string): Promise<void> {
+    await this.api.delete(`/api/v1/trades/${id}?accountId=${accountId}`);
   }
 
   async getTradeDetails(tradeId: string): Promise<any> {
@@ -433,6 +436,21 @@ class ApiService {
     return response.data;
   }
 
+  async updateHoldingTransaction(transactionId: string, updateData: {
+    units?: number;
+    amount?: number;
+    description?: string;
+    transactionDate?: string;
+  }): Promise<any> {
+    const response = await this.api.put(`/api/v1/investor-holdings/fund-unit-transactions/${transactionId}`, updateData);
+    return response.data;
+  }
+
+  async deleteHoldingTransaction(transactionId: string): Promise<any> {
+    const response = await this.api.delete(`/api/v1/investor-holdings/fund-unit-transactions/${transactionId}`);
+    return response.data;
+  }
+
   // Utility methods
   async testConnection(): Promise<boolean> {
     try {
@@ -442,6 +460,24 @@ class ApiService {
       console.error('API connection test failed:', error);
       return false;
     }
+  }
+
+  async refreshNavPerUnit(portfolioId: string): Promise<{
+    portfolioId: string;
+    navPerUnit: number;
+    totalAllValue: number;
+    totalOutstandingUnits: number;
+  }> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/refresh-nav-per-unit`);
+    return response.data;
+  }
+
+  async recalculateAllHoldings(portfolioId: string): Promise<{
+    portfolioId: string;
+    updatedHoldingsCount: number;
+  }> {
+    const response = await this.api.post(`/api/v1/investor-holdings/recalculate-all/${portfolioId}`);
+    return response.data;
   }
 }
 

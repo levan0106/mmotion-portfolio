@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsUUID, Min, IsDateString } from 'class-validator';
 
 export class RedeemFromFundDto {
   @ApiProperty({
@@ -26,4 +26,13 @@ export class RedeemFromFundDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({
+    description: 'Date when the redemption will be processed',
+    example: '2025-08-16',
+    required: false
+  })
+  @IsOptional()
+  @IsDateString()
+  redemptionDate?: string;
 }

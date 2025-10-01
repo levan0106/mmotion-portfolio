@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { snapshotService } from '../services/snapshot.service';
+import { useAccount } from '../contexts/AccountContext';
 import {
   SnapshotResponse,
   CreateSnapshotRequest,
@@ -37,6 +38,7 @@ export interface UseSnapshotsActions {
 }
 
 export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
+  const { accountId } = useAccount();
   const [state, setState] = useState<UseSnapshotsState>({
     snapshots: [],
     loading: false,
@@ -65,7 +67,7 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
     
     try {
       const currentParams = queryParams || params;
-      const snapshots = await snapshotService.getSnapshots(currentParams);
+      const snapshots = await snapshotService.getSnapshots(currentParams, accountId);
       setState(prev => ({
         ...prev,
         snapshots,
@@ -84,7 +86,7 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
     
     try {
       const currentParams = queryParams || params;
-      const response = await snapshotService.getSnapshotsPaginated(currentParams);
+      const response = await snapshotService.getSnapshotsPaginated(currentParams, accountId);
       setState(prev => ({
         ...prev,
         snapshots: response.data,

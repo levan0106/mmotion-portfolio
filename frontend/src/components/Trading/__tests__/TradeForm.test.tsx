@@ -187,7 +187,7 @@ describe('TradeForm', () => {
     });
   });
 
-  it('should validate price is positive', async () => {
+  it('should validate price is non-negative', async () => {
     const user = userEvent.setup();
     
     render(
@@ -203,7 +203,29 @@ describe('TradeForm', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Price must be positive')).toBeInTheDocument();
+      expect(screen.getByText('Price must be non-negative')).toBeInTheDocument();
+    });
+  });
+
+  it('should allow price of 0', async () => {
+    const user = userEvent.setup();
+    
+    render(
+      <TestWrapper>
+        <TradeForm {...defaultProps} />
+      </TestWrapper>
+    );
+
+    const priceInput = screen.getByLabelText('Price per Unit');
+    await user.clear(priceInput);
+    await user.type(priceInput, '0');
+
+    const submitButton = screen.getByRole('button', { name: /create trade/i });
+    await user.click(submitButton);
+
+    // Should not show any price validation error
+    await waitFor(() => {
+      expect(screen.queryByText('Price must be non-negative')).not.toBeInTheDocument();
     });
   });
 

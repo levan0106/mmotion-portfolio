@@ -107,8 +107,8 @@ export class LIFOEngine {
       errors.push('Sell trade quantity must be positive');
     }
 
-    if (sellTrade.price <= 0) {
-      errors.push('Sell trade price must be positive');
+    if (sellTrade.price < 0) {
+      errors.push('Sell trade price must be non-negative');
     }
 
     // Check buy trades

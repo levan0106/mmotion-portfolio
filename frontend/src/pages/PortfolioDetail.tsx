@@ -186,7 +186,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 0, // Position at very top
+          top: 30, // Position at very top
           zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -580,8 +580,8 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 110, // Position below header
-          zIndex: 1100, // Below header
+          top: 120, // Position below header
+          zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -609,10 +609,10 @@ const PortfolioDetail: React.FC = () => {
           >
             <Tab label="Performance" defaultChecked />
             <Tab label="Allocation" />
-            <Tab label="Trading Management" />
-            <Tab label="Deposit Management" />
+            <Tab label="Trading" />
+            <Tab label="Deposit" />
             <Tab label="Cash Flow" />
-            <Tab label="NAV Holdings" />
+            <Tab label="Holdings" />
           </Tabs>
           
           {/* Compact Mode Toggle */}
@@ -727,9 +727,9 @@ const PortfolioDetail: React.FC = () => {
               bgcolor: 'white',
               borderRadius: 3,
               p: 0,
-              maxWidth: 900,
-              width: '95%',
-              maxHeight: '95%',
+              maxWidth: 1000,
+              width: '100%',
+              maxHeight: '100%',
               overflow: 'hidden',
               boxShadow: 24,
               animation: 'modalSlideIn 0.3s ease-out',
@@ -767,7 +767,7 @@ const PortfolioDetail: React.FC = () => {
             </Box>
 
             {/* Modal Content */}
-            <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(95vh - 80px)' }}>
+            <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(80vh - 80px)' }}>
               <TradeForm
                 onSubmit={handleCreateTrade}
                 defaultPortfolioId={portfolioId!}

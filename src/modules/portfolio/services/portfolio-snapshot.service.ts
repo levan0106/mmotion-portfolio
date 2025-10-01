@@ -127,16 +127,17 @@ export class PortfolioSnapshotService {
     
     this.logger.debug(`Recalculating NAV per unit for portfolio ${portfolioId}`);
     // To get real-time data for fund management, we need to recalculate the following fields:
+
+    // 0. recalculate number of outstanding units
+    const newTotalOutstandingUnits = await this.investorHoldingService.updateTotalOutstandingUnits(portfolioId, date); // calculate and update totalOutstandingUnits to DB for daily snapshot
+
     // 1. Update Portfolio NAV per unit
     // Recalculate NAV per unit
-    const newNavPerUnit = await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId); // calculate and update navPerUnit to DB for daily snapshot
+    const newNavPerUnit = await this.investorHoldingService.updatePortfolioNavPerUnit(portfolioId, date); // calculate and update navPerUnit to DB for daily snapshot
 
     // 2. Update Portfolio numberOfInvestors
     // Recalculate number of investors
-    const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId); // calculate and update numberOfInvestors to DB for daily snapshot
-    
-    // // 3. Recalculate cash balance
-    // const cashFlow = await this.cashFlowService.recalculateCashBalance(portfolioId, snapshotDate);
+    const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId, date); // calculate and update numberOfInvestors to DB for daily snapshot
     
 
     if (assetSnapshots.length === 0) {
@@ -175,9 +176,9 @@ export class PortfolioSnapshotService {
         totalDepositInterest: depositData.totalDepositInterest,
         totalDepositValue: depositData.totalDepositValue,
         totalDepositCount: depositData.totalDepositCount,
-        totalOutstandingUnits: portfolio.totalOutstandingUnits || 0,
-        navPerUnit: portfolio.navPerUnit|| 0, // only use portfolio.navPerUnit for daily snapshot because it's already calculated in the portfolio service
-        numberOfInvestors: portfolio.numberOfInvestors || 0,
+        totalOutstandingUnits: newTotalOutstandingUnits || 0,
+        navPerUnit: newNavPerUnit || 0, // only use portfolio.navPerUnit for daily snapshot because it's already calculated in the portfolio service
+        numberOfInvestors: newNumberOfInvestors || 0,
         isFund: portfolio.isFund || false,
         unrealizedDepositPnL: depositData.unrealizedDepositPnL,
         realizedDepositPnL: depositData.realizedDepositPnL,

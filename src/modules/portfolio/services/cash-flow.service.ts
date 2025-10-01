@@ -380,7 +380,7 @@ export class CashFlowService {
 
     const totalCashFlow = cashFlows.reduce((sum, flow) => {
       // Use netAmount which applies correct sign based on cash flow type
-      return sum + flow.netAmount;
+      return sum + Number(flow.netAmount);
     }, 0);
 
     return totalCashFlow;
@@ -482,7 +482,7 @@ export class CashFlowService {
       // Calculate new cash balance from all completed cash flows
       let newCashBalance = 0;
       for (const cf of completedCashFlows) {
-        newCashBalance += cf.netAmount;
+        newCashBalance += Number(cf.netAmount);
       }
 
       console.log(`[CashFlowService] createCashFlow called for portfolioId: ${portfolioId}, type: ${type}, 
@@ -525,6 +525,19 @@ export class CashFlowService {
     const tradeAmount = parseFloat(trade.totalAmount.toString());
     const fee = parseFloat(trade.fee.toString()) || 0;
     const tax = parseFloat(trade.tax.toString()) || 0;
+
+    console.log(`[CashFlowService] Debug - tradeAmount: ${tradeAmount}, fee: ${fee}, tax: ${tax}`);
+
+    // If trade has zero price and no fees/taxes, no cash flow is needed
+    if (tradeAmount === 0 && fee === 0 && tax === 0) {
+      console.log(`[CashFlowService] Skipping cash flow creation for trade ${trade.tradeId} - zero amount trade`);
+      return {
+        cashFlow: null,
+        oldCashBalance: 0,
+        newCashBalance: 0,
+        portfolioUpdated: false,
+      };
+    }
 
     // Load asset information
     const asset = await this.assetRepository.findOne({
@@ -779,5 +792,107 @@ export class CashFlowService {
 
   formatReferenceId(referenceId: string, type: string): string {
     return (referenceId +"_"+ type).substring(0, 50);
+  }
+
+  /**
+   * Transfer cash between funding sources
+   * Creates two cash flows: one withdrawal from source and one deposit to destination
+   */
+  async transferCash(
+    portfolioId: string,
+    fromSource: string,
+    toSource: string,
+    amount: number,
+    description?: string,
+    transferDate?: Date,
+  ): Promise<{
+    withdrawalCashFlow: CashFlow;
+    depositCashFlow: CashFlow;
+    oldCashBalance: number;
+    newCashBalance: number;
+  }> {
+    if (fromSource === toSource) {
+      throw new BadRequestException('Source and destination funding sources cannot be the same');
+    }
+
+    if (amount <= 0) {
+      throw new BadRequestException('Transfer amount must be greater than 0');
+    }
+
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    const oldCashBalance = parseFloat(portfolio.cashBalance.toString());
+    const transferDateToUse = transferDate || new Date();
+    const transferDescription = description || `Transfer from ${fromSource} to ${toSource}`;
+
+    return await this.dataSource.transaction(async (manager) => {
+      // Create withdrawal cash flow from source
+      const withdrawalCashFlow = manager.create(CashFlow, {
+        portfolioId,
+        type: CashFlowType.WITHDRAWAL,
+        amount: amount,
+        description: `${transferDescription} - Withdrawal from ${fromSource}`,
+        status: CashFlowStatus.COMPLETED,
+        flowDate: transferDateToUse,
+        effectiveDate: transferDateToUse,
+        currency: portfolio.baseCurrency || 'VND',
+        fundingSource: fromSource,
+        reference: `TRANSFER_${Date.now()}_FROM`,
+      });
+
+      // Create deposit cash flow to destination
+      const depositCashFlow = manager.create(CashFlow, {
+        portfolioId,
+        type: CashFlowType.DEPOSIT,
+        amount: amount,
+        description: `${transferDescription} - Deposit to ${toSource}`,
+        status: CashFlowStatus.COMPLETED,
+        flowDate: transferDateToUse,
+        effectiveDate: transferDateToUse,
+        currency: portfolio.baseCurrency || 'VND',
+        fundingSource: toSource,
+        reference: `TRANSFER_${Date.now()}_TO`,
+      });
+
+      // Save both cash flows
+      const savedWithdrawal = await manager.save(withdrawalCashFlow);
+      const savedDeposit = await manager.save(depositCashFlow);
+
+      // Recalculate portfolio balance
+      const allCashFlows = await manager.find(CashFlow, {
+        where: { portfolioId },
+        order: { flowDate: 'ASC' }
+      });
+
+      const completedCashFlows = allCashFlows.filter(cashFlow => 
+        cashFlow.status === CashFlowStatus.COMPLETED
+      );
+
+      let newCashBalance = 0;
+      for (const cf of completedCashFlows) {
+        newCashBalance += cf.netAmount;
+      }
+
+      // Update portfolio cash balance
+      await manager.update(Portfolio, 
+        { portfolioId }, 
+        { cashBalance: newCashBalance }
+      );
+
+      this.logger.log(`Transfer completed: ${amount} from ${fromSource} to ${toSource} for portfolio ${portfolioId}`);
+
+      return {
+        withdrawalCashFlow: savedWithdrawal,
+        depositCashFlow: savedDeposit,
+        oldCashBalance,
+        newCashBalance,
+      };
+    });
   }
 }

@@ -12,7 +12,7 @@ import {
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Asset } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import { formatCurrency } from '../../utils/format';
 
 export interface AssetAutocompleteProps {

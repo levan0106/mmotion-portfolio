@@ -215,8 +215,8 @@ export class TradingService {
       throw new BadRequestException('Quantity must be positive');
     }
 
-    if (updateTradeDto.price !== undefined && updateTradeDto.price <= 0) {
-      throw new BadRequestException('Price must be positive');
+    if (updateTradeDto.price !== undefined && updateTradeDto.price < 0) {
+      throw new BadRequestException('Price must be non-negative');
     }
 
     // Store original assetId to handle position updates
@@ -374,10 +374,15 @@ export class TradingService {
    * @returns Trade matching result
    */
   async processTradeMatching(sellTrade: Trade): Promise<TradeMatchingResult> {
-    // Get unmatched buy trades for the same asset and portfolio
+    if (sellTrade.side !== TradeSide.SELL) {
+      throw new Error("processTradeMatching chỉ áp dụng cho SELL trades");
+    }
+  
+    // Lấy tất cả BUY (bao gồm cả BONUS) chưa match hết
     const buyTrades = await this.tradeRepo.findUnmatchedBuyTrades(
       sellTrade.assetId,
       sellTrade.portfolioId,
+      sellTrade.tradeDate,
     );
 
     if (buyTrades.length === 0) {
@@ -1174,8 +1179,8 @@ export class TradingService {
       throw new BadRequestException('Quantity must be positive');
     }
 
-    if (!tradeData.price || tradeData.price <= 0) {
-      throw new BadRequestException('Price must be positive');
+    if (tradeData.price === undefined || tradeData.price === null || tradeData.price < 0) {
+      throw new BadRequestException('Price must be non-negative');
     }
 
     if (tradeData.fee !== undefined && tradeData.fee < 0) {

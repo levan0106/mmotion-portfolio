@@ -17,7 +17,7 @@ import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarning
 import { assetService } from '../services/asset.service';
 import { apiService } from '../services/api';
 import { formatCurrency } from '../utils/format';
-import { useAccount } from '../hooks/useAccount';
+import { useAccount } from '../contexts/AccountContext';
 import './AssetManagement.styles.css';
 
 export interface AssetManagementPageProps {
@@ -289,7 +289,7 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
         await assetService.forceDeleteAsset(assetToForceDelete.id);
       } else {
         // Asset has no trades, use normal delete
-        await assetService.deleteAsset(assetToForceDelete.id);
+        await assetService.deleteAsset(assetToForceDelete.id, accountId);
       }
 
       // Small delay to ensure API call completes

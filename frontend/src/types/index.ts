@@ -15,6 +15,8 @@ export interface Account extends BaseEntity {
   name: string;
   email: string;
   baseCurrency: string;
+  isInvestor?: boolean;
+  isMainAccount?: boolean;
 }
 
 // Asset types
@@ -213,6 +215,7 @@ export interface SubscribeToFundDto {
   portfolioId: string;
   amount: number;
   description?: string;
+  subscriptionDate?: string;
 }
 
 export interface RedeemFromFundDto {
@@ -220,6 +223,7 @@ export interface RedeemFromFundDto {
   portfolioId: string;
   units: number;
   description?: string;
+  redemptionDate?: string;
 }
 
 // Fund Unit Transaction types

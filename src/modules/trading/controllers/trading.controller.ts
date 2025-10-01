@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   HttpStatus,
+  BadRequestException,
   HttpCode,
   ParseUUIDPipe,
   ValidationPipe,
@@ -31,6 +32,7 @@ import { Repository } from 'typeorm';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 import { Asset } from '../../asset/entities/asset.entity';
 import { Account } from '../../shared/entities/account.entity';
+import { AccountValidationService } from '../../shared/services/account-validation.service';
 
 export interface TradeQueryDto {
   portfolioId: string;
@@ -84,6 +86,7 @@ export class TradingController {
     private readonly assetRepository: Repository<Asset>,
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    private readonly accountValidationService: AccountValidationService,
   ) {}
 
   /**
@@ -103,21 +106,31 @@ export class TradingController {
     description: 'Invalid query parameters',
   })
   @ApiQuery({ name: 'portfolioId', required: true, description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiQuery({ name: 'assetId', required: false, description: 'Asset ID filter' })
   @ApiQuery({ name: 'side', required: false, enum: TradeSide, description: 'Trade side filter' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date filter (ISO string)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date filter (ISO string)' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page' })
-  async getTrades(@Query() query: TradeQueryDto): Promise<TradeResponseDto[]> {
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  async getTrades(@Query() query: TradeQueryDto & { accountId: string }): Promise<TradeResponseDto[]> {
     const {
       portfolioId,
+      accountId,
       assetId,
       side,
       startDate,
       endDate,
     } = query;
-    //debugger;
+    
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
     const startDateObj = startDate ? new Date(startDate) : undefined;
     const endDateObj = endDate ? new Date(endDate) : undefined;
 
@@ -151,8 +164,20 @@ export class TradingController {
     status: 404,
     description: 'Portfolio or asset not found',
   })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiBody({ type: CreateTradeDto })
-  async createTrade(@Body() createTradeDto: CreateTradeDto): Promise<Trade> {
+  async createTrade(
+    @Body() createTradeDto: CreateTradeDto,
+    @Query('accountId') accountId: string,
+  ): Promise<Trade> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership for the portfolioId in the DTO
+    await this.accountValidationService.validatePortfolioOwnership(createTradeDto.portfolioId, accountId);
+    
     return this.tradingService.createTrade(createTradeDto);
   }
 
@@ -396,9 +421,22 @@ export class TradingController {
     status: 404,
     description: 'Trade not found',
   })
+  @ApiResponse({ status: 403, description: 'Trade does not belong to account' })
   @ApiParam({ name: 'id', description: 'Trade ID' })
-  async getTradeDetails(@Param('id', ParseUUIDPipe) id: string): Promise<Trade> {
-    return this.tradingService.getTradeDetails(id);
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  async getTradeDetails(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<Trade> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Get trade first to validate portfolio ownership
+    const trade = await this.tradingService.getTradeDetails(id);
+    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    
+    return trade;
   }
 
   /**
@@ -454,12 +492,23 @@ export class TradingController {
     status: 404,
     description: 'Trade not found',
   })
+  @ApiResponse({ status: 403, description: 'Trade does not belong to account' })
   @ApiParam({ name: 'id', description: 'Trade ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiBody({ type: UpdateTradeDto })
   async updateTrade(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
     @Body() updateTradeDto: UpdateTradeDto,
   ): Promise<Trade> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Get trade first to validate portfolio ownership
+    const trade = await this.tradingService.getTradeDetails(id);
+    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    
     return this.tradingService.updateTrade(id, updateTradeDto);
   }
 
@@ -479,8 +528,21 @@ export class TradingController {
     status: 404,
     description: 'Trade not found',
   })
+  @ApiResponse({ status: 403, description: 'Trade does not belong to account' })
   @ApiParam({ name: 'id', description: 'Trade ID' })
-  async deleteTrade(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  async deleteTrade(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<void> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Get trade first to validate portfolio ownership
+    const trade = await this.tradingService.getTradeDetails(id);
+    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    
     return this.tradingService.deleteTrade(id);
   }
 

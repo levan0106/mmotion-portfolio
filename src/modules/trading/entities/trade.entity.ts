@@ -16,6 +16,7 @@ import { TradeDetail } from './trade-detail.entity';
 export enum TradeSide {
   BUY = 'BUY',
   SELL = 'SELL',
+  BONUS = 'BONUS',
 }
 
 export enum TradeType {

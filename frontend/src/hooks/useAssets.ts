@@ -5,8 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Asset, AssetFilters, UpdateAssetRequest } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
-import { apiService } from '../services/api';
-import { useAccount } from './useAccount';
+import { useAccount } from '../contexts/AccountContext';
 import { calculatePerformanceWithMarketData, calculatePerformanceWithTrades } from '../utils/performance.utils';
 
 export interface UseAssetsOptions {
@@ -72,34 +71,11 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
     setError(null);
     
     try {
-      const queryParams = new URLSearchParams();
-      
-      Object.entries(currentFilters).forEach(([key, value]) => {
-        // Special handling for hasTrades boolean - always send if defined
-        if (key === 'hasTrades' && value !== undefined) {
-          queryParams.append(key, value.toString());
-        } else if (value !== undefined && value !== null && value !== '') {
-          if (key === 'limit' || key === 'page') {
-            queryParams.append(key, value.toString());
-          } else {
-            queryParams.append(key, value.toString());
-          }
-        }
-      });
-
-      // Use userId endpoint if createdBy is provided
-      const baseUrl = currentFilters.createdBy 
-        ? `/api/v1/assets/user/${currentFilters.createdBy}`
-        : '/api/v1/assets';
-      const url = `${baseUrl}?${queryParams.toString()}`;
-      
       console.log('Fetching assets with filters:', currentFilters);
-      console.log('API URL:', url);
-      console.log('hasTrades value:', currentFilters.hasTrades);
+      console.log('AccountId:', accountId);
       
-      try {
-        const response = await apiService.api.get(url);
-        const data = response.data;
+      const response = await assetService.getAssets(currentFilters, accountId);
+      const data = response;
       
         // Map backend data to frontend format
         const mapAsset = (asset: any): Asset => {
@@ -175,7 +151,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         
         const total = data.total || 0;
         const limit = data.limit || 10;
-        const totalPages = data.totalPages || Math.ceil(total / limit);
+        const totalPages = Math.ceil(total / limit);
         
         const paginationData = {
           page: data.page || currentFilters.page || 1,
@@ -185,11 +161,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         };
         
         setPagination(paginationData);
-      }
-      } catch (apiError) {
-        console.error('Error fetching assets from API:', apiError);
-        throw apiError;
-      }
+      } 
     } catch (err) {
       console.error('Error fetching assets:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch assets');
@@ -298,7 +270,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       
       console.log('Mapped backend data:', backendData);
       console.log('Calling assetService.updateAsset...');
-      const updatedAsset = await assetService.updateAsset(id, backendData);
+      const updatedAsset = await assetService.updateAsset(id, backendData, accountId);
       console.log('assetService.updateAsset result:', updatedAsset);
       
       // Calculate performance for updated asset
@@ -372,7 +344,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       setLoading(true);
       setError(null);
       
-      const newAsset = await assetService.createAsset(data);
+      const newAsset = await assetService.createAsset(data, accountId);
       
       // Calculate performance for new asset
       const performanceData = {
@@ -428,7 +400,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       setLoading(true);
       setError(null);
       
-      await assetService.deleteAsset(id);
+      await assetService.deleteAsset(id, accountId);
       
       // Remove the asset from the local state
       setAssets(prevAssets => prevAssets.filter(asset => asset.id !== id));

@@ -7,7 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { Asset, AssetFilters } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import { 
   formatCurrency, 
   formatPercentage, 

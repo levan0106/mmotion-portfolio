@@ -21,7 +21,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../../types';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface PortfolioFormProps {
   open: boolean;

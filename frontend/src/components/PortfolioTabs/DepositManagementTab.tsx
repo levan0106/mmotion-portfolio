@@ -28,14 +28,13 @@ const DepositManagementTabComponent: React.FC<DepositManagementTabProps> = ({
       {/* Deposit Management Section */}
       <Typography variant={isCompactMode ? "h6" : "h5"} gutterBottom sx={{ 
         fontWeight: 600, 
-        color: '#1a1a1a', 
+        color: '#4a5568', 
         mb: getUltraSpacing(3, 1.5),
         fontSize: isCompactMode ? '0.9rem' : undefined,
         display: 'flex',
         alignItems: 'center',
         gap: 1
       }}>
-        💰 Deposit Management (Quản lý tiền gửi)
       </Typography>
       <Box sx={{ mb: getUltraSpacing(4, 2) }}>
         <DepositManagementTab portfolioId={portfolioId} />

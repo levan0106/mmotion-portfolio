@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { CreateAssetRequest, Asset, AssetType } from '../../types/asset.types';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './AssetForm.styles.css';
 
 export interface AssetFormProps {

@@ -45,8 +45,13 @@ export class UnifiedSnapshotService {
   /**
    * Get all snapshots with optional filters
    */
-  async getSnapshots(params?: SnapshotQueryParams): Promise<SnapshotResponse[]> {
+  async getSnapshots(params?: SnapshotQueryParams, accountId?: string): Promise<SnapshotResponse[]> {
     const queryParams = new URLSearchParams();
+    
+    // Add accountId first
+    if (accountId) {
+      queryParams.append('accountId', accountId);
+    }
     
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -63,8 +68,13 @@ export class UnifiedSnapshotService {
   /**
    * Get paginated snapshots
    */
-  async getSnapshotsPaginated(params?: SnapshotQueryParams): Promise<PaginatedSnapshotResponse> {
+  async getSnapshotsPaginated(params?: SnapshotQueryParams, accountId?: string): Promise<PaginatedSnapshotResponse> {
     const queryParams = new URLSearchParams();
+    
+    // Add accountId first
+    if (accountId) {
+      queryParams.append('accountId', accountId);
+    }
     
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -118,22 +128,27 @@ export class UnifiedSnapshotService {
   }
 
   /**
-   * Create portfolio snapshots
+   * Create portfolio snapshots (supports both single date and date range)
    */
   async createPortfolioSnapshots(
     portfolioId: string,
-    snapshotDate?: string,
-    granularity?: string,
-    createdBy?: string
-  ): Promise<SnapshotResponse[]> {
-    const queryParams = new URLSearchParams();
-    
-    if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
-    if (granularity) queryParams.append('granularity', granularity);
-    if (createdBy) queryParams.append('createdBy', createdBy);
-
+    options: {
+      startDate?: string;
+      endDate?: string;
+      granularity?: string;
+      createdBy?: string;
+    } = {}
+  ): Promise<{
+    message: string;
+    assetSnapshots: SnapshotResponse[];
+    portfolioSnapshot: any;
+    assetCount: number;
+    totalSnapshots: number;
+    datesProcessed: string[];
+  }> {
     const response = await apiService.api.post(
-      `${this.basicSnapshotUrl}/portfolio/${portfolioId}?${queryParams.toString()}`
+      `${this.basicSnapshotUrl}/portfolio/${portfolioId}`,
+      options
     );
     return response.data;
   }
@@ -818,8 +833,8 @@ export class UnifiedSnapshotService {
     basicSnapshots: SnapshotResponse[];
     performanceSnapshots: PerformanceSnapshotResult;
   }> {
-    const [basicSnapshots, performanceSnapshots] = await Promise.all([
-      this.createPortfolioSnapshots(portfolioId, snapshotDate, granularity, createdBy),
+    const [basicSnapshotsResult, performanceSnapshots] = await Promise.all([
+      this.createPortfolioSnapshots(portfolioId, { startDate: snapshotDate, granularity, createdBy }),
       this.createPerformanceSnapshots({
         portfolioId,
         snapshotDate,
@@ -829,7 +844,7 @@ export class UnifiedSnapshotService {
     ]);
 
     return {
-      basicSnapshots,
+      basicSnapshots: basicSnapshotsResult.assetSnapshots,
       performanceSnapshots,
     };
   }

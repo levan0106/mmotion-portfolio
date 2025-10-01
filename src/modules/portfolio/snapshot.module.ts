@@ -6,6 +6,7 @@ import { SnapshotService } from './services/snapshot.service';
 import { SnapshotController } from './controllers/snapshot.controller';
 import { AssetModule } from '../asset/asset.module';
 import { LoggingModule } from '../logging/logging.module';
+import { SharedModule } from '../shared/shared.module';
 import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
 import { AssetGlobalSyncService } from '../asset/services/asset-global-sync.service';
@@ -18,6 +19,7 @@ import { PortfolioSnapshotModule } from './portfolio-snapshot.module';
     TypeOrmModule.forFeature([AssetAllocationSnapshot, Trade, TradeDetail]),
     AssetModule,
     LoggingModule,
+    SharedModule,
     forwardRef(() => PortfolioSnapshotModule),
   ],
   providers: [

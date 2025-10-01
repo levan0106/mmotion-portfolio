@@ -3,9 +3,11 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Trade, CreateTradeDto, UpdateTradeDto, TradeAnalysis, TradePerformance } from '../types';
 import { apiService } from '../services/api';
+import { useAccount } from '../contexts/AccountContext';
 
 export const useTrades = (portfolioId: string, filters?: {
   assetId?: string;
@@ -13,11 +15,25 @@ export const useTrades = (portfolioId: string, filters?: {
   startDate?: string;
   endDate?: string;
 }) => {
+  const { accountId, loading: accountLoading } = useAccount();
+  const queryClient = useQueryClient();
+  
+  console.log('🔍 useTrades: accountId:', accountId);
+  console.log('🔍 useTrades: accountLoading:', accountLoading);
+
+  // Invalidate trades queries when account changes
+  useEffect(() => {
+    if (accountId) {
+      console.log('🔍 useTrades: Invalidating trades queries for account:', accountId);
+      queryClient.invalidateQueries(['trades']);
+    }
+  }, [accountId, queryClient]);
+  
   return useQuery<Trade[]>(
-    ['trades', portfolioId, filters],
-    () => apiService.getTrades(portfolioId, filters),
+    ['trades', portfolioId, filters, accountId],
+    () => apiService.getTrades(portfolioId, accountId, filters),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId && !accountLoading,
       staleTime: 2 * 60 * 1000, // 2 minutes
     }
   );
@@ -25,9 +41,10 @@ export const useTrades = (portfolioId: string, filters?: {
 
 export const useCreateTrade = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
   
   return useMutation(
-    (data: CreateTradeDto) => apiService.createTrade(data),
+    (data: CreateTradeDto) => apiService.createTrade(data, accountId),
     {
       onSuccess: (_newTrade) => {
         // Invalidate and refetch trades
@@ -44,10 +61,11 @@ export const useCreateTrade = () => {
 
 export const useUpdateTrade = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
   
   return useMutation(
     ({ id, data }: { id: string; data: UpdateTradeDto }) => 
-      apiService.updateTrade(id, data),
+      apiService.updateTrade(id, accountId, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('trades');
@@ -63,9 +81,10 @@ export const useUpdateTrade = () => {
 
 export const useDeleteTrade = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
   
   return useMutation(
-    (id: string) => apiService.deleteTrade(id),
+    (id: string) => apiService.deleteTrade(id, accountId),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('trades');
@@ -80,11 +99,13 @@ export const useDeleteTrade = () => {
 };
 
 export const useTradeDetails = (tradeId: string) => {
+  const { accountId } = useAccount();
+  
   return useQuery(
     ['tradeDetails', tradeId],
-    () => apiService.getTradeDetails(tradeId),
+    () => apiService.getTrade(tradeId, accountId),
     {
-      enabled: !!tradeId,
+      enabled: !!tradeId && !!accountId,
       staleTime: 2 * 60 * 1000, // 2 minutes
     }
   );

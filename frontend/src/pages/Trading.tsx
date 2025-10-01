@@ -18,11 +18,13 @@ import {
 } from '@mui/material';
 import { 
   Add as AddIcon,
-  TrendingUp,
-  TrendingDown,
   AccountBalance,
   Assessment,
   ArrowBack as ArrowBackIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Sell as SellIcon,
+  MonetizationOn as MonetizationOnIcon,
+  ShowChart as ShowChartIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TradeForm } from '../components/Trading/TradeForm';
@@ -116,25 +118,25 @@ const Trading: React.FC = () => {
     {
       title: 'Total Trades',
       value: totalTrades.toString(),
-      icon: <AccountBalance />,
+      icon: <ShowChartIcon sx={{ fontSize: 32 }} />,
       color: 'primary',
     },
     {
       title: 'Buy Orders',
       value: buyTrades.toString(),
-      icon: <TrendingUp />,
+      icon: <ShoppingCartIcon sx={{ fontSize: 32 }} />,
       color: 'success',
     },
     {
       title: 'Sell Orders',
       value: sellTrades.toString(),
-      icon: <TrendingDown />,
+      icon: <SellIcon sx={{ fontSize: 32 }} />,
       color: 'error',
     },
     {
       title: 'Total Volume',
       value: formatCurrency(totalVolume),
-      icon: <Assessment />,
+      icon: <MonetizationOnIcon sx={{ fontSize: 32 }} />,
       color: 'info',
     },
   ];

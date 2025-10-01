@@ -24,14 +24,27 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { usePortfolios } from '../../hooks/usePortfolios';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import { TradeSide, TradeType, TradeSource, TradeFormData } from '../../types';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { 
+  Refresh as RefreshIcon,
+  MonetizationOn as MonetizationOnIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Assessment as AssessmentIcon,
+} from '@mui/icons-material';
 import { AssetAutocomplete } from '../Common/AssetAutocomplete';
+import { NumberInput, MoneyInput } from '../Common';
 
 // Re-export TradeFormData for components that need it
 export type { TradeFormData };
-import { formatCurrency, CURRENCY_SYMBOLS, formatNumber } from '../../utils/format';
+import { formatCurrency } from '../../utils/format';
+import { 
+  getBaseCurrency, 
+  getCurrencySymbol, 
+  getCurrencyPriorityInfo
+} from '../../utils/currency';
+import { useCurrencyCache } from '../../hooks/useCurrencyCache';
 
 // Validation schema
 const tradeSchema = yup.object({
@@ -46,8 +59,7 @@ const tradeSchema = yup.object({
     .required('Quantity is required'),
   price: yup
     .number()
-    .positive('Price must be positive')
-    .min(0.01, 'Price must be at least 0.01')
+    .min(0, 'Price must be non-negative')
     .required('Price is required'),
   fee: yup.number().min(0, 'Fee cannot be negative').optional(),
   tax: yup.number().min(0, 'Tax cannot be negative').optional(),
@@ -75,126 +87,6 @@ export interface TradeFormProps {
  * TradeForm component for creating and editing trades.
  * Provides a comprehensive form with validation and real-time calculations.
  */
-// Custom Number TextField component with formatting
-const FormattedNumberField: React.FC<{
-  field: any;
-  label: string;
-  error?: boolean;
-  helperText?: string;
-  disabled?: boolean;
-  inputProps?: any;
-  currency?: string;
-  decimalPlaces?: number;
-}> = ({ field, label, error, helperText, disabled, inputProps, currency, decimalPlaces = 2 }) => {
-  const [displayValue, setDisplayValue] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-
-  // Format number for display
-  const formatDisplayValue = (value: number | string) => {
-    if (!value || value === '') return '';
-    const numValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(numValue)) return '';
-    return formatNumber(numValue, currency === 'VND' ? 0 : decimalPlaces);
-  };
-
-  // Parse display value back to number
-  const parseDisplayValue = (value: string) => {
-    if (!value || value.trim() === '') return '';
-    // Remove thousand separators and parse
-    const cleanValue = value.replace(/,/g, '').trim();
-    const numValue = parseFloat(cleanValue);
-    return isNaN(numValue) ? '' : numValue.toString();
-  };
-
-  // Check if input is valid number while typing
-  const isValidNumberInput = (value: string) => {
-    if (!value) return true; // Allow empty
-    const cleanValue = value.replace(/,/g, '').trim();
-    // Allow partial numbers like "123.", "123.4", etc.
-    return /^\d*\.?\d*$/.test(cleanValue);
-  };
-
-  // Update display value when field value changes
-  useEffect(() => {
-    if (!isFocused) {
-      setDisplayValue(formatDisplayValue(field.value));
-    }
-  }, [field.value, isFocused]);
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    // Show clean raw value when focused for easier editing
-    let rawValue = field.value?.toString() || '';
-    
-    // Clean up trailing zeros and decimal point if not needed
-    if (rawValue.includes('.')) {
-      // Remove trailing zeros
-      rawValue = rawValue.replace(/\.?0+$/, '');
-      // If only decimal point left, remove it
-      if (rawValue.endsWith('.')) {
-        rawValue = rawValue.slice(0, -1);
-      }
-    }
-    
-    setDisplayValue(rawValue);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    // Parse current display value and update field
-    const parsedValue = parseDisplayValue(displayValue);
-    if (parsedValue) {
-      field.onChange(parseFloat(parsedValue));
-    } else {
-      field.onChange('');
-    }
-    // Format value for display
-    const formatted = formatDisplayValue(field.value);
-    setDisplayValue(formatted);
-  };
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = event.target.value;
-    
-    // Only allow valid number input
-    if (!isValidNumberInput(rawValue)) {
-      return; // Don't update if invalid
-    }
-    
-    setDisplayValue(rawValue);
-    
-    // Only update form field if it's a complete valid number
-    const parsedValue = parseDisplayValue(rawValue);
-    if (parsedValue) {
-      field.onChange(parseFloat(parsedValue));
-    } else if (rawValue === '') {
-      field.onChange('');
-    }
-  };
-
-  return (
-    <TextField
-      value={displayValue}
-      onChange={handleChange}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      label={label}
-      type="text"
-      fullWidth
-      error={error}
-      helperText={helperText}
-      disabled={disabled}
-      inputProps={inputProps}
-      InputProps={{
-        startAdornment: currency ? (
-          <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary' }}>
-            {CURRENCY_SYMBOLS[currency] || currency}
-          </Typography>
-        ) : undefined,
-      }}
-    />
-  );
-};
 
 export const TradeForm: React.FC<TradeFormProps> = ({
   onSubmit,
@@ -208,7 +100,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   isModal = false,
 }) => {
 
-  const { accountId } = useAccount();
+  const { accountId, currentAccount } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
 
   // Debug logging (can be removed in production)
@@ -250,7 +142,21 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   
   // Get selected portfolio for currency
   const selectedPortfolio = portfolios?.find(p => p.portfolioId === watchedPortfolioId);
-  const portfolioCurrency = selectedPortfolio?.baseCurrency || 'VND';
+  
+  // Update currency cache
+  useCurrencyCache(currentAccount, null); // userCurrency can be added later
+  
+  // Get base currency with priority: portfolio -> account (cached) -> user (cached) -> default VND
+  const baseCurrency = getBaseCurrency(
+    selectedPortfolio,
+    'VND' // default currency
+  );
+  
+  // Get currency priority info for debugging/display
+  const currencyInfo = getCurrencyPriorityInfo(
+    selectedPortfolio,
+    'VND'
+  );
 
   // Auto-fill market price when asset is selected
   // Note: AssetAutocomplete will handle asset selection, but we need to get current price
@@ -340,9 +246,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     return side === TradeSide.BUY ? 'success' : 'error';
   };
 
-  const getSideIcon = (side: TradeSide) => {
-    return side === TradeSide.BUY ? '↗' : '↘';
-  };
 
   // Function to refresh market price
   const refreshMarketPrice = () => {
@@ -461,12 +364,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                           value={field.value}
                           onChange={field.onChange}
                           error={!!errors.assetId}
-                          helperText={errors.assetId?.message}
                           disabled={isLoading}
                           label="Asset"
                           required={true}
                           placeholder="Search and select asset..."
-                          currency={portfolioCurrency}
+                          currency={baseCurrency}
                           showCreateOption={true}
                           onCreateAsset={() => {
                             // TODO: Implement create asset functionality
@@ -514,7 +416,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                             textField: {
                               fullWidth: true,
                               error: !!errors.tradeDate,
-                              helperText: errors.tradeDate?.message,
                               sx: {
                                 '& .MuiOutlinedInput-root': {
                                   borderRadius: 2
@@ -580,14 +481,15 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       name="quantity"
                       control={control}
                       render={({ field }) => (
-                        <FormattedNumberField
-                          field={field}
+                        <NumberInput
+                          value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
+                          onChange={(value) => field.onChange(value)}
                           label="Quantity *"
                           error={!!errors.quantity}
-                          helperText={errors.quantity?.message}
                           disabled={isLoading}
-                          inputProps={{ step: '0.00001', min: '0.00001' }}
                           decimalPlaces={5}
+                          min={0.00001}
+                          step={0.00001}
                         />
                       )}
                     />
@@ -600,14 +502,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       control={control}
                       render={({ field }) => (
                         <Box sx={{ position: 'relative' }}>
-                          <FormattedNumberField
-                            field={field}
-                            label={`Price per Unit (${portfolioCurrency}) *`}
+                          <MoneyInput
+                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
+                            onChange={(value) => field.onChange(value)}
+                            label={`Price per Unit (${baseCurrency}) *`}
                             error={!!errors.price}
-                            helperText={errors.price?.message}
                             disabled={isLoading}
-                            inputProps={{ step: '0.01', min: '0.01' }}
-                            currency={portfolioCurrency}
+                            currency={baseCurrency}
                           />
                           {watchedAssetId && (
                             <Tooltip title="Refresh market price">
@@ -650,15 +551,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       name="fee"
                       control={control}
                       render={({ field }) => (
-                        <FormattedNumberField
-                          field={field}
-                          label={`Trading Fee (${portfolioCurrency})`}
-                          error={!!errors.fee}
-                          helperText={errors.fee?.message}
-                          disabled={isLoading}
-                          inputProps={{ step: '0.01', min: '0' }}
-                          currency={portfolioCurrency}
-                        />
+                          <MoneyInput
+                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
+                            onChange={(value) => field.onChange(value)}
+                            label={`Trading Fee (${baseCurrency})`}
+                            error={!!errors.fee}
+                            disabled={isLoading}
+                            currency={baseCurrency}
+                          />
                       )}
                     />
                   </Grid>
@@ -669,15 +569,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       name="tax"
                       control={control}
                       render={({ field }) => (
-                        <FormattedNumberField
-                          field={field}
-                          label={`Tax (${portfolioCurrency})`}
-                          error={!!errors.tax}
-                          helperText={errors.tax?.message}
-                          disabled={isLoading}
-                          inputProps={{ step: '0.01', min: '0' }}
-                          currency={portfolioCurrency}
-                        />
+                          <MoneyInput
+                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
+                            onChange={(value) => field.onChange(value)}
+                            label={`Tax (${baseCurrency})`}
+                            error={!!errors.tax}
+                            disabled={isLoading}
+                            currency={baseCurrency}
+                          />
                       )}
                     />
                   </Grid>
@@ -733,7 +632,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         label="Exchange/Platform"
                         fullWidth
                         error={!!errors.exchange}
-                        helperText={errors.exchange?.message || 'e.g., VNDIRECT, BINANCE, COINBASE'}
                         disabled={isLoading}
                         placeholder="Enter exchange or platform name"
                         sx={{
@@ -764,7 +662,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         label="Funding Source"
                         fullWidth
                         error={!!errors.fundingSource}
-                        helperText={errors.fundingSource?.message || 'e.g., VIETCOMBANK, BANK_ACCOUNT_001'}
                         disabled={isLoading}
                         placeholder="Enter funding source"
                         sx={{
@@ -797,7 +694,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         rows={3}
                         fullWidth
                         error={!!errors.notes}
-                        helperText={errors.notes?.message || 'Optional notes about this trade'}
                         disabled={isLoading}
                         placeholder="Enter any additional notes about this trade"
                         sx={{
@@ -815,9 +711,20 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
             {/* Summary Section */}
             <Box mb={isModal ? 1 : 2} p={isModal ? 1 : 1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
-              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
-                Trade Summary
-              </Typography>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={isModal ? 1 : 1.5}>
+                <Typography variant="h6" color="primary" fontWeight="bold">
+                  Trade Summary
+                </Typography>
+                <Tooltip title={`Currency source: ${currencyInfo.source} (priority ${currencyInfo.priority})`}>
+                  <Chip
+                    size="small"
+                    label={`${baseCurrency} ${getCurrencySymbol(baseCurrency)}`}
+                    color={currencyInfo.source === 'portfolio' ? 'primary' : currencyInfo.source === 'account' ? 'secondary' : 'default'}
+                    variant="outlined"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                </Tooltip>
+              </Box>
               <Grid container spacing={isModal ? 1 : 1.5}>
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={2} sx={{ 
@@ -830,11 +737,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     flexDirection: 'column',
                     justifyContent: 'center'
                   }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Total Value
-                    </Typography>
+                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
+                      <MonetizationOnIcon sx={{ fontSize: 20, color: 'info.main', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Total Value
+                      </Typography>
+                    </Box>
                     <Typography variant="h6" fontWeight="bold" color="info.main">
-                      {formatCurrency(calculatedValues.value, portfolioCurrency)}
+                      {formatCurrency(calculatedValues.value, baseCurrency)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -849,11 +759,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     flexDirection: 'column',
                     justifyContent: 'center'
                   }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Fees & Taxes
-                    </Typography>
+                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
+                      <AssessmentIcon sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Fees & Taxes
+                      </Typography>
+                    </Box>
                     <Typography variant="h6" fontWeight="bold" color="warning.main">
-                      {formatCurrency(calculatedValues.fee + calculatedValues.tax, portfolioCurrency)}
+                      {formatCurrency(calculatedValues.fee + calculatedValues.tax, baseCurrency)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -872,7 +785,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       {watch('side') === TradeSide.SELL ? 'Amount Received' : 'Amount Paid'}
                     </Typography>
                     <Typography variant="h6" fontWeight="bold" color="primary.main">
-                      {formatCurrency(calculatedValues.cost, portfolioCurrency)}
+                      {formatCurrency(calculatedValues.cost, baseCurrency)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: 0.5 }}>
                       {watch('side') === TradeSide.SELL 
@@ -892,13 +805,22 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     flexDirection: 'column',
                     justifyContent: 'center'
                   }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Trade Side
-                    </Typography>
+                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
+                      {watch('side') === TradeSide.BUY ? 
+                        <TrendingUpIcon sx={{ fontSize: 20, color: 'success.main', mr: 1 }} /> :
+                        <TrendingDownIcon sx={{ fontSize: 20, color: 'error.main', mr: 1 }} />
+                      }
+                      <Typography variant="body2" color="text.secondary">
+                        Trade Side
+                      </Typography>
+                    </Box>
                     <Chip
                       label={watch('side')}
                       color={getSideColor(watch('side'))}
-                      icon={<span>{getSideIcon(watch('side'))}</span>}
+                      icon={watch('side') === TradeSide.BUY ? 
+                        <TrendingUpIcon sx={{ fontSize: 16 }} /> :
+                        <TrendingDownIcon sx={{ fontSize: 16 }} />
+                      }
                       size="small"
                       sx={{ fontWeight: 600 }}
                     />

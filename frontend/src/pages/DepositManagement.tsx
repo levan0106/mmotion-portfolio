@@ -34,7 +34,7 @@ import DepositSettlementModal from '../components/Deposit/DepositSettlementModal
 import DepositDetailsModal from '../components/Deposit/DepositDetailsModal';
 import { apiService } from '../services/api';
 import { formatCurrency, formatPercentage } from '../utils/format';
-import { useAccount } from '../hooks/useAccount';
+import { useAccount } from '../contexts/AccountContext';
 
 interface Deposit {
   depositId: string;

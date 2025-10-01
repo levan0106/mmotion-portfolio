@@ -56,17 +56,18 @@ export class CreateCashFlowDto {
   type: CashFlowType;
 
   /**
-   * Description of the cash flow.
+   * Description of the cash flow (optional).
    */
   @ApiProperty({
-    description: 'Description of the cash flow',
+    description: 'Description of the cash flow (optional)',
     example: 'Initial deposit to portfolio',
     maxLength: 1000,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
-  description: string;
+  description?: string;
 
   /**
    * Flow date (optional, defaults to now).
@@ -241,4 +242,87 @@ export class CashBalanceUpdateResultDto {
 
   @ApiProperty({ description: 'Cash flow type' })
   cashFlowType: string;
+}
+
+/**
+ * DTO for transferring cash between funding sources.
+ */
+export class TransferCashDto {
+  /**
+   * Portfolio ID.
+   */
+  @ApiProperty({
+    description: 'Portfolio ID',
+    example: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5',
+    format: 'uuid',
+  })
+  @IsString()
+  @IsNotEmpty()
+  portfolioId: string;
+
+  /**
+   * Source funding source to transfer from.
+   */
+  @ApiProperty({
+    description: 'Source funding source to transfer from',
+    example: 'VIETCOMBANK',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => typeof value === 'string' ? value.toUpperCase().trim() : value)
+  fromSource: string;
+
+  /**
+   * Destination funding source to transfer to.
+   */
+  @ApiProperty({
+    description: 'Destination funding source to transfer to',
+    example: 'BIDV',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => typeof value === 'string' ? value.toUpperCase().trim() : value)
+  toSource: string;
+
+  /**
+   * Transfer amount.
+   */
+  @ApiProperty({
+    description: 'Transfer amount',
+    example: 1000000,
+    minimum: 0.01,
+    maximum: 1000000000000,
+  })
+  @IsNumber()
+  @Min(0.01)
+  @Max(1000000000000)
+  amount: number;
+
+  /**
+   * Description of the transfer (optional).
+   */
+  @ApiProperty({
+    description: 'Description of the transfer (optional)',
+    example: 'Transfer from Vietcombank to BIDV for better interest rates',
+    maxLength: 1000,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  description?: string;
+
+  /**
+   * Transfer date (optional, defaults to now).
+   */
+  @ApiProperty({
+    description: 'Transfer date (optional, defaults to now)',
+    example: '2024-01-15T10:30:00Z',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  transferDate?: string;
 }

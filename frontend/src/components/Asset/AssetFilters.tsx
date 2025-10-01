@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AssetType, AssetFilters as AssetFiltersType } from '../../types/asset.types';
 import { AssetTypeLabels } from '../../types/asset.types';
 import { usePortfolios } from '../../hooks/usePortfolios';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './AssetFilters.styles.css';
 
 export interface AssetFiltersProps {

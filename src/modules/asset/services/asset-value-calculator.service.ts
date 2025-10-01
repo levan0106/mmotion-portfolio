@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Trade, TradeSide } from '../../trading/entities/trade.entity';
 
 export interface TaxFeeOption {
   type: 'percentage' | 'fixed';
@@ -318,44 +319,132 @@ export class AssetValueCalculatorService {
   }
 
   
+  // /**
+  //  * Calculate position for a specific asset using FIFO algorithm
+  //  * @param assetId - Asset ID
+  //  * @param trades - Trades for this asset
+  //  * @param currentPrice - Current price of the asset
+  //  * @returns Promise<AssetPosition>
+  //  */
+  // calculateAssetPositionFIFOFinal(
+  //   trades: any[],
+  //   currentPrice: number,
+  // ): {
+  //   quantity: number;
+  //   avgCost: number;
+  //   currentValue: number;
+  //   unrealizedPl: number;
+  //   realizedPl: number;
+  //   totalPnl: number;
+  //   currentPrice: number;
+  // } {
+
+  //   let realizedPnl = 0;
+  //   const buyTrades: Array<{
+  //     quantity: number;
+  //     price: number;
+  //     fee:number;
+  //     tax:number;
+  //     remainingQuantity: number;
+  //   }> = [];
+  
+  //   for (const trade of trades) {
+
+  //     const quantity = parseFloat(trade.quantity.toString());
+  //     const price = parseFloat(trade.price.toString());
+  //     const fee = parseFloat(trade.fee?.toString() || '0');
+  //     const tax = parseFloat(trade.tax?.toString() || '0');
+  
+  //     if (trade.side === 'BUY') {
+  //       // chỉ lưu cost gốc, không cộng fee/tax BUY
+  //       buyTrades.push({
+  //         quantity,
+  //         price,
+  //         fee,
+  //         tax,
+  //         remainingQuantity: quantity,
+  //       });
+  //     } else if (trade.side === 'SELL') {
+  //       let remainingToSell = Math.abs(quantity);
+  
+  //       for (const buyTrade of buyTrades) {
+  //         if (remainingToSell <= 0) break;
+  //         if (buyTrade.remainingQuantity <= 0) continue;
+  
+  //         const sellFromThisTrade = Math.min(remainingToSell, buyTrade.remainingQuantity);
+  
+  //         const cost = sellFromThisTrade * buyTrade.price;
+  //         const proceeds = sellFromThisTrade * price;
+  
+  //         // chỉ trừ fee + tax SELL
+  //         realizedPnl += proceeds - cost - (fee + tax) * (sellFromThisTrade / Math.abs(quantity));
+  
+  //         buyTrade.remainingQuantity -= sellFromThisTrade;
+  //         remainingToSell -= sellFromThisTrade;
+  //       }
+  //     }
+  //   }
+  
+  //   // Unrealized PnL
+  //   let netQuantity = 0;
+  //   let totalCostBasis = 0;
+  //   for (const buyTrade of buyTrades) {
+  //     if (buyTrade.remainingQuantity > 0) {
+  //       netQuantity += buyTrade.remainingQuantity;
+  //       const proportion = buyTrade.remainingQuantity / buyTrade.quantity;
+  //       totalCostBasis += (buyTrade.remainingQuantity * buyTrade.price) + (buyTrade.fee * proportion) + (buyTrade.tax * proportion);
+  //     }
+  //   }
+  
+  //   const marketValue = netQuantity * currentPrice;
+  //   const unrealizedPnl = marketValue - totalCostBasis;
+  //   const totalPnl = realizedPnl + unrealizedPnl;
+  
+  //   return {
+  //     quantity: netQuantity,
+  //     avgCost: netQuantity > 0 ? totalCostBasis / netQuantity : 0,
+  //     currentValue: marketValue,
+  //     unrealizedPl: unrealizedPnl,
+  //     realizedPl: realizedPnl,
+  //     totalPnl,
+  //     currentPrice,
+  //   };
+  // }
+
   /**
    * Calculate position for a specific asset using FIFO algorithm
-   * @param assetId - Asset ID
    * @param trades - Trades for this asset
    * @param currentPrice - Current price of the asset
    * @returns Promise<AssetPosition>
    */
   calculateAssetPositionFIFOFinal(
-    trades: any[],
+    trades: Trade[],
     currentPrice: number,
-  ): {
-    quantity: number;
-    avgCost: number;
-    currentValue: number;
-    unrealizedPl: number;
-    realizedPl: number;
-    totalPnl: number;
-    currentPrice: number;
-  } {
-
+  ) {
     let realizedPnl = 0;
+    // Danh sách FIFO các lệnh BUY (lot còn lại)
     const buyTrades: Array<{
-      quantity: number;
-      price: number;
-      fee:number;
-      tax:number;
-      remainingQuantity: number;
+      quantity: number;           // số lượng gốc của lot (bao gồm cả bonus sau này)
+      price: number;              // giá vốn bình quân trên mỗi cổ phiếu (có điều chỉnh sau bonus)
+      fee: number;                // phí giao dịch (mua)
+      tax: number;                // thuế liên quan (mua)
+      remainingQuantity: number;  // số lượng còn lại (sau khi bán một phần)
     }> = [];
   
-    for (const trade of trades) {
+    // Sắp xếp theo tradeDate (FIFO - oldest first)
+    trades = trades.sort((a, b) => a.tradeDate.getTime() - b.tradeDate.getTime());
 
+    // Xử lý từng trade
+    for (const trade of trades) {
       const quantity = parseFloat(trade.quantity.toString());
       const price = parseFloat(trade.price.toString());
       const fee = parseFloat(trade.fee?.toString() || '0');
       const tax = parseFloat(trade.tax?.toString() || '0');
-  
-      if (trade.side === 'BUY') {
-        // chỉ lưu cost gốc, không cộng fee/tax BUY
+      
+      // ========== 1. BUY ==========
+      if (trade.side === TradeSide.BUY && price > 0) {
+        // Thêm 1 lot mới vào danh sách FIFO
+        // (chỉ lưu cost gốc, không cộng fee/tax tại thời điểm này)
         buyTrades.push({
           quantity,
           price,
@@ -363,35 +452,82 @@ export class AssetValueCalculatorService {
           tax,
           remainingQuantity: quantity,
         });
-      } else if (trade.side === 'SELL') {
+      } 
+      // ========== 2. BONUS/Vốn mới tăng thêm ==========
+      else if (trade.side === TradeSide.BONUS || price === 0) {
+        // Tổng số lượng còn lại để phân bổ bonus theo tỷ lệ
+        let totalRemaining = buyTrades.reduce(
+          (sum, b) => sum + b.remainingQuantity,
+          0,
+        );
+        if (totalRemaining === 0) continue; // nếu đã bán hết thì bỏ qua
+
+        // Phân bổ bonus vào từng lot còn lại
+        for (const b of buyTrades) {
+          if (b.remainingQuantity <= 0) continue;
+
+          // Số lượng bonus được phân bổ cho lot này
+          const bonusForLot = quantity * (b.remainingQuantity / totalRemaining);
+
+          // Cập nhật số lượng còn lại và tổng số lượng của lot
+          b.remainingQuantity += bonusForLot;
+          b.quantity += bonusForLot;
+
+          // Điều chỉnh lại giá vốn (cost basis không đổi, chỉ giảm giá bình quân)
+          // công thức: giá mới = (giá cũ × số lượng cũ) / số lượng mới
+          b.price = (b.price * (b.remainingQuantity - bonusForLot)) / b.remainingQuantity;
+        }
+      } 
+      // ========== 3. SELL ==========
+      else if (trade.side === TradeSide.SELL) {
         let remainingToSell = Math.abs(quantity);
-  
+
+        // Dùng FIFO: bán từ lot cũ nhất còn lại
         for (const buyTrade of buyTrades) {
           if (remainingToSell <= 0) break;
           if (buyTrade.remainingQuantity <= 0) continue;
-  
-          const sellFromThisTrade = Math.min(remainingToSell, buyTrade.remainingQuantity);
-  
+
+          // Số lượng bán ra từ lot này
+          const sellFromThisTrade = Math.min(
+            remainingToSell,
+            buyTrade.remainingQuantity,
+          );
+
+          // Giá vốn (cost basis) cho số lượng này
           const cost = sellFromThisTrade * buyTrade.price;
+
+          // Doanh thu bán (proceeds)
           const proceeds = sellFromThisTrade * price;
-  
-          // chỉ trừ fee + tax SELL
+
+          // Lãi/lỗ thực hiện (realized PnL)
+          // chỉ tính phí/tax SELL, không cộng phí/tax BUY
           realizedPnl += proceeds - cost - (fee + tax) * (sellFromThisTrade / Math.abs(quantity));
-  
+
+          // Giảm số lượng còn lại trong lot
           buyTrade.remainingQuantity -= sellFromThisTrade;
+
+          // Giảm số lượng còn lại cần bán
           remainingToSell -= sellFromThisTrade;
         }
       }
     }
   
-    // Unrealized PnL
-    let netQuantity = 0;
-    let totalCostBasis = 0;
+    // ========== 4. Unrealized PnL ==========
+    let netQuantity = 0;     // tổng số lượng còn lại
+    let totalCostBasis = 0;  // tổng vốn gốc còn lại
+
     for (const buyTrade of buyTrades) {
       if (buyTrade.remainingQuantity > 0) {
         netQuantity += buyTrade.remainingQuantity;
+
+        // Tỷ lệ số lượng còn lại so với gốc (để phân bổ fee/tax)
         const proportion = buyTrade.remainingQuantity / buyTrade.quantity;
-        totalCostBasis += (buyTrade.remainingQuantity * buyTrade.price) + (buyTrade.fee * proportion) + (buyTrade.tax * proportion);
+
+        // Cost basis còn lại = giá vốn × số lượng + phí/tax phân bổ
+        totalCostBasis +=
+          buyTrade.remainingQuantity * buyTrade.price +
+          buyTrade.fee * proportion +
+          buyTrade.tax * proportion;
       }
     }
   
@@ -399,15 +535,15 @@ export class AssetValueCalculatorService {
     const unrealizedPnl = marketValue - totalCostBasis;
     const totalPnl = realizedPnl + unrealizedPnl;
   
+    // ========== 5. Output ==========
     return {
-      quantity: netQuantity,
-      avgCost: netQuantity > 0 ? totalCostBasis / netQuantity : 0,
-      currentValue: marketValue,
-      unrealizedPl: unrealizedPnl,
-      realizedPl: realizedPnl,
-      totalPnl,
-      currentPrice,
+      quantity: netQuantity,                          // số lượng còn lại
+      avgCost: netQuantity > 0 ? totalCostBasis / netQuantity : 0, // giá vốn bình quân còn lại
+      currentValue: marketValue,                      // giá trị thị trường
+      unrealizedPl: unrealizedPnl,                    // lãi/lỗ chưa thực hiện
+      realizedPl: realizedPnl,                        // lãi/lỗ đã thực hiện
+      totalPnl,                                       // tổng lãi/lỗ
+      currentPrice,                                   // giá thị trường
     };
   }
-  
 }

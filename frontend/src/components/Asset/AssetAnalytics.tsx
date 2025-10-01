@@ -6,7 +6,7 @@
 import React from 'react';
 import { Asset, AssetType } from '../../types/asset.types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './AssetAnalytics.styles.css';
 
 export interface AssetAnalyticsProps {

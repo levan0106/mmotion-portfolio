@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   ParseUUIDPipe,
@@ -136,5 +138,70 @@ export class InvestorHoldingController {
   @ApiResponse({ status: 404, description: 'Holding not found' })
   async getHoldingDetail(@Param('holdingId', ParseUUIDPipe) holdingId: string): Promise<HoldingDetailDto> {
     return this.investorHoldingService.getHoldingDetail(holdingId);
+  }
+
+  @Put('fund-unit-transactions/:transactionId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a fund unit transaction' })
+  @ApiParam({ name: 'transactionId', description: 'Fund unit transaction ID' })
+  @ApiBody({
+    description: 'Fund unit transaction update data',
+    schema: {
+      type: 'object',
+      properties: {
+        units: { type: 'number', description: 'Number of units' },
+        amount: { type: 'number', description: 'Transaction amount' },
+        description: { type: 'string', description: 'Transaction description' },
+        transactionDate: { type: 'string', format: 'date', description: 'Transaction date' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Fund unit transaction updated successfully' })
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  @ApiResponse({ status: 400, description: 'Invalid update data' })
+  async updateHoldingTransaction(
+    @Param('transactionId', ParseUUIDPipe) transactionId: string,
+    @Body() updateData: {
+      units?: number;
+      amount?: number;
+      description?: string;
+      transactionDate?: string;
+    }
+  ) {
+    return this.investorHoldingService.updateHoldingTransaction(transactionId, updateData);
+  }
+
+  @Delete('fund-unit-transactions/:transactionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a fund unit transaction' })
+  @ApiParam({ name: 'transactionId', description: 'Fund unit transaction ID' })
+  @ApiResponse({ status: 204, description: 'Fund unit transaction deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  async deleteHoldingTransaction(
+    @Param('transactionId', ParseUUIDPipe) transactionId: string,
+  ) {
+    await this.investorHoldingService.deleteHoldingTransaction(transactionId);
+  }
+
+  @Post('recalculate-all/:portfolioId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Recalculate all investor holdings for a portfolio' })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'All holdings recalculated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        portfolioId: { type: 'string' },
+        updatedHoldingsCount: { type: 'number' }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Portfolio not found' })
+  async recalculateAllHoldings(
+    @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
+  ) {
+    return this.investorHoldingService.recalculateAllHoldings(portfolioId);
   }
 }

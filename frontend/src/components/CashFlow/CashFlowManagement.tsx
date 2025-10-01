@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 import {
   Box,
   Card,
@@ -50,6 +52,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
   portfolioId,
   onCashFlowUpdate,
 }) => {
+  const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,10 +70,8 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
   const loadCashFlows = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history`);
-      if (!response.ok) throw new Error('Failed to load cash flows');
-      const data = await response.json();
-      setCashFlows(data);
+      const response = await apiService.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?accountId=${accountId}`);
+      setCashFlows(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load cash flows');
     } finally {
@@ -173,7 +174,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       <Card>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">Cash Flow Management</Typography>
+            <Typography variant="h4" fontWeight="bold">Cash Flow Management</Typography>
             <Box>
               <Button
                 variant="contained"
@@ -302,11 +303,10 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
             />
             <TextField
               fullWidth
-              label="Description"
+              label="Description (Optional)"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               margin="normal"
-              required
             />
             <TextField
               fullWidth

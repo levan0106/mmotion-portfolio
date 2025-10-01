@@ -14,27 +14,40 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Button,
   CircularProgress,
   Alert,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   ArrowBack,
   TrendingUp,
   TrendingDown,
   AccountBalance,
-  AttachMoney,
+  ShowChart,
+  MonetizationOn,
+  Assessment,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { apiService } from '../services/api';
-import { HoldingDetail as HoldingDetailType } from '../types';
+import { HoldingDetail as HoldingDetailType, FundUnitTransactionWithCashFlow } from '../types';
 import { 
   formatCurrency, 
   formatNumberWithSeparators, 
   formatPercentage 
 } from '../utils/format';
+import EditHoldingTransactionModal from '../components/NAVUnit/EditHoldingTransactionModal';
 
 const HoldingDetail: React.FC = () => {
   const { holdingId } = useParams<{ holdingId: string }>();
@@ -43,6 +56,12 @@ const HoldingDetail: React.FC = () => {
   const [holdingDetail, setHoldingDetail] = useState<HoldingDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<FundUnitTransactionWithCashFlow | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<FundUnitTransactionWithCashFlow | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [recalculateLoading, setRecalculateLoading] = useState(false);
 
   useEffect(() => {
     if (holdingId) {
@@ -55,6 +74,7 @@ const HoldingDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await apiService.getHoldingDetail(holdingId!);
+      data.summary.returnPercentage = (data.holding.currentValue - data.holding.totalInvestment) / data.holding.totalInvestment * 100;
       setHoldingDetail(data);
     } catch (err) {
       console.error('Error fetching holding detail:', err);
@@ -77,13 +97,78 @@ const HoldingDetail: React.FC = () => {
     }
   };
 
-
-  const getPnLColor = (value: number | string | null | undefined) => {
-    if (value === null || value === undefined) return 'default';
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(num)) return 'default';
-    return num >= 0 ? 'success' : 'error';
+  const handleEditTransaction = (transaction: FundUnitTransactionWithCashFlow) => {
+    setSelectedTransaction(transaction);
+    setEditModalOpen(true);
   };
+
+  const handleTransactionUpdated = () => {
+    // Refresh the holding detail data
+    fetchHoldingDetail();
+    
+    // Show success message with recalculation info
+    // Note: This could be enhanced with a toast notification
+    console.log('✅ Transaction updated successfully. Portfolio metrics have been recalculated.');
+  };
+
+  const handleDeleteTransaction = (transaction: FundUnitTransactionWithCashFlow) => {
+    setTransactionToDelete(transaction);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      await apiService.deleteHoldingTransaction(transactionToDelete.transaction.transactionId);
+      
+      // Close modal and refresh data
+      setDeleteModalOpen(false);
+      setTransactionToDelete(null);
+      await fetchHoldingDetail();
+      
+      // Show success message with recalculation info
+      console.log('✅ Transaction deleted successfully. Portfolio metrics have been recalculated.');
+    } catch (err) {
+      console.error('Error deleting transaction:', err);
+      setError('Failed to delete transaction');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleRecalculateNav = async () => {
+    if (!holdingDetail?.holding?.portfolioId) return;
+    
+    try {
+      setRecalculateLoading(true);
+      
+      // Step 1: Refresh NAV per unit
+      const navResult = await apiService.refreshNavPerUnit(holdingDetail.holding.portfolioId);
+      console.log('NAV recalculated successfully:', navResult);
+      
+      // Step 2: Recalculate all investor holdings with new NAV
+      const holdingsResult = await apiService.recalculateAllHoldings(holdingDetail.holding.portfolioId);
+      console.log('Holdings recalculated successfully:', holdingsResult);
+      
+      
+      // Refresh holding detail to show updated values
+      await fetchHoldingDetail();
+    } catch (err: any) {
+      console.error('Error recalculating NAV:', err);
+      setError('Failed to recalculate NAV. Please try again.');
+    } finally {
+      setRecalculateLoading(false);
+    }
+  };
+
+
 
   const getPnLIcon = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return null;
@@ -130,228 +215,392 @@ const HoldingDetail: React.FC = () => {
   const { holding, transactions, summary } = holdingDetail;
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 1, mb: 2 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 2 }}>
         <Button
-          variant="outlined"
+          variant="text"
           startIcon={<ArrowBack />}
           onClick={handleBackNavigation}
-          sx={{ mb: 2 }}
+          sx={{ mb: 1.5, textTransform: 'none' }}
         >
-          Back
+          Back to Portfolio
         </Button>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Holding Details
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          {holding.account?.name} - {holding.portfolio?.name}
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          mb: 1.5,
+          p: 2,
+          borderRadius: 2,
+          background: '#f8f9fa',
+          border: '1px solid #e9ecef'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ 
+              bgcolor: 'primary.main', 
+              width: 48, 
+              height: 48,
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }}>
+              <AccountBalance />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                {holding.account?.name}
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Investment in {holding.portfolio?.name}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
+            onClick={handleRecalculateNav}
+            disabled={recalculateLoading}
+            sx={{
+              minWidth: '160px',
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+              }
+            }}
+          >
+            {recalculateLoading ? 'Recalculating...' : 'Recalculate NAV'}
+          </Button>
+        </Box>
       </Box>
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={1}>
-                <AccountBalance color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Total Investment</Typography>
-              </Box>
-              <Typography variant="h4" color="primary">
-                {formatCurrency(holding.totalInvestment, 'VND')}
-              </Typography>
-            </CardContent>
-          </Card>
+      {/* Main Content Layout - 2 Columns */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* Left Column - Portfolio Performance + Transaction Summary */}
+        <Grid item xs={12} md={8}>
+          <Stack spacing={2}>
+            {/* Portfolio Performance */}
+            <Card sx={{ 
+              background: 'white',
+              border: '1px solid #e9ecef',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                  Portfolio Performance
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>
+                        {formatCurrency(holding.currentValue, 'VND')}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Current Value
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+                        {formatCurrency(holding.totalInvestment, 'VND')}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Total Investment
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+                        {getPnLIcon(holding.unrealizedPnL)}
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                          {formatCurrency(holding.unrealizedPnL, 'VND')}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Unrealized P&L
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+                        {getPnLIcon(summary.returnPercentage)}
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: summary.returnPercentage >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                          {formatPercentage(summary.returnPercentage, 2)}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Return %
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Transaction Summary */}
+            <Card sx={{ 
+              background: 'white',
+              border: '1px solid #e9ecef',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                  Transaction Summary
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                        {summary.totalTransactions}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Total Transactions
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
+                        {summary.totalSubscriptions}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Subscriptions
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                        {summary.totalRedemptions}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Redemptions
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      p: 1.5,
+                      borderRadius: 2,
+                    }}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
+                        {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                        Units Subscribed
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Stack>
         </Grid>
 
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={1}>
-                <AttachMoney color="secondary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Current Value</Typography>
-              </Box>
-              <Typography variant="h4" color="secondary">
-                {formatCurrency(holding.currentValue, 'VND')}
+        {/* Right Column - Holding Details */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ 
+            height: '100%',
+            background: 'white',
+            border: '1px solid #e9ecef',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                Holding Details
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={1}>
-                {getPnLIcon(holding.unrealizedPnL)}
-                <Typography variant="h6">Unrealized P&L</Typography>
-              </Box>
-              <Typography variant="h4" color={getPnLColor(holding.unrealizedPnL)}>
-                {formatCurrency(holding.unrealizedPnL, 'VND')}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={1}>
-                {getPnLIcon(holding.realizedPnL)}
-                <Typography variant="h6">Realized P&L</Typography>
-              </Box>
-              <Typography variant="h4" color={getPnLColor(holding.realizedPnL)}>
-                {formatCurrency(holding.realizedPnL, 'VND')}
-              </Typography>
+              <List dense>
+                <ListItem sx={{ 
+                  px: 0, 
+                  py: 1,
+                  mb: 1
+                }}>
+                  <ListItemIcon>
+                    <ShowChart color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Total Units"
+                    secondary={formatNumberWithSeparators(holding.totalUnits, 3)}
+                    primaryTypographyProps={{ sx: { color: 'text.primary', fontWeight: 600 } }}
+                    secondaryTypographyProps={{ sx: { color: 'text.secondary' } }}
+                  />
+                </ListItem>
+                <ListItem sx={{ 
+                  px: 0, 
+                  py: 1,
+                  mb: 1
+                }}>
+                  <ListItemIcon>
+                    <MonetizationOn color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Avg Cost per Unit"
+                    secondary={formatCurrency(holding.avgCostPerUnit, 'VND')}
+                    primaryTypographyProps={{ sx: { color: 'text.primary', fontWeight: 600 } }}
+                    secondaryTypographyProps={{ sx: { color: 'text.secondary' } }}
+                  />
+                </ListItem>
+                <ListItem sx={{ 
+                  px: 0, 
+                  py: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <ListItemIcon>
+                      <Assessment color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Current NAV"
+                      secondary={
+                        holding.portfolio?.navPerUnit 
+                          ? formatCurrency(holding.portfolio.navPerUnit, 'VND')
+                          : holding.totalUnits > 0 
+                            ? formatCurrency(holding.currentValue / holding.totalUnits, 'VND')
+                            : 'N/A'
+                      }
+                      primaryTypographyProps={{ sx: { color: 'text.primary', fontWeight: 600 } }}
+                      secondaryTypographyProps={{ sx: { color: 'text.secondary' } }}
+                    />
+                  </Box>
+                  
+                </ListItem>
+              </List>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Holding Information */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Holding Information
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Stack spacing={1}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Units
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatNumberWithSeparators(holding.totalUnits, 3)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Average Cost per Unit
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatCurrency(holding.avgCostPerUnit, 'VND')}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Stack spacing={1}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Current NAV per Unit
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatCurrency(holding.portfolio?.navPerUnit || 0, 'VND')}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Return Percentage
-                  </Typography>
-                  <Typography variant="h6" color={getPnLColor(summary.returnPercentage)}>
-                    {formatPercentage(summary.returnPercentage, 2)}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* Transaction Summary */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Transaction Summary
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="primary">
-                  {summary.totalTransactions}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Transactions
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="success.main">
-                  {summary.totalSubscriptions}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Subscriptions
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="warning.main">
-                  {summary.totalRedemptions}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Redemptions
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="info.main">
-                  {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Units Subscribed
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* Transaction History */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Transaction History
-          </Typography>
-          <TableContainer component={Paper} variant="outlined">
+      {/* Transaction History - Clean Table */}
+      <Card sx={{ 
+        background: 'white',
+        border: '1px solid #e9ecef',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      }}>
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ p: 2, pb: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              Transaction History
+            </Typography>
+          </Box>
+          <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell align="right">Units</TableCell>
-                  <TableCell align="right">NAV per Unit</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                  <TableCell>Description</TableCell>
+                <TableRow sx={{ 
+                  background: '#f8f9fa'
+                }}>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Type</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Units</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>NAV per Unit</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Amount</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Description</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.map(({ transaction, cashFlow }) => (
-                  <TableRow key={transaction.transactionId}>
-                    <TableCell>
-                      {format(new Date(transaction.createdAt), 'dd/MM/yyyy HH:mm')}
+                {transactions.map(({ transaction, cashFlow }, index) => (
+                  <TableRow 
+                    key={transaction.transactionId}
+                    sx={{ 
+                      '&:hover': { 
+                        background: '#f8f9fa'
+                      },
+                      background: index % 2 === 0 ? 'white' : '#fafbfc'
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 500, color: 'text.primary' }}>
+                      {format(new Date(transaction.createdAt), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell>
                       <Chip
                         label={transaction.holdingType}
                         color={transaction.holdingType === 'SUBSCRIBE' ? 'success' : 'warning'}
                         size="small"
+                        sx={{ fontWeight: 500 }}
                       />
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ fontWeight: 500, color: 'text.primary' }}>
                       {formatNumberWithSeparators(transaction.units, 3)}
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ fontWeight: 500, color: 'text.primary' }}>
                       {formatCurrency(transaction.navPerUnit, 'VND')}
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
                       {formatCurrency(transaction.amount, 'VND')}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ color: 'text.secondary' }}>
                       {cashFlow?.description || 'N/A'}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() => handleEditTransaction({ transaction, cashFlow })}
+                          sx={{ 
+                            minWidth: 'auto',
+                            px: 1,
+                            py: 0.5,
+                            textTransform: 'none',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleDeleteTransaction({ transaction, cashFlow })}
+                          sx={{ 
+                            minWidth: 'auto',
+                            px: 1,
+                            py: 0.5,
+                            textTransform: 'none',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -360,6 +609,103 @@ const HoldingDetail: React.FC = () => {
           </TableContainer>
         </CardContent>
       </Card>
+
+      {/* Edit Transaction Modal */}
+      <EditHoldingTransactionModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        transaction={selectedTransaction}
+        onTransactionUpdated={handleTransactionUpdated}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={deleteModalOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          color: 'error.main',
+          fontWeight: 600
+        }}>
+          <DeleteIcon color="error" />
+          Confirm Delete Transaction
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to delete this transaction? This action cannot be undone.
+          </Typography>
+          {transactionToDelete && (
+            <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                Transaction Details:
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Type:</strong> {transactionToDelete.transaction.holdingType}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Units:</strong> {formatNumberWithSeparators(transactionToDelete.transaction.units, 3)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Amount:</strong> {formatCurrency(transactionToDelete.transaction.amount, 'VND')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Date:</strong> {format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy')}
+              </Typography>
+            </Card>
+          )}
+
+          {/* Date Awareness Notice */}
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              ⚠️ Data Recalculation Impact
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Deleting this transaction will trigger automatic recalculation of:
+            </Typography>
+            <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
+              <Typography component="li" variant="body2">
+                Portfolio NAV per unit and total outstanding units
+              </Typography>
+              <Typography component="li" variant="body2">
+                All holding metrics (units, investment, P&L) will be recalculated from remaining transactions
+              </Typography>
+              <Typography component="li" variant="body2">
+                Associated cash flow records will be removed
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+              Recalculation will be based on the original transaction date: <strong>{transactionToDelete ? format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy') : 'N/A'}</strong>
+            </Typography>
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={handleCancelDelete} 
+            disabled={deleteLoading}
+            size="large"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            disabled={deleteLoading}
+            size="large"
+            startIcon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete Transaction'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

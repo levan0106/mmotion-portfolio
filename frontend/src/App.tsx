@@ -5,7 +5,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Box } from '@mui/material';
+import { CssBaseline, Box, Typography } from '@mui/material';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { Toaster } from 'react-hot-toast';
@@ -20,7 +20,12 @@ import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
 import DepositManagement from './pages/DepositManagement';
 import HoldingDetail from './pages/HoldingDetail';
+import Login from './pages/Login';
+import Settings from './pages/Settings';
 import { customTheme } from './theme/customTheme';
+import { AccountProvider, useAccount } from './contexts/AccountContext';
+import { ApiCallMonitor } from './components/Debug/ApiCallMonitor';
+import { AccountContextDebug } from './components/Debug/AccountContextDebug';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -32,6 +37,57 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const AppContent: React.FC = () => {
+  const { loading } = useAccount();
+  
+  // Check if user is authenticated (has logged in)
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  
+  // Show loading state while fetching account data
+  if (loading) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: 2
+      }}>
+        <Typography variant="h6">Loading account...</Typography>
+      </Box>
+    );
+  }
+
+  // Only redirect to login if user is not authenticated
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return (
+    <AppLayout>
+      <Box sx={{ minHeight: '100vh' }}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/portfolios" element={<Portfolios />} />
+          <Route path="/portfolios/new" element={<Portfolios />} />
+          <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
+          <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
+          <Route path="/holdings/:holdingId" element={<HoldingDetail />} />
+          <Route path="/assets" element={<AssetManagement />} />
+          <Route path="/global-assets" element={<GlobalAssetsPage />} />
+          <Route path="/snapshots" element={<SnapshotManagementPage />} />
+          <Route path="/deposits" element={<DepositManagement />} />
+          <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
+          <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Box>
+    </AppLayout>
+  );
+};
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -48,27 +104,13 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={customTheme}>
         <CssBaseline />
-        <Router>
-          <AppLayout>
-            <Box sx={{ minHeight: '100vh' }}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/portfolios" element={<Portfolios />} />
-                <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
-                <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
-                <Route path="/holdings/:holdingId" element={<HoldingDetail />} />
-                <Route path="/assets" element={<AssetManagement />} />
-                <Route path="/global-assets" element={<GlobalAssetsPage />} />
-                <Route path="/snapshots" element={<SnapshotManagementPage />} />
-                <Route path="/deposits" element={<DepositManagement />} />
-                <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
-                <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
-                <Route path="/settings" element={<div>Settings Page - Coming Soon</div>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Box>
-          </AppLayout>
-        </Router>
+        <AccountProvider>
+          <Router>
+            <AppContent />
+          </Router>
+          <AccountContextDebug />
+        </AccountProvider>
+        <ApiCallMonitor />
         <Toaster
           position="top-right"
           toastOptions={{

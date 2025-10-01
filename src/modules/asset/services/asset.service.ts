@@ -794,7 +794,7 @@ export class AssetService {
       initialQuantity: Number(computedFields.initialQuantity),
       // currentValue removed - calculated real-time as currentQuantity * currentPrice
       currentQuantity: Number(computedFields.currentQuantity),
-      updatedBy: asset.createdBy || asset.updatedBy || '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5', // Fallback to test user
+      updatedBy: asset.createdBy || asset.updatedBy,
     };
 
     const updatedAsset = await this.assetRepository.update(assetId, updateData);

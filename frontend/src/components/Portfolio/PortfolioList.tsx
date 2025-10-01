@@ -12,10 +12,17 @@ import {
   CircularProgress,
   Fab,
 } from '@mui/material';
-import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Search as SearchIcon,
+  AccountBalance as PortfolioIcon,
+  TrendingUp as TrendingUpIcon,
+  MonetizationOn as MonetizationOnIcon,
+  Assessment as AssessmentIcon,
+} from '@mui/icons-material';
 import PortfolioCard from './PortfolioCard';
 import { usePortfolios } from '../../hooks/usePortfolios';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './PortfolioList.styles.css';
 
 interface PortfolioListProps {
@@ -113,20 +120,70 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
       {/* Portfolio Grid */}
       {filteredPortfolios.length === 0 ? (
         <div className="portfolio-list__empty">
-          <div className="portfolio-list__empty-icon">📊</div>
-          <h3 className="portfolio-list__empty-title">
-            {portfolios.length === 0
-              ? 'No portfolios found. Create your first portfolio to get started.'
-              : 'No portfolios match your search criteria.'}
-          </h3>
+          <div className="portfolio-list__empty-illustration">
+            <div className="portfolio-list__empty-icon">
+              <PortfolioIcon sx={{ fontSize: 60, color: '#3b82f6' }} />
+            </div>
+          </div>
+          
+          <div className="portfolio-list__empty-content">
+            <h3 className="portfolio-list__empty-title">
+              {portfolios.length === 0
+                ? 'Start Your Investment Journey'
+                : 'No portfolios match your search criteria.'}
+            </h3>
+            
+            {portfolios.length === 0 ? (
+              <>
+                <p className="portfolio-list__empty-description">
+                  Create your first portfolio to begin tracking your investments, 
+                  monitor performance, and make informed financial decisions.
+                </p>
+                
+                <div className="portfolio-list__empty-features">
+                  <div className="portfolio-list__empty-feature">
+                    <div className="portfolio-list__empty-feature-icon">
+                      <TrendingUpIcon sx={{ fontSize: 24, color: '#10b981' }} />
+                    </div>
+                    <span>Track Performance</span>
+                  </div>
+                  <div className="portfolio-list__empty-feature">
+                    <div className="portfolio-list__empty-feature-icon">
+                      <MonetizationOnIcon sx={{ fontSize: 24, color: '#f59e0b' }} />
+                    </div>
+                    <span>Monitor Returns</span>
+                  </div>
+                  <div className="portfolio-list__empty-feature">
+                    <div className="portfolio-list__empty-feature-icon">
+                      <AssessmentIcon sx={{ fontSize: 24, color: '#8b5cf6' }} />
+                    </div>
+                    <span>Analyze Trends</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="portfolio-list__empty-description">
+                Try adjusting your search criteria or filters to find the portfolio you're looking for.
+              </p>
+            )}
+          </div>
+          
           {onCreatePortfolio && portfolios.length === 0 && (
-            <button
-              className="portfolio-list__empty-btn"
-              onClick={onCreatePortfolio}
-            >
-              <AddIcon />
-              Create Your First Portfolio
-            </button>
+            <div className="portfolio-list__empty-actions">
+              <button
+                className="portfolio-list__empty-btn portfolio-list__empty-btn--primary"
+                onClick={onCreatePortfolio}
+              >
+                <AddIcon />
+                Create Your First Portfolio
+              </button>
+              <button
+                className="portfolio-list__empty-btn portfolio-list__empty-btn--secondary"
+                onClick={() => {/* Add help/tutorial action */}}
+              >
+                Learn More
+              </button>
+            </div>
           )}
         </div>
       ) : (

@@ -31,6 +31,7 @@ import {
 import { SnapshotService } from '../services/snapshot.service';
 import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
+import { AccountValidationService } from '../../shared/services/account-validation.service';
 import {
   CreateSnapshotDto,
   UpdateSnapshotDto,
@@ -54,6 +55,7 @@ export class SnapshotController {
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
     @Inject(forwardRef(() => PerformanceSnapshotService))
     private readonly performanceSnapshotService: PerformanceSnapshotService,
+    private readonly accountValidationService: AccountValidationService,
   ) {}
 
   // @Post()
@@ -73,7 +75,7 @@ export class SnapshotController {
   // }
 
   @Post('portfolio/:portfolioId')
-  @ApiOperation({ summary: 'Create snapshots for all assets in a portfolio and portfolio snapshot' })
+  @ApiOperation({ summary: 'Create snapshots for all assets in a portfolio and portfolio snapshot (supports both single date and date range)' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiCreatedResponse({
     description: 'Portfolio snapshots created successfully',
@@ -84,14 +86,18 @@ export class SnapshotController {
         assetSnapshots: { type: 'array', items: { $ref: '#/components/schemas/SnapshotResponseDto' } },
         portfolioSnapshot: { type: 'object' },
         assetCount: { type: 'number' },
+        totalSnapshots: { type: 'number' },
+        datesProcessed: { type: 'array', items: { type: 'string' } },
       },
     },
   })
   @ApiNotFoundResponse({ description: 'Portfolio not found' })
+  @ApiBadRequestResponse({ description: 'Invalid date range or date format' })
   async createPortfolioSnapshot(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Body() body: {
-      snapshotDate?: string;
+      startDate?: string;
+      endDate?: string;
       granularity?: SnapshotGranularity;
       createdBy?: string;
     } = {},
@@ -100,55 +106,114 @@ export class SnapshotController {
     assetSnapshots: SnapshotResponseDto[]; 
     portfolioSnapshot: any;
     assetCount: number;
+    totalSnapshots: number;
+    datesProcessed: string[];
   }> {
-    const date = body.snapshotDate ? new Date(body.snapshotDate) : new Date();
     const granularityValue = body.granularity || SnapshotGranularity.DAILY;
 
-    const snapshotDate = normalizeDateToString(date);
+    // Normalize to date range: if single date, set startDate = endDate
+    let startDate: Date;
+    let endDate: Date;
     
-    // step 1: Create portfolio and asset snapshots first
-    const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
-      portfolioId,
-      snapshotDate,
-      granularityValue,
-      body.createdBy,
-    );
+    if (body.startDate && body.endDate) {
+      // Date range mode
+      startDate = new Date(body.startDate);
+      endDate = new Date(body.endDate);
+    } else if (body.startDate) {
+      // Single date mode - normalize to date range (startDate = endDate)
+      startDate = new Date(body.startDate);
+      endDate = new Date(body.startDate);
+    } else {
+      // Default to today
+      startDate = new Date();
+      endDate = new Date();
+    }
     
-    // step 2: Create performance snapshots, it not depends on portfolio and asset snapshots
-    let performanceSnapshots = null;
-    if (assetSnapshots.length > 0) {
+    // Validate dates
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      throw new BadRequestException('Invalid date format. Use YYYY-MM-DD format.');
+    }
+    
+    if (startDate > endDate) {
+      throw new BadRequestException('Start date must be before end date.');
+    }
+    
+    if (startDate > new Date()) {
+      throw new BadRequestException('Start date cannot be in the future.');
+    }
+
+    const datesProcessed: string[] = [];
+    let totalSnapshots = 0;
+    let assetCount = 0;
+    const allAssetSnapshots: any[] = [];
+
+    this.logger.log(`Creating snapshots for portfolio ${portfolioId} from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+
+    // Generate dates between start and end date
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const snapshotDate = normalizeDateToString(currentDate);
+      
       try {
-        this.logger.log(`Start creating performance snapshots for portfolio ${portfolioId}`);
-        performanceSnapshots = await this.performanceSnapshotService.createPerformanceSnapshots(
+        // Create snapshots for this date
+        const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
           portfolioId,
           snapshotDate,
           granularityValue,
           body.createdBy,
         );
-        this.logger.log(`Performance snapshots created successfully: 1 portfolio, ${performanceSnapshots.assetSnapshots.length} assets, ${performanceSnapshots.groupSnapshots.length} groups`);
+        
+        // Create performance snapshots if asset snapshots were created
+        if (assetSnapshots.length > 0) {
+          try {
+            await this.performanceSnapshotService.createPerformanceSnapshots(
+              portfolioId,
+              snapshotDate,
+              granularityValue,
+              body.createdBy,
+            );
+          } catch (error) {
+            this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioId} on ${snapshotDate}:`, error);
+            // Continue with next date even if performance snapshots fail
+          }
+          
+          totalSnapshots += assetSnapshots.length;
+          if (assetCount === 0) {
+            assetCount = assetSnapshots.length;
+          }
+          datesProcessed.push(snapshotDate);
+          allAssetSnapshots.push(...assetSnapshots);
+        }
+        
+        this.logger.log(`Created ${assetSnapshots.length} snapshots for ${snapshotDate}`);
       } catch (error) {
-        this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioId}:`, error);
-        // Don't fail the entire operation if performance snapshots fail
-        // Performance snapshots are not critical, so we don't need to fail the entire operation if performance snapshots fail
+        this.logger.error(`Failed to create snapshots for portfolio ${portfolioId} on ${snapshotDate}:`, error);
+        // Continue with next date even if one date fails
       }
+      
+      // Move to next date
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     const response = {
-      message: assetSnapshots.length > 0 
-        ? `Successfully created ${assetSnapshots.length} asset snapshots, portfolio snapshot${performanceSnapshots ? ' and performance snapshots' : ''} for portfolio ${portfolioId}`
-        : `No assets found in portfolio ${portfolioId}. No snapshots created.`,
-      assetSnapshots: assetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
-      portfolioSnapshot: null, // Portfolio snapshot is created internally by createPortfolioSnapshot, do not need to return it
-      performanceSnapshots: performanceSnapshots,
-      assetCount: assetSnapshots.length,
+      message: totalSnapshots > 0 
+        ? `Successfully created ${totalSnapshots} snapshots for ${datesProcessed.length} dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`
+        : `No snapshots created for portfolio ${portfolioId} in the specified date range.`,
+      assetSnapshots: allAssetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
+      portfolioSnapshot: null,
+      assetCount,
+      totalSnapshots,
+      datesProcessed,
     };
     
     this.logger.log(`Portfolio snapshot creation result: ${response.message}`);
     return response;
   }
 
+
   @Get()
   @ApiOperation({ summary: 'Get snapshots with query options' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID', required: false })
   @ApiQuery({ name: 'assetId', description: 'Asset ID', required: false })
   @ApiQuery({ name: 'assetSymbol', description: 'Asset symbol', required: false })
@@ -164,7 +229,16 @@ export class SnapshotController {
     description: 'Snapshots retrieved successfully',
     type: [SnapshotResponseDto],
   })
-  async getSnapshots(@Query() query: SnapshotQueryDto): Promise<SnapshotResponseDto[]> {
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  async getSnapshots(@Query() query: SnapshotQueryDto & { accountId: string }): Promise<SnapshotResponseDto[]> {
+    if (!query.accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // If portfolioId is provided, validate portfolio ownership
+    if (query.portfolioId) {
+      await this.accountValidationService.validatePortfolioOwnership(query.portfolioId, query.accountId);
+    }
     const options = {
       ...query,
       startDate: query.startDate ? new Date(query.startDate) : undefined,
@@ -337,29 +411,53 @@ export class SnapshotController {
   @Get(':id')
   @ApiOperation({ summary: 'Get snapshot by ID' })
   @ApiParam({ name: 'id', description: 'Snapshot ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiOkResponse({
     description: 'Snapshot retrieved successfully',
     type: SnapshotResponseDto,
   })
   @ApiNotFoundResponse({ description: 'Snapshot not found' })
-  async getSnapshotById(@Param('id', ParseUUIDPipe) id: string): Promise<SnapshotResponseDto> {
+  @ApiResponse({ status: 403, description: 'Snapshot does not belong to account' })
+  async getSnapshotById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<SnapshotResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
     const snapshot = await this.snapshotService.getSnapshotById(id);
+    
+    // Validate portfolio ownership for the snapshot's portfolio
+    await this.accountValidationService.validatePortfolioOwnership(snapshot.portfolioId, accountId);
+    
     return this.mapToResponseDto(snapshot);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update snapshot' })
   @ApiParam({ name: 'id', description: 'Snapshot ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiOkResponse({
     description: 'Snapshot updated successfully',
     type: SnapshotResponseDto,
   })
   @ApiNotFoundResponse({ description: 'Snapshot not found' })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
+  @ApiResponse({ status: 403, description: 'Snapshot does not belong to account' })
   async updateSnapshot(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
     @Body() updateDto: UpdateSnapshotDto,
   ): Promise<SnapshotResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Get snapshot first to validate portfolio ownership
+    const existingSnapshot = await this.snapshotService.getSnapshotById(id);
+    await this.accountValidationService.validatePortfolioOwnership(existingSnapshot.portfolioId, accountId);
+    
     const snapshot = await this.snapshotService.updateSnapshot(id, updateDto);
     return this.mapToResponseDto(snapshot);
   }
@@ -380,6 +478,7 @@ export class SnapshotController {
   @Post('bulk-recalculate/:portfolioId')
   @ApiOperation({ summary: 'Bulk recalculate snapshots for portfolio' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiQuery({ name: 'snapshotDate', description: 'Specific snapshot date to recalculate', required: false })
   @ApiOkResponse({
     description: 'Snapshots recalculated successfully',
@@ -391,10 +490,18 @@ export class SnapshotController {
       },
     },
   })
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
   async bulkRecalculateSnapshots(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
+    @Query('accountId') accountId: string,
     @Query('snapshotDate') snapshotDate?: string,
   ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
     const date = snapshotDate ? new Date(snapshotDate) : undefined;
     const updatedCount = await this.snapshotService.bulkRecalculateSnapshots(portfolioId, date);
     return {

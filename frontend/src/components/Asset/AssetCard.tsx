@@ -11,7 +11,7 @@ import {
   formatNumber
 } from '../../utils/format';
 import { AssetTypeLabels } from '../../types/asset.types';
-import { useAccount } from '../../hooks/useAccount';
+import { useAccount } from '../../contexts/AccountContext';
 import './AssetCard.styles.css';
 
 export interface AssetCardProps {

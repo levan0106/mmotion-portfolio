@@ -44,15 +44,18 @@ export class AssetService {
   /**
    * Create a new asset
    */
-  async createAsset(data: CreateAssetRequest): Promise<Asset> {
-    return this.makeRequest<Asset>('POST', '/api/v1/assets', data);
+  async createAsset(data: CreateAssetRequest, accountId: string): Promise<Asset> {
+    return this.makeRequest<Asset>('POST', `/api/v1/assets?accountId=${accountId}`, data);
   }
 
   /**
    * Get all assets with filtering and pagination
    */
-  async getAssets(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
+  async getAssets(filters: AssetFilters = {}, accountId: string): Promise<PaginatedResponse<Asset>> {
     const queryParams = new URLSearchParams();
+    
+    // Add accountId first
+    queryParams.append('accountId', accountId);
     
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -74,11 +77,11 @@ export class AssetService {
   /**
    * Update asset by ID
    */
-  async updateAsset(id: string, data: UpdateAssetRequest): Promise<Asset> {
+  async updateAsset(id: string, data: UpdateAssetRequest, accountId: string): Promise<Asset> {
     console.log('AssetService.updateAsset called with:', { id, data });
     console.log('Making PUT request to: /api/v1/assets/' + id);
     
-    const result = await this.makeRequest<Asset>('PUT', `/api/v1/assets/${id}`, data);
+    const result = await this.makeRequest<Asset>('PUT', `/api/v1/assets/${id}?accountId=${accountId}`, data);
     console.log('API response data:', result);
     return result;
   }
@@ -86,8 +89,8 @@ export class AssetService {
   /**
    * Delete asset by ID
    */
-  async deleteAsset(id: string): Promise<void> {
-    await this.makeRequest<void>('DELETE', `/api/v1/assets/${id}`);
+  async deleteAsset(id: string, accountId: string): Promise<void> {
+    await this.makeRequest<void>('DELETE', `/api/v1/assets/${id}?accountId=${accountId}`);
   }
 
   /**

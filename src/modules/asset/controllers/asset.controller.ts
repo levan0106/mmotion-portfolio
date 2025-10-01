@@ -11,6 +11,7 @@ import {
   HttpCode,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,6 +27,7 @@ import { CreateAssetDto } from '../dto/create-asset.dto';
 import { UpdateAssetDto } from '../dto/update-asset.dto';
 import { AssetValidationService } from '../services/asset-validation.service';
 import { AssetAnalyticsService } from '../services/asset-analytics.service';
+import { AccountValidationService } from '../../shared/services/account-validation.service';
 import { Asset } from '../entities/asset.entity';
 import { AssetType, AssetTypeLabels, AssetTypeDescriptions } from '../enums/asset-type.enum';
 import { AssetFilters, PaginatedResponse } from '../repositories/asset.repository';
@@ -58,6 +60,7 @@ export class AssetController {
     private readonly assetService: AssetService,
     private readonly assetValidationService: AssetValidationService,
     private readonly assetAnalyticsService: AssetAnalyticsService,
+    private readonly accountValidationService: AccountValidationService,
   ) {}
 
   /**
@@ -85,7 +88,18 @@ export class AssetController {
     status: 409,
     description: 'Conflict - asset symbol already exists for this user',
   })
-  async create(@Body() createAssetDto: CreateAssetDto): Promise<AssetResponseDto> {
+  @ApiResponse({ status: 403, description: 'Account does not have permission to create assets' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  async create(
+    @Query('accountId') accountId: string,
+    @Body() createAssetDto: CreateAssetDto
+  ): Promise<AssetResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate account ownership for asset creation
+    await this.accountValidationService.validateAccountOwnership(accountId, accountId);
     await this.assetValidationService.validateAssetCreation(createAssetDto);
     const asset = await this.assetService.create(createAssetDto);
     
@@ -100,6 +114,7 @@ export class AssetController {
    */
   @Get()
   @ApiOperation({ summary: 'Get all assets with filtering and pagination' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiQuery({ name: 'createdBy', required: false, description: 'Filter by user ID' })
   @ApiQuery({ name: 'symbol', required: false, description: 'Filter by asset symbol' })
   @ApiQuery({ name: 'type', required: false, enum: AssetType, description: 'Filter by asset type' })
@@ -116,7 +131,17 @@ export class AssetController {
     description: 'Assets retrieved successfully',
     type: PaginatedAssetResponseDto,
   })
-  async findAll(@Query() filters: AssetFilters): Promise<PaginatedAssetResponseDto> {
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  async findAll(@Query() filters: AssetFilters & { accountId: string }): Promise<PaginatedAssetResponseDto> {
+    if (!filters.accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // If portfolioId is provided, validate portfolio ownership
+    if (filters.portfolioId) {
+      await this.accountValidationService.validatePortfolioOwnership(filters.portfolioId, filters.accountId);
+    }
+    
     console.log('Asset filters received:', filters);
     console.log('hasTrades filter:', filters.hasTrades);
     const result = await this.assetService.findAll(filters);
@@ -444,6 +469,7 @@ export class AssetController {
   @Get(':id')
   @ApiOperation({ summary: 'Get asset by ID' })
   @ApiParam({ name: 'id', description: 'Asset ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   @ApiResponse({
     status: 200,
     description: 'Asset retrieved successfully',
@@ -453,7 +479,21 @@ export class AssetController {
     status: 404,
     description: 'Asset not found',
   })
-  async findById(@Param('id') id: string, @Query('portfolioId') portfolioId?: string): Promise<AssetResponseDto> {
+  @ApiResponse({ status: 403, description: 'Portfolio does not belong to account' })
+  async findById(
+    @Param('id') id: string, 
+    @Query('accountId') accountId: string,
+    @Query('portfolioId') portfolioId?: string
+  ): Promise<AssetResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // If portfolioId is provided, validate portfolio ownership
+    if (portfolioId) {
+      await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    }
+    
     const { asset, computedFields } = await this.assetService.findByIdWithComputedFields(id, portfolioId);
     return AssetMapper.toResponseDto(asset, computedFields);
   }
@@ -486,10 +526,19 @@ export class AssetController {
     status: 409,
     description: 'Conflict - validation failed',
   })
+  @ApiResponse({ status: 403, description: 'Asset does not belong to account' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
   async update(
     @Param('id') id: string,
+    @Query('accountId') accountId: string,
     @Body() updateAssetDto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate account ownership for asset updates
+    await this.accountValidationService.validateAccountOwnership(accountId, accountId);
     await this.assetValidationService.validateAssetUpdate(id, updateAssetDto);
     const asset = await this.assetService.update(id, updateAssetDto);
     
@@ -519,7 +568,18 @@ export class AssetController {
     status: 404,
     description: 'Asset not found',
   })
-  async delete(@Param('id') id: string): Promise<AssetDeletionResponseDto> {
+  @ApiResponse({ status: 403, description: 'Asset does not belong to account' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  async delete(
+    @Param('id') id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<AssetDeletionResponseDto> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate account ownership for asset deletion
+    await this.accountValidationService.validateAccountOwnership(accountId, accountId);
     const validation = await this.assetValidationService.validateAssetDeletion(id);
     
     if (!validation.canDelete) {

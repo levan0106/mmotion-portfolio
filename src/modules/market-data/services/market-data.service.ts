@@ -1095,8 +1095,8 @@ export class MarketDataService {
     const change = changeMatch ? parseFloat(changeMatch[1]) : 0;
     const changePercent = changeMatch ? parseFloat(changeMatch[2]) : 0;
 
-    // Use GiaDieuChinh if GiaDongCua is 0 (no trading day)
-    let closePrice = item.GiaDieuChinh || item.GiaDongCua || 0;
+    // Sử dụng giá đóng cửa sẽ đúng với historical data, giá điều chỉnh sẽ đúng với giá hiện tại
+    let closePrice = item.GiaDongCua || item.GiaDieuChinh ||  0;
     
     // Apply multiplication factor based on asset type
     closePrice = closePrice * multiplyBy;
