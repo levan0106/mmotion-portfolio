@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 import {
   Box,
   Card,
@@ -36,6 +38,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
   portfolioId,
   onRefresh,
 }) => {
+  const { accountId } = useAccount();
   const [stats, setStats] = useState<CashFlowStats>({
     totalDeposits: 0,
     totalWithdrawals: 0,
@@ -48,9 +51,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
   const loadStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history`);
-      if (!response.ok) throw new Error('Failed to load cash flow stats');
-      const data = await response.json();
+      const data = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId);
 
       const totalDeposits = data
         .filter((cf: any) => (cf.type === 'DEPOSIT' || cf.type === 'SELL_TRADE') && cf.status === 'COMPLETED')

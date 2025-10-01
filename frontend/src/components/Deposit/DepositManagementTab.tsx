@@ -71,7 +71,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
   // Fetch deposits
   const { data: depositsResponse, isLoading: depositsLoading, error: depositsError } = useQuery(
     ['deposits', portfolioId],
-    () => apiService.get(`/api/v1/deposits/portfolio/${portfolioId}`),
+    () => apiService.getPortfolioDeposits(portfolioId),
     {
       enabled: !!portfolioId,
     }
@@ -83,7 +83,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
   // Fetch deposit analytics
   const { data: analytics } = useQuery(
     ['deposit-analytics', portfolioId],
-    () => apiService.get(`/api/v1/deposits/portfolio/${portfolioId}/analytics`),
+    () => apiService.getPortfolioDepositAnalytics(portfolioId),
     {
       enabled: !!portfolioId,
     }
@@ -91,7 +91,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
 
   // Create deposit mutation
   const createDepositMutation = useMutation(
-    (data: any) => apiService.post('/api/v1/deposits', data),
+    (data: any) => apiService.createDeposit(data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
@@ -107,7 +107,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
 
   // Update deposit mutation
   const updateDepositMutation = useMutation(
-    ({ id, data }: { id: string; data: any }) => apiService.put(`/api/v1/deposits/${id}`, data),
+    ({ id, data }: { id: string; data: any }) => apiService.updateDeposit(id, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
@@ -124,7 +124,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
 
   // Settle deposit mutation
   const settleDepositMutation = useMutation(
-    ({ id, data }: { id: string; data: any }) => apiService.post(`/api/v1/deposits/${id}/settle`, data),
+    ({ id, data }: { id: string; data: any }) => apiService.settleDeposit(id, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
@@ -141,7 +141,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
 
   // Delete deposit mutation
   const deleteDepositMutation = useMutation(
-    (id: string) => apiService.delete(`/api/v1/deposits/${id}`),
+    (id: string) => apiService.deleteDeposit(id),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);

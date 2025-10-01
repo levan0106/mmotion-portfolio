@@ -16,6 +16,8 @@ import {
   AccountBalance
 } from '@mui/icons-material';
 import { formatCurrency } from '../../utils/format';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface NAVHistoryData {
   date: string;
@@ -53,6 +55,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   getUltraSpacing = (normal) => normal,
   portfolioId
 }) => {
+  const { accountId } = useAccount();
   // State for NAV history data
   const [navHistoryData, setNavHistoryData] = useState<NAVHistoryData[]>([]);
 
@@ -68,24 +71,18 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   // Fetch NAV history data
   useEffect(() => {
     const fetchNAVHistory = async () => {
-      if (!portfolioId || !isFund) return;
+      if (!portfolioId || !isFund || !accountId) return;
 
       try {
-        const response = await fetch(
-          `/api/v1/portfolios/${portfolioId}/nav/history?months=1&granularity=DAILY`
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          setNavHistoryData(result.data || []);
-        }
+        const result = await apiService.getPortfolioNAVHistory(portfolioId, accountId, { months: 1, granularity: 'DAILY' });
+        setNavHistoryData(result.data || []);
       } catch (error) {
         console.error('Error fetching NAV history:', error);
       }
     };
 
     fetchNAVHistory();
-  }, [portfolioId, isFund]);
+  }, [portfolioId, isFund, accountId]);
 
   // Calculate NAV/Unit growth from real data
   const calculateNAVPerUnitGrowth = () => {

@@ -61,8 +61,7 @@ export class UnifiedSnapshotService {
       });
     }
 
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}?${queryParams.toString()}`);
-    return response.data;
+    return await apiService.getSnapshots(params, accountId);
   }
 
   /**
@@ -84,8 +83,7 @@ export class UnifiedSnapshotService {
       });
     }
 
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/paginated?${queryParams.toString()}`);
-    return response.data;
+    return await apiService.getSnapshotsPaginated(params, accountId);
   }
 
   /**
@@ -107,24 +105,21 @@ export class UnifiedSnapshotService {
     if (options?.orderBy) params.append('orderBy', options.orderBy);
     if (options?.orderDirection) params.append('orderDirection', options.orderDirection);
 
-    const response = await apiService.api.get(`/api/v1/portfolio-snapshots?${params.toString()}`);
-    return response.data;
+    return await apiService.getPortfolioSnapshotsPaginated(portfolioId, options);
   }
 
   /**
    * Get snapshot by ID
    */
   async getSnapshotById(id: string): Promise<SnapshotResponse> {
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/${id}`);
-    return response.data;
+    return await apiService.getSnapshotById(id);
   }
 
   /**
    * Create new snapshot
    */
   async createSnapshot(data: CreateSnapshotRequest): Promise<SnapshotResponse> {
-    const response = await apiService.api.post(this.basicSnapshotUrl, data);
-    return response.data;
+    return await apiService.createSnapshot(data);
   }
 
   /**
@@ -146,19 +141,14 @@ export class UnifiedSnapshotService {
     totalSnapshots: number;
     datesProcessed: string[];
   }> {
-    const response = await apiService.api.post(
-      `${this.basicSnapshotUrl}/portfolio/${portfolioId}`,
-      options
-    );
-    return response.data;
+    return await apiService.createPortfolioSnapshots(portfolioId, options);
   }
 
   /**
    * Update snapshot
    */
   async updateSnapshot(id: string, data: UpdateSnapshotRequest): Promise<SnapshotResponse> {
-    const response = await apiService.api.put(`${this.basicSnapshotUrl}/${id}`, data);
-    return response.data;
+    return await apiService.updateSnapshot(id, data);
   }
 
   /**
@@ -179,17 +169,14 @@ export class UnifiedSnapshotService {
     const queryParams = new URLSearchParams();
     if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
 
-    const response = await apiService.api.post(
-      `${this.basicSnapshotUrl}/bulk-recalculate/${portfolioId}?${queryParams.toString()}`
-    );
-    return response.data;
+    return await apiService.bulkRecalculateSnapshots(portfolioId, snapshotDate);
   }
 
   /**
    * Delete snapshot (soft delete)
    */
   async deleteSnapshot(id: string): Promise<void> {
-    await apiService.api.delete(`${this.basicSnapshotUrl}/${id}`);
+    await apiService.deleteSnapshot(id);
   }
 
   /**
@@ -255,8 +242,7 @@ export class UnifiedSnapshotService {
    * Get snapshot statistics
    */
   async getSnapshotStatistics(portfolioId: string): Promise<SnapshotStatistics> {
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/statistics/${portfolioId}`);
-    return response.data;
+    return await apiService.getSnapshotStatistics(portfolioId);
   }
 
   /**
@@ -284,10 +270,7 @@ export class UnifiedSnapshotService {
     queryParams.append('endDate', endDate);
     if (granularity) queryParams.append('granularity', granularity);
 
-    const response = await apiService.api.delete(
-      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/date-range?${queryParams.toString()}`
-    );
-    return response.data;
+    return await apiService.deleteSnapshotsByDateRange(portfolioId, startDate, endDate, granularity);
   }
 
   /**
@@ -302,10 +285,7 @@ export class UnifiedSnapshotService {
     queryParams.append('snapshotDate', snapshotDate);
     if (granularity) queryParams.append('granularity', granularity);
 
-    const response = await apiService.api.delete(
-      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/date?${queryParams.toString()}`
-    );
-    return response.data;
+    return await apiService.deleteSnapshotsByDate(portfolioId, snapshotDate, granularity);
   }
 
   /**
@@ -331,8 +311,7 @@ export class UnifiedSnapshotService {
     latestSnapshotDate: string; 
     oldestSnapshotDate: string; 
   }[]> {
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/portfolios`);
-    return response.data;
+    return await apiService.getPortfoliosWithSnapshots();
   }
 
   // ============================================================================
@@ -343,8 +322,7 @@ export class UnifiedSnapshotService {
    * Create performance snapshots for a portfolio
    */
   async createPerformanceSnapshots(dto: CreatePerformanceSnapshotDto): Promise<PerformanceSnapshotResult> {
-    const response: AxiosResponse<PerformanceSnapshotResult> = await axios.post(this.performanceSnapshotUrl, dto);
-    return response.data;
+    return await apiService.createPerformanceSnapshots(dto);
   }
 
   /**
@@ -366,10 +344,7 @@ export class UnifiedSnapshotService {
       params.append('granularity', query.granularity);
     }
 
-    const response: AxiosResponse<PortfolioPerformanceSnapshot[]> = await axios.get(
-      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPortfolioPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -397,10 +372,7 @@ export class UnifiedSnapshotService {
       params.append('limit', query.limit.toString());
     }
 
-    const response: AxiosResponse<{ data: PortfolioPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
-      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPortfolioPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -425,10 +397,7 @@ export class UnifiedSnapshotService {
       params.append('granularity', query.granularity);
     }
 
-    const response: AxiosResponse<AssetPerformanceSnapshot[]> = await axios.get(
-      `${this.performanceSnapshotUrl}/asset/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -459,10 +428,7 @@ export class UnifiedSnapshotService {
       params.append('limit', query.limit.toString());
     }
 
-    const response: AxiosResponse<{ data: AssetPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
-      `${this.performanceSnapshotUrl}/asset/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -537,10 +503,7 @@ export class UnifiedSnapshotService {
     const params = new URLSearchParams();
     params.append('period', period);
     
-    const response: AxiosResponse<PortfolioPerformanceSummary> = await axios.get(
-      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}/summary?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPortfolioPerformanceSummary(portfolioId, period);
   }
 
   /**
@@ -559,10 +522,7 @@ export class UnifiedSnapshotService {
       params.append('period', query.period);
     }
 
-    const response: AxiosResponse<AssetPerformanceSummary> = await axios.get(
-      `${this.performanceSnapshotUrl}/asset/${portfolioId}/summary?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetPerformanceSummary(portfolioId, query);
   }
 
   /**
@@ -604,10 +564,7 @@ export class UnifiedSnapshotService {
       params.append('granularity', granularity);
     }
 
-    const response: AxiosResponse<{ deletedCount: number; message: string }> = await axios.delete(
-      `${this.performanceSnapshotUrl}/portfolio/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.deletePerformanceSnapshotsByDateRange(portfolioId, startDate, endDate, granularity);
   }
 
   /**
@@ -629,18 +586,14 @@ export class UnifiedSnapshotService {
       params.append('granularity', query.granularity);
     }
 
-    const response: AxiosResponse<PerformanceSnapshotExport> = await axios.get(
-      `${this.performanceSnapshotUrl}/export/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.exportPerformanceSnapshots(portfolioId, query);
   }
 
   /**
    * Get performance metrics for dashboard
    */
   async getPerformanceDashboardData(portfolioId: string): Promise<any> {
-    const response: AxiosResponse<any> = await axios.get(`${this.performanceSnapshotUrl}/dashboard/${portfolioId}`);
-    return response.data;
+    return await apiService.getPerformanceDashboardData(portfolioId);
   }
 
   /**
@@ -655,10 +608,7 @@ export class UnifiedSnapshotService {
     params.append('benchmarkId', benchmarkId);
     params.append('period', period);
 
-    const response: AxiosResponse<any> = await axios.get(
-      `${this.performanceSnapshotUrl}/comparison/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPerformanceComparison(portfolioId, benchmarkId, period);
   }
 
   /**
@@ -668,10 +618,7 @@ export class UnifiedSnapshotService {
     const params = new URLSearchParams();
     params.append('period', period);
 
-    const response: AxiosResponse<any> = await axios.get(
-      `${this.performanceSnapshotUrl}/risk-analysis/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getRiskAnalysis(portfolioId, period);
   }
 
   /**
@@ -684,10 +631,7 @@ export class UnifiedSnapshotService {
     const params = new URLSearchParams();
     params.append('period', period);
 
-    const response: AxiosResponse<any> = await axios.get(
-      `${this.performanceSnapshotUrl}/attribution/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPerformanceAttribution(portfolioId, period);
   }
 
   /**
@@ -702,10 +646,7 @@ export class UnifiedSnapshotService {
     params.append('metric', metric);
     params.append('period', period);
 
-    const response: AxiosResponse<any> = await axios.get(
-      `${this.performanceSnapshotUrl}/trends/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getPerformanceTrends(portfolioId, metric, period);
   }
 
   /**
@@ -725,50 +666,42 @@ export class UnifiedSnapshotService {
       params.append('endDate', endDate);
     }
 
-    const response: AxiosResponse<any> = await axios.get(
-      `${this.performanceSnapshotUrl}/benchmark/${benchmarkId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getBenchmarkData(benchmarkId, startDate, endDate);
   }
 
   /**
    * Get available benchmarks
    */
   async getAvailableBenchmarks(): Promise<any[]> {
-    const response: AxiosResponse<any[]> = await axios.get(`${this.performanceSnapshotUrl}/benchmarks`);
-    return response.data;
+    return await apiService.getAvailableBenchmarks();
   }
 
   /**
    * Get performance alerts
    */
   async getPerformanceAlerts(portfolioId: string): Promise<any[]> {
-    const response: AxiosResponse<any[]> = await axios.get(`${this.performanceSnapshotUrl}/alerts/${portfolioId}`);
-    return response.data;
+    return await apiService.getPerformanceAlerts(portfolioId);
   }
 
   /**
    * Create performance alert
    */
   async createPerformanceAlert(portfolioId: string, alert: any): Promise<any> {
-    const response: AxiosResponse<any> = await axios.post(`${this.performanceSnapshotUrl}/alerts/${portfolioId}`, alert);
-    return response.data;
+    return await apiService.createPerformanceAlert(portfolioId, alert);
   }
 
   /**
    * Update performance alert
    */
   async updatePerformanceAlert(portfolioId: string, alertId: string, alert: any): Promise<any> {
-    const response: AxiosResponse<any> = await axios.put(`${this.performanceSnapshotUrl}/alerts/${portfolioId}/${alertId}`, alert);
-    return response.data;
+    return await apiService.updatePerformanceAlert(portfolioId, alertId, alert);
   }
 
   /**
    * Delete performance alert
    */
   async deletePerformanceAlert(portfolioId: string, alertId: string): Promise<any> {
-    const response: AxiosResponse<any> = await axios.delete(`${this.performanceSnapshotUrl}/alerts/${portfolioId}/${alertId}`);
-    return response.data;
+    return await apiService.deletePerformanceAlert(portfolioId, alertId);
   }
 
   // ============================================================================

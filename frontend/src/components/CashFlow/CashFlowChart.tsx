@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 import {
   Box,
   Card,
@@ -80,6 +82,7 @@ interface MonthlyData {
 }
 
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
+  const { accountId } = useAccount();
   const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('line');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
   const [lineData, setLineData] = useState<CashFlowData[]>([]);
@@ -109,12 +112,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
       console.log('Loading cash flow data for portfolio:', portfolioId);
       
       // Load all data for chart (no pagination needed for chart)
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history?limit=1000`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
+      const responseData = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { limit: 1000 });
       console.log('Raw API response:', responseData);
       
       // Extract the actual data array from the new pagination format

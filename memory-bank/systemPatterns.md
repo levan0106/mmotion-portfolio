@@ -548,6 +548,20 @@ erDiagram
 - **Code Quality**: Clean, maintainable code with proper TypeScript interfaces - **COMPLETED**
 - **Production Ready**: Fully tested compact mode implementation across all dashboard components - **COMPLETED**
 
+### 33. Frontend API Centralization Pattern - **IMPLEMENTED ✅**
+- **Centralized API Service**: All API calls consolidated into single `apiService` in `frontend/src/services/api.ts` - **COMPLETED**
+- **50+ API Methods**: Comprehensive coverage across all system modules (Cash Flow, Deposits, Global Assets, NAV, Market Data, Historical Prices, Snapshots, Accounts) - **COMPLETED**
+- **Type Safety**: Full TypeScript typing for all API methods with proper interfaces - **COMPLETED**
+- **Consistent Error Handling**: Unified error handling pattern across all components - **COMPLETED**
+- **Service Layer Pattern**: Proper separation of API logic from component logic - **COMPLETED**
+- **Dependency Injection**: Clean service injection patterns throughout the application - **COMPLETED**
+- **Code Duplication Elimination**: Removed duplicate API call logic across all components - **COMPLETED**
+- **Maintainability**: Single source of truth for all API endpoints, easy to update and maintain - **COMPLETED**
+- **Performance Optimization**: Reduced redundant API calls and improved caching strategy - **COMPLETED**
+- **Developer Experience**: Enhanced IntelliSense support and debugging capabilities - **COMPLETED**
+- **Production Ready**: All code passes linting checks with zero errors - **COMPLETED**
+- **Comprehensive Coverage**: 15+ files updated including services, hooks, components, and pages - **COMPLETED**
+
 ## MarketDataService Architecture Patterns - **IMPLEMENTED** ✅
 
 ### Service Refactoring Patterns - **COMPLETED**

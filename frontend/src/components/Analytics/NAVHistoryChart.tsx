@@ -32,6 +32,8 @@ import {
   Bar
 } from 'recharts';
 import { formatCurrency, formatPercentage } from '../../utils/format';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface NAVHistoryData {
   date: string;
@@ -72,6 +74,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   compact = false,
   getUltraSpacing = (normal) => normal
 }) => {
+  const { accountId } = useAccount();
   const [data, setData] = useState<NAVHistoryData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,21 +97,13 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   ];
 
   const fetchNAVHistory = async () => {
-    if (!portfolioId) return;
+    if (!portfolioId || !accountId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/v1/portfolios/${portfolioId}/nav/history?months=${timeframe}&granularity=${granularity}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: NAVHistoryResponse = await response.json();
+      const result: NAVHistoryResponse = await apiService.getPortfolioNAVHistory(portfolioId, accountId, { months: timeframe, granularity });
       setData(result.data || []);
     } catch (err) {
       console.error('Error fetching NAV history:', err);
@@ -120,7 +115,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
 
   useEffect(() => {
     fetchNAVHistory();
-  }, [portfolioId, timeframe, granularity]);
+  }, [portfolioId, accountId, timeframe, granularity]);
 
   const handleTimeframeChange = (event: any) => {
     setTimeframe(event.target.value);

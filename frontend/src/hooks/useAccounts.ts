@@ -29,15 +29,7 @@ export const useAccounts = () => {
       setLoading(true);
       setError(null);
       console.log('🔍 useAccounts: Fetching accounts from API');
-      const response = await apiService.get('/api/v1/accounts');
-      
-      // API returns data directly, not in response.data
-      let accountsData = [];
-      if (response && Array.isArray(response)) {
-        accountsData = response;
-      } else if (response.data && Array.isArray(response.data)) {
-        accountsData = response.data;
-      }
+      const accountsData = await apiService.getAccounts();
       
       // Sort accounts: main account first, then by creation date
       const sortedAccounts = accountsData.sort((a: Account, b: Account) => {

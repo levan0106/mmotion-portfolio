@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 import {
   Box,
   Card,
@@ -66,6 +68,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
   portfolioId,
   onCashFlowUpdate,
 }) => {
+  const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,9 +89,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
   const loadCashFlows = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/history`);
-      if (!response.ok) throw new Error('Failed to load cash flows');
-      const data = await response.json();
+      const data = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId);
       setCashFlows(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load cash flows');
@@ -115,18 +116,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
         fundingSource: formData.fundingSource || undefined,
       };
 
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/${dialogType}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create cash flow');
-      }
+      await apiService.createCashFlow(portfolioId, accountId, dialogType, payload);
 
       // Reset form and close dialog
       setFormData({ amount: '', description: '', reference: '', effectiveDate: '', fundingSource: '' });
@@ -149,11 +139,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/${cashFlowId}/cancel`, {
-        method: 'PUT',
-      });
-
-      if (!response.ok) throw new Error('Failed to cancel cash flow');
+      await apiService.cancelCashFlow(portfolioId, accountId, cashFlowId);
 
       await loadCashFlows();
       onCashFlowUpdate?.();

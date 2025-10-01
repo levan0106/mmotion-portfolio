@@ -101,7 +101,7 @@ const GlobalAssetsPage: React.FC = () => {
   const handleUpdateAllPrices = async () => {
     try {
       // Trigger manual sync
-      const response = await apiService.api.post('/api/v1/global-assets/auto-sync/trigger');
+      const response = await apiService.triggerGlobalAssetsSync();
       console.log('Manual sync triggered:', response.data);
       
       // Refresh assets after sync

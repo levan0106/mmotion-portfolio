@@ -13,7 +13,6 @@ import {
   PerformanceHistoryResponse,
   NavSnapshot,
   CashFlow,
-  CashFlowFormData,
   ApiResponse,
   Asset,
   Trade,
@@ -272,10 +271,6 @@ class ApiService {
     return response.data;
   }
 
-  async createCashFlow(portfolioId: string, accountId: string, data: CashFlowFormData): Promise<CashFlow> {
-    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/cash-flows?accountId=${accountId}`, data);
-    return response.data;
-  }
 
   // Trading endpoints
   async createTrade(data: any, accountId: string): Promise<any> {
@@ -477,6 +472,521 @@ class ApiService {
     updatedHoldingsCount: number;
   }> {
     const response = await this.api.post(`/api/v1/investor-holdings/recalculate-all/${portfolioId}`);
+    return response.data;
+  }
+
+  // Cash Flow endpoints
+  async getPortfolioCashFlowHistory(
+    portfolioId: string, 
+    accountId: string, 
+    options?: { page?: number; limit?: number }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('accountId', accountId);
+    if (options?.page) params.append('page', options.page.toString());
+    if (options?.limit) params.append('limit', options.limit.toString());
+    
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?${params.toString()}`);
+    return response.data;
+  }
+
+  async createCashFlow(
+    portfolioId: string, 
+    accountId: string, 
+    type: string, 
+    data: any
+  ): Promise<any> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/cash-flow/${type}?accountId=${accountId}`, data);
+    return response.data;
+  }
+
+  async updateCashFlow(
+    portfolioId: string, 
+    accountId: string, 
+    cashFlowId: string, 
+    data: any
+  ): Promise<any> {
+    const response = await this.api.put(`/api/v1/portfolios/${portfolioId}/cash-flow/${cashFlowId}?accountId=${accountId}`, data);
+    return response.data;
+  }
+
+  async deleteCashFlow(
+    portfolioId: string, 
+    accountId: string, 
+    cashFlowId: string
+  ): Promise<void> {
+    await this.api.delete(`/api/v1/portfolios/${portfolioId}/cash-flow/${cashFlowId}?accountId=${accountId}`);
+  }
+
+  async cancelCashFlow(
+    portfolioId: string, 
+    accountId: string, 
+    cashFlowId: string
+  ): Promise<any> {
+    const response = await this.api.put(`/api/v1/portfolios/${portfolioId}/cash-flow/${cashFlowId}/cancel?accountId=${accountId}`);
+    return response.data;
+  }
+
+  async transferCashFlow(
+    portfolioId: string, 
+    accountId: string, 
+    data: any
+  ): Promise<any> {
+    const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/cash-flow/transfer?accountId=${accountId}`, data);
+    return response.data;
+  }
+
+  // Deposit Management endpoints
+  async getDeposits(params?: { portfolioId?: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.portfolioId && params.portfolioId !== 'ALL') {
+      queryParams.append('portfolioId', params.portfolioId);
+    }
+    const response = await this.api.get(`/api/v1/deposits?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async getDepositAnalytics(params?: { portfolioId?: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.portfolioId && params.portfolioId !== 'ALL') {
+      queryParams.append('portfolioId', params.portfolioId);
+    }
+    const response = await this.api.get(`/api/v1/deposits/analytics?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async createDeposit(data: any): Promise<any> {
+    const response = await this.api.post('/api/v1/deposits', data);
+    return response.data;
+  }
+
+  async updateDeposit(id: string, data: any): Promise<any> {
+    const response = await this.api.put(`/api/v1/deposits/${id}`, data);
+    return response.data;
+  }
+
+  async deleteDeposit(id: string): Promise<void> {
+    await this.api.delete(`/api/v1/deposits/${id}`);
+  }
+
+  // Global Assets endpoints
+  async triggerGlobalAssetsSync(): Promise<any> {
+    const response = await this.api.post('/api/v1/global-assets/auto-sync/trigger');
+    return response.data;
+  }
+
+  // NAV History endpoints
+  async getPortfolioNAVHistory(
+    portfolioId: string, 
+    accountId: string, 
+    options?: { months?: number; granularity?: string }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('accountId', accountId);
+    if (options?.months) params.append('months', options.months.toString());
+    if (options?.granularity) params.append('granularity', options.granularity);
+    
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav/history?${params.toString()}`);
+    return response.data;
+  }
+
+  // Market Data endpoints
+  async getMarketDataStats(): Promise<any> {
+    const response = await this.api.get('/api/v1/market-data/statistics');
+    return response.data;
+  }
+
+  async getMarketDataProviders(): Promise<any> {
+    const response = await this.api.get('/api/v1/market-data/providers');
+    return response.data;
+  }
+
+  async updatePricesByNation(nation: string): Promise<any> {
+    const response = await this.api.post(`/api/v1/market-data/update-by-nation/${nation}`);
+    return response.data;
+  }
+
+  async updatePricesByMarket(marketCode: string): Promise<any> {
+    const response = await this.api.post(`/api/v1/market-data/update-by-market/${marketCode}`);
+    return response.data;
+  }
+
+  async testMarketDataProvider(providerName: string): Promise<any> {
+    const response = await this.api.post(`/api/v1/market-data/test-connection/${providerName}`);
+    return response.data;
+  }
+
+  async getMarketDataConfig(): Promise<any> {
+    const response = await this.api.get('/api/v1/market-data/config');
+    return response.data;
+  }
+
+  async updateMarketDataConfig(config: any): Promise<any> {
+    const response = await this.api.post('/api/v1/market-data/config', config);
+    return response.data;
+  }
+
+  // Historical Prices endpoints
+  async getHistoricalPrices(params?: { symbols?: string; startDate?: string; endDate?: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.symbols) queryParams.append('symbols', params.symbols);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    
+    const response = await this.api.get(`/api/v1/market-data/historical-prices?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async updateHistoricalPrices(data: any): Promise<any> {
+    const response = await this.api.post('/api/v1/market-data/historical-prices/update', data);
+    return response.data;
+  }
+
+  // Snapshot endpoints
+  async getSnapshots(params?: any, accountId?: string): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (accountId) queryParams.append('accountId', accountId);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await this.api.get(`/api/v1/snapshots?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async getSnapshotsPaginated(params?: any, accountId?: string): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (accountId) queryParams.append('accountId', accountId);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const response = await this.api.get(`/api/v1/snapshots/paginated?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async getPortfolioSnapshotsPaginated(
+    portfolioId: string,
+    options?: { page?: number; limit?: number; startDate?: string; endDate?: string; granularity?: string; isActive?: boolean; orderBy?: string; orderDirection?: 'ASC' | 'DESC' }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('portfolioId', portfolioId);
+    
+    if (options?.page) params.append('page', options.page.toString());
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.startDate) params.append('startDate', options.startDate);
+    if (options?.endDate) params.append('endDate', options.endDate);
+    if (options?.granularity) params.append('granularity', options.granularity);
+    if (options?.isActive !== undefined) params.append('isActive', options.isActive.toString());
+    if (options?.orderBy) params.append('orderBy', options.orderBy);
+    if (options?.orderDirection) params.append('orderDirection', options.orderDirection);
+
+    const response = await this.api.get(`/api/v1/portfolio-snapshots?${params.toString()}`);
+    return response.data;
+  }
+
+  async createSnapshot(data: any): Promise<any> {
+    const response = await this.api.post('/api/v1/snapshots', data);
+    return response.data;
+  }
+
+  async createPortfolioSnapshots(
+    portfolioId: string,
+    options: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string } = {}
+  ): Promise<any> {
+    const response = await this.api.post(`/api/v1/snapshots/portfolio/${portfolioId}`, options);
+    return response.data;
+  }
+
+  async updateSnapshot(id: string, data: any): Promise<any> {
+    const response = await this.api.put(`/api/v1/snapshots/${id}`, data);
+    return response.data;
+  }
+
+  async deleteSnapshot(id: string): Promise<void> {
+    await this.api.delete(`/api/v1/snapshots/${id}`);
+  }
+
+  async getSnapshotById(id: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/snapshots/${id}`);
+    return response.data;
+  }
+
+  async getLatestSnapshot(portfolioId: string, assetId?: string, granularity?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (assetId) params.append('assetId', assetId);
+    if (granularity) params.append('granularity', granularity);
+
+    const response = await this.api.get(`/api/v1/snapshots/latest/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getSnapshotStatistics(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/snapshots/statistics/${portfolioId}`);
+    return response.data;
+  }
+
+  async bulkRecalculateSnapshots(portfolioId: string, snapshotDate?: string): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
+
+    const response = await this.api.post(`/api/v1/snapshots/bulk-recalculate/${portfolioId}?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async deleteSnapshotsByDateRange(
+    portfolioId: string,
+    startDate: string,
+    endDate: string,
+    granularity?: string
+  ): Promise<any> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('startDate', startDate);
+    queryParams.append('endDate', endDate);
+    if (granularity) queryParams.append('granularity', granularity);
+
+    const response = await this.api.delete(`/api/v1/snapshots/portfolio/${portfolioId}/date-range?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async deleteSnapshotsByDate(
+    portfolioId: string,
+    snapshotDate: string,
+    granularity?: string
+  ): Promise<any> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('snapshotDate', snapshotDate);
+    if (granularity) queryParams.append('granularity', granularity);
+
+    const response = await this.api.delete(`/api/v1/snapshots/portfolio/${portfolioId}/date?${queryParams.toString()}`);
+    return response.data;
+  }
+
+  async getPortfoliosWithSnapshots(): Promise<any> {
+    const response = await this.api.get('/api/v1/snapshots/portfolios');
+    return response.data;
+  }
+
+  // Performance Snapshot endpoints
+  async createPerformanceSnapshots(data: any): Promise<any> {
+    const response = await this.api.post('/api/v1/performance-snapshots', data);
+    return response.data;
+  }
+
+  async getPortfolioPerformanceSnapshots(
+    portfolioId: string,
+    query?: { startDate?: string; endDate?: string; granularity?: string; page?: number; limit?: number }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    if (query?.granularity) params.append('granularity', query.granularity);
+    if (query?.page) params.append('page', query.page.toString());
+    if (query?.limit) params.append('limit', query.limit.toString());
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/portfolio/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getAssetPerformanceSnapshots(
+    portfolioId: string,
+    query?: { assetId?: string; startDate?: string; endDate?: string; granularity?: string; page?: number; limit?: number }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetId) params.append('assetId', query.assetId);
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    if (query?.granularity) params.append('granularity', query.granularity);
+    if (query?.page) params.append('page', query.page.toString());
+    if (query?.limit) params.append('limit', query.limit.toString());
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/asset/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getPortfolioPerformanceSummary(portfolioId: string, period: string = '1Y'): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+    
+    const response = await this.api.get(`/api/v1/performance-snapshots/portfolio/${portfolioId}/summary?${params.toString()}`);
+    return response.data;
+  }
+
+  async getAssetPerformanceSummary(
+    portfolioId: string,
+    query?: { assetId?: string; period?: string }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetId) params.append('assetId', query.assetId);
+    if (query?.period) params.append('period', query.period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/asset/${portfolioId}/summary?${params.toString()}`);
+    return response.data;
+  }
+
+  async deletePerformanceSnapshotsByDateRange(
+    portfolioId: string,
+    startDate: string,
+    endDate: string,
+    granularity?: string
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('startDate', startDate);
+    params.append('endDate', endDate);
+    
+    if (granularity) params.append('granularity', granularity);
+
+    const response = await this.api.delete(`/api/v1/performance-snapshots/portfolio/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async exportPerformanceSnapshots(
+    portfolioId: string,
+    query?: { startDate?: string; endDate?: string; granularity?: string }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    if (query?.granularity) params.append('granularity', query.granularity);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/export/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getPerformanceDashboardData(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/performance-snapshots/dashboard/${portfolioId}`);
+    return response.data;
+  }
+
+  async getPerformanceComparison(
+    portfolioId: string,
+    benchmarkId: string,
+    period: string = '1Y'
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('benchmarkId', benchmarkId);
+    params.append('period', period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/comparison/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getRiskAnalysis(portfolioId: string, period: string = '1Y'): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/risk-analysis/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getPerformanceAttribution(portfolioId: string, period: string = '1Y'): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('period', period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/attribution/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getPerformanceTrends(
+    portfolioId: string,
+    metric: string,
+    period: string = '1Y'
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('metric', metric);
+    params.append('period', period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/trends/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getBenchmarkData(
+    benchmarkId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/benchmark/${benchmarkId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getAvailableBenchmarks(): Promise<any> {
+    const response = await this.api.get('/api/v1/performance-snapshots/benchmarks');
+    return response.data;
+  }
+
+  async getPerformanceAlerts(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/performance-snapshots/alerts/${portfolioId}`);
+    return response.data;
+  }
+
+  async createPerformanceAlert(portfolioId: string, alert: any): Promise<any> {
+    const response = await this.api.post(`/api/v1/performance-snapshots/alerts/${portfolioId}`, alert);
+    return response.data;
+  }
+
+  async updatePerformanceAlert(portfolioId: string, alertId: string, alert: any): Promise<any> {
+    const response = await this.api.put(`/api/v1/performance-snapshots/alerts/${portfolioId}/${alertId}`, alert);
+    return response.data;
+  }
+
+  async deletePerformanceAlert(portfolioId: string, alertId: string): Promise<any> {
+    const response = await this.api.delete(`/api/v1/performance-snapshots/alerts/${portfolioId}/${alertId}`);
+    return response.data;
+  }
+
+  // Account Management endpoints
+  async getAccounts(): Promise<any> {
+    const response = await this.api.get('/api/v1/accounts');
+    return response.data;
+  }
+
+  async getAccount(accountId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/accounts/${accountId}`);
+    return response.data;
+  }
+
+  async createAccount(data: any): Promise<any> {
+    const response = await this.api.post('/api/v1/accounts', data);
+    return response.data;
+  }
+
+  async updateAccount(accountId: string, data: any): Promise<any> {
+    const response = await this.api.put(`/api/v1/accounts/${accountId}`, data);
+    return response.data;
+  }
+
+  async deleteAccount(accountId: string): Promise<void> {
+    await this.api.delete(`/api/v1/accounts/${accountId}`);
+  }
+
+  // Deposit Management endpoints (Portfolio-specific)
+  async getPortfolioDeposits(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/deposits/portfolio/${portfolioId}`);
+    return response.data;
+  }
+
+  async getPortfolioDepositAnalytics(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/deposits/portfolio/${portfolioId}/analytics`);
+    return response.data;
+  }
+
+  async settleDeposit(depositId: string, data: any): Promise<any> {
+    const response = await this.api.post(`/api/v1/deposits/${depositId}/settle`, data);
     return response.data;
   }
 }

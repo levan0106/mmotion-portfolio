@@ -85,17 +85,7 @@ class AccountManager {
 
   // Separate method for actual API call
   private async fetchAccountFromAPI(accountId: string): Promise<Account> {
-    const response = await apiService.get(`/api/v1/accounts/${accountId}`);
-    
-    // API returns data directly, not in response.data
-    let accountData;
-    if (response && response.accountId) {
-      accountData = response;
-    } else if (response.data && response.data.accountId) {
-      accountData = response.data;
-    } else {
-      accountData = DEFAULT_ACCOUNT;
-    }
+    const accountData = await apiService.getAccount(accountId);
     
     // Cache the result
     this.accountCache[accountId] = accountData;

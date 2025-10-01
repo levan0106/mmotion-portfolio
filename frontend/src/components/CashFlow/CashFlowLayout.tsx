@@ -157,7 +157,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   // Load all cash flows for summary calculations
   const loadAllCashFlows = async () => {
     try {
-      const response = await apiService.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?accountId=${accountId}&limit=100000`);
+      const response = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { limit: 100000 });
       setAllCashFlows(response.data || []);
     } catch (err) {
       console.error('Failed to load all cash flows:', err);
@@ -168,7 +168,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 50) => {
     try {
       setLoading(true);
-      const response = await apiService.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?accountId=${accountId}&page=${page}&limit=${limit}`);
+      const response = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { page, limit });
       setCashFlows(response.data);
       setPagination(response.pagination);
     } catch (err) {
@@ -214,35 +214,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       };
 
       const isEdit = editingCashFlow !== null;
-      const url = isEdit 
-        ? `/api/v1/portfolios/${portfolioId}/cash-flow/${editingCashFlow.cashflowId}`
-        : `/api/v1/portfolios/${portfolioId}/cash-flow`;
       
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        let errorMessage = `Failed to ${isEdit ? 'update' : 'create'} cash flow`;
-        
-        if (errorData.message) {
-          if (Array.isArray(errorData.message)) {
-            errorMessage = errorData.message.join(', ');
-          } else {
-            errorMessage = errorData.message;
-          }
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-        
-        throw new Error(errorMessage);
+      if (isEdit) {
+        await apiService.updateCashFlow(portfolioId, accountId, editingCashFlow.cashflowId, payload);
+      } else {
+        await apiService.createCashFlow(portfolioId, accountId, 'deposit', payload);
       }
 
       // Reset form with auto-filled flowDate
@@ -430,30 +406,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         transferDate: new Date(transferData.transferDate).toISOString(),
       };
 
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/transfer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        let errorMessage = 'Failed to transfer cash';
-        
-        if (errorData.message) {
-          if (Array.isArray(errorData.message)) {
-            errorMessage = errorData.message.join(', ');
-          } else {
-            errorMessage = errorData.message;
-          }
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-        
-        throw new Error(errorMessage);
-      }
+      await apiService.transferCashFlow(portfolioId, accountId, payload);
 
       // Reset form and close dialog
       setTransferData({
@@ -518,26 +471,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       setLoading(true);
       setDeleteError(null); // Clear previous errors
       
-      const response = await fetch(`/api/v1/portfolios/${portfolioId}/cash-flow/${cashFlowToDelete.cashflowId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        let errorMessage = 'Failed to delete cash flow';
-        
-        if (errorData.message) {
-          if (Array.isArray(errorData.message)) {
-            errorMessage = errorData.message.join(', ');
-          } else {
-            errorMessage = errorData.message;
-          }
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-        
-        throw new Error(errorMessage);
-      }
+      await apiService.deleteCashFlow(portfolioId, accountId, cashFlowToDelete.cashflowId);
 
       await loadCashFlows();
       await loadAllCashFlows(); // Reload all cash flows for summary

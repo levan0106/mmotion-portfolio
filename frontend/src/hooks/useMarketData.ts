@@ -82,13 +82,11 @@ interface TestProviderResponse {
 
 // API functions
 const fetchMarketDataStats = async (): Promise<MarketDataStats> => {
-  const response = await apiService.api.get('/api/v1/market-data/statistics');
-  return response.data;
+  return await apiService.getMarketDataStats();
 };
 
 const fetchMarketDataProviders = async (): Promise<MarketDataProvider[]> => {
-  const response = await apiService.api.get('/api/v1/market-data/providers');
-  return response.data;
+  return await apiService.getMarketDataProviders();
 };
 
 const fetchRecentUpdates = async (_limit: number = 50): Promise<PriceUpdateResult[]> => {
@@ -99,7 +97,7 @@ const fetchRecentUpdates = async (_limit: number = 50): Promise<PriceUpdateResul
 };
 
 const updateAllPrices = async (): Promise<UpdateAllPricesResponse> => {
-  await apiService.api.post('/api/v1/global-assets/auto-sync/trigger');
+  await apiService.triggerGlobalAssetsSync();
   return {
     success: true,
     totalAssets: 0,
@@ -111,32 +109,29 @@ const updateAllPrices = async (): Promise<UpdateAllPricesResponse> => {
 };
 
 const updatePricesByNation = async (nation: string): Promise<UpdateByNationResponse> => {
-  const response = await apiService.api.post(`/api/v1/market-data/update-by-nation/${nation}`);
-  return response.data;
+  return await apiService.updatePricesByNation(nation);
 };
 
 const updatePricesByMarket = async (marketCode: string): Promise<UpdateByMarketResponse> => {
-  const response = await apiService.api.post(`/api/v1/market-data/update-by-market/${marketCode}`);
-  return response.data;
+  return await apiService.updatePricesByMarket(marketCode);
 };
 
 const testProvider = async (providerName: string): Promise<TestProviderResponse> => {
-  const response = await apiService.api.post(`/api/v1/market-data/test-connection/${providerName}`);
+  const response = await apiService.testMarketDataProvider(providerName);
   return {
-    success: response.data.connected,
-    provider: response.data.providerName,
+    success: response.connected,
+    provider: response.providerName,
     responseTime: 0, // Not provided by backend
-    error: response.data.connected ? undefined : response.data.message,
+    error: response.connected ? undefined : response.message,
   };
 };
 
 const fetchMarketDataConfig = async (): Promise<MarketDataConfig> => {
-  const response = await apiService.api.get('/api/v1/market-data/config');
-  return response.data;
+  return await apiService.getMarketDataConfig();
 };
 
 const updateMarketDataConfig = async (config: MarketDataConfig): Promise<MarketDataConfig> => {
-  await apiService.api.post('/api/v1/market-data/config', config);
+  await apiService.updateMarketDataConfig(config);
   return config; // Backend returns { message: string }, not the config
 };
 

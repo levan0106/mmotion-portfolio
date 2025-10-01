@@ -101,7 +101,7 @@ const DepositManagement: React.FC = () => {
         params.append('portfolioId', selectedPortfolioId);
       }
       
-      return apiService.get(`/api/v1/deposits?${params.toString()}`);
+      return apiService.getDeposits({ portfolioId: selectedPortfolioId });
     },
     {
       enabled: true,
@@ -124,7 +124,7 @@ const DepositManagement: React.FC = () => {
       if (selectedPortfolioId !== 'ALL') {
         params.append('portfolioId', selectedPortfolioId);
       }
-      return apiService.get(`/api/v1/deposits/analytics?${params.toString()}`);
+      return apiService.getDepositAnalytics({ portfolioId: selectedPortfolioId });
     },
     {
       enabled: true,
@@ -133,7 +133,7 @@ const DepositManagement: React.FC = () => {
 
   // Create deposit mutation
   const createDepositMutation = useMutation(
-    (data: any) => apiService.post('/api/v1/deposits', data),
+    (data: any) => apiService.createDeposit(data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
@@ -149,7 +149,7 @@ const DepositManagement: React.FC = () => {
 
   // Update deposit mutation
   const updateDepositMutation = useMutation(
-    ({ id, data }: { id: string; data: any }) => apiService.put(`/api/v1/deposits/${id}`, data),
+    ({ id, data }: { id: string; data: any }) => apiService.updateDeposit(id, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
@@ -166,7 +166,7 @@ const DepositManagement: React.FC = () => {
 
   // Settle deposit mutation
   const settleDepositMutation = useMutation(
-    ({ id, data }: { id: string; data: any }) => apiService.post(`/api/v1/deposits/${id}/settle`, data),
+    ({ id, data }: { id: string; data: any }) => apiService.settleDeposit(id, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
@@ -183,7 +183,7 @@ const DepositManagement: React.FC = () => {
 
   // Delete deposit mutation
   const deleteDepositMutation = useMutation(
-    (id: string) => apiService.delete(`/api/v1/deposits/${id}`),
+    (id: string) => apiService.deleteDeposit(id),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);

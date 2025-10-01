@@ -43,11 +43,7 @@ export class HistoricalPricesService {
     request: HistoricalPriceUpdateRequest
   ): Promise<HistoricalPriceUpdateResult> {
     try {
-      const response = await apiService.api.post(
-        '/api/v1/market-data/historical-prices/update',
-        request
-      );
-      return response.data;
+      return await apiService.updateHistoricalPrices(request);
     } catch (error) {
       console.error('Failed to update historical prices:', error);
       throw error;
@@ -61,22 +57,7 @@ export class HistoricalPricesService {
     params: HistoricalPriceQueryParams
   ): Promise<any[]> {
     try {
-      const queryParams = new URLSearchParams();
-      
-      if (params.symbols) {
-        queryParams.append('symbols', params.symbols);
-      }
-      if (params.startDate) {
-        queryParams.append('startDate', params.startDate);
-      }
-      if (params.endDate) {
-        queryParams.append('endDate', params.endDate);
-      }
-
-      const response = await apiService.api.get(
-        `/api/v1/market-data/historical-prices?${queryParams.toString()}`
-      );
-      return response.data;
+      return await apiService.getHistoricalPrices(params);
     } catch (error) {
       console.error('Failed to get historical prices:', error);
       throw error;
