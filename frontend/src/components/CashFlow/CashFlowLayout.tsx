@@ -29,14 +29,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Fab,
   Tooltip,
   LinearProgress,
+  Pagination,
+  SelectChangeEvent,
   OutlinedInput,
   Checkbox,
   ListItemText,
-  Pagination,
-  SelectChangeEvent,
 } from '@mui/material';
 import {
   AccountBalance as DepositIcon,
@@ -54,7 +53,12 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   SwapHoriz as TransferIcon,
+  DateRange as DateRangeIcon,
+  FilterList as FilterIcon,
 } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { formatCurrency, formatDate } from '../../utils/format';
 import CashFlowChart from './CashFlowChart';
 import FundingSourceSummary from './FundingSourceSummary';
@@ -87,11 +91,13 @@ interface TransferCashData {
 interface CashFlowLayoutProps {
   portfolioId: string;
   onCashFlowUpdate?: () => void;
+  compact?: boolean;
 }
 
 const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   portfolioId,
   onCashFlowUpdate,
+  compact = false,
 }) => {
   const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
@@ -124,13 +130,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   });
   const [tabValue, setTabValue] = useState(1);
   const [filterTypes, setFilterTypes] = useState<string[]>(['ALL']);
-  
-  // Pagination state
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0,
+  const [dateFilters, setDateFilters] = useState({
+    startDate: null as Date | null,
+    endDate: null as Date | null,
   });
 
   // Handler để xóa item từ filter
@@ -142,6 +144,31 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       setFilterTypes(newTypes);
     }
   };
+
+  // Handler để apply filters
+  const handleApplyFilters = () => {
+    // Validate dates before applying filters
+    const hasValidStartDate = dateFilters.startDate && !isNaN(dateFilters.startDate.getTime());
+    const hasValidEndDate = dateFilters.endDate && !isNaN(dateFilters.endDate.getTime());
+    
+    // If user has entered dates but they're invalid, show error
+    if ((dateFilters.startDate && !hasValidStartDate) || (dateFilters.endDate && !hasValidEndDate)) {
+      setError('Please enter valid dates');
+      return;
+    }
+    
+    loadCashFlows();
+    loadAllCashFlows();
+  };
+  
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+
 
   // Get unique funding sources from cash flows
   const getFundingSources = () => {
@@ -168,7 +195,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 50) => {
     try {
       setLoading(true);
-      const response = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { page, limit });
+      const filters = {
+        page,
+        limit,
+        startDate: dateFilters.startDate ? dateFilters.startDate.toISOString() : undefined,
+        endDate: dateFilters.endDate ? dateFilters.endDate.toISOString() : undefined,
+        types: filterTypes.includes('ALL') ? undefined : filterTypes,
+      };
+      const response = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, filters);
       setCashFlows(response.data);
       setPagination(response.pagination);
     } catch (err) {
@@ -334,10 +368,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   const netCashFlow = totalDeposits - totalWithdrawals;
 
-  // Filter cash flows
-  const filteredCashFlows = (cashFlows || []).filter(cf => 
-    filterTypes.includes('ALL') || filterTypes.includes(cf.type)
-  );
+  // Cash flows are already filtered by server
+  const filteredCashFlows = cashFlows || [];
 
   // Calculate total amount for filtered cash flows
   const filteredTotal = filteredCashFlows
@@ -523,14 +555,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   };
 
   return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
     <Box>
       {/* Header Section */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: compact ? 1 : 3 }}>
         <Box 
           display="flex" 
           justifyContent="space-between" 
           alignItems="center" 
-          mb={2}
+          mb={compact ? 0.5 : 2}
           sx={{
             position: 'sticky',
             top: 0,
@@ -538,13 +571,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             backgroundColor: 'background.paper',
             borderBottom: 1,
             borderColor: 'divider',
-            px: 3,
-            py: 2,
+            px: compact ? 1.5 : 3,
+            py: compact ? 0.5 : 2,
             boxShadow: 2,
             transition: 'all 0.3s ease-in-out'
           }}
         >
-          <Typography variant="h4" fontWeight="bold" color="primary">
+          <Typography variant={compact ? "h6" : "h4"} fontWeight="bold" color="primary" sx={{ fontSize: compact ? '1rem' : undefined }}>
             Cash Flow Management
           </Typography>
           <Box display="flex" gap={1}>
@@ -558,27 +591,48 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               color="success"
               startIcon={<DepositIcon />}
               onClick={() => handleCreateCashFlow('deposit')}
-              sx={{ borderRadius: 2, mr: 1 }}
+              size={compact ? "small" : "medium"}
+              sx={{ 
+                borderRadius: 2, 
+                mr: compact ? 0.5 : 1,
+                px: compact ? 1 : 2,
+                py: compact ? 0.5 : 1,
+                fontSize: compact ? '0.7rem' : undefined
+              }}
             >
-              Create Deposit
+              {compact ? "Deposit" : "Create Deposit"}
             </Button>
             <Button
               variant="contained"
               color="error"
               startIcon={<WithdrawIcon />}
               onClick={() => handleCreateCashFlow('withdrawal')}
-              sx={{ borderRadius: 2, mr: 1 }}
+              size={compact ? "small" : "medium"}
+              sx={{ 
+                borderRadius: 2, 
+                mr: compact ? 0.5 : 1,
+                px: compact ? 1 : 2,
+                py: compact ? 0.5 : 1,
+                fontSize: compact ? '0.7rem' : undefined
+              }}
             >
-              Create Withdrawal
+              {compact ? "Withdraw" : "Create Withdrawal"}
             </Button>
             <Button
               variant="contained"
               color="info"
               startIcon={<DividendIcon />}
               onClick={() => handleCreateCashFlow('dividend')}
-              sx={{ borderRadius: 2, mr: 1 }}
+              size={compact ? "small" : "medium"}
+              sx={{ 
+                borderRadius: 2, 
+                mr: compact ? 0.5 : 1,
+                px: compact ? 1 : 2,
+                py: compact ? 0.5 : 1,
+                fontSize: compact ? '0.7rem' : undefined
+              }}
             >
-              Create Dividend
+              {compact ? "Dividend" : "Create Dividend"}
             </Button>
             <Button
               variant="contained"
@@ -594,9 +648,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 });
                 setTransferDialogOpen(true);
               }}
-              sx={{ borderRadius: 2 }}
+              size={compact ? "small" : "medium"}
+              sx={{ 
+                borderRadius: 2,
+                px: compact ? 1 : 2,
+                py: compact ? 0.5 : 1,
+                fontSize: compact ? '0.7rem' : undefined
+              }}
             >
-              Transfer Cash
+              {compact ? "Transfer" : "Transfer Cash"}
             </Button>
           </Box>
         </Box>
@@ -609,7 +669,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       </Box>
 
       {/* Soft & Gentle Financial Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={compact ? 1.5 : 3} sx={{ mb: compact ? 1.5 : 4 }}>
         <Grid item xs={12} sm={6} lg={3}>
           <Card sx={{ 
             height: '100%', 
@@ -623,24 +683,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               boxShadow: '0 4px 20px rgba(59, 130, 246, 0.12)',
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ 
+              px: compact ? 1.5 : 3, 
+              py: compact ? 1 : 3 
+            }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box sx={{ 
-                  p: 1.5, 
+                  p: compact ? 0.5 : 1.5, 
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
                   boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-                  width: 48,
-                  height: 48,
+                  width: compact ? 32 : 48,
+                  height: compact ? 32 : 48,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <DepositIcon sx={{ color: 'white', fontSize: 24 }} />
+                  <DepositIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography color="#1e40af" variant="caption" sx={{ 
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.6rem' : '0.75rem',
                     fontWeight: 500,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -648,7 +711,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     Total Inflows
                   </Typography>
                   <Typography variant="h4" color="#1e40af" fontWeight="600" sx={{ 
-                    fontSize: '1.5rem',
+                    fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(totalDeposits)}
@@ -672,24 +735,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               boxShadow: '0 4px 20px rgba(239, 68, 68, 0.12)',
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ 
+              px: compact ? 1.5 : 3, 
+              py: compact ? 1 : 3 
+            }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box sx={{ 
-                  p: 1.5, 
+                  p: compact ? 0.5 : 1.5, 
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
                   boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
-                  width: 48,
-                  height: 48,
+                  width: compact ? 32 : 48,
+                  height: compact ? 32 : 48,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <WithdrawIcon sx={{ color: 'white', fontSize: 24 }} />
+                  <WithdrawIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography color="#dc2626" variant="caption" sx={{ 
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.6rem' : '0.75rem',
                     fontWeight: 500,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -697,7 +763,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     Total Outflows
                   </Typography>
                   <Typography variant="h4" color="#dc2626" fontWeight="600" sx={{ 
-                    fontSize: '1.5rem',
+                    fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(totalWithdrawals)}
@@ -729,10 +795,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 : '0 4px 20px rgba(239, 68, 68, 0.12)',
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ 
+              px: compact ? 1.5 : 3, 
+              py: compact ? 1 : 3 
+            }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box sx={{ 
-                  p: 1.5, 
+                  p: compact ? 0.5 : 1.5, 
                   borderRadius: '50%', 
                   background: netCashFlow >= 0 
                     ? 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)'
@@ -740,17 +809,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   boxShadow: netCashFlow >= 0 
                     ? '0 2px 8px rgba(34, 197, 94, 0.2)'
                     : '0 2px 8px rgba(239, 68, 68, 0.2)',
-                  width: 48,
-                  height: 48,
+                  width: compact ? 32 : 48,
+                  height: compact ? 32 : 48,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <BalanceIcon sx={{ color: 'white', fontSize: 24 }} />
+                  <BalanceIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} variant="caption" sx={{ 
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.6rem' : '0.75rem',
                     fontWeight: 500,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -758,7 +827,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     Net Cash Flow
                   </Typography>
                   <Typography variant="h4" color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} fontWeight="600" sx={{ 
-                    fontSize: '1.5rem',
+                    fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(netCashFlow)}
@@ -782,24 +851,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               boxShadow: '0 4px 20px rgba(168, 85, 247, 0.12)',
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ 
+              px: compact ? 1.5 : 3, 
+              py: compact ? 1 : 3 
+            }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                 <Box sx={{ 
-                  p: 1.5, 
+                  p: compact ? 0.5 : 1.5, 
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #a855f7 0%, #c084fc 100%)',
                   boxShadow: '0 2px 8px rgba(168, 85, 247, 0.2)',
-                  width: 48,
-                  height: 48,
+                  width: compact ? 32 : 48,
+                  height: compact ? 32 : 48,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <TimelineIcon sx={{ color: 'white', fontSize: 24 }} />
+                  <TimelineIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography color="#7c3aed" variant="caption" sx={{ 
-                    fontSize: '0.75rem',
+                    fontSize: compact ? '0.6rem' : '0.75rem',
                     fontWeight: 500,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -807,7 +879,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     Total Transactions
                   </Typography>
                   <Typography variant="h4" color="#7c3aed" fontWeight="600" sx={{ 
-                    fontSize: '1.5rem',
+                    fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {allCashFlows?.length || 0}
@@ -833,13 +905,25 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               icon={<TimelineIcon />} 
               label="Analytics" 
               iconPosition="start"
-              sx={{ textTransform: 'none', fontWeight: 600 }}
+              sx={{ 
+                textTransform: 'none', 
+                fontWeight: 600,
+                fontSize: compact ? '0.75rem' : '0.875rem',
+                py: compact ? 0.5 : 1.5,
+                px: compact ? 1 : 2
+              }}
             />
             <Tab 
               icon={<TableIcon />} 
               label="Cash Flow History" 
               iconPosition="start"
-              sx={{ textTransform: 'none', fontWeight: 600 }}
+              sx={{ 
+                textTransform: 'none', 
+                fontWeight: 600,
+                fontSize: compact ? '0.75rem' : '0.875rem',
+                py: compact ? 0.5 : 1.5,
+                px: compact ? 1 : 2
+              }}
             />
           </Tabs>
         </Box>
@@ -855,34 +939,127 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           {/* Transaction History Tab */}
           {tabValue === 1 && (
             <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6" fontWeight="600">
-                  Cash Flow History
-                </Typography>
-                <Box display="flex" gap={2} alignItems="center">
-                  <FormControl size="small" sx={{ minWidth: 200, maxWidth: 400 }}>
-                    <InputLabel>Filter by Type</InputLabel>
+              {/* Simple Filters Section */}
+              <Box sx={{ mb: compact ? 1.5 : 3 }}>
+                {/* Header */}
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 0.5 : 2}>
+                  <Typography variant={compact ? "subtitle2" : "h6"} fontWeight="600" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                    Cash Flow History
+                  </Typography>
+                  <Box display="flex" gap={1} alignItems="center">
+                    <Typography variant="body2" color="text.secondary">
+                      {filteredCashFlows.length} transactions
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RefreshIcon />}
+                      onClick={() => { loadCashFlows(); loadAllCashFlows(); }}
+                      disabled={loading}
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                </Box>
+                
+                {/* Simple Filter Row */}
+                <Box display="flex" gap={2} alignItems="center" flexWrap="wrap" mb={2}>
+                  {/* Date Filters */}
+                  <Box display="flex" gap={1} alignItems="center">
+                    <DateRangeIcon color="action" />
+                    <DatePicker
+                      label="From"
+                      value={dateFilters.startDate}
+                      onChange={(date) => setDateFilters(prev => ({ ...prev, startDate: date }))}
+                      slotProps={{ 
+                        textField: { 
+                          size: 'small',
+                          sx: { minWidth: 140 },
+                          error: false,
+                          helperText: ''
+                        } 
+                      }}
+                      format="dd/MM/yyyy"
+                    />
+                    <DatePicker
+                      label="To"
+                      value={dateFilters.endDate}
+                      onChange={(date) => setDateFilters(prev => ({ ...prev, endDate: date }))}
+                      slotProps={{ 
+                        textField: { 
+                          size: 'small',
+                          sx: { minWidth: 140 },
+                          error: false,
+                          helperText: ''
+                        } 
+                      }}
+                      format="dd/MM/yyyy"
+                    />
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setDateFilters({ startDate: null, endDate: null })}
+                      disabled={!dateFilters.startDate && !dateFilters.endDate}
+                    >
+                      Clear
+                    </Button>
+                  </Box>
+                  
+                  {/* Quick Date Buttons */}
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        const today = new Date();
+                        const last7Days = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        setDateFilters({ startDate: last7Days, endDate: today });
+                      }}
+                    >
+                      7 days
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        const today = new Date();
+                        const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        setDateFilters({ startDate: last30Days, endDate: today });
+                      }}
+                    >
+                      30 days
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        const today = new Date();
+                        const last90Days = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+                        setDateFilters({ startDate: last90Days, endDate: today });
+                      }}
+                    >
+                      90 days
+                    </Button>
+                  </Box>
+                  
+                  {/* Type Filter */}
+                  <FormControl size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel>Type</InputLabel>
                     <Select
                       multiple
                       value={filterTypes}
-                      label="Filter by Type"
+                      label="Type"
                       onChange={(e) => {
                         const value = e.target.value as string[];
-                        
-                        // If ALL is being selected, clear everything else
                         if (value.includes('ALL') && value.length === 1) {
                           setFilterTypes(['ALL']);
-                        } 
-                        // If nothing is selected, default to ALL
-                        else if (value.length === 0) {
+                        } else if (value.length === 0) {
                           setFilterTypes(['ALL']);
-                        }
-                        // Normal selection - allow switching from ALL to specific types
-                        else {
+                        } else {
                           setFilterTypes(value);
                         }
                       }}
-                      input={<OutlinedInput label="Filter by Type" />}
+                      input={<OutlinedInput label="Type" />}
                       renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 60, overflow: 'auto' }}>
                           {selected.map((value) => (
@@ -960,47 +1137,85 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     </Select>
                   </FormControl>
                   <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setFilterTypes(['ALL'])}
-                    disabled={filterTypes.includes('ALL')}
-                  >
-                    All
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT', 'DEPOSIT_CREATION'])}
-                    disabled={filterTypes.length === 9 && !filterTypes.includes('ALL')}
-                  >
-                    Reset
-                  </Button>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Total:
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color={filteredTotal >= 0 ? 'success.main' : 'error.main'}
-                      sx={{ fontWeight: 'bold' }}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setFilterTypes(['ALL'])}
+                      disabled={filterTypes.includes('ALL')}
                     >
-                      {formatCurrency(filteredTotal, 'VND')}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      ({filteredCashFlows.length} items)
-                    </Typography>
+                      All Types
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT', 'DEPOSIT_CREATION'])}
+                      disabled={filterTypes.length === 11 && !filterTypes.includes('ALL')}
+                    >
+                      Reset
+                    </Button>
+                  
+                  {/* Actions */}
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      startIcon={<FilterIcon />}
+                      onClick={handleApplyFilters}
+                      disabled={loading}
+                    >
+                      Filter
+                    </Button>
+                    
+                    <Button
+                      variant="outlined"
+                      startIcon={<DownloadIcon />}
+                      size="small"
+                      onClick={() => {
+                        const csvContent = generateCSV(filteredCashFlows);
+                        downloadCSV(csvContent, `cash-flow-${portfolioId}-${new Date().toISOString().split('T')[0]}.csv`);
+                      }}
+                    >
+                      Export
+                    </Button>
                   </Box>
-                  <Button
-                    variant="outlined"
-                    startIcon={<DownloadIcon />}
-                    size="small"
-                    onClick={() => {
-                      const csvContent = generateCSV(filteredCashFlows);
-                      downloadCSV(csvContent, `cash-flow-${portfolioId}-${new Date().toISOString().split('T')[0]}.csv`);
-                    }}
-                  >
-                    Export CSV
-                  </Button>
+                </Box>
+                
+                {/* Active Filters */}
+                {((dateFilters.startDate && !isNaN(dateFilters.startDate.getTime())) || (dateFilters.endDate && !isNaN(dateFilters.endDate.getTime())) || (filterTypes.length > 0 && !filterTypes.includes('ALL'))) && (
+                  <Box sx={{ mb: 2, p: 1, backgroundColor: 'grey.100', borderRadius: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Active filters:
+                    </Typography>
+                    <Box display="flex" gap={1} flexWrap="wrap">
+                      {dateFilters.startDate && !isNaN(dateFilters.startDate.getTime()) && (
+                        <Chip
+                          label={`From: ${formatDate(dateFilters.startDate.toISOString())}`}
+                          size="small"
+                          onDelete={() => setDateFilters(prev => ({ ...prev, startDate: null }))}
+                        />
+                      )}
+                      {dateFilters.endDate && !isNaN(dateFilters.endDate.getTime()) && (
+                        <Chip
+                          label={`To: ${formatDate(dateFilters.endDate.toISOString())}`}
+                          size="small"
+                          onDelete={() => setDateFilters(prev => ({ ...prev, endDate: null }))}
+                        />
+                      )}
+                      {filterTypes.length > 0 && !filterTypes.includes('ALL') && (
+                        <Chip
+                          label={`Types: ${filterTypes.join(', ')}`}
+                          size="small"
+                          onDelete={() => setFilterTypes(['ALL'])}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                )}
+                
+                {/* Summary */}
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({filteredCashFlows.length} items)
+                  </Typography>
                 </Box>
               </Box>
 
@@ -1146,7 +1361,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       </Card>
 
       {/* Quick Action FABs */}
-      <Box sx={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* <Box sx={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Tooltip title="Add Deposit">
           <Fab
             color="success"
@@ -1197,7 +1412,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <CancelIcon />
           </Fab>
         </Tooltip>
-      </Box>
+      </Box> */}
 
       {/* Cash Flow Dialog */}
       <Dialog open={dialogOpen} onClose={() => {
@@ -1668,6 +1883,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         </DialogActions>
       </Dialog>
     </Box>
+    </LocalizationProvider>
   );
 };
 

@@ -1326,7 +1326,9 @@ export class PortfolioService {
 
     const totalCashBalance = cashFlows.reduce((sum, cf) => {
       const inflowTypes = ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'];
-      return sum + (inflowTypes.includes(cf.type) ? cf.amount : -cf.amount);
+      // Ensure amount is converted to number (TypeORM may return string for decimal fields)
+      const amount = typeof cf.amount === 'string' ? parseFloat(cf.amount) : cf.amount;
+      return sum + (inflowTypes.includes(cf.type) ? amount : -amount);
     }, 0);
 
     this.logger.log(`Recalculated cash balance: ${totalCashBalance}`);

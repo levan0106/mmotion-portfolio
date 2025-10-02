@@ -81,7 +81,7 @@ export class PortfolioSnapshotRepository {
     const queryBuilder = this.createQueryBuilder(options);
     
     const page = options.page || 1;
-    const limit = options.limit || 25;
+    const limit = options.limit || 10;
     const skip = (page - 1) * limit;
 
     const [data, total] = await queryBuilder

@@ -26,7 +26,7 @@ interface UsePortfolioSnapshotsReturn {
 }
 
 export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}): UsePortfolioSnapshotsReturn => {
-  const { portfolioId, autoFetch = true, page = 1, limit = 25 } = options;
+  const { portfolioId, autoFetch = true, page = 1, limit = 10 } = options;
   
   const [state, setState] = useState<{
     portfolioSnapshots: SnapshotResponse[];

@@ -27,11 +27,17 @@ import {
   Refresh as RefreshIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
-  Close as CloseIcon,
+  TrendingUp as TrendingUpIcon,
+  AccountBalanceWallet as AllocationIcon,
+  SwapHoriz as TradingIcon,
+  AccountBalance as DepositIcon,
+  AttachMoney as CashFlowIcon,
+  Inventory as HoldingsIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { TradeForm } from '../components/Trading/TradeForm';
+import { ModalWrapper } from '../components/Common/ModalWrapper';
 import { 
   PerformanceTab,
   AllocationTab,
@@ -334,7 +340,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
                      Investment Value
                    </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
                      {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                    </Typography>
                  </Box>
@@ -342,7 +348,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
                      Current NAV (+cash)
                    </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
                      {formatCurrency(portfolio.totalAllValue, portfolio.baseCurrency)}
                    </Typography>
                  </Box>
@@ -407,7 +413,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography 
                      variant="h6" 
                      sx={{ 
-                       fontWeight: 800, 
+                       fontWeight: 700, 
                        fontSize: '1.2rem', 
                        lineHeight: 1.2,
                        color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
@@ -423,7 +429,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography 
                      variant="h6" 
                      sx={{ 
-                       fontWeight: 800, 
+                       fontWeight: 700, 
                        fontSize: '1.2rem', 
                        lineHeight: 1.2,
                        color: (performanceData?.annualizedReturn || 0) >= 0 ? '#059669' : '#dc2626'
@@ -479,7 +485,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
                      Total Trades
                    </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
                      {formatNumberWithSeparators(totalTrades, 0)}
                    </Typography>
                  </Box>
@@ -487,7 +493,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
                      Total Volume
                    </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
                      {formatCurrency(totalTradeVolume, portfolio?.baseCurrency || 'VND')}
                    </Typography>
                  </Box>
@@ -552,7 +558,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography 
                      variant="h6" 
                      sx={{ 
-                       fontWeight: 800, 
+                       fontWeight: 700, 
                        fontSize: '1.2rem', 
                        lineHeight: 1.2,
                        color: portfolio.realizedInvestPnL >= 0 ? '#059669' : '#dc2626'
@@ -565,7 +571,7 @@ const PortfolioDetail: React.FC = () => {
                    <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
                      Fees & Taxes
                    </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, color: '#ea580c' }}>
+                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#ea580c' }}>
                      {formatCurrency(totalTradeFeesAndTaxes, portfolio?.baseCurrency || 'VND')}
                    </Typography>
                  </Box>
@@ -607,12 +613,37 @@ const PortfolioDetail: React.FC = () => {
               },
             }}
           >
-            <Tab label="Performance" defaultChecked />
-            <Tab label="Allocation" />
-            <Tab label="Trading" />
-            <Tab label="Deposit" />
-            <Tab label="Cash Flow" />
-            <Tab label="Holdings" />
+            <Tab 
+              icon={<TrendingUpIcon />} 
+              iconPosition="start" 
+              label="Performance" 
+              defaultChecked 
+            />
+            <Tab 
+              icon={<AllocationIcon />} 
+              iconPosition="start" 
+              label="Allocation" 
+            />
+            <Tab 
+              icon={<TradingIcon />} 
+              iconPosition="start" 
+              label="Trading" 
+            />
+            <Tab 
+              icon={<DepositIcon />} 
+              iconPosition="start" 
+              label="Deposit" 
+            />
+            <Tab 
+              icon={<CashFlowIcon />} 
+              iconPosition="start" 
+              label="Cash Flow" 
+            />
+            <Tab 
+              icon={<HoldingsIcon />} 
+              iconPosition="start" 
+              label="Holdings" 
+            />
           </Tabs>
           
           {/* Compact Mode Toggle */}
@@ -705,77 +736,19 @@ const PortfolioDetail: React.FC = () => {
 
       </Box>
       {/* Create Trade Modal */}
-      {showCreateForm && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1300,
-            backdropFilter: 'blur(4px)',
-          }}
-          onClick={() => setShowCreateForm(false)}
-        >
-          <Box
-            sx={{
-              bgcolor: 'white',
-              borderRadius: 3,
-              p: 0,
-              maxWidth: 1000,
-              width: '100%',
-              maxHeight: '100%',
-              overflow: 'hidden',
-              boxShadow: 24,
-              animation: 'modalSlideIn 0.3s ease-out',
-              position: 'relative',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header with Close Button */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 2,
-                borderBottom: 1,
-                borderColor: 'divider',
-                bgcolor: 'grey.50',
-              }}
-            >
-              <Typography variant="h6" fontWeight="bold">
-                Create New Trade
-              </Typography>
-              <IconButton
-                onClick={() => setShowCreateForm(false)}
-                size="small"
-                sx={{
-                  '&:hover': {
-                    bgcolor: 'error.main',
-                    color: 'white',
-                  },
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-
-            {/* Modal Content */}
-            <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(80vh - 80px)' }}>
-              <TradeForm
-                onSubmit={handleCreateTrade}
-                defaultPortfolioId={portfolioId!}
-              />
-            </Box>
-          </Box>
-        </Box>
-      )}
+      <ModalWrapper
+        open={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Create New Trade"
+        icon={<TrendingUpIcon />}
+        maxWidth="lg"
+        loading={createTradeMutation.isLoading}
+      >
+        <TradeForm
+          onSubmit={handleCreateTrade}
+          defaultPortfolioId={portfolioId!}
+        />
+      </ModalWrapper>
     </Container>
   );
 };

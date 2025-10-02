@@ -267,7 +267,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             onSnapshotEdit={handleEditSnapshot}
             onSnapshotDelete={handleDeleteSnapshot}
             showActions={true}
-            pageSize={25}
+            pageSize={10}
             refreshTrigger={refreshTrigger}
             onPortfolioRefresh={(portfolioId) => {
               // Auto-refresh portfolio data when snapshot is created

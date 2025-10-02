@@ -68,7 +68,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     const numericValue = typeof num === 'string' ? parseFloat(num) : num;
     
     if (numericValue === null || numericValue === undefined || isNaN(numericValue)) return '';
-    if (numericValue === 0) return '';
+    if (numericValue === 0) return '0';
     
     let formatted = numericValue.toFixed(decimalPlaces);
     
@@ -93,7 +93,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   useEffect(() => {
     if (!isFocused) {
       const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-      if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue) && numericValue !== 0) {
+      if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue)) {
         setDisplayValue(formatNumber(numericValue));
       } else {
         setDisplayValue('');
@@ -155,11 +155,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     if (isFocused) {
       setDisplayValue(rawValue);
     } else {
-      if (finalValue !== 0) {
-        setDisplayValue(formatNumber(finalValue));
-      } else {
-        setDisplayValue('');
-      }
+      setDisplayValue(formatNumber(finalValue));
     }
   };
 
@@ -167,7 +163,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     setIsFocused(true);
     // When focusing, show raw value for easy editing
     const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue) && numericValue !== 0) {
+    if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue)) {
       setDisplayValue(numericValue.toString());
     } else {
       setDisplayValue('');
@@ -179,7 +175,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     setIsFocused(false);
     // When blurring, format the value
     const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue) && numericValue !== 0) {
+    if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue)) {
       setDisplayValue(formatNumber(numericValue));
     } else {
       setDisplayValue('');

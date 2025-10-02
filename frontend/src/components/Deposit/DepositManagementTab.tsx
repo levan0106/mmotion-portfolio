@@ -56,9 +56,10 @@ interface Deposit {
 
 interface DepositManagementTabProps {
   portfolioId: string;
+  compact?: boolean;
 }
 
-const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId }) => {
+const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId, compact = false }) => {
   const [tabValue, setTabValue] = useState(0);
   const [depositFormOpen, setDepositFormOpen] = useState(false);
   const [settlementModalOpen, setSettlementModalOpen] = useState(false);
@@ -205,8 +206,8 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
   return (
     <Box>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 2 : 3}>
+        <Typography variant={compact ? "h5" : "h4"} fontWeight="bold" sx={{ fontSize: compact ? '1.1rem' : undefined }}>
           Quản Lý Tiền Gửi
         </Typography>
         <Button
@@ -214,21 +215,30 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
           startIcon={<AddIcon />}
           onClick={() => setDepositFormOpen(true)}
           disabled={createDepositMutation.isLoading}
+          size={compact ? "small" : "medium"}
+          sx={{
+            px: compact ? 1.5 : 2,
+            py: compact ? 0.5 : 1,
+            fontSize: compact ? '0.8rem' : undefined
+          }}
         >
-          Tạo tiền gửi mới
+          {compact ? "Tạo mới" : "Tạo tiền gửi mới"}
         </Button>
       </Box>
 
       {/* Analytics Cards */}
       {analytics && (
-        <Grid container spacing={2} mb={3}>
+        <Grid container spacing={compact ? 1.5 : 2} mb={compact ? 2 : 3}>
           {/* Card 1: Tổng quan */}
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <BankIcon color="primary" />
-                  <Typography variant="h6" fontWeight="bold">
+              <CardContent sx={{ 
+                px: compact ? 1.5 : 2, 
+                py: compact ? 1 : 2 
+              }}>
+                <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
+                  <BankIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
+                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Tổng quan
                   </Typography>
                 </Box>
@@ -251,10 +261,13 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
           {/* Card 2: Tổng giá trị */}
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <InterestIcon color="success" />
-                  <Typography variant="h6" fontWeight="bold">
+              <CardContent sx={{ 
+                px: compact ? 1.5 : 2, 
+                py: compact ? 1 : 2 
+              }}>
+                <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
+                  <InterestIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
+                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Tổng giá trị
                   </Typography>
                 </Box>
@@ -283,10 +296,13 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
           {/* Card 3: Lãi đã tất toán */}
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <SettledIcon color="success" />
-                  <Typography variant="h6" fontWeight="bold">
+              <CardContent sx={{ 
+                px: compact ? 1.5 : 2, 
+                py: compact ? 1 : 2 
+              }}>
+                <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
+                  <SettledIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
+                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Lãi đã tất toán
                   </Typography>
                 </Box>
@@ -315,10 +331,13 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
           {/* Card 4: Lãi chưa tất toán */}
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <TrendingUpIcon color="primary" />
-                  <Typography variant="h6" fontWeight="bold">
+              <CardContent sx={{ 
+                px: compact ? 1.5 : 2, 
+                py: compact ? 1 : 2 
+              }}>
+                <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
+                  <TrendingUpIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
+                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Lãi chưa tất toán
                   </Typography>
                 </Box>
@@ -347,11 +366,18 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       )}
 
       {/* Tabs */}
-      <Paper sx={{ mb: 2 }}>
+      <Paper sx={{ mb: compact ? 1.5 : 2 }}>
         <Tabs
           value={tabValue}
           onChange={(_, newValue) => setTabValue(newValue)}
-          sx={{ px: 2 }}
+          sx={{ 
+            px: compact ? 1.5 : 2,
+            '& .MuiTab-root': {
+              fontSize: compact ? '0.8rem' : undefined,
+              py: compact ? 1 : 1.5,
+              px: compact ? 1 : 2
+            }
+          }}
         >
           <Tab label={`Tất cả (${deposits.length})`} />
           <Tab label={`Đang hoạt động (${activeDeposits.length})`} />

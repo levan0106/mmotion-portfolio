@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { Box, Typography, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { formatPercentageValue, formatDateFns as formatDate } from '../../utils/format';
+import { getAssetTypeColor, RECHARTS_COLORS } from '../../config/chartColors';
 
 export interface TimelineDataPoint {
   date: string;
@@ -60,7 +61,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
   subtitle,
   compact = false,
   height = 267,
-  colors = ['#1976d2', '#dc004e', '#9c27b0', '#ff9800', '#4caf50', '#f44336', '#00bcd4', '#8bc34a'],
+  colors = RECHARTS_COLORS,
   showBarTypeToggle = true,
   defaultChartType = 'line',
   defaultBarType = 'stacked',
@@ -182,7 +183,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
               key={seriesName}
               type="monotone"
               dataKey={seriesName}
-              stroke={colors[index % colors.length]}
+              stroke={getAssetTypeColor(seriesName) || colors[index % colors.length]}
               strokeWidth={lineStrokeWidth}
               dot={false}
               activeDot={{ r: 4 }}
@@ -204,7 +205,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
             <Bar
               key={seriesName}
               dataKey={seriesName}
-              fill={colors[index % colors.length]}
+              fill={getAssetTypeColor(seriesName) || colors[index % colors.length]}
               fillOpacity={barOpacity}
               radius={barRadius}
               stackId={barType === 'stacked' ? 'stack' : undefined}
@@ -226,7 +227,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
           <Bar
             key={`bar-${seriesName}`}
             dataKey={seriesName}
-            fill={colors[index % colors.length]}
+            fill={getAssetTypeColor(seriesName) || colors[index % colors.length]}
             fillOpacity={barOpacity * 0.6}
             radius={barRadius}
             stackId={barType === 'stacked' ? 'stack' : undefined}
@@ -239,7 +240,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
             key={`line-${seriesName}`}
             type="monotone"
             dataKey={seriesName}
-            stroke={colors[index % colors.length]}
+            stroke={getAssetTypeColor(seriesName) || colors[index % colors.length]}
             strokeWidth={lineStrokeWidth + 1}
             dot={false}
             activeDot={{ r: 4 }}

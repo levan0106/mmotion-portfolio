@@ -57,7 +57,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   onSnapshotEdit,
   onSnapshotDelete,
   showActions = true,
-  pageSize = 25,
+  pageSize = 10,
   // refreshTrigger and onPortfolioRefresh removed for simplified logic
 }) => {
   const [page, setPage] = useState(0);
@@ -69,15 +69,15 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   const [expandedAssetTypes, setExpandedAssetTypes] = useState<Set<string>>(new Set());
   const [allExpanded, setAllExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const [portfolioPerformanceData, setPortfolioPerformanceData] = useState<any>({ data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
-  const [assetGroupPerformanceData, setAssetGroupPerformanceData] = useState<any>({ data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
-  const [assetPerformanceData, setAssetPerformanceData] = useState<any>({ data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+  const [portfolioPerformanceData, setPortfolioPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+  const [assetGroupPerformanceData, setAssetGroupPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+  const [assetPerformanceData, setAssetPerformanceData] = useState<any>({ data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
   const [performanceLoading, setPerformanceLoading] = useState(false);
   
   // Pagination hooks for each performance tab
-  const portfolioPagination = usePagination(25);
-  const assetGroupPagination = usePagination(25);
-  const assetPagination = usePagination(25);
+  const portfolioPagination = usePagination(10);
+  const assetGroupPagination = usePagination(10);
+  const assetPagination = usePagination(10);
   
   // Simplified logic - queryClient removed
 
@@ -95,7 +95,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
         limit: portfolioPagination.pagination.limit
       });
 
-      setPortfolioPerformanceData(portfolioPerf || { data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      setPortfolioPerformanceData(portfolioPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
       
       // Update pagination state
       if (portfolioPerf) {
@@ -127,7 +127,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
         limit: assetGroupPagination.pagination.limit
       });
 
-      setAssetGroupPerformanceData(assetGroupPerf || { data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      setAssetGroupPerformanceData(assetGroupPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
       
       // Update pagination state
       if (assetGroupPerf) {
@@ -159,7 +159,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
         limit: assetPagination.pagination.limit
       });
 
-      setAssetPerformanceData(assetPerf || { data: [], page: 1, limit: 25, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      setAssetPerformanceData(assetPerf || { data: [], page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
       
       // Update pagination state
       if (assetPerf) {

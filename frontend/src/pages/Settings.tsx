@@ -17,7 +17,7 @@ import {
   Notifications as NotificationsIcon,
   Palette as ThemeIcon,
 } from '@mui/icons-material';
-import { AccountManagementDemo } from '../components/Account';
+import { AccountManagement } from '../components/Account';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -115,7 +115,7 @@ const Settings: React.FC = () => {
               Manage your accounts, create new accounts, and update account information.
             </Typography>
           </Box>
-          <AccountManagementDemo />
+            <AccountManagement />
         </TabPanel>
 
         <TabPanel value={value} index={1}>

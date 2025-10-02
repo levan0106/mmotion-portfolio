@@ -42,6 +42,7 @@ const CashFlowTab: React.FC<CashFlowTabProps> = ({
         <CashFlowLayout 
           portfolioId={portfolioId} 
           onCashFlowUpdate={onCashFlowUpdate}
+          compact={isCompactMode}
         />
       </Box>
     </Box>

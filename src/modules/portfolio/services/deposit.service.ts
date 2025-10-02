@@ -121,7 +121,7 @@ export class DepositService {
     // Update deposit
     deposit.status = 'SETTLED';
     deposit.actualInterest = settleDepositDto.actualInterest;
-    deposit.settledAt = new Date();
+    deposit.settledAt = new Date(settleDepositDto.settlementDate);
     if (settleDepositDto.notes) {
       deposit.notes = settleDepositDto.notes;
     }

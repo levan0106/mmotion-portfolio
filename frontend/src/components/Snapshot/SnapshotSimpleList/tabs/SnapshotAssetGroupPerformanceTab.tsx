@@ -46,7 +46,18 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
           <Table size="small" sx={{ minWidth: 1000 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }}>Date</TableCell>
+                <TableCell sx={{ 
+                  fontWeight: 600, 
+                  fontSize: '0.7rem', 
+                  py: 0.5, 
+                  minWidth: 100,
+                  position: 'sticky',
+                  left: 0,
+                  backgroundColor: 'grey.50',
+                  zIndex: 1,
+                  borderRight: '1px solid',
+                  borderColor: 'divider'
+                }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Asset Type</TableCell>
                 {/* TWR Metrics */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1D</TableCell>
@@ -99,7 +110,15 @@ const SnapshotAssetGroupPerformanceTab: React.FC<SnapshotAssetGroupPerformanceTa
                 .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime())
                 .map((snapshot) => (
                 <TableRow key={snapshot.id} hover>
-                  <TableCell sx={{ py: 0.5 }}>
+                  <TableCell sx={{ 
+                    py: 0.5,
+                    position: 'sticky',
+                    left: 0,
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                    borderRight: '1px solid',
+                    borderColor: 'divider'
+                  }}>
                     <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
                       {formatDate(snapshot.snapshotDate)}
                     </Typography>

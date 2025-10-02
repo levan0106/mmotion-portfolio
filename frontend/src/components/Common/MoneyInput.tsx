@@ -54,7 +54,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
   // Update display value when value prop changes (only when not focused)
   useEffect(() => {
     if (!isFocused) {
-      if (value > 0) {
+      if (value >= 0) {
         setDisplayValue(formatCurrency(value));
       } else {
         setDisplayValue('');
@@ -83,14 +83,14 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     // When focused, show formatted number (without currency)
     // When not focused, show formatted currency
     if (isFocused) {
-      if (numericValue > 0) {
+      if (numericValue >= 0) {
         // Format number with thousands separator but no currency
         setDisplayValue(numericValue.toLocaleString('en-US'));
       } else {
         setDisplayValue('');
       }
     } else {
-      if (numericValue > 0) {
+      if (numericValue >= 0) {
         setDisplayValue(formatCurrency(numericValue));
       } else {
         setDisplayValue('');
@@ -101,7 +101,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
   const handleFocus = () => {
     setIsFocused(true);
     // When focusing, show formatted number (without currency)
-    if (value > 0) {
+    if (value >= 0) {
       setDisplayValue(value.toLocaleString('en-US'));
     } else {
       setDisplayValue('');
@@ -112,7 +112,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
   const handleBlur = () => {
     setIsFocused(false);
     // When blurring, format the value
-    if (value > 0) {
+    if (value >= 0) {
       setDisplayValue(formatCurrency(value));
     } else {
       setDisplayValue('');
@@ -150,7 +150,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
             <BalanceIcon color="action" />
           </InputAdornment>
         ),
-        endAdornment: showCurrency && value > 0 && (
+        endAdornment: showCurrency && value >= 0 && (
           <InputAdornment position="end">
             <Typography 
               variant="caption" 

@@ -97,7 +97,15 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ minWidth: 100 }}>
+              <TableCell sx={{ 
+                minWidth: 100,
+                position: 'sticky',
+                left: 0,
+                backgroundColor: 'grey.50',
+                zIndex: 1,
+                borderRight: '1px solid',
+                borderColor: 'divider'
+              }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Tooltip title={allExpanded ? "Collapse All" : "Expand All"}>
                     <IconButton 
@@ -177,7 +185,14 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                         }}
                         onClick={() => toggleAssetType(`${date}_${assetType}`)}
                       >
-                        <TableCell>
+                        <TableCell sx={{
+                          position: 'sticky',
+                          left: 0,
+                          backgroundColor: 'background.paper',
+                          zIndex: 1,
+                          borderRight: '1px solid',
+                          borderColor: 'divider'
+                        }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -284,7 +299,15 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                             '& td': { borderTop: 0 }
                           }}
                         >
-                          <TableCell sx={{ pl: 4 }}>
+                          <TableCell sx={{ 
+                            pl: 4,
+                            position: 'sticky',
+                            left: 0,
+                            backgroundColor: 'background.paper',
+                            zIndex: 1,
+                            borderRight: '1px solid',
+                            borderColor: 'divider'
+                          }}>
                             {formatDate(snapshot.snapshotDate)}
                           </TableCell>
                           <TableCell>

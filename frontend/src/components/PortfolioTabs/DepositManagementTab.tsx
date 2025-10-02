@@ -37,7 +37,7 @@ const DepositManagementTabComponent: React.FC<DepositManagementTabProps> = ({
       }}>
       </Typography>
       <Box sx={{ mb: getUltraSpacing(4, 2) }}>
-        <DepositManagementTab portfolioId={portfolioId} />
+        <DepositManagementTab portfolioId={portfolioId} compact={isCompactMode} />
       </Box>
     </Box>
   );

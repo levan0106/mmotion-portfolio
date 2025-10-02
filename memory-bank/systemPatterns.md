@@ -582,6 +582,28 @@ erDiagram
 - **Production Ready**: All code passes linting checks with zero errors - **COMPLETED**
 - **Comprehensive Coverage**: 15+ files updated including services, hooks, components, and pages - **COMPLETED**
 
+### 34. Deposit Settlement Date Pattern - **IMPLEMENTED ✅**
+- **Request Date Usage**: Use settlement date from request instead of current date for cashflow creation - **COMPLETED**
+- **DTO Enhancement**: Add settlementDate property to SettleDepositDto with proper validation - **COMPLETED**
+- **TypeScript Support**: Full type safety with @IsString() and @IsDateString() decorators - **COMPLETED**
+- **API Documentation**: Swagger documentation with settlement date examples and validation - **COMPLETED**
+- **CashFlow Integration**: Cashflow creation uses correct settlement date from deposit settlement - **COMPLETED**
+- **Data Consistency**: Deposit settlement date and cashflow date match for accurate reporting - **COMPLETED**
+- **User Control**: Users can select settlement date and it's properly applied to all related records - **COMPLETED**
+- **Error Handling**: Proper validation and error handling for invalid date formats - **COMPLETED**
+- **Production Ready**: All changes tested and build successful - **COMPLETED**
+
+### 35. Zero Value Input Pattern - **IMPLEMENTED ✅**
+- **NumberInput Zero Support**: Fixed NumberInput component to properly handle and display zero values - **COMPLETED**
+- **MoneyInput Zero Support**: Fixed MoneyInput component to properly handle and display zero values - **COMPLETED**
+- **Conditional Logic Fix**: Updated all conditional logic from `value > 0` to `value >= 0` for zero inclusion - **COMPLETED**
+- **Display Logic**: Zero values are now properly formatted and displayed in all component states - **COMPLETED**
+- **User Experience**: Users can input and see 0% interest rates and 0 VND amounts clearly - **COMPLETED**
+- **Validation Support**: Both components properly handle zero values in focused, blurred, and change states - **COMPLETED**
+- **Currency Display**: Currency symbols and formatting work correctly with zero values - **COMPLETED**
+- **Form Integration**: Zero values work properly with form validation and submission - **COMPLETED**
+- **Production Ready**: All changes tested and working correctly - **COMPLETED**
+
 ## MarketDataService Architecture Patterns - **IMPLEMENTED** ✅
 
 ### Service Refactoring Patterns - **COMPLETED**

@@ -484,12 +484,23 @@ class ApiService {
   async getPortfolioCashFlowHistory(
     portfolioId: string, 
     accountId: string, 
-    options?: { page?: number; limit?: number }
+    options?: { 
+      page?: number; 
+      limit?: number; 
+      startDate?: string; 
+      endDate?: string; 
+      types?: string[] 
+    }
   ): Promise<any> {
     const params = new URLSearchParams();
     params.append('accountId', accountId);
     if (options?.page) params.append('page', options.page.toString());
     if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.startDate) params.append('startDate', options.startDate);
+    if (options?.endDate) params.append('endDate', options.endDate);
+    if (options?.types && options.types.length > 0) {
+      options.types.forEach(type => params.append('types', type));
+    }
     
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history?${params.toString()}`);
     return response.data;

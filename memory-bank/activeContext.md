@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Portfolio Deletion with Enhanced Safety Features - COMPLETED**
-**Latest Update: Successfully implemented comprehensive portfolio deletion with double confirmation and comprehensive data cleanup (Current Session)**
+**Phase: Deposit Management & Input Component Fixes - COMPLETED**
+**Latest Update: Successfully implemented deposit settlement date fix and zero value input support (Current Session)**
 **Code Version: Backend v1.0.0, Frontend v1.0.0 - Production Ready**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ **Snapshot Date Range Implementation** (Complete date range support for bulk snapshot creation)
@@ -35,6 +35,11 @@
 - ✅ **AccountId Validation Requirement** (Mandatory accountId validation for all API calls to ensure data security and isolation)
 - ✅ **Security Implementation** (AccountValidationService integration for ownership verification)
 - ✅ **Frontend Security Integration** (useAccount hook automatically provides accountId to all API calls)
+- ✅ **Deposit Settlement Date Fix** (Fixed cashflow date to use settlementDate from request instead of current date)
+- ✅ **SettleDepositDto Enhancement** (Added settlementDate property with proper validation and TypeScript support)
+- ✅ **NumberInput Zero Value Support** (Fixed NumberInput component to allow and display 0 values)
+- ✅ **MoneyInput Zero Value Support** (Fixed MoneyInput component to allow and display 0 values)
+- ✅ **Deposit Management Enhancement** (Complete deposit settlement with proper date handling and zero interest support)
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
 - ✅ Thiết lập Memory Bank cho project tracking

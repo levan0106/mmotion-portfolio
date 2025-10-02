@@ -276,8 +276,9 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: compact ? 1 : 2 }}>
         <Box>
-          <Typography variant={compact ? "subtitle1" : "h6"} gutterBottom sx={{ 
-            fontSize: compact ? '0.9rem' : undefined,
+          <Typography variant="subtitle2" gutterBottom sx={{ 
+            fontSize: compact ? '0.7rem' : '0.8rem',
+            fontWeight: 600,
             mb: 0
           }}>
             {title}

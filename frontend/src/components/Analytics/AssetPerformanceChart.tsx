@@ -220,8 +220,10 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
 
   return (
     <Box>
-      <Typography variant={compact ? "subtitle1" : "h6"} gutterBottom sx={{ 
-        fontSize: compact ? '0.9rem' : undefined,
+      <Typography variant="subtitle2" gutterBottom sx={{ 
+        fontSize: compact ? '0.7rem' : '0.8rem',
+        fontWeight: 600,
+        textAlign: 'center',
         mb: compact ? 1 : 2
       }}>
         {title}

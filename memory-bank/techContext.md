@@ -114,6 +114,10 @@
 - **Hybrid Market Data System**: Real-time external data and mock data with fallback mechanisms ✅
 - **API Client Standardization**: Generic naming for API clients to allow easy provider swapping ✅
 - **Code Cleanup**: Removed unused packages and debug logs for cleaner codebase ✅
+- **Deposit Settlement Date Fix**: Fixed cashflow date to use settlement date from request instead of current date ✅
+- **SettleDepositDto Enhancement**: Added settlementDate property with proper validation and TypeScript support ✅
+- **Zero Value Input Support**: Fixed NumberInput and MoneyInput components to properly handle and display zero values ✅
+- **Input Component Validation**: Enhanced form validation to support zero values in financial inputs ✅
 
 ### Infrastructure & DevOps
 - **Docker**: Containerization cho all services - **PROJECT RUNS WITH DOCKER** ✅

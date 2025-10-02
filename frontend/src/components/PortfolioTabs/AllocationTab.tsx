@@ -5,7 +5,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Grid, Typography, CircularProgress, Card, CardContent } from '@mui/material';
-import { AccountBalance, TrendingUp, TrendingDown } from '@mui/icons-material';
+import { 
+  AccountBalance, 
+  TrendingUp, 
+  TrendingDown,
+  PieChart as PieChartIcon,
+  Assignment as AssignmentIcon,
+  Analytics as AnalyticsIcon,
+  Timeline as TimelineIcon
+} from '@mui/icons-material';
 import { usePortfolioAnalytics } from '../../hooks/usePortfolios';
 import { usePortfolioAllocationTimeline } from '../../hooks/usePortfolioAnalytics';
 import { apiService } from '../../services/api';
@@ -17,6 +25,7 @@ import DiversificationHeatmap from '../Analytics/DiversificationHeatmap';
 import AssetAllocationTimeline from '../Analytics/AssetAllocationTimeline';
 import AssetDetailSummary from '../Analytics/AssetDetailSummary';
 import { formatCurrency, formatNumber, formatNumberWithSeparators } from '../../utils/format';
+import { getAssetTypeColor } from '../../config/chartColors';
 
 interface AllocationTabProps {
   portfolioId: string;
@@ -35,7 +44,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
   const [riskReturnData, setRiskReturnData] = useState<any>(null);
   const [isRiskReturnLoading, setIsRiskReturnLoading] = useState(false);
   const [riskReturnError, setRiskReturnError] = useState<string | null>(null);
-  const [riskReturnPeriod, setRiskReturnPeriod] = useState<string>('1Y');
+  const [riskReturnPeriod, setRiskReturnPeriod] = useState<string>('1M');
   
   const [diversificationData, setDiversificationData] = useState<any>(null);
   const [isDiversificationLoading, setIsDiversificationLoading] = useState(false);
@@ -377,7 +386,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 color: '#6c757d', 
                 fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
               }}>
-                Available Cash (Số dư tiền mặt)
+                Available Cash
               </Typography>
             </CardContent>
           </Card>
@@ -447,7 +456,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 color: '#6c757d', 
                 fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
               }}>
-                Different Asset Types (Loại tài sản)
+                Different Asset Types
               </Typography>
             </CardContent>
           </Card>
@@ -463,9 +472,16 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         alignItems: 'center',
         gap: 1
       }}>
-        📊 Asset Type Allocation (Phân bổ loại tài sản)
+        <PieChartIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+        Asset Type Allocation
       </Typography>
-      <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
+      <Grid container spacing={getUltraSpacing(2, 1)} sx={{ 
+        mb: getUltraSpacing(4, 2),
+        '& .MuiGrid-item': {
+          display: 'flex',
+          flexDirection: 'column'
+        }
+      }}>
         {/* Asset Allocation Pie Chart - Column 1 */}
         <Grid item xs={12} md={4}>
           <Box sx={{ 
@@ -474,7 +490,10 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             borderRadius: 2, 
             boxShadow: 1,
             border: '1px solid #e0e0e0',
-            height: '100%'
+            height: '100%', // Fill grid item height
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center' // Center the pie chart
           }}>
             <Typography variant="subtitle2" gutterBottom sx={{ 
               mb: getUltraSpacing(1, 0.5),
@@ -508,7 +527,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             borderRadius: 2, 
             boxShadow: 1,
             border: '1px solid #e0e0e0',
-            height: '100%'
+            height: '100%', // Fill grid item height
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             {assetPerformanceLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
@@ -518,9 +539,13 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <Typography color="error" variant="body2">Failed to load P&L data</Typography>
             ) : (
               <UnrealizedPnLChart 
-                data={assetPerformanceData || []} 
+                data={(assetPerformanceData || []).map((item: any) => ({
+                  ...item,
+                  color: getAssetTypeColor(item.assetType)
+                }))} 
                 baseCurrency={portfolio.baseCurrency} 
                 compact={isCompactMode}
+                colorScheme="default"
               />
             )}
           </Box>
@@ -534,7 +559,10 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             borderRadius: 2, 
             boxShadow: 1,
             border: '1px solid #e0e0e0',
-            height: '100%'
+            height: '100%', // Fill grid item height
+            minHeight: 250, // Minimum height, auto expand based on data
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             <Typography variant="subtitle2" gutterBottom sx={{ 
               mb: getUltraSpacing(1, 0.5),
@@ -569,7 +597,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                         sx={{
                           width: `${allocation.percentage}%`,
                           height: '100%',
-                          backgroundColor: '#1976d2',
+                          backgroundColor: getAssetTypeColor(assetType),
                           transition: 'width 0.3s ease'
                         }}
                       />
@@ -644,7 +672,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         alignItems: 'center',
         gap: 1
       }}>
-        📋 Asset Detail Summary (Tổng quan tài sản)
+        <AssignmentIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+        Asset Detail Summary
       </Typography>
       <Box sx={{ 
         p: getUltraSpacing(2, 1), 
@@ -679,7 +708,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         alignItems: 'center',
         gap: 1
       }}>
-        📈 Risk & Performance Analysis (Rủi ro và hiệu suất)
+        <AnalyticsIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+        Risk & Performance Analysis
       </Typography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
@@ -699,7 +729,10 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <Typography color="error" variant="body2">{riskReturnError}</Typography>
             ) : (
               <RiskReturnChart 
-                data={riskReturnData?.data || []} 
+                data={(riskReturnData?.data || []).map((item: any) => ({
+                  ...item,
+                  color: getAssetTypeColor(item.assetType)
+                }))} 
                 baseCurrency={portfolio.baseCurrency}
                 title="Risk-Return Analysis"
                 compact={isCompactMode}
@@ -726,7 +759,10 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <Typography color="error" variant="body2">{assetPerformanceError}</Typography>
             ) : (
               <AssetPerformanceChart 
-                data={assetPerformanceData || []} 
+                data={(assetPerformanceData || []).map((item: any) => ({
+                  ...item,
+                  color: getAssetTypeColor(item.assetType)
+                }))} 
                 baseCurrency={portfolio.baseCurrency}
                 title="Asset Performance Comparison"
                 compact={isCompactMode}
@@ -745,7 +781,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         alignItems: 'center',
         gap: 1
       }}>
-        🔄 Diversification & Timeline (Đa dạng hóa và lịch sử phân bổ)
+        <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+        Diversification & Timeline
       </Typography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>

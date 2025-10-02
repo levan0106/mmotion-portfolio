@@ -2,7 +2,21 @@
 
 ## What Works
 ### ✅ Completed
-- **PORTFOLIO DELETION WITH ENHANCED SAFETY FEATURES - COMPLETED** (Current Session - October 1, 2025)
+- **DEPOSIT MANAGEMENT & INPUT COMPONENT FIXES - COMPLETED** (Current Session - October 1, 2025)
+  - **Deposit Settlement Date Fix**: Fixed critical bug where cashflow date was using current date instead of settlement date from request
+    - **Backend Fix**: Modified `deposit.service.ts` to use `new Date(settleDepositDto.settlementDate)` instead of `new Date()`
+    - **DTO Enhancement**: Added `settlementDate` property to `SettleDepositDto` with proper validation
+    - **TypeScript Support**: Added `@IsString()` and `@IsDateString()` decorators for validation
+    - **API Documentation**: Updated Swagger documentation with settlement date examples
+    - **CashFlow Integration**: Cashflow now uses correct settlement date from deposit settlement
+  - **Zero Value Input Support**: Fixed both NumberInput and MoneyInput components to properly handle and display zero values
+    - **NumberInput Fix**: Modified `formatNumber`, `useEffect`, `handleFocus`, `handleBlur`, and `handleChange` to include zero values
+    - **MoneyInput Fix**: Updated all conditional logic from `value > 0` to `value >= 0` for zero value support
+    - **User Experience**: Users can now input and see 0% interest rates and 0 VND amounts clearly
+    - **Validation Support**: Both components now properly display and handle zero values in all states
+  - **Production Ready**: All changes tested, build successful, and ready for production use
+
+- **PORTFOLIO DELETION WITH ENHANCED SAFETY FEATURES - COMPLETED** (Previous Session - October 1, 2025)
   - **Portfolio Deletion Implementation**: Complete portfolio deletion with comprehensive data cleanup
     - **Backend Service Enhancement**: Enhanced `deletePortfolio` method in `portfolio.service.ts`
       - **Systematic Deletion Order**: Deletes related entities in correct order to avoid foreign key constraints

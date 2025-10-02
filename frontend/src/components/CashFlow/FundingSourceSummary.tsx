@@ -217,36 +217,39 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
         borderRadius: 2,
         overflow: 'hidden'
       }}>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ 
+          px: isCompactMode ? 2 : 3, 
+          py: isCompactMode ? 1.5 : 3 
+        }}>
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            mb: getUltraSpacing(3, 2),
-            pb: 2,
+            mb: getUltraSpacing(3, 1.5),
+            pb: isCompactMode ? 1 : 2,
             borderBottom: '1px solid rgba(160, 174, 192, 0.08)'
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: isCompactMode ? 1 : 2 }}>
               <Box sx={{ 
-                p: 1.5, 
+                p: isCompactMode ? 1 : 1.5, 
                 borderRadius: '50%', 
                 background: 'linear-gradient(135deg, #4a5568 0%, #718096 100%)',
                 boxShadow: '0 4px 12px rgba(74, 85, 104, 0.2)',
-                width: 48,
-                height: 48,
+                width: isCompactMode ? 36 : 48,
+                height: isCompactMode ? 36 : 48,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <WalletIcon sx={{ color: 'white', fontSize: 24 }} />
+                <WalletIcon sx={{ color: 'white', fontSize: isCompactMode ? 18 : 24 }} />
               </Box>
               <Box>
                 <Typography 
-                  variant={isCompactMode ? "h6" : "h5"} 
+                  variant={isCompactMode ? "subtitle1" : "h5"} 
                   sx={{ 
                     fontWeight: 500, 
                     color: '#4a5568',
-                    fontSize: isCompactMode ? '1.1rem' : '1.4rem',
+                    fontSize: isCompactMode ? '0.9rem' : '1.4rem',
                     letterSpacing: '-0.01em'
                   }}
                 >
@@ -255,7 +258,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
-                  sx={{ fontSize: isCompactMode ? '0.8rem' : undefined }}
+                  sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                 >
                   Track cash flows by funding source
                 </Typography>
@@ -263,15 +266,16 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
             </Box>
             
             <ButtonGroup 
-              size="small" 
+              size={isCompactMode ? "small" : "small"} 
               variant="outlined"
               sx={{
                 '& .MuiButton-root': {
                   borderRadius: 2,
                   textTransform: 'none',
                   fontWeight: 400,
-                  px: 2,
-                  py: 1,
+                  px: isCompactMode ? 1 : 2,
+                  py: isCompactMode ? 0.5 : 1,
+                  fontSize: isCompactMode ? '0.7rem' : undefined,
                   borderColor: 'rgba(160, 174, 192, 0.25)',
                   '&:hover': {
                     borderColor: '#4a5568',
@@ -295,7 +299,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   }
                 }}
               >
-                Grid View
+                {isCompactMode ? "Grid" : "Grid View"}
               </Button>
               <Button
                 startIcon={<ListViewIcon />}
@@ -312,7 +316,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   }
                 }}
               >
-                List View
+                {isCompactMode ? "List" : "List View"}
               </Button>
             </ButtonGroup>
           </Box>

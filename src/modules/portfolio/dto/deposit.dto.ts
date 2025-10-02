@@ -171,6 +171,16 @@ export class SettleDepositDto {
   })
   actualInterest: number;
 
+  @IsString()
+  @IsDateString()
+  @ApiProperty({ 
+    description: 'Settlement date',
+    example: '2025-10-01',
+    type: 'string',
+    format: 'date'
+  })
+  settlementDate: string;
+
   @IsOptional()
   @IsString()
   @ApiPropertyOptional({ 

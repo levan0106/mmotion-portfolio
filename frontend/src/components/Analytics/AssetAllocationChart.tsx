@@ -7,6 +7,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Box, Typography } from '@mui/material';
 import { AssetAllocationResponse } from '../../types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
+import { getAssetTypeColor } from '../../config/chartColors';
 
 interface AssetAllocationChartProps {
   data: AssetAllocationResponse;
@@ -14,14 +15,7 @@ interface AssetAllocationChartProps {
   compact?: boolean;
 }
 
-const COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8',
-  '#82CA9D', '#FFC658', '#FF7C7C', '#8DD1E1', '#D084D0',
-  '#FFB347', '#87CEEB', '#DDA0DD', '#F0E68C', '#98FB98',
-];
-
-// Special color for deposits
-const DEPOSITS_COLOR = '#4CAF50'; // Green color for deposits
+// Use standard chart colors from config
 
 const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   data,
@@ -29,11 +23,11 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   compact = false,
 }) => {
   // Transform data for the chart
-  const chartData = Object.entries(data.allocation).map(([assetType, allocation], index) => ({
+  const chartData = Object.entries(data.allocation).map(([assetType, allocation]) => ({
     name: assetType.toUpperCase(),
     value: allocation.percentage,
     marketValue: allocation.value,
-    color: assetType.toLowerCase() === 'deposits' ? DEPOSITS_COLOR : COLORS[index % COLORS.length],
+    color: getAssetTypeColor(assetType),
   }));
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -118,9 +112,16 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   }
 
   return (
-    <Box sx={{ height: compact ? 133 : 220, display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ flex: 1, height: '100%' }}>
-        <ResponsiveContainer width="100%" height="100%">
+    <Box sx={{ 
+      width: '100%',
+      minHeight: compact ? 133 : 200,
+      display: 'flex', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1
+    }}>
+      <Box sx={{ width: '100%', maxWidth: 300 }}>
+        <ResponsiveContainer width="100%" height={compact ? 200 : 250}>
           <PieChart>
             <Pie
               data={chartData}

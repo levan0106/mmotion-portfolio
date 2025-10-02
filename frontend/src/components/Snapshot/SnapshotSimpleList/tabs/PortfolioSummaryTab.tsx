@@ -66,7 +66,18 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
           <Table size="small" sx={{ minWidth: 4880 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }}>Date</TableCell>
+                <TableCell sx={{ 
+                  fontWeight: 600, 
+                  fontSize: '0.7rem', 
+                  py: 0.5, 
+                  minWidth: 100,
+                  position: 'sticky',
+                  left: 0,
+                  backgroundColor: 'grey.50',
+                  zIndex: 1,
+                  borderRight: '1px solid',
+                  borderColor: 'divider'
+                }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Portfolio</TableCell>
                 {/* Portfolio Level (Assets + Deposits) */}
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Value</TableCell>
@@ -119,7 +130,15 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                 .map((snapshot) => (
                 <TableRow key={snapshot.id} hover>
                   {/* Date */}
-                  <TableCell sx={{ py: 0.5 }}>
+                  <TableCell sx={{ 
+                    py: 0.5,
+                    position: 'sticky',
+                    left: 0,
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                    borderRight: '1px solid',
+                    borderColor: 'divider'
+                  }}>
                     <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
                       {formatDate(snapshot.snapshotDate)}
                     </Typography>

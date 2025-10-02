@@ -27,7 +27,7 @@ import { apiService } from '../../services/api';
 import CreateAccountModal from './CreateAccountModal';
 import EditAccountModal from './EditAccountModal';
 
-export const AccountManagementDemo: React.FC = () => {
+export const AccountManagement: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,10 +124,10 @@ export const AccountManagementDemo: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 2 }}>
       <Card>
-        <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h5" component="h1">
               Account Management
             </Typography>
@@ -156,7 +156,7 @@ export const AccountManagementDemo: React.FC = () => {
                 <React.Fragment key={account.accountId}>
                   <ListItem 
                     sx={{ 
-                      py: 2,
+                      py: 1,
                       ...(account.isMainAccount && {
                         backgroundColor: 'primary.50',
                         mb: 0.5,
@@ -292,4 +292,4 @@ export const AccountManagementDemo: React.FC = () => {
   );
 };
 
-export default AccountManagementDemo;
+export default AccountManagement;

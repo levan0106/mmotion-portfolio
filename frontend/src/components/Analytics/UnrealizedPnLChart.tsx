@@ -5,7 +5,9 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Box, Typography } from '@mui/material';
+import { TrendingUp, TrendingDown } from '@mui/icons-material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
+import { getAssetTypeColor, getPnLColors, type PnLColorScheme } from '../../config/chartColors';
 
 interface AssetPerformanceData {
   assetType: string;
@@ -20,6 +22,7 @@ interface UnrealizedPnLChartProps {
   data: AssetPerformanceData[];
   baseCurrency: string;
   compact?: boolean;
+  colorScheme?: PnLColorScheme;
 }
 
 
@@ -27,9 +30,13 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   data,
   baseCurrency,
   compact = false,
+  colorScheme = 'default',
 }) => {
   // Ensure data is an array
   const safeData = Array.isArray(data) ? data : [];
+  
+  // Get P&L colors based on scheme
+  const pnlColors = getPnLColors(colorScheme);
   
   // Transform data for the chart
   const chartData = safeData.map((item) => {
@@ -43,11 +50,12 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
       unrealizedPnLPercentage: unrealizedPnLPercentage,
       marketValue: item.value,
       positionCount: item.positionCount,
-      color: item.unrealizedPl >= 0 ? '#00C49F' : '#FF8042', // Green for profit, Red for loss
+      color: getAssetTypeColor(item.assetType), // Use standard asset type colors
+      isPositive: item.unrealizedPl >= 0, // Track if P&L is positive
     };
   });
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload, pnlColors }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const isProfit = (data.unrealizedPnL || 0) >= 0;
@@ -107,32 +115,47 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
             }}>
               Unrealized P&L
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', mt: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5, gap: 1 }}>
+              {isProfit ? (
+                <TrendingUp sx={{ fontSize: 20, color: pnlColors.positive }} />
+              ) : (
+                <TrendingDown sx={{ fontSize: 20, color: pnlColors.negative }} />
+              )}
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  color: isProfit ? '#00C49F' : '#FF8042',
+                  color: isProfit ? pnlColors.positive : pnlColors.negative,
                   fontWeight: 'bold',
-                  fontSize: '1.1rem',
-                  mr: 1
+                  fontSize: '1.1rem'
                 }}
               >
                 {isProfit ? '+' : ''}{formatCurrency(data.unrealizedPnL || 0, baseCurrency)}
               </Typography>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  color: isProfit ? '#00C49F' : '#FF8042',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  backgroundColor: isProfit ? '#E8F5E8' : '#FFE8E8',
-                  px: 1,
-                  py: 0.25,
-                  borderRadius: 1
-                }}
-              >
-                {isProfit ? '+' : ''}{formatPercentage(data.unrealizedPnLPercentage || 0)}
-              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                backgroundColor: isProfit ? pnlColors.positiveLight : pnlColors.negativeLight,
+                px: 1,
+                py: 0.25,
+                borderRadius: 1
+              }}>
+                {isProfit ? (
+                  <TrendingUp sx={{ fontSize: 14, color: pnlColors.positive }} />
+                ) : (
+                  <TrendingDown sx={{ fontSize: 14, color: pnlColors.negative }} />
+                )}
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: isProfit ? pnlColors.positive : pnlColors.negative,
+                    fontWeight: 600,
+                    fontSize: '0.8rem'
+                  }}
+                >
+                  {isProfit ? '+' : ''}{formatPercentage(data.unrealizedPnLPercentage || 0)}
+                </Typography>
+              </Box>
             </Box>
           </Box>
 
@@ -199,16 +222,28 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   }
 
   return (
-    <Box sx={{ height: compact ? 133 : 187 }}>
-      <Typography variant={compact ? "subtitle2" : "h6"} gutterBottom sx={{ 
+    <Box sx={{ 
+      minHeight: compact ? 133 : 200,
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1
+    }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ 
         mb: compact ? 1 : 2,
-        fontSize: compact ? '0.8rem' : undefined,
+        fontSize: compact ? '0.7rem' : '0.8rem',
         fontWeight: 600,
         textAlign: 'center'
       }}>
         Unrealized P&L by Asset Type
       </Typography>
-      <ResponsiveContainer width="100%" height="100%">
+      <Box sx={{ 
+        flex: 1, 
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <ResponsiveContainer width="100%" height={compact ? 200 : 250}>
         <BarChart data={chartData} margin={{ 
           top: compact ? 5 : 10, 
           right: compact ? 5 : 10, 
@@ -227,14 +262,20 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
             tickFormatter={(value) => formatCurrency(value, baseCurrency)}
             tick={{ fontSize: compact ? 8 : 10 }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip pnlColors={pnlColors} />} />
           <Bar dataKey="unrealizedPnL" radius={compact ? [2, 2, 0, 0] : [4, 4, 0, 0]}>
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
+            {chartData.map((entry, index) => {
+              // Use configurable colors for positive/negative values
+              const barColor = entry.isPositive ? pnlColors.positive : pnlColors.negative;
+              
+              return (
+                <Cell key={`cell-${index}`} fill={barColor} />
+              );
+            })}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+        </ResponsiveContainer>
+      </Box>
     </Box>
   );
 };

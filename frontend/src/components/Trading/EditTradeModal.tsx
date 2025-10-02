@@ -1,17 +1,12 @@
 import React, { useRef } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   Box,
-  IconButton,
-  Typography,
   CircularProgress,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Edit as EditIcon } from '@mui/icons-material';
 import TradeForm, { TradeFormData } from './TradeForm';
+import { ModalWrapper } from '../Common/ModalWrapper';
 
 export interface EditTradeModalProps {
   open: boolean;
@@ -52,74 +47,49 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
   };
 
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={onClose}
+      title="Edit Trade"
+      icon={<EditIcon />}
       maxWidth="lg"
-      fullWidth
-      PaperProps={{
-        sx: { 
-          maxHeight: '90vh',
-          overflow: 'hidden'
-        }
-      }}
+      loading={isLoading}
+      actions={
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            onClick={onClose} 
+            disabled={isLoading}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdateClick}
+            variant="contained"
+            disabled={isLoading}
+            startIcon={isLoading ? <CircularProgress size={20} /> : null}
+            sx={{ 
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3
+            }}
+          >
+            {isLoading ? 'Updating...' : 'Update Trade'}
+          </Button>
+        </Box>
+      }
     >
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Edit Trade</Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-        <DialogContent
-          dividers
-          sx={{
-            overflow: 'hidden',
-            p: 0,
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <Box sx={{ p: 2 }}>
-          <TradeForm
-            onSubmit={handleSubmit}
-            initialData={initialData}
-            isLoading={isLoading}
-            error={error}
-            mode="edit"
-            showSubmitButton={false}
-            formRef={formRef}
-            isModal={true}
-          />
-        </Box>
-      </DialogContent>
-
-        <DialogActions sx={{ p: 2 }}>
-        <Button 
-          onClick={onClose} 
-          disabled={isLoading}
-          sx={{ textTransform: 'none' }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleUpdateClick}
-          variant="contained"
-          disabled={isLoading}
-          startIcon={isLoading ? <CircularProgress size={20} /> : null}
-          sx={{ 
-            textTransform: 'none',
-            fontWeight: 600,
-            px: 3
-          }}
-        >
-          {isLoading ? 'Updating...' : 'Update Trade'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <TradeForm
+        onSubmit={handleSubmit}
+        initialData={initialData}
+        isLoading={isLoading}
+        error={error}
+        mode="edit"
+        showSubmitButton={false}
+        formRef={formRef}
+        isModal={true}
+      />
+    </ModalWrapper>
   );
 };
 
