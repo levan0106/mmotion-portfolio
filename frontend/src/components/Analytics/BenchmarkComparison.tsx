@@ -62,7 +62,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   onTimeframeChange,
   currentTimeframe = '1Y',
   onTwrPeriodChange,
-  currentTwrPeriod = '1M',
+  currentTwrPeriod = 'YTD',
 }) => {
   const [timeframe, setTimeframe] = useState(currentTimeframe);
   const [twrPeriod, setTwrPeriod] = useState(currentTwrPeriod);

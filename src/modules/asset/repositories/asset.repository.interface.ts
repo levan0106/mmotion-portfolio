@@ -218,6 +218,13 @@ export interface IAssetRepository {
   getTradesForAsset(assetId: string): Promise<any[]>;
 
   /**
+   * Get all portfolios for an account
+   * @param accountId - Account ID
+   * @returns Promise<any[]> - Array of portfolios
+   */
+  getPortfoliosForAccount(accountId: string): Promise<any[]>;
+
+  /**
    * Get all trades for a specific asset and portfolio
    * @param assetId - Asset ID
    * @param portfolioId - Portfolio ID

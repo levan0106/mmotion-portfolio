@@ -252,7 +252,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
             <strong>Computed Fields:</strong> Initial value, initial quantity, current value, and current quantity are automatically calculated based on your trades and market prices. These fields will be updated when you create trades for this asset.
           </Alert>
         </Grid>
-
+{/* 
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
@@ -303,7 +303,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
             inputProps={{ min: 0, step: 0.0001 }}
             placeholder={formData.currentQuantity ? undefined : "No data available"}
           />
-        </Grid>
+        </Grid> */}
       </Grid>
       
       <div className="asset-form__actions">

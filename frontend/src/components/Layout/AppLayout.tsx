@@ -164,17 +164,57 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               width: 48,
               height: 48,
               border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}
           >
             <PortfolioIcon sx={{ fontSize: 28 }} />
           </Avatar>
-          <Box>
-            <Typography variant="h5" noWrap component="div" sx={{ fontWeight: 300, mb: 0.5 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'flex-start',
+            justifyContent: 'center'
+          }}>
+            <Typography 
+              variant="h5" 
+              noWrap 
+              component="div" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 0.25,
+                background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '0.5px'
+              }}
+            >
               MMO
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 300 }}>
-              Beta Version
-            </Typography>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1,
+              py: 0.25,
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderRadius: 1,
+              border: '1px solid rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  opacity: 0.9, 
+                  fontWeight: 500,
+                  fontSize: '0.7rem',
+                  letterSpacing: '0.3px',
+                  textTransform: 'uppercase'
+                }}
+              >
+                v1.0.0-beta
+              </Typography>
+            </Box>
           </Box>
         </Box>
         

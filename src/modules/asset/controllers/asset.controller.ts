@@ -615,30 +615,97 @@ export class AssetController {
   }
 
   /**
-   * Get trade count for an asset
+   * Get trade count and portfolio info for an asset
    * This endpoint is useful for checking if an asset can be safely deleted.
    */
   @Get(':id/trades/count')
   @ApiOperation({ 
-    summary: 'Get trade count for an asset',
-    description: 'Get the number of trades associated with an asset. Use this to check if asset can be safely deleted.'
+    summary: 'Get trade count and portfolio info for an asset',
+    description: 'Get the number of trades and related portfolios for an asset. Use this to check if asset can be safely deleted.'
   })
   @ApiParam({ name: 'id', description: 'Asset ID' })
+  @ApiQuery({ name: 'accountId', required: false, description: 'Account ID for portfolio validation (optional)' })
   @ApiResponse({
     status: 200,
-    description: 'Trade count retrieved successfully',
+    description: 'Trade count and portfolio info retrieved successfully',
     schema: {
       type: 'object',
       properties: {
         count: { type: 'number', description: 'Number of trades' },
-        canDelete: { type: 'boolean', description: 'Whether asset can be deleted without force' }
+        canDelete: { type: 'boolean', description: 'Whether asset can be deleted without force' },
+        portfolios: { 
+          type: 'array', 
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' }
+            }
+          },
+          description: 'List of portfolios that have trades for this asset'
+        },
+        trades: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              portfolioId: { type: 'string' },
+              portfolioName: { type: 'string' },
+              type: { type: 'string' },
+              quantity: { type: 'number' },
+              price: { type: 'number' },
+              date: { type: 'string' }
+            }
+          },
+          description: 'List of trades for this asset'
+        }
       }
     }
   })
-  async getTradeCount(@Param('id') id: string): Promise<{ count: number; canDelete: boolean }> {
+  async getTradeCount(
+    @Param('id') id: string,
+    @Query('accountId') accountId?: string
+  ): Promise<{
+    count: number;
+    canDelete: boolean;
+    portfolios: Array<{ id: string; name: string }>;
+    trades: Array<{
+      id: string;
+      portfolioId: string;
+      portfolioName: string;
+      type: string;
+      quantity: number;
+      price: number;
+      date: string;
+    }>;
+  }> {
+    // implement check for accountId
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+
+    // Get trade count
     const count = await this.assetService.getTradeCount(id);
     const canDelete = count === 0;
-    return { count, canDelete };
+
+    // Get portfolio and trade info only if accountId is provided
+    let portfolioInfo = { portfolios: [], trades: [] };
+    if (accountId) {
+      try {
+        portfolioInfo = await this.assetService.getAssetPortfolioInfo(id, accountId);
+      } catch (error) {
+        console.warn('Error getting portfolio info:', error);
+        // Continue with empty portfolio info
+      }
+    }
+
+    return {
+      count,
+      canDelete,
+      portfolios: portfolioInfo.portfolios,
+      trades: portfolioInfo.trades || []
+    };
   }
 
   /**

@@ -59,7 +59,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
   onTimeframeChange,
   currentTimeframe = '1Y'
 }) => {
-  const [selectedMwrPeriod, setSelectedMwrPeriod] = useState(currentMWRPeriod || '1M');
+  const [selectedMwrPeriod, setSelectedMwrPeriod] = useState(currentMWRPeriod || 'YTD');
   const [timeframe, setTimeframe] = useState(currentTimeframe);
 
   useEffect(() => {

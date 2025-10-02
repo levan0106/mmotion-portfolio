@@ -10,10 +10,10 @@ import { useAssets } from '../hooks/useAssets';
 import { AssetList } from '../components/Asset/AssetList';
 import { AssetCard } from '../components/Asset/AssetCard';
 import { AssetFilters as AssetFiltersComponent } from '../components/Asset/AssetFilters';
-import { AssetForm } from '../components/Asset/AssetForm';
 import { AssetAnalytics } from '../components/Asset/AssetAnalytics';
-import { AssetDialogs } from '../components/Asset/AssetDialogs';
+import { AssetDetailsModal } from '../components/Asset/AssetDetailsModal';
 import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarningDialog';
+import { AssetFormModal } from '../components/Asset/AssetFormModal';
 import { assetService } from '../services/asset.service';
 import { apiService } from '../services/api';
 import { formatCurrency } from '../utils/format';
@@ -44,11 +44,11 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
   // Selected asset state
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
-  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [isForceDeleting, setIsForceDeleting] = useState(false);
   const [assetToForceDelete, setAssetToForceDelete] = useState<Asset | null>(null);
   const [tradeCount, setTradeCount] = useState(0);
+  const [portfolioInfo, setPortfolioInfo] = useState<Array<{ id: string; name: string }>>([]);
 
   // Error state
   const [formError, setFormError] = useState<string | null>(null);
@@ -137,7 +137,6 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
   const handleDialogClose = useCallback(() => {
     setSelectedAsset(null);
     setEditingAsset(null);
-    setDeletingAsset(null);
     setShowCreateForm(false);
     setFormError(null);
   }, []);
@@ -265,18 +264,19 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
   // Handle asset delete
   const handleAssetDelete = useCallback(async (asset: Asset) => {
     try {
-      // Get trade count first
-      const tradeInfo = await assetService.getTradeCount(asset.id);
+      // Get portfolio and trade info using accountId
+      const portfolioInfo = await assetService.getAssetPortfolioInfo(asset.id, accountId);
 
       // Set asset and trade count for modal
       setAssetToForceDelete(asset);
-      setTradeCount(tradeInfo.count);
+      setTradeCount(portfolioInfo.tradingCount);
+      setPortfolioInfo(portfolioInfo.portfolios);
       setShowDeleteWarning(true);
     } catch (error) {
-      console.error('Error getting trade count:', error);
-      alert(`Error getting trade information: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error getting portfolio info:', error);
+      alert(`Error getting portfolio information: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, []);
+  }, [accountId]);
 
   // Handle delete confirmation (for both cases)
   const handleForceDeleteConfirm = useCallback(async () => {
@@ -568,71 +568,34 @@ export const AssetManagementPage: React.FC<AssetManagementPageProps> = ({
         </div>
       )}
 
-      {/* Dialogs */}
-      <AssetDialogs
-        selectedAsset={selectedAsset}
-        editingAsset={editingAsset}
-        deletingAsset={deletingAsset}
-        showCreateForm={false}
+      {/* View Asset Modal */}
+      <AssetDetailsModal
+        open={!!selectedAsset}
         onClose={handleDialogClose}
-        onSubmit={handleAssetFormSubmit}
-        onDeleteConfirm={handleAssetDelete}
-        onEditAsset={handleAssetEdit}
-        portfolioId={portfolioId}
+        asset={selectedAsset || null}
+        onEdit={handleAssetEdit}
+        onDelete={handleAssetDelete}
+        loading={false}
       />
 
       {/* Create/Edit Form Modal */}
-      {(showCreateForm || editingAsset) && (
-        <div className="modal-overlay" onClick={handleDialogClose}>
-          <div className="modal-content modal-content--form" onClick={(e) => e.stopPropagation()}>
-            {/* Error Message */}
-            {formError && (
-              <div className="error-message" style={{
-                backgroundColor: '#fee',
-                color: '#c33',
-                padding: '12px',
-                margin: '0 0 16px 0',
-                borderRadius: '4px',
-                border: '1px solid #fcc',
-                fontSize: '14px'
-              }}>
-                {formError}
-              </div>
-            )}
-            
-            <AssetForm
-              userId={accountId}
-              initialData={editingAsset ? (() => {
-                const initialData = {
-                  name: editingAsset.name || '',
-                  symbol: editingAsset.symbol || '',
-                  type: editingAsset.type as any,
-                  description: editingAsset.description || '',
-                  // Computed fields are shown as read-only for display purposes
-                  initialValue: editingAsset.initialValue || undefined,
-                  initialQuantity: editingAsset.initialQuantity || undefined,
-                  currentValue: editingAsset.currentValue || undefined,
-                  currentQuantity: editingAsset.currentQuantity || undefined,
-                  createdBy: editingAsset.createdBy || accountId,
-                  updatedBy: editingAsset.updatedBy || accountId,
-                };
-                return initialData;
-              })() : undefined}
-              submitText={editingAsset ? 'Update Asset' : 'Create Asset'}
-              mode={editingAsset ? 'edit' : 'create'}
-              onSubmit={handleAssetFormSubmit}
-              onCancel={handleDialogClose}
-              loading={isSubmitting}
-            />
-          </div>
-        </div>
-      )}
+      <AssetFormModal
+        open={!!(showCreateForm || editingAsset)}
+        onClose={handleDialogClose}
+        onSubmit={handleAssetFormSubmit}
+        onCancel={handleDialogClose}
+        loading={isSubmitting}
+        error={formError}
+        editingAsset={editingAsset}
+        accountId={accountId}
+      />
 
       {/* Delete Warning Dialog */}
       <AssetDeleteWarningDialog
         open={showDeleteWarning}
         assetName={assetToForceDelete?.name || ''}
         tradeCount={tradeCount}
+        portfolios={portfolioInfo}
         onConfirm={handleForceDeleteConfirm}
         onCancel={handleForceDeleteCancel}
         isDeleting={isForceDeleting}

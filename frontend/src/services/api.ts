@@ -294,6 +294,13 @@ class ApiService {
     return response.data;
   }
 
+  // New method to get all trades for a specific asset across all portfolios
+  async getAllTradesForAsset(assetId: string, accountId: string): Promise<any[]> {
+    const params = new URLSearchParams({ accountId, assetId });
+    const response = await this.api.get(`/api/v1/trades?${params}`);
+    return response.data;
+  }
+
   async getTrade(id: string, accountId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/trades/${id}?accountId=${accountId}`);
     return response.data;

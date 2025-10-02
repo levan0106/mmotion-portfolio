@@ -21,6 +21,8 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   Star as StarIcon,
+  ContentCopy as CopyIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
@@ -34,6 +36,7 @@ export const AccountManagement: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAccounts();
@@ -92,6 +95,30 @@ export const AccountManagement: React.FC = () => {
     } catch (err: any) {
       console.error('Error deleting account:', err);
       setError('Failed to delete account');
+    }
+  };
+
+  const handleCopyId = async (accountId: string) => {
+    try {
+      await navigator.clipboard.writeText(accountId);
+      setCopiedId(accountId);
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy ID:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = accountId;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedId(accountId);
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
     }
   };
 
@@ -156,16 +183,20 @@ export const AccountManagement: React.FC = () => {
                 <React.Fragment key={account.accountId}>
                   <ListItem 
                     sx={{ 
-                      py: 1,
+                      py: 0.5,
+                      px: 1,
                       ...(account.isMainAccount && {
                         backgroundColor: 'primary.50',
-                        mb: 0.5,
+                        mb: 0.25,
                       })
                     }}
                   >
-                    <Box sx={{ position: 'relative', mr: 2 }}>
+                    <Box sx={{ position: 'relative', mr: 1.5 }}>
                       <Avatar 
                         sx={{ 
+                          width: 36,
+                          height: 36,
+                          fontSize: '0.875rem',
                           bgcolor: account.isMainAccount 
                             ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                             : 'primary.main',
@@ -190,24 +221,27 @@ export const AccountManagement: React.FC = () => {
                     </Box>
                     <ListItemText
                       primary={
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                          <Typography variant="h6">
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.25 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
                             {account.name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                            {account.email}
                           </Typography>
                           {account.isMainAccount && (
                             <Chip
-                              label="Main Account"
+                              label="Main"
                               size="small"
                               color="primary"
                               variant="filled"
                               sx={{
-                                height: 20,
-                                fontSize: '0.75rem',
+                                height: 18,
+                                fontSize: '0.7rem',
                                 fontWeight: 'bold',
                                 background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                                 color: 'white',
                                 '& .MuiChip-label': {
-                                  px: 1,
+                                  px: 0.75,
                                 }
                               }}
                             />
@@ -217,22 +251,71 @@ export const AccountManagement: React.FC = () => {
                               label="Investor"
                               size="small"
                               color="secondary"
-                              sx={{ height: 20, fontSize: '0.75rem' }}
+                              sx={{ height: 18, fontSize: '0.7rem' }}
                             />
                           )}
                         </Box>
                       }
                       secondary={
-                        <Box component="span">
-                          <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'block' }}>
-                            {account.email}
-                          </Box>
-                          <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
-                            Base Currency: {account.baseCurrency} {getCurrencySymbol(account.baseCurrency)}
+                        <Box component="span" sx={{ mt: 0.25 }}>
+                          <Box component="span" sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1, 
+                            flexWrap: 'wrap',
+                            fontSize: '0.7rem'
+                          }}>
+                            <Box component="span" sx={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              color: 'text.primary', 
+                              fontFamily: 'monospace', 
+                              fontWeight: 500,
+                              backgroundColor: copiedId === account.accountId ? 'success.50' : 'grey.100',
+                              px: 0.75,
+                              py: 0.25,
+                              borderRadius: 0.5,
+                              border: '1px solid',
+                              borderColor: copiedId === account.accountId ? 'success.300' : 'grey.300',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                backgroundColor: copiedId === account.accountId ? 'success.100' : 'grey.200',
+                                borderColor: copiedId === account.accountId ? 'success.400' : 'grey.400',
+                              }
+                            }}
+                            onClick={() => handleCopyId(account.accountId)}
+                            title="Click to copy Account ID"
+                            >
+                              <Box component="span">
+                                ID: {account.accountId}
+                              </Box>
+                              {copiedId === account.accountId ? (
+                                <CheckIcon sx={{ fontSize: '0.75rem', color: 'success.main' }} />
+                              ) : (
+                                <CopyIcon sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
+                              )}
+                            </Box>
+                            <Box component="span" sx={{ color: 'text.secondary' }}>
+                              {account.baseCurrency} {getCurrencySymbol(account.baseCurrency)}
+                            </Box>
                           </Box>
                           {account.isMainAccount && (
-                            <Box component="span" sx={{ fontSize: '0.75rem', color: 'primary.main', fontWeight: 'bold', display: 'block', mt: 0.5 }}>
-                              🛡️ Protected Account - Cannot be deleted
+                            <Box component="span" sx={{ 
+                              fontSize: '0.7rem', 
+                              color: 'primary.main', 
+                              fontWeight: 'bold', 
+                              display: 'block', 
+                              mt: 0.25,
+                              backgroundColor: 'primary.50',
+                              px: 0.5,
+                              py: 0.25,
+                              borderRadius: 0.5,
+                              border: '1px solid',
+                              borderColor: 'primary.200'
+                            }}>
+                              🛡️ Protected Account
                             </Box>
                           )}
                         </Box>

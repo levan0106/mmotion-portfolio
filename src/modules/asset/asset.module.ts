@@ -6,6 +6,7 @@ import { AssetPriceHistory } from './entities/asset-price-history.entity';
 import { Asset } from './entities/asset.entity';
 import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
+import { Portfolio } from '../portfolio/entities/portfolio.entity';
 import { GlobalAssetController } from './controllers/global-asset.controller';
 import { BasicPriceController } from './controllers/basic-price.controller';
 import { PriceHistoryController } from './controllers/price-history.controller';
@@ -58,6 +59,7 @@ import { SharedModule } from '../shared/shared.module';
       Asset,
       Trade,
       TradeDetail,
+      Portfolio,
     ]),
     MarketDataModule,
     forwardRef(() => TradingModule),

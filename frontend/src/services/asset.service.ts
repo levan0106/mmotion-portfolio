@@ -252,6 +252,35 @@ export class AssetService {
   }
 
   /**
+   * Get portfolios and trading info for an asset using the new API endpoint
+   */
+  async getAssetPortfolioInfo(assetId: string, accountId: string): Promise<{
+    portfolios: Array<{ id: string; name: string }>;
+    tradingCount: number;
+  }> {
+    try {
+      // Use the new API endpoint that returns portfolio and trade info
+      const result = await this.makeRequest<{
+        count: number;
+        canDelete: boolean;
+        portfolios: Array<{ id: string; name: string }>;
+        trades: Array<any>;
+      }>('GET', `/api/v1/assets/${assetId}/trades/count?accountId=${accountId}`);
+      
+      return {
+        portfolios: result.portfolios || [],
+        tradingCount: result.count || 0,
+      };
+    } catch (error) {
+      console.error('Error getting asset portfolio info:', error);
+      return {
+        portfolios: [],
+        tradingCount: 0,
+      };
+    }
+  }
+
+  /**
    * Delete all trades for an asset
    */
   async deleteAllTrades(assetId: string): Promise<number> {

@@ -35,8 +35,8 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   const [isMwrBenchmarkLoading, setIsMwrBenchmarkLoading] = useState(false);
   const [mwrBenchmarkError, setMwrBenchmarkError] = useState<string | null>(null);
   const [benchmarkTimeframe, setBenchmarkTimeframe] = useState('1Y');
-  const [benchmarkTwrPeriod, setBenchmarkTwrPeriod] = useState('1M');
-  const [benchmarkMwrPeriod, setBenchmarkMwrPeriod] = useState('1M');
+  const [benchmarkTwrPeriod, setBenchmarkTwrPeriod] = useState('YTD');
+  const [benchmarkMwrPeriod, setBenchmarkMwrPeriod] = useState('YTD');
 
   // State for risk metrics
   const [riskMetricsData, setRiskMetricsData] = useState<any>(null);

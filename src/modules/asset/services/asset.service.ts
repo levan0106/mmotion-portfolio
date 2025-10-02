@@ -412,6 +412,88 @@ export class AssetService {
   }
 
   /**
+   * Get portfolio and trade info for an asset
+   * @param assetId - Asset ID
+   * @param accountId - Account ID
+   * @returns Portfolio and trade information
+   */
+  async getAssetPortfolioInfo(assetId: string, accountId: string): Promise<{
+    portfolios: Array<{ id: string; name: string }>;
+    trades: Array<{
+      id: string;
+      portfolioId: string;
+      portfolioName: string;
+      type: string;
+      quantity: number;
+      price: number;
+      date: string;
+    }>;
+  }> {
+    try {
+      // Get all trades for this asset
+      const trades = await this.assetRepository.getTradesForAsset(assetId);
+      
+      // Get all portfolios for the account
+      const portfolios = await this.assetRepository.getPortfoliosForAccount(accountId);
+      
+      // Group trades by portfolio
+      const portfolioTradeMap = new Map<string, any[]>();
+      for (const trade of trades) {
+        const portfolioId = trade.portfolioId;
+        if (portfolioId) {
+          if (!portfolioTradeMap.has(portfolioId)) {
+            portfolioTradeMap.set(portfolioId, []);
+          }
+          portfolioTradeMap.get(portfolioId)!.push(trade);
+        }
+      }
+
+      
+      // Find related portfolios
+      const relatedPortfolios = [];
+      const tradeDetails = [];
+      
+      for (const [portfolioId, portfolioTrades] of portfolioTradeMap) {
+        const portfolio = portfolios.find(p => {
+          const pid = p.id || p.portfolioId || (p as any).uuid;
+          return pid === portfolioId;
+        });
+        
+        if (portfolio) {
+          relatedPortfolios.push({
+            id: portfolio.id || portfolio.portfolioId || (portfolio as any).uuid,
+            name: portfolio.name || portfolio.portfolioName || 'Unnamed Portfolio'
+          });
+          
+          // Add trade details
+          for (const trade of portfolioTrades) {
+            tradeDetails.push({
+              id: trade.id,
+              portfolioId: trade.portfolioId,
+              portfolioName: portfolio.name || portfolio.portfolioName || 'Unnamed Portfolio',
+              type: trade.type || 'BUY',
+              quantity: trade.quantity || 0,
+              price: trade.price || 0,
+              date: trade.date ? new Date(trade.date).toISOString() : new Date().toISOString()
+            });
+          }
+        }
+      }
+      
+      return {
+        portfolios: relatedPortfolios,
+        trades: tradeDetails
+      };
+    } catch (error) {
+      console.error('Error getting asset portfolio info:', error);
+      return {
+        portfolios: [],
+        trades: []
+      };
+    }
+  }
+
+  /**
    * Delete all trades for an asset
    * @param id - Asset ID
    * @returns Number of deleted trades

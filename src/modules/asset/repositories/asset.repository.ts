@@ -6,6 +6,7 @@ import { AssetType } from '../enums/asset-type.enum';
 import { IAssetRepository, AssetStatistics } from './asset.repository.interface';
 import { Trade } from '../../trading/entities/trade.entity';
 import { TradeDetail } from '../../trading/entities/trade-detail.entity';
+import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 
 /**
  * Asset filters interface for query parameters
@@ -47,6 +48,8 @@ export class AssetRepository implements IAssetRepository {
     private readonly tradeRepository: Repository<Trade>,
     @InjectRepository(TradeDetail)
     private readonly tradeDetailRepository: Repository<TradeDetail>,
+    @InjectRepository(Portfolio)
+    private readonly portfolioRepository: Repository<Portfolio>,
   ) {}
 
   /**
@@ -668,6 +671,20 @@ export class AssetRepository implements IAssetRepository {
       .addOrderBy('trade.createdAt', 'ASC')
       .getMany();
     return trades;
+  }
+
+  /**
+   * Get all portfolios for an account
+   * @param accountId - Account ID
+   * @returns Promise<any[]> - Array of portfolios
+   */
+  async getPortfoliosForAccount(accountId: string): Promise<any[]> {
+    const portfolios = await this.portfolioRepository
+      .createQueryBuilder('portfolio')
+      .where('portfolio.accountId = :accountId', { accountId })
+      .getMany();
+    
+    return portfolios;
   }
 
   /**
