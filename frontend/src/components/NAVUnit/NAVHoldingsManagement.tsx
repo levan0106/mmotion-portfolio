@@ -134,9 +134,9 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
     }
   };
 
-  const totalInvestment = holdings.reduce((sum, holding) => sum + holding.totalInvestment, 0);
-  const totalCurrentValue = holdings.reduce((sum, holding) => sum + holding.currentValue, 0);
-  const totalPnL = totalCurrentValue - totalInvestment;
+  const totalInvestment = holdings.reduce((sum, holding) => sum + Number(holding.totalInvestment), 0);
+  const totalCurrentValue = holdings.reduce((sum, holding) => sum + Number(holding.currentValue), 0);
+  const totalPnL = Number(totalCurrentValue) - Number(totalInvestment);
 
   if (!portfolio.isFund) {
     return (
@@ -246,7 +246,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <Typography variant="caption" color="text.secondary">
-                  Total P&L
+                  Total P&L (current value - capital)
                 </Typography>
                 <Typography 
                   variant="h6" 

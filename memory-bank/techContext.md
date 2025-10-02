@@ -48,6 +48,8 @@
 - **Compact Mode**: Ultra compact mode with global toggle for maximum data density ✅
 - **Global Assets System**: CR-005 documentation complete (PRD, TDD, TBD) ✅
 - **Module Separation**: Asset Module (Core) + Market Data Module (Optional) ✅
+- **Real-time Calculation Engine**: Enhanced portfolio service with real-time outstanding units and NAV calculations ✅
+- **Database Accuracy System**: Smart calculation logic with threshold-based updates for optimal performance ✅
 - **Portfolio Deletion System**: Comprehensive deletion with enhanced safety features ✅
 - **Double Confirmation UI**: Checkbox-based confirmation system for destructive actions ✅
 - **Systematic Data Cleanup**: Backend service with proper deletion order and error handling ✅
@@ -105,6 +107,9 @@
 - **Fund Management Integration**: Added isFund field and numberOfInvestors to portfolio snapshots ✅
 - **Migration Script Management**: Comprehensive migration approach for fund management data ✅
 - **Code Quality**: Production-ready with clean, maintainable code ✅
+- **Real-time Calculation Engine**: Enhanced portfolio service with smart calculation logic for outstanding units and NAV ✅
+- **Database Accuracy System**: Threshold-based updates (0.1%) for optimal performance while maintaining accuracy ✅
+- **lastNavDate Matching**: Proper timestamp tracking for calculation freshness and consistency ✅
 - **Asset Price Bulk Update**: Complete bulk price update system with historical data integration ✅
 - **Reason Format Enhancement**: Dynamic reason format with date information for better audit trail ✅
 - **External Market Data System**: Real-time market data integration with 5 external APIs (FMarket, Doji, Tygia/Vietcombank, SSI, CoinGecko) ✅

@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: UI/UX Optimization & Performance Chart Defaults - COMPLETED**
-**Latest Update: Successfully optimized UI layouts, updated chart defaults, and enhanced branding (Current Session)**
+**Phase: Real-time Calculation Fixes & Database Accuracy - COMPLETED**
+**Latest Update: Fixed totalOutstandingUnits and navPerUnit real-time calculations, improved lastNavDate matching (Current Session)**
 **Code Version: Backend v1.0.0, Frontend v1.0.0 - Production Ready**
 **Docker Deployment: Project runs with Docker and Docker Compose - PRIMARY DEPLOYMENT METHOD**
 - ✅ **Snapshot Date Range Implementation** (Complete date range support for bulk snapshot creation)
@@ -44,6 +44,9 @@
 - ✅ **Professional Branding Enhancement** (Updated MMO branding with gradient text, glass morphism effects, and semantic versioning)
 - ✅ **Account Management Layout Optimization** (Compact layout with inline name/email, professional ID display, and space efficiency)
 - ✅ **Asset Form Modal Layout Improvement** (Enhanced responsive layout with better field formatting and professional styling)
+- ✅ **Real-time Outstanding Units Calculation Fix** (Fixed totalOutstandingUnits to calculate real-time instead of using stale database values)
+- ✅ **NAV Per Unit Real-time Calculation Enhancement** (Improved navPerUnit calculation to update when outstanding units change significantly)
+- ✅ **lastNavDate Matching Logic** (Enhanced lastNavDate update logic to match real-time value calculations)
 - ✅ Hoàn thành project document theo prompt v4.md structure
 - ✅ Phân tích requirements từ requirement.md và draft ideas.md
 - ✅ Thiết lập Memory Bank cho project tracking

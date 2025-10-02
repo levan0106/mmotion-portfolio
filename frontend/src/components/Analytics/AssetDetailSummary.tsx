@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { Box, Typography, Grid, Card, CardContent, Chip } from '@mui/material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
+import { getPnLColor, getPnLLightColor } from '../../config/chartColors';
 
 interface AssetDetail {
   symbol: string;
@@ -285,9 +286,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                             justifyContent: 'space-between', 
                             alignItems: 'center',
                             p: 1,
-                            backgroundColor: data.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                            backgroundColor: getPnLLightColor(data.unrealizedPl),
                             borderRadius: 1,
-                            border: `1px solid ${data.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
+                            border: `1px solid ${getPnLColor(data.unrealizedPl)}40`
                           }}>
                             <Typography variant="body2" color="text.secondary">
                               Unrealized P&L:
@@ -297,7 +298,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                                 variant="body2" 
                                 sx={{ 
                                   fontWeight: 600,
-                                  color: data.unrealizedPl >= 0 ? '#4caf50' : '#f44336'
+                                  color: getPnLColor(data.unrealizedPl)
                                 }}
                               >
                                 {formatCurrency(data.unrealizedPl, baseCurrency)}
@@ -305,7 +306,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                               <Typography 
                                 variant="caption" 
                                 sx={{ 
-                                  color: data.unrealizedPl >= 0 ? '#4caf50' : '#f44336',
+                                  color: getPnLColor(data.unrealizedPl),
                                   fontSize: '0.7rem'
                                 }}
                               >
@@ -323,7 +324,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   {chartData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.unrealizedPl >= 0 ? '#4caf50' : '#f44336'} 
+                      fill={getPnLColor(entry.unrealizedPl)} 
                     />
                   ))}
                 </Bar>
@@ -543,9 +544,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   justifyContent: 'space-between',
                   mt: 1,
                   p: 0.75,
-                  backgroundColor: asset.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.08)' : 'rgba(244, 67, 54, 0.08)',
+                  backgroundColor: getPnLLightColor(asset.unrealizedPl),
                   borderRadius: 1,
-                  border: `1px solid ${asset.unrealizedPl >= 0 ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}`
+                  border: `1px solid ${getPnLColor(asset.unrealizedPl)}30`
                 }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>

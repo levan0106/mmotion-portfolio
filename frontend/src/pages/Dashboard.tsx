@@ -381,13 +381,26 @@ const Dashboard: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 1.5, borderRadius: 2, background: alpha(theme.palette.info.main, 0.03) }}>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
-                          Cash Allocation
+                          Best Portfolio Cash
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: 'info.main' }}>
-                          {formatPercentage(cashAllocationPercentage)}
+                          {portfolios.length > 0 ? (() => {
+                            const bestPortfolio = portfolios.reduce((best, current) => 
+                              (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
+                            );
+                            const bestPortfolioCash = Number(bestPortfolio.cashBalance) || 0;
+                            const bestPortfolioTotalValue = Number(bestPortfolio.totalInvestValue) || 0;
+                            const bestPortfolioCashPercentage = bestPortfolioTotalValue > 0 ? (bestPortfolioCash / bestPortfolioTotalValue) * 100 : 0;
+                            return formatPercentage(bestPortfolioCashPercentage);
+                          })() : 'N/A'}
                         </Typography>
                         <Typography variant="body2" color="info.main" sx={{ fontWeight: 500 }}>
-                          {formatCurrency(totalCashBalance, displayCurrency)}
+                          {portfolios.length > 0 ? (() => {
+                            const bestPortfolio = portfolios.reduce((best, current) => 
+                              (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
+                            );
+                            return formatCurrency(Number(bestPortfolio.cashBalance) || 0, displayCurrency);
+                          })() : 'N/A'}
                         </Typography>
                       </Box>
                     </Grid>

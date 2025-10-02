@@ -15,6 +15,7 @@ import { PortfolioValueCalculatorService } from './portfolio-value-calculator.se
 import { CashFlowService } from './cash-flow.service';
 import { DepositRepository } from '../repositories/deposit.repository';
 import { NavUtilsService } from './nav-utils.service';
+import { InvestorHoldingService } from './investor-holding.service';
 // Additional imports for comprehensive deletion
 import { Trade } from '../../trading/entities/trade.entity';
 import { TradeDetail } from '../../trading/entities/trade-detail.entity';
@@ -52,6 +53,7 @@ export class PortfolioService {
     private readonly cashFlowService: CashFlowService,
     private readonly depositRepository: DepositRepository,
     private readonly navUtilsService: NavUtilsService,
+    private readonly investorHoldingService: InvestorHoldingService,
     // Additional repositories for comprehensive deletion
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
@@ -156,24 +158,39 @@ export class PortfolioService {
       // Calculate new portfolio fields
       const newFields = await this.calculateNewPortfolioFields(portfolioId);
       
-      // Get NAV per unit for funds (DB-first with fallback calculation)
-      if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
-        const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+      // Get NAV per unit for funds (real-time calculation)
+      if (portfolio.isFund) {
+        // Calculate real-time total outstanding units
+        const realTimeOutstandingUnits = await this.investorHoldingService.calculateTotalOutstandingUnits(portfolioId);
+        
+        // Check if outstanding units changed significantly (more than 0.1%)
+        const dbOutstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
           ? parseFloat(portfolio.totalOutstandingUnits) 
           : portfolio.totalOutstandingUnits;
+        const unitsChanged = Math.abs(realTimeOutstandingUnits - dbOutstandingUnits) > (dbOutstandingUnits * 0.001);
         
-        // Check if DB value is valid and not stale
-        const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(portfolio.navPerUnit);
-        const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
+        // Update portfolio with real-time outstanding units
+        portfolio.totalOutstandingUnits = realTimeOutstandingUnits;
         
-        if (isNavPerUnitValid && !isNavPerUnitStale) {
-          // Use DB value (already set)
-          this.logger.debug(`Using DB navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
-        } else {
-          // Fallback to real-time calculation
-          portfolio.navPerUnit = newFields.totalAllValue / outstandingUnits;
-          const reason = !isNavPerUnitValid ? 'DB value is zero' : 'DB value is stale';
-          this.logger.debug(`Calculated real-time navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
+        if (realTimeOutstandingUnits > 0) {
+          
+          // Check if DB value is valid and not stale
+          const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(portfolio.navPerUnit);
+          const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
+          
+          if (isNavPerUnitValid && !isNavPerUnitStale && !unitsChanged) {
+            // Use DB value (already set) - only if units haven't changed
+            this.logger.debug(`Using DB navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
+          } else {
+            // Calculate real-time NAV per unit
+            portfolio.navPerUnit = newFields.totalAllValue / realTimeOutstandingUnits;
+            // Update lastNavDate when calculating real-time NAV
+            portfolio.lastNavDate = new Date();
+            const reason = !isNavPerUnitValid ? 'DB value is zero' : 
+                          isNavPerUnitStale ? 'DB value is stale' : 
+                          'Outstanding units changed';
+            this.logger.debug(`Calculated real-time navPerUnit: ${portfolio.navPerUnit} for portfolio ${portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
+          }
         }
       }
       

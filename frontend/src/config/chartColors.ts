@@ -16,7 +16,7 @@ export const CHART_COLORS: AssetTypeColors = {
   STOCK: '#9c27b0',      // Purple
   BOND: '#059669',       // Emerald
   GOLD: '#ff9800',       // Orange/Yellow
-  CRYPTO: '#f44336',     // Rose
+  CRYPTO: '#dc3532',     // Rose
   DEPOSITS: '#1377c7',   // Sky
 };
 
@@ -107,9 +107,9 @@ export interface PnLColors {
 }
 
 export const PNL_COLORS: PnLColors = {
-  positive: '#4caf50',      // Green for positive P&L
-  negative: '#f44336',     // Red for negative P&L
-  positiveLight: '#E8F5E8', // Light green background
+  positive: '#00c49f',      // Green for positive P&L
+  negative: '#bf2724',     // Red for negative P&L
+  positiveLight: '#E0F2F1', // Light green background
   negativeLight: '#FFE8E8',  // Light red background
 };
 
@@ -118,33 +118,33 @@ export const PNL_COLORS: PnLColors = {
  */
 export const PNL_COLOR_SCHEMES = {
   default: {
-    positive: '#4caf50',
-    negative: '#f44336',
-    positiveLight: '#E8F5E8',
+    positive: '#00c49f',
+    negative: '#f15350',
+    positiveLight: '#E0F2F1',
     negativeLight: '#FFE8E8',
   },
   blueRed: {
     positive: '#2196f3',
     negative: '#f44336',
-    positiveLight: '#E3F2FD',
+    positiveLight: '#E0F2F1',
     negativeLight: '#FFE8E8',
   },
   tealOrange: {
     positive: '#00BCD4',
     negative: '#FF9800',
-    positiveLight: '#E0F2F1',
+    positiveLight: '#E8F5E8',
     negativeLight: '#FFF3E0',
   },
   purplePink: {
     positive: '#9C27B0',
     negative: '#E91E63',
-    positiveLight: '#F3E5F5',
+    positiveLight: '#E0F2F1',
     negativeLight: '#FCE4EC',
   },
   greenRed: {
     positive: '#2E7D32',
     negative: '#D32F2F',
-    positiveLight: '#E8F5E8',
+    positiveLight: '#E0F2F1',
     negativeLight: '#FFEBEE',
   },
 } as const;

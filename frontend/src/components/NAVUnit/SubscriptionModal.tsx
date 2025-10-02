@@ -66,26 +66,39 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
     transactionDate?: string;
   }>({});
 
+  // Helper function to clear form data
+  const clearFormData = () => {
+    setFormData({
+      accountId: '',
+      amount: 0,
+      units: 0,
+      description: '',
+      transactionDate: new Date().toISOString().split('T')[0],
+    });
+    setError(null);
+    setErrors({});
+  };
+
   // Initialize form data when portfolio changes
   useEffect(() => {
     if (portfolio) {
-      setFormData({
-        accountId: '',
-        amount: 0,
-        units: 0,
-        description: '',
-        transactionDate: new Date().toISOString().split('T')[0], // Default to current date
-      });
-      setError(null);
-      setErrors({});
+      clearFormData();
     }
   }, [portfolio]);
+
+  // Clear form data when modal opens/closes
+  useEffect(() => {
+    if (open && portfolio) {
+      // Reset form when modal opens
+      clearFormData();
+    }
+  }, [open, portfolio]);
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (!formData.accountId) {
-      newErrors.accountId = 'Please select an account';
+    if (!formData.accountId || formData.accountId.trim() === '') {
+      newErrors.accountId = 'Please select an account or enter an account ID';
     }
 
     if (!formData.amount || formData.amount <= 0) {
@@ -122,15 +135,37 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
         subscriptionDate: formData.transactionDate,
       };
 
+      console.log('SubscriptionModal: Submitting with data:', subscriptionData);
+      console.log('SubscriptionModal: Account ID:', subscriptionData.accountId);
+      console.log('SubscriptionModal: Portfolio ID:', subscriptionData.portfolioId);
+      console.log('SubscriptionModal: Amount:', subscriptionData.amount);
+      
       await apiService.subscribeToFund(subscriptionData);
+      
+      // Clear form data after successful submission
+      clearFormData();
+      
       onSubscriptionSuccess();
       onClose();
     } catch (err: any) {
       console.error('Error creating subscription:', err);
-      setError(
-        err.response?.data?.message || 
-        'Failed to create subscription. Please try again.'
-      );
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      
+      // Handle specific error cases
+      let errorMessage = 'Failed to create subscription. Please try again.';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Account is not authorized to invest in this fund. Please contact administrator.';
+      } else if (err.response?.status === 400) {
+        errorMessage = 'Invalid subscription data. Please check your input.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Portfolio or account not found. Please refresh and try again.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -138,8 +173,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
   const handleClose = () => {
     if (!loading) {
-      setError(null);
-      setErrors({});
+      // Clear all form data when closing
+      clearFormData();
       onClose();
     }
   };
@@ -151,11 +186,45 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
     ? Math.round((formData.amount / navPerUnit) * 1000) / 1000 
     : 0;
   
-  // Form validation
+  // Form validation - simplified for custom account ID
   const isFormValid = formData.accountId && 
+                     formData.accountId.trim() !== '' &&
                      formData.amount > 0 && 
-                     calculatedUnits > 0 && 
                      !loading;
+
+  // Additional validation for custom account ID
+  const hasValidAccountId = formData.accountId && formData.accountId.trim() !== '';
+  const hasValidAmount = formData.amount > 0;
+  const hasValidUnits = calculatedUnits > 0;
+  const isNotLoading = !loading;
+
+  // Enhanced validation for custom account ID
+  console.log('Custom account ID check:', {
+    accountId: formData.accountId,
+    hasValidAccountId,
+    hasValidAmount,
+    isFormValid
+  });
+
+  // Debug logging for form validation
+  console.log('Form validation:', {
+    accountId: formData.accountId,
+    amount: formData.amount,
+    calculatedUnits,
+    loading,
+    isFormValid,
+    hasValidAccountId,
+    hasValidAmount,
+    hasValidUnits,
+    isNotLoading
+  });
+
+  // Test validation logic
+  if (formData.accountId && formData.accountId.trim() !== '') {
+    console.log('✅ Account ID is valid:', formData.accountId);
+  } else {
+    console.log('❌ Account ID is invalid:', formData.accountId);
+  }
 
   const modalActions = (
     <>
@@ -223,17 +292,21 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             <AccountAutocomplete
               value={formData.accountId}
               onChange={(accountId) => {
+                console.log('SubscriptionModal: Account ID changed to:', accountId);
                 setFormData(prev => ({ ...prev, accountId }));
                 if (errors.accountId) {
                   setErrors(prev => ({ ...prev, accountId: undefined }));
                 }
               }}
-              label="Investor Account"
-              placeholder="Search for an investor account..."
+              label="Account"
+              placeholder="Search for an account or enter new account ID..."
               helperText={errors.accountId}
               error={!!errors.accountId}
               disabled={loading}
-              filterInvestorOnly={true}
+              filterInvestorOnly={false}
+              portfolioId={portfolio.portfolioId}
+              allowCustomAccountId={true}
+              showPortfolioInvestors={true}
               required
             />
           </Grid>

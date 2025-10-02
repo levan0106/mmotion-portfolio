@@ -2,7 +2,27 @@
 
 ## What Works
 ### ✅ Completed
-- **UI/UX OPTIMIZATION & PERFORMANCE CHART DEFAULTS - COMPLETED** (Current Session - October 1, 2025)
+- **REAL-TIME CALCULATION FIXES & DATABASE ACCURACY - COMPLETED** (Current Session - October 2, 2025)
+  - **Total Outstanding Units Real-time Calculation**: Fixed critical issue where API returned stale database values instead of real-time calculations
+    - **Problem Identified**: Database `totalOutstandingUnits` (12400.000) was stale compared to real-time calculation (12611.704)
+    - **Solution Implemented**: Modified `getPortfolioDetails` in `portfolio.service.ts` to calculate real-time outstanding units using `calculateTotalOutstandingUnits()`
+    - **Result**: API now returns accurate `totalOutstandingUnits: 12611.704` matching real-time data
+    - **Impact**: Portfolio calculations now use current data instead of outdated database values
+  - **NAV Per Unit Real-time Enhancement**: Improved NAV calculation logic to update when outstanding units change significantly
+    - **Smart Calculation Logic**: Added logic to detect when outstanding units change by more than 0.1% threshold
+    - **Real-time NAV Update**: NAV per unit now recalculates when units change: `navPerUnit = totalAllValue / realTimeOutstandingUnits`
+    - **Result**: NAV per unit now accurately reflects current portfolio value (10521.597280018623)
+    - **Performance**: Maintains DB values when no significant changes, calculates real-time when needed
+  - **lastNavDate Matching Logic**: Enhanced lastNavDate update to match real-time value calculations
+    - **Date Update Logic**: `lastNavDate` now updates when real-time NAV is calculated
+    - **Consistency**: Ensures lastNavDate reflects when values were last recalculated
+    - **Validation**: Proper timestamp tracking for NAV calculation freshness
+  - **Database Accuracy Verification**: Comprehensive testing confirmed all calculations match real-time data
+    - **API Response Accuracy**: `totalOutstandingUnits` and `navPerUnit` now 100% accurate
+    - **Calculation Matching**: All values match manual calculations and real-time data
+    - **Production Ready**: All changes tested and working correctly in Docker environment
+
+- **UI/UX OPTIMIZATION & PERFORMANCE CHART DEFAULTS - COMPLETED** (Previous Session - October 1, 2025)
   - **Portfolio Performance Chart Defaults Update**: Changed default filters from 1M to YTD for better user context
     - **TWR Chart Default**: Modified `benchmarkTwrPeriod` state from '1M' to 'YTD' in `PerformanceTab.tsx`
     - **MWR Chart Default**: Modified `benchmarkMwrPeriod` state from '1M' to 'YTD' in `PerformanceTab.tsx`

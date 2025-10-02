@@ -375,11 +375,25 @@ export class InvestorHoldingService {
    * Get investor holdings for a specific account
    */
   async getInvestorHoldings(accountId: string): Promise<InvestorHolding[]> {
-    return this.investorHoldingRepository.find({
+    const holdings = await this.investorHoldingRepository.find({
       where: { accountId },
       relations: ['portfolio'],
       order: { createdAt: 'DESC' }
     });
+
+    // Calculate real-time values for each holding
+    const holdingsWithRealTimeValues = await Promise.all(
+      holdings.map(async (holding) => {
+        const realTimeValues = await this.calculateRealTimeHoldingValues(holding);
+        const updatedHolding = Object.assign(holding, {
+          currentValue: realTimeValues.currentValue,
+          unrealizedPnL: realTimeValues.unrealizedPnL,
+        });
+        return updatedHolding;
+      })
+    );
+
+    return holdingsWithRealTimeValues;
   }
 
   /**
@@ -396,13 +410,16 @@ export class InvestorHoldingService {
       throw new NotFoundException(`Holding with ID ${holdingId} not found`);
     }
 
-    // 2. Get all transactions for this holding
+    // 2. Calculate real-time currentValue and unrealizedPnL
+    const realTimeValues = await this.calculateRealTimeHoldingValues(holding);
+
+    // 3. Get all transactions for this holding
     const transactions = await this.fundUnitTransactionRepository.find({
       where: { holdingId },
       order: { createdAt: 'DESC' },
     });
 
-    // 3. Get cash flows for each transaction
+    // 4. Get cash flows for each transaction
     const transactionsWithCashFlow: FundUnitTransactionWithCashFlow[] = [];
     
     for (const transaction of transactions) {
@@ -417,14 +434,52 @@ export class InvestorHoldingService {
       });
     }
 
-    // 4. Calculate summary
-    const summary = this.calculateHoldingSummary(transactionsWithCashFlow, holding);
+    // 5. Update holding with real-time values
+    const updatedHolding = Object.assign(holding, {
+      currentValue: realTimeValues.currentValue,
+      unrealizedPnL: realTimeValues.unrealizedPnL,
+    });
+
+    // 6. Calculate summary with real-time values
+    const summary = this.calculateHoldingSummary(transactionsWithCashFlow, updatedHolding);
 
     return {
-      holding,
+      holding: updatedHolding,
       transactions: transactionsWithCashFlow,
       summary,
     };
+  }
+
+  /**
+   * Calculate real-time currentValue and unrealizedPnL for a holding
+   */
+  private async calculateRealTimeHoldingValues(holding: InvestorHolding): Promise<{
+    currentValue: number;
+    unrealizedPnL: number;
+  }> {
+    try {
+      // Get current NAV per unit for the portfolio
+      const navPerUnit = await this.calculateNavPerUnit(holding.portfolioId);
+      
+      // Calculate real-time current value
+      const currentValue = Number(holding.totalUnits) * navPerUnit;
+      
+      // Calculate real-time unrealized P&L
+      const unrealizedPnL = currentValue - Number(holding.totalInvestment);
+      
+      return {
+        currentValue: Math.round(currentValue * 1000) / 1000,
+        unrealizedPnL: Math.round(unrealizedPnL * 1000) / 1000,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to calculate real-time values for holding ${holding.holdingId}: ${error.message}`);
+      
+      // Fallback to stored values if calculation fails
+      return {
+        currentValue: Number(holding.currentValue) || 0,
+        unrealizedPnL: Number(holding.unrealizedPnL) || 0,
+      };
+    }
   }
 
   /**
@@ -505,7 +560,19 @@ export class InvestorHoldingService {
       investors = investors.filter(investor => compareDates(investor.createdAt, snapshotDate));
     }
 
-    return investors;
+    // Calculate real-time values for each investor
+    const investorsWithRealTimeValues = await Promise.all(
+      investors.map(async (investor) => {
+        const realTimeValues = await this.calculateRealTimeHoldingValues(investor);
+        const updatedInvestor = Object.assign(investor, {
+          currentValue: realTimeValues.currentValue,
+          unrealizedPnL: realTimeValues.unrealizedPnL,
+        });
+        return updatedInvestor;
+      })
+    );
+
+    return investorsWithRealTimeValues;
   }
 
   // /**
@@ -529,8 +596,20 @@ export class InvestorHoldingService {
     let holding = await this.investorHoldingRepository.findOne({
       where: { portfolioId, accountId},
       relations: ['account', 'portfolio']
-    })
-    return holding;
+    });
+
+    if (!holding) {
+      return null;
+    }
+
+    // Calculate real-time values
+    const realTimeValues = await this.calculateRealTimeHoldingValues(holding);
+    const updatedHolding = Object.assign(holding, {
+      currentValue: realTimeValues.currentValue,
+      unrealizedPnL: realTimeValues.unrealizedPnL,
+    });
+
+    return updatedHolding;
   }
 
   /**
@@ -651,9 +730,10 @@ export class InvestorHoldingService {
       throw new NotFoundException(`Account ${dto.accountId} not found`);
     }
 
-    if (!account.isInvestor) {
-      throw new BadRequestException('Account is not authorized to invest in funds');
-    }
+    // Removed investor validation - any account can invest in funds
+    // if (!account.isInvestor) {
+    //   throw new BadRequestException('Account is not authorized to invest in funds');
+    // }
   }
 
   /**
@@ -684,9 +764,10 @@ export class InvestorHoldingService {
       throw new NotFoundException(`Account ${dto.accountId} not found`);
     }
 
-    if (!account.isInvestor) {
-      throw new BadRequestException('Account is not authorized to invest in funds');
-    }
+    // Removed investor validation - any account can invest in funds
+    // if (!account.isInvestor) {
+    //   throw new BadRequestException('Account is not authorized to invest in funds');
+    // }
   }
 
   /**

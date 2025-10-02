@@ -45,7 +45,24 @@ flowchart LR
 - **DRY Principle Pattern**: Eliminate code duplication by reusing existing methods instead of duplicating logic
 - **Debug Cleanup Pattern**: Remove all debug logs and files after bug fixes for production-ready code
 
-### Portfolio Deletion Patterns - **RECENTLY IMPLEMENTED**
+### Real-time Calculation Patterns - **RECENTLY IMPLEMENTED**
+- **Real-time Outstanding Units Pattern**: Calculate totalOutstandingUnits in real-time instead of using stale database values
+  - **Problem**: Database values can become stale when new transactions occur
+  - **Solution**: Use `calculateTotalOutstandingUnits()` method to get current values
+  - **Implementation**: Modified `getPortfolioDetails` to always calculate real-time outstanding units
+  - **Benefit**: Ensures portfolio calculations use current data instead of outdated values
+- **Smart NAV Calculation Pattern**: Update NAV per unit when outstanding units change significantly
+  - **Threshold Logic**: Detect changes > 0.1% in outstanding units to trigger recalculation
+  - **Performance Optimization**: Use DB values when no significant changes, calculate real-time when needed
+  - **Formula**: `navPerUnit = totalAllValue / realTimeOutstandingUnits`
+  - **Benefit**: Maintains accuracy while optimizing performance
+- **lastNavDate Matching Pattern**: Update lastNavDate when real-time calculations are performed
+  - **Consistency**: Ensure lastNavDate reflects when values were last recalculated
+  - **Timestamp Tracking**: Proper tracking of NAV calculation freshness
+  - **Validation**: Clear indication of when values were last updated
+  - **Benefit**: Provides accurate metadata about calculation freshness
+
+### Portfolio Deletion Patterns - **PREVIOUSLY IMPLEMENTED**
 - **Systematic Deletion Pattern**: Delete related entities in correct order to avoid foreign key constraints
 - **Comprehensive Cleanup Pattern**: Delete all related data (trades, cash flows, deposits, snapshots, holdings) before deleting main entity
 - **Double Confirmation Pattern**: Require explicit user confirmation through checkbox before enabling destructive actions
