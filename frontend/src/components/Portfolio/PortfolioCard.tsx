@@ -165,7 +165,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             <AccountBalance className="portfolio-card__total-value-icon" />
             <div>
               <div className="portfolio-card__total-value-amount">
-                {formatCurrency(Number(portfolio.totalInvestValue) || 0, portfolio.baseCurrency)}
+                {formatCurrency(Number(portfolio.totalAllValue) || 0, portfolio.baseCurrency)}
               </div>
               <div className="portfolio-card__total-value-label">Investment Value</div>
             </div>

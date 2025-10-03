@@ -28,20 +28,10 @@ const formatNumber = (value: number | undefined, decimals: number = 4): string =
   }).format(value);
 };
 
-const formatAssetType = (type: string): string => {
-  const typeMap: Record<string, string> = {
-    'STOCK': 'Cổ phiếu',
-    'BOND': 'Trái phiếu',
-    'FUND': 'Quỹ đầu tư',
-    'CRYPTO': 'Tiền điện tử',
-    'COMMODITY': 'Hàng hóa',
-    'CASH': 'Tiền mặt',
-    'OTHER': 'Khác'
-  };
-  return typeMap[type] || type;
-};
+// Removed unused formatAssetType function
 
 // Helper component for formatted data display
+// @ts-ignore
 const FormattedDataDisplay: React.FC<{
   label: string;
   value: string | number | undefined;

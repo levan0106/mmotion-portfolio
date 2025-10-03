@@ -33,6 +33,7 @@ import {
   CameraAlt as SnapshotIcon,
   Settings as SettingsIcon,
   Assessment as ReportsIcon,
+  Assessment as AssessmentIcon,
   Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
@@ -112,6 +113,13 @@ const menuItems = [
     path: '/settings', 
     description: 'System configuration',
     badge: null
+  },
+  {
+    text: 'Transactions',
+    icon: <AssessmentIcon />,
+    path: '/transactions',
+    description: 'View transaction history',
+    badge: 'under review'
   },
 ];
 

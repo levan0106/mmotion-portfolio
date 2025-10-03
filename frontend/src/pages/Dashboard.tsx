@@ -37,6 +37,7 @@ import {
   Refresh,
 } from '@mui/icons-material';
 import { usePortfolios } from '../hooks/usePortfolios';
+import { usePortfolioChangeForAllPortfolios } from '../hooks/usePortfolioChange';
 import { useAccount } from '../contexts/AccountContext';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import PortfolioCard from '../components/Portfolio/PortfolioCard';
@@ -46,6 +47,9 @@ const Dashboard: React.FC = () => {
   const theme = useTheme();
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
+  
+  
+  const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
 
   if (isLoading) {
     return (
@@ -136,7 +140,7 @@ const Dashboard: React.FC = () => {
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
       trend: totalValue > 0 ? 'positive' : 'neutral',
-      change: '+12.5%',
+      change: isChangeLoading ? '...' : (totalChange || '+0.0%'),
     },
     {
       title: 'Total P&L',

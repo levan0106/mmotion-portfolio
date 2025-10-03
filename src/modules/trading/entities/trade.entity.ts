@@ -118,6 +118,8 @@ export class Trade {
   }
 
   get totalCost(): number {
-    return this.totalAmount + this.fee + this.tax;
+    return this.side === 'SELL' 
+      ? this.totalAmount - this.fee - this.tax
+      : this.totalAmount + this.fee + this.tax;
   }
 }

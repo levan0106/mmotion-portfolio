@@ -15,11 +15,14 @@ import Dashboard from './pages/Dashboard';
 import Portfolios from './pages/Portfolios';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Trading from './pages/Trading';
-import AssetManagement from './pages/AssetManagement';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
 import DepositManagement from './pages/DepositManagement';
 import HoldingDetail from './pages/HoldingDetail';
+import Holdings from './pages/Holdings';
+import Transactions from './pages/Transactions';
+import Assets from './pages/Assets';
+import Report from './pages/Report';
 import Login from './pages/Login';
 import Settings from './pages/Settings';
 import { customTheme } from './theme/customTheme';
@@ -75,12 +78,14 @@ const AppContent: React.FC = () => {
           <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
           <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
           <Route path="/holdings/:holdingId" element={<HoldingDetail />} />
-          <Route path="/assets" element={<AssetManagement />} />
+          <Route path="/assets" element={<Assets />} />
           <Route path="/global-assets" element={<GlobalAssetsPage />} />
           <Route path="/snapshots" element={<SnapshotManagementPage />} />
           <Route path="/deposits" element={<DepositManagement />} />
+          <Route path="/holdings" element={<Holdings />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
-          <Route path="/reports" element={<div>Reports Page - Coming Soon</div>} />
+          <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

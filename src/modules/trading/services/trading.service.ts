@@ -1240,7 +1240,9 @@ export class TradingService {
           totalValue: Number(trade.totalAmount) || 0,
           fee: Number(trade.fee) || 0,
           tax: Number(trade.tax) || 0,
-          totalCost: (Number(trade.totalAmount) || 0) + (Number(trade.fee) || 0) + (Number(trade.tax) || 0),
+          totalCost: trade.side === 'SELL' 
+            ? (Number(trade.totalAmount) || 0) - (Number(trade.fee) || 0) - (Number(trade.tax) || 0)
+            : (Number(trade.totalAmount) || 0) + (Number(trade.fee) || 0) + (Number(trade.tax) || 0),
           tradeType: trade.tradeType,
           source: trade.source,
           exchange: trade.exchange,

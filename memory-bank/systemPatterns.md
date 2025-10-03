@@ -24,6 +24,26 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### FIFO Calculation Integration Pattern - **IMPLEMENTED** ✅
+- **AssetValueCalculatorService Integration**: Report service uses dedicated FIFO calculation service for accurate asset holdings
+- **FIFO Algorithm Usage**: Uses calculateAssetPositionFIFOFinal method for proper trade matching and position calculation
+- **Service Dependency Injection**: Proper dependency injection pattern with AssetValueCalculatorService in ReportService constructor
+- **Position Data Structure**: FIFO returns structured data with quantity, currentValue, avgCost, realizedPnl, unrealizedPnl
+- **Trade Grouping Strategy**: Groups trades by asset before applying FIFO calculation for accurate portfolio-specific holdings
+- **Value Calculation Consistency**: Uses FIFO calculated values (currentValue, avgCost) instead of manual calculations
+- **Error Handling**: Comprehensive error handling for FIFO calculation failures with fallback values
+- **Debug Logging**: Detailed logging of FIFO calculation results for troubleshooting and verification
+
+### Portfolio Filter Pattern - **IMPLEMENTED** ✅
+- **Frontend Filter Component**: Material-UI Select component with proper event handling for portfolio selection
+- **Real-time API Integration**: Automatic API calls when portfolio filter changes with proper state management
+- **Portfolio Data Mapping**: Correct mapping between frontend portfolio.id and backend portfolio.portfolioId fields
+- **State Management**: React useState for selectedPortfolioId with proper type definitions
+- **Event Handling**: Fixed Material-UI Select onChange event to properly extract portfolio values
+- **API Parameter Passing**: Correctly passes portfolioId parameter to backend API endpoints
+- **Data Filtering**: Backend services filter data by portfolioId for accurate portfolio-specific reports
+- **Error Handling**: Proper error handling for invalid portfolio selections and API failures
+
 ### Material Design Icons Pattern - **IMPLEMENTED** ✅
 - **Consistent Icon System**: Use Material-UI icons throughout the application for unified design language
 - **Semantic Color Coding**: Icons use meaningful colors (blue for primary, green for success, orange for value, purple for analytics)

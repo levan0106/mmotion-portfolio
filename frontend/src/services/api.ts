@@ -254,7 +254,7 @@ class ApiService {
   }
 
   async getPortfolioAnalyticsHistory(portfolioId: string, period?: string): Promise<NavSnapshot[]> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/history`, {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/performance-history`, {
       params: { period },
     });
     return response.data;
@@ -278,21 +278,6 @@ class ApiService {
     return response.data;
   }
 
-  async getTrades(portfolioId: string, accountId: string, filters?: {
-    assetId?: string;
-    side?: string;
-    startDate?: string;
-    endDate?: string;
-  }): Promise<any[]> {
-    const params = new URLSearchParams({ portfolioId, accountId });
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
-    }
-    const response = await this.api.get(`/api/v1/trades?${params}`);
-    return response.data;
-  }
 
   // New method to get all trades for a specific asset across all portfolios
   async getAllTradesForAsset(assetId: string, accountId: string): Promise<any[]> {
@@ -427,6 +412,50 @@ class ApiService {
     return response.data;
   }
 
+  async getInvestorHoldings(accountId: string): Promise<InvestorHolding[]> {
+    const response = await this.api.get(`/api/v1/investor-holdings/account/${accountId}`);
+    return response.data;
+  }
+
+  async getHoldingDetail(holdingId: string): Promise<HoldingDetail> {
+    const response = await this.api.get(`/api/v1/investor-holdings/${holdingId}/detail`);
+    return response.data;
+  }
+
+  // Trading transactions
+  async getTrades(portfolioId: string, accountId: string, filters?: {
+    assetId?: string;
+    side?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<any[]> {
+    const params = { portfolioId, accountId, ...filters };
+    const response = await this.api.get('/api/v1/trades', { params });
+    return response.data;
+  }
+
+  // Cash flow transactions
+  async getCashFlowHistory(portfolioId: string, accountId: string, filters?: {
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: CashFlow[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const params = { accountId, ...filters };
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/cash-flow/history`, { params });
+    return response.data;
+  }
+
   async convertPortfolioToFund(portfolioId: string, snapshotDate?: string): Promise<Portfolio> {
     const params = snapshotDate ? { snapshotDate } : {};
     const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-fund`, {}, { params });
@@ -435,11 +464,6 @@ class ApiService {
 
   async convertFundToPortfolio(portfolioId: string, accountId: string): Promise<{ success: boolean; message: string; portfolioId: string }> {
     const response = await this.api.post(`/api/v1/portfolios/${portfolioId}/convert-to-portfolio?accountId=${accountId}`);
-    return response.data;
-  }
-
-  async getHoldingDetail(holdingId: string): Promise<HoldingDetail> {
-    const response = await this.api.get(`/api/v1/investor-holdings/${holdingId}/detail`);
     return response.data;
   }
 
@@ -1010,6 +1034,22 @@ class ApiService {
 
   async settleDeposit(depositId: string, data: any): Promise<any> {
     const response = await this.api.post(`/api/v1/deposits/${depositId}/settle`, data);
+    return response.data;
+  }
+
+  // Report endpoints
+  async getReportData(accountId: string, portfolioId?: string): Promise<any> {
+    console.log('getReportData called with:', { accountId, portfolioId });
+    let url = `/api/v1/reports?accountId=${accountId}`;
+    if (portfolioId && portfolioId !== 'all') {
+      url += `&portfolioId=${portfolioId}`;
+      console.log('Adding portfolioId to URL:', portfolioId);
+    } else {
+      console.log('portfolioId is all or undefined, not adding to URL');
+    }
+    console.log('Final API call to:', url);
+    const response = await this.api.get(url);
+    console.log('API response:', response.data);
     return response.data;
   }
 }
