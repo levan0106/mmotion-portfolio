@@ -2,6 +2,44 @@
 
 ## Latest Updates
 
+### October 3, 2025 - Report Page Multi-Portfolio Filter with Checkbox UI
+**Status**: ✅ COMPLETED
+**Impact**: Enhanced Multi-Selection User Experience + Professional UI Design
+
+#### Key Achievements
+- **Multi-Portfolio Filter Implementation**: Complete multi-selection portfolio filter with checkbox indicators
+- **Checkbox UI Enhancement**: Professional checkbox layout with visual selection state indicators
+- **Backend Multi-Portfolio Support**: Updated all report services to handle multiple portfolio IDs
+- **Enhanced User Experience**: Smart selection logic with intelligent display rendering
+
+#### Technical Details
+- **Frontend Changes**:
+  - Updated state management from `selectedPortfolioId: string` to `selectedPortfolioIds: string[]`
+  - Implemented Material-UI MultiSelect with checkbox indicators for each portfolio option
+  - Added smart selection logic handling "All Portfolios" vs specific portfolio selection
+  - Enhanced renderValue function for intelligent display (All Portfolios, single name, or "X portfolios selected")
+  - Added professional styling with consistent layout, spacing, and responsive design
+
+- **Backend Changes**:
+  - Updated `getReportData` method to parse comma-separated portfolio IDs from query parameters
+  - Modified all report service methods (`getCashBalanceReport`, `getDepositsReport`, `getAssetsReport`) to support multiple portfolio IDs
+  - Implemented TypeORM IN queries for efficient multiple portfolio filtering
+  - Added comprehensive debug logging for multiple portfolio processing
+
+#### UI/UX Improvements
+- **Visual Clarity**: Checkbox indicators clearly show which portfolios are selected
+- **Professional Layout**: Consistent styling with proper spacing and alignment
+- **Responsive Design**: Dropdown menu with appropriate sizing and scroll support
+- **Smart Display**: Intelligent rendering based on selection state
+- **Color Consistency**: Primary color checkboxes for theme integration
+
+#### Files Modified
+- `frontend/src/pages/Report.tsx` - MultiSelect implementation with checkbox UI
+- `src/modules/report/services/report.service.ts` - Multi-portfolio backend support
+- `memory-bank/activeContext.md` - Updated current work focus
+- `memory-bank/progress.md` - Added multi-portfolio filter progress
+- `memory-bank/systemPatterns.md` - Added multi-portfolio filter patterns
+
 ### October 3, 2025 - Report Page FIFO Integration & Portfolio Filter
 **Status**: ✅ COMPLETED
 **Impact**: Accurate Data Calculation + Enhanced User Experience

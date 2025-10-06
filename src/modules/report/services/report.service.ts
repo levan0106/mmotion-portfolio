@@ -107,10 +107,17 @@ export class ReportService {
    */
   async getReportData(accountId: string, portfolioId?: string): Promise<ReportDataDto> {
     try {
+      // Parse multiple portfolio IDs if provided as comma-separated string
+      let portfolioIds: string[] | undefined;
+      if (portfolioId && portfolioId !== 'all') {
+        portfolioIds = portfolioId.split(',').map(id => id.trim()).filter(id => id.length > 0);
+        this.logger.debug(`Processing multiple portfolio IDs: ${portfolioIds.join(', ')}`);
+      }
+
       const [cashBalanceReport, depositsReport, assetsReport] = await Promise.all([
-        this.getCashBalanceReport(accountId, portfolioId),
-        this.getDepositsReport(accountId, portfolioId),
-        this.getAssetsReport(accountId, portfolioId),
+        this.getCashBalanceReport(accountId, portfolioIds),
+        this.getDepositsReport(accountId, portfolioIds),
+        this.getAssetsReport(accountId, portfolioIds),
       ]);
 
       return {
@@ -127,15 +134,16 @@ export class ReportService {
   /**
    * Get cash balance report data
    */
-  private async getCashBalanceReport(accountId: string, portfolioId?: string): Promise<CashBalanceReportDto> {
-    // Get portfolios for the account, optionally filtered by portfolioId
-    const whereCondition: any = { accountId };
-    if (portfolioId) {
-      whereCondition.portfolioId = portfolioId;
+  private async getCashBalanceReport(accountId: string, portfolioIds?: string[]): Promise<CashBalanceReportDto> {
+    // Get portfolios for the account, optionally filtered by portfolioIds
+    let portfolioQuery = this.portfolioRepository.createQueryBuilder('portfolio')
+      .where('portfolio.accountId = :accountId', { accountId });
+    
+    if (portfolioIds && portfolioIds.length > 0) {
+      portfolioQuery = portfolioQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     }
-    const portfolios = await this.portfolioRepository.find({
-      where: whereCondition,
-    });
+    
+    const portfolios = await portfolioQuery.getMany();
 
     // Calculate total cash balance
     const totalCashBalance = portfolios.reduce((sum, portfolio) => {
@@ -149,8 +157,8 @@ export class ReportService {
       .leftJoin('cashFlow.portfolio', 'portfolio')
       .where('portfolio.accountId = :accountId', { accountId });
     
-    if (portfolioId) {
-      cashFlowQuery = cashFlowQuery.andWhere('portfolio.portfolioId = :portfolioId', { portfolioId });
+    if (portfolioIds && portfolioIds.length > 0) {
+      cashFlowQuery = cashFlowQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     }
     
     const cashFlows = await cashFlowQuery.getMany();
@@ -192,7 +200,7 @@ export class ReportService {
   /**
    * Get deposits report data
    */
-  private async getDepositsReport(accountId: string, portfolioId?: string): Promise<DepositsReportDto> {
+  private async getDepositsReport(accountId: string, portfolioIds?: string[]): Promise<DepositsReportDto> {
     // Get only active deposits (not settled) for portfolios belonging to this account
     let depositQuery = this.depositRepository
       .createQueryBuilder('deposit')
@@ -200,8 +208,8 @@ export class ReportService {
       .where('portfolio.accountId = :accountId', { accountId })
       .andWhere('deposit.status = :status', { status: 'ACTIVE' });
     
-    if (portfolioId) {
-      depositQuery = depositQuery.andWhere('portfolio.portfolioId = :portfolioId', { portfolioId });
+    if (portfolioIds && portfolioIds.length > 0) {
+      depositQuery = depositQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     }
     
     const deposits = await depositQuery.getMany();
@@ -275,7 +283,7 @@ export class ReportService {
   /**
    * Get assets report data
    */
-  private async getAssetsReport(accountId: string, portfolioId?: string): Promise<AssetsReportDto> {
+  private async getAssetsReport(accountId: string, portfolioIds?: string[]): Promise<AssetsReportDto> {
     // Get trades for the specific portfolio to calculate actual holdings
     let tradeQuery = this.tradeRepository
       .createQueryBuilder('trade')
@@ -284,8 +292,8 @@ export class ReportService {
       .where('portfolio.accountId = :accountId', { accountId })
       .addSelect(['asset.id', 'asset.symbol', 'asset.type', 'asset.initialValue']);
     
-    if (portfolioId) {
-      tradeQuery = tradeQuery.andWhere('portfolio.portfolioId = :portfolioId', { portfolioId });
+    if (portfolioIds && portfolioIds.length > 0) {
+      tradeQuery = tradeQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     }
     
     const trades = await tradeQuery.getMany();
@@ -328,7 +336,7 @@ export class ReportService {
       }
     }
     
-    this.logger.debug(`Found ${assets.length} assets for accountId: ${accountId}, portfolioId: ${portfolioId}`);
+    this.logger.debug(`Found ${assets.length} assets for accountId: ${accountId}, portfolioIds: ${portfolioIds ? portfolioIds.join(', ') : 'all'}`);
     this.logger.debug('Assets with FIFO calculated holdings:', assets.map(a => ({ 
       id: a.id, 
       symbol: a.symbol, 

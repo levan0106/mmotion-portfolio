@@ -21,6 +21,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  ListItemText,
 } from '@mui/material';
 import {
   AccountBalance,
@@ -62,7 +64,7 @@ const Report: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [portfolios, setPortfolios] = useState<Array<{ portfolioId: string; name: string }>>([]);
-  const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('all');
+  const [selectedPortfolioIds, setSelectedPortfolioIds] = useState<string[]>(['all']);
   // Fetch portfolios
   useEffect(() => {
     const fetchPortfolios = async () => {
@@ -85,14 +87,19 @@ const Report: React.FC = () => {
 
   // Fetch report data
   useEffect(() => {
-    console.log('useEffect triggered with accountId:', accountId, 'selectedPortfolioId:', selectedPortfolioId);
+    console.log('useEffect triggered with accountId:', accountId, 'selectedPortfolioIds:', selectedPortfolioIds);
     const fetchReportData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        console.log('Fetching report data for accountId:', accountId, 'portfolioId:', selectedPortfolioId);
-        const data = await apiService.getReportData(accountId, selectedPortfolioId);
+        // If "all" is selected or no specific portfolios selected, fetch all data
+        const portfolioId = selectedPortfolioIds.includes('all') || selectedPortfolioIds.length === 0 
+          ? undefined 
+          : selectedPortfolioIds.join(',');
+        
+        console.log('Fetching report data for accountId:', accountId, 'portfolioIds:', portfolioId);
+        const data = await apiService.getReportData(accountId, portfolioId);
         console.log('Report data received:', data);
         setReportData(data);
       } catch (err) {
@@ -106,7 +113,7 @@ const Report: React.FC = () => {
     if (accountId) {
       fetchReportData();
     }
-  }, [accountId, selectedPortfolioId]);
+  }, [accountId, selectedPortfolioIds]);
 
   const SummaryCard = ({ 
     title, 
@@ -316,44 +323,79 @@ const Report: React.FC = () => {
           <FormControl sx={{ minWidth: 200 }}>
             <InputLabel>Portfolio Filter</InputLabel>
             <Select
-              value={selectedPortfolioId ?? 'all'}
-              onChange={(event, child) => {
-                console.log('Select onChange event:', event);
-                console.log('Select onChange child:', child);
-                console.log('event.target:', event.target);
-                console.log('event.target.value:', event.target.value);
+              multiple
+              value={selectedPortfolioIds}
+              onChange={(event) => {
+                const value = event.target.value as string[];
+                console.log('MultiSelect onChange value:', value);
                 
-                // Get value from the child element (MenuItem)
-                const childValue = (child as any)?.props?.value;
-                const targetValue = event.target.value;
-                console.log('Child value:', childValue);
-                console.log('Target value:', targetValue);
-                
-                const newValue = childValue || targetValue;
-                console.log('Setting portfolio to:', newValue);
-                
-                if (newValue && typeof newValue === 'string' && newValue !== 'undefined') {
-                  setSelectedPortfolioId(newValue);
+                // Handle "All Portfolios" selection
+                if (value.includes('all')) {
+                  if (value.length === 1) {
+                    // Only "all" selected, keep it
+                    setSelectedPortfolioIds(['all']);
+                  } else {
+                    // "all" + others selected, remove "all"
+                    setSelectedPortfolioIds(value.filter(id => id !== 'all'));
+                  }
                 } else {
-                  console.error('Could not get valid portfolio value:', { 
-                    newValue, 
-                    childValue, 
-                    targetValue, 
-                    child, 
-                    event 
-                  });
+                  // No "all" selected, use the selected portfolios
+                  setSelectedPortfolioIds(value.length > 0 ? value : ['all']);
                 }
               }}
               label="Portfolio Filter"
+              renderValue={(selected) => {
+                if (selected.includes('all')) {
+                  return 'All Portfolios';
+                }
+                if (selected.length === 0) {
+                  return 'All Portfolios';
+                }
+                if (selected.length === 1) {
+                  const portfolio = portfolios.find(p => p.portfolioId === selected[0]);
+                  return portfolio ? portfolio.name : selected[0];
+                }
+                return `${selected.length} portfolios selected`;
+              }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 300,
+                    width: 250,
+                  },
+                },
+              }}
             >
-              <MenuItem key="all" value="all">All Portfolios</MenuItem>
+              <MenuItem key="all" value="all" sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
+                <Checkbox 
+                  checked={selectedPortfolioIds.includes('all')} 
+                  color="primary"
+                  size="small"
+                />
+                <ListItemText 
+                  primary="All Portfolios" 
+                  sx={{ ml: 1 }}
+                />
+              </MenuItem>
               {portfolios.map((portfolio, index) => {
                 console.log(`Portfolio ${index}:`, { portfolioId: portfolio.portfolioId, name: portfolio.name });
                 // Only render if portfolio has valid portfolioId
                 if (portfolio.portfolioId) {
                   return (
-                    <MenuItem key={`portfolio-${index}-${portfolio.portfolioId}`} value={portfolio.portfolioId}>
-                      {portfolio.name}
+                    <MenuItem 
+                      key={`portfolio-${index}-${portfolio.portfolioId}`} 
+                      value={portfolio.portfolioId}
+                      sx={{ display: 'flex', alignItems: 'center', py: 1 }}
+                    >
+                      <Checkbox 
+                        checked={selectedPortfolioIds.includes(portfolio.portfolioId)} 
+                        color="primary"
+                        size="small"
+                      />
+                      <ListItemText 
+                        primary={portfolio.name} 
+                        sx={{ ml: 1 }}
+                      />
                     </MenuItem>
                   );
                 } else {

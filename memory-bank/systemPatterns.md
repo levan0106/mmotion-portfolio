@@ -34,6 +34,18 @@ flowchart LR
 - **Error Handling**: Comprehensive error handling for FIFO calculation failures with fallback values
 - **Debug Logging**: Detailed logging of FIFO calculation results for troubleshooting and verification
 
+### Multi-Portfolio Filter Pattern - **IMPLEMENTED** ✅
+- **MultiSelect Component**: Material-UI Select with multiple selection support and checkbox indicators
+- **Visual Checkbox Indicators**: Clear checkbox display for each portfolio option showing selection state
+- **Smart Selection Logic**: Handles "All Portfolios" vs specific portfolio selection with intelligent state management
+- **State Management**: React useState with array-based portfolio ID tracking (selectedPortfolioIds: string[])
+- **Event Handling**: Proper Material-UI Select onChange event handling for multiple selections
+- **API Parameter Passing**: Correctly passes comma-separated portfolio IDs to backend API endpoints
+- **Backend Multi-Portfolio Support**: Updated all report services to handle multiple portfolio IDs with IN queries
+- **Enhanced User Experience**: Professional checkbox layout with consistent styling and responsive design
+- **Smart Display Logic**: Intelligent rendering of selection state (All Portfolios, single name, or "X portfolios selected")
+- **Error Handling**: Comprehensive error handling for invalid selections and API failures
+
 ### Portfolio Filter Pattern - **IMPLEMENTED** ✅
 - **Frontend Filter Component**: Material-UI Select component with proper event handling for portfolio selection
 - **Real-time API Integration**: Automatic API calls when portfolio filter changes with proper state management
