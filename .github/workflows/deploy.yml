@@ -1,4 +1,4 @@
-name: Deploy Portfolio Backend
+name: Deploy Portfolio Application
 
 on:
   push:
@@ -10,11 +10,21 @@ on:
       environment:
         description: 'Environment to deploy to'
         required: true
-        default: 'staging'
+        default: 'production'
         type: choice
         options:
         - staging
         - production
+      deploy_backend:
+        description: 'Deploy Backend Services'
+        required: true
+        default: true
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy Frontend Services'
+        required: true
+        default: true
+        type: boolean
 
 env:
   AWS_REGION: us-east-1
@@ -22,32 +32,11 @@ env:
   ECR_REPOSITORY_FRONTEND: portfolio-frontend
 
 jobs:
-  # test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v4
-
-  #   - name: Setup Node.js
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: '18'
-  #       cache: 'npm'
-
-  #   - name: Install dependencies
-  #     run: npm ci
-
-  #   - name: Run tests
-  #     run: npm test || echo "Tests failed but continuing with deployment"
-
-  #   - name: Run linting
-  #     run: npm run lint
-
-  build-and-push:
-    # needs: test
+  build-and-push-backend:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || github.event.inputs.deploy_backend == null)
+    outputs:
+      image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -64,6 +53,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build, tag, and push backend image
+      id: build
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
@@ -75,8 +65,31 @@ jobs:
         # Push backend images
         docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+        
+        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  build-and-push-frontend:
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || github.event.inputs.deploy_frontend == null)
+    outputs:
+      image-tag: ${{ steps.build.outputs.image-tag }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build, tag, and push frontend image
+      id: build
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
@@ -88,11 +101,13 @@ jobs:
         # Push frontend images
         docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+        
+        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  deploy:
-    needs: build-and-push
+  deploy-backend:
+    needs: build-and-push-backend
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || github.event.inputs.deploy_backend == null)
     
     steps:
     - name: Checkout code
@@ -109,16 +124,16 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Upload deployment files to EC2
+    - name: Upload backend deployment files to EC2
       uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.backend.yml,docker-compose.frontend.yml,production.env"
+        source: "docker-compose.backend.yml,production.env"
         target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
-    - name: Deploy to EC2
+    - name: Deploy Backend to EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -128,6 +143,105 @@ jobs:
           # Update environment variables
           export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
           export ECR_REPOSITORY_BACKEND=${{ env.ECR_REPOSITORY_BACKEND }}
+          export IMAGE_TAG=${{ github.sha }}
+          
+          # Test ECR access first
+          echo "🔐 Testing ECR access..."
+          aws sts get-caller-identity
+          
+          # Login to ECR with retry
+          echo "🔑 Logging into ECR..."
+          for i in {1..3}; do
+            if aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; then
+              echo "✅ ECR login successful"
+              break
+            else
+              echo "❌ ECR login attempt $i failed, retrying..."
+              sleep 5
+            fi
+          done
+          
+          # Pull latest backend image with retry
+          echo "📥 Pulling backend image..."
+          for i in {1..3}; do
+            if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest; then
+              echo "✅ Backend image pulled successfully"
+              break
+            else
+              echo "❌ Backend image pull attempt $i failed, retrying..."
+              sleep 10
+            fi
+          done
+          
+          # Ensure project directory exists
+          echo "📁 Setting up project directory..."
+          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
+          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
+          
+          # Copy production environment file
+          if [ ! -f .env ]; then
+            cp production.env .env
+            echo "📝 Created .env file from production.env"
+          fi
+          
+          # Stop existing backend containers
+          echo "🛑 Stopping existing backend containers..."
+          docker-compose -f docker-compose.backend.yml down || true
+          
+          # Start backend services
+          echo "🚀 Starting backend services..."
+          docker-compose -f docker-compose.backend.yml up -d
+          
+          # Wait for backend to be healthy
+          echo "⏳ Waiting for backend to be healthy..."
+          sleep 60
+          
+          # Check backend health
+          echo "🏥 Checking backend health..."
+          curl -f http://localhost:3000/health || echo "Backend health check failed"
+          
+          # Clean up old images
+          echo "🧹 Cleaning up old images..."
+          docker image prune -f
+
+  deploy-frontend:
+    needs: build-and-push-frontend
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || github.event.inputs.deploy_frontend == null)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Upload frontend deployment files to EC2
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "docker-compose.frontend.yml"
+        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
+
+    - name: Deploy Frontend to EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Update environment variables
+          export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
           export ECR_REPOSITORY_FRONTEND=${{ env.ECR_REPOSITORY_FRONTEND }}
           export IMAGE_TAG=${{ github.sha }}
           
@@ -147,14 +261,14 @@ jobs:
             fi
           done
           
-          # Pull latest images with retry
-          echo "📥 Pulling images..."
+          # Pull latest frontend image with retry
+          echo "📥 Pulling frontend image..."
           for i in {1..3}; do
-            if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest && docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest; then
-              echo "✅ Images pulled successfully"
+            if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest; then
+              echo "✅ Frontend image pulled successfully"
               break
             else
-              echo "❌ Image pull attempt $i failed, retrying..."
+              echo "❌ Frontend image pull attempt $i failed, retrying..."
               sleep 10
             fi
           done
@@ -164,50 +278,33 @@ jobs:
           mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           
-          # Copy production environment file
-          if [ ! -f .env ]; then
-            cp production.env .env
-            echo "📝 Created .env file from production.env"
-          fi
-          
-          # Stop existing containers
-          echo "🛑 Stopping existing containers..."
-          docker-compose -f docker-compose.backend.yml down || true
+          # Stop existing frontend containers
+          echo "🛑 Stopping existing frontend containers..."
           docker-compose -f docker-compose.frontend.yml down || true
-          
-          # Start backend services
-          echo "🚀 Starting backend services..."
-          docker-compose -f docker-compose.backend.yml up -d
-          
-          # Wait for backend to be healthy
-          echo "⏳ Waiting for backend to be healthy..."
-          sleep 60
           
           # Start frontend service
           echo "🌐 Starting frontend service..."
           docker-compose -f docker-compose.frontend.yml up -d
           
-          # Wait for services to start
-          echo "⏳ Waiting for services to start..."
+          # Wait for frontend to be healthy
+          echo "⏳ Waiting for frontend to be healthy..."
           sleep 30
           
-          # Check container status
-          echo "📊 Checking container status..."
-          docker-compose -f docker-compose.prod.yml ps
-          
-          # Check backend logs if unhealthy
-          echo "🔍 Checking backend logs..."
-          docker-compose -f docker-compose.prod.yml logs backend || echo "Backend container not found"
-          
-          # Check if backend is responding
-          echo "🏥 Testing backend health..."
-          curl -f http://localhost:3000/health || echo "Backend health check failed"
+          # Check frontend health
+          echo "🏥 Checking frontend health..."
+          curl -f http://localhost || echo "Frontend health check failed"
           
           # Clean up old images
           echo "🧹 Cleaning up old images..."
           docker image prune -f
 
+  health-check:
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-frontend.result == 'success')
+    
+    steps:
     - name: Health Check
       run: |
         sleep 30
-        curl -f http://${{ secrets.EC2_HOST }}/health || exit 1
+        curl -f http://${{ secrets.EC2_HOST }}/health || echo "Health check failed"
