@@ -109,6 +109,15 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    - name: Upload deployment files to EC2
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "docker-compose.prod.yml,env.example"
+        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
+
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -150,9 +159,19 @@ jobs:
             fi
           done
           
+          # Ensure project directory exists
+          echo "📁 Setting up project directory..."
+          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
+          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
+          
+          # Copy environment file if not exists
+          if [ ! -f .env ]; then
+            cp env.example .env
+            echo "📝 Created .env file from env.example"
+          fi
+          
           # Stop existing containers
           echo "🛑 Stopping existing containers..."
-          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           docker-compose -f docker-compose.prod.yml down || true
           
           # Start new containers
