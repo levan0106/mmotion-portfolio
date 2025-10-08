@@ -34,7 +34,7 @@ echo "✅ Migrations completed successfully"
 
 # Verify accounts table
 echo "🔍 Verifying accounts table..."
-ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d src/config/database.config.ts 2>/dev/null | grep -c "accounts" || echo "0")
+ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -c "accounts" || echo "0")
 
 if [ "$ACCOUNTS_EXIST" -eq 0 ]; then
     echo "❌ Error: Accounts table not found after migration!"
@@ -45,7 +45,7 @@ echo "✅ Accounts table exists"
 
 # Check accounts data
 echo "🔍 Checking accounts data..."
-ACCOUNTS_COUNT=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT COUNT(*) as count FROM accounts" -d src/config/database.config.ts 2>/dev/null | grep -o '"count":[0-9]*' | cut -d':' -f2 || echo "0")
+ACCOUNTS_COUNT=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT COUNT(*) as count FROM accounts" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -o '"count":[0-9]*' | cut -d':' -f2 || echo "0")
 
 if [ "$ACCOUNTS_COUNT" -eq 0 ]; then
     echo "⚠️  Warning: No accounts found in database"

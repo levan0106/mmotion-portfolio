@@ -28,15 +28,15 @@ echo "✅ Backend container detected: $CONTAINER_NAME"
 
 # Check if migrations table exists
 echo "🔍 Checking migrations table..."
-MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'" -d src/config/database.config.ts 2>/dev/null | grep -c "migrations" || echo "0")
+MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -c "migrations" || echo "0")
 
 if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     echo "📋 Migrations table not found. This is a fresh database."
     echo "🔄 Running all migrations..."
     
     # Try different approaches to run migration
-    if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d /app/src/config/database.config.ts; then
-        echo "✅ Migration successful with absolute path"
+    if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d /app/dist/src/config/database.config.js; then
+        echo "✅ Migration successful with JavaScript config"
     elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
         echo "✅ Migration successful from container root"
     elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
@@ -96,7 +96,7 @@ fi
 
 # Verify accounts table exists (critical check)
 echo "🔍 Verifying critical tables..."
-ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d src/config/database.config.ts 2>/dev/null | grep -c "accounts" || echo "0")
+ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -c "accounts" || echo "0")
 
 if [ "$ACCOUNTS_EXIST" -eq 0 ]; then
     echo "❌ Error: Accounts table not found! Running emergency migration..."
