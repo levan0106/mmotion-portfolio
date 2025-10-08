@@ -183,3 +183,32 @@ logs/
 # Frontend build folders
 frontend/build/
 frontend/dist/
+
+# Test files
+test_capital_value*.json
+test_fixed_capital_value.json
+test_with_original.json
+
+# Backend test files
+backend.py
+server.js
+package.json
+backend.env
+
+# Deployment test files
+user-data-backend.sh
+portfolio-key.pem
+
+# Coverage and build artifacts
+coverage/
+coverage-integration/
+dist/
+logs/
+custom-logs/
+
+# Test scripts
+scripts/test-*.ps1
+scripts/test-*.bat
+scripts/configure-*.ps1
+scripts/configure-*.sh
+scripts/create-*.ps1

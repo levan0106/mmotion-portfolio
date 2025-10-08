@@ -1,0 +1,32 @@
+# CDK Build Artifacts
+cdk.out/
+*.d.ts
+*.js
+
+# CDK Context
+cdk.context.json
+
+# Node modules
+node_modules/
+
+# Environment files
+*.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

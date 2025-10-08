@@ -13,7 +13,7 @@ RUN npm cache clean --force
 RUN npm ci --verbose --no-audit --no-fund
 
 # Verify critical dependencies are installed
-RUN npm list prom-client @willsoto/nestjs-prometheus
+RUN npm list @nestjs/common @nestjs/core
 
 # Copy source code
 COPY . .

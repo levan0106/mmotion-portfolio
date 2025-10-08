@@ -28,6 +28,16 @@
 - **Redis**: In-memory cache và session storage ✅
 - **TypeORM**: ORM cho database operations với custom repositories ✅
 - **JWT**: Authentication và authorization (planned for future)
+
+### Infrastructure Stack - **AWS DEPLOYED ✅**
+- **AWS CDK**: Infrastructure as Code với TypeScript ✅
+- **AWS CloudFront**: Content Delivery Network cho frontend ✅
+- **AWS S3**: Static website hosting cho frontend assets ✅
+- **AWS EC2**: Virtual server cho backend application ✅
+- **AWS RDS**: Managed PostgreSQL database ✅
+- **AWS ElastiCache**: Managed Redis cache ✅
+- **AWS VPC**: Virtual Private Cloud cho network isolation ✅
+- **AWS IAM**: Identity and Access Management ✅
 - **Swagger/OpenAPI**: API documentation với comprehensive examples ✅
 - **class-validator**: DTO validation với custom validation rules ✅
 - **Pagination System**: Standardized pagination DTOs and response format for all performance snapshot APIs ✅

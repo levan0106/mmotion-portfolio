@@ -35,7 +35,7 @@ in
 LẤY GIÁ VÀNG
 let
     // Lấy dữ liệu từ URL
-    Source = Web.Contents("http://giavang.doji.vn/sites/default/files/data/hienthi/vungmien_109.dat"),
+    Source = Web.Contents("https://giavang.doji.vn/sites/default/files/data/hienthi/vungmien_109.dat"),
     // Chuyển binary thành text
     HtmlText = Text.FromBinary(Source),
     

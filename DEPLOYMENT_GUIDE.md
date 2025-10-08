@@ -1,268 +1,310 @@
 # Portfolio Management System - Deployment Guide
 
-## Overview
-This guide provides step-by-step instructions for deploying the Portfolio Management System with 3 decimal places precision to a new server.
+## 🚀 Quick Deployment Options
 
-## Prerequisites
+### Option 1: Automated CI/CD Pipeline (Recommended)
 
-### System Requirements
-- **OS**: Ubuntu 20.04+ or CentOS 8+ (recommended)
-- **RAM**: Minimum 4GB, Recommended 8GB+
-- **Storage**: Minimum 20GB free space
-- **CPU**: 2+ cores
+#### Prerequisites
+- GitHub repository with secrets configured
+- AWS credentials in GitHub Secrets
+- EC2 instance running
 
-### Software Requirements
-- **Docker**: 20.10+
-- **Docker Compose**: 2.0+
-- **Node.js**: 18+ (for running scripts)
-- **npm**: 8+
-- **Git**: Latest version
-
-## Quick Deployment
-
-### 1. Clone Repository
-```bash
-git clone <repository-url>
-cd mmotion-portfolio
+#### Secrets Required
+```
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_ACCOUNT_ID
+EC2_PRIVATE_KEY (SSH private key for EC2)
 ```
 
-### 2. Install Dependencies
+#### Deploy via GitHub Actions
+1. Push to `main` branch triggers automatic deployment
+2. Or manually trigger via GitHub Actions tab
+3. Select environment (production/staging)
+
+### Option 2: Manual Deployment Script
+
+#### Prerequisites
+- SSH access to EC2 instance
+- `mmo-portfolio-key.pem` file in project root
+- Node.js 18+ and npm installed locally
+
+#### Deploy Steps
 ```bash
-npm install
+# 1. Make script executable
+chmod +x scripts/deploy-to-ec2.sh
+
+# 2. Run deployment
+./scripts/deploy-to-ec2.sh
 ```
 
-### 3. Run Migration Test (Optional but Recommended)
+### Option 3: Docker Image Build and Deploy (Recommended for Production)
+
+#### Prerequisites
+- Docker installed locally
+- Access to container registry (GitHub Container Registry, Docker Hub, etc.)
+- SSH access to EC2 instance
+
+#### Deploy Steps
 ```bash
-# Test migration process on the server
-./scripts/test-migration-on-server.sh
+# 1. Make script executable
+chmod +x scripts/docker-build-deploy.sh
+
+# 2. Build and deploy (full process)
+./scripts/docker-build-deploy.sh
+
+# 3. Or step by step:
+./scripts/docker-build-deploy.sh --build-only    # Only build images
+./scripts/docker-build-deploy.sh --push-only     # Only push to registry
+./scripts/docker-build-deploy.sh --deploy-only   # Only deploy to EC2
 ```
 
-### 4. Deploy Application
+#### Manual Docker Build and Deploy
 ```bash
-# Start all services
-docker-compose up -d
+# 1. Build images locally
+docker build -t your-registry/portfolio-backend:latest -f Dockerfile.prod .
+docker build -t your-registry/portfolio-frontend:latest -f frontend/Dockerfile.prod ./frontend
 
-# Wait for services to be ready
-sleep 30
+# 2. Push to registry
+docker push your-registry/portfolio-backend:latest
+docker push your-registry/portfolio-frontend:latest
 
-# Run database migrations
-npm run migration:run:full
-
-# Verify migration status
-npm run migration:verify
+# 3. Deploy to EC2
+scp -i "mmo-portfolio-key.pem" docker-compose.registry.yml ec2-user@ec2-34-228-198-131.compute-1.amazonaws.com:/home/ec2-user/mmotion-portfolio/
+ssh -i "mmo-portfolio-key.pem" ec2-user@ec2-34-228-198-131.compute-1.amazonaws.com "cd /home/ec2-user/mmotion-portfolio && docker-compose -f docker-compose.registry.yml up -d"
 ```
 
-### 5. Verify Deployment
+### Option 4: Manual Docker Deployment (Local Build)
+
+#### On EC2 Instance
 ```bash
-# Check service status
-docker-compose ps
+# 1. Connect to EC2
+ssh -i "mmo-portfolio-key.pem" ec2-user@ec2-34-228-198-131.compute-1.amazonaws.com
 
-# Verify migration status and precision
-npm run migration:verify:simple
+# 2. Create project directory
+mkdir -p /home/ec2-user/mmotion-portfolio
+cd /home/ec2-user/mmotion-portfolio
 
-# Test API endpoints
-curl http://localhost:3000/health
-curl http://localhost:3001
+# 3. Upload files (from local machine)
+scp -i "mmo-portfolio-key.pem" -r . ec2-user@ec2-34-228-198-131.compute-1.amazonaws.com:/home/ec2-user/mmotion-portfolio/
+
+# 4. Build and run with Docker
+sudo docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
-## Detailed Migration Process
+## 📋 Deployment Checklist
 
-### Migration Scripts Available
+### Before Deployment
+- [ ] All tests passing
+- [ ] Environment variables configured
+- [ ] Database migrations ready
+- [ ] SSL certificates (if needed)
+- [ ] Security groups configured
 
-#### 1. Schema Migrations
-```bash
-npm run migration:run-schema
-```
-**What it does:**
-- Creates `fund_unit_transactions` table
-- Updates precision to 3 decimal places for:
-  - `investor_holdings`: `total_units`, `avg_cost_per_unit`, `total_investment`, `current_value`, `unrealized_pnl`, `realized_pnl`
-  - `fund_unit_transactions`: `units`, `nav_per_unit`, `amount`
-  - `portfolios`: `total_outstanding_units`, `nav_per_unit`
-  - `nav_snapshots`: `total_outstanding_units`, `nav_per_unit`
+### During Deployment
+- [ ] Backup existing deployment
+- [ ] Run database migrations
+- [ ] Deploy application
+- [ ] Verify health checks
+- [ ] Test endpoints
 
-#### 2. Data Migrations
-```bash
-npm run migration:run-data
-```
-**What it does:**
-- Migrates existing data to new schema
-- Updates precision for existing records
+### After Deployment
+- [ ] Monitor application logs
+- [ ] Check performance metrics
+- [ ] Verify all features working
+- [ ] Update documentation
 
-#### 3. Full Migration
-```bash
-npm run migration:run:full
-```
-**What it does:**
-- Runs both schema and data migrations
-- Includes safety checks and confirmations
+## 🔧 Configuration
 
-#### 4. Migration Verification
-```bash
-# TypeScript version (may have compilation issues)
-npm run migration:verify
-
-# PowerShell version (recommended for Windows)
-npm run migration:verify:simple
-```
-**What it does:**
-- Checks migration status
-- Verifies 3 decimal places precision
-- Validates table structures
-- Provides recommendations
-
-### Migration Files Included
-
-1. **`1734567890123-AddNavUnitSystem.ts`**
-   - Adds NAV unit system fields to portfolios
-   - Creates initial fund structure
-
-2. **`1758722000000-AddNavPerUnitToNavSnapshotsSimple.ts`**
-   - Adds NAV per unit tracking to snapshots
-
-3. **`1758723000000-AddLastNavDateToPortfolio.ts`**
-   - Adds last NAV date tracking
-
-4. **`1758731000000-CreateFundUnitTransactions.ts`**
-   - Creates fund unit transactions table
-   - Sets up relationships and constraints
-
-5. **`1758732000000-UpdateNavPrecisionTo3Decimals.ts`**
-   - Updates NAV precision from 8 to 3 decimal places
-
-6. **`1758733000000-UpdateCurrencyPrecisionTo3Decimals.ts`**
-   - Updates currency precision from 8 to 3 decimal places
-
-## Environment Configuration
-
-### Required Environment Variables
+### Environment Variables
 ```bash
 # Database
-DB_HOST=postgres
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your-secure-password
-DB_DATABASE=portfolio_db
+DATABASE_URL=postgresql://username:password@host:port/database
 
 # Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
+REDIS_URL=redis://host:port
 
 # Application
 NODE_ENV=production
 PORT=3000
-
-# Frontend
-REACT_APP_API_URL=http://localhost:3000
 ```
 
-### Optional Environment Variables
+### Docker Configuration
+- **Backend**: Port 3000
+- **Frontend**: Port 80 (Nginx)
+- **Redis**: Port 6379 (optional)
+
+## 🏥 Health Checks
+
+### Backend Health
 ```bash
-# Logging
-LOG_LEVEL=info
-LOG_FILE_ENABLED=true
-LOG_RETENTION_DAYS=90
-
-# Monitoring
-GRAFANA_PASSWORD=admin
+curl http://your-domain:3000/health
 ```
 
-## Service URLs
+### Frontend Health
+```bash
+curl http://your-domain:80
+```
 
-After successful deployment, the following services will be available:
+### API Endpoints
+```bash
+curl http://your-domain:3000/api/v1/portfolios
+curl http://your-domain:3000/api/v1/assets
+```
 
-- **API**: http://localhost:3000
-- **Frontend**: http://localhost:3001
-- **Grafana**: http://localhost:3002
-- **Kibana**: http://localhost:5601
-- **Prometheus**: http://localhost:9090
+## 🔄 Rollback Process
 
-## Verification Checklist
+### Quick Rollback
+```bash
+# On EC2 instance
+cd /home/ec2-user/mmotion-portfolio
+sudo docker-compose down
+sudo docker-compose -f docker-compose.prod.yml up -d
+```
 
-### ✅ Database Schema
-- [ ] `fund_unit_transactions` table exists
-- [ ] All precision fields use 3 decimal places
-- [ ] Foreign key constraints are in place
-- [ ] Indexes are created
+### Full Rollback
+```bash
+# Restore from backup
+sudo rm -rf /home/ec2-user/mmotion-portfolio
+sudo mv /home/ec2-user/mmotion-portfolio-backup /home/ec2-user/mmotion-portfolio
+cd /home/ec2-user/mmotion-portfolio
+sudo docker-compose up -d
+```
 
-### ✅ API Endpoints
-- [ ] Health check: `GET /health`
-- [ ] Fund subscription: `POST /api/v1/investor-holdings/subscribe`
-- [ ] Fund redemption: `POST /api/v1/investor-holdings/redeem`
-- [ ] Holding detail: `GET /api/v1/investor-holdings/:id/detail`
+## 📊 Monitoring
 
-### ✅ Frontend
-- [ ] Application loads without errors
-- [ ] NAV Holdings tab displays correctly
-- [ ] Holding detail page shows 3 decimal places
-- [ ] Navigation between pages works
+### Application Logs
+```bash
+# Backend logs
+sudo docker-compose logs -f backend
 
-### ✅ Data Precision
-- [ ] Units display with 3 decimal places (e.g., `16522.917`)
-- [ ] Currency amounts display with 3 decimal places (e.g., `1000000.000`)
-- [ ] NAV per unit displays with 3 decimal places (e.g., `60.522`)
+# Frontend logs
+sudo docker-compose logs -f frontend
 
-## Troubleshooting
+# All logs
+sudo docker-compose logs -f
+```
+
+### System Resources
+```bash
+# Docker stats
+sudo docker stats
+
+# System resources
+htop
+df -h
+free -h
+```
+
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-#### 1. Migration Fails
+#### 1. Port Already in Use
 ```bash
-# Check migration status
-npm run migration:verify
+# Check what's using the port
+sudo netstat -tulpn | grep :3000
+sudo netstat -tulpn | grep :80
 
-# Check database connection
-docker-compose logs postgres
-
-# Reset and retry
-docker-compose down
-docker-compose up -d postgres redis
-npm run migration:run:full
+# Kill the process
+sudo kill -9 <PID>
 ```
 
-#### 2. Precision Issues
+#### 2. Docker Issues
 ```bash
-# Verify precision in database
-docker exec portfolio_postgres psql -U postgres -d portfolio_db -c "
-SELECT column_name, data_type, numeric_precision, numeric_scale 
-FROM information_schema.columns 
-WHERE table_name = 'investor_holdings' 
-AND column_name IN ('total_units', 'avg_cost_per_unit', 'total_investment', 'current_value', 'unrealized_pnl', 'realized_pnl');"
+# Clean up Docker
+sudo docker system prune -a
+sudo docker-compose down
+sudo docker-compose up -d --build
 ```
 
-#### 3. API Errors
+#### 3. Database Connection Issues
 ```bash
-# Check application logs
-docker-compose logs app
+# Check database connectivity
+telnet <database-host> 5432
 
-# Restart application
-docker-compose restart app
+# Test connection
+psql $DATABASE_URL -c "SELECT 1;"
 ```
 
-### Rollback Instructions
-
-If you need to rollback migrations:
-
+#### 4. Memory Issues
 ```bash
-# Rollback last migration
-npm run typeorm:migration:revert
+# Check memory usage
+free -h
+sudo docker stats
 
-# Or restore from backup
-docker exec portfolio_postgres psql -U postgres -d portfolio_db < backup.sql
+# Restart services
+sudo docker-compose restart
 ```
 
-## Support
+### Log Locations
+- **Application**: `/var/log/nginx/access.log`
+- **Docker**: `sudo docker-compose logs`
+- **System**: `/var/log/messages`
 
-For issues or questions:
-1. Check the logs: `docker-compose logs`
-2. Verify migration status: `npm run migration:verify`
-3. Test API endpoints: `curl http://localhost:3000/health`
-4. Check database schema: Use the verification script
+## 🔐 Security Considerations
 
-## Security Notes
+### Firewall Rules
+```bash
+# Allow HTTP/HTTPS
+sudo ufw allow 80
+sudo ufw allow 443
 
-- Change default passwords in production
-- Use environment variables for sensitive data
-- Enable SSL/TLS for production deployments
-- Regularly backup the database
-- Monitor logs for security events
+# Allow SSH
+sudo ufw allow 22
+
+# Allow application port
+sudo ufw allow 3000
+```
+
+### SSL/TLS Setup
+```bash
+# Install Certbot
+sudo dnf install certbot python3-certbot-nginx
+
+# Get SSL certificate
+sudo certbot --nginx -d your-domain.com
+```
+
+## 📈 Performance Optimization
+
+### Nginx Configuration
+- Enable gzip compression
+- Set up caching headers
+- Configure rate limiting
+- Enable HTTP/2
+
+### Docker Optimization
+- Use multi-stage builds
+- Optimize image layers
+- Set resource limits
+- Use health checks
+
+### Database Optimization
+- Configure connection pooling
+- Set up indexes
+- Monitor query performance
+- Regular maintenance
+
+## 🆘 Support
+
+### Emergency Contacts
+- **System Admin**: [Contact Info]
+- **Database Admin**: [Contact Info]
+- **DevOps Team**: [Contact Info]
+
+### Escalation Process
+1. Check application logs
+2. Verify system resources
+3. Test connectivity
+4. Contact support team
+5. Document issue and resolution
+
+---
+
+## 📚 Additional Resources
+
+- [AWS EC2 Documentation](https://docs.aws.amazon.com/ec2/)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Nginx Configuration Guide](https://nginx.org/en/docs/)
+- [Node.js Production Best Practices](https://nodejs.org/en/docs/guides/nodejs-docker-webapp/)

@@ -11,7 +11,7 @@ import {
 @Injectable()
 export class GoldPriceAPIClient {
   private readonly logger = new Logger(GoldPriceAPIClient.name);
-  private readonly baseUrl = 'http://giavang.doji.vn';
+  private readonly baseUrl = 'https://giavang.doji.vn';
   private readonly timeout = 10000; // 10 seconds
 
   constructor(private readonly httpService: HttpService) {}

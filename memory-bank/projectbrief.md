@@ -26,7 +26,8 @@
 ## Technology Stack - **IMPLEMENTED**
 - **Frontend**: ✅ React.js 18, TypeScript, Material-UI, Recharts, React Query
 - **Backend**: ✅ NestJS, PostgreSQL, Redis, TypeORM, Swagger
-- **Infrastructure**: ✅ Docker, Docker Compose, Local development environment
+- **Infrastructure**: ✅ Docker, Docker Compose, AWS CDK, AWS Free Tier
+- **Deployment**: ✅ AWS CloudFront (Frontend), AWS EC2 (Backend), AWS RDS (Database), AWS ElastiCache (Redis)
 
 ## Success Criteria - **FOUNDATION ACHIEVED**
 - ✅ Hệ thống có thể xử lý real-time portfolio tracking (Portfolio module implemented)
