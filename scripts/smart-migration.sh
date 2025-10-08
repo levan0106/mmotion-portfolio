@@ -33,7 +33,20 @@ MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT 
 if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     echo "📋 Migrations table not found. This is a fresh database."
     echo "🔄 Running all migrations..."
-    docker exec $CONTAINER_NAME npm run typeorm:migration:run
+    
+    # Try different approaches to run migration
+    if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d /app/src/config/database.config.ts; then
+        echo "✅ Migration successful with absolute path"
+    elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
+        echo "✅ Migration successful from container root"
+    elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
+        echo "✅ Migration successful without config file"
+    else
+        echo "❌ Migration failed with all approaches"
+        echo "💡 Check container logs: docker logs $CONTAINER_NAME"
+        exit 1
+    fi
+    
     echo "✅ Fresh database migration completed"
 else
     echo "📋 Migrations table exists. Checking for pending migrations..."
@@ -43,7 +56,20 @@ else
     
     if [ "$PENDING_MIGRATIONS" -gt 0 ]; then
         echo "🔄 Found pending migrations. Running migrations..."
-        docker exec $CONTAINER_NAME npm run typeorm:migration:run
+        
+        # Try different approaches to run migration
+        if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d /app/src/config/database.config.ts; then
+            echo "✅ Migration successful with absolute path"
+        elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
+            echo "✅ Migration successful from container root"
+        elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
+            echo "✅ Migration successful without config file"
+        else
+            echo "❌ Migration failed with all approaches"
+            echo "💡 Check container logs: docker logs $CONTAINER_NAME"
+            exit 1
+        fi
+        
         echo "✅ Pending migrations completed"
     else
         echo "✅ No pending migrations. Skipping migration step."
