@@ -55,7 +55,7 @@ After setting up secrets, push to main branch to trigger the CI/CD pipeline:
 ```bash
 git add .
 git commit -m "feat: Setup ECR repositories and GitHub secrets"
-git push origin main
+git push origin master
 ```
 
 ## 🔧 IAM Permissions Required
