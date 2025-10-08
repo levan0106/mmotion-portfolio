@@ -115,7 +115,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.prod.yml,env.example"
+        source: "docker-compose.backend.yml,docker-compose.frontend.yml,production.env"
         target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
     - name: Deploy to EC2
@@ -164,19 +164,28 @@ jobs:
           mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           
-          # Copy environment file if not exists
+          # Copy production environment file
           if [ ! -f .env ]; then
-            cp env.example .env
-            echo "📝 Created .env file from env.example"
+            cp production.env .env
+            echo "📝 Created .env file from production.env"
           fi
           
           # Stop existing containers
           echo "🛑 Stopping existing containers..."
-          docker-compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.backend.yml down || true
+          docker-compose -f docker-compose.frontend.yml down || true
           
-          # Start new containers
-          echo "🚀 Starting new containers..."
-          docker-compose -f docker-compose.prod.yml up -d
+          # Start backend services
+          echo "🚀 Starting backend services..."
+          docker-compose -f docker-compose.backend.yml up -d
+          
+          # Wait for backend to be healthy
+          echo "⏳ Waiting for backend to be healthy..."
+          sleep 60
+          
+          # Start frontend service
+          echo "🌐 Starting frontend service..."
+          docker-compose -f docker-compose.frontend.yml up -d
           
           # Wait for services to start
           echo "⏳ Waiting for services to start..."
