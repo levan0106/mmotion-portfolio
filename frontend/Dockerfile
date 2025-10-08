@@ -17,6 +17,9 @@ COPY . .
 RUN rm -rf node_modules package-lock.json
 RUN npm install
 
+# Copy production environment
+COPY production.env .env
+
 # Build the application
 RUN npm run build
 
