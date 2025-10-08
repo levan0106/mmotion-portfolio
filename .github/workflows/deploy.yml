@@ -178,6 +178,22 @@ jobs:
           echo "🚀 Starting new containers..."
           docker-compose -f docker-compose.prod.yml up -d
           
+          # Wait for services to start
+          echo "⏳ Waiting for services to start..."
+          sleep 30
+          
+          # Check container status
+          echo "📊 Checking container status..."
+          docker-compose -f docker-compose.prod.yml ps
+          
+          # Check backend logs if unhealthy
+          echo "🔍 Checking backend logs..."
+          docker-compose -f docker-compose.prod.yml logs backend || echo "Backend container not found"
+          
+          # Check if backend is responding
+          echo "🏥 Testing backend health..."
+          curl -f http://localhost:3000/health || echo "Backend health check failed"
+          
           # Clean up old images
           echo "🧹 Cleaning up old images..."
           docker image prune -f
