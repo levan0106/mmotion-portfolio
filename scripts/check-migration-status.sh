@@ -13,17 +13,22 @@ if [ ! -f "docker-compose.backend.yml" ]; then
     exit 1
 fi
 
-# Check if backend container is running
-if ! docker ps | grep -q "portfolio-backend"; then
-    echo "❌ Error: Backend container is not running."
+# Detect backend container
+echo "🔍 Detecting backend container..."
+CONTAINER_NAME=$(docker ps --format "{{.Names}}" | grep -E "(portfolio.*backend|portfolio.*app)" | head -1)
+
+if [ -z "$CONTAINER_NAME" ]; then
+    echo "❌ Error: No backend container found"
+    echo "Available containers:"
+    docker ps --format "table {{.Names}}\t{{.Status}}"
     exit 1
 fi
 
-echo "✅ Backend container is running"
+echo "✅ Backend container detected: $CONTAINER_NAME"
 
 # Check migrations table
 echo "📋 Checking migrations table..."
-MIGRATIONS_EXIST=$(docker exec portfolio-backend npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'" -d src/config/database.config.ts 2>/dev/null | grep -c "migrations" || echo "0")
+MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'" -d src/config/database.config.ts 2>/dev/null | grep -c "migrations" || echo "0")
 
 if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     echo "❌ Migrations table not found - Fresh database"
@@ -35,7 +40,7 @@ echo "✅ Migrations table exists"
 
 # Check pending migrations
 echo "🔍 Checking for pending migrations..."
-PENDING_MIGRATIONS=$(docker exec portfolio-backend npm run typeorm:migration:run -- --dry-run 2>/dev/null | grep -c "pending" || echo "0")
+PENDING_MIGRATIONS=$(docker exec $CONTAINER_NAME npm run typeorm:migration:run -- --dry-run 2>/dev/null | grep -c "pending" || echo "0")
 
 if [ "$PENDING_MIGRATIONS" -gt 0 ]; then
     echo "⚠️  Found $PENDING_MIGRATIONS pending migrations"
@@ -46,7 +51,7 @@ fi
 
 # Check critical tables
 echo "🔍 Checking critical tables..."
-ACCOUNTS_EXIST=$(docker exec portfolio-backend npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d src/config/database.config.ts 2>/dev/null | grep -c "accounts" || echo "0")
+ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d src/config/database.config.ts 2>/dev/null | grep -c "accounts" || echo "0")
 
 if [ "$ACCOUNTS_EXIST" -eq 0 ]; then
     echo "❌ Accounts table not found - Database issue!"
