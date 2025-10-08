@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Fix Production Database Script
+# Quick Fix Production Database
 # Simple script to fix production database immediately
 
 set -e
 
-echo "🚀 Fixing Production Database..."
+echo "🚀 Quick Fix Production Database..."
 
 # Detect backend container
 echo "🔍 Detecting backend container..."
@@ -20,46 +20,14 @@ fi
 
 echo "✅ Backend container detected: $CONTAINER_NAME"
 
-# Check if database is accessible
-echo "🔍 Checking database connection..."
-if ! docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT version()" -d src/config/database.config.ts > /dev/null 2>&1; then
-    echo "❌ Error: Cannot connect to database"
-    echo "💡 Check if database container is running"
-    exit 1
-fi
-
-echo "✅ Database connection successful"
-
-# Try to run migrations with different approaches
-echo "🗄️ Running database migrations..."
-
-# First, find the correct config file path
-CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.ts" -type f 2>/dev/null | head -1)
-
-if [ -n "$CONFIG_PATH" ]; then
-    echo "🔍 Found config file at: $CONFIG_PATH"
-    if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d "$CONFIG_PATH"; then
-        echo "✅ Migration successful with found config path"
-    elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
-        echo "✅ Migration successful from container root"
-    elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
-        echo "✅ Migration successful without config file"
-    else
-        echo "❌ All migration approaches failed"
-        echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-        exit 1
-    fi
+# Try to run migration from container root (most reliable approach)
+echo "🗄️ Running database migration from container root..."
+if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
+    echo "✅ Migration successful from container root"
 else
-    echo "⚠️  Config file not found, trying alternative approaches..."
-    if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
-        echo "✅ Migration successful from container root"
-    elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
-        echo "✅ Migration successful without config file"
-    else
-        echo "❌ All migration approaches failed"
-        echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-        exit 1
-    fi
+    echo "❌ Migration failed from container root"
+    echo "💡 Check container logs: docker logs $CONTAINER_NAME"
+    exit 1
 fi
 
 echo "✅ Migrations completed successfully"
@@ -102,4 +70,4 @@ else
     echo "⚠️  API returned status: $API_RESPONSE"
 fi
 
-echo "🎉 Production database fix completed!"
+echo "🎉 Quick fix completed!"
