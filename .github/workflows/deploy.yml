@@ -130,7 +130,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.backend.yml,production.env"
+        source: "docker-compose.backend.yml,production.env,scripts/smart-migration.sh"
         target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
     - name: Deploy Backend to EC2
@@ -195,6 +195,11 @@ jobs:
           # Wait for backend to be healthy
           echo "⏳ Waiting for backend to be healthy..."
           sleep 60
+          
+          # Run smart database migrations (only when needed)
+          echo "🧠 Running smart database migrations..."
+          chmod +x scripts/smart-migration.sh
+          ./scripts/smart-migration.sh || echo "Smart migration failed, but continuing deployment..."
           
           # Check backend health
           echo "🏥 Checking backend health..."
