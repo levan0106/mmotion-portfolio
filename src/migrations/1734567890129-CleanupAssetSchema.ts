@@ -5,8 +5,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * This migration removes the code column, old constraints, and adds new user-scoped constraints.
  * It also removes the migration tracking column as it's no longer needed.
  */
-export class CleanupAssetSchema20250915090003 implements MigrationInterface {
-  name = 'CleanupAssetSchema20250915090003';
+export class CleanupAssetSchema1734567890129 implements MigrationInterface {
+  name = 'CleanupAssetSchema1734567890129';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 1: Ensure all assets have symbol field (validation)

@@ -4,8 +4,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Migration to make portfolioId nullable in assets table.
  * This allows assets to be created without being tied to a specific portfolio.
  */
-export class MakePortfolioIdNullableInAssets20250914070000 implements MigrationInterface {
-  name = 'MakePortfolioIdNullableInAssets20250914070000';
+export class MakePortfolioIdNullableInAssets1734567890127 implements MigrationInterface {
+  name = 'MakePortfolioIdNullableInAssets1734567890127';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Make portfolioId column nullable in assets table
