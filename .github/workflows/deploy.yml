@@ -153,11 +153,11 @@ jobs:
           # Stop existing containers
           echo "🛑 Stopping existing containers..."
           cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
-          docker-compose down || true
+          docker-compose -f docker-compose.prod.yml down || true
           
           # Start new containers
           echo "🚀 Starting new containers..."
-          docker-compose up -d
+          docker-compose -f docker-compose.prod.yml up -d
           
           # Clean up old images
           echo "🧹 Cleaning up old images..."
