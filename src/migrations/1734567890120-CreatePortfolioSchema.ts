@@ -4,8 +4,8 @@ import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
  * Migration to create the complete portfolio management schema.
  * Creates all tables: accounts, assets, portfolios, portfolio_assets, nav_snapshots, cash_flows
  */
-export class CreatePortfolioSchema1734567890123 implements MigrationInterface {
-  name = 'CreatePortfolioSchema1734567890123';
+export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
+  name = 'CreatePortfolioSchema1734567890120';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create accounts table

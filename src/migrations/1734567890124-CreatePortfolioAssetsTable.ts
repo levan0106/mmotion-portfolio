@@ -4,8 +4,8 @@ import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } f
  * Migration to create asset_instances table for asset management.
  * This table stores asset instances that belong to specific portfolios.
  */
-export class CreatePortfolioAssetsTable20250913100905 implements MigrationInterface {
-  name = 'CreatePortfolioAssetsTable20250913100905';
+export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterface {
+  name = 'CreatePortfolioAssetsTable1734567890124';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create asset_instances table

@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddNavUnitSystem1734567890123 implements MigrationInterface {
-  name = 'AddNavUnitSystem1734567890123';
+export class AddNavUnitSystem1734567890125 implements MigrationInterface {
+  name = 'AddNavUnitSystem1734567890125';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // 1. Extend portfolios table

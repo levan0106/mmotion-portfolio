@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner, Table, Index } from 'typeorm';
 
-export class CreateAssetAllocationSnapshots1734567890123 implements MigrationInterface {
-  name = 'CreateAssetAllocationSnapshots1734567890123';
+export class CreateAssetAllocationSnapshots1734567890126 implements MigrationInterface {
+  name = 'CreateAssetAllocationSnapshots1734567890126';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enum type for snapshot granularity
