@@ -122,21 +122,45 @@ jobs:
           export ECR_REPOSITORY_FRONTEND=${{ env.ECR_REPOSITORY_FRONTEND }}
           export IMAGE_TAG=${{ github.sha }}
           
-          # Login to ECR
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
+          # Test ECR access first
+          echo "🔐 Testing ECR access..."
+          aws sts get-caller-identity
           
-          # Pull latest images
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+          # Login to ECR with retry
+          echo "🔑 Logging into ECR..."
+          for i in {1..3}; do
+            if aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; then
+              echo "✅ ECR login successful"
+              break
+            else
+              echo "❌ ECR login attempt $i failed, retrying..."
+              sleep 5
+            fi
+          done
+          
+          # Pull latest images with retry
+          echo "📥 Pulling images..."
+          for i in {1..3}; do
+            if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest && docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest; then
+              echo "✅ Images pulled successfully"
+              break
+            else
+              echo "❌ Image pull attempt $i failed, retrying..."
+              sleep 10
+            fi
+          done
           
           # Stop existing containers
+          echo "🛑 Stopping existing containers..."
           cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
           docker-compose down || true
           
           # Start new containers
+          echo "🚀 Starting new containers..."
           docker-compose up -d
           
           # Clean up old images
+          echo "🧹 Cleaning up old images..."
           docker image prune -f
 
     - name: Health Check
