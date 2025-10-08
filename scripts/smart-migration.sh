@@ -58,8 +58,8 @@ else
         echo "🔄 Found pending migrations. Running migrations..."
         
         # Try different approaches to run migration
-        # First, find the correct config file path
-        CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.ts" -type f 2>/dev/null | head -1)
+        # First, find the correct config file path (look for .js file in production)
+        CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1)
         
         if [ -n "$CONFIG_PATH" ]; then
             echo "🔍 Found config file at: $CONFIG_PATH"
