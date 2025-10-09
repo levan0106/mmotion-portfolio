@@ -214,7 +214,13 @@ export class CashFlowController {
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async createDeposit(
     @Param('id', ParseUUIDPipe) portfolioId: string,
-    @Body() createDepositDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+    @Body() createDepositDto: { 
+      amount: number; 
+      description: string; 
+      reference?: string; 
+      effectiveDate?: Date;
+      fundingSource?: string;
+    },
   ) {
     return await this.cashFlowService.createCashFlow(
       portfolioId,
@@ -223,6 +229,8 @@ export class CashFlowController {
       createDepositDto.description,
       createDepositDto.reference,
       createDepositDto.effectiveDate,
+      'VND', // Default currency
+      createDepositDto.fundingSource,
     );
   }
 
@@ -238,7 +246,13 @@ export class CashFlowController {
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async createWithdrawal(
     @Param('id', ParseUUIDPipe) portfolioId: string,
-    @Body() createWithdrawalDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+    @Body() createWithdrawalDto: { 
+      amount: number; 
+      description: string; 
+      reference?: string; 
+      effectiveDate?: Date;
+      fundingSource?: string;
+    },
   ) {
     return await this.cashFlowService.createCashFlow(
       portfolioId,
@@ -247,6 +261,8 @@ export class CashFlowController {
       createWithdrawalDto.description,
       createWithdrawalDto.reference,
       createWithdrawalDto.effectiveDate,
+      'VND', // Default currency
+      createWithdrawalDto.fundingSource,
     );
   }
 
@@ -262,7 +278,13 @@ export class CashFlowController {
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async createDividend(
     @Param('id', ParseUUIDPipe) portfolioId: string,
-    @Body() createDividendDto: { amount: number; description: string; reference?: string; effectiveDate?: Date },
+    @Body() createDividendDto: { 
+      amount: number; 
+      description: string; 
+      reference?: string; 
+      effectiveDate?: Date;
+      fundingSource?: string;
+    },
   ) {
     return await this.cashFlowService.createCashFlow(
       portfolioId,
@@ -271,6 +293,8 @@ export class CashFlowController {
       createDividendDto.description,
       createDividendDto.reference,
       createDividendDto.effectiveDate,
+      'VND', // Default currency
+      createDividendDto.fundingSource,
     );
   }
 

@@ -36,6 +36,7 @@ interface PortfolioFormProps {
 const schema = yup.object({
   name: yup.string().required('Portfolio name is required').min(2, 'Name must be at least 2 characters'),
   baseCurrency: yup.string().required('Base currency is required'),
+  fundingSource: yup.string().optional().min(2, 'Funding source must be at least 2 characters'),
   accountId: yup.string().required('Account ID is required'),
 });
 
@@ -46,6 +47,8 @@ const currencies = [
   { code: 'GBP', name: 'British Pound' },
   { code: 'JPY', name: 'Japanese Yen' },
 ];
+
+// Funding source is now a free text input, no predefined options
 
 const PortfolioForm: React.FC<PortfolioFormProps> = ({
   open,
@@ -67,6 +70,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
     defaultValues: {
       name: initialData?.name || '',
       baseCurrency: initialData?.baseCurrency || 'VND',
+      fundingSource: initialData?.fundingSource || 'VIETCOMBANK',
       accountId: initialData?.accountId || accountId,
     },
   });
@@ -76,6 +80,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
       reset({
         name: initialData?.name || '',
         baseCurrency: initialData?.baseCurrency || 'VND',
+        fundingSource: initialData?.fundingSource || 'VIETCOMBANK',
         accountId: initialData?.accountId || accountId,
       });
     }
@@ -87,6 +92,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
       reset({
         name: initialData.name || '',
         baseCurrency: initialData.baseCurrency || 'VND',
+        fundingSource: initialData.fundingSource || '',
         accountId: initialData.accountId || accountId,
       });
     }
@@ -149,6 +155,21 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                     </Box>
                   )}
                 </FormControl>
+              )}
+            />
+
+            <Controller
+              name="fundingSource"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Funding Source"
+                  fullWidth
+                  error={!!errors.fundingSource}
+                  helperText={errors.fundingSource?.message || "Optional: Enter the source of funding for this portfolio (default: VIETCOMBANK, TPBANK, etc.)"}
+                  placeholder="VIETCOMBANK, TPBANK, etc."
+                />
               )}
             />
 

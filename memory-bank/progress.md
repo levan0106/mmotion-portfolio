@@ -2,7 +2,75 @@
 
 ## What Works
 ### ✅ Completed
-- **PROJECT CLEANUP AND DOCUMENTATION OPTIMIZATION - COMPLETED** (Current Session - October 8, 2025)
+- **FUNDING SOURCE FEATURE IMPLEMENTATION - COMPLETED** (Current Session - January 8, 2025)
+  - **Database Migration Execution**: Successfully executed migration to add funding_source column to portfolios table
+    - **Migration Status**: AddFundingSourceToPortfolio1736332800000 migration executed successfully
+    - **Database Schema**: Added `funding_source` varchar(100) NULL column to portfolios table
+    - **Column Properties**: Nullable column with 100 character limit for flexible funding source entry
+    - **Backward Compatibility**: Existing portfolios can have null funding source without issues
+    - **Default Value**: Frontend defaults to 'VIETCOMBANK' for new portfolios
+    - **User Experience**: Updated helper text and placeholder to reflect default value
+    - **Production Ready**: Database schema updated and ready for production use
+  - **Cash Flow Form Enhancement**: Updated cash flow forms to use portfolio funding source as default value
+    - **Default Value Integration**: Cash flow forms now automatically populate with portfolio's funding source
+    - **User Experience**: Users see portfolio funding source as default when creating cash flows
+    - **Helper Text Update**: Updated helper text to show current portfolio funding source as default
+    - **Form Behavior**: New cash flows automatically inherit portfolio's funding source setting
+    - **Consistency**: Ensures funding source consistency across portfolio and cash flow management
+    - **Production Ready**: Complete cash flow form enhancement ready for production use
+  - **Cash Flow API Enhancement**: Updated all cash flow endpoints to support funding source parameter
+    - **Deposit Endpoint**: Updated createDeposit method to accept fundingSource parameter
+    - **Withdrawal Endpoint**: Updated createWithdrawal method to accept fundingSource parameter  
+    - **Dividend Endpoint**: Updated createDividend method to accept fundingSource parameter
+    - **Backward Compatibility**: All existing API calls continue to work without fundingSource
+    - **Forward Compatibility**: New API calls can include fundingSource for better tracking
+    - **Service Integration**: All endpoints now pass fundingSource to CashFlowService.createCashFlow
+    - **Database Persistence**: Funding source is properly saved to cash_flows.funding_source column
+    - **Production Ready**: Complete API enhancement ready for production use
+  - **Portfolio Entity Enhancement**: Added funding source field to Portfolio entity with proper database schema
+    - **Database Field**: Added `funding_source` column with varchar(50) type and default 'PERSONAL' value
+    - **Entity Update**: Updated Portfolio entity with fundingSource property and proper TypeORM decorators
+    - **Migration Created**: Generated database migration for funding source field addition
+  - **DTO Updates**: Updated CreatePortfolioDto and UpdatePortfolioDto to support funding source
+    - **Validation**: Added proper validation with @IsString(), @Length(3, 50), and @Transform decorators
+    - **API Documentation**: Enhanced Swagger documentation with funding source enum options
+    - **Type Safety**: Full TypeScript support for funding source in all DTOs
+  - **Frontend Integration**: Complete frontend implementation for funding source management
+    - **PortfolioForm Component**: Added funding source selector with 8 predefined options
+    - **Form Validation**: Integrated funding source validation in form schema
+    - **Type Definitions**: Updated all TypeScript interfaces to include funding source
+    - **User Experience**: Professional dropdown with clear funding source options
+  - **Funding Source Options**: Optional free text input for flexible funding source entry
+    - **User Flexibility**: Users can enter any funding source they want (e.g., "Personal Savings", "Business Capital", "Inheritance", "Bonus", "Salary", "Investment Return", "Loan", "Gift", etc.)
+    - **Optional Field**: Funding source is completely optional - users can leave it blank
+    - **No Restrictions**: No predefined options, complete freedom for users to describe their funding source
+    - **Validation**: Optional field with minimum 2 characters when provided, maximum 100 characters with proper trimming
+  - **API Integration**: Seamless integration with existing portfolio management APIs
+    - **Create Portfolio**: Funding source included in portfolio creation process
+    - **Update Portfolio**: Funding source can be updated through edit functionality
+    - **Data Persistence**: Funding source properly stored and retrieved from database
+    - **Backward Compatibility**: Existing portfolios can have null funding source without issues
+  - **Code Quality**: Clean, maintainable implementation with proper error handling
+    - **Validation**: Comprehensive input validation and error handling
+    - **Type Safety**: Full TypeScript typing throughout the implementation
+    - **Documentation**: Clear code comments and API documentation
+    - **Testing Ready**: Implementation ready for unit and integration testing
+- **MEMORY BANK UPDATE AND SYSTEM STATUS REVIEW - COMPLETED** (Previous Session - January 8, 2025)
+  - **Memory Bank Documentation Update**: Updating all memory bank files to reflect current project state
+    - **Active Context Update**: Updated current work focus and recent achievements
+    - **Progress Tracking**: Reviewing and updating progress documentation
+    - **System Patterns Review**: Checking for any new patterns or architectural changes
+    - **Technical Context Update**: Verifying current technical status and dependencies
+    - **Project Brief Verification**: Ensuring project brief reflects latest status
+  - **Git Status Analysis**: Identified current changes in repository
+    - **Modified Files**: .github/workflows/deploy.yml (deployment workflow changes)
+    - **Repository Status**: Clean working directory except for deployment workflow modifications
+    - **Branch Status**: Up to date with origin/master
+  - **Documentation Consistency**: Ensuring all memory bank files are synchronized
+    - **Cross-Reference Validation**: Verifying consistency across all documentation files
+    - **Status Alignment**: Ensuring all files reflect the same current state
+    - **Update Completeness**: Comprehensive review of all memory bank components
+- **PROJECT CLEANUP AND DOCUMENTATION OPTIMIZATION - COMPLETED** (Previous Session - October 8, 2025)
   - **Project Structure Cleanup**: Successfully cleaned up project structure and removed unnecessary files
     - **Root Level Cleanup**: Removed deployment guides, AWS analysis files, and migration summaries
     - **Documentation Optimization**: Removed redundant deployment documentation and kept only essential files
@@ -2124,3 +2192,24 @@ const symbolsToUpdate = selectedAssets.map(asset => ({
 - ✅ **Error Handling**: Comprehensive error display and recovery
 - ✅ **Loading States**: Proper loading indicators during API calls
 - ✅ **Build Success**: Frontend compiles successfully with no TypeScript errors
+
+## **Fund Transaction Backend Enhancement - COMPLETED** (Current Session - January 8, 2025)
+- **Fund Subscription Logic**: Updated subscribeToFund method to use portfolio.fundingSource when creating cash flows
+- **Fund Redemption Logic**: Updated redeemFromFund method to use portfolio.fundingSource when creating cash flows  
+- **Portfolio Data Access**: Added portfolio data retrieval in redemption method to access funding source
+- **Cash Flow Integration**: Both subscription and redemption now pass portfolio funding source to CashFlowService.createCashFlow
+- **Consistency**: Ensures fund transactions use the same funding source as the portfolio for proper tracking
+- **Backward Compatibility**: Existing fund transactions continue to work with new funding source integration
+- **Database Persistence**: Funding source is properly saved to cash_flows table for fund transactions
+- **User Experience**: Fund transactions now inherit portfolio funding source automatically
+- **Production Ready**: Complete fund transaction backend enhancement ready for production use
+
+## **Fund Transaction Currency Enhancement - COMPLETED** (Current Session - January 8, 2025)
+- **Currency Flexibility**: Updated fund transactions to use portfolio.baseCurrency instead of hardcoded 'VND'
+- **Multi-Currency Support**: Fund subscriptions and redemptions now support different base currencies (VND, USD, EUR, etc.)
+- **Portfolio Consistency**: Cash flows created for fund transactions use the same currency as the portfolio
+- **Dynamic Currency**: Currency is determined by portfolio.baseCurrency field, not hardcoded values
+- **International Support**: Enables fund management in different currencies based on portfolio settings
+- **Code Quality**: Removed hardcoded currency values for better maintainability and flexibility
+- **User Experience**: Fund transactions automatically use the correct currency for each portfolio
+- **Production Ready**: Complete fund transaction currency enhancement ready for production use

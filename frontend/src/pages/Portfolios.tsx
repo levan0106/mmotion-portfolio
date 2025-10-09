@@ -98,6 +98,7 @@ const Portfolios: React.FC = () => {
     return {
       name: portfolio.name,
       baseCurrency: portfolio.baseCurrency,
+      fundingSource: portfolio.fundingSource || '',
       accountId: portfolio.accountId,
     };
   };

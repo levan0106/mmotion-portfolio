@@ -23,4 +23,13 @@ export class UpdatePortfolioDto extends PartialType(CreatePortfolioDto) {
   @Length(3, 3)
   @Transform(({ value }) => typeof value === 'string' ? value.toUpperCase() : value)
   baseCurrency?: string;
+
+  /**
+   * Updated funding source for the portfolio.
+   */
+  @IsOptional()
+  @IsString()
+  @Length(2, 100)
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  fundingSource?: string;
 }

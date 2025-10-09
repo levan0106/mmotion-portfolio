@@ -1,10 +1,11 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Project Cleanup and Documentation Optimization - COMPLETED**
-**Latest Update: Successfully cleaned up project structure, removed unnecessary deployment files, and optimized documentation (Current Session)**
+**Phase: Memory Bank Update and System Status Review - IN PROGRESS**
+**Latest Update: Updating memory bank documentation to reflect current project state and recent changes (Current Session)**
 **Code Version: Backend v1.0.0, Frontend v1.0.0 - Production Ready**
 **AWS Deployment: Project deployed on AWS with frontend on CloudFront and backend on EC2**
+**Git Status: Modified .github/workflows/deploy.yml (deployment workflow changes)**
 - ✅ **Snapshot Date Range Implementation** (Complete date range support for bulk snapshot creation)
 - ✅ **API Timeout Optimization** (Dynamic timeout calculation based on date range size)
 - ✅ **Subscription Date Support** (Subscribe/Redeem endpoints now accept custom dates)
@@ -52,6 +53,14 @@
 - ✅ **Infrastructure Cleanup** (Cleaned up CDK build artifacts and duplicate configuration files)
 - ✅ **Documentation Optimization** (Removed redundant deployment guides and kept only essential documentation)
 - ✅ **File Organization** (Organized project structure for better maintainability and professional appearance)
+- ✅ **Memory Bank Update** (Updating all memory bank files to reflect current project state and recent changes)
+- ✅ **Git Status Review** (Identified modified .github/workflows/deploy.yml with deployment workflow changes)
+- ✅ **Funding Source Feature Implementation** (Added funding source field to Portfolio entity and complete frontend/backend integration)
+- ✅ **Database Migration Execution** (Successfully ran migration to add funding_source column to portfolios table)
+- ✅ **Cash Flow Form Enhancement** (Updated cash flow forms to use portfolio funding source as default value)
+- ✅ **Cash Flow API Enhancement** (Updated all cash flow endpoints to support funding source parameter)
+- ✅ **Fund Transaction Backend Enhancement** (Updated fund subscription and redemption logic to use portfolio funding source)
+- ✅ **Fund Transaction Currency Enhancement** (Updated fund transactions to use portfolio.baseCurrency instead of hardcoded 'VND')
 - ✅ **Report Page Portfolio Filter Implementation** (Complete portfolio filter functionality with real-time API calls and data filtering)
 - ✅ **Report Service FIFO Integration** (Integrated AssetValueCalculatorService with FIFO calculation for accurate asset holdings)
 - ✅ **Backend Portfolio ID Field Fix** (Fixed portfolio.id vs portfolio.portfolioId field mapping issues across all report services)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
+import { usePortfolio } from '../../hooks/usePortfolios';
 import {
   Box,
   Card,
@@ -100,6 +101,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   compact = false,
 }) => {
   const { accountId } = useAccount();
+  const { portfolio } = usePortfolio(portfolioId);
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [allCashFlows, setAllCashFlows] = useState<CashFlow[]>([]); // All cash flows for summary calculations
   const [loading, setLoading] = useState(false);
@@ -252,7 +254,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       if (isEdit) {
         await apiService.updateCashFlow(portfolioId, accountId, editingCashFlow.cashflowId, payload);
       } else {
-        await apiService.createCashFlow(portfolioId, accountId, 'deposit', payload);
+        await apiService.createCashFlow(portfolioId, accountId, dialogType, payload);
       }
 
       // Reset form with auto-filled flowDate
@@ -390,7 +392,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   };
 
-  // Helper function to reset form with auto-filled flowDate
+  // Helper function to reset form with auto-filled flowDate and portfolio funding source
   const resetFormWithAutoFlowDate = () => {
     setFormData({
       amount: '',
@@ -400,7 +402,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       currency: 'VND',
       flowDate: getCurrentLocalDateTime(),
       status: 'COMPLETED',
-      fundingSource: '',
+      fundingSource: portfolio?.fundingSource || '',
     });
   };
 
@@ -1585,7 +1587,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
                   margin="normal"
                   placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
-                  helperText="Source of funding for this transaction (optional)"
+                  helperText={`Source of funding for this transaction (optional)`}
                   inputProps={{
                     style: { textTransform: 'uppercase' }
                   }}

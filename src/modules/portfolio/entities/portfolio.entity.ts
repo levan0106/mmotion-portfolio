@@ -48,6 +48,12 @@ export class Portfolio {
   baseCurrency: string;
 
   /**
+   * Funding source for the portfolio (free text input, optional).
+   */
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'funding_source' })
+  fundingSource?: string;
+
+  /**
    * Current total value of the portfolio in base currency.
    */
   @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'total_value' })

@@ -179,7 +179,9 @@ export class InvestorHoldingService {
         dto.amount,
         `Fund subscription - ${unitsIssued.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
         `${transaction.transactionId}`,
-        subscriptionDate
+        subscriptionDate,
+        portfolio.baseCurrency, // Default currency
+        portfolio.fundingSource // Use portfolio funding source
       );
       cashFlow = cashFlowResult.cashFlow;
 
@@ -239,13 +241,22 @@ export class InvestorHoldingService {
     // 1. Validate inputs
     await this.validateRedemption(dto);
 
-    // 2. Get holding
+    // 2. Get holding and portfolio
     const holding = await this.investorHoldingRepository.findOne({
       where: { accountId: dto.accountId, portfolioId: dto.portfolioId }
     });
 
     if (!holding) {
       throw new NotFoundException('No holding found for this investor in this fund');
+    }
+
+    // Get portfolio for funding source
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { portfolioId: dto.portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio ${dto.portfolioId} not found`);
     }
 
     if (holding.totalUnits < dto.units) {
@@ -284,7 +295,9 @@ export class InvestorHoldingService {
         amountReceived,
         `Fund redemption - ${dto.units.toFixed(3)} units at ${navPerUnit.toFixed(3)} per unit. ${dto.description}`,
         `${transaction.transactionId}`,
-        redemptionDate
+        redemptionDate,
+        portfolio.baseCurrency, // Default currency
+        portfolio.fundingSource // Use portfolio funding source
       );
       cashFlow = cashFlowResult.cashFlow;
 

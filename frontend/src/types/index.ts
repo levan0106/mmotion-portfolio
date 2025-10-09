@@ -36,6 +36,7 @@ export interface Portfolio extends BaseEntity {
   accountId: string;
   name: string;
   baseCurrency: string;
+  fundingSource?: string;
   totalValue: number; // Keep for backward compatibility
   cashBalance: number;
   unrealizedPl: number; // Keep for backward compatibility
@@ -100,12 +101,14 @@ export interface CashFlow {
 export interface CreatePortfolioDto {
   name: string;
   baseCurrency: string;
+  fundingSource?: string;
   accountId: string;
 }
 
 export interface UpdatePortfolioDto {
   name?: string;
   baseCurrency?: string;
+  fundingSource?: string;
 }
 
 // API Response types
@@ -181,6 +184,7 @@ export interface WebSocketMessage {
 export interface PortfolioFormData {
   name: string;
   baseCurrency: string;
+  fundingSource?: string;
   accountId: string;
 }
 
