@@ -44,7 +44,7 @@ import { TestLoggingController } from './test-logging.controller';
       migrations: [__dirname + '/migrations/*{.ts,.js}'],
       synchronize: false, // Disable synchronize, use migrations only
       logging: process.env.NODE_ENV === 'development',
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     }),
 
     // Cache module - conditionally enabled
