@@ -9,11 +9,17 @@ export class AddIsMainAccountToAccounts20250130000002 implements MigrationInterf
       return;
     }
 
-    // Add is_main_account column
-    await queryRunner.query(`
-      ALTER TABLE accounts 
-      ADD COLUMN is_main_account BOOLEAN DEFAULT FALSE
-    `);
+    // Check if is_main_account column already exists
+    const columnExists = await queryRunner.hasColumn('accounts', 'is_main_account');
+    if (columnExists) {
+      console.log('is_main_account column already exists, skipping column addition');
+    } else {
+      // Add is_main_account column
+      await queryRunner.query(`
+        ALTER TABLE accounts 
+        ADD COLUMN is_main_account BOOLEAN DEFAULT FALSE
+      `);
+    }
 
     // Update existing main account
     await queryRunner.query(`

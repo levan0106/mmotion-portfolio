@@ -21,7 +21,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'portfolioId',
+            name: 'portfolio_id',
             type: 'uuid',
             isNullable: false,
           },
@@ -49,50 +49,50 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
             isNullable: true,
           },
           {
-            name: 'initialValue',
+            name: 'initial_value',
             type: 'decimal',
             precision: 15,
             scale: 2,
             isNullable: false,
           },
           {
-            name: 'initialQuantity',
+            name: 'initial_quantity',
             type: 'decimal',
             precision: 15,
             scale: 4,
             isNullable: false,
           },
           {
-            name: 'currentValue',
+            name: 'current_value',
             type: 'decimal',
             precision: 15,
             scale: 2,
             isNullable: true,
           },
           {
-            name: 'currentQuantity',
+            name: 'current_quantity',
             type: 'decimal',
             precision: 15,
             scale: 4,
             isNullable: true,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
           },
           {
-            name: 'createdBy',
+            name: 'created_by',
             type: 'uuid',
             isNullable: false,
           },
           {
-            name: 'updatedBy',
+            name: 'updated_by',
             type: 'uuid',
             isNullable: false,
           },
@@ -106,7 +106,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
       'asset_instances',
       new TableIndex({
         name: 'IDX_ASSET_INSTANCE_PORTFOLIO_ID',
-        columnNames: ['portfolioId']
+        columnNames: ['portfolio_id']
       })
     );
 
@@ -139,7 +139,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
       'asset_instances',
       new TableIndex({
         name: 'IDX_ASSET_INSTANCE_PORTFOLIO_TYPE',
-        columnNames: ['portfolioId', 'type']
+        columnNames: ['portfolio_id', 'type']
       })
     );
 
@@ -148,7 +148,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
       'asset_instances',
       new TableIndex({
         name: 'IDX_ASSET_INSTANCE_PORTFOLIO_NAME',
-        columnNames: ['portfolioId', 'name']
+        columnNames: ['portfolio_id', 'name']
       })
     );
 
@@ -156,8 +156,8 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
     await queryRunner.createForeignKey(
       'asset_instances',
       new TableForeignKey({
-        columnNames: ['portfolioId'],
-        referencedColumnNames: ['portfolioId'],
+        columnNames: ['portfolio_id'],
+        referencedColumnNames: ['portfolio_id'],
         referencedTableName: 'portfolios',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
@@ -169,7 +169,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
       'asset_instances',
       new TableIndex({
         name: 'IDX_ASSET_INSTANCE_UNIQUE_NAME',
-        columnNames: ['portfolioId', 'name'],
+        columnNames: ['portfolio_id', 'name'],
         isUnique: true,
       })
     );
@@ -191,7 +191,7 @@ export class CreatePortfolioAssetsTable1734567890124 implements MigrationInterfa
     const table = await queryRunner.getTable('asset_instances');
     if (table) {
       const foreignKey = table.foreignKeys.find(
-        (fk) => fk.columnNames.indexOf('portfolioId') !== -1
+        (fk) => fk.columnNames.indexOf('portfolio_id') !== -1
       );
       if (foreignKey) {
         await queryRunner.dropForeignKey('asset_instances', foreignKey);

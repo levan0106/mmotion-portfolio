@@ -76,23 +76,23 @@ export class AddNotesToTrades1757563759554 implements MigrationInterface {
         await queryRunner.query(`CREATE INDEX "IDX_ce72eb2d12d5ad37d25ec1d5f0" ON "trades" ("trade_date") `);
         await queryRunner.query(`CREATE INDEX "IDX_1628a75c483742377ebcf53f53" ON "trades" ("assetId") `);
         await queryRunner.query(`CREATE INDEX "IDX_2a46262bf5530d16b2722935d1" ON "trades" ("portfolioId") `);
-        await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_682c37b81c863dc30f54155045a" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_682c37b81c863dc30f54155045a" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_96e4f24a6ef0f4c4811296c1aae" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "nav_snapshots" ADD CONSTRAINT "FK_1c2ac58c931bc14e33354ea305d" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "cash_flows" ADD CONSTRAINT "FK_6e33a679a64c347f651312bdb1e" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "nav_snapshots" ADD CONSTRAINT "FK_1c2ac58c931bc14e33354ea305d" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "cash_flows" ADD CONSTRAINT "FK_6e33a679a64c347f651312bdb1e" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "portfolios" ADD CONSTRAINT "FK_bfdc33481d4a493b4f445a6a26d" FOREIGN KEY ("account_id") REFERENCES "accounts"("account_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_8a303e57b225f6438d8c353778f" FOREIGN KEY ("sell_trade_id") REFERENCES "trades"("trade_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_5f9e779187758f66864910d56d6" FOREIGN KEY ("buy_trade_id") REFERENCES "trades"("trade_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_9ee6b8fecc23ad130ba7efebd07" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_2a46262bf5530d16b2722935d15" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_2a46262bf5530d16b2722935d15" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_1628a75c483742377ebcf53f539" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "asset_targets" ADD CONSTRAINT "FK_89e1e884480ed2010047509c862" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "request_logs" ADD CONSTRAINT "FK_b5f9dbba1a152b519ef219b94e1" FOREIGN KEY ("user_id") REFERENCES "accounts"("account_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "business_event_logs" ADD CONSTRAINT "FK_dfed99ad3b558b35bd5dedd8136" FOREIGN KEY ("user_id") REFERENCES "accounts"("account_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "business_event_logs" ADD CONSTRAINT "FK_a26fd22a89d3e91de2e18b22cd4" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "business_event_logs" ADD CONSTRAINT "FK_a26fd22a89d3e91de2e18b22cd4" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "business_event_logs" ADD CONSTRAINT "FK_9db960ef7b9040a73a775047f9b" FOREIGN KEY ("trade_id") REFERENCES "trades"("trade_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "application_logs" ADD CONSTRAINT "FK_73d7020c15d8b2f0f7833dcb2a1" FOREIGN KEY ("user_id") REFERENCES "accounts"("account_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "application_logs" ADD CONSTRAINT "FK_deb5748e93586a2d11fd4c41a17" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "application_logs" ADD CONSTRAINT "FK_deb5748e93586a2d11fd4c41a17" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "application_logs" ADD CONSTRAINT "FK_5f09d9e345af4c5777c7d252857" FOREIGN KEY ("trade_id") REFERENCES "trades"("trade_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
 
@@ -178,15 +178,15 @@ export class AddNotesToTrades1757563759554 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "request_logs" ADD CONSTRAINT "FK_request_logs_user_id" FOREIGN KEY ("user_id") REFERENCES "accounts"("account_id") ON DELETE SET NULL ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "asset_targets" ADD CONSTRAINT "FK_asset_targets_asset_id" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_trades_asset_id" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_trades_portfolio_id" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_trades_portfolio_id" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_trade_details_asset_id" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_trade_details_buy_trade_id" FOREIGN KEY ("buy_trade_id") REFERENCES "trades"("trade_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_trade_details_sell_trade_id" FOREIGN KEY ("sell_trade_id") REFERENCES "trades"("trade_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "portfolios" ADD CONSTRAINT "FK_bfdc33481d4a493b4f445a6a26d" FOREIGN KEY ("account_id") REFERENCES "accounts"("account_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "cash_flows" ADD CONSTRAINT "FK_6e33a679a64c347f651312bdb1e" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "nav_snapshots" ADD CONSTRAINT "FK_1c2ac58c931bc14e33354ea305d" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "cash_flows" ADD CONSTRAINT "FK_6e33a679a64c347f651312bdb1e" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "nav_snapshots" ADD CONSTRAINT "FK_1c2ac58c931bc14e33354ea305d" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_96e4f24a6ef0f4c4811296c1aae" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_682c37b81c863dc30f54155045a" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_682c37b81c863dc30f54155045a" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
 }

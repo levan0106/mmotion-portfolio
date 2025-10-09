@@ -72,7 +72,7 @@ export class FixEntityNamingConvention1736330999998 implements MigrationInterfac
         await queryRunner.query(`ALTER TABLE "portfolios" RENAME COLUMN "portfolio_id" TO "portfolioId"`);
         await queryRunner.query(`CREATE INDEX "IDX_ASSET_CREATED_BY" ON "assets" ("createdBy") `);
         await queryRunner.query(`CREATE INDEX "IDX_e111dca732e710c55205e9422c" ON "cash_flows" ("flow_date") `);
-        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_59e03129c502f9b0e32a9b9f3b8" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_59e03129c502f9b0e32a9b9f3b8" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trades" ADD CONSTRAINT "FK_5fd93524af719fe21ff3c579b4b" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "trade_details" ADD CONSTRAINT "FK_11a235d81b4f4ed4624ecac703a" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }

@@ -253,13 +253,13 @@ export class CreateFundManagerSnapshotTables1734567890140 implements MigrationIn
     await queryRunner.query(`
       ALTER TABLE portfolio_performance_snapshots 
       ADD CONSTRAINT fk_portfolio_performance_portfolio 
-      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolioId) ON DELETE CASCADE
+      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolio_id) ON DELETE CASCADE
     `);
 
     await queryRunner.query(`
       ALTER TABLE asset_performance_snapshots 
       ADD CONSTRAINT fk_asset_performance_portfolio 
-      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolioId) ON DELETE CASCADE
+      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolio_id) ON DELETE CASCADE
     `);
 
     await queryRunner.query(`
@@ -271,7 +271,7 @@ export class CreateFundManagerSnapshotTables1734567890140 implements MigrationIn
     await queryRunner.query(`
       ALTER TABLE asset_group_performance_snapshots 
       ADD CONSTRAINT fk_asset_group_performance_portfolio 
-      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolioId) ON DELETE CASCADE
+      FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolio_id) ON DELETE CASCADE
     `);
   }
 

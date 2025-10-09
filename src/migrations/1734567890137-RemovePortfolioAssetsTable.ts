@@ -49,7 +49,7 @@ export class RemovePortfolioAssetsTable1734567890137 implements MigrationInterfa
     await queryRunner.query(`CREATE INDEX "IDX_portfolio_assets_portfolio_asset" ON "portfolio_assets" ("portfolioId", "assetId")`);
 
     // Add foreign key constraints
-    await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_portfolio_assets_portfolio_id" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE CASCADE`);
+    await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_portfolio_assets_portfolio_id" FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE CASCADE`);
     await queryRunner.query(`ALTER TABLE "portfolio_assets" ADD CONSTRAINT "FK_portfolio_assets_asset_id" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
   }
 }

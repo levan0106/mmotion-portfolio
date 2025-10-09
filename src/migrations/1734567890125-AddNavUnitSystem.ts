@@ -23,7 +23,7 @@ export class AddNavUnitSystem1734567890125 implements MigrationInterface {
       CREATE TABLE investor_holdings (
         holding_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         account_id UUID NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
-        portfolio_id UUID NOT NULL REFERENCES portfolios(portfolioId) ON DELETE CASCADE,
+        portfolio_id UUID NOT NULL REFERENCES portfolios(portfolio_id) ON DELETE CASCADE,
         total_units DECIMAL(20,8) DEFAULT 0,
         avg_cost_per_unit DECIMAL(20,8) DEFAULT 0,
         total_investment DECIMAL(20,8) DEFAULT 0,

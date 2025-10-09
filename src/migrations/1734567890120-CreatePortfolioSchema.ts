@@ -113,7 +113,7 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         name: 'portfolios',
         columns: [
           {
-            name: 'portfolioId',
+            name: 'portfolio_id',
             type: 'uuid',
             isPrimary: true,
             generationStrategy: 'uuid',
@@ -192,12 +192,12 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         name: 'portfolio_assets',
         columns: [
           {
-            name: 'portfolioId',
+            name: 'portfolio_id',
             type: 'uuid',
             isPrimary: true,
           },
           {
-            name: 'assetId',
+            name: 'asset_id',
             type: 'uuid',
             isPrimary: true,
           },
@@ -238,13 +238,13 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            columnNames: ['portfolioId'],
+            columnNames: ['portfolio_id'],
             referencedTableName: 'portfolios',
-            referencedColumnNames: ['portfolioId'],
+            referencedColumnNames: ['portfolio_id'],
             onDelete: 'CASCADE',
           },
           {
-            columnNames: ['assetId'],
+            columnNames: ['asset_id'],
             referencedTableName: 'assets',
             referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
@@ -260,7 +260,7 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         name: 'nav_snapshots',
         columns: [
           {
-            name: 'portfolioId',
+            name: 'portfolio_id',
             type: 'uuid',
             isPrimary: true,
           },
@@ -295,9 +295,9 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            columnNames: ['portfolioId'],
+            columnNames: ['portfolio_id'],
             referencedTableName: 'portfolios',
-            referencedColumnNames: ['portfolioId'],
+            referencedColumnNames: ['portfolio_id'],
             onDelete: 'CASCADE',
           },
         ],
@@ -318,7 +318,7 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'portfolioId',
+            name: 'portfolio_id',
             type: 'uuid',
           },
           {
@@ -354,9 +354,9 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            columnNames: ['portfolioId'],
+            columnNames: ['portfolio_id'],
             referencedTableName: 'portfolios',
-            referencedColumnNames: ['portfolioId'],
+            referencedColumnNames: ['portfolio_id'],
             onDelete: 'CASCADE',
           },
         ],
@@ -372,7 +372,7 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
 
     await queryRunner.createIndex('portfolio_assets', new TableIndex({
       name: 'IDX_portfolio_assets_asset_id',
-      columnNames: ['assetId'],
+      columnNames: ['asset_id'],
     }));
 
     await queryRunner.createIndex('nav_snapshots', new TableIndex({
@@ -385,15 +385,32 @@ export class CreatePortfolioSchema1734567890120 implements MigrationInterface {
       columnNames: ['nav_date'],
     }));
 
-    await queryRunner.createIndex('cash_flows', new TableIndex({
-      name: 'IDX_cash_flows_portfolio_id',
-      columnNames: ['portfolioId'],
-    }));
+    // Check if index already exists before creating
+    try {
+      await queryRunner.createIndex('cash_flows', new TableIndex({
+        name: 'IDX_cash_flows_portfolio_id',
+        columnNames: ['portfolio_id'],
+      }));
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        console.log('Index IDX_cash_flows_portfolio_id already exists, skipping...');
+      } else {
+        throw error;
+      }
+    }
 
-    await queryRunner.createIndex('cash_flows', new TableIndex({
-      name: 'IDX_cash_flows_flow_date',
-      columnNames: ['flow_date'],
-    }));
+    try {
+      await queryRunner.createIndex('cash_flows', new TableIndex({
+        name: 'IDX_cash_flows_flow_date',
+        columnNames: ['flow_date'],
+      }));
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        console.log('Index IDX_cash_flows_flow_date already exists, skipping...');
+      } else {
+        throw error;
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

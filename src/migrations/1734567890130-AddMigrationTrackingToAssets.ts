@@ -5,8 +5,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * This migration adds a temporary column to track migration status
  * for the code to symbol field migration process.
  */
-export class AddMigrationTrackingToAssets1734567890128 implements MigrationInterface {
-  name = 'AddMigrationTrackingToAssets1734567890128';
+export class AddMigrationTrackingToAssets1734567890133 implements MigrationInterface {
+  name = 'AddMigrationTrackingToAssets1734567890133';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add migration status tracking column

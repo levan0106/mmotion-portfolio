@@ -69,7 +69,7 @@ export class CreateTradingEntities1736330999997 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "trades" 
       ADD CONSTRAINT "FK_trades_portfolio_id" 
-      FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolioId") ON DELETE CASCADE ON UPDATE NO ACTION
+      FOREIGN KEY ("portfolioId") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE ON UPDATE NO ACTION
     `);
 
     await queryRunner.query(`
