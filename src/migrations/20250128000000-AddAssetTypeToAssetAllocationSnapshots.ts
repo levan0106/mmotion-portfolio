@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddAssetTypeToAssetAllocationSnapshots1706400000000 implements MigrationInterface {
-  name = 'AddAssetTypeToAssetAllocationSnapshots1706400000000';
+export class AddAssetTypeToAssetAllocationSnapshots20250128000000 implements MigrationInterface {
+  name = 'AddAssetTypeToAssetAllocationSnapshots20250128000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if the table exists first

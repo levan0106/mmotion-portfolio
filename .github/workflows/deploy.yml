@@ -22,7 +22,7 @@ on:
         type: boolean
       deploy_frontend:
         description: 'Deploy Frontend Services'
-        required: false
+        required: true
         default: false
         type: boolean
 
@@ -34,7 +34,7 @@ env:
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || github.event.inputs.deploy_backend == null)
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_backend == 'true'
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -70,7 +70,7 @@ jobs:
 
   build-and-push-frontend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || github.event.inputs.deploy_frontend == null)
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_frontend == 'true'
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -107,7 +107,7 @@ jobs:
   deploy-backend:
     needs: build-and-push-backend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || github.event.inputs.deploy_backend == null)
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_backend == 'true'
     
     steps:
     - name: Checkout code
@@ -214,7 +214,7 @@ jobs:
   deploy-frontend:
     needs: build-and-push-frontend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || github.event.inputs.deploy_frontend == null)
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_frontend == 'true'
     
     steps:
     - name: Checkout code

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateMainAccount1704067200001 implements MigrationInterface {
+export class CreateMainAccount20250130000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if main account already exists
     const existingAccount = await queryRunner.query(

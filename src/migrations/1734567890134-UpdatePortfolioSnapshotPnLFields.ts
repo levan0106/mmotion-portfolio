@@ -1,24 +1,36 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdatePortfolioSnapshotPnLFields20250923000000 implements MigrationInterface {
-  name = 'UpdatePortfolioSnapshotPnLFields20250923000000';
+export class UpdatePortfolioSnapshotPnLFields1734567890134 implements MigrationInterface {
+  name = 'UpdatePortfolioSnapshotPnLFields1734567890134';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Rename existing columns to asset-specific names
-    await queryRunner.query(`
-      ALTER TABLE portfolio_snapshots
-      RENAME COLUMN total_pl TO total_asset_pl;
-    `);
+    // Check if columns exist before renaming
+    const table = await queryRunner.getTable('portfolio_snapshots');
+    if (!table) {
+      throw new Error('portfolio_snapshots table does not exist');
+    }
 
-    await queryRunner.query(`
-      ALTER TABLE portfolio_snapshots
-      RENAME COLUMN unrealized_pl TO unrealized_asset_pl;
-    `);
+    // Rename existing columns to asset-specific names (only if they exist)
+    if (table.columns.find(col => col.name === 'total_pl')) {
+      await queryRunner.query(`
+        ALTER TABLE portfolio_snapshots
+        RENAME COLUMN total_pl TO total_asset_pl;
+      `);
+    }
 
-    await queryRunner.query(`
-      ALTER TABLE portfolio_snapshots
-      RENAME COLUMN realized_pl TO realized_asset_pl;
-    `);
+    if (table.columns.find(col => col.name === 'unrealized_pl')) {
+      await queryRunner.query(`
+        ALTER TABLE portfolio_snapshots
+        RENAME COLUMN unrealized_pl TO unrealized_asset_pl;
+      `);
+    }
+
+    if (table.columns.find(col => col.name === 'realized_pl')) {
+      await queryRunner.query(`
+        ALTER TABLE portfolio_snapshots
+        RENAME COLUMN realized_pl TO realized_asset_pl;
+      `);
+    }
 
     // Add new portfolio P&L columns (Assets + Deposits)
     await queryRunner.query(`

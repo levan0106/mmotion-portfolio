@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddIsMainAccountToAccounts1704067200002 implements MigrationInterface {
+export class AddIsMainAccountToAccounts20250130000002 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add is_main_account column
     await queryRunner.query(`
