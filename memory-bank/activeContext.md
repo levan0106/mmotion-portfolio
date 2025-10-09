@@ -1,11 +1,11 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Memory Bank Update and System Status Review - IN PROGRESS**
-**Latest Update: Updating memory bank documentation to reflect current project state and recent changes (Current Session)**
+**Phase: Portfolio Funding Source Bug Fix - COMPLETED**
+**Latest Update: Fixed portfolio creation not saving funding source value (Current Session)**
 **Code Version: Backend v1.0.0, Frontend v1.0.0 - Production Ready**
 **AWS Deployment: Project deployed on AWS with frontend on CloudFront and backend on EC2**
-**Git Status: Modified .github/workflows/deploy.yml (deployment workflow changes)**
+**Git Status: Clean - All changes committed and pushed to master**
 - ✅ **Snapshot Date Range Implementation** (Complete date range support for bulk snapshot creation)
 - ✅ **API Timeout Optimization** (Dynamic timeout calculation based on date range size)
 - ✅ **Subscription Date Support** (Subscribe/Redeem endpoints now accept custom dates)
@@ -48,6 +48,7 @@
 - ✅ **Real-time Outstanding Units Calculation Fix** (Fixed totalOutstandingUnits to calculate real-time instead of using stale database values)
 - ✅ **NAV Per Unit Real-time Calculation Enhancement** (Improved navPerUnit calculation to update when outstanding units change significantly)
 - ✅ **lastNavDate Matching Logic** (Enhanced lastNavDate update logic to match real-time value calculations)
+- ✅ **Portfolio Funding Source Bug Fix** (Fixed backend createPortfolio method to extract and save fundingSource from DTO)
 - ✅ **Holdings Page Implementation** (Complete Holdings page with investor holdings display, summary metrics, and portfolio navigation)
 - ✅ **Project Structure Cleanup** (Removed unnecessary deployment files and optimized documentation structure)
 - ✅ **Infrastructure Cleanup** (Cleaned up CDK build artifacts and duplicate configuration files)
