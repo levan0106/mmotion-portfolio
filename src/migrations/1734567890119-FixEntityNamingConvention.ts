@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class FixEntityNamingConvention1757861450759 implements MigrationInterface {
-    name = 'FixEntityNamingConvention1757861450759'
+export class FixEntityNamingConvention1734567890119 implements MigrationInterface {
+    name = 'FixEntityNamingConvention1734567890119'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "trade_details" DROP CONSTRAINT "FK_11a235d81b4f4ed4624ecac703a"`);
