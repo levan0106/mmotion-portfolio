@@ -70,7 +70,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
     defaultValues: {
       name: initialData?.name || '',
       baseCurrency: initialData?.baseCurrency || 'VND',
-      fundingSource: initialData?.fundingSource || 'VIETCOMBANK',
+      fundingSource: initialData?.fundingSource || '',
       accountId: initialData?.accountId || accountId,
     },
   });
@@ -80,7 +80,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
       reset({
         name: initialData?.name || '',
         baseCurrency: initialData?.baseCurrency || 'VND',
-        fundingSource: initialData?.fundingSource || 'VIETCOMBANK',
+        fundingSource: initialData?.fundingSource || '',
         accountId: initialData?.accountId || accountId,
       });
     }

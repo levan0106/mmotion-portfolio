@@ -107,6 +107,7 @@ export const createMockPortfolio = (overrides: Partial<Portfolio> = {}): Portfol
   accountId: mockUUIDs.account1,
   name: 'Growth Portfolio',
   baseCurrency: 'VND',
+  fundingSource: 'Personal Savings',
   totalValue: 1500000000, // 1.5 billion VND
   cashBalance: 50000000, // 50 million VND
   unrealizedPl: 150000000, // 150 million VND profit
@@ -125,6 +126,7 @@ export const createMockPortfolio2 = (overrides: Partial<Portfolio> = {}): Portfo
   accountId: mockUUIDs.account1,
   name: 'Conservative Portfolio',
   baseCurrency: 'USD',
+  fundingSource: 'Investment Fund',
   totalValue: 50000, // 50k USD
   cashBalance: 5000, // 5k USD
   unrealizedPl: -2000, // 2k USD loss
@@ -198,6 +200,7 @@ export const createMockCashFlow = (overrides: Partial<CashFlow> = {}): CashFlow 
 export const createMockCreatePortfolioDto = (overrides: Partial<CreatePortfolioDto> = {}): CreatePortfolioDto => ({
   name: 'Test Portfolio',
   baseCurrency: 'VND',
+  fundingSource: 'Test Funding Source',
   accountId: mockUUIDs.account1,
   description: 'A test portfolio for unit testing',
   ...overrides,
