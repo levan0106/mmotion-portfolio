@@ -4,7 +4,7 @@ services:
     container_name: portfolio-backend
     restart: always
     env_file:
-      - env.example
+      - production.env
     ports:
       - "3000:3000"
     depends_on:
@@ -26,7 +26,7 @@ services:
     container_name: portfolio-postgres
     restart: always
     env_file:
-      - env.example
+      - production.env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
