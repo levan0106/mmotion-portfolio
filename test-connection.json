@@ -1,8 +1,0 @@
-{
-  "commands": [
-    "echo 'SSH connection test'",
-    "whoami",
-    "pwd",
-    "ls -la /opt/portfolio"
-  ]
-}
