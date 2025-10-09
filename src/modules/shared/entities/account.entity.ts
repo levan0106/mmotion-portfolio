@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 import { InvestorHolding } from '../../portfolio/entities/investor-holding.entity';
+import { User } from './user.entity';
 
 /**
  * Account entity representing user accounts in the system.
@@ -52,6 +55,12 @@ export class Account {
   isMainAccount: boolean;
 
   /**
+   * ID of the user who owns this account.
+   */
+  @Column({ type: 'uuid', nullable: true, name: 'user_id' })
+  userId?: string;
+
+  /**
    * Timestamp when the account was created.
    */
   @CreateDateColumn({ name: 'created_at' })
@@ -74,6 +83,13 @@ export class Account {
    */
   @OneToMany(() => InvestorHolding, (holding) => holding.account)
   investorHoldings: InvestorHolding[];
+
+  /**
+   * User who owns this account.
+   */
+  @ManyToOne(() => User, (user) => user.accounts)
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 
   // Computed properties for investor management
   /**

@@ -95,11 +95,6 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
     try {
       setLoadingPortfolioInvestors(true);
       const investors = await apiService.getFundInvestors(portfolioId);
-      console.log('DEBUG: Loaded portfolio investors:', investors);
-      console.log('DEBUG: First investor structure:', investors?.[0]);
-      console.log('DEBUG: First investor account relation:', investors?.[0]?.account);
-      console.log('DEBUG: Account name from relation:', investors?.[0]?.account?.name);
-      console.log('DEBUG: Account email from relation:', investors?.[0]?.account?.email);
       setPortfolioInvestors(investors || []);
     } catch (err) {
       console.error('Error loading portfolio investors:', err);
@@ -281,8 +276,6 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
   const getAllOptions = () => {
     // If showPortfolioInvestors is enabled and we have portfolio investors data, use it directly
     if (showPortfolioInvestors && portfolioInvestors.length > 0) {
-      console.log('DEBUG: Using portfolio investors data directly:', portfolioInvestors);
-      
       // Convert portfolio investors to Account objects
       return portfolioInvestors.map(investor => {
         const accountData = investor.account || {};
@@ -300,7 +293,6 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
           updatedAt: accountData.updatedAt || investor.updatedAt
         };
         
-        console.log('DEBUG: Converted investor to account:', account);
         return account;
       });
     }

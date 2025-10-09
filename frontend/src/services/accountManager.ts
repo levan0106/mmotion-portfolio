@@ -17,10 +17,10 @@ const DEFAULT_ACCOUNT: Account = {
 class AccountManager {
   private static instance: AccountManager;
   private accountCache: { [key: string]: Account } = {};
-  private currentAccount: Account = DEFAULT_ACCOUNT;
+  private currentAccount: Account | null = null;
   private loading = false;
   private initialized = false;
-  private listeners: Array<(account: Account) => void> = [];
+  private listeners: Array<(account: Account | null) => void> = [];
   private loadingListeners: Array<(loading: boolean) => void> = [];
   private pendingRequests: { [key: string]: Promise<Account> } = {};
 
@@ -39,8 +39,15 @@ class AccountManager {
   }
 
   // Fetch account data from API with caching
-  async fetchAccount(accountId: string): Promise<Account> {
+  async fetchAccount(accountId: string): Promise<Account | null> {
     try {
+      // Check if user is authenticated before making API calls
+      const jwtToken = localStorage.getItem('jwt_token');
+      if (!jwtToken) {
+        console.log('🔍 AccountManager: No JWT token, returning null');
+        return null;
+      }
+
       // Check cache first
       if (this.accountCache[accountId]) {
         console.log('🔍 AccountManager: Using cached account for:', accountId);
@@ -72,12 +79,12 @@ class AccountManager {
           delete this.pendingRequests[accountId];
         }
       } else {
-        console.log('🔍 AccountManager: Invalid UUID, using default account');
-        return DEFAULT_ACCOUNT;
+        console.log('🔍 AccountManager: Invalid UUID, returning null');
+        return null;
       }
     } catch (error) {
       console.error('Failed to fetch account:', error);
-      return DEFAULT_ACCOUNT;
+      return null;
     } finally {
       this.setLoading(false);
     }
@@ -100,19 +107,31 @@ class AccountManager {
       return;
     }
 
+    // Check if user is authenticated before trying to fetch accounts
+    const jwtToken = localStorage.getItem('jwt_token');
+    if (!jwtToken) {
+      console.log('🔍 AccountManager: No JWT token, setting currentAccount to null');
+      this.setCurrentAccount(null);
+      this.initialized = true;
+      return;
+    }
+
     console.log('🔍 AccountManager: Initializing account...');
     const savedAccountId = localStorage.getItem('currentAccountId');
     
     if (savedAccountId) {
       console.log('🔍 AccountManager: Found saved account ID:', savedAccountId);
       const account = await this.fetchAccount(savedAccountId);
-      this.setCurrentAccount(account);
+      if (account) {
+        this.setCurrentAccount(account);
+      } else {
+        console.log('🔍 AccountManager: Failed to fetch saved account, fetching user accounts');
+        await this.loadUserMainAccount();
+      }
     } else {
-      // No saved account, fetch main account from API
-      console.log('🔍 AccountManager: No saved account, fetching main account');
-      const account = await this.fetchAccount(MAIN_ACCOUNT_ID);
-      this.setCurrentAccount(account);
-      localStorage.setItem('currentAccountId', MAIN_ACCOUNT_ID);
+      // No saved account, fetch user's main account
+      console.log('🔍 AccountManager: No saved account, fetching user main account');
+      await this.loadUserMainAccount();
     }
     
     this.initialized = true;
@@ -125,12 +144,17 @@ class AccountManager {
     localStorage.setItem('currentAccountId', accountId);
     const account = await this.fetchAccount(accountId);
     console.log('🔍 AccountManager: Fetched account:', account);
-    this.setCurrentAccount(account);
+    if (account) {
+      this.setCurrentAccount(account);
+    } else {
+      console.log('🔍 AccountManager: Failed to fetch account, using default');
+      this.setCurrentAccount(DEFAULT_ACCOUNT);
+    }
     console.log('🔍 AccountManager: Current account after switch:', this.currentAccount);
   }
 
   // Get current account
-  getCurrentAccount(): Account {
+  getCurrentAccount(): Account | null {
     return this.currentAccount;
   }
 
@@ -155,7 +179,7 @@ class AccountManager {
   }
 
   // Set current account and notify listeners
-  private setCurrentAccount(account: Account): void {
+  private setCurrentAccount(account: Account | null): void {
     console.log('🔍 AccountManager: Setting current account:', account);
     this.currentAccount = account;
     this.notifyListeners(account);
@@ -168,7 +192,7 @@ class AccountManager {
   }
 
   // Add account change listener
-  addAccountListener(listener: (account: Account) => void): () => void {
+  addAccountListener(listener: (account: Account | null) => void): () => void {
     this.listeners.push(listener);
     return () => {
       this.listeners = this.listeners.filter(l => l !== listener);
@@ -184,7 +208,7 @@ class AccountManager {
   }
 
   // Notify account listeners
-  private notifyListeners(account: Account): void {
+  private notifyListeners(account: Account | null): void {
     this.listeners.forEach(listener => listener(account));
   }
 
@@ -193,14 +217,36 @@ class AccountManager {
     this.loadingListeners.forEach(listener => listener(loading));
   }
 
+  // Load user's main account from API
+  private async loadUserMainAccount(): Promise<void> {
+    try {
+      const accounts = await apiService.getAccounts();
+      
+      if (accounts && accounts.length > 0) {
+        // Find main account (isMainAccount: true) or use first account
+        const mainAccount = accounts.find((acc: Account) => acc.isMainAccount) || accounts[0];
+        
+        this.setCurrentAccount(mainAccount);
+        localStorage.setItem('currentAccountId', mainAccount.accountId);
+      } else {
+        this.setCurrentAccount(DEFAULT_ACCOUNT);
+      }
+    } catch (error) {
+      console.error('Failed to load user accounts:', error);
+      this.setCurrentAccount(DEFAULT_ACCOUNT);
+    }
+  }
+
   // Force reload main account
   async reloadMainAccount(): Promise<void> {
     localStorage.removeItem('currentAccountId');
-    // Clear cache for main account
-    delete this.accountCache[MAIN_ACCOUNT_ID];
-    const account = await this.fetchAccount(MAIN_ACCOUNT_ID);
-    this.setCurrentAccount(account);
-    localStorage.setItem('currentAccountId', MAIN_ACCOUNT_ID);
+    // Clear all cached accounts
+    this.accountCache = {};
+    try {
+      await this.loadUserMainAccount();
+    } catch (error) {
+      console.error('Error in loadUserMainAccount:', error);
+    }
   }
 }
 

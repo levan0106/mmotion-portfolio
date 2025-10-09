@@ -39,6 +39,9 @@ import {
   Logout as LogoutIcon,
   AccountBalanceWallet as DepositIcon,
   Wallet as HoldingsIcon,
+  Warning as WarningIcon,
+  Edit as EditIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AccountSwitcher } from '../Account';
@@ -120,7 +123,7 @@ const menuItems = [
     path: '/transactions',
     description: 'View transaction history',
     badge: 'under review'
-  },
+  }
 ];
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
@@ -129,7 +132,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { currentAccount, loading: accountLoading } = useAccount();
+  const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -335,59 +338,208 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </List>
       </Box>
 
-      {/* Professional Footer */}
+      {/* User Info - Bottom Left */}
       <Box sx={{ 
-        p: 2, 
-        borderTop: 1, 
-        borderColor: 'divider',
-        background: alpha(theme.palette.background.paper, 0.5),
-        backdropFilter: 'blur(10px)',
+        mt: 'auto', // Push to bottom
+        p: 2.5, 
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+        backdropFilter: 'blur(12px)',
+        borderRadius: '12px 0 0 0',
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        {/* User Profile Section */}
+        <Box 
+          onClick={() => {
+            if (currentUser) {
+              navigate('/profile');
+            }
+          }}
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            mb: 2.5,
+            p: 1.5,
+            borderRadius: 2,
+            background: alpha(theme.palette.background.paper, 0.3),
+            transition: 'all 0.2s ease-in-out',
+            position: 'relative',
+            cursor: currentUser ? 'pointer' : 'default',
+            '&:hover': {
+              background: alpha(theme.palette.background.paper, 0.5),
+              transform: 'translateY(-1px)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
+            }
+          }}
+        >
+          {/* Profile Completion Indicator */}
+          {currentUser && !currentUser.isProfileComplete && !currentUser.isPasswordSet && (
+            <Box sx={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              zIndex: 1,
+            }}>
+              <Tooltip title="Profile incomplete - Click to update" placement="top">
+                <Chip
+                  icon={<WarningIcon sx={{ fontSize: 14 }} />}
+                  label="!"
+                  size="small"
+                  color="warning"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(1)', opacity: 1 },
+                      '50%': { transform: 'scale(1.1)', opacity: 0.8 },
+                      '100%': { transform: 'scale(1)', opacity: 1 },
+                    },
+                    '&:hover': {
+                      animation: 'none',
+                      transform: 'scale(1.1)',
+                    }
+                  }}
+                />
+              </Tooltip>
+            </Box>
+          )}
+
           <Avatar sx={{ 
-            width: 36, 
-            height: 36, 
+            width: 40, 
+            height: 40, 
             mr: 2,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+            border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
           }}>
-            <AccountIcon sx={{ color: 'primary.main' }} />
+            {currentUser?.avatarText ? (
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                {currentUser.avatarText}
+              </Typography>
+            ) : (
+              <AccountIcon sx={{ color: 'primary.main' }} />
+            )}
           </Avatar>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.primary' }}>
-              Financial Administrator
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 500, 
+                  color: 'text.primary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {currentUser?.fullName || currentUser?.username || 'User'}
+              </Typography>
+              {currentUser?.isProfileComplete ? (
+                <Tooltip title="Profile complete" placement="top">
+                  <CheckCircleIcon 
+                    sx={{ 
+                      fontSize: 16, 
+                      color: 'success.main',
+                      opacity: 0.8,
+                    }} 
+                  />
+                </Tooltip>
+              ) : currentUser?.isPasswordSet ? (
+                <Tooltip title="Password set, profile optional" placement="top">
+                  <CheckCircleIcon 
+                    sx={{ 
+                      fontSize: 16, 
+                      color: 'info.main',
+                      opacity: 0.8,
+                    }} 
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Profile needs completion" placement="top">
+                  <EditIcon 
+                    sx={{ 
+                      fontSize: 16, 
+                      color: 'warning.main',
+                      opacity: 0.8,
+                    }} 
+                  />
+                </Tooltip>
+              )}
+            </Box>
+            <Typography 
+              variant="caption" 
+              color="text.secondary" 
+              sx={{ 
+                fontWeight: 400,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {currentUser?.email || currentUser?.username || 'No email'}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 300 }}>
-              admin@financialsystem.com
-            </Typography>
+            {currentUser && !currentUser.isProfileComplete && (
+              <Typography 
+                variant="caption" 
+                color="warning.main" 
+                sx={{ 
+                  fontWeight: 500,
+                  display: 'block',
+                  mt: 0.5,
+                  fontSize: '0.7rem',
+                }}
+              >
+                Complete your profile
+              </Typography>
+            )}
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="System Settings">
+
+        {/* Action Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 1.5,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <Tooltip title="Settings" placement="top">
             <IconButton 
               size="small" 
               sx={{ 
-                color: 'primary.main',
+                color: 'text.secondary',
+                background: alpha(theme.palette.background.paper, 0.3),
                 '&:hover': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  transform: 'scale(1.1)',
+                  color: 'primary.main',
+                  background: alpha(theme.palette.primary.main, 0.1),
+                  transform: 'scale(1.05)',
                 },
                 transition: 'all 0.2s ease-in-out',
+                borderRadius: 2,
+                width: 36,
+                height: 36,
               }}
             >
               <SettingsIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Sign Out">
+          
+          <Tooltip title="Sign Out" placement="top">
             <IconButton 
               size="small" 
+              onClick={logout}
               sx={{ 
                 color: 'error.main',
+                background: alpha(theme.palette.error.main, 0.1),
                 '&:hover': {
-                  bgcolor: alpha(theme.palette.error.main, 0.1),
-                  transform: 'scale(1.1)',
+                  background: alpha(theme.palette.error.main, 0.15),
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.2)}`,
                 },
                 transition: 'all 0.2s ease-in-out',
+                borderRadius: 2,
+                width: 36,
+                height: 36,
               }}
             >
               <LogoutIcon fontSize="small" />
@@ -506,6 +658,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </Box>
             </Box>
 
+
             <Tooltip title="Notifications">
               <IconButton color="inherit">
                 <Badge badgeContent={3} color="error">
@@ -513,6 +666,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 </Badge>
               </IconButton>
             </Tooltip>
+
             
             <AccountSwitcher />
           </Box>

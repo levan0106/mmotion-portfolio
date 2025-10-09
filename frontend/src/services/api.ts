@@ -2,7 +2,7 @@
  * API service for Portfolio Management System
  */
 
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { logApiCall } from '../utils/apiLogger';
 import {
   Portfolio,
@@ -36,11 +36,10 @@ class ApiService {
       },
     });
 
-    // Request interceptor
+    // Add request interceptor to include JWT token
     this.api.interceptors.request.use(
       (config) => {
-        // Add auth token if available
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('jwt_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -51,15 +50,24 @@ class ApiService {
       }
     );
 
-    // Response interceptor
+    // Add response interceptor to handle token expiration
     this.api.interceptors.response.use(
-      (response: AxiosResponse) => {
+      (response) => {
         return response;
       },
       (error) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized access
-          localStorage.removeItem('auth_token');
+          // Don't redirect for login/register endpoints - let them handle the error
+          const url = error.config?.url || '';
+          if (url.includes('/auth/login-or-register') || url.includes('/auth/check-user')) {
+            return Promise.reject(error);
+          }
+          
+          // For other endpoints, redirect to login
+          localStorage.removeItem('jwt_token');
+          localStorage.removeItem('user_session');
+          localStorage.removeItem('current_account');
+          localStorage.removeItem('isAuthenticated');
           window.location.href = '/login';
         }
         return Promise.reject(error);

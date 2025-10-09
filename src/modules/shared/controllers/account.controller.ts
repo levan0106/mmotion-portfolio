@@ -9,18 +9,24 @@ import {
   ParseUUIDPipe,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AccountService } from '../services/account.service';
 import { CreateAccountDto } from '../dto/create-account.dto';
 import { UpdateAccountDto } from '../dto/update-account.dto';
 import { Account } from '../entities/account.entity';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { CurrentUser } from '../decorators/user.decorator';
+import { User } from '../entities/user.entity';
 
 /**
  * Controller for Account CRUD operations.
  */
 @ApiTags('Accounts')
 @Controller('api/v1/accounts')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class AccountController {
   constructor(
     private readonly accountService: AccountService,
@@ -50,20 +56,20 @@ export class AccountController {
   }
 
   /**
-   * Get all accounts.
+   * Get all accounts for the current user.
    */
   @Get()
   @ApiOperation({ 
-    summary: 'Get all accounts',
-    description: 'Retrieves all user accounts in the system'
+    summary: 'Get user accounts',
+    description: 'Retrieves all accounts belonging to the authenticated user'
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'List of accounts retrieved successfully',
+    description: 'List of user accounts retrieved successfully',
     type: [Account]
   })
-  async getAllAccounts(): Promise<Account[]> {
-    return await this.accountService.getAllAccounts();
+  async getAllAccounts(@CurrentUser() user: User): Promise<Account[]> {
+    return await this.accountService.getAccountsByUserId(user.userId);
   }
 
   /**
@@ -88,8 +94,11 @@ export class AccountController {
     status: 404, 
     description: 'Account not found'
   })
-  async getAccountById(@Param('id', ParseUUIDPipe) accountId: string): Promise<Account> {
-    return await this.accountService.getAccountById(accountId);
+  async getAccountById(
+    @Param('id', ParseUUIDPipe) accountId: string,
+    @CurrentUser() user: User
+  ): Promise<Account> {
+    return await this.accountService.getAccountByIdForUser(accountId, user.userId);
   }
 
   /**
@@ -122,8 +131,9 @@ export class AccountController {
   async updateAccount(
     @Param('id', ParseUUIDPipe) accountId: string,
     @Body() updateAccountDto: UpdateAccountDto,
+    @CurrentUser() user: User
   ): Promise<Account> {
-    return await this.accountService.updateAccount(accountId, updateAccountDto);
+    return await this.accountService.updateAccountForUser(accountId, updateAccountDto, user.userId);
   }
 
   /**
@@ -152,8 +162,11 @@ export class AccountController {
     status: 404, 
     description: 'Account not found'
   })
-  async deleteAccount(@Param('id', ParseUUIDPipe) accountId: string): Promise<void> {
-    await this.accountService.deleteAccount(accountId);
+  async deleteAccount(
+    @Param('id', ParseUUIDPipe) accountId: string,
+    @CurrentUser() user: User
+  ): Promise<void> {
+    await this.accountService.deleteAccountForUser(accountId, user.userId);
   }
 
   /**
@@ -186,13 +199,16 @@ export class AccountController {
     status: 404, 
     description: 'Account not found'
   })
-  async getAccountStats(@Param('id', ParseUUIDPipe) accountId: string): Promise<{
+  async getAccountStats(
+    @Param('id', ParseUUIDPipe) accountId: string,
+    @CurrentUser() user: User
+  ): Promise<{
     totalPortfolios: number;
     totalValue: number;
     totalInvestors: number;
     isInvestor: boolean;
   }> {
-    return await this.accountService.getAccountStats(accountId);
+    return await this.accountService.getAccountStatsForUser(accountId, user.userId);
   }
 }
 

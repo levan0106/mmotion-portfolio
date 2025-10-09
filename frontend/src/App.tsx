@@ -24,11 +24,10 @@ import Transactions from './pages/Transactions';
 import Assets from './pages/Assets';
 import Report from './pages/Report';
 import Login from './pages/Login';
+import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
-import { ApiCallMonitor } from './components/Debug/ApiCallMonitor';
-import { AccountContextDebug } from './components/Debug/AccountContextDebug';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -42,10 +41,7 @@ const queryClient = new QueryClient({
 });
 
 const AppContent: React.FC = () => {
-  const { loading } = useAccount();
-  
-  // Check if user is authenticated (has logged in)
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const { loading, isAuthenticated } = useAccount();
   
   // Show loading state while fetching account data
   if (loading) {
@@ -86,6 +82,7 @@ const AppContent: React.FC = () => {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
           <Route path="/reports" element={<Report />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -113,9 +110,7 @@ const App: React.FC = () => {
           <Router>
             <AppContent />
           </Router>
-          <AccountContextDebug />
         </AccountProvider>
-        <ApiCallMonitor />
         <Toaster
           position="top-right"
           toastOptions={{
