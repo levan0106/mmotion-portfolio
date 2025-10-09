@@ -29,7 +29,7 @@ interface CreateAccountModalProps {
 
 interface CreateAccountFormData {
   name: string;
-  email: string;
+  email?: string;
   baseCurrency: string;
   isInvestor: boolean;
 }
@@ -73,7 +73,15 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     setError(null);
 
     try {
-      const response = await apiService.api.post('/api/v1/accounts', formData);
+      // Prepare data - only include email if it's not empty
+      const submitData = {
+        name: formData.name,
+        baseCurrency: formData.baseCurrency,
+        isInvestor: formData.isInvestor,
+        ...(formData.email && formData.email.trim() !== '' && { email: formData.email.trim() })
+      };
+
+      const response = await apiService.api.post('/api/v1/accounts', submitData);
       const newAccount: Account = {
         id: response.data.accountId,
         accountId: response.data.accountId,
@@ -175,14 +183,13 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
 
           <TextField
             fullWidth
-            label="Email Address"
+            label="Email Address (Optional)"
             type="email"
             value={formData.email}
             onChange={handleInputChange('email')}
             margin="normal"
-            required
             disabled={loading}
-            helperText="This will be used for account identification"
+            helperText="Optional: Enter email address for account identification"
           />
 
           <FormControl fullWidth margin="normal" required>
@@ -229,7 +236,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading || !formData.name || !formData.email}
+          disabled={loading || !formData.name}
           startIcon={loading && <CircularProgress size={16} />}
         >
           {loading ? 'Creating...' : 'Create Account'}

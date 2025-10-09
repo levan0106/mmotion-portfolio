@@ -19,27 +19,21 @@ export class AccountService {
   /**
    * Create a new account.
    * @param createAccountDto - Account creation data
+   * @param userId - User ID (optional, for backward compatibility)
    * @returns Promise<Account>
    */
-  async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
+  async createAccount(createAccountDto: CreateAccountDto, userId?: string): Promise<Account> {
     const { name, email, baseCurrency = 'VND', isInvestor = false } = createAccountDto;
 
-    // Check if account with same email already exists
-    const existingAccount = await this.accountRepository.findOne({
-      where: { email },
-    });
-
-    if (existingAccount) {
-      throw new BadRequestException(
-        `Account with email "${email}" already exists`,
-      );
-    }
+    // Email is optional and can be shared across multiple accounts
+    // No need to check for email uniqueness
 
     const account = this.accountRepository.create({
       name,
-      email,
+      email, // Can be null/undefined
       baseCurrency,
       isInvestor,
+      userId, // Assign to the current user if provided
     });
 
     return await this.accountRepository.save(account);
@@ -113,18 +107,8 @@ export class AccountService {
   async updateAccount(accountId: string, updateAccountDto: UpdateAccountDto): Promise<Account> {
     const account = await this.getAccountById(accountId);
 
-    // Check if email is being changed and if it already exists
-    if (updateAccountDto.email && updateAccountDto.email !== account.email) {
-      const existingAccount = await this.accountRepository.findOne({
-        where: { email: updateAccountDto.email },
-      });
-
-      if (existingAccount) {
-        throw new BadRequestException(
-          `Account with email "${updateAccountDto.email}" already exists`,
-        );
-      }
-    }
+    // Email can be shared across multiple accounts
+    // No need to check for email uniqueness
 
     Object.assign(account, updateAccountDto);
     return await this.accountRepository.save(account);
@@ -140,18 +124,8 @@ export class AccountService {
   async updateAccountForUser(accountId: string, updateAccountDto: UpdateAccountDto, userId: string): Promise<Account> {
     const account = await this.getAccountByIdForUser(accountId, userId);
 
-    // Check if email is being changed and if it already exists
-    if (updateAccountDto.email && updateAccountDto.email !== account.email) {
-      const existingAccount = await this.accountRepository.findOne({
-        where: { email: updateAccountDto.email },
-      });
-
-      if (existingAccount) {
-        throw new BadRequestException(
-          `Account with email "${updateAccountDto.email}" already exists`,
-        );
-      }
-    }
+    // Email can be shared across multiple accounts
+    // No need to check for email uniqueness
 
     Object.assign(account, updateAccountDto);
     return await this.accountRepository.save(account);

@@ -20,14 +20,16 @@ export class CreateAccountDto {
   name: string;
 
   /**
-   * Account holder's email address.
+   * Account holder's email address (optional).
    */
   @ApiProperty({
-    description: 'Account holder\'s email address',
+    description: 'Account holder\'s email address (optional)',
     example: 'john.doe@example.com',
+    required: false,
   })
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
   /**
    * Base currency for the account.

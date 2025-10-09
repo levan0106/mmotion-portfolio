@@ -51,8 +51,11 @@ export class AccountController {
     status: 400, 
     description: 'Bad request - invalid data or email already exists'
   })
-  async createAccount(@Body() createAccountDto: CreateAccountDto): Promise<Account> {
-    return await this.accountService.createAccount(createAccountDto);
+  async createAccount(
+    @Body() createAccountDto: CreateAccountDto,
+    @CurrentUser() user: User
+  ): Promise<Account> {
+    return await this.accountService.createAccount(createAccountDto, user.userId);
   }
 
   /**
