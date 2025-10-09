@@ -5,8 +5,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * This migration copies code values to symbol field for assets that have code but no symbol.
  * It also updates the migration status to track the migration process.
  */
-export class MigrateCodeToSymbol20250915090001 implements MigrationInterface {
-  name = 'MigrateCodeToSymbol20250915090001';
+export class MigrateCodeToSymbol1734567890130 implements MigrationInterface {
+  name = 'MigrateCodeToSymbol1734567890130';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 1: Migrate assets with code field only to symbol field

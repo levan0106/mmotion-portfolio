@@ -5,8 +5,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * This migration handles cases where multiple assets have the same symbol
  * within the same user account by adding numeric suffixes.
  */
-export class ResolveSymbolConflicts20250915090002 implements MigrationInterface {
-  name = 'ResolveSymbolConflicts20250915090002';
+export class ResolveSymbolConflicts1734567890131 implements MigrationInterface {
+  name = 'ResolveSymbolConflicts1734567890131';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Find and resolve duplicate symbols per user
