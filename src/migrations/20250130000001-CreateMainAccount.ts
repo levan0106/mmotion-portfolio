@@ -2,6 +2,13 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateMainAccount20250130000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if accounts table exists
+    const tableExists = await queryRunner.hasTable('accounts');
+    if (!tableExists) {
+      console.log('Accounts table does not exist, skipping main account creation');
+      return;
+    }
+
     // Check if main account already exists
     const existingAccount = await queryRunner.query(
       `SELECT account_id FROM accounts WHERE account_id = '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5'`

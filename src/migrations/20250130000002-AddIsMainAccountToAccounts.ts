@@ -2,6 +2,13 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddIsMainAccountToAccounts20250130000002 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if accounts table exists
+    const tableExists = await queryRunner.hasTable('accounts');
+    if (!tableExists) {
+      console.log('Accounts table does not exist, skipping is_main_account column addition');
+      return;
+    }
+
     // Add is_main_account column
     await queryRunner.query(`
       ALTER TABLE accounts 

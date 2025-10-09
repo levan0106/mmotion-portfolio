@@ -23,18 +23,21 @@ on:
       deploy_frontend:
         description: 'Deploy Frontend Services'
         required: true
-        default: false
+        default: true
         type: boolean
 
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY_BACKEND: portfolio-backend
   ECR_REPOSITORY_FRONTEND: portfolio-frontend
+  # Default deployment settings for push events
+  DEFAULT_DEPLOY_BACKEND: true
+  DEFAULT_DEPLOY_FRONTEND: false
 
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_backend == 'true'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND == 'true'))
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -70,7 +73,7 @@ jobs:
 
   build-and-push-frontend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_frontend == 'true'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND == 'true'))
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -107,7 +110,7 @@ jobs:
   deploy-backend:
     needs: build-and-push-backend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_backend == 'true'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND == 'true'))
     
     steps:
     - name: Checkout code
@@ -214,7 +217,7 @@ jobs:
   deploy-frontend:
     needs: build-and-push-frontend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event.inputs.deploy_frontend == 'true'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND == 'true'))
     
     steps:
     - name: Checkout code
