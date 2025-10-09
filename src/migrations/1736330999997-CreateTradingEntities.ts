@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTradingEntities1736331000000 implements MigrationInterface {
-  name = 'CreateTradingEntities1736331000000';
+export class CreateTradingEntities1736330999997 implements MigrationInterface {
+  name = 'CreateTradingEntities1736330999997';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create trades table
