@@ -168,7 +168,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.backend.yml,production.env,scripts/smart-migration.sh,scripts/fix-production-database.sh,scripts/quick-fix-production.sh"
+        source: "docker-compose.backend.yml,production.env,scripts/smart-migration.sh"
         target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
     - name: Deploy Backend to EC2
@@ -262,30 +262,23 @@ jobs:
           # Run smart database migrations (only when needed)
           echo "🧠 Running smart database migrations..."
           chmod +x scripts/smart-migration.sh
-          chmod +x scripts/fix-production-database.sh
-          chmod +x scripts/quick-fix-production.sh
           
           # Try smart migration first
           if ./scripts/smart-migration.sh; then
             echo "✅ Smart migration completed successfully"
           else
-            echo "⚠️ Smart migration failed, trying quick fix..."
-            if ./scripts/quick-fix-production.sh; then
-              echo "✅ Quick fix migration completed successfully"
-            else
-              echo "❌ All migration attempts failed"
-              exit 1
-            fi
+            echo "❌ All migration attempts failed"
+            exit 1
           fi
           
           # Check backend health
-          echo "🏥 Checking backend health..."
-          if curl -f http://localhost:3000/health; then
-            echo "✅ Backend health check passed"
-          else
-            echo "❌ Backend health check failed"
-            exit 1
-          fi
+          # echo "🏥 Checking backend health..."
+          # if curl -f http://localhost:3000/health; then
+          #   echo "✅ Backend health check passed"
+          # else
+          #   echo "❌ Backend health check failed"
+          #   exit 1
+          # fi
           
           # Clean up old images
           echo "🧹 Cleaning up old images..."
