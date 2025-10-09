@@ -58,14 +58,33 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        set -e  # Exit on any error
+        
         # Build backend image
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG .
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest .
+        echo "🔨 Building backend image..."
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG . || {
+          echo "❌ Backend image build failed"
+          exit 1
+        }
+        
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest . || {
+          echo "❌ Backend latest image build failed"
+          exit 1
+        }
         
         # Push backend images
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+        echo "📤 Pushing backend images..."
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG || {
+          echo "❌ Backend image push failed"
+          exit 1
+        }
         
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest || {
+          echo "❌ Backend latest image push failed"
+          exit 1
+        }
+        
+        echo "✅ Backend images built and pushed successfully"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   build-and-push-frontend:
@@ -94,14 +113,33 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        set -e  # Exit on any error
+        
         # Build frontend image
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG ./frontend
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest ./frontend
+        echo "🔨 Building frontend image..."
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG ./frontend || {
+          echo "❌ Frontend image build failed"
+          exit 1
+        }
+        
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest ./frontend || {
+          echo "❌ Frontend latest image build failed"
+          exit 1
+        }
         
         # Push frontend images
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+        echo "📤 Pushing frontend images..."
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG || {
+          echo "❌ Frontend image push failed"
+          exit 1
+        }
         
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest || {
+          echo "❌ Frontend latest image push failed"
+          exit 1
+        }
+        
+        echo "✅ Frontend images built and pushed successfully"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   deploy-backend:
@@ -140,6 +178,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          set -e  # Exit on any error
+          
           # Update environment variables
           export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
           export ECR_REPOSITORY_BACKEND=${{ env.ECR_REPOSITORY_BACKEND }}
@@ -147,13 +187,18 @@ jobs:
           
           # Test ECR access first
           echo "🔐 Testing ECR access..."
-          aws sts get-caller-identity
+          aws sts get-caller-identity || {
+            echo "❌ AWS credentials test failed"
+            exit 1
+          }
           
           # Login to ECR with retry
           echo "🔑 Logging into ECR..."
+          ECR_LOGIN_SUCCESS=false
           for i in {1..3}; do
             if aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; then
               echo "✅ ECR login successful"
+              ECR_LOGIN_SUCCESS=true
               break
             else
               echo "❌ ECR login attempt $i failed, retrying..."
@@ -161,17 +206,29 @@ jobs:
             fi
           done
           
+          if [ "$ECR_LOGIN_SUCCESS" = false ]; then
+            echo "❌ ECR login failed after 3 attempts"
+            exit 1
+          fi
+          
           # Pull latest backend image with retry
           echo "📥 Pulling backend image..."
+          IMAGE_PULL_SUCCESS=false
           for i in {1..3}; do
             if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest; then
               echo "✅ Backend image pulled successfully"
+              IMAGE_PULL_SUCCESS=true
               break
             else
               echo "❌ Backend image pull attempt $i failed, retrying..."
               sleep 10
             fi
           done
+          
+          if [ "$IMAGE_PULL_SUCCESS" = false ]; then
+            echo "❌ Backend image pull failed after 3 attempts"
+            exit 1
+          fi
           
           # Ensure project directory exists
           echo "📁 Setting up project directory..."
@@ -180,17 +237,23 @@ jobs:
           
           # Copy production environment file
           if [ ! -f .env ]; then
-            cp production.env .env
+            cp production.env .env || {
+              echo "❌ Failed to copy production.env to .env"
+              exit 1
+            }
             echo "📝 Created .env file from production.env"
           fi
           
           # Stop existing backend containers
           echo "🛑 Stopping existing backend containers..."
-          docker-compose -f docker-compose.backend.yml down || true
+          docker-compose -f docker-compose.backend.yml down || echo "⚠️ No existing containers to stop"
           
           # Start backend services
           echo "🚀 Starting backend services..."
-          docker-compose -f docker-compose.backend.yml up -d
+          docker-compose -f docker-compose.backend.yml up -d || {
+            echo "❌ Failed to start backend services"
+            exit 1
+          }
           
           # Wait for backend to be healthy
           echo "⏳ Waiting for backend to be healthy..."
@@ -201,15 +264,34 @@ jobs:
           chmod +x scripts/smart-migration.sh
           chmod +x scripts/fix-production-database.sh
           chmod +x scripts/quick-fix-production.sh
-          ./scripts/smart-migration.sh || echo "Smart migration failed, trying quick fix..." && ./scripts/quick-fix-production.sh || echo "All migration attempts failed, but continuing deployment..."
+          
+          # Try smart migration first
+          if ./scripts/smart-migration.sh; then
+            echo "✅ Smart migration completed successfully"
+          else
+            echo "⚠️ Smart migration failed, trying quick fix..."
+            if ./scripts/quick-fix-production.sh; then
+              echo "✅ Quick fix migration completed successfully"
+            else
+              echo "❌ All migration attempts failed"
+              exit 1
+            fi
+          fi
           
           # Check backend health
           echo "🏥 Checking backend health..."
-          curl -f http://localhost:3000/health || echo "Backend health check failed"
+          if curl -f http://localhost:3000/health; then
+            echo "✅ Backend health check passed"
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
           
           # Clean up old images
           echo "🧹 Cleaning up old images..."
-          docker image prune -f
+          docker image prune -f || echo "⚠️ Image cleanup failed, but continuing..."
+          
+          echo "✅ Backend deployment completed successfully"
 
   deploy-frontend:
     needs: build-and-push-frontend
@@ -247,6 +329,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          set -e  # Exit on any error
+          
           # Update environment variables
           export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
           export ECR_REPOSITORY_FRONTEND=${{ env.ECR_REPOSITORY_FRONTEND }}
@@ -254,13 +338,18 @@ jobs:
           
           # Test ECR access first
           echo "🔐 Testing ECR access..."
-          aws sts get-caller-identity
+          aws sts get-caller-identity || {
+            echo "❌ AWS credentials test failed"
+            exit 1
+          }
           
           # Login to ECR with retry
           echo "🔑 Logging into ECR..."
+          ECR_LOGIN_SUCCESS=false
           for i in {1..3}; do
             if aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; then
               echo "✅ ECR login successful"
+              ECR_LOGIN_SUCCESS=true
               break
             else
               echo "❌ ECR login attempt $i failed, retrying..."
@@ -268,17 +357,29 @@ jobs:
             fi
           done
           
+          if [ "$ECR_LOGIN_SUCCESS" = false ]; then
+            echo "❌ ECR login failed after 3 attempts"
+            exit 1
+          fi
+          
           # Pull latest frontend image with retry
           echo "📥 Pulling frontend image..."
+          IMAGE_PULL_SUCCESS=false
           for i in {1..3}; do
             if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest; then
               echo "✅ Frontend image pulled successfully"
+              IMAGE_PULL_SUCCESS=true
               break
             else
               echo "❌ Frontend image pull attempt $i failed, retrying..."
               sleep 10
             fi
           done
+          
+          if [ "$IMAGE_PULL_SUCCESS" = false ]; then
+            echo "❌ Frontend image pull failed after 3 attempts"
+            exit 1
+          fi
           
           # Ensure project directory exists
           echo "📁 Setting up project directory..."
@@ -287,11 +388,14 @@ jobs:
           
           # Stop existing frontend containers
           echo "🛑 Stopping existing frontend containers..."
-          docker-compose -f docker-compose.frontend.yml down || true
+          docker-compose -f docker-compose.frontend.yml down || echo "⚠️ No existing containers to stop"
           
           # Start frontend service
           echo "🌐 Starting frontend service..."
-          docker-compose -f docker-compose.frontend.yml up -d
+          docker-compose -f docker-compose.frontend.yml up -d || {
+            echo "❌ Failed to start frontend service"
+            exit 1
+          }
           
           # Wait for frontend to be healthy
           echo "⏳ Waiting for frontend to be healthy..."
@@ -299,11 +403,18 @@ jobs:
           
           # Check frontend health
           echo "🏥 Checking frontend health..."
-          curl -f http://localhost || echo "Frontend health check failed"
+          if curl -f http://localhost; then
+            echo "✅ Frontend health check passed"
+          else
+            echo "❌ Frontend health check failed"
+            exit 1
+          fi
           
           # Clean up old images
           echo "🧹 Cleaning up old images..."
-          docker image prune -f
+          docker image prune -f || echo "⚠️ Image cleanup failed, but continuing..."
+          
+          echo "✅ Frontend deployment completed successfully"
 
   health-check:
     needs: [deploy-backend, deploy-frontend]
@@ -313,5 +424,27 @@ jobs:
     steps:
     - name: Health Check
       run: |
+        set -e  # Exit on any error
+        
+        echo "🏥 Starting health check..."
         sleep 30
-        curl -f http://${{ secrets.EC2_HOST }}/health || echo "Health check failed"
+        
+        # Check backend health
+        echo "🔍 Checking backend health..."
+        if curl -f http://${{ secrets.EC2_HOST }}:3000/health; then
+          echo "✅ Backend health check passed"
+        else
+          echo "❌ Backend health check failed"
+          exit 1
+        fi
+        
+        # Check frontend health
+        echo "🔍 Checking frontend health..."
+        if curl -f http://${{ secrets.EC2_HOST }}; then
+          echo "✅ Frontend health check passed"
+        else
+          echo "❌ Frontend health check failed"
+          exit 1
+        fi
+        
+        echo "✅ All health checks passed successfully"
