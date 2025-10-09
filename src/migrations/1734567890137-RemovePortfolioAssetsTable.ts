@@ -4,8 +4,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Migration to remove portfolio_assets table.
  * Portfolio is now linked to Assets through Trades only.
  */
-export class RemovePortfolioAssetsTable20250914080000 implements MigrationInterface {
-  name = 'RemovePortfolioAssetsTable20250914080000';
+export class RemovePortfolioAssetsTable1734567890137 implements MigrationInterface {
+  name = 'RemovePortfolioAssetsTable1734567890137';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Drop foreign key constraints first

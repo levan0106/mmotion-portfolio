@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddAssetAndPortfolioMetricsFields20250923020000 implements MigrationInterface {
-  name = 'AddAssetAndPortfolioMetricsFields20250923020000';
+export class AddAssetAndPortfolioMetricsFields1734567890136 implements MigrationInterface {
+  name = 'AddAssetAndPortfolioMetricsFields1734567890136';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add Asset Performance Metrics (Assets Only)

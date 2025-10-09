@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddPortfolioValueAndPnLFields20250922060000 implements MigrationInterface {
-  name = 'AddPortfolioValueAndPnLFields20250922060000';
+export class AddPortfolioValueAndPnLFields1734567890132 implements MigrationInterface {
+  name = 'AddPortfolioValueAndPnLFields1734567890132';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add new value fields

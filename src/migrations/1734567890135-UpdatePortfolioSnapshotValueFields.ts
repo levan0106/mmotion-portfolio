@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdatePortfolioSnapshotValueFields20250923010000 implements MigrationInterface {
-  name = 'UpdatePortfolioSnapshotValueFields20250923010000';
+export class UpdatePortfolioSnapshotValueFields1734567890135 implements MigrationInterface {
+  name = 'UpdatePortfolioSnapshotValueFields1734567890135';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Rename existing value columns to asset-specific value

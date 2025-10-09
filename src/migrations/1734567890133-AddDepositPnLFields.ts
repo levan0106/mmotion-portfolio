@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddDepositPnLFields20250922070000 implements MigrationInterface {
-  name = 'AddDepositPnLFields20250922070000';
+export class AddDepositPnLFields1734567890133 implements MigrationInterface {
+  name = 'AddDepositPnLFields1734567890133';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add deposit P&L fields to portfolio_snapshots
