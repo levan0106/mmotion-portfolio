@@ -309,6 +309,11 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                       helperText={errors.symbol?.message || symbolValidation.message}
                       placeholder="e.g., AAPL, HPG"
                       disabled={mode === 'edit'}
+                      onChange={(e) => {
+                        // Ensure symbol is always uppercase
+                        const uppercaseValue = e.target.value.toUpperCase();
+                        field.onChange(uppercaseValue);
+                      }}
                     />
                   )}
                 />

@@ -829,6 +829,70 @@ export class BasicPriceService {
   }
 
   /**
+   * Get multiple asset prices in batch.
+   * Optimized method to fetch prices for multiple assets in a single query.
+   * @param assetIds - Array of global asset IDs
+   * @returns Array of price data for the requested assets
+   */
+  async getBatchPrices(assetIds: string[]): Promise<Array<{
+    assetId: string;
+    currentPrice: number;
+    priceType: string;
+    priceSource: string;
+    lastPriceUpdate: Date;
+    metadata?: any;
+  }>> {
+    this.logger.log(`Fetching batch prices for ${assetIds.length} assets`);
+
+    try {
+      // Fetch all prices in a single query using IN clause
+      const prices = await this.assetPriceRepository.find({
+        where: {
+          assetId: In(assetIds),
+        },
+        relations: ['asset'], // Include asset relation for additional data if needed
+      });
+
+      // Create a map for O(1) lookup
+      const priceMap = new Map();
+      prices.forEach(price => {
+        priceMap.set(price.assetId, price);
+      });
+
+      // Return prices in the same order as requested assetIds
+      const result = assetIds.map(assetId => {
+        const price = priceMap.get(assetId);
+        if (price) {
+          return {
+            assetId: price.assetId,
+            currentPrice: price.currentPrice,
+            priceType: price.priceType,
+            priceSource: price.priceSource,
+            lastPriceUpdate: price.lastPriceUpdate,
+            metadata: price.metadata,
+          };
+        } else {
+          // Return null for assets without prices
+          return {
+            assetId,
+            currentPrice: 0,
+            priceType: 'NONE',
+            priceSource: 'NONE',
+            lastPriceUpdate: new Date(),
+            metadata: { error: 'No price data available' },
+          };
+        }
+      });
+
+      this.logger.log(`Successfully fetched ${result.length} batch prices`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to fetch batch prices: ${error.message}`, error.stack);
+      throw new BadRequestException(`Failed to fetch batch prices: ${error.message}`);
+    }
+  }
+
+  /**
    * Map entity to response DTO.
    * @private
    */

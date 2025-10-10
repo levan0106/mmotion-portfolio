@@ -114,7 +114,12 @@ export const AssetForm: React.FC<AssetFormProps> = ({
       return;
     }
 
-    const value = event.target.value;
+    let value = event.target.value;
+    
+    // Ensure symbol is always uppercase
+    if (field === 'symbol') {
+      value = value.toUpperCase();
+    }
     
     setFormData(prev => ({
       ...prev,

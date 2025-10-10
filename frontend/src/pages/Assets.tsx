@@ -468,7 +468,7 @@ const Assets: React.FC = () => {
   const { assets, loading, error, refresh, updateAsset, createAsset, deleteAsset, setFilters: setApiFilters } = useAssets({ 
     initialFilters: { 
       createdBy: accountId,
-      limit: 100,
+      limit: 50,
       sortBy: 'name',
       sortOrder: 'ASC'
     }, 
@@ -588,7 +588,13 @@ const Assets: React.FC = () => {
         await updateAsset(editingAsset.id, assetData);
       } else {
         await createAsset(assetData);
+        // Refresh data to get updated prices from global assets
+        // setTimeout(() => {
+        //   refresh();
+        // }, 1000);
       }
+      
+      
       handleCloseModals();
     } catch (error) {
       console.error('Error saving asset:', error);

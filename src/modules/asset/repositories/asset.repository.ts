@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder, In } from 'typeorm';
 import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
 import { IAssetRepository, AssetStatistics } from './asset.repository.interface';
@@ -84,29 +84,51 @@ export class AssetRepository implements IAssetRepository {
    * @returns Paginated response
    */
   async findWithPagination(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
-    // First, get total count with filters but without pagination
-    const countQueryBuilder = this.createCountQueryBuilder(filters);
-    const total = await countQueryBuilder.getCount();
-    
-    // Get ALL data first (without pagination) to apply filters correctly
-    const dataQueryBuilder = this.createQueryBuilder(filters);
-    const allAssets = await dataQueryBuilder.getMany();
-    
-    // Load trades separately for each asset to avoid duplicate rows
-    for (const asset of allAssets) {
-      const trades = await this.tradeRepository.find({
-        where: { assetId: asset.id },
-        order: { tradeDate: 'ASC', createdAt: 'ASC' }
-      });
-      asset.trades = trades;
-    }
-    
-    // Apply pagination AFTER loading trades and applying all filters
+    // ✅ PERFORMANCE OPTIMIZATION: Use proper pagination with database-level LIMIT/OFFSET
     const limit = filters.limit || 10;
     const page = filters.page || 1;
     const offset = (page - 1) * limit;
     
-    const paginatedAssets = allAssets.slice(offset, offset + limit);
+    // Get total count with filters
+    const countQueryBuilder = this.createCountQueryBuilder(filters);
+    const total = await countQueryBuilder.getCount();
+    
+    // ✅ OPTIMIZED: Get paginated data directly from database
+    const dataQueryBuilder = this.createQueryBuilder(filters);
+    const paginatedAssets = await dataQueryBuilder
+      .skip(offset)
+      .take(limit)
+      .getMany();
+    
+    // ✅ OPTIMIZED: Only load trades if hasTrades filter is true
+    if (filters.hasTrades === true && paginatedAssets.length > 0) {
+      const assetIds = paginatedAssets.map(asset => asset.id);
+      
+      // ✅ BATCH LOAD: Load all trades in a single query
+      const allTrades = await this.tradeRepository.find({
+        where: { assetId: In(assetIds) },
+        order: { tradeDate: 'ASC', createdAt: 'ASC' }
+      });
+      
+      // ✅ MAP TRADES: Group trades by assetId for O(1) lookup
+      const tradesMap = new Map<string, any[]>();
+      allTrades.forEach(trade => {
+        if (!tradesMap.has(trade.assetId)) {
+          tradesMap.set(trade.assetId, []);
+        }
+        tradesMap.get(trade.assetId)!.push(trade);
+      });
+      
+      // ✅ ASSIGN TRADES: Assign trades to assets
+      paginatedAssets.forEach(asset => {
+        asset.trades = tradesMap.get(asset.id) || [];
+      });
+    } else {
+      // ✅ SKIP TRADES: Don't load trades if not needed
+      paginatedAssets.forEach(asset => {
+        asset.trades = [];
+      });
+    }
     
     return {
       data: paginatedAssets,

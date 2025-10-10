@@ -104,6 +104,11 @@ const Trading: React.FC = () => {
     setTabValue(2); // Switch to Create Trade tab
   };
 
+  const handleAssetCreated = async () => {
+    // Refresh trades query to get updated asset data with prices
+    await tradesQuery.refetch();
+  };
+
   // Calculate summary statistics
   const totalTrades = trades?.length || 0;
   const buyTrades = trades?.filter((trade: any) => trade.side === 'BUY').length || 0;
@@ -325,6 +330,7 @@ const Trading: React.FC = () => {
               error={createTradeMutation.error?.message}
               mode="create"
               defaultPortfolioId={portfolioId}
+              onAssetCreated={handleAssetCreated}
             />
           </Box>
         </TabPanel>
@@ -398,6 +404,7 @@ const Trading: React.FC = () => {
               error={createTradeMutation.error?.message}
               mode="create"
               defaultPortfolioId={portfolioId}
+              onAssetCreated={handleAssetCreated}
             />
           </Box>
         </Box>

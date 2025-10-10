@@ -285,7 +285,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       
     } catch (error) {
       console.error('Error creating asset:', error);
-      setAssetFormError(error instanceof Error ? error.message : 'An error occurred while creating asset');
+      setAssetFormError(error instanceof Error ? error.message : `An error occurred while creating asset. Asset symbol "${assetData.symbol}" maybe duplicated or already exists for this user.`);
     } finally {
       setIsSubmittingAsset(false);
     }

@@ -78,23 +78,35 @@ export class AssetService {
     // Create asset
     const asset = await this.assetRepository.create(normalizedCreateDto);
     
-    // Sync with global asset
-    console.log(`[SYNC DEBUG] Starting sync for asset: ${asset.symbol}`);
-    try {
-      const globalAssetId = await this.assetGlobalSyncService.syncAssetOnCreate({
-        symbol: asset.symbol,
-        name: asset.name,
-        type: asset.type,
-        currency: 'VND', // Default currency for now
-        userId: asset.createdBy,
-      });
-      console.log(`[SYNC DEBUG] Sync completed for asset: ${asset.symbol}, globalAssetId: ${globalAssetId}`);
-    } catch (error) {
-      console.error(`[SYNC ERROR] Failed to sync asset with global asset: ${error.message}`, error.stack);
-      // Continue without failing the asset creation
-    }
+    // ✅ PERFORMANCE OPTIMIZATION: Async sync with global asset
+    // Don't block the response - sync in background
+    this.syncAssetInBackground(asset);
     
     return asset;
+  }
+
+  /**
+   * Sync asset with global asset in background (non-blocking)
+   * @private
+   */
+  private syncAssetInBackground(asset: Asset): void {
+    // Use setImmediate to run in next tick (non-blocking)
+    setImmediate(async () => {
+      try {
+        console.log(`[SYNC DEBUG] Starting background sync for asset: ${asset.symbol}`);
+        const globalAssetId = await this.assetGlobalSyncService.syncAssetOnCreate({
+          symbol: asset.symbol,
+          name: asset.name,
+          type: asset.type,
+          currency: 'VND', // Default currency for now
+          userId: asset.createdBy,
+        });
+        console.log(`[SYNC DEBUG] Background sync completed for asset: ${asset.symbol}, globalAssetId: ${globalAssetId}`);
+      } catch (error) {
+        console.error(`[SYNC ERROR] Failed to sync asset with global asset: ${error.message}`, error.stack);
+        // Log error but don't fail the request
+      }
+    });
   }
 
   /**

@@ -13,11 +13,11 @@ export interface AssetTypeColors {
 }
 
 export const CHART_COLORS: AssetTypeColors = {
-  STOCK: '#7e1091',      // Purple
+  STOCK: '#045db4',      // Blue
   BOND: '#059669',       // Emerald
   GOLD: '#ff9800',       // Orange/Yellow
   CRYPTO: '#dc3532',     // Rose
-  DEPOSITS: '#1377c7',   // Sky
+  DEPOSITS: '#1377c7',   // Sky blue
 };
 
 // Extended color palette for additional asset types

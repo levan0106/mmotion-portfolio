@@ -24,6 +24,14 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Performance Optimization Pattern - **IMPLEMENTED** ✅
+- **Asynchronous Processing**: Background operations for non-blocking user experience
+- **Batch Operations**: Single queries instead of N+1 queries for better performance
+- **Database-Level Pagination**: LIMIT/OFFSET instead of memory slicing
+- **Conditional Loading**: Load data only when needed (e.g., trades only when hasTrades=true)
+- **Caching Strategy**: Enhanced caching with staleTime and cacheTime for better performance
+- **Background Sync**: Non-blocking global asset sync and market price updates
+
 ### Color System Integration Pattern - **IMPLEMENTED** ✅
 - **Centralized Color Management**: chartColors.ts provides consistent color scheme across all components
 - **Asset Type Color Mapping**: Proper mapping from chart colors to Material-UI chip colors

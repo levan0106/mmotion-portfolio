@@ -13,6 +13,7 @@ import {
   ParseUUIDPipe,
   ValidationPipe,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -201,6 +202,98 @@ export class BasicPriceController {
       throw new NotFoundException(`Asset price not found for global asset with ID '${assetId}'.`);
     }
     return price;
+  }
+
+  /**
+   * Get multiple asset prices in batch.
+   * Optimized endpoint for fetching multiple asset prices in a single request.
+   */
+  @Post('batch')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get multiple asset prices in batch',
+    description: 'Retrieve prices for multiple assets in a single optimized request. This endpoint is designed to solve the N+1 query problem when fetching prices for multiple assets.',
+  })
+  @ApiBody({
+    description: 'Batch request for multiple asset prices',
+    schema: {
+      type: 'object',
+      properties: {
+        assetIds: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          description: 'Array of global asset IDs to fetch prices for',
+          example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
+        },
+      },
+      required: ['assetIds'],
+    },
+    examples: {
+      batchRequest: {
+        summary: 'Batch Price Request',
+        value: {
+          assetIds: [
+            '550e8400-e29b-41d4-a716-446655440000',
+            '550e8400-e29b-41d4-a716-446655440001',
+            '550e8400-e29b-41d4-a716-446655440002'
+          ]
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Batch asset prices retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          assetId: { type: 'string', format: 'uuid' },
+          currentPrice: { type: 'number' },
+          priceType: { type: 'string' },
+          priceSource: { type: 'string' },
+          lastPriceUpdate: { type: 'string', format: 'date-time' },
+          metadata: { type: 'object' }
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request data or validation errors',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async getBatchAssetPrices(
+    @Body(ValidationPipe) batchRequest: { assetIds: string[] },
+  ): Promise<Array<{
+    assetId: string;
+    currentPrice: number;
+    priceType: string;
+    priceSource: string;
+    lastPriceUpdate: Date;
+    metadata?: any;
+  }>> {
+    if (!batchRequest.assetIds || !Array.isArray(batchRequest.assetIds) || batchRequest.assetIds.length === 0) {
+      throw new BadRequestException('assetIds array is required and must not be empty');
+    }
+
+    // Validate UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const invalidIds = batchRequest.assetIds.filter(id => !uuidRegex.test(id));
+    if (invalidIds.length > 0) {
+      throw new BadRequestException(`Invalid UUID format for asset IDs: ${invalidIds.join(', ')}`);
+    }
+
+    // Limit batch size to prevent abuse
+    if (batchRequest.assetIds.length > 100) {
+      throw new BadRequestException('Batch size cannot exceed 100 asset IDs');
+    }
+
+    return this.basicPriceService.getBatchPrices(batchRequest.assetIds);
   }
 
   /**

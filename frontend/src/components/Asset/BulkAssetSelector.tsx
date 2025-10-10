@@ -29,6 +29,7 @@ import { AssetType, AssetTypeLabels } from '../../types/asset.types';
 import { useGlobalAssets } from '../../hooks/useGlobalAssets';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { toastService } from '../../utils/toast';
+import { getAssetTypeColor } from '../../config/chartColors';
 
 interface BulkAssetSelectorProps {
   open: boolean;
@@ -178,7 +179,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
     return matchesSearch && matchesType;
   });
 
-  const getAssetTypeColor = (type: AssetType): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
+  const getAssetTypeChipColor = (type: AssetType): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
     const colors: Record<string, "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"> = {
       STOCK: 'primary',
       BOND: 'secondary',
@@ -350,7 +351,15 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                             <Chip
                               label={AssetTypeLabels[asset.type as keyof typeof AssetTypeLabels]}
                               size="small"
-                              color={getAssetTypeColor(asset.type)}
+                              color={getAssetTypeChipColor(asset.type)}
+                              sx={{
+                                backgroundColor: getAssetTypeColor(asset.type),
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: getAssetTypeColor(asset.type),
+                                  opacity: 0.8,
+                                }
+                              }}
                             />
                           </Box>
                         }
