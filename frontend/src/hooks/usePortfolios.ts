@@ -15,16 +15,9 @@ export const usePortfolios = (accountId?: string) => {
   
   // Use context accountId if provided, otherwise use passed accountId
   const currentAccountId = contextAccountId || accountId;
-  
-  console.log('🔍 usePortfolios: accountId param:', accountId);
-  console.log('🔍 usePortfolios: contextAccountId:', contextAccountId);
-  console.log('🔍 usePortfolios: currentAccountId:', currentAccountId);
-  console.log('🔍 usePortfolios: accountLoading:', accountLoading);
-
   // Invalidate all queries when account changes
   useEffect(() => {
     if (currentAccountId) {
-      console.log('🔍 usePortfolios: Invalidating queries for account:', currentAccountId);
       queryClient.invalidateQueries(['portfolios']);
       queryClient.invalidateQueries(['trades']);
       queryClient.invalidateQueries(['portfolio-analytics']);
@@ -102,7 +95,6 @@ export const usePortfolio = (portfolioId: string) => {
   // Invalidate portfolio queries when account changes
   useEffect(() => {
     if (accountId) {
-      console.log('🔍 usePortfolio: Invalidating portfolio queries for account:', accountId);
       queryClient.invalidateQueries(['portfolio', portfolioId]);
     }
   }, [accountId, queryClient, portfolioId]);
@@ -151,7 +143,6 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
   // Invalidate analytics queries when account changes
   useEffect(() => {
     if (accountId) {
-      console.log('🔍 usePortfolioAnalytics: Invalidating analytics queries for account:', accountId);
       queryClient.invalidateQueries(['portfolio-performance', portfolioId]);
       queryClient.invalidateQueries(['portfolio-allocation', portfolioId]);
       queryClient.invalidateQueries(['portfolio-positions', portfolioId]);
@@ -218,21 +209,6 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
 
   // Debug logging
   React.useEffect(() => {
-    console.log('usePortfolioAnalytics Debug:', {
-      portfolioId,
-      
-      performanceData,
-      allocationData,
-      positionsData,
-      
-      isPerformanceLoading,
-      isAllocationLoading,
-      isPositionsLoading,
-      
-      performanceError,
-      allocationError,
-      positionsError
-    });
   }, [portfolioId, performanceData, allocationData, positionsData, isPerformanceLoading, isAllocationLoading, isPositionsLoading, performanceError, allocationError, positionsError]);
 
   return {

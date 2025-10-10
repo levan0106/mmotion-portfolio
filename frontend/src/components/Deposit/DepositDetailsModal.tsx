@@ -338,7 +338,6 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                       </Box>
                     </Box>
 
-
                     {deposit.settledAt && (
                       <Box display="flex" alignItems="center" gap={1.5} p={1.5} sx={{ bgcolor: 'success.light', borderRadius: 2 }}>
                         <Avatar sx={{ bgcolor: 'success.main', width: 36, height: 36 }}>

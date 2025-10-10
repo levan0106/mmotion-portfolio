@@ -179,9 +179,6 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
     }
   }, [portfolioId, assetPagination.pagination]);
 
-
-
-
   // Helper functions
   const toggleAssetType = (assetType: string) => {
     const newExpanded = new Set(expandedAssetTypes);
@@ -345,8 +342,6 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
     pagination,
     fetchSnapshotsPaginated,
   } = useSnapshots();
-
-
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);

@@ -86,15 +86,8 @@ const fetchGlobalAssets = async (query: GlobalAssetQueryDto = {}): Promise<Globa
   if (query.nation) params.append('nation', query.nation);
   if (query.marketCode) params.append('marketCode', query.marketCode);
   if (query.isActive !== undefined) params.append('isActive', query.isActive.toString());
-
-  console.log('fetchGlobalAssets - query:', query);
-  console.log('fetchGlobalAssets - params:', params.toString());
   
   const response = await apiService.api.get(`/api/v1/global-assets?${params.toString()}`);
-  
-  console.log('fetchGlobalAssets - response:', response);
-  console.log('fetchGlobalAssets - response.data:', response.data);
-  
   return response.data;
 };
 
@@ -296,12 +289,8 @@ export const useUpdateAssetPrice = () => {
       changeReason?: string;
     }) => {
       try {
-        console.log('useUpdateAssetPrice - trying to get existing price for assetId:', assetId);
         // Try to get existing asset price
-        const existingPriceResponse = await apiService.api.get(`/api/v1/asset-prices/asset/${assetId}`);
-        const existingPrice = existingPriceResponse.data;
-        console.log('useUpdateAssetPrice - found existing price:', existingPrice);
-        
+        await apiService.api.get(`/api/v1/asset-prices/asset/${assetId}`);
         // Update existing asset price by asset ID (this will automatically create price history)
         const updateResponse = await apiService.api.put(`/api/v1/asset-prices/asset/${assetId}`, {
           currentPrice: price,

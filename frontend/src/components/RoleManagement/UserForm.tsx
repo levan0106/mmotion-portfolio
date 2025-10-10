@@ -16,8 +16,8 @@ import {
   Paper,
 } from '@mui/material';
 import { User } from '../../services/api.user';
-import { AutoRoleAssignmentService } from '../../services/autoRoleAssignment';
-import { ToastService } from '../../services/toast';
+//import { AutoRoleAssignmentService } from '../../services/autoRoleAssignment';
+//import { ToastService } from '../../services/toast';
 
 interface UserFormProps {
   open: boolean;
@@ -123,27 +123,26 @@ export const UserForm: React.FC<UserFormProps> = ({
     };
 
     // Check auto role assignment for new users
-    if (mode === 'create') {
-      const mockUser: User = {
-        userId: 'temp',
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        displayName: userData.displayName,
-        isActive: userData.isActive,
-        isEmailVerified: userData.isEmailVerified,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        department: undefined,
-        position: undefined,
-      };
+    // if (mode === 'create') {
+    //   const mockUser: User = {
+    //     userId: 'temp',
+    //     email: userData.email,
+    //     firstName: userData.firstName,
+    //     lastName: userData.lastName,
+    //     displayName: userData.displayName,
+    //     isActive: userData.isActive,
+    //     isEmailVerified: userData.isEmailVerified,
+    //     createdAt: new Date().toISOString(),
+    //     updatedAt: new Date().toISOString(),
+    //     department: undefined,
+    //     position: undefined,
+    //   };
 
-      const roleAssignment = AutoRoleAssignmentService.determineRoleForUser(mockUser);
-      if (roleAssignment.success) {
-        console.log(`Auto role assignment: ${roleAssignment.assignedRole} (${roleAssignment.reason})`);
-        ToastService.info(`User will be automatically assigned the "${roleAssignment.assignedRole}" role`);
-      }
-    }
+    //   const roleAssignment = AutoRoleAssignmentService.determineRoleForUser(mockUser);
+    //   if (roleAssignment.success) {
+    //     ToastService.info(`User will be automatically assigned the "${roleAssignment.assignedRole}" role`);
+    //   }
+    // }
 
     onSubmit(userData);
   };
@@ -271,14 +270,20 @@ export const UserForm: React.FC<UserFormProps> = ({
           {/* Auto Role Assignment Info - Only for create mode */}
           {mode === 'create' && (
             <Grid item xs={12}>
-              <Paper sx={{ p: 2, backgroundColor: 'info.light', color: 'info.contrastText' }}>
-                <Typography variant="h6" gutterBottom>
+              <Paper sx={{ 
+                p: 2, 
+                backgroundColor: 'primary.50', 
+                border: '1px solid',
+                borderColor: 'primary.200',
+                borderRadius: 2
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ color: 'primary.800' }}>
                   Auto Role Assignment
                 </Typography>
-                <Typography variant="body2" gutterBottom>
+                <Typography variant="body2" gutterBottom sx={{ color: 'text.secondary' }}>
                   This user will automatically be assigned the "Investor" role based on the current system configuration.
                 </Typography>
-                <Typography variant="caption" display="block">
+                <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
                   You can change the assigned role after creating the user.
                 </Typography>
               </Paper>

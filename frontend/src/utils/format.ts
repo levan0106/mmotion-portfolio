@@ -198,7 +198,6 @@ export const formatPercentageWithSeparators = (
   }).format(value) + '%';
 };
 
-
 /**
  * Format a large number with K, M, B suffixes
  * @param num - The number to format

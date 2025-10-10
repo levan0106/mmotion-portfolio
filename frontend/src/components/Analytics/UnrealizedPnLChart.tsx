@@ -25,7 +25,6 @@ interface UnrealizedPnLChartProps {
   colorScheme?: PnLColorScheme;
 }
 
-
 const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   data,
   baseCurrency,

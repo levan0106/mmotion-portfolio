@@ -16,6 +16,7 @@ import { UserRoleService } from '../services/user-role.service';
 import { PermissionGuard } from '../guards/permission.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RequirePermissions } from '../decorators/permissions.decorator';
+import { CurrentUser } from '../decorators/user.decorator';
 import {
   AssignRoleToUserDto,
   UpdateUserRoleDto,
@@ -198,5 +199,14 @@ export class UserRoleController {
     this.logger.log('Cleaning up expired user roles');
     const cleanedCount = await this.userRoleService.cleanupExpiredUserRoles();
     return { cleanedCount };
+  }
+
+  @Get('current/roles')
+  @ApiOperation({ summary: 'Get current user roles and permissions' })
+  @ApiResponse({ status: 200, description: 'Current user roles and permissions retrieved successfully', type: UserPermissionsResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getCurrentUserRoles(@CurrentUser() user: any): Promise<UserPermissionsResponseDto> {
+    this.logger.log('Fetching current user roles and permissions');
+    return this.userRoleService.getCurrentUserRoles(user.userId);
   }
 }

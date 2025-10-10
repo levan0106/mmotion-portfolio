@@ -89,7 +89,6 @@ export const AccountSwitcher: React.FC = () => {
     }
   };
 
-
   const handleEditAccount = (account: Account) => {
     setSelectedAccount(account);
     setEditModalOpen(true);
@@ -363,7 +362,6 @@ export const AccountSwitcher: React.FC = () => {
           />
         </MenuItem>
       </Menu>
-
 
       <EditAccountModal
         open={editModalOpen}

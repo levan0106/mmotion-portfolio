@@ -73,7 +73,6 @@ class AccountManager {
           delete this.pendingRequests[accountId];
         }
       } else {
-        console.log('🔍 AccountManager: Invalid UUID, returning null');
         return null;
       }
     } catch (error) {
@@ -90,61 +89,48 @@ class AccountManager {
     
     // Cache the result
     this.accountCache[accountId] = accountData;
-    console.log('🔍 AccountManager: Cached account for:', accountId);
     return accountData;
   }
 
   // Initialize account (only once)
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log('🔍 AccountManager: Already initialized');
       return;
     }
 
     // Check if user is authenticated before trying to fetch accounts
     const jwtToken = localStorage.getItem('jwt_token');
     if (!jwtToken) {
-      console.log('🔍 AccountManager: No JWT token, setting currentAccount to null');
       this.setCurrentAccount(null);
       this.initialized = true;
       return;
     }
-
-    console.log('🔍 AccountManager: Initializing account...');
     const savedAccountId = localStorage.getItem('currentAccountId');
     
     if (savedAccountId) {
-      console.log('🔍 AccountManager: Found saved account ID:', savedAccountId);
       const account = await this.fetchAccount(savedAccountId);
       if (account) {
         this.setCurrentAccount(account);
       } else {
-        console.log('🔍 AccountManager: Failed to fetch saved account, fetching user accounts');
         await this.loadUserMainAccount();
       }
     } else {
       // No saved account, fetch user's main account
-      console.log('🔍 AccountManager: No saved account, fetching user main account');
       await this.loadUserMainAccount();
     }
     
     this.initialized = true;
-    console.log('🔍 AccountManager: Initialization complete');
   }
 
   // Switch account
   async switchAccount(accountId: string): Promise<void> {
-    console.log('🔍 AccountManager: Switching to account:', accountId);
     localStorage.setItem('currentAccountId', accountId);
     const account = await this.fetchAccount(accountId);
-    console.log('🔍 AccountManager: Fetched account:', account);
     if (account) {
       this.setCurrentAccount(account);
     } else {
-      console.log('🔍 AccountManager: Failed to fetch account, using default');
       this.setCurrentAccount(DEFAULT_ACCOUNT);
     }
-    console.log('🔍 AccountManager: Current account after switch:', this.currentAccount);
   }
 
   // Get current account
@@ -174,7 +160,6 @@ class AccountManager {
 
   // Set current account and notify listeners
   private setCurrentAccount(account: Account | null): void {
-    console.log('🔍 AccountManager: Setting current account:', account);
     this.currentAccount = account;
     this.notifyListeners(account);
   }

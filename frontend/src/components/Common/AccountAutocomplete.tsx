@@ -415,8 +415,7 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
         loadingText="Loading accounts..."
         openOnFocus={true}
       />
-      
-      
+
       {/* Portfolio Investors Info */}
       {showPortfolioInvestors && (
         <Box sx={{ mt: 1 }}>

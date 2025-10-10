@@ -84,8 +84,6 @@ const PerformanceSnapshotDashboard: React.FC<PerformanceSnapshotDashboardProps> 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      console.log('Loading dashboard data for portfolio:', portfolioId, 'period:', selectedPeriod);
-      
       const [portfolio, assets, groups, performance, comparison, risk] = await Promise.all([
         snapshotService.getPortfolioPerformanceSummary(portfolioId, selectedPeriod),
         snapshotService.getAssetPerformanceSummary(portfolioId, { period: selectedPeriod }),
@@ -94,9 +92,6 @@ const PerformanceSnapshotDashboard: React.FC<PerformanceSnapshotDashboardProps> 
         snapshotService.getPerformanceComparison(portfolioId, 'default-benchmark', selectedPeriod),
         snapshotService.getRiskAnalysis(portfolioId, selectedPeriod),
       ]);
-
-      console.log('Dashboard data loaded:', { portfolio, assets, groups, performance, comparison, risk });
-
       setPortfolioSummary(portfolio);
       setAssetSummary(assets);
       setGroupSummary(groups);

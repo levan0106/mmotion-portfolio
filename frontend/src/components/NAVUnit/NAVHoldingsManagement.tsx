@@ -59,7 +59,6 @@ interface NAVHoldingsManagementProps {
   onPortfolioUpdate?: () => void;
 }
 
-
 const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
   portfolio,
   getUltraSpacing = (normal) => normal,
@@ -83,13 +82,9 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       setRecalculateLoading(true);
       
       // Step 1: Refresh NAV per unit
-      const navResult = await apiService.refreshNavPerUnit(portfolio.portfolioId);
-      console.log('NAV recalculated successfully:', navResult);
-      
+      await apiService.refreshNavPerUnit(portfolio.portfolioId);
       // Step 2: Recalculate all investor holdings with new NAV
-      const holdingsResult = await apiService.recalculateAllHoldings(portfolio.portfolioId);
-      console.log('Holdings recalculated successfully:', holdingsResult);
-      
+      await apiService.recalculateAllHoldings(portfolio.portfolioId);
       // Refresh portfolio data
       if (onPortfolioUpdate) {
         onPortfolioUpdate();
@@ -104,7 +99,6 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       setRecalculateLoading(false);
     }
   };
-
 
   const handleConvertToFund = async (snapshotDate?: string) => {
     try {

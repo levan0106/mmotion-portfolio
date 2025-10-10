@@ -187,4 +187,12 @@ export class RoleController {
     this.logger.log(`Fetching users with role: ${roleId}`);
     return this.roleService.getUsersWithRole(roleId);
   }
+
+  @Get('permissions/categories')
+  @ApiOperation({ summary: 'Get permissions grouped by category' })
+  @ApiResponse({ status: 200, description: 'Permissions by category retrieved successfully' })
+  async getPermissionsByCategory(): Promise<any[]> {
+    this.logger.log('Fetching permissions by category');
+    return this.roleService.getPermissionsByCategory();
+  }
 }

@@ -126,7 +126,6 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
     }
   };
 
-
   const calculateTotalSettlement = (principal: number, actualInterest: number): number => {
     return principal + actualInterest;
   };

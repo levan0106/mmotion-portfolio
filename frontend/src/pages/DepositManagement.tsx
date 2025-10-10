@@ -61,7 +61,6 @@ interface Deposit {
   settledAt?: string;
 }
 
-
 interface Portfolio {
   portfolioId: string;
   name: string;
@@ -230,7 +229,6 @@ const DepositManagement: React.FC = () => {
     setSelectedDeposit(deposit);
     setDetailsModalOpen(true);
   };
-
 
   const activeDeposits = deposits.filter((d: Deposit) => d.status === 'ACTIVE');
   const settledDeposits = deposits.filter((d: Deposit) => d.status === 'SETTLED');

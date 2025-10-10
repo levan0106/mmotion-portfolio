@@ -29,6 +29,7 @@ import { UserList } from '../components/RoleManagement/UserList';
 import { UserDetails } from '../components/RoleManagement/UserDetails';
 import { UserForm } from '../components/RoleManagement/UserForm';
 import { Settings } from '../components/RoleManagement/Settings';
+import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { ToastService } from '../services/toast';
 import { useRoles } from '../hooks/useRoles';
 import { Role } from '../services/api.role';
@@ -58,6 +59,16 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export const RoleManagement: React.FC = () => {
+  return (
+    <PermissionGuard 
+      role="super_admin"
+    >
+      <RoleManagementContent />
+    </PermissionGuard>
+  );
+};
+
+const RoleManagementContent: React.FC = () => {
   const { roles, isLoading, error, assignPermissions, isAssigningPermissions } = useRoles();
   // const { users, isLoading: isLoadingUsers, error: usersError } = useUsers();
   const [tabValue, setTabValue] = useState(0);
@@ -141,10 +152,8 @@ export const RoleManagement: React.FC = () => {
 
   const handleDeleteUser = async (user: User) => {
     try {
-      console.log('Deleting user:', user);
       // Call API to delete user
       await UserApi.deleteUser(user.userId);
-      console.log(`User ${user.email} deleted successfully`);
     } catch (error) {
       console.error('Error deleting user:', error);
       throw error;
@@ -175,8 +184,6 @@ export const RoleManagement: React.FC = () => {
     try {
       if (formMode === 'create') {
         // Create new user
-        console.log('Creating user:', userData);
-        
         const newUser = await UserApi.createUser(userData);
         ToastService.success(`User "${userData.email}" created successfully!`);
         
@@ -196,8 +203,6 @@ export const RoleManagement: React.FC = () => {
         }
       } else {
         // Update existing user
-        console.log('Updating user:', userData);
-        
         if (selectedUser?.userId) {
           await UserApi.updateUser(selectedUser.userId, userData);
           ToastService.success(`User "${userData.email}" updated successfully!`);
@@ -214,8 +219,7 @@ export const RoleManagement: React.FC = () => {
 
   const handlePermissionSave = (permissionIds: string[]) => {
     if (!selectedRole) return;
-    
-    
+
     // Call API to assign permissions to role
     assignPermissions({ roleId: selectedRole.roleId, permissionIds });
     
@@ -245,6 +249,7 @@ export const RoleManagement: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Role & Permission Management

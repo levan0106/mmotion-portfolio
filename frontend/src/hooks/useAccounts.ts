@@ -21,14 +21,12 @@ export const useAccounts = () => {
       // Check cache first
       const now = Date.now();
       if (accountsCache && (now - accountsCacheTime) < CACHE_DURATION) {
-        console.log('🔍 useAccounts: Using cached accounts');
         setAccounts(accountsCache);
         return;
       }
 
       setLoading(true);
       setError(null);
-      console.log('🔍 useAccounts: Fetching accounts from API');
       const accountsData = await apiService.getAccounts();
       
       // Sort accounts: main account first, then by creation date

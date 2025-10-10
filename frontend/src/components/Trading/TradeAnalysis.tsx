@@ -124,7 +124,6 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
   const locale = getLocale(currency);
 
-
   // ✅ ĐÚNG - Validation data trước khi sử dụng theo UTILS_GUIDE.md
   const isValidAnalysis = useMemo(() => {
     if (!analysis) return false;
@@ -185,16 +184,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   }, [analysis.monthlyPerformance, currency, locale]);
 
   const assetChartData = useMemo(() => {
-    console.log('🔍 Asset Performance Debug:', {
-      hasAnalysis: !!analysis,
-      hasAssetPerformance: !!analysis?.assetPerformance,
-      isArray: Array.isArray(analysis?.assetPerformance),
-      assetPerformance: analysis?.assetPerformance,
-      length: analysis?.assetPerformance?.length
-    });
     
     if (!analysis.assetPerformance || !Array.isArray(analysis.assetPerformance)) {
-      console.log('Asset performance not available or not an array');
       return [];
     }
     
@@ -225,16 +216,6 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     
     // Sort by P&L value (descending) for better visualization
     const sortedData = data.sort((a, b) => b.value - a.value);
-    
-    console.log('🔍 Asset Chart Data Processed:', {
-      originalLength: data.length,
-      sortedLength: sortedData.length,
-      sampleData: sortedData.slice(0, 3),
-      allValues: sortedData.map(item => item.value),
-      originalValues: sortedData.map(item => item.originalValue),
-      hasPositiveValues: sortedData.some(item => item.value > 0),
-      colors: sortedData.map(item => item.color)
-    });
     
     return sortedData;
   }, [analysis.assetPerformance, currency, locale]);
@@ -385,8 +366,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     // Show labels for all slices, but with different styling based on size
     const percentage = formatPercentageWithSeparators(percent * 100, 1, locale);
     const value = payload?.formattedValue || formatCurrency(payload?.value || 0, currency, {}, locale);
-    
-    
+
     // For very small slices, show only name and value
     if (percent < 0.02) {
       return `${name}\n${value}`;
@@ -1536,22 +1516,6 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   
   const { data: analysis, isLoading, error } = useTradeAnalysis(portfolioId, filters);
 
-  // Debug: Log filter values and analysis data
-  console.log('🔍 TradeAnalysisContainer - Filters:', {
-    selectedTimeframe,
-    selectedMetric,
-    portfolioId
-  });
-  
-  console.log('🔍 TradeAnalysisContainer - Analysis Data:', {
-    hasAnalysis: !!analysis,
-    analysisKeys: analysis ? Object.keys(analysis) : [],
-    assetPerformance: analysis?.assetPerformance,
-    monthlyPerformance: analysis?.monthlyPerformance,
-    pnlSummary: analysis?.pnlSummary,
-    statistics: analysis?.statistics,
-    riskMetrics: analysis?.riskMetrics
-  });
 
   if (isPortfolioLoading || isLoading) {
     return (

@@ -14,7 +14,7 @@ export class SystemSettingsDto {
   @IsBoolean()
   autoRoleAssignment: boolean;
 
-  @ApiProperty({ description: 'Default role for new users', example: 'Investor' })
+  @ApiProperty({ description: 'Default role for new users', example: 'investor' })
   @IsString()
   defaultRoleForNewUsers: string;
 

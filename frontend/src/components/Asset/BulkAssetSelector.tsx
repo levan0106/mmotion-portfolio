@@ -66,7 +66,6 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
     sortOrder: 'ASC'
   });
 
-
   // Fetch global assets when dialog opens
   useEffect(() => {
     if (open) {
@@ -98,7 +97,6 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       setSelectedAssets(filteredAssets.map((asset: any) => asset.id));
     }
   };
-
 
   const handleBulkCreate = async () => {
     if (selectedAssets.length === 0) return;
@@ -154,7 +152,6 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       setIsCreating(false);
     }
   };
-
 
   // Filter out assets that user already has
   const availableAssets = React.useMemo(() => {

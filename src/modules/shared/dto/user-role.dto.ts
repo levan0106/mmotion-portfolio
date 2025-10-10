@@ -73,15 +73,9 @@ export class UserRoleResponseDto {
 }
 
 export class UserPermissionsResponseDto {
-  @ApiProperty({ description: 'User ID' })
-  userId: string;
-
   @ApiProperty({ description: 'User roles' })
-  roles: UserRoleResponseDto[];
+  userRoles: UserRoleResponseDto[];
 
   @ApiProperty({ description: 'All permissions for this user' })
-  permissions: string[];
-
-  @ApiProperty({ description: 'Permissions grouped by category' })
-  permissionsByCategory: Record<string, string[]>;
+  permissions: any[];
 }

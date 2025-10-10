@@ -85,8 +85,6 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   // Function to refresh portfolio data after snapshot creation
   const refreshPortfolioData = async (portfolioId: string) => {
     try {
-      console.log(`🔄 Starting portfolio data refresh for: ${portfolioId}`);
-      
       // Invalidate React Query cache for portfolio-related data
       const invalidationPromises = [
         queryClient.invalidateQueries(['portfolio', portfolioId]),
@@ -99,15 +97,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       ];
       
       await Promise.all(invalidationPromises);
-      console.log(`✅ React Query cache invalidated for portfolio: ${portfolioId}`);
-      
       // Call custom refresh callback if provided
       if (onPortfolioRefresh) {
-        console.log(`🔄 Calling custom refresh callback for: ${portfolioId}`);
         onPortfolioRefresh(portfolioId);
       }
-      
-      console.log(`✅ Portfolio data refresh completed for: ${portfolioId}`);
     } catch (error) {
       console.error('❌ Error refreshing portfolio data:', error);
     }
@@ -216,11 +209,6 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
             },
         { timeout: timeoutMs }
       );
-      
-      console.log('Bulk snapshot creation response:', response);
-      console.log('Response status:', response.status);
-      console.log('Response data:', response.data);
-
       // Only show success if we get a valid response
       if (response && response.status >= 200 && response.status < 300) {
         const responseData = response.data;

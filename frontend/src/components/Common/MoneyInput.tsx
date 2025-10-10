@@ -62,7 +62,6 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     }
   }, [value, isFocused]);
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     

@@ -68,7 +68,6 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
     });
   };
 
-
   const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
 
   return (

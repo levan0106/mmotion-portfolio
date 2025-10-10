@@ -326,7 +326,6 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
     </Box>
   );
 
-
   // Render confirmation step
   const renderConfirmStep = () => (
     <Box>

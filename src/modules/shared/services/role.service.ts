@@ -399,4 +399,58 @@ export class RoleService {
       isExpired: userRole.isExpired,
     }));
   }
+
+  /**
+   * Get permissions grouped by category
+   */
+  async getPermissionsByCategory(): Promise<any[]> {
+    this.logger.log('Fetching permissions by category');
+    
+    // Get all permissions
+    const permissions = await this.permissionRepository.find({
+      order: { category: 'ASC', name: 'ASC' }
+    });
+
+    // Group permissions by category
+    const categoriesMap = new Map();
+    
+    permissions.forEach(permission => {
+      const category = permission.category;
+      if (!categoriesMap.has(category)) {
+        categoriesMap.set(category, {
+          name: category,
+          displayName: this.getCategoryDisplayName(category),
+          permissions: []
+        });
+      }
+      
+      categoriesMap.get(category).permissions.push({
+        permissionId: permission.permissionId,
+        resource: permission.category,
+        action: permission.name.split('.')[1] || 'read',
+        name: permission.name,
+        displayName: permission.displayName,
+        description: permission.description
+      });
+    });
+
+    return Array.from(categoriesMap.values());
+  }
+
+  /**
+   * Get display name for category
+   */
+  private getCategoryDisplayName(resource: string): string {
+    const categoryNames: { [key: string]: string } = {
+      'snapshots': 'Snapshot Management',
+      'global_assets': 'Global Assets',
+      'roles': 'Role Management',
+      'users': 'User Management',
+      'settings': 'System Settings',
+      'portfolios': 'Portfolio Management',
+      'transactions': 'Transaction Management'
+    };
+    
+    return categoryNames[resource] || resource.charAt(0).toUpperCase() + resource.slice(1);
+  }
 }

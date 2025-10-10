@@ -158,7 +158,6 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
     }
   };
 
-
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -169,14 +168,9 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
 
   const handleRefresh = async () => {
     try {
-      console.log('handleRefresh called in SnapshotManagement');
-      console.log('refreshSnapshots:', refreshSnapshots);
-      console.log('refreshPortfolioSnapshots:', refreshPortfolioSnapshots);
-      
       // Refresh asset snapshots
       if (refreshSnapshots) {
         await refreshSnapshots();
-        console.log('Asset snapshots refreshed');
       } else {
         console.error('refreshSnapshots is not available');
       }
@@ -184,15 +178,12 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       // Refresh portfolio snapshots
       if (refreshPortfolioSnapshots) {
         await refreshPortfolioSnapshots();
-        console.log('Portfolio snapshots refreshed');
       } else {
         console.error('refreshPortfolioSnapshots is not available');
       }
       
       // Trigger refresh for SnapshotSimpleList
       setRefreshTrigger(prev => prev + 1);
-      console.log('Refresh trigger updated for SnapshotSimpleList');
-      
       showSnackbar('Data refreshed successfully!', 'success');
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -269,9 +260,8 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             showActions={true}
             pageSize={10}
             refreshTrigger={refreshTrigger}
-            onPortfolioRefresh={(portfolioId) => {
+            onPortfolioRefresh={() => {
               // Auto-refresh portfolio data when snapshot is created
-              console.log(`Auto-refreshing portfolio data for: ${portfolioId}`);
               // Trigger refresh of all portfolio-related data
               setRefreshTrigger(prev => prev + 1);
               refreshSnapshots();
@@ -309,12 +299,10 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
         return (
           <SnapshotExportImport
             portfolioId={selectedPortfolioId!}
-            onImportComplete={(count) => {
-              console.log(`Imported ${count} snapshots`);
+            onImportComplete={() => {
               setViewMode('list');
             }}
-            onExportComplete={(count) => {
-              console.log(`Exported ${count} snapshots`);
+            onExportComplete={() => {
             }}
           />
         );
@@ -540,28 +528,22 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
       <BulkSnapshotModal
         open={bulkCreateModalOpen}
         onClose={() => setBulkCreateModalOpen(false)}
-        onSuccess={(portfolioId, snapshotDate) => {
-          console.log(`🎉 Snapshot created successfully for portfolio: ${portfolioId} on ${snapshotDate}`);
+        onSuccess={(_, snapshotDate) => {
           showSnackbar(`Snapshot created successfully for portfolio on ${snapshotDate}`, 'success');
           
           // Refresh all snapshot-related data
-          console.log(`🔄 Refreshing snapshot data for portfolio: ${portfolioId}`);
           refreshSnapshots();
           refreshPortfolioSnapshots();
           
           // Trigger refresh trigger for UI updates
-          console.log(`🔄 Triggering UI refresh for portfolio: ${portfolioId}`);
           setRefreshTrigger(prev => prev + 1);
         }}
         onError={(error) => {
           showSnackbar(`Failed to create snapshot: ${error}`, 'error');
         }}
-        onPortfolioRefresh={(portfolioId) => {
+        onPortfolioRefresh={() => {
           // Auto-refresh portfolio data when snapshot is created
-          console.log(`🔄 Custom portfolio refresh callback triggered for: ${portfolioId}`);
-          
           // Additional refresh actions if needed
-          console.log(`🔄 Triggering additional UI refresh for: ${portfolioId}`);
           setRefreshTrigger(prev => prev + 1);
         }}
       />

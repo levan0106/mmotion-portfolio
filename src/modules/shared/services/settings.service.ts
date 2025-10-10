@@ -10,7 +10,7 @@ export class SettingsService {
     roleHierarchyEnabled: true,
     permissionInheritance: true,
     autoRoleAssignment: true,
-    defaultRoleForNewUsers: 'Investor',
+    defaultRoleForNewUsers: 'investor',
     sessionTimeout: 30,
     maxLoginAttempts: 5,
     passwordExpiry: 90,

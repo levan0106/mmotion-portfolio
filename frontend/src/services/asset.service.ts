@@ -92,11 +92,7 @@ export class AssetService {
    * Update asset by ID
    */
   async updateAsset(id: string, data: UpdateAssetRequest, accountId: string): Promise<Asset> {
-    console.log('AssetService.updateAsset called with:', { id, data });
-    console.log('Making PUT request to: /api/v1/assets/' + id);
-    
     const result = await this.makeRequest<Asset>('PUT', `/api/v1/assets/${id}?accountId=${accountId}`, data);
-    console.log('API response data:', result);
     return result;
   }
 

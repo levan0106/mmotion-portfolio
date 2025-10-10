@@ -171,7 +171,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     totalPages: 0,
   });
 
-
   // Get unique funding sources from cash flows
   const getFundingSources = () => {
     const sources = new Set<string>();
@@ -228,7 +227,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     loadCashFlows();
     loadAllCashFlows();
   }, [portfolioId]);
-
 
   // Handle form submission
   const handleSubmit = async () => {

@@ -76,7 +76,6 @@ export const AssetCard: React.FC<AssetCardProps> = ({
         </div>
       </div>
 
-
       {/* Content */}
       <div className="asset-card__content">
         {/* Value Information - Original Layout */}

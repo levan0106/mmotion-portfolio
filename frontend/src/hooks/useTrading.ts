@@ -17,14 +17,9 @@ export const useTrades = (portfolioId: string, filters?: {
 }) => {
   const { accountId, loading: accountLoading } = useAccount();
   const queryClient = useQueryClient();
-  
-  console.log('🔍 useTrades: accountId:', accountId);
-  console.log('🔍 useTrades: accountLoading:', accountLoading);
-
   // Invalidate trades queries when account changes
   useEffect(() => {
     if (accountId) {
-      console.log('🔍 useTrades: Invalidating trades queries for account:', accountId);
       queryClient.invalidateQueries(['trades']);
     }
   }, [accountId, queryClient]);

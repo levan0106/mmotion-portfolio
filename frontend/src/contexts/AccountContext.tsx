@@ -37,24 +37,17 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Track provider instances and ensure only one active provider
   useEffect(() => {
     providerCount++;
-    console.log('🔍 AccountProvider: Provider instance created, total:', providerCount);
-    
     // If this is the first provider, mark it as active
     if (providerCount === 1) {
       activeProvider = AccountProvider;
-      console.log('🔍 AccountProvider: Marked as active provider');
     } else {
-      console.log('🔍 AccountProvider: Multiple providers detected, this may cause issues');
     }
     
     return () => {
       providerCount--;
-      console.log('🔍 AccountProvider: Provider instance destroyed, total:', providerCount);
-      
       // If this was the active provider, clear it
       if (activeProvider === AccountProvider) {
         activeProvider = null;
-        console.log('🔍 AccountProvider: Active provider cleared');
       }
     };
   }, []);
@@ -64,20 +57,16 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     const initializeAccount = async () => {
       // Only initialize if user is authenticated
       if (!isAuthenticated) {
-        console.log('🔍 AccountProvider: User not authenticated, skipping AccountManager initialization');
         return;
       }
 
       if (!isProviderInitialized && !accountManager.getInitialized() && activeProvider === AccountProvider) {
         isProviderInitialized = true;
-        console.log('🔍 AccountProvider: Initializing AccountManager...');
         await accountManager.initialize();
         setCurrentAccount(accountManager.getCurrentAccount());
         setLoading(accountManager.getLoading());
       } else if (activeProvider !== AccountProvider) {
-        console.log('🔍 AccountProvider: Not the active provider, skipping initialization');
       } else if (accountManager.getInitialized()) {
-        console.log('🔍 AccountProvider: AccountManager already initialized, syncing state');
         setCurrentAccount(accountManager.getCurrentAccount());
         setLoading(accountManager.getLoading());
       }
@@ -89,25 +78,19 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Listen to account changes (only for active provider)
   useEffect(() => {
     if (activeProvider !== AccountProvider) {
-      console.log('🔍 AccountProvider: Not the active provider, skipping listeners');
       return;
     }
-    
-    console.log('🔍 AccountProvider: Setting up listeners...');
     const unsubscribeAccount = accountManager.addAccountListener((account) => {
-      console.log('🔍 AccountProvider: Account changed, updating state');
       globalAccountState = account;
       setCurrentAccount(account);
     });
 
     const unsubscribeLoading = accountManager.addLoadingListener((loading) => {
-      console.log('🔍 AccountProvider: Loading changed, updating state');
       globalLoadingState = loading;
       setLoading(loading);
     });
 
     return () => {
-      console.log('🔍 AccountProvider: Cleaning up listeners...');
       unsubscribeAccount();
       unsubscribeLoading();
     };
@@ -118,12 +101,9 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     const checkAuthState = () => {
       const authState = authService.isAuthenticated();
       const user = authService.getCurrentUser();
-      console.log('🔍 AccountProvider: Checking auth state:', authState, user);
-      
       // Only update if state actually changed to avoid loops
       setIsAuthenticated(prevState => {
         if (prevState !== authState) {
-          console.log('🔍 AccountProvider: Auth state changed from', prevState, 'to', authState);
           return authState;
         }
         return prevState;
@@ -131,7 +111,6 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
       
       setCurrentUser(prevUser => {
         if (JSON.stringify(prevUser) !== JSON.stringify(user)) {
-          console.log('🔍 AccountProvider: User changed');
           return user;
         }
         return prevUser;
@@ -144,7 +123,6 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'isAuthenticated' || e.key === 'user_session') {
-        console.log('🔍 AccountProvider: Storage changed, updating auth state');
         checkAuthState();
       }
     };
@@ -157,17 +135,10 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const switchAccount = async (accountId: string) => {
-    console.log('🔍 AccountProvider: switchAccount called with:', accountId);
-    console.log('🔍 AccountProvider: Active provider:', activeProvider === AccountProvider);
-    
     if (activeProvider !== AccountProvider) {
-      console.log('🔍 AccountProvider: Not the active provider, skipping switchAccount');
       return;
     }
-    
-    console.log('🔍 AccountProvider: Calling accountManager.switchAccount');
     await accountManager.switchAccount(accountId);
-    console.log('🔍 AccountProvider: switchAccount completed');
   };
 
   const getCurrentAccountId = (): string => {

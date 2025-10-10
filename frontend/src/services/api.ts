@@ -190,7 +190,6 @@ class ApiService {
     return response.data;
   }
 
-
   async getPortfolioRiskMetrics(portfolioId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/risk-metrics`);
     return response.data;
@@ -279,13 +278,11 @@ class ApiService {
     return response.data;
   }
 
-
   // Trading endpoints
   async createTrade(data: any, accountId: string): Promise<any> {
     const response = await this.api.post(`/api/v1/trades?accountId=${accountId}`, data);
     return response.data;
   }
-
 
   // New method to get all trades for a specific asset across all portfolios
   async getAllTradesForAsset(assetId: string, accountId: string): Promise<any[]> {
@@ -1047,17 +1044,17 @@ class ApiService {
 
   // Report endpoints
   async getReportData(accountId: string, portfolioId?: string): Promise<any> {
-    console.log('getReportData called with:', { accountId, portfolioId });
+
     let url = `/api/v1/reports?accountId=${accountId}`;
     if (portfolioId && portfolioId !== 'all') {
       url += `&portfolioId=${portfolioId}`;
-      console.log('Adding portfolioId to URL:', portfolioId);
+
     } else {
-      console.log('portfolioId is all or undefined, not adding to URL');
+
     }
-    console.log('Final API call to:', url);
+
     const response = await this.api.get(url);
-    console.log('API response:', response.data);
+
     return response.data;
   }
 }

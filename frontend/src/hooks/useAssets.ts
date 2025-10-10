@@ -71,9 +71,6 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
     setError(null);
     
     try {
-      console.log('Fetching assets with filters:', currentFilters);
-      console.log('AccountId:', accountId);
-      
       const response = await assetService.getAssets(currentFilters, accountId);
       const data = response;
       
@@ -133,8 +130,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
         };
         return mappedAsset;
       };
-      
-      
+
       // Handle both array response and paginated response
       if (Array.isArray(data)) {
         const mappedAssets = data.map(mapAsset);
@@ -180,15 +176,10 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
 
   // Set filters and trigger fetch
   const setFilters = useCallback((newFilters: AssetFilters) => {
-    console.log('setFilters called with:', newFilters);
-    console.log('Current filters state:', filters);
-    console.log('autoFetch:', autoFetch);
     setFiltersState(newFilters);
     if (autoFetch) {
-      console.log('Auto-fetching assets with new filters');
       fetchAssets(newFilters);
     } else {
-      console.log('autoFetch is false, not fetching assets');
     }
   }, [autoFetch, fetchAssets, filters]);
 
@@ -256,7 +247,6 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
   // Update asset
   const updateAsset = useCallback(async (id: string, data: UpdateAssetRequest): Promise<Asset> => {
     try {
-      console.log('useAssets updateAsset called with:', { id, data });
       setLoading(true);
       setError(null);
       
@@ -267,12 +257,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       
       // Symbol field is already mapped correctly
       // No need to map code to symbol as UpdateAssetRequest doesn't have code field
-      
-      console.log('Mapped backend data:', backendData);
-      console.log('Calling assetService.updateAsset...');
       const updatedAsset = await assetService.updateAsset(id, backendData, accountId);
-      console.log('assetService.updateAsset result:', updatedAsset);
-      
       // Calculate performance for updated asset
       const performanceData = {
         initialValue: (updatedAsset as any).initialValue || 0,
@@ -310,20 +295,13 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       
       // Update the asset in the local state
       setAssets(prevAssets => {
-        console.log('Previous assets:', prevAssets);
-        console.log('Asset to update ID:', id);
-        console.log('Frontend asset data:', frontendAsset);
-        
         const newAssets = prevAssets.map(asset => {
           if (asset.id === id) {
             const updatedAsset = { ...asset, ...frontendAsset };
-            console.log('Updated asset:', updatedAsset);
             return updatedAsset;
           }
           return asset;
         });
-        
-        console.log('New assets state:', newAssets);
         return newAssets;
       });
       

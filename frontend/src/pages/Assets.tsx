@@ -493,8 +493,6 @@ const Assets: React.FC = () => {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
-  
-  
 
   const handleRefresh = () => {
     refresh();
@@ -593,8 +591,7 @@ const Assets: React.FC = () => {
         //   refresh();
         // }, 1000);
       }
-      
-      
+
       handleCloseModals();
     } catch (error) {
       console.error('Error saving asset:', error);
@@ -619,8 +616,6 @@ const Assets: React.FC = () => {
   const handleBulkCreate = useCallback(async (globalAssetIds: string[]) => {
     try {
       const response = await assetService.bulkCreateAssets(globalAssetIds, accountId);
-      console.log('Bulk create result:', response);
-      
       // The BulkAssetSelector will handle showing the result and closing modal
       return response;
     } catch (error) {
@@ -632,7 +627,6 @@ const Assets: React.FC = () => {
   const handleBulkCreateClick = useCallback(() => {
     setShowBulkSelector(true);
   }, []);
-
 
   if (loading) {
     return (
@@ -681,7 +675,6 @@ const Assets: React.FC = () => {
                 Manage your portfolio assets
               </Typography>
             </Box>
-            
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Button
@@ -746,7 +739,6 @@ const Assets: React.FC = () => {
             </Box>
           </Box>
         </Box>
-
 
         {/* Summary Metrics - Memoized Component */}
         <SummaryMetrics 

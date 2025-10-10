@@ -49,7 +49,6 @@ export const BulkSnapshotCreator: React.FC<BulkSnapshotCreatorProps> = ({
     message: string;
   }>({ type: null, message: '' });
 
-
   const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
 
   const handleCreateSnapshot = async () => {

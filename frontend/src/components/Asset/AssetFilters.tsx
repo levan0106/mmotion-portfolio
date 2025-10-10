@@ -68,7 +68,6 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
     });
   }, [filters, onFiltersChange]);
 
-
   // Handle type filter
   const handleTypeChange = useCallback((type: AssetType | 'ALL') => {
     setSelectedType(type);
@@ -89,17 +88,13 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
 
   // Handle has trades filter
   const handleHasTradesChange = useCallback((value: boolean | undefined) => {
-    console.log('handleHasTradesChange called with:', value);
-    console.log('Current hasTrades state:', hasTrades);
     setHasTrades(value);
     const newFilters = {
       ...filters,
       hasTrades: value,
     };
-    console.log('Calling onFiltersChange with:', newFilters);
     onFiltersChange(newFilters);
   }, [filters, onFiltersChange, hasTrades]);
-
 
   // Handle value range changes
   const handleValueRangeChange = useCallback((field: 'min' | 'max', value: string) => {

@@ -64,7 +64,6 @@ export const AssetList: React.FC<AssetListProps> = ({
   const assets = propAssets.length > 0 ? propAssets : hookAssets;
   const loading = propLoading || hookLoading;
   const error = propError || hookError;
-  
 
   // Use asset types hook
   const { assetTypes } = useAssetTypes();

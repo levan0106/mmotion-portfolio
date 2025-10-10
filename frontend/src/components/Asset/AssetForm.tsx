@@ -93,15 +93,9 @@ export const AssetForm: React.FC<AssetFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('AssetForm handleSubmit called');
-    console.log('Form data:', formData);
-    console.log('Form validation result:', validateForm());
-    
     if (validateForm()) {
-      console.log('Calling onSubmit with formData');
       onSubmit(formData);
     } else {
-      console.log('Form validation failed');
     }
   };
 

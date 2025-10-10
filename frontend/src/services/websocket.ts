@@ -37,12 +37,10 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('WebSocket connected');
       this.reconnectAttempts = 0;
     });
 
-    this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+    this.socket.on('disconnect', (_reason) => {
       this.handleReconnect();
     });
 
@@ -72,7 +70,6 @@ class WebSocketService {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       setTimeout(() => {
-        console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
         this.connect();
       }, this.reconnectInterval * this.reconnectAttempts);
     } else {

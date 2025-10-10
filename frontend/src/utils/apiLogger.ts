@@ -16,12 +16,8 @@ export const logApiCall = (url: string) => {
       count: 1
     });
   }
-  
-  console.log(`🔍 API Call #${apiCallCount}: ${url} (Total calls to this endpoint: ${existingCall ? existingCall.count : 1})`);
-  
   // Log summary every 10 calls
   if (apiCallCount % 10 === 0) {
-    console.log('📊 API Call Summary:', apiCalls);
   }
 };
 

@@ -108,7 +108,6 @@ const HoldingDetail: React.FC = () => {
     
     // Show success message with recalculation info
     // Note: This could be enhanced with a toast notification
-    console.log('✅ Transaction updated successfully. Portfolio metrics have been recalculated.');
   };
 
   const handleDeleteTransaction = (transaction: FundUnitTransactionWithCashFlow) => {
@@ -129,7 +128,6 @@ const HoldingDetail: React.FC = () => {
       await fetchHoldingDetail();
       
       // Show success message with recalculation info
-      console.log('✅ Transaction deleted successfully. Portfolio metrics have been recalculated.');
     } catch (err) {
       console.error('Error deleting transaction:', err);
       setError('Failed to delete transaction');
@@ -150,14 +148,9 @@ const HoldingDetail: React.FC = () => {
       setRecalculateLoading(true);
       
       // Step 1: Refresh NAV per unit
-      const navResult = await apiService.refreshNavPerUnit(holdingDetail.holding.portfolioId);
-      console.log('NAV recalculated successfully:', navResult);
-      
+      await apiService.refreshNavPerUnit(holdingDetail.holding.portfolioId);
       // Step 2: Recalculate all investor holdings with new NAV
-      const holdingsResult = await apiService.recalculateAllHoldings(holdingDetail.holding.portfolioId);
-      console.log('Holdings recalculated successfully:', holdingsResult);
-      
-      
+      await apiService.recalculateAllHoldings(holdingDetail.holding.portfolioId);
       // Refresh holding detail to show updated values
       await fetchHoldingDetail();
     } catch (err: any) {
@@ -167,8 +160,6 @@ const HoldingDetail: React.FC = () => {
       setRecalculateLoading(false);
     }
   };
-
-
 
   const getPnLIcon = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return null;

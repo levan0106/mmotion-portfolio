@@ -4,13 +4,24 @@ import GlobalAssetManagement from '../components/GlobalAssetManagement';
 import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
 import { UpdatePriceByDateButton } from '../components/AssetPrice';
 import { HistoricalPricesButton } from '../components/HistoricalPrices';
+import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
 import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
 import { apiService } from '../services/api';
 
-
 const GlobalAssetsPage: React.FC = () => {
+  return (
+    <PermissionGuard 
+      roles={["admin", "super_admin"]}
+      requireAllRoles={false}
+    >
+      <GlobalAssetsContent />
+    </PermissionGuard>
+  );
+};
+
+const GlobalAssetsContent: React.FC = () => {
   // Use real API hooks with higher limit to show more assets
   const { 
     data: assets = [], 
@@ -21,7 +32,6 @@ const GlobalAssetsPage: React.FC = () => {
     page,
     totalPages
   } = useGlobalAssets({ limit: 50 }); // Increase limit to 50
-
 
   const { 
     data: marketDataStats, 
@@ -61,7 +71,6 @@ const GlobalAssetsPage: React.FC = () => {
     // This will be handled by the GlobalAssetManagement component
   };
 
-
   const handlePriceUpdate = async (
     assetId: string, 
     price: number, 
@@ -83,10 +92,9 @@ const GlobalAssetsPage: React.FC = () => {
     }
   };
 
-  const handlePriceHistoryRefresh = async (assetId: string) => {
+  const handlePriceHistoryRefresh = async (_assetId: string) => {
     try {
       // Temporary comment out and will review later
-      console.log('Price history refresh for assetId:', assetId);
       // await updateAssetPriceFromMarketMutation.mutateAsync(assetId);
     } catch (error) {
       console.error('Price history refresh error:', error);
@@ -101,9 +109,7 @@ const GlobalAssetsPage: React.FC = () => {
   const handleUpdateAllPrices = async () => {
     try {
       // Trigger manual sync
-      const response = await apiService.triggerGlobalAssetsSync();
-      console.log('Manual sync triggered:', response.data);
-      
+      await apiService.triggerGlobalAssetsSync();
       // Refresh assets after sync
       await refetchAssets();
     } catch (error) {
@@ -146,8 +152,7 @@ const GlobalAssetsPage: React.FC = () => {
           </Typography>
           <Stack direction="row" spacing={1}>
             <UpdatePriceByDateButton
-              onUpdateSuccess={(result: BulkUpdateResult) => {
-                console.log('Bulk update completed:', result);
+              onUpdateSuccess={(_result: BulkUpdateResult) => {
                 // Refresh assets after successful update
                 handleRefresh();
               }}
@@ -158,8 +163,7 @@ const GlobalAssetsPage: React.FC = () => {
               variant="button"
               size="small"
               color="secondary"
-              onSuccess={(result) => {
-                console.log('Historical prices update completed:', result);
+              onSuccess={(_result) => {
                 // Refresh assets after successful update
                 handleRefresh();
               }}
@@ -167,8 +171,7 @@ const GlobalAssetsPage: React.FC = () => {
           </Stack>
         </Box>
         <AutoSyncToggle
-          onToggle={(enabled) => {
-            console.log(`Auto sync ${enabled ? 'enabled' : 'disabled'}`);
+          onToggle={(_enabled) => {
           }}
         />
       </Paper>

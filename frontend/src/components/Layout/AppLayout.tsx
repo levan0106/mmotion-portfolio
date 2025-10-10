@@ -47,6 +47,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const drawerWidth = 240;
 
@@ -60,77 +61,110 @@ const menuItems = [
     icon: <DashboardIcon />, 
     path: '/', 
     description: 'Overview and key metrics',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for dashboard
+    role: null,
+    roles: null
   },
   { 
     text: 'Portfolios', 
     icon: <PortfolioIcon />, 
     path: '/portfolios', 
     description: 'Manage investment portfolios',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for portfolios
+    role: null,
+    roles: null
   },
   {
     text: 'Holdings',
     icon: <HoldingsIcon />,
     path: '/holdings',
     description: 'Manage holdings',
-    badge: 'NEW'
+    badge: 'NEW',
+    permission: null, // No permission required for holdings
+    role: null,
+    roles: null
   },
   { 
     text: 'Assets', 
     icon: <AssetIcon />, 
     path: '/assets', 
     description: 'Track individual assets',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for assets
+    role: null,
+    roles: null
   },
   { 
     text: 'Deposits', 
     icon: <DepositIcon />, 
     path: '/deposits', 
     description: 'Manage deposits',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for deposits
+    role: null,
+    roles: null
   },
   { 
     text: 'Reports', 
     icon: <ReportsIcon />, 
     path: '/reports', 
     description: 'Generate reports',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for reports
+    role: null,
+    roles: null
   },
   { 
     text: 'Snapshots', 
     icon: <SnapshotIcon />, 
     path: '/snapshots', 
     description: 'Portfolio snapshots & analysis',
-    badge: 'Manager'
+    badge: 'Manager',
+    permission: 'financial.snapshots.manage',
+    role: null,
+    roles: null
   },
   { 
     text: 'Global Assets', 
     icon: <GlobalAssetIcon />, 
     path: '/global-assets', 
     description: 'Global market data',
-    badge: 'Admin'
+    badge: 'Admin',
+    permission: null,
+    role: null,
+    roles: ['admin', 'super_admin']
   },
   {
     text: 'Role Management',
     icon: <SecurityIcon />,
     path: '/role-management',
     description: 'Manage roles and permissions',
-    badge: 'Admin'
+    badge: 'Admin',
+    permission: null,
+    role: 'super_admin',
+    roles: null
   },
   {
     text: 'Transactions',
     icon: <AssessmentIcon />,
     path: '/transactions',
     description: 'View transaction history',
-    badge: 'under review'
+    badge: 'under review',
+    permission: null, // No permission required for transactions
+    role: null,
+    roles: null
   },
   { 
     text: 'Settings', 
     icon: <SettingsIcon />, 
     path: '/settings', 
     description: 'System configuration',
-    badge: null
+    badge: null,
+    permission: null, // No permission required for settings
+    role: null,
+    roles: null
   }
 ];
 
@@ -141,6 +175,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
+  const { hasPermission, hasRole, hasAnyRole } = usePermissions();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -262,7 +297,47 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Professional Navigation */}
       <Box sx={{ flexGrow: 1, overflow: 'auto', py: 0.25 }}>
         <List sx={{ px: 0.25 }}>
-          {menuItems.map((item) => (
+          {menuItems
+            .filter((item) => {
+              // Show item if no access control required
+              if (!item.permission && !item.role && !item.roles) {
+                return true;
+              }
+              
+              let hasPermissionAccess = true;
+              let hasRoleAccess = true;
+              
+              // Check permission-based access
+              if (item.permission) {
+                hasPermissionAccess = hasPermission(item.permission);
+              }
+              // Check role-based access
+              if (item.role) {
+                hasRoleAccess = hasRole(item.role);
+              }
+              
+              if (item.roles) {
+                hasRoleAccess = hasAnyRole(item.roles);
+              }
+              
+              // If both permission and role are specified, user needs both
+              if (item.permission && (item.role || item.roles)) {
+                return hasPermissionAccess && hasRoleAccess;
+              }
+              
+              // If only permission is specified, check permission
+              if (item.permission && !item.role && !item.roles) {
+                return hasPermissionAccess;
+              }
+              
+              // If only role is specified, check role
+              if (!item.permission && (item.role || item.roles)) {
+                return hasRoleAccess;
+              }
+              
+              return false;
+            })
+            .map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
               <ListItemButton
                   selected={location.pathname === item.path}
@@ -666,7 +741,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </Box>
             </Box>
 
-
             <Tooltip title="Notifications">
               <IconButton color="inherit">
                 <Badge badgeContent={3} color="error">
@@ -675,7 +749,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </IconButton>
             </Tooltip>
 
-            
             <AccountSwitcher />
           </Box>
         </Toolbar>

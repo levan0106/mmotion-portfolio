@@ -59,8 +59,6 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
 
   const fetchPortfolioSnapshots = useCallback(async () => {
     if (!portfolioId) return;
-    
-    console.log('🔄 usePortfolioSnapshots: Fetching with page=', page, 'limit=', limit);
     setLoading(true);
     setError(null);
     
@@ -96,7 +94,6 @@ export const usePortfolioSnapshots = (options: UsePortfolioSnapshotsOptions = {}
 
   // Auto-fetch when portfolioId, page, or limit changes
   useEffect(() => {
-    console.log('🔄 usePortfolioSnapshots useEffect: autoFetch=', autoFetch, 'portfolioId=', portfolioId, 'page=', page, 'limit=', limit);
     if (autoFetch && portfolioId) {
       fetchPortfolioSnapshots();
     }

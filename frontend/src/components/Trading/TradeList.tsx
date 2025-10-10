@@ -182,7 +182,6 @@ export const TradeList: React.FC<TradeListProps> = ({
       <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />;
   };
 
-
   return (
     <Box>
       {/* Header */}

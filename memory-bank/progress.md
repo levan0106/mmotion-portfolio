@@ -3,6 +3,21 @@
 ## What Works
 ### ✅ Completed
 - **ROLE & PERMISSION SYSTEM IMPLEMENTATION - COMPLETED** (Current Session - January 10, 2025)
+- **PERMISSION SYSTEM BUG FIXES - COMPLETED** (Current Session - January 10, 2025)
+  - **Permission API Response Format Fix**: Fixed backend to return correct resource.action format
+    - **Backend Fix**: Updated user-role.service.ts to properly extract resource and action from permission names
+    - **Logic Enhancement**: Implemented proper handling for single-part and multi-part permission names
+    - **Format Standardization**: Unified permission naming between frontend and backend
+  - **React Key Props Warning Fix**: Resolved missing key props in RoleForm component
+    - **Tooltip Fix**: Removed unnecessary keys from Tooltip title content
+    - **Slider Fix**: Fixed Slider marks to not use .map() with keys
+    - **Permission Mapping**: Added proper fallback keys for permission mapping
+  - **Menu Access Control Logic Enhancement**: Improved fallback logic for permission vs role checks
+    - **Logic Fix**: Enhanced AppLayout.tsx to properly handle both permission and role requirements
+    - **Fallback Logic**: Implemented proper fallback when permission check fails
+  - **Database Permission Verification**: Confirmed super_admin role has correct permissions
+    - **Verification**: Confirmed user tungle has super_admin role with financial.snapshots.manage permission
+    - **API Testing**: Verified API returns correct permission format
   - **Complete Role-Based Access Control System**: Full implementation of RBAC with user management
     - **Role Management**: Create, read, update, delete roles with permission assignment
     - **Permission Management**: Granular permission system with category-based organization

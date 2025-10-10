@@ -26,7 +26,7 @@ import {
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import { useRoles } from '../../hooks/useRoles';
-import { usePermissions } from '../../hooks/usePermissions';
+import { userRolesApi } from '../../services/api.userRoles';
 import { Role, CreateRoleRequest, UpdateRoleRequest } from '../../services/api.role';
 
 interface RoleFormProps {
@@ -43,7 +43,36 @@ export const RoleForm: React.FC<RoleFormProps> = ({
   mode,
 }) => {
   const { createRole, updateRole, isCreating, isUpdating, createError, updateError } = useRoles();
-  const { permissions, isLoading: isLoadingPermissions } = usePermissions();
+  
+  const [permissions, setPermissions] = useState<any[]>([]);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
+  
+  // Fetch permissions when dialog opens
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (open) {
+        setIsLoadingPermissions(true);
+        try {
+          const categories = await userRolesApi.getPermissionsByCategory();
+          // Flatten all permissions from categories
+          const allPermissions = categories.flatMap(category => 
+            category.permissions.map((permission: any) => ({
+              ...permission,
+              category: category.name
+            }))
+          );
+          setPermissions(allPermissions);
+        } catch (error) {
+          console.error('Error fetching permissions:', error);
+          setPermissions([]);
+        } finally {
+          setIsLoadingPermissions(false);
+        }
+      }
+    };
+
+    fetchPermissions();
+  }, [open]);
   
   const [formData, setFormData] = useState<CreateRoleRequest>({
     name: '',
@@ -202,6 +231,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
     if (!acc[permission.category]) {
       acc[permission.category] = [];
     }
+    // console.log('permission', permission);
     acc[permission.category].push(permission);
     return acc;
   }, {} as Record<string, any>);
@@ -350,9 +380,8 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                 </Typography>
               )}
               <Collapse in={expandedSections.permissions}>
-              
-              <Box display="flex" gap={2} mb={3}>
-                <TextField
+                <Box display="flex" gap={2} mb={3}>
+                  <TextField
                   label="Search permissions"
                   value={permissionSearch}
                   onChange={(e) => setPermissionSearch(e.target.value)}
@@ -389,12 +418,12 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                   {Object.entries(permissionsByCategory).map(([category, categoryPermissions]) => (
                     <Box key={category} sx={{ mb: 3 }}>
                       <Typography variant="subtitle1" fontWeight="medium" gutterBottom sx={{ mb: 2 }}>
-                        {category.replace(/_/g, ' ').toUpperCase()}
+                        {category.replace(/_/g, ' ').toUpperCase()}                        
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                        {(categoryPermissions as any[]).map((permission: any) => (
+                        {(categoryPermissions as any[]).map((permission: any, index: number) => (
                           <Tooltip
-                            key={permission.permissionId}
+                            key={permission.permissionId || `${category}-${index}`}
                             title={
                               <Box>
                                 <Typography variant="subtitle2" fontWeight="bold">

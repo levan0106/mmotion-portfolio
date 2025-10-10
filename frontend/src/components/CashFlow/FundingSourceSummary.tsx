@@ -142,7 +142,6 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
     }
   };
 
-
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {

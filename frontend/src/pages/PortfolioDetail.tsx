@@ -80,7 +80,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-
 const PortfolioDetail: React.FC = () => {
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
@@ -140,8 +139,6 @@ const PortfolioDetail: React.FC = () => {
         // Trades data
         tradesQuery.refetch(),
       ]);
-      
-      console.log('All data refreshed successfully');
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -155,13 +152,9 @@ const PortfolioDetail: React.FC = () => {
   const totalTradeFeesAndTaxes = trades.reduce((sum, trade) => sum + (Number(trade.fee) || 0) + (Number(trade.tax) || 0), 0);
   const totalTradeRealizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
-
-
-
   const handleBack = () => {
     navigate('/portfolios');
   };
-
 
   if (isPortfolioLoading) {
     return (
@@ -581,7 +574,6 @@ const PortfolioDetail: React.FC = () => {
         </Grid>
       </Grid>
 
-
       {/* Sticky Tabs with Toggle */}
       <Box
         sx={{
@@ -706,7 +698,6 @@ const PortfolioDetail: React.FC = () => {
             onCreateTrade={() => setShowCreateForm(true)}
           />
         </TabPanel>
-
 
         <TabPanel value={tabValue} index={3}>
           <DepositManagementTab

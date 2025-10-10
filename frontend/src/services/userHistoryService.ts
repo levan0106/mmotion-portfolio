@@ -44,7 +44,6 @@ class UserHistoryService {
       const updatedHistory = [newEntry, ...filteredHistory].slice(0, this.MAX_HISTORY);
       
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
-      console.log('🔍 UserHistoryService: Added user to history:', user.username);
     } catch (error) {
       console.error('Failed to add user to history:', error);
     }
@@ -74,7 +73,6 @@ class UserHistoryService {
       const history = this.getUserHistory();
       const filteredHistory = history.filter(h => h.username !== username);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filteredHistory));
-      console.log('🔍 UserHistoryService: Removed user from history:', username);
     } catch (error) {
       console.error('Failed to remove user from history:', error);
     }
@@ -86,7 +84,6 @@ class UserHistoryService {
   clearHistory(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
-      console.log('🔍 UserHistoryService: Cleared all user history');
     } catch (error) {
       console.error('Failed to clear user history:', error);
     }

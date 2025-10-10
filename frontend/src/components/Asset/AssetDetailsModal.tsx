@@ -70,8 +70,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
     isMockData: false,
   });
 
-
-
   // Fetch portfolio and trading information
   useEffect(() => {
     const fetchPortfolioInfo = async () => {
@@ -326,8 +324,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 color={asset.isActive ? 'success' : 'error'}
                 variant="outlined"
               />
-              
-              
+
               {/* Portfolio Information */}
               <Tooltip
                 title={

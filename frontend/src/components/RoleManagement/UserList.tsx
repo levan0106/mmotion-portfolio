@@ -57,7 +57,6 @@ export const UserList: React.FC<UserListProps> = ({
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, user: User) => {
     setAnchorEl(event.currentTarget);
     setSelectedUser(user);
@@ -131,7 +130,6 @@ export const UserList: React.FC<UserListProps> = ({
       setSelectedUser(null);
     }, 100);
   };
-
 
   const handleManageRoles = () => {
     if (selectedUser && onManageRoles) {

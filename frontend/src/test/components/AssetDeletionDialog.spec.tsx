@@ -208,7 +208,6 @@ describe('AssetDeletionDialog', () => {
     expect(mockOnConfirm).not.toHaveBeenCalled();
   });
 
-
   it('should display correct asset information', () => {
     const customAsset: Asset = {
       ...mockAsset,

@@ -55,7 +55,6 @@ interface AssetPrice {
   lastPriceUpdate: string;
 }
 
-
 interface AssetPriceManagementProps {
   asset: {
     id: string;
@@ -109,7 +108,6 @@ const PRICE_SOURCES = [
   { value: 'EXTERNAL_API', label: 'External API', color: '#f57c00' },
 ];
 
-
 const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   asset,
   onPriceUpdate,
@@ -158,7 +156,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
       changeReason: '',
     },
   });
-
 
   // Calculate price change
   const priceChange = useMemo(() => {

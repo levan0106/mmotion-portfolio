@@ -52,7 +52,7 @@ export const Settings: React.FC<SettingsProps> = () => {
   const [roleHierarchyEnabled, setRoleHierarchyEnabled] = useState<boolean>(true);
   const [permissionInheritance, setPermissionInheritance] = useState<boolean>(true);
   const [autoRoleAssignment, setAutoRoleAssignment] = useState<boolean>(true);
-  const [defaultRoleForNewUsers, setDefaultRoleForNewUsers] = useState<string>('Investor');
+  const [defaultRoleForNewUsers, setDefaultRoleForNewUsers] = useState<string>('investor');
   const [sessionTimeout, setSessionTimeout] = useState<number>(30);
   const [maxLoginAttempts, setMaxLoginAttempts] = useState<number>(5);
   const [passwordExpiry, setPasswordExpiry] = useState<number>(90);
@@ -121,14 +121,10 @@ export const Settings: React.FC<SettingsProps> = () => {
         maxLoginAttempts,
         passwordExpiry,
       };
-
-      console.log('Saving settings...', settings);
-      
       const response = await SettingsApi.updateSettings(settings);
       
       if (response.success) {
         setSaveSuccess(true);
-        console.log('Settings saved successfully:', response.message);
         ToastService.success(`Settings saved successfully! New users will automatically be assigned the "${defaultRoleForNewUsers}" role.`);
         
         // Auto hide success message after 3 seconds
@@ -149,7 +145,6 @@ export const Settings: React.FC<SettingsProps> = () => {
 
   const handleCreateRole = () => {
     // TODO: Implement create role API call
-    console.log('Creating role:', newRoleName);
     ToastService.success(`Role "${newRoleName}" created successfully!`);
     setCreateRoleDialogOpen(false);
     setNewRoleName('');
@@ -157,7 +152,6 @@ export const Settings: React.FC<SettingsProps> = () => {
 
   const handleCreatePermission = () => {
     // TODO: Implement create permission API call
-    console.log('Creating permission:', newPermissionName);
     ToastService.success(`Permission "${newPermissionName}" created successfully!`);
     setCreatePermissionDialogOpen(false);
     setNewPermissionName('');
@@ -165,7 +159,6 @@ export const Settings: React.FC<SettingsProps> = () => {
 
   const handleBulkAction = () => {
     // TODO: Implement bulk action API call
-    console.log('Bulk action:', bulkAction);
     ToastService.info(`Bulk action "${bulkAction}" executed successfully!`);
     setBulkActionDialogOpen(false);
     setBulkAction('');

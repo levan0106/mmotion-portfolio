@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindManyOptions } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../entities/user-role.entity';
+import { AutoRoleAssignmentService } from './auto-role-assignment.service';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -21,6 +22,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
+    private readonly autoRoleAssignmentService: AutoRoleAssignmentService,
   ) {}
 
   async getUsers(params: UserSearchParamsDto): Promise<{ users: UserResponseDto[]; total: number; page: number; limit: number }> {
@@ -152,8 +154,19 @@ export class UserService {
     });
 
     const savedUser = await this.userRepository.save(user);
+
+    // Auto assign default role if enabled
+    try {
+      await this.autoRoleAssignmentService.assignDefaultRole(savedUser.userId);
+      this.logger.log(`Auto-assigned default role to user: ${savedUser.email}`);
+    } catch (error) {
+      this.logger.warn(`Failed to auto-assign default role to user ${savedUser.email}: ${error.message}`);
+      // Don't throw error - user creation should succeed even if role assignment fails
+    }
+
     return this.mapUserToResponse(savedUser);
   }
+
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({

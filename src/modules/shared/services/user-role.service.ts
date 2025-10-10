@@ -131,10 +131,8 @@ export class UserRoleService {
     });
 
     return {
-      userId,
-      roles: validRoles.map(userRole => this.mapUserRoleToResponseDto(userRole)),
+      userRoles: validRoles.map(userRole => this.mapUserRoleToResponseDto(userRole)),
       permissions: Array.from(allPermissions),
-      permissionsByCategory,
     };
   }
 
@@ -307,6 +305,55 @@ export class UserRoleService {
 
     this.logger.log(`Cleaned up ${expiredUserRoles.length} expired user roles`);
     return expiredUserRoles.length;
+  }
+
+  /**
+   * Get current user roles and permissions
+   */
+  async getCurrentUserRoles(currentUserId?: string): Promise<UserPermissionsResponseDto> {
+    this.logger.log('Fetching current user roles and permissions');
+    
+    // Get current user from request context (this would be injected via decorator in real implementation)
+    // For now, we'll use a placeholder - in real implementation, this would come from JWT token
+    const userId = currentUserId || 'current-user-id'; // This should be extracted from JWT token
+    
+    // Get user roles with role and permission details
+    const userRoles = await this.userRoleRepository.find({
+      where: { 
+        userId: userId,
+        isActive: true 
+      },
+      relations: ['role', 'role.permissions'],
+      order: { assignedAt: 'DESC' }
+    });
+
+    // Extract all unique permissions from all roles
+    const allPermissions = new Map();
+    userRoles.forEach(userRole => {
+      if (userRole.role?.permissions) {
+        userRole.role.permissions.forEach(permission => {
+          // Extract resource and action from permission name
+          // resource = 0->n-1, action = n (last part) or read if n is not present
+          const parts = (permission.name || '').split('.').filter(Boolean);
+          const resource = parts.length > 1 ? parts.slice(0, -1).join('.') : parts[0] || '';
+          const action = parts.length > 1 ? parts.at(-1) : 'read';
+          
+          allPermissions.set(permission.permissionId, {
+            permissionId: permission.permissionId,
+            resource: resource,
+            action: action,
+            name: permission.name,
+            displayName: permission.displayName,
+            description: permission.description
+          });
+        });
+      }
+    });
+
+    return {
+      userRoles: userRoles.map(ur => this.mapUserRoleToResponseDto(ur)),
+      permissions: Array.from(allPermissions.values())
+    };
   }
 
   /**

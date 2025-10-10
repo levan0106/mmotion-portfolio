@@ -40,7 +40,6 @@ export const AutoSyncToggle: React.FC<AutoSyncToggleProps> = ({
       onToggle?.(enabled);
       
       // Show success message
-      console.log(`Auto sync ${enabled ? 'enabled' : 'disabled'} successfully`);
     } catch (error) {
       console.error('Failed to toggle auto sync:', error);
       // Revert the toggle state on error

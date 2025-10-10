@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { Account } from '../entities/account.entity';
+import { AutoRoleAssignmentService } from './auto-role-assignment.service';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
@@ -29,6 +30,7 @@ export class AuthService {
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
     private readonly jwtService: JwtService,
+    private readonly autoRoleAssignmentService: AutoRoleAssignmentService,
   ) {}
 
   /**
@@ -97,12 +99,22 @@ export class AuthService {
       userId: user.userId,
     });
 
+    // Auto assign default role if enabled
+    try {
+      await this.autoRoleAssignmentService.assignDefaultRole(user.userId);
+      this.logger.log(`Auto-assigned default role to user: ${username}`);
+    } catch (error) {
+      this.logger.warn(`Failed to auto-assign default role to user ${username}: ${error.message}`);
+      // Don't throw error - user creation should succeed even if role assignment fails
+    }
+
     // Generate JWT token
     const token = this.generateToken(user);
 
     this.logger.log(`Created user ${username} with main account ${mainAccount.accountId}`);
     return { user, account: mainAccount, token };
   }
+
 
   /**
    * Update user profile

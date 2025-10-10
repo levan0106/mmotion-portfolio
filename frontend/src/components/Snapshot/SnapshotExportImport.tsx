@@ -246,7 +246,6 @@ export const SnapshotExportImport: React.FC<SnapshotExportImportProps> = ({
 
           // Here you would typically send the data to your backend
           // For now, we'll just show a success message
-          console.log('Import data:', data);
           alert(`Successfully imported ${data.length} snapshots`);
           
           onImportComplete?.(data.length);

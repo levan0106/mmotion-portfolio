@@ -24,8 +24,8 @@ import {
   ExpandMore as ExpandMoreIcon,
   Security as SecurityIcon,
 } from '@mui/icons-material';
-import { usePermissions } from '../../hooks/usePermissions';
 import { Role, Permission } from '../../services/api.role';
+import { userRolesApi } from '../../services/api.userRoles';
 
 interface PermissionManagerProps {
   open: boolean;
@@ -42,10 +42,31 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
   onSave,
   isLoading = false,
 }) => {
-  const { permissionsByCategory, isLoading: isLoadingPermissions } = usePermissions();
+  const [permissionsByCategory, setPermissionsByCategory] = useState<any[]>([]);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+
+  // Fetch permissions when dialog opens
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (open) {
+        setIsLoadingPermissions(true);
+        try {
+          const categories = await userRolesApi.getPermissionsByCategory();
+          setPermissionsByCategory(categories);
+        } catch (error) {
+          console.error('Error fetching permissions:', error);
+          setPermissionsByCategory([]);
+        } finally {
+          setIsLoadingPermissions(false);
+        }
+      }
+    };
+
+    fetchPermissions();
+  }, [open]);
 
   useEffect(() => {
     if (role && open) {

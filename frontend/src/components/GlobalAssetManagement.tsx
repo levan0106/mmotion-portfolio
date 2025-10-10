@@ -264,7 +264,6 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
     return names[code] || code;
   };
 
-
   if (error) {
     return (
       <Alert severity="error" action={

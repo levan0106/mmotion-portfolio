@@ -111,7 +111,6 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
     }
   };
 
-
   const totalMatchedQuantity = tradeDetails.reduce((sum, detail) => sum + detail.matchedQty, 0);
   const totalRealizedPL = tradeDetails.reduce((sum, detail) => sum + detail.pnl, 0);
   

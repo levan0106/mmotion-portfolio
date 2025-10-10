@@ -101,7 +101,6 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     text: '#424242',
   };
 
-
   useEffect(() => {
     loadData();
   }, [portfolioId, timeRange]);
@@ -109,16 +108,10 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   const loadData = async () => {
     try {
       setLoading(true);
-      console.log('Loading cash flow data for portfolio:', portfolioId);
-      
       // Load all data for chart (no pagination needed for chart)
       const responseData = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { limit: 1000 });
-      console.log('Raw API response:', responseData);
-      
       // Extract the actual data array from the new pagination format
       const data = responseData.data || [];
-      console.log('Extracted data array:', data);
-
       // Process data for different chart types
       processLineData(data);
       processMonthlyData(data);
@@ -134,17 +127,9 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     const daysAgo = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
-    
-    console.log(`Processing line data for ${daysAgo} days ago from ${startDate.toISOString()}`);
-    console.log(`Total records: ${data.length}`);
-
     const filteredData = data.filter(cf => 
       new Date(cf.flowDate) >= startDate && (cf.status === 'COMPLETED' || !cf.status)
     );
-
-    console.log(`Filtered ${filteredData.length} records for line chart`);
-    console.log('Sample filtered record:', filteredData[0]);
-
     // Group by date
     const groupedData = filteredData.reduce((acc, cf) => {
       const date = cf.flowDate.split('T')[0];
@@ -170,8 +155,6 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
         cumulative += item.netFlow;
         return { ...item, cumulative };
       });
-
-    console.log('Processed line data:', result);
     setLineData(result);
   };
 
@@ -593,7 +576,6 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
 
         {/* Chart */}
         {renderChart()}
-
 
         {/* Data Summary */}
         {lineData.length > 0 && (

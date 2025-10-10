@@ -56,7 +56,6 @@ interface ReportData {
   };
 }
 
-
 const Report: React.FC = () => {
   const theme = useTheme();
   const { accountId, baseCurrency } = useAccount();
@@ -70,11 +69,10 @@ const Report: React.FC = () => {
     const fetchPortfolios = async () => {
       try {
         const portfoliosData = await apiService.getPortfolios(accountId);
-        console.log('Portfolios data:', portfoliosData);
-        console.log('Portfolio IDs:', portfoliosData.map(p => ({ portfolioId: p.portfolioId, name: p.name })));
+
         setPortfolios(portfoliosData);
         // Keep default "All Portfolios" selection - no auto-selection
-        console.log('Portfolios loaded, keeping default "All Portfolios" selection');
+
       } catch (err) {
         console.error('Failed to load portfolios:', err);
       }
@@ -87,7 +85,7 @@ const Report: React.FC = () => {
 
   // Fetch report data
   useEffect(() => {
-    console.log('useEffect triggered with accountId:', accountId, 'selectedPortfolioIds:', selectedPortfolioIds);
+
     const fetchReportData = async () => {
       try {
         setLoading(true);
@@ -97,10 +95,9 @@ const Report: React.FC = () => {
         const portfolioId = selectedPortfolioIds.includes('all') || selectedPortfolioIds.length === 0 
           ? undefined 
           : selectedPortfolioIds.join(',');
-        
-        console.log('Fetching report data for accountId:', accountId, 'portfolioIds:', portfolioId);
+
         const data = await apiService.getReportData(accountId, portfolioId);
-        console.log('Report data received:', data);
+
         setReportData(data);
       } catch (err) {
         setError('Failed to load report data');
@@ -327,8 +324,7 @@ const Report: React.FC = () => {
               value={selectedPortfolioIds}
               onChange={(event) => {
                 const value = event.target.value as string[];
-                console.log('MultiSelect onChange value:', value);
-                
+
                 // Handle "All Portfolios" selection
                 if (value.includes('all')) {
                   if (value.length === 1) {
@@ -378,7 +374,7 @@ const Report: React.FC = () => {
                 />
               </MenuItem>
               {portfolios.map((portfolio, index) => {
-                console.log(`Portfolio ${index}:`, { portfolioId: portfolio.portfolioId, name: portfolio.name });
+
                 // Only render if portfolio has valid portfolioId
                 if (portfolio.portfolioId) {
                   return (
@@ -416,8 +412,7 @@ const Report: React.FC = () => {
         {/* Column 1: Cash Balance */}
         <Grid item xs={12} md={4}>
           <Box sx={{ p: 0.2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            
-            
+
             <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch' }}>
               <Box sx={{ width: '100%' }}>
                 <SummaryCard

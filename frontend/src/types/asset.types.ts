@@ -249,7 +249,6 @@ export interface ApiError {
   details?: Record<string, any>;
 }
 
-
 // Asset Type Labels for UI
 export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.STOCK]: 'Cổ phiếu',

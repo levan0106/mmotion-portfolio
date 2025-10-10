@@ -101,7 +101,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
     }
   }, [value, decimalPlaces, showThousandsSeparator, isFocused]);
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     

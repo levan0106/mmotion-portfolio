@@ -73,7 +73,6 @@ const tradeSchema = yup.object({
   notes: yup.string().max(500, 'Notes cannot exceed 500 characters').optional(),
 });
 
-
 export interface TradeFormProps {
   onSubmit: (data: TradeFormData) => Promise<void>;
   initialData?: Partial<TradeFormData>;
@@ -113,8 +112,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   const [assetFormError, setAssetFormError] = useState<string | null>(null);
   const [isSubmittingAsset, setIsSubmittingAsset] = useState(false);
 
-  // Debug logging (can be removed in production)
-  // console.log('TradeForm Debug:', { accountId, portfolios: portfolios?.length || 0, assets: assets?.length || 0 });
   
   const {
     control,
@@ -192,8 +189,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     return { value, cost, fee, tax };
   }, [watchedQuantity, watchedPrice, watchedFee, watchedTax, watch('side')]);
 
-
-
   // Update form values when initialData changes (for edit mode)
   useEffect(() => {
     if (initialData && mode === 'edit') {
@@ -269,12 +264,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     setAssetFormError(null);
     
     try {
-      console.log('Creating asset:', assetData);
-      
       // Call the actual API to create asset
       const createdAsset = await assetService.createAsset(assetData, accountId);
-      console.log('Asset created successfully:', createdAsset);
-      
       // Notify parent component about the created asset
       if (onAssetCreated) {
         onAssetCreated(createdAsset);
@@ -295,12 +286,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     return side === TradeSide.BUY ? 'success' : 'error';
   };
 
-
   // Function to refresh market price
   const refreshMarketPrice = () => {
     // TODO: Implement market price refresh functionality
     // This would typically call an API to get the latest price for the selected asset
-    console.log('Refresh market price for asset:', watchedAssetId);
   };
 
   // Show loading state
@@ -336,7 +325,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       </LocalizationProvider>
     );
   }
-
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -754,7 +742,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               </Grid>
             </Box>
 
-
             {/* Summary Section */}
             <Box mb={isModal ? 1 : 2} p={isModal ? 1 : 1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={isModal ? 1 : 1.5}>
@@ -874,7 +861,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 </Grid>
               </Grid>
             </Box>
-
 
             {/* Submit Button */}
             {showSubmitButton && (

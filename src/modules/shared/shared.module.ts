@@ -14,6 +14,7 @@ import { PermissionService } from './services/permission.service';
 import { UserRoleService } from './services/user-role.service';
 import { UserService } from './services/user.service';
 import { SettingsService } from './services/settings.service';
+import { AutoRoleAssignmentService } from './services/auto-role-assignment.service';
 import { AccountController } from './controllers/account.controller';
 import { AuthController } from './controllers/auth.controller';
 import { RoleController } from './controllers/role.controller';
@@ -21,6 +22,7 @@ import { PermissionController } from './controllers/permission.controller';
 import { UserRoleController } from './controllers/user-role.controller';
 import { UserController } from './controllers/user.controller';
 import { SettingsController } from './controllers/settings.controller';
+import { CurrentUserController } from './controllers/current-user.controller';
 import { DepositCalculationService } from './services/deposit-calculation.service';
 import { AccountValidationService } from './services/account-validation.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -49,7 +51,8 @@ import { Portfolio } from '../portfolio/entities/portfolio.entity';
     PermissionController, 
     UserRoleController,
     UserController,
-    SettingsController
+    SettingsController,
+    CurrentUserController
   ],
   providers: [
     AccountService, 
@@ -59,6 +62,7 @@ import { Portfolio } from '../portfolio/entities/portfolio.entity';
     UserRoleService,
     UserService,
     SettingsService,
+    AutoRoleAssignmentService,
     DepositCalculationService, 
     AccountValidationService, 
     JwtStrategy,
@@ -72,6 +76,8 @@ import { Portfolio } from '../portfolio/entities/portfolio.entity';
     PermissionService, 
     UserRoleService,
     UserService,
+    SettingsService,
+    AutoRoleAssignmentService,
     DepositCalculationService, 
     AccountValidationService,
     PermissionGuard,

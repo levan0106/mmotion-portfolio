@@ -153,8 +153,6 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     }
   }, [value, selectedAsset, assets, loading]);
 
-
-
   // Load more assets
   const loadMore = useCallback(async () => {
     if (hasMore && !isLoadingMore) {

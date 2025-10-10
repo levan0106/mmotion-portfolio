@@ -120,7 +120,6 @@ export const UserRoleManager: React.FC<UserRoleManagerProps> = ({
     setSelectedUserRole(null);
   };
 
-
   const handleRemoveUser = (userRoleId: string) => {
     removeUserFromRole(userRoleId);
     handleMenuClose();

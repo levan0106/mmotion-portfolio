@@ -671,7 +671,6 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
     }
   };
 
-
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={vi}>
       <Dialog 

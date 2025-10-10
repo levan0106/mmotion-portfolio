@@ -87,7 +87,6 @@ export const SnapshotList: React.FC<SnapshotListProps> = ({
     fetchSnapshotsPaginated(updatedFilters);
   };
 
-
   const handleDelete = async (snapshot: SnapshotResponse) => {
     if (window.confirm(`Are you sure you want to delete snapshot for ${snapshot.assetSymbol}?`)) {
       try {

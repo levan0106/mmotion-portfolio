@@ -7,9 +7,19 @@ import {
   Paper,
 } from '@mui/material';
 import { SnapshotManagement } from '../components/Snapshot';
+import { PermissionGuard } from '../components/Common/PermissionGuard';
 
 const SnapshotManagementPage: React.FC = () => {
+  return (
+    <PermissionGuard 
+      permission="financial.snapshots.manage"
+    >
+      <SnapshotManagementContent />
+    </PermissionGuard>
+  );
+};
 
+const SnapshotManagementContent: React.FC = () => {
   return (
     <Box>
       {/* Page Header */}
@@ -28,7 +38,6 @@ const SnapshotManagementPage: React.FC = () => {
           </Box>
         </Box>
 
-        
       </Box>
 
       {/* Main Content */}

@@ -86,16 +86,6 @@ export const SnapshotDashboard: React.FC<SnapshotDashboardProps> = ({
   });
 
   // Debug logging
-  console.log('SnapshotDashboard Debug:', {
-    portfolioId,
-    portfolioSnapshots,
-    portfolioSnapshotsLoading,
-    portfolioSnapshotsError,
-    portfolioSnapshotsLength: portfolioSnapshots?.length
-  });
-
-
-
   const getGranularityIcon = (granularity: SnapshotGranularity) => {
     switch (granularity) {
       case SnapshotGranularity.DAILY:
@@ -345,7 +335,6 @@ export const SnapshotDashboard: React.FC<SnapshotDashboardProps> = ({
           />
         </Box>
       </Paper>
-
 
       {/* Portfolio Snapshots Grid */}
       <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: 1, borderColor: 'divider' }}>

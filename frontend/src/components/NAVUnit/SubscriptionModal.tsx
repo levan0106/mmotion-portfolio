@@ -134,12 +134,6 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
         description: formData.description,
         subscriptionDate: formData.transactionDate,
       };
-
-      console.log('SubscriptionModal: Submitting with data:', subscriptionData);
-      console.log('SubscriptionModal: Account ID:', subscriptionData.accountId);
-      console.log('SubscriptionModal: Portfolio ID:', subscriptionData.portfolioId);
-      console.log('SubscriptionModal: Amount:', subscriptionData.amount);
-      
       await apiService.subscribeToFund(subscriptionData);
       
       // Clear form data after successful submission
@@ -193,37 +187,16 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                      !loading;
 
   // Additional validation for custom account ID
-  const hasValidAccountId = formData.accountId && formData.accountId.trim() !== '';
-  const hasValidAmount = formData.amount > 0;
-  const hasValidUnits = calculatedUnits > 0;
-  const isNotLoading = !loading;
+  // const hasValidAccountId = formData.accountId && formData.accountId.trim() !== '';
+  // const hasValidAmount = formData.amount > 0;
+  // const hasValidUnits = calculatedUnits > 0;
+  // const isNotLoading = !loading;
 
   // Enhanced validation for custom account ID
-  console.log('Custom account ID check:', {
-    accountId: formData.accountId,
-    hasValidAccountId,
-    hasValidAmount,
-    isFormValid
-  });
-
   // Debug logging for form validation
-  console.log('Form validation:', {
-    accountId: formData.accountId,
-    amount: formData.amount,
-    calculatedUnits,
-    loading,
-    isFormValid,
-    hasValidAccountId,
-    hasValidAmount,
-    hasValidUnits,
-    isNotLoading
-  });
-
   // Test validation logic
   if (formData.accountId && formData.accountId.trim() !== '') {
-    console.log('✅ Account ID is valid:', formData.accountId);
   } else {
-    console.log('❌ Account ID is invalid:', formData.accountId);
   }
 
   const modalActions = (
@@ -292,7 +265,6 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             <AccountAutocomplete
               value={formData.accountId}
               onChange={(accountId) => {
-                console.log('SubscriptionModal: Account ID changed to:', accountId);
                 setFormData(prev => ({ ...prev, accountId }));
                 if (errors.accountId) {
                   setErrors(prev => ({ ...prev, accountId: undefined }));

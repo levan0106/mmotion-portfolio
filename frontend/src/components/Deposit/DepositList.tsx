@@ -120,7 +120,6 @@ const DepositList: React.FC<DepositListProps> = ({
     setDepositToDelete(null);
   };
 
-
   const getStatusColor = (deposit: Deposit): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     if (deposit.status === 'SETTLED') {
       return 'success';
@@ -144,7 +143,6 @@ const DepositList: React.FC<DepositListProps> = ({
     
     return <PendingIcon fontSize="small" />;
   };
-
 
   if (loading) {
     return (

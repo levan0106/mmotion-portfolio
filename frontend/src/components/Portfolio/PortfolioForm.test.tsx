@@ -151,7 +151,6 @@ describe('PortfolioForm', () => {
       })
     })
 
-
     it('should show validation error for empty account ID', async () => {
       const user = userEvent.setup()
       render(<PortfolioForm {...defaultProps} />)

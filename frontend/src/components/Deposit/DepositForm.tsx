@@ -226,7 +226,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
     }
   };
 
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <form onSubmit={handleSubmit(handleFormSubmit)}>

@@ -47,8 +47,7 @@ const Dashboard: React.FC = () => {
   const theme = useTheme();
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
-  
-  
+
   const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
 
   if (isLoading) {
