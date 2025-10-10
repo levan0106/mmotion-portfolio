@@ -8,7 +8,6 @@ import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box, Typography } from '@mui/material';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { Toaster } from 'react-hot-toast';
 
 import AppLayout from './components/Layout/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -26,6 +25,7 @@ import Report from './pages/Report';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import { RoleManagement } from './pages/RoleManagement';
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
 import { ToastProvider } from './components/Common/ToastProvider';
@@ -85,6 +85,7 @@ const AppContent: React.FC = () => {
           <Route path="/reports" element={<Report />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/role-management" element={<RoleManagement />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
@@ -114,16 +115,6 @@ const App: React.FC = () => {
             </Router>
           </ToastProvider>
         </AccountProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-          }}
-        />
         <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProvider>
     </QueryClientProvider>

@@ -24,6 +24,18 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Role & Permission System Pattern - **IMPLEMENTED** ✅
+- **Role-Based Access Control (RBAC)**: Hierarchical role system with permission inheritance
+- **Permission-Based Access Control**: Granular permission system with category organization
+- **User Management**: Complete CRUD operations with role assignment capabilities
+- **Settings Management**: System-wide configuration with auto role assignment
+- **Security Integration**: JWT authentication with permission guards and account validation
+- **Database Schema**: Normalized schema with proper relationships and indexing
+- **API Design**: RESTful API with comprehensive CRUD endpoints
+- **Frontend Architecture**: Component-based UI with React Query for data management
+- **Migration System**: Production-ready database migrations with rollback support
+- **Toast Notifications**: Professional user feedback system replacing alerts
+
 ### Performance Optimization Pattern - **IMPLEMENTED** ✅
 - **Asynchronous Processing**: Background operations for non-blocking user experience
 - **Batch Operations**: Single queries instead of N+1 queries for better performance

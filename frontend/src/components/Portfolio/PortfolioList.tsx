@@ -4,17 +4,11 @@
 
 import React, { useState } from 'react';
 import {
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   CircularProgress,
   Fab,
 } from '@mui/material';
 import { 
   Add as AddIcon, 
-  Search as SearchIcon,
   AccountBalance as PortfolioIcon,
   TrendingUp as TrendingUpIcon,
   MonetizationOn as MonetizationOnIcon,
@@ -40,8 +34,8 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
 }) => {
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currencyFilter, setCurrencyFilter] = useState('');
+  const [searchTerm] = useState('');
+  const [currencyFilter] = useState('');
 
   // Filter portfolios based on search term and currency
   const filteredPortfolios = portfolios.filter((portfolio) => {
@@ -50,8 +44,8 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
     return matchesSearch && matchesCurrency;
   });
 
-  // Get unique currencies for filter
-  const currencies = Array.from(new Set(portfolios.map(p => p.baseCurrency)));
+  // Get unique currencies for filter (currently unused)
+  // const currencies = Array.from(new Set(portfolios.map(p => p.baseCurrency)));
 
   if (isLoading) {
     return (
@@ -90,7 +84,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="portfolio-list__filters">
+      {/* <div className="portfolio-list__filters">
         <TextField
           label="Search portfolios"
           variant="outlined"
@@ -117,7 +111,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
             ))}
           </Select>
         </FormControl>
-      </div>
+      </div> */}
 
       {/* Portfolio Grid */}
       {filteredPortfolios.length === 0 ? (

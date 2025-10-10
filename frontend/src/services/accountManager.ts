@@ -44,28 +44,22 @@ class AccountManager {
       // Check if user is authenticated before making API calls
       const jwtToken = localStorage.getItem('jwt_token');
       if (!jwtToken) {
-        console.log('🔍 AccountManager: No JWT token, returning null');
         return null;
       }
 
       // Check cache first
       if (this.accountCache[accountId]) {
-        console.log('🔍 AccountManager: Using cached account for:', accountId);
         return this.accountCache[accountId];
       }
 
       // Check if there's already a pending request for this account
       if (this.pendingRequests[accountId] !== undefined) {
-        console.log('🔍 AccountManager: Waiting for pending request for:', accountId);
         return await this.pendingRequests[accountId];
       }
-
-      console.log('🔍 AccountManager: Cache miss for account:', accountId);
       this.setLoading(true);
       
       // Only call API for valid UUID format
       if (this.isValidUUID(accountId)) {
-        console.log('🔍 AccountManager: Fetching account from API:', accountId);
         
         // Create pending request to prevent duplicate calls
         const requestPromise = this.fetchAccountFromAPI(accountId);

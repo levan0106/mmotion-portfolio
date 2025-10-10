@@ -8,6 +8,7 @@ import {
   Index,
 } from 'typeorm';
 import { Account } from './account.entity';
+import { UserRole } from './user-role.entity';
 
 /**
  * User entity representing system users with progressive authentication.
@@ -118,6 +119,12 @@ export class User {
    */
   @OneToMany(() => Account, (account) => account.user)
   accounts: Account[];
+
+  /**
+   * Role assignments for this user.
+   */
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  userRoles: UserRole[];
 
   /**
    * Get user's authentication state.

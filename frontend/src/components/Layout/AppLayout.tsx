@@ -42,6 +42,7 @@ import {
   Warning as WarningIcon,
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AccountSwitcher } from '../Account';
@@ -97,25 +98,25 @@ const menuItems = [
     badge: null
   },
   { 
-    text: 'Global Assets', 
-    icon: <GlobalAssetIcon />, 
-    path: '/global-assets', 
-    description: 'Global market data',
-    badge: 'NEW'
-  },
-  { 
     text: 'Snapshots', 
     icon: <SnapshotIcon />, 
     path: '/snapshots', 
     description: 'Portfolio snapshots & analysis',
-    badge: null
+    badge: 'Manager'
   },
   { 
-    text: 'Settings', 
-    icon: <SettingsIcon />, 
-    path: '/settings', 
-    description: 'System configuration',
-    badge: null
+    text: 'Global Assets', 
+    icon: <GlobalAssetIcon />, 
+    path: '/global-assets', 
+    description: 'Global market data',
+    badge: 'Admin'
+  },
+  {
+    text: 'Role Management',
+    icon: <SecurityIcon />,
+    path: '/role-management',
+    description: 'Manage roles and permissions',
+    badge: 'Admin'
   },
   {
     text: 'Transactions',
@@ -123,6 +124,13 @@ const menuItems = [
     path: '/transactions',
     description: 'View transaction history',
     badge: 'under review'
+  },
+  { 
+    text: 'Settings', 
+    icon: <SettingsIcon />, 
+    path: '/settings', 
+    description: 'System configuration',
+    badge: null
   }
 ];
 
