@@ -42,9 +42,12 @@ import { formatCurrency, formatDateTime } from '../utils/format';
 import { AssetDetailsModal } from '../components/Asset/AssetDetailsModal';
 import { AssetFormModal } from '../components/Asset/AssetFormModal';
 import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarningDialog';
+import { BulkAssetSelector } from '../components/Asset/BulkAssetSelector';
 import AssetsFilterPanel from '../components/Assets/AssetsFilterPanel';
+import { UserGuide } from '../components/Common/UserGuide';
 import { Asset, AssetFilters as AssetFiltersType } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
+import { getAssetTypeColor } from '../config/chartColors';
 
 // Memoized table row component for better performance
 const AssetTableRow = memo(({ 
@@ -64,12 +67,15 @@ const AssetTableRow = memo(({
   onDelete: (asset: Asset) => void;
   isLoadingDeleteInfo: boolean;
 }) => {
-  const getAssetTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'stock': return 'success';
-      case 'bond': return 'info';
-      case 'fund': return 'warning';
-      case 'crypto': return 'error';
+  const getAssetTypeChipColor = (type: string) => {
+    const color = getAssetTypeColor(type);
+    // Map chart colors to Material-UI chip colors
+    switch (color) {
+      case '#9c27b0': return 'secondary'; // Purple - STOCK
+      case '#059669': return 'success';   // Emerald - BOND
+      case '#ff9800': return 'warning';   // Orange - GOLD
+      case '#dc3532': return 'error';    // Rose - CRYPTO
+      case '#1377c7': return 'info';      // Sky - DEPOSITS
       default: return 'default';
     }
   };
@@ -103,9 +109,17 @@ const AssetTableRow = memo(({
       <TableCell>
         <Chip
           label={asset.type}
-          color={getAssetTypeColor(asset.type) as any}
+          color={getAssetTypeChipColor(asset.type) as any}
           size="small"
-          sx={{ fontWeight: 500 }}
+          sx={{ 
+            fontWeight: 500,
+            backgroundColor: getAssetTypeColor(asset.type),
+            color: 'white',
+            '& .MuiChip-label': {
+              color: 'white',
+              fontWeight: 600
+            }
+          }}
         />
       </TableCell>
       <TableCell>
@@ -414,8 +428,11 @@ const AssetsTable = memo(({
                 {assets.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        No assets found.
+                      <Typography variant="h6" color="text.primary" sx={{ mb: 1 }}>
+                        No Assets Found
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        You don't have any assets in your portfolio yet.
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -439,16 +456,6 @@ const AssetsTable = memo(({
         </CardContent>
       </Card>
 
-      {assets.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 4, mt: 3 }}>
-          <Typography variant="h6" color="text.primary" sx={{ mb: 1 }}>
-            No Assets Found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            You don't have any assets in your portfolio yet.
-          </Typography>
-        </Box>
-      )}
     </Box>
   );
 });
@@ -473,6 +480,7 @@ const Assets: React.FC = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [showBulkSelector, setShowBulkSelector] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -485,6 +493,8 @@ const Assets: React.FC = () => {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
+  
+  
 
   const handleRefresh = () => {
     refresh();
@@ -561,6 +571,7 @@ const Assets: React.FC = () => {
     setEditingAsset(null);
     setShowCreateForm(false);
     setShowDeleteWarning(false);
+    setShowBulkSelector(false);
     setAssetToDelete(null);
     setFormError(null);
     setTradeCount(0);
@@ -598,6 +609,23 @@ const Assets: React.FC = () => {
       setFormError(error instanceof Error ? error.message : 'An error occurred');
     }
   }, [assetToDelete, deleteAsset, handleCloseModals]);
+
+  const handleBulkCreate = useCallback(async (globalAssetIds: string[]) => {
+    try {
+      const response = await assetService.bulkCreateAssets(globalAssetIds, accountId);
+      console.log('Bulk create result:', response);
+      
+      // The BulkAssetSelector will handle showing the result and closing modal
+      return response;
+    } catch (error) {
+      console.error('Error in bulk create:', error);
+      throw error;
+    }
+  }, [accountId]);
+
+  const handleBulkCreateClick = useCallback(() => {
+    setShowBulkSelector(true);
+  }, []);
 
 
   if (loading) {
@@ -647,7 +675,9 @@ const Assets: React.FC = () => {
                 Manage your portfolio assets
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            
+
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Button
                 variant={showFilters ? "contained" : "outlined"}
                 startIcon={<FilterList />}
@@ -672,21 +702,45 @@ const Assets: React.FC = () => {
               >
                 Refresh
               </Button>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={handleCreateAsset}
-                sx={{ 
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                Add Asset
-              </Button>
+              <Tooltip title="Chọn nhiều assets từ danh sách mẫu - Nhanh và dễ dàng">
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={handleBulkCreateClick}
+                  sx={{ 
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500
+                  }}
+                >
+                  Quick Create
+                </Button>
+              </Tooltip>
+              <Tooltip title="Tạo asset mới với thông tin chi tiết">
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={handleCreateAsset}
+                  sx={{ 
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500
+                  }}
+                >
+                  Add Asset
+                </Button>
+              </Tooltip>
+
+              {/* User Guide Component */}
+              <UserGuide
+                guideKey="assets"
+                position="top-right"
+                size="large"
+              />
             </Box>
           </Box>
         </Box>
+
 
         {/* Summary Metrics - Memoized Component */}
         <SummaryMetrics 
@@ -761,6 +815,18 @@ const Assets: React.FC = () => {
           onConfirm={handleDeleteConfirm}
           onCancel={handleCloseModals}
           isDeleting={isSubmitting}
+        />
+
+        {/* Bulk Asset Selector */}
+        <BulkAssetSelector
+          open={showBulkSelector}
+          onClose={handleCloseModals}
+          onBulkCreate={handleBulkCreate}
+          existingAssets={assets.map(asset => ({
+            symbol: asset.symbol,
+            name: asset.name
+          }))}
+          onRefresh={refresh}
         />
       </Box>
   );

@@ -11,6 +11,9 @@
 - **React Router**: Client-side routing
 - **WebSocket**: Real-time updates cho market data
 - **React Hook Form + Yup**: Form handling và validation
+- **Chart Colors System**: Centralized color management with chartColors.ts for consistent asset type colors ✅
+- **UserGuide Component**: Reusable tooltip-based help system with size customization and new user detection ✅
+- **Asset Creation Workflow**: Seamless asset creation from TradeForm with modal integration and API calls ✅
 - **Deposit Management Components**: Complete UI with DepositForm, DepositList, DepositManagementTab, and global management page ✅
 - **Format Helpers**: Centralized formatting utilities for consistent number, currency, and date display ✅
 - **Modal UI/UX Enhancements**: Professional modal headers with close buttons and improved layout structure ✅

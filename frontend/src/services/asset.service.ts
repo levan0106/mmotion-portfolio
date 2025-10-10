@@ -49,6 +49,20 @@ export class AssetService {
   }
 
   /**
+   * Bulk create assets from global assets
+   */
+  async bulkCreateAssets(globalAssetIds: string[], accountId: string): Promise<{
+    created: Asset[];
+    failed: Array<{ globalAssetId: string; error: string }>;
+    summary: { total: number; created: number; failed: number };
+  }> {
+    // Bulk create assets from global assets
+    return this.makeRequest('POST', `/api/v1/assets/bulk-create?accountId=${accountId}`, {
+      globalAssetIds,
+    });
+  }
+
+  /**
    * Get all assets with filtering and pagination
    */
   async getAssets(filters: AssetFilters = {}, accountId: string): Promise<PaginatedResponse<Asset>> {

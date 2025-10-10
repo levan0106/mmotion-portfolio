@@ -28,6 +28,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
+import { ToastProvider } from './components/Common/ToastProvider';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -107,9 +108,11 @@ const App: React.FC = () => {
       <ThemeProvider theme={customTheme}>
         <CssBaseline />
         <AccountProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <ToastProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </ToastProvider>
         </AccountProvider>
         <Toaster
           position="top-right"

@@ -26,6 +26,7 @@ import * as yup from 'yup';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 import { TradeSide, TradeType, TradeSource, TradeFormData } from '../../types';
+import { CreateAssetRequest } from '../../types/asset.types';
 import { 
   Refresh as RefreshIcon,
   MonetizationOn as MonetizationOnIcon,
@@ -35,6 +36,8 @@ import {
 } from '@mui/icons-material';
 import { AssetAutocomplete } from '../Common/AssetAutocomplete';
 import { NumberInput, MoneyInput } from '../Common';
+import { AssetFormModal } from '../Asset/AssetFormModal';
+import { assetService } from '../../services/asset.service';
 
 // Re-export TradeFormData for components that need it
 export type { TradeFormData };
@@ -81,6 +84,7 @@ export interface TradeFormProps {
   showSubmitButton?: boolean;
   formRef?: React.RefObject<HTMLFormElement>;
   isModal?: boolean;
+  onAssetCreated?: (asset: any) => void; // Callback when asset is created
 }
 
 /**
@@ -98,10 +102,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   showSubmitButton = true,
   formRef,
   isModal = false,
+  onAssetCreated,
 }) => {
 
   const { accountId, currentAccount } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
+
+  // Asset creation modal state
+  const [showAssetForm, setShowAssetForm] = useState(false);
+  const [assetFormError, setAssetFormError] = useState<string | null>(null);
+  const [isSubmittingAsset, setIsSubmittingAsset] = useState(false);
 
   // Debug logging (can be removed in production)
   // console.log('TradeForm Debug:', { accountId, portfolios: portfolios?.length || 0, assets: assets?.length || 0 });
@@ -242,6 +252,45 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     }
   };
 
+  // Asset creation handlers
+  const handleCreateAsset = () => {
+    setShowAssetForm(true);
+    setAssetFormError(null);
+  };
+
+  const handleCloseAssetForm = () => {
+    setShowAssetForm(false);
+    setAssetFormError(null);
+    setIsSubmittingAsset(false);
+  };
+
+  const handleAssetFormSubmit = async (assetData: CreateAssetRequest) => {
+    setIsSubmittingAsset(true);
+    setAssetFormError(null);
+    
+    try {
+      console.log('Creating asset:', assetData);
+      
+      // Call the actual API to create asset
+      const createdAsset = await assetService.createAsset(assetData, accountId);
+      console.log('Asset created successfully:', createdAsset);
+      
+      // Notify parent component about the created asset
+      if (onAssetCreated) {
+        onAssetCreated(createdAsset);
+      }
+      
+      // Close the modal
+      handleCloseAssetForm();
+      
+    } catch (error) {
+      console.error('Error creating asset:', error);
+      setAssetFormError(error instanceof Error ? error.message : 'An error occurred while creating asset');
+    } finally {
+      setIsSubmittingAsset(false);
+    }
+  };
+
   const getSideColor = (side: TradeSide) => {
     return side === TradeSide.BUY ? 'success' : 'error';
   };
@@ -370,10 +419,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                           placeholder="Search and select asset..."
                           currency={baseCurrency}
                           showCreateOption={true}
-                          onCreateAsset={() => {
-                            // TODO: Implement create asset functionality
-                            console.log('Create new asset clicked');
-                          }}
+                          onCreateAsset={handleCreateAsset}
                         />
                       )}
                     />
@@ -845,6 +891,17 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               </Box>
             )}
           </form>
+
+          {/* Asset Creation Modal */}
+          <AssetFormModal
+            open={showAssetForm}
+            onClose={handleCloseAssetForm}
+            onSubmit={handleAssetFormSubmit}
+            onCancel={handleCloseAssetForm}
+            loading={isSubmittingAsset}
+            error={assetFormError}
+            accountId={accountId}
+          />
         </LocalizationProvider>
   );
 };

@@ -39,6 +39,7 @@ import {
   AssetCountResponseDto,
   AssetDeletionResponseDto
 } from '../dto/asset-response.dto';
+import { AssetMapper } from '../mappers/asset.mapper';
 import { 
   AssetAllocationResponseDto,
   AssetPerformanceResponseDto,
@@ -46,7 +47,6 @@ import {
   AssetAnalyticsSummaryResponseDto,
   AssetValueRangeResponseDto
 } from '../dto/asset-analytics-response.dto';
-import { AssetMapper } from '../mappers/asset.mapper';
 import { AssetAnalyticsMapper } from '../mappers/asset-analytics.mapper';
 
 /**
@@ -107,6 +107,113 @@ export class AssetController {
     // Computed fields will be calculated when needed (lazy loading)
     
     return AssetMapper.toResponseDto(asset);
+  }
+
+  /**
+   * Create multiple assets from global assets.
+   */
+  @Post('bulk-create')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Bulk create assets from global assets',
+    description: 'Create multiple assets for the authenticated user by selecting from global assets. This is useful for new users to quickly add popular assets.',
+  })
+  @ApiBody({
+    description: 'Bulk asset creation data',
+    schema: {
+      type: 'object',
+      properties: {
+        globalAssetIds: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          description: 'Array of global asset IDs to create as user assets',
+          example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
+        },
+      },
+      required: ['globalAssetIds'],
+    },
+    examples: {
+      bulkCreate: {
+        summary: 'Bulk Create Assets Example',
+        value: {
+          globalAssetIds: [
+            '550e8400-e29b-41d4-a716-446655440000',
+            '550e8400-e29b-41d4-a716-446655440001',
+            '550e8400-e29b-41d4-a716-446655440002',
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Assets created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        created: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/AssetResponseDto' },
+        },
+        failed: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              globalAssetId: { type: 'string', format: 'uuid' },
+              error: { type: 'string' },
+            },
+          },
+        },
+        summary: {
+          type: 'object',
+          properties: {
+            total: { type: 'number' },
+            created: { type: 'number' },
+            failed: { type: 'number' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or validation errors',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  async bulkCreateAssets(
+    @Query('accountId') accountId: string,
+    @Body() body: { globalAssetIds: string[] }
+  ): Promise<{
+    created: AssetResponseDto[];
+    failed: Array<{ globalAssetId: string; error: string }>;
+    summary: { total: number; created: number; failed: number };
+  }> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+
+    if (!body.globalAssetIds || !Array.isArray(body.globalAssetIds) || body.globalAssetIds.length === 0) {
+      throw new BadRequestException('globalAssetIds must be a non-empty array');
+    }
+
+    // Validate account ownership
+    await this.accountValidationService.validateAccountOwnership(accountId, accountId);
+
+    const result = await this.assetService.bulkCreateAssetsFromGlobal(body.globalAssetIds, accountId);
+    
+    // Map Asset entities to AssetResponseDto
+    const mappedResult = {
+      created: AssetMapper.toResponseDtoArray(result.created),
+      failed: result.failed,
+      summary: result.summary,
+    };
+    
+    return mappedResult;
   }
 
   /**

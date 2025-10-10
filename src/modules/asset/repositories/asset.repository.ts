@@ -753,4 +753,19 @@ export class AssetRepository implements IAssetRepository {
     // Then delete the trade
     await this.tradeRepository.delete(tradeId);
   }
+
+  /**
+   * Find asset by symbol and user
+   * @param symbol - Asset symbol
+   * @param userId - User ID
+   * @returns Asset or null if not found
+   */
+  async findBySymbolAndUser(symbol: string, userId: string): Promise<Asset | null> {
+    return await this.assetRepository.findOne({
+      where: {
+        symbol: symbol.toUpperCase(),
+        createdBy: userId,
+      },
+    });
+  }
 }

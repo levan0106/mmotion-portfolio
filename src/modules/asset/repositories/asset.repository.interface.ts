@@ -253,6 +253,14 @@ export interface IAssetRepository {
    * @returns Promise<void>
    */
   deleteTrade(tradeId: string): Promise<void>;
+
+  /**
+   * Find asset by symbol and user
+   * @param symbol - Asset symbol
+   * @param userId - User ID
+   * @returns Promise<Asset | null> - Asset or null if not found
+   */
+  findBySymbolAndUser(symbol: string, userId: string): Promise<Asset | null>;
 }
 
 /**

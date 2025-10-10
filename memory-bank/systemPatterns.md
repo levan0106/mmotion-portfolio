@@ -24,6 +24,29 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Color System Integration Pattern - **IMPLEMENTED** ✅
+- **Centralized Color Management**: chartColors.ts provides consistent color scheme across all components
+- **Asset Type Color Mapping**: Proper mapping from chart colors to Material-UI chip colors
+- **Visual Consistency**: Asset type colors match chart colors for better user experience
+- **Extensible Design**: Easy to add new asset types with corresponding colors
+- **Type Safety**: TypeScript interfaces ensure color consistency
+
+### User Guidance System Pattern - **IMPLEMENTED** ✅
+- **Reusable UserGuide Component**: Common component for consistent help across all pages
+- **Tooltip-Based Help**: Click-to-show tooltip system for better UX than collapsible sections
+- **Size Customization**: Multiple tooltip sizes (small, medium, large, xlarge, xxlarge)
+- **New User Detection**: Blinking animation for unread guides to draw attention
+- **Per-Page Tracking**: localStorage-based guide tracking for different pages
+- **Content Centralization**: All guide content stored in GUIDE_REGISTRY for easy management
+
+### Asset Creation Workflow Pattern - **IMPLEMENTED** ✅
+- **Modal Integration**: AssetFormModal integration in TradeForm for seamless asset creation
+- **API Integration**: Real assetService.createAsset API calls with proper error handling
+- **Type Safety**: CreateAssetRequest interface ensures type safety
+- **Callback System**: onAssetCreated callback for asset list refresh after creation
+- **Loading States**: Proper loading states during asset creation process
+- **Error Handling**: Comprehensive error handling with user feedback
+
 ### FIFO Calculation Integration Pattern - **IMPLEMENTED** ✅
 - **AssetValueCalculatorService Integration**: Report service uses dedicated FIFO calculation service for accurate asset holdings
 - **FIFO Algorithm Usage**: Uses calculateAssetPositionFIFOFinal method for proper trade matching and position calculation

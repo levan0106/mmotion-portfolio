@@ -98,6 +98,83 @@ export class AssetService {
   }
 
   /**
+   * Bulk create assets from global assets
+   * @param globalAssetIds - Array of global asset IDs
+   * @param accountId - Account ID for ownership
+   * @returns Bulk creation result
+   */
+  async bulkCreateAssetsFromGlobal(
+    globalAssetIds: string[],
+    accountId: string
+  ): Promise<{
+    created: Asset[];
+    failed: Array<{ globalAssetId: string; error: string }>;
+    summary: { total: number; created: number; failed: number };
+  }> {
+    const created: Asset[] = [];
+    const failed: Array<{ globalAssetId: string; error: string }> = [];
+
+    for (const globalAssetId of globalAssetIds) {
+      try {
+        // Get global asset details
+        const globalAsset = await this.assetGlobalSyncService.getGlobalAssetById(globalAssetId);
+        
+        if (!globalAsset) {
+          failed.push({
+            globalAssetId,
+            error: 'Global asset not found'
+          });
+          continue;
+        }
+
+        // Check if asset already exists for this user
+        const existingAsset = await this.assetRepository.findBySymbolAndUser(
+          globalAsset.symbol,
+          accountId
+        );
+
+        if (existingAsset) {
+          failed.push({
+            globalAssetId,
+            error: `Asset with symbol '${globalAsset.symbol}' already exists for this user`
+          });
+          continue;
+        }
+
+        // Create asset from global asset
+        const createAssetDto: CreateAssetDto = {
+          name: globalAsset.name,
+          symbol: globalAsset.symbol,
+          type: globalAsset.type,
+          description: globalAsset.description,
+          createdBy: accountId,
+          updatedBy: accountId,
+        };
+
+        const asset = await this.create(createAssetDto);
+        created.push(asset);
+
+      } catch (error) {
+        console.error(`Failed to create asset from global asset ${globalAssetId}:`, error);
+        failed.push({
+          globalAssetId,
+          error: error.message || 'Unknown error occurred'
+        });
+      }
+    }
+
+    return {
+      created,
+      failed,
+      summary: {
+        total: globalAssetIds.length,
+        created: created.length,
+        failed: failed.length,
+      },
+    };
+  }
+
+  /**
    * Find all assets with filtering and pagination
    * @param filters - Filter criteria
    * @returns Paginated assets

@@ -296,4 +296,21 @@ export class AssetGlobalSyncService {
       return null;
     }
   }
+
+  /**
+   * Get global asset by ID
+   * @param id - Global asset ID
+   * @returns GlobalAsset or null if not found
+   */
+  async getGlobalAssetById(id: string): Promise<GlobalAsset | null> {
+    try {
+      return await this.globalAssetRepository.findOne({
+        where: { id },
+        relations: ['assetPrice']
+      });
+    } catch (error) {
+      this.logger.error(`Failed to get global asset by ID: ${error.message}`, error.stack);
+      return null;
+    }
+  }
 }
