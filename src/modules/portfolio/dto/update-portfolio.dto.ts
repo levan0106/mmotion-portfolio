@@ -29,7 +29,6 @@ export class UpdatePortfolioDto extends PartialType(CreatePortfolioDto) {
    */
   @IsOptional()
   @IsString()
-  @Length(2, 100)
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
   fundingSource?: string;
 }

@@ -36,7 +36,7 @@ interface PortfolioFormProps {
 const schema = yup.object({
   name: yup.string().required('Portfolio name is required').min(2, 'Name must be at least 2 characters'),
   baseCurrency: yup.string().required('Base currency is required'),
-  fundingSource: yup.string().optional().min(2, 'Funding source must be at least 2 characters'),
+  fundingSource: yup.string().optional(),
   accountId: yup.string().required('Account ID is required'),
 });
 
@@ -164,11 +164,12 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Funding Source"
+                  label="Funding Source (Optional)"
                   fullWidth
                   error={!!errors.fundingSource}
-                  helperText={errors.fundingSource?.message || "Optional: Enter the source of funding for this portfolio (default: VIETCOMBANK, TPBANK, etc.)"}
+                  helperText={errors.fundingSource?.message || "Optional: Enter the source of funding for this portfolio (e.g., VIETCOMBANK, TPBANK, etc.)"}
                   placeholder="VIETCOMBANK, TPBANK, etc."
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />

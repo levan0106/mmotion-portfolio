@@ -19,8 +19,8 @@ export type ExchangeType = 'HOSE' | 'HNX' | 'ETF';
 @Injectable()
 export class StockPriceAPIClient {
   private readonly logger = new Logger(StockPriceAPIClient.name);
-  private readonly baseUrl = 'https://iboard-query.ssi.com.vn';
-  private readonly timeout = 20000; // 20 seconds
+  private readonly baseUrl =  'https://stock-price-ssi-proxy.lvttung0106.workers.dev/'; //'https://iboard-query.ssi.com.vn'; SSI blocked requests on aws ec2
+  private readonly timeout = 10000; // 10 seconds
 
   constructor(private readonly httpService: HttpService) {}
 

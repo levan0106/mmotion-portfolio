@@ -103,7 +103,7 @@ const menuItems = [
     icon: <SnapshotIcon />, 
     path: '/snapshots', 
     description: 'Portfolio snapshots & analysis',
-    badge: 'Manager',
+    badge: null,
     permissions: ['financial.snapshots.manage']
   },
   { 
@@ -111,15 +111,15 @@ const menuItems = [
     icon: <GlobalAssetIcon />, 
     path: '/global-assets', 
     description: 'Global market data',
-    badge: 'Admin',
+    badge: null,
     roles: ['admin', 'super_admin']
   },
   {
-    text: 'Role Management',
+    text: 'Roles & Users',
     icon: <SecurityIcon />,
     path: '/role-management',
     description: 'Manage roles and permissions',
-    badge: 'Admin',
+    badge: null,
     roles: ['super_admin']
   },
   {
@@ -127,7 +127,7 @@ const menuItems = [
     icon: <AssessmentIcon />,
     path: '/transactions',
     description: 'View transaction history',
-    badge: 'under review',
+    badge: null,
     permissions: ['transactions.read']
   },
   { 
@@ -376,7 +376,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* User Info - Bottom Left */}
       <Box sx={{ 
         mt: 'auto', // Push to bottom
-        p: 2.5, 
+        p: 0.5, 
         background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
         backdropFilter: 'blur(12px)',
         borderRadius: '12px 0 0 0',
@@ -391,8 +391,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            mb: 2.5,
-            p: 1.5,
+            mb: 0.5,
+            p: 1,
             borderRadius: 2,
             background: alpha(theme.palette.background.paper, 0.3),
             transition: 'all 0.2s ease-in-out',

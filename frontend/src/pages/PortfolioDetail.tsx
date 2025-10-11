@@ -301,7 +301,7 @@ const PortfolioDetail: React.FC = () => {
       </Box>
 
       {/* Portfolio Summary Cards */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 4, sm: 6 } }}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 4 } }}>
         {/* Portfolio Value & NAV */}
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -629,15 +629,14 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 120, // Position below header
+          top: 100, // Position below header
           zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: 2,
+          py: 1,
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           backdropFilter: 'blur(10px)',
-          marginTop: 2, // Add margin from cards
         }}
       >
         <Box sx={{ 
@@ -654,10 +653,10 @@ const PortfolioDetail: React.FC = () => {
             onChange={handleTabChange} 
             aria-label="portfolio tabs"
             sx={{
-              minHeight: '48px',
+              minHeight: '30px',
               width: { xs: '100%', sm: 'auto' },
               '& .MuiTab-root': {
-                minHeight: '48px',
+                minHeight: '30px',
                 fontWeight: 600,
                 textTransform: 'none',
                 fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },

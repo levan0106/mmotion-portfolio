@@ -7,7 +7,7 @@ import {
   TrendingUp,
   TrendingDown,
   AccountBalance,
-  Visibility,
+  Edit,
   ContentCopy,
   AccountBalanceWallet,
   Business,
@@ -69,10 +69,6 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
     }
   };
 
-  const handleViewButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
-    handleView();
-  };
 
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
@@ -211,18 +207,19 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
       </div>
 
       <div className="portfolio-card__actions">
-        <button
+        {/* <button
           className="portfolio-card__view-btn"
           onClick={handleViewButtonClick}
         >
           <Visibility />
           View Details
-        </button>
+        </button> */}
         {onEdit && (
           <button
             className="portfolio-card__edit-btn"
             onClick={handleEdit}
           >
+            <Edit />
             Edit
           </button>
         )}

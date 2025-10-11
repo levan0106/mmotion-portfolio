@@ -42,12 +42,10 @@ export class CreatePortfolioDto {
     description: 'Funding source for the portfolio (free text input, optional)',
     example: 'Personal Savings',
     required: false,
-    minLength: 2,
     maxLength: 100,
   })
   @IsOptional()
   @IsString()
-  @Length(2, 100)
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
   fundingSource?: string;
 
