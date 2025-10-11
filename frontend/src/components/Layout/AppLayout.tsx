@@ -61,60 +61,42 @@ const menuItems = [
     icon: <DashboardIcon />, 
     path: '/', 
     description: 'Overview and key metrics',
-    badge: null,
-    permission: null, // No permission required for dashboard
-    role: null,
-    roles: null
+    badge: null
   },
   { 
     text: 'Portfolios', 
     icon: <PortfolioIcon />, 
     path: '/portfolios', 
     description: 'Manage investment portfolios',
-    badge: null,
-    permission: null, // No permission required for portfolios
-    role: null,
-    roles: null
+    badge: null
   },
   {
     text: 'Holdings',
     icon: <HoldingsIcon />,
     path: '/holdings',
     description: 'Manage holdings',
-    badge: 'NEW',
-    permission: null, // No permission required for holdings
-    role: null,
-    roles: null
+    badge: 'NEW'
   },
   { 
     text: 'Assets', 
     icon: <AssetIcon />, 
     path: '/assets', 
     description: 'Track individual assets',
-    badge: null,
-    permission: null, // No permission required for assets
-    role: null,
-    roles: null
+    badge: null
   },
   { 
     text: 'Deposits', 
     icon: <DepositIcon />, 
     path: '/deposits', 
     description: 'Manage deposits',
-    badge: null,
-    permission: null, // No permission required for deposits
-    role: null,
-    roles: null
+    badge: null
   },
   { 
     text: 'Reports', 
     icon: <ReportsIcon />, 
     path: '/reports', 
     description: 'Generate reports',
-    badge: null,
-    permission: null, // No permission required for reports
-    role: null,
-    roles: null
+    badge: null
   },
   { 
     text: 'Snapshots', 
@@ -122,9 +104,7 @@ const menuItems = [
     path: '/snapshots', 
     description: 'Portfolio snapshots & analysis',
     badge: 'Manager',
-    permission: 'financial.snapshots.manage',
-    role: null,
-    roles: null
+    permissions: ['financial.snapshots.manage']
   },
   { 
     text: 'Global Assets', 
@@ -132,8 +112,6 @@ const menuItems = [
     path: '/global-assets', 
     description: 'Global market data',
     badge: 'Admin',
-    permission: null,
-    role: null,
     roles: ['admin', 'super_admin']
   },
   {
@@ -142,9 +120,7 @@ const menuItems = [
     path: '/role-management',
     description: 'Manage roles and permissions',
     badge: 'Admin',
-    permission: null,
-    role: 'super_admin',
-    roles: null
+    roles: ['super_admin']
   },
   {
     text: 'Transactions',
@@ -152,19 +128,14 @@ const menuItems = [
     path: '/transactions',
     description: 'View transaction history',
     badge: 'under review',
-    permission: null, // No permission required for transactions
-    role: null,
-    roles: null
+    permissions: ['transactions.read']
   },
   { 
     text: 'Settings', 
     icon: <SettingsIcon />, 
     path: '/settings', 
     description: 'System configuration',
-    badge: null,
-    permission: null, // No permission required for settings
-    role: null,
-    roles: null
+    badge: null
   }
 ];
 
@@ -175,7 +146,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
-  const { hasPermission, hasRole, hasAnyRole } = usePermissions();
+  const { hasAnyPermission, hasAnyRole } = usePermissions();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -300,42 +271,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {menuItems
             .filter((item) => {
               // Show item if no access control required
-              if (!item.permission && !item.role && !item.roles) {
+              if (!item.permissions && !item.roles) {
                 return true;
               }
               
-              let hasPermissionAccess = true;
-              let hasRoleAccess = true;
+              let hasPermissionAccess = false;
+              let hasRoleAccess = false;
               
               // Check permission-based access
-              if (item.permission) {
-                hasPermissionAccess = hasPermission(item.permission);
+              if (item.permissions) {
+                hasPermissionAccess = hasAnyPermission(item.permissions);
               }
-              // Check role-based access
-              if (item.role) {
-                hasRoleAccess = hasRole(item.role);
-              }
-              
+
               if (item.roles) {
                 hasRoleAccess = hasAnyRole(item.roles);
               }
               
-              // If both permission and role are specified, user needs both
-              if (item.permission && (item.role || item.roles)) {
-                return hasPermissionAccess && hasRoleAccess;
-              }
-              
-              // If only permission is specified, check permission
-              if (item.permission && !item.role && !item.roles) {
-                return hasPermissionAccess;
-              }
-              
-              // If only role is specified, check role
-              if (!item.permission && (item.role || item.roles)) {
-                return hasRoleAccess;
-              }
-              
-              return false;
+              return hasPermissionAccess || hasRoleAccess;
             })
             .map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
