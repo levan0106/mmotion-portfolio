@@ -248,8 +248,47 @@ export const Profile: React.FC = () => {
       // Refresh user info in AccountContext
       await updateAuthState();
     } catch (err: any) {
-      console.error('Error changing password:', err);
-      setError(err.response?.data?.message || 'Failed to change password');
+      // console.error('Error changing password:', err);
+      // console.error('Error response status:', err.response?.status);
+      // console.error('Error response data:', err.response?.data);
+      // console.error('Error response message:', err.response?.data?.message);
+      
+      // Xử lý các loại lỗi khác nhau với thông báo rõ ràng
+      let errorMessage = 'Không thể thay đổi mật khẩu. Vui lòng thử lại.';
+      
+      if (err.response?.status === 401) {
+        if (err.response?.data?.message?.includes('Current password is incorrect')) {
+          errorMessage = 'Mật khẩu hiện tại không đúng. Vui lòng kiểm tra lại mật khẩu hiện tại.';
+        } else if (err.response?.data?.message?.includes('User has no password set')) {
+          errorMessage = 'Tài khoản chưa có mật khẩu. Vui lòng đặt mật khẩu trước.';
+        } else {
+          errorMessage = 'Xác thực thất bại. Vui lòng đăng nhập lại.';
+        }
+      } else if (err.response?.status === 400) {
+        if (err.response?.data?.message?.includes('Password must be at least 6 characters')) {
+          errorMessage = 'Mật khẩu mới không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.';
+        } else {
+          errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+        }
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Không tìm thấy tài khoản. Vui lòng đăng nhập lại.';
+      } else if (err.response?.data?.message) {
+        // Sử dụng thông báo lỗi từ backend và dịch sang tiếng Việt
+        const backendMessage = err.response.data.message;
+        if (backendMessage.includes('Current password is incorrect')) {
+          errorMessage = 'Mật khẩu hiện tại không đúng. Vui lòng kiểm tra lại mật khẩu hiện tại.';
+        } else if (backendMessage.includes('User has no password set')) {
+          errorMessage = 'Tài khoản chưa có mật khẩu. Vui lòng đặt mật khẩu trước.';
+        } else if (backendMessage.includes('Password must be at least 6 characters')) {
+          errorMessage = 'Mật khẩu mới không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.';
+        } else if (backendMessage.includes('User not found')) {
+          errorMessage = 'Không tìm thấy tài khoản. Vui lòng đăng nhập lại.';
+        } else {
+          errorMessage = backendMessage;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }

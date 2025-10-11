@@ -108,10 +108,36 @@ class AuthService {
    * Change password for user
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await apiService.api.post('/api/v1/auth/change-password', {
-      currentPassword,
-      newPassword,
-    });
+    try {
+      await apiService.api.post('/api/v1/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+    } catch (error: any) {
+      // console.error('AuthService changePassword error:', error);
+      // console.error('AuthService error response:', error.response);
+      // console.error('AuthService error message:', error.response?.data?.message);
+      
+      // Re-throw error with better context for the UI
+      if (error.response?.status === 401) {
+        const message = error.response?.data?.message || 'Authentication failed';
+        // Preserve the original error structure
+        const newError = new Error(message);
+        (newError as any).response = error.response;
+        throw newError;
+      } else if (error.response?.status === 400) {
+        const message = error.response?.data?.message || 'Invalid request data';
+        const newError = new Error(message);
+        (newError as any).response = error.response;
+        throw newError;
+      } else if (error.response?.status === 404) {
+        const newError = new Error('User not found');
+        (newError as any).response = error.response;
+        throw newError;
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

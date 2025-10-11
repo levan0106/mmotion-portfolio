@@ -57,9 +57,12 @@ class ApiService {
       },
       (error) => {
         if (error.response?.status === 401) {
-          // Don't redirect for login/register endpoints - let them handle the error
+          // Don't redirect for login/register/change-password endpoints - let them handle the error
           const url = error.config?.url || '';
-          if (url.includes('/auth/login-or-register') || url.includes('/auth/check-user')) {
+          if (url.includes('/auth/login-or-register') || 
+              url.includes('/auth/check-user') || 
+              url.includes('/auth/change-password') ||
+              url.includes('/auth/set-password')) {
             return Promise.reject(error);
           }
           

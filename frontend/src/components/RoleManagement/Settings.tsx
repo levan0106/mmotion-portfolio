@@ -46,7 +46,7 @@ interface SettingsProps {
 
 export const Settings: React.FC<SettingsProps> = () => {
   const { roles, isLoading: isLoadingRoles } = useRoles();
-  const { permissions, isLoading: isLoadingPermissions } = usePermissions();
+  const { userPermissions, isLoading: isLoadingPermissions } = usePermissions();
   
   // Settings state - initialize with default values to avoid controlled/uncontrolled warnings
   const [roleHierarchyEnabled, setRoleHierarchyEnabled] = useState<boolean>(true);
@@ -386,25 +386,43 @@ export const Settings: React.FC<SettingsProps> = () => {
                 </Box>
               ) : (
                 <List dense>
-                  {permissions?.slice(0, 5).map((permission: any) => (
+                  {userPermissions?.slice(0, 5).map((permission: any) => (
                     <ListItem key={permission.permissionId} sx={{ py: 0.5 }}>
                       <ListItemText
-                        primary={permission.displayName}
-                        secondary={permission.category}
+                        primary={
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Typography variant="body1">
+                              {permission.displayName || permission.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
+                              ({permission.name})
+                            </Typography>
+                          </Box>
+                        }
+                        secondary={permission.description || permission.resource}
                       />
-                      <ListItemSecondaryAction>
-                        <Chip
-                          label={permission.category}
-                          size="small"
-                          color="secondary"
-                        />
-                      </ListItemSecondaryAction>
+                      {/* <ListItemSecondaryAction>
+                        <Box display="flex" gap={1}>
+                          <Chip
+                            label={permission.resource || 'Uncategorized'}
+                            size="small"
+                            color="secondary"
+                          />
+                          {permission.isSystemPermission && (
+                            <Chip
+                              label="System"
+                              size="small"
+                              color="primary"
+                            />
+                          )}
+                        </Box>
+                      </ListItemSecondaryAction> */}
                     </ListItem>
                   ))}
-                  {permissions && permissions.length > 5 && (
+                  {userPermissions && userPermissions.length > 5 && (
                     <ListItem>
                       <ListItemText
-                        primary={`+${permissions.length - 5} more permissions`}
+                        primary={`+${userPermissions.length - 5} more permissions`}
                         sx={{ fontStyle: 'italic' }}
                       />
                     </ListItem>
@@ -438,7 +456,7 @@ export const Settings: React.FC<SettingsProps> = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <Paper sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="h4" color="secondary">
-                      {permissions?.length || 0}
+                      {userPermissions?.length || 0}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Total Permissions
