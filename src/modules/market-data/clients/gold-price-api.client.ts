@@ -28,7 +28,16 @@ export class GoldPriceAPIClient {
           `${this.baseUrl}/sites/default/files/data/hienthi/vungmien_109.dat`,
           {
             headers: {
-              'User-Agent': 'MMotion-Portfolio/1.0'
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive',
+              'Referer': 'https://giavang.doji.vn/',
+              'Origin': 'https://giavang.doji.vn',
+              'Sec-Fetch-Dest': 'document',
+              'Sec-Fetch-Mode': 'navigate',
+              'Sec-Fetch-Site': 'same-origin'
             },
             timeout: this.timeout,
             responseType: 'arraybuffer' // Get binary data

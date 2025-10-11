@@ -46,7 +46,16 @@ export class FundPriceAPIClient {
           {
             headers: {
               'Content-Type': 'application/json',
-              'User-Agent': 'MMotion-Portfolio/1.0'
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive',
+              'Referer': 'https://fmarket.vn/',
+              'Origin': 'https://fmarket.vn',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin'
             },
             timeout: this.timeout
           }

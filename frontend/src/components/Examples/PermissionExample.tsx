@@ -18,7 +18,7 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
-import { PermissionGate, RoleGate } from '../Common/PermissionGate';
+import { PermissionGuard } from '../Common/PermissionGuard';
 import { useUserPermissions } from '../../hooks/useUserPermissions';
 
 /**
@@ -101,29 +101,29 @@ export const PermissionExample: React.FC = () => {
                   Portfolio Management
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <PermissionGate permission="portfolios.read">
+                  <PermissionGuard permission="portfolios.read">
                     <Button variant="outlined" size="small" startIcon={<PersonIcon />}>
                       View Portfolios
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="portfolios.create">
+                  <PermissionGuard permission="portfolios.create">
                     <Button variant="contained" size="small" startIcon={<AddIcon />}>
                       Create Portfolio
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="portfolios.update">
+                  <PermissionGuard permission="portfolios.update">
                     <Button variant="outlined" size="small" startIcon={<EditIcon />}>
                       Edit Portfolio
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="portfolios.delete">
+                  <PermissionGuard permission="portfolios.delete">
                     <Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />}>
                       Delete Portfolio
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
 
@@ -135,23 +135,23 @@ export const PermissionExample: React.FC = () => {
                   Trading Operations
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <PermissionGate permission="trades.create">
+                  <PermissionGuard permission="trades.create">
                     <Button variant="contained" size="small">
                       Execute Trade
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="trades.read">
+                  <PermissionGuard permission="trades.read">
                     <Button variant="outlined" size="small">
                       View Trades
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="trades.approve">
+                  <PermissionGuard permission="trades.approve">
                     <Button variant="outlined" color="warning" size="small">
                       Approve Trade
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
 
@@ -163,23 +163,23 @@ export const PermissionExample: React.FC = () => {
                   System Administration
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <PermissionGate permission="users.create">
+                  <PermissionGuard permission="users.create">
                     <Button variant="contained" size="small" startIcon={<PersonIcon />}>
                       Create User
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="system.settings">
+                  <PermissionGuard permission="system.settings">
                     <Button variant="outlined" size="small" startIcon={<SettingsIcon />}>
                       System Settings
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                   
-                  <PermissionGate permission="system.logs">
+                  <PermissionGuard permission="system.logs">
                     <Button variant="outlined" size="small" startIcon={<SecurityIcon />}>
                       View Logs
                     </Button>
-                  </PermissionGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
             </Stack>
@@ -198,17 +198,17 @@ export const PermissionExample: React.FC = () => {
                   Admin Functions
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <RoleGate role="admin">
+                  <PermissionGuard role="admin">
                     <Button variant="contained" color="primary">
                       Admin Panel
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                   
-                  <RoleGate role="super_admin">
+                  <PermissionGuard role="super_admin">
                     <Button variant="contained" color="error">
                       Super Admin
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
 
@@ -217,17 +217,17 @@ export const PermissionExample: React.FC = () => {
                   Analyst Functions
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <RoleGate role="analyst">
+                  <PermissionGuard role="analyst">
                     <Button variant="outlined" color="info">
                       Generate Reports
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                   
-                  <RoleGate role="analyst">
+                  <PermissionGuard role="analyst">
                     <Button variant="outlined" color="info">
                       Data Analysis
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
 
@@ -236,17 +236,17 @@ export const PermissionExample: React.FC = () => {
                   Investor Functions
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <RoleGate role="investor">
+                  <PermissionGuard role="investor">
                     <Button variant="contained" color="success">
                       Manage Portfolio
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                   
-                  <RoleGate role="investor">
+                  <PermissionGuard role="investor">
                     <Button variant="outlined" color="success">
                       Execute Trades
                     </Button>
-                  </RoleGate>
+                  </PermissionGuard>
                 </Stack>
               </Box>
             </Stack>
@@ -264,28 +264,28 @@ export const PermissionExample: React.FC = () => {
                 <Typography variant="subtitle2" gutterBottom>
                   Require ALL permissions (AND logic)
                 </Typography>
-                <PermissionGate 
+                <PermissionGuard 
                   permissions={['portfolios.read', 'financial.read']}
                   requireAll={true}
                 >
                   <Button variant="contained" color="secondary">
                     Advanced Portfolio Analysis
                   </Button>
-                </PermissionGate>
+                </PermissionGuard>
               </Box>
 
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
                   Require ANY permission (OR logic)
                 </Typography>
-                <PermissionGate 
+                <PermissionGuard 
                   permissions={['trades.create', 'trades.approve']}
                   requireAll={false}
                 >
                   <Button variant="outlined" color="warning">
                     Trading Operations
                   </Button>
-                </PermissionGate>
+                </PermissionGuard>
               </Box>
             </Stack>
           </CardContent>
@@ -298,7 +298,7 @@ export const PermissionExample: React.FC = () => {
               Fallback Content
             </Typography>
             <Stack spacing={2}>
-              <PermissionGate 
+              <PermissionGuard 
                 permission="system.settings"
                 fallback={
                   <Alert severity="warning">
@@ -309,9 +309,9 @@ export const PermissionExample: React.FC = () => {
                 <Button variant="contained" color="primary">
                   Access System Settings
                 </Button>
-              </PermissionGate>
+              </PermissionGuard>
 
-              <PermissionGate 
+              <PermissionGuard 
                 permission="users.delete"
                 fallback={
                   <Alert severity="info">
@@ -322,7 +322,7 @@ export const PermissionExample: React.FC = () => {
                 <Button variant="contained" color="error">
                   Delete User
                 </Button>
-              </PermissionGate>
+              </PermissionGuard>
             </Stack>
           </CardContent>
         </Card>
