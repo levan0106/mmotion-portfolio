@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
-  Typography,
   Box,
   Grid,
   Card,
@@ -15,6 +13,7 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,6 +34,7 @@ import DepositDetailsModal from '../components/Deposit/DepositDetailsModal';
 import { apiService } from '../services/api';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import { useAccount } from '../contexts/AccountContext';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 interface Deposit {
   depositId: string;
@@ -67,6 +67,7 @@ interface Portfolio {
 }
 
 const DepositManagement: React.FC = () => {
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [depositFormOpen, setDepositFormOpen] = useState(false);
   const [settlementModalOpen, setSettlementModalOpen] = useState(false);
@@ -236,22 +237,32 @@ const DepositManagement: React.FC = () => {
 
   if (depositsError) {
     return (
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Box sx={{ mt: 2 }}>
         <Alert severity="error">
           Có lỗi xảy ra khi tải dữ liệu tiền gửi
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4 }}>
+    <Box sx={{ mt: 2 }}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
-          Quản lý tiền gửi
-        </Typography>
-        <Box display="flex" gap={2}>
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+        <Box sx={{ flex: 1 }}>
+          <ResponsiveTypography variant="pageHeader"
+          sx={{ 
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 1,
+                    filter: 'none'
+          }}>
+            Quản lý tiền gửi
+          </ResponsiveTypography>
+        </Box>
+        <Box display="flex" gap={2} sx={{ ml: 2 }}>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
@@ -348,21 +359,21 @@ const DepositManagement: React.FC = () => {
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <BankIcon color="primary" />
-                  <Typography variant="h6" fontWeight="bold">
+                  <ResponsiveTypography variant="cardTitle">
                     Tổng quan
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng số tiền gửi:</Typography>
-                  <Typography variant="body2" fontWeight="medium">{analytics?.totalDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="formHelper">Tổng số tiền gửi:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell">{analytics?.totalDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Đang hoạt động:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="info.main">{analytics?.activeDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="formHelper">Đang hoạt động:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ color: 'info.main' }}>{analytics?.activeDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Đã tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="warning.main">{analytics?.settledDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="formHelper">Đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ color: 'warning.main' }}>{analytics?.settledDeposits || 0}</ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -374,27 +385,27 @@ const DepositManagement: React.FC = () => {
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <InterestIcon color="success" />
-                  <Typography variant="h6" fontWeight="bold">
+                  <ResponsiveTypography variant="cardTitle">
                     Tổng giá trị
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng giá trị:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="success.main">
+                  <ResponsiveTypography variant="formHelper">Tổng giá trị:</ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValue" sx={{ color: 'success.main' }}>
                     {formatCurrency(analytics?.totalValue)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng gốc:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="formHelper">Tổng gốc:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell">
                     {formatCurrency(analytics?.totalPrincipal || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Lãi suất TB:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="secondary.main">
+                  <ResponsiveTypography variant="formHelper">Lãi suất TB:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ color: 'secondary.main' }}>
                     {analytics?.averageInterestRate ? `${formatPercentage(analytics.averageInterestRate)}` : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -406,27 +417,27 @@ const DepositManagement: React.FC = () => {
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <SettledIcon color="success" />
-                  <Typography variant="h6" fontWeight="bold">
+                  <ResponsiveTypography variant="cardTitle">
                     Lãi đã tất toán
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Lãi đã tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="success.main">
+                  <ResponsiveTypography variant="formHelper">Lãi đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValue" sx={{ color: 'success.main' }}>
                     {formatCurrency(analytics?.totalSettledInterest || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Số lượng:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="warning.main">
+                  <ResponsiveTypography variant="formHelper">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ color: 'warning.main' }}>
                     {analytics?.settledDeposits || 0} deposits
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Trung bình:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="formHelper">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell">
                     {analytics?.settledDeposits ? formatCurrency((analytics?.totalSettledInterest || 0) / analytics.settledDeposits) : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -438,27 +449,27 @@ const DepositManagement: React.FC = () => {
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <TrendingUpIcon color="primary" />
-                  <Typography variant="h6" fontWeight="bold">
+                  <ResponsiveTypography variant="cardTitle">
                     Lãi chưa tất toán
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Lãi chưa tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="primary.main">
+                  <ResponsiveTypography variant="formHelper">Lãi chưa tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main' }}>
                     {formatCurrency(analytics?.totalAccruedInterest || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Số lượng:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="info.main">
+                  <ResponsiveTypography variant="formHelper">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ color: 'info.main' }}>
                     {analytics?.activeDeposits || 0} deposits
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Trung bình:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="formHelper">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell">
                     {analytics?.activeDeposits ? formatCurrency((analytics?.totalAccruedInterest || 0) / analytics.activeDeposits) : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -544,7 +555,7 @@ const DepositManagement: React.FC = () => {
         deposit={selectedDeposit}
         onSettle={handleSettleDepositClick}
       />
-    </Container>
+    </Box>
   );
 };
 

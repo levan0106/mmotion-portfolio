@@ -4,7 +4,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Typography,
   Paper,
   Table,
   TableBody,
@@ -32,6 +31,7 @@ import {
 import { useAccount } from '../contexts/AccountContext';
 import { apiService } from '../services/api';
 import { formatCurrency, formatNumber, formatPercentageValue } from '../utils/format';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 interface ReportData {
   cashBalance: {
@@ -165,21 +165,20 @@ const Report: React.FC = () => {
             }}>
               {icon}
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
+            <ResponsiveTypography variant="cardTitle" sx={{ color: '#1a1a1a' }}>
               {title}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
-          <Typography variant="h4" sx={{ 
-            fontWeight: 700, 
+          <ResponsiveTypography variant="cardValue" sx={{ 
             mb: 1, 
             color: '#212529' 
           }}>
             {value}
-          </Typography>
+          </ResponsiveTypography>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="body2" sx={{ color: '#6c757d' }}>
+            <ResponsiveTypography variant="cardLabel" sx={{ color: '#6c757d' }}>
               {subtitle}
-            </Typography>
+            </ResponsiveTypography>
             {change && (
               <Chip
                 label={change}
@@ -208,17 +207,74 @@ const Report: React.FC = () => {
   }) => (
     <Paper sx={{ mb: 3 }}>
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <ResponsiveTypography variant="chartTitle">
           {title}
-        </Typography>
+        </ResponsiveTypography>
       </Box>
-      <TableContainer>
-        <Table>
+      <TableContainer sx={{ 
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': {
+          height: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#f1f1f1',
+          borderRadius: '3px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#c1c1c1',
+          borderRadius: '3px',
+          '&:hover': {
+            backgroundColor: '#a8a8a8',
+          },
+        },
+      }}>
+        <Table sx={{ 
+          width: '100%',
+          tableLayout: 'auto'
+        }}>
           <TableHead>
             <TableRow>
               {columns.map((column, colIndex) => (
-                <TableCell key={`header-${colIndex}-${column.key}`} align={column.align || 'left'} sx={{ fontWeight: 600 }}>
-                  {column.label}
+                <TableCell 
+                  key={`header-${colIndex}-${column.key}`} 
+                  align={column.align || 'left'}
+                  sx={{
+                    padding: { xs: '4px 8px', sm: '8px 12px', md: '12px 16px' },
+                    whiteSpace: 'nowrap',
+                    width: 'auto',
+                    minWidth: 'fit-content',
+                    // Flexible width based on content
+                    ...(column.key === 'percentage' ? {
+                      minWidth: '50px',
+                      maxWidth: '80px'
+                    } : {}),
+                    ...(column.key === 'count' ? {
+                      minWidth: '50px',
+                      maxWidth: '80px'
+                    } : {}),
+                    ...(column.key.includes('value') || column.key.includes('total') ? {
+                      minWidth: '50px',
+                      maxWidth: '200px'
+                    } : {}),
+                    ...(column.key === 'source' || column.key === 'exchange' || column.key === 'group' ? {
+                      minWidth: '50px',
+                      maxWidth: '80px'
+                    } : {})
+                  }}
+                >
+                  <ResponsiveTypography 
+                    variant="tableHeaderSmall" 
+                    sx={{ 
+                      fontWeight: 600,
+                      // Use extra small on very small screens
+                      '@media (max-width: 600px)': {
+                        fontSize: '0.55rem !important',
+                        lineHeight: '1.1 !important'
+                      }
+                    }}
+                  >
+                    {column.label}
+                  </ResponsiveTypography>
                 </TableCell>
               ))}
             </TableRow>
@@ -228,7 +284,33 @@ const Report: React.FC = () => {
               data.map((row, index) => (
                 <TableRow key={index} hover>
                   {columns.map((column, colIndex) => (
-                    <TableCell key={`${index}-${colIndex}-${column.key}`} align={column.align || 'left'}>
+                    <TableCell 
+                      key={`${index}-${colIndex}-${column.key}`} 
+                      align={column.align || 'left'}
+                      sx={{
+                        padding: { xs: '4px 8px', sm: '8px 12px', md: '12px 16px' },
+                        whiteSpace: 'nowrap',
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        // Flexible width based on content
+                        ...(column.key === 'percentage' ? {
+                          minWidth: '50px',
+                          maxWidth: '80px'
+                        } : {}),
+                        ...(column.key === 'count' ? {
+                          minWidth: '50px',
+                          maxWidth: '80px'
+                        } : {}),
+                        ...(column.key.includes('value') || column.key.includes('total') ? {
+                          minWidth: '50px',
+                          maxWidth: '200px'
+                        } : {}),
+                        ...(column.key === 'source' || column.key === 'exchange' || column.key === 'group' ? {
+                          minWidth: '50px',
+                          maxWidth: '80px'
+                        } : {})
+                      }}
+                    >
                       {customRender && customRender[column.key] ? (
                         customRender[column.key](row[column.key], row)
                       ) : column.key === 'percentage' ? (
@@ -239,33 +321,62 @@ const Report: React.FC = () => {
                           variant="outlined"
                         />
                       ) : column.key === 'pnl' ? (
-                        <Typography 
-                          variant="body2" 
+                        <ResponsiveTypography 
+                          variant="tableCellSmall" 
                           sx={{ 
-                            fontWeight: 600,
-                            color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main'
+                            fontWeight: 400,
+                            color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
+                            // Use extra small on very small screens
+                            '@media (max-width: 600px)': {
+                              fontSize: '0.55rem !important',
+                              lineHeight: '1.1 !important'
+                            }
                           }}
                         >
                           {formatCurrency(row.total - row.capitalValue, baseCurrency)}
-                        </Typography>
+                        </ResponsiveTypography>
                       ) : column.key.includes('value') || column.key.includes('total') || column.key === 'capitalValue' ? (
-                        <Typography 
-                          variant="body2" 
+                        <ResponsiveTypography 
+                          variant="tableCellSmall" 
                           sx={{ 
-                            fontWeight: 600,
-                            color: Number(row[column.key]) >= 0 ? 'success.main' : 'error.main'
+                            fontWeight: 400,
+                            color: Number(row[column.key]) >= 0 ? 'success.main' : 'error.main',
+                            // Use extra small on very small screens
+                            '@media (max-width: 600px)': {
+                              fontSize: '0.55rem !important',
+                              lineHeight: '1.1 !important'
+                            }
                           }}
                         >
                           {formatCurrency(row[column.key], baseCurrency)}
-                        </Typography>
+                        </ResponsiveTypography>
                       ) : column.key === 'count' ? (
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <ResponsiveTypography 
+                          variant="tableCellSmall" 
+                          sx={{ 
+                            fontWeight: 400,
+                            // Use extra small on very small screens
+                            '@media (max-width: 600px)': {
+                              fontSize: '0.55rem !important',
+                              lineHeight: '1.1 !important'
+                            }
+                          }}
+                        >
                           {formatNumber(row[column.key], 0)}
-                        </Typography>
+                        </ResponsiveTypography>
                       ) : (
-                        <Typography variant="body2">
+                        <ResponsiveTypography 
+                          variant="tableCellSmall"
+                          sx={{
+                            // Use extra small on very small screens
+                            '@media (max-width: 600px)': {
+                              fontSize: '0.55rem !important',
+                              lineHeight: '1.1 !important'
+                            }
+                          }}
+                        >
                           {row[column.key]}
-                        </Typography>
+                        </ResponsiveTypography>
                       )}
                     </TableCell>
                   ))}
@@ -274,9 +385,9 @@ const Report: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="formHelper">
                     No data available
-                  </Typography>
+                  </ResponsiveTypography>
                 </TableCell>
               </TableRow>
             )}
@@ -296,7 +407,7 @@ const Report: React.FC = () => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -304,24 +415,36 @@ const Report: React.FC = () => {
 
   if (!reportData) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box>
         <Alert severity="info">No report data available</Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Financial Report
-          </Typography>
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Portfolio Filter</InputLabel>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, m: 0 }}>
+          <Box sx={{ flex: 1 }}>
+            <ResponsiveTypography variant="pageHeader"
+            sx={{ 
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1,
+              filter: 'none'
+            }}>
+              Financial Report
+            </ResponsiveTypography>
+          </Box>
+          <Box sx={{ ml: 2 }}>
+            <FormControl sx={{ minWidth: 200, '& .MuiOutlinedInput-root': { height: '40px' } }}>
+              <InputLabel sx={{ fontSize: '0.875rem' }}>Portfolio Filter</InputLabel>
             <Select
               multiple
               value={selectedPortfolioIds}
+              size="small"
               onChange={(event) => {
                 const value = event.target.value as string[];
 
@@ -356,13 +479,13 @@ const Report: React.FC = () => {
               MenuProps={{
                 PaperProps: {
                   style: {
-                    maxHeight: 300,
+                    maxHeight: 250,
                     width: 250,
                   },
                 },
               }}
             >
-              <MenuItem key="all" value="all" sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
+              <MenuItem key="all" value="all" sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}>
                 <Checkbox 
                   checked={selectedPortfolioIds.includes('all')} 
                   color="primary"
@@ -370,7 +493,7 @@ const Report: React.FC = () => {
                 />
                 <ListItemText 
                   primary="All Portfolios" 
-                  sx={{ ml: 1 }}
+                  sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
                 />
               </MenuItem>
               {portfolios.map((portfolio, index) => {
@@ -381,7 +504,7 @@ const Report: React.FC = () => {
                     <MenuItem 
                       key={`portfolio-${index}-${portfolio.portfolioId}`} 
                       value={portfolio.portfolioId}
-                      sx={{ display: 'flex', alignItems: 'center', py: 1 }}
+                      sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}
                     >
                       <Checkbox 
                         checked={selectedPortfolioIds.includes(portfolio.portfolioId)} 
@@ -390,7 +513,7 @@ const Report: React.FC = () => {
                       />
                       <ListItemText 
                         primary={portfolio.name} 
-                        sx={{ ml: 1 }}
+                        sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
                       />
                     </MenuItem>
                   );
@@ -400,11 +523,12 @@ const Report: React.FC = () => {
                 }
               })}
             </Select>
-          </FormControl>
+            </FormControl>
+          </Box>
         </Box>
-        <Typography variant="body1" color="text.secondary">
+        <ResponsiveTypography variant="pageSubtitle">
           Comprehensive overview of cash balance, deposits, and assets by category
-        </Typography>
+        </ResponsiveTypography>
       </Box>
 
       {/* 3-Column Layout */}
@@ -513,22 +637,63 @@ const Report: React.FC = () => {
                 customRender={{
                   count: (value, row) => (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main' }}>
+                      <ResponsiveTypography 
+                        variant="tableCellSmall" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.55rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         {formatCurrency(row.capitalValue, baseCurrency)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="formHelper"
+                        sx={{
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.5rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         Count: {formatNumber(value, 0)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   ),
                   total: (value, row) => (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: Number(value) >= 0 ? 'success.main' : 'error.main' }}>
+                      <ResponsiveTypography 
+                        variant="tableCellSmall" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: Number(value) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.55rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         {formatCurrency(value, baseCurrency)}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main' }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="formHelper" 
+                        sx={{ 
+                          color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.5rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         P&L: {formatCurrency(value - row.capitalValue, baseCurrency)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   )
                 }}
@@ -546,22 +711,63 @@ const Report: React.FC = () => {
                 customRender={{
                   count: (value, row) => (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main' }}>
+                      <ResponsiveTypography 
+                        variant="tableCellSmall" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.55rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         {formatCurrency(row.capitalValue, baseCurrency)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="formHelper"
+                        sx={{
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.5rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         Count: {formatNumber(value, 0)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   ),
                   total: (value, row) => (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: Number(value) >= 0 ? 'success.main' : 'error.main' }}>
+                      <ResponsiveTypography 
+                        variant="tableCellSmall" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: Number(value) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.55rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         {formatCurrency(value, baseCurrency)}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main' }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="formHelper" 
+                        sx={{ 
+                          color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
+                          // Use extra small on very small screens
+                          '@media (max-width: 600px)': {
+                            fontSize: '0.5rem !important',
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
                         P&L: {formatCurrency(value - row.capitalValue, baseCurrency)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   )
                 }}

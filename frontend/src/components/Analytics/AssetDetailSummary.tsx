@@ -13,7 +13,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Typography, Grid, Card, CardContent, Chip } from '@mui/material';
+import { Box, Grid, Card, CardContent, Chip } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { getPnLColor, getPnLLightColor } from '../../config/chartColors';
 
@@ -52,9 +53,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   if (!data || data.length === 0) {
     return (
       <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body1" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "tableCell" : "cardTitle"} color="text.secondary">
           No asset detail data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -85,40 +86,40 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           minWidth: 200
         }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#1a1a1a' }}>
+          <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, color: '#1a1a1a' }}>
             {data.symbol} - {data.name}
-          </Typography>
+          </ResponsiveTypography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="tableCell" color="text.secondary">
               Allocation:
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatPercentage(data.percentage || 0)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="tableCell" color="text.secondary">
               Current Value:
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatCurrency(data.totalValue, baseCurrency)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="tableCell" color="text.secondary">
               Quantity:
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {data.quantity?.toLocaleString() || '0'}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="tableCell" color="text.secondary">
               Market Price:
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatCurrency(data.currentPrice, baseCurrency)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ 
             display: 'flex', 
@@ -129,28 +130,27 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
             borderRadius: 1,
             border: `1px solid ${(data.unrealizedPl || 0) >= 0 ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
           }}>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="tableCell" color="text.secondary">
               Unrealized P&L:
-            </Typography>
+            </ResponsiveTypography>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography 
-                variant="body2" 
+              <ResponsiveTypography 
+                variant="tableCell" 
                 sx={{ 
                   fontWeight: 600,
                   color: (data.unrealizedPl || 0) >= 0 ? '#4caf50' : '#f44336'
                 }}
               >
                 {formatCurrency(data.unrealizedPl || 0, baseCurrency)}
-              </Typography>
-              <Typography 
-                variant="caption" 
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="labelSmall" 
                 sx={{ 
-                  color: (data.unrealizedPl || 0) >= 0 ? '#4caf50' : '#f44336',
-                  fontSize: '0.7rem'
+                  color: (data.unrealizedPl || 0) >= 0 ? '#4caf50' : '#f44336'
                 }}
               >
                 {formatPercentage(data.unrealizedPlPercentage || 0)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         </Box>
@@ -162,9 +162,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   if (!data || data.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+        <ResponsiveTypography variant="cardTitle" color="text.secondary">
           No asset detail data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -173,12 +173,12 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     <Box>
       {!compact && (
         <>
-          <Typography variant="h6" gutterBottom>
+          <ResponsiveTypography variant="pageTitle">
             {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="labelSmall" color="text.secondary" sx={{ mb: 3 }}>
             Individual asset holdings with values and performance
-          </Typography>
+          </ResponsiveTypography>
         </>
       )}
       
@@ -186,12 +186,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
       <Grid container spacing={compact ? 1.5 : 3} sx={{ mb: compact ? 1.5 : 3 }}>
         {/* Allocation Chart */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle1" gutterBottom sx={{ 
-            fontWeight: 600,
-            fontSize: compact ? '0.9rem' : '1rem'
-          }}>
+          <ResponsiveTypography variant="chartTitle" >
             Asset Allocation (%)
-          </Typography>
+          </ResponsiveTypography>
           <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -220,12 +217,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
         {/* P&L Chart */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle1" gutterBottom sx={{ 
-            fontWeight: 600,
-            fontSize: compact ? '0.9rem' : '1rem'
-          }}>
+          <ResponsiveTypography variant="chartTitle" >
             Unrealized P&L ({baseCurrency})
-          </Typography>
+          </ResponsiveTypography>
           <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -254,32 +248,32 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                           minWidth: 200
                         }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#1a1a1a' }}>
+                          <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, color: '#1a1a1a' }}>
                             {data.symbol} - {data.name}
-                          </Typography>
+                          </ResponsiveTypography>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <ResponsiveTypography variant="tableCell" color="text.secondary">
                               Current Value:
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {formatCurrency(data.totalValue, baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <ResponsiveTypography variant="tableCell" color="text.secondary">
                               Quantity:
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {data.quantity?.toLocaleString() || '0'}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <ResponsiveTypography variant="tableCell" color="text.secondary">
                               Market Price:
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {formatCurrency(data.currentPrice, baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                           <Box sx={{ 
                             display: 'flex', 
@@ -290,28 +284,27 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                             borderRadius: 1,
                             border: `1px solid ${getPnLColor(data.unrealizedPl)}40`
                           }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <ResponsiveTypography variant="tableCell" color="text.secondary">
                               Unrealized P&L:
-                            </Typography>
+                            </ResponsiveTypography>
                             <Box sx={{ textAlign: 'right' }}>
-                              <Typography 
-                                variant="body2" 
+                              <ResponsiveTypography 
+                                variant="tableCell" 
                                 sx={{ 
                                   fontWeight: 600,
                                   color: getPnLColor(data.unrealizedPl)
                                 }}
                               >
                                 {formatCurrency(data.unrealizedPl, baseCurrency)}
-                              </Typography>
-                              <Typography 
-                                variant="caption" 
+                              </ResponsiveTypography>
+                              <ResponsiveTypography 
+                                variant="labelSmall" 
                                 sx={{ 
-                                  color: getPnLColor(data.unrealizedPl),
-                                  fontSize: '0.7rem'
+                                  color: getPnLColor(data.unrealizedPl)
                                 }}
                               >
                                 {formatPercentage(data.unrealizedPlPercentage)}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </Box>
                         </Box>
@@ -342,71 +335,61 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         borderRadius: 2,
         border: '1px solid rgba(25, 118, 210, 0.12)'
       }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ 
+        <ResponsiveTypography variant="cardTitle" sx={{ 
           fontWeight: 600, 
-          mb: compact ? 1 : 2,
-          fontSize: compact ? '0.9rem' : '1rem'
+          mb: compact ? 1 : 2
         }}>
           Portfolio Performance Summary
-        </Typography>
+        </ResponsiveTypography>
         <Grid container spacing={compact ? 1 : 2}>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: compact ? '0.65rem' : '0.75rem' 
-              }}>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Total Unrealized P&L
-              </Typography>
-              <Typography 
-                variant="h6" 
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="cardValue" 
                 color={chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0) >= 0 ? "success.main" : "error.main"}
                 sx={{ 
                   fontWeight: 'bold', 
-                  display: 'block',
-                  fontSize: compact ? '0.9rem' : '1.25rem'
+                  display: 'block'
                 }}
               >
                 {formatCurrency(
                   chartData.reduce((sum, asset) => sum + asset.unrealizedPl, 0), 
                   baseCurrency
                 )}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: compact ? '0.65rem' : '0.75rem' 
-              }}>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Profitable Assets
-              </Typography>
-              <Typography variant="h6" color="success.main" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="success.main" sx={{ 
                 fontWeight: 'bold', 
-                display: 'block',
-                fontSize: compact ? '0.9rem' : '1.25rem'
+                display: 'block'
               }}>
                 {chartData.filter(asset => asset.unrealizedPl > 0).length} / {chartData.length}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: compact ? '0.65rem' : '0.75rem' 
-              }}>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Best Performer
-              </Typography>
-              <Typography variant="body2" color="primary" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell" color="primary" sx={{ 
                 fontWeight: 'bold', 
-                display: 'block',
-                fontSize: compact ? '0.8rem' : '0.875rem'
+                display: 'block'
               }}>
                 {chartData.length > 0 ? 
                   chartData.reduce((best, asset) => 
                     asset.unrealizedPlPercentage > best.unrealizedPlPercentage ? asset : best
                   ).symbol : 'N/A'
                 }
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
         </Grid>
@@ -439,9 +422,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                         mr: 0.75,
                       }}
                     />
-                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="cardValueMedium" >
                       {asset.symbol}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Chip 
                     label={asset.assetType} 
@@ -457,11 +440,10 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                 </Box>
                 
                 {/* Asset Name */}
-                <Typography 
-                  variant="caption" 
+                <ResponsiveTypography 
+                  variant="labelSmall" 
                   color="text.secondary" 
                   sx={{ 
-                    fontSize: '0.7rem',
                     display: 'block',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -470,7 +452,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   }}
                 >
                   {asset.name}
-                </Typography>
+                </ResponsiveTypography>
                 
                 {/* Allocation & Total Value */}
                 <Box sx={{ 
@@ -484,30 +466,28 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   border: '1px solid rgba(25, 118, 210, 0.12)'
                 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
                       Allocation
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
+                      variant="cardValueSmall" 
                       color="primary" 
-                      fontWeight="bold" 
-                      sx={{ fontSize: '0.85rem', display: 'block' }}
+                      sx={{ fontWeight: 'bold', display: 'block' }}
                     >
                       {formatPercentage(asset.percentage)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
                       Value
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
+                      variant="cardValueSmall" 
                       color="text.primary" 
-                      fontWeight="bold" 
-                      sx={{ fontSize: '0.8rem', display: 'block' }}
+                      sx={{ fontWeight: 'bold', display: 'block' }}
                     >
                       {formatCurrency(asset.totalValue, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
                 
@@ -519,21 +499,21 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   fontSize: '0.7rem'
                 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
                       Qty
-                    </Typography>
-                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.7rem', display: 'block' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
                       {asset.quantity?.toLocaleString() || '0'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
                       Market Price
-                    </Typography>
-                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: '0.7rem', display: 'block' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
                       {formatCurrency(asset.currentPrice, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
                 
@@ -549,34 +529,37 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   border: `1px solid ${getPnLColor(asset.unrealizedPl)}30`
                 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
                       Unrealized P&L
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight="bold"
-                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                      sx={{ fontSize: '0.8rem', display: 'block' }}
-                    >
-                      {formatCurrency(asset.unrealizedPl, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValueSmall" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          color: asset.unrealizedPl >= 0 ? "success.main" : "error.main",
+                          display: 'block' 
+                        }}
+                      >
+                        {formatCurrency(asset.unrealizedPl, baseCurrency)}
+                      </ResponsiveTypography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight="bold"
-                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                      sx={{ fontSize: '0.8rem', display: 'block' }}
+                    <ResponsiveTypography 
+                      variant="cardValueSmall" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        color: asset.unrealizedPl >= 0 ? "success.main" : "error.main",
+                        display: 'block' 
+                      }}
                     >
                       {formatPercentage(asset.unrealizedPlPercentage)}
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
+                      variant="labelSmall" 
                       color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                      sx={{ fontSize: '0.65rem' }}
                     >
                       {asset.unrealizedPl >= 0 ? 'Profit' : 'Loss'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               </CardContent>
@@ -595,46 +578,48 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 Total Assets
-              </Typography>
-              <Typography variant="h5" color="primary" fontWeight="bold">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {data.length}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 Total Asset Value
-              </Typography>
-              <Typography variant="h5" color="primary" fontWeight="bold">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {formatCurrency(data.reduce((sum, asset) => sum + asset.totalValue, 0), baseCurrency)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 Total P&L
-              </Typography>
-              <Typography 
-                variant="h5" 
-                fontWeight="bold"
-                color={data.reduce((sum, asset) => sum + asset.unrealizedPl, 0) >= 0 ? "success.main" : "error.main"}
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="cardValue" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: data.reduce((sum, asset) => sum + asset.unrealizedPl, 0) >= 0 ? "success.main" : "error.main"
+                }}
               >
                 {formatCurrency(data.reduce((sum, asset) => sum + asset.unrealizedPl, 0), baseCurrency)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 Asset Types
-              </Typography>
-              <Typography variant="h5" color="primary" fontWeight="bold">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {new Set(data.map(asset => asset.assetType)).size}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
         </Grid>

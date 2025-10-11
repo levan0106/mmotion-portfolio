@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Typography, CircularProgress, Card, CardContent } from '@mui/material';
+import { Box, Grid, CircularProgress, Card, CardContent } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { 
   AccountBalance, 
   TrendingUp, 
@@ -200,8 +201,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <AccountBalance sx={{ fontSize: 35, color: '#1976d2' }} />
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
-                <Box sx={{ 
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
+                {/* <Box sx={{ 
                   p: getUltraSpacing(1, 0.5), 
                   backgroundColor: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)', 
                   borderRadius: 2,
@@ -211,29 +212,17 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   justifyContent: 'center'
                 }}>
                   <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 700, 
-                  fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
-                  color: '#1a1a1a' 
-                }}>
+                </Box> */}
+                <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Total Investment
-                </Typography>
+                </ResponsiveTypography>
               </Box>
-              <Typography variant="h4" sx={{ 
-                fontWeight: 700, 
-                mb: getUltraSpacing(1, 0.5), 
-                fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
-                color: '#212529' 
-              }}>
+              <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                color: '#6c757d', 
-                fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
-              }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel">
                 Assets + Deposits Value
-              </Typography>
+              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
@@ -279,8 +268,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               }
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
-                <Box sx={{ 
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
+                {/* <Box sx={{ 
                   p: getUltraSpacing(1, 0.5), 
                   backgroundColor: (portfolio.unrealizedInvestPnL || 0) >= 0 
                     ? 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)'
@@ -295,29 +284,20 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                     <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} /> : 
                     <TrendingDown sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
                   }
-                </Box>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 700, 
-                  fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
-                  color: '#1a1a1a' 
-                }}>
+                </Box> */}
+                <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Unrealized P&L
-                </Typography>
+                </ResponsiveTypography>
               </Box>
-              <Typography variant="h4" sx={{ 
-                fontWeight: 700, 
-                mb: getUltraSpacing(1, 0.5), 
-                fontSize: isCompactMode ? '1.4rem' : '1.8rem',
+              <ResponsiveTypography variant="cardValue" sx={{ 
+                mb: getUltraSpacing(1, 0.5),
                 color: (portfolio.unrealizedInvestPnL || 0) >= 0 ? '#28a745' : '#dc3545'
               }}>
                 {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                color: '#6c757d', 
-                fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
-              }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel">
                 Current Unrealized Profit/Loss
-              </Typography>
+              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
@@ -354,8 +334,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <AccountBalance sx={{ fontSize: 35, color: '#9c27b0' }} />
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
-                <Box sx={{ 
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
+                {/* <Box sx={{ 
                   p: getUltraSpacing(1, 0.5), 
                   backgroundColor: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 100%)', 
                   borderRadius: 2,
@@ -365,29 +345,17 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   justifyContent: 'center'
                 }}>
                   <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 700, 
-                  fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
-                  color: '#1a1a1a' 
-                }}>
+                </Box> */}
+                <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Cash Balance
-                </Typography>
+                </ResponsiveTypography>
               </Box>
-              <Typography variant="h4" sx={{ 
-                fontWeight: 700, 
-                mb: getUltraSpacing(1, 0.5), 
-                fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
-                color: '#212529' 
-              }}>
+              <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                color: '#6c757d', 
-                fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
-              }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel">
                 Available Cash
-              </Typography>
+              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
@@ -424,8 +392,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} />
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: getUltraSpacing(2, 1) }}>
-                <Box sx={{ 
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
+                {/* <Box sx={{ 
                   p: getUltraSpacing(1, 0.5), 
                   backgroundColor: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)', 
                   borderRadius: 2,
@@ -435,38 +403,24 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   justifyContent: 'center'
                 }}>
                   <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 700, 
-                  fontSize: isCompactMode ? '0.9rem' : '1.1rem', 
-                  color: '#1a1a1a' 
-                }}>
+                </Box> */}
+                <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Asset Classes
-                </Typography>
+                </ResponsiveTypography>
               </Box>
-              <Typography variant="h4" sx={{ 
-                fontWeight: 700, 
-                mb: getUltraSpacing(1, 0.5), 
-                fontSize: isCompactMode ? '1.4rem' : '1.8rem', 
-                color: '#212529' 
-              }}>
+              <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatNumberWithSeparators(Object.keys(allocationData?.allocation || {}).length, 0)}
-              </Typography>
-              <Typography variant="body2" sx={{ 
-                color: '#6c757d', 
-                fontSize: isCompactMode ? '0.75rem' : '0.85rem' 
-              }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel">
                 Different Asset Types
-              </Typography>
+              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       {/* Asset Allocation Section */}
-      <Typography variant="h5" gutterBottom sx={{ 
-        fontWeight: 600, 
-        color: 'text.primary',
+      <ResponsiveTypography variant="pageTitle" sx={{ 
         mb: getUltraSpacing(3, 1),
         display: 'flex',
         alignItems: 'center',
@@ -474,7 +428,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       }}>
         <PieChartIcon sx={{ fontSize: 20, color: 'primary.main' }} />
         Asset Type Allocation
-      </Typography>
+      </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ 
         mb: getUltraSpacing(4, 2),
         '& .MuiGrid-item': {
@@ -495,20 +449,18 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             flexDirection: 'column',
             alignItems: 'center' // Center the pie chart
           }}>
-            <Typography variant="subtitle2" gutterBottom sx={{ 
+            <ResponsiveTypography variant="chartTitle" sx={{ 
               mb: getUltraSpacing(1, 0.5),
-              fontSize: isCompactMode ? '0.7rem' : '0.8rem',
-              fontWeight: 600,
               textAlign: 'center'
             }}>
               Asset Allocation (Pie Chart)
-            </Typography>
+            </ResponsiveTypography>
             {isAnalyticsLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
                 <CircularProgress size={20} />
               </Box>
             ) : analyticsError ? (
-              <Typography color="error" variant="body2">Failed to load allocation data</Typography>
+              <ResponsiveTypography variant="errorText">Failed to load allocation data</ResponsiveTypography>
             ) : (
               <AssetAllocationChart 
                 data={allocationData || { allocation: {}, totalValue: 0, totalAssetsValue: 0, totalDepositsValue: 0, assetCount: 0 }} 
@@ -536,7 +488,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={20} />
               </Box>
             ) : assetPerformanceError ? (
-              <Typography color="error" variant="body2">Failed to load P&L data</Typography>
+              <ResponsiveTypography variant="errorText">Failed to load P&L data</ResponsiveTypography>
             ) : (
               <UnrealizedPnLChart 
                 data={(assetPerformanceData || []).map((item: any) => ({
@@ -564,25 +516,23 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <Typography variant="subtitle2" gutterBottom sx={{ 
+            <ResponsiveTypography variant="chartTitle" sx={{ 
               mb: getUltraSpacing(1, 0.5),
-              fontSize: isCompactMode ? '0.7rem' : '0.8rem',
-              fontWeight: 600,
               textAlign: 'center'
             }}>
               Allocation Summary
-            </Typography>
+            </ResponsiveTypography>
             {allocationData && Object.keys(allocationData.allocation).length > 0 ? (
               <Box>
                         {Object.entries(allocationData.allocation).map(([assetType, allocation]: [string, any]) => (
                   <Box key={assetType} sx={{ mb: getUltraSpacing(1, 0.5) }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
-                      <Typography variant="body2" fontWeight="medium" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                         {assetType.toUpperCase()}
-                      </Typography>
-                      <Typography variant="body2" fontWeight="bold" color="primary" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 700, color: 'primary.main' }}>
                         {formatNumber(allocation.percentage, 1)}%
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     <Box 
                       sx={{ 
@@ -602,13 +552,12 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                         }}
                       />
                     </Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ 
+                    <ResponsiveTypography variant="formHelper" sx={{ 
                       mt: 0.2, 
-                      display: 'block', 
-                      fontSize: isCompactMode ? '0.55rem' : '0.65rem' 
+                      display: 'block'
                     }}>
                       {formatCurrency(allocation.value, portfolio.baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 ))}
                 
@@ -622,51 +571,49 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
                     {/* Total Assets Value Column */}
                     <Box sx={{ flex: 1, textAlign: 'center' }}>
-                      <Typography variant="caption" color="text.secondary" gutterBottom sx={{ 
-                        fontSize: isCompactMode ? '0.6rem' : '0.7rem', 
-                        display: 'block' 
+                      <ResponsiveTypography variant="formHelper" sx={{ 
+                        display: 'block',
+                        mb: 0.5
                       }}>
                         Total Assets Value
-                      </Typography>
-                      <Typography variant="h6" color="primary" fontWeight="bold" sx={{ 
-                        fontSize: isCompactMode ? '0.8rem' : '0.9rem' 
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValue" sx={{ 
+                        color: 'primary.main',
+                        fontWeight: 700
                       }}>
                         {formatCurrency(allocationData?.totalAssetsValue || 0, portfolio.baseCurrency)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     
                     {/* Total Deposits Value Column */}
                     <Box sx={{ flex: 1, textAlign: 'center' }}>
-                      <Typography variant="caption" color="text.secondary" gutterBottom sx={{ 
-                        fontSize: isCompactMode ? '0.6rem' : '0.7rem', 
-                        display: 'block' 
+                      <ResponsiveTypography variant="formHelper" sx={{ 
+                        display: 'block',
+                        mb: 0.5
                       }}>
                         Total Deposits Value
-                      </Typography>
-                      <Typography variant="h6" color="primary" fontWeight="bold" sx={{ 
-                        fontSize: isCompactMode ? '0.8rem' : '0.9rem' 
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValue" sx={{ 
+                        color: 'primary.main',
+                        fontWeight: 700
                       }}>
                         {formatCurrency(allocationData?.totalDepositsValue || 0, portfolio.baseCurrency)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                 </Box>
               </Box>
             ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ 
-                fontSize: isCompactMode ? '0.65rem' : '0.75rem' 
-              }}>
+              <ResponsiveTypography variant="formHelper">
                 No allocation data available
-              </Typography>
+              </ResponsiveTypography>
             )}
           </Box>
         </Grid>
       </Grid>
 
       {/* Asset Detail Summary Section */}
-      <Typography variant="h5" gutterBottom sx={{ 
-        fontWeight: 600, 
-        color: 'text.primary',
+      <ResponsiveTypography variant="pageTitle" sx={{ 
         mb: getUltraSpacing(3, 1),
         display: 'flex',
         alignItems: 'center',
@@ -674,7 +621,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       }}>
         <AssignmentIcon sx={{ fontSize: 20, color: 'primary.main' }} />
         Asset Detail Summary
-      </Typography>
+      </ResponsiveTypography>
       <Box sx={{ 
         p: getUltraSpacing(2, 1), 
         backgroundColor: 'white', 
@@ -688,7 +635,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             <CircularProgress size={24} />
           </Box>
         ) : assetDetailError ? (
-          <Typography color="error" variant="body2">{assetDetailError}</Typography>
+          <ResponsiveTypography variant="errorText">{assetDetailError}</ResponsiveTypography>
         ) : (
           <AssetDetailSummary 
             data={assetDetailData?.data || []} 
@@ -700,9 +647,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       </Box>
 
       {/* Risk & Performance Analysis Section */}
-      <Typography variant="h5" gutterBottom sx={{ 
-        fontWeight: 600, 
-        color: 'text.primary',
+      <ResponsiveTypography variant="pageTitle" sx={{ 
         mb: getUltraSpacing(3, 1),
         display: 'flex',
         alignItems: 'center',
@@ -710,7 +655,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       }}>
         <AnalyticsIcon sx={{ fontSize: 20, color: 'primary.main' }} />
         Risk & Performance Analysis
-      </Typography>
+      </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
@@ -726,7 +671,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : riskReturnError ? (
-              <Typography color="error" variant="body2">{riskReturnError}</Typography>
+              <ResponsiveTypography variant="errorText">{riskReturnError}</ResponsiveTypography>
             ) : (
               <RiskReturnChart 
                 data={(riskReturnData?.data || []).map((item: any) => ({
@@ -756,7 +701,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : assetPerformanceError ? (
-              <Typography color="error" variant="body2">{assetPerformanceError}</Typography>
+              <ResponsiveTypography variant="errorText">{assetPerformanceError}</ResponsiveTypography>
             ) : (
               <AssetPerformanceChart 
                 data={(assetPerformanceData || []).map((item: any) => ({
@@ -773,9 +718,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       </Grid>
 
       {/* Diversification & Timeline Section */}
-      <Typography variant="h5" gutterBottom sx={{ 
-        fontWeight: 600, 
-        color: 'text.primary',
+      <ResponsiveTypography variant="pageTitle" sx={{ 
         mb: getUltraSpacing(3, 1),
         display: 'flex',
         alignItems: 'center',
@@ -783,7 +726,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       }}>
         <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
         Diversification & Timeline
-      </Typography>
+      </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
@@ -800,7 +743,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : diversificationError ? (
-              <Typography color="error" variant="body2">{diversificationError}</Typography>
+              <ResponsiveTypography variant="errorText">{diversificationError}</ResponsiveTypography>
             ) : (
               <DiversificationHeatmap 
                 data={diversificationData?.data || []} 
@@ -824,7 +767,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : allocationTimelineError ? (
-              <Typography color="error" variant="body2">{allocationTimelineError}</Typography>
+              <ResponsiveTypography variant="errorText">{allocationTimelineError}</ResponsiveTypography>
             ) : (
               <AssetAllocationTimeline 
                 data={allocationTimelineData || []} 

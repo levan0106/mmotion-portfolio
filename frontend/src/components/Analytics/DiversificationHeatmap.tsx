@@ -5,10 +5,10 @@
 import React from 'react';
 import {
   Box,
-  Typography,
   Grid,
   Tooltip as MuiTooltip,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatPercentage } from '../../utils/format';
 
 interface HeatmapData {
@@ -76,9 +76,9 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
   if (assetTypes.length === 0) {
     return (
       <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body1" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "tableCell" : "cardTitle"} color="text.secondary">
           No diversification data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -87,12 +87,12 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
     <Box>
       {!compact && (
         <>
-          <Typography variant="h6" gutterBottom>
+          <ResponsiveTypography variant="chartTitle">
             {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
             Correlation matrix showing diversification between asset types
-          </Typography>
+          </ResponsiveTypography>
         </>
       )}
       
@@ -173,17 +173,16 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                         }}
                       >
                         {!isDiagonal && (
-                          <Typography 
-                            variant="caption" 
+                          <ResponsiveTypography 
+                            variant="formHelper" 
                             sx={{ 
                               color: 'white', 
                               fontWeight: 'bold',
-                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                              fontSize: compact ? '0.6rem' : '0.75rem'
+                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
                             }}
                           >
                             {formatPercentage(correlation)}
-                          </Typography>
+                          </ResponsiveTypography>
                         )}
                       </Box>
                     </MuiTooltip>
@@ -198,9 +197,9 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
       {/* Legend */}
       {!compact && (
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+          <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ fontWeight: 600 }}>
             Correlation Level:
-          </Typography>
+          </ResponsiveTypography>
         {[
           { label: 'High (≥0.8)', color: '#d32f2f' },
           { label: 'Medium-High (0.6-0.8)', color: '#f57c00' },
@@ -218,9 +217,9 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                 border: '1px solid rgba(0,0,0,0.1)'
               }} 
             />
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            <ResponsiveTypography variant="formHelper" color="text.secondary">
               {item.label}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
         ))}
         </Box>

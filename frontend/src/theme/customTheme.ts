@@ -1,12 +1,195 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
 
-// Professional Financial System Theme
-export const customTheme = createTheme({
+// Custom typography variants for responsive design
+const customTypography = {
+  // Header variants
+  header: {
+    xs: '1.2rem',    // 19.2px (increased from 16px)
+    sm: '1.4rem',    // 22.4px (increased from 18.7px)
+    md: '1.6rem',    // 25.6px (increased from 21.3px)
+    lg: '1.8rem',    // 28.8px (increased from 24px)
+    xl: '2rem',      // 32px (increased from 26.7px)
+  },
+  
+  // Title variants
+  title: {
+    xs: '0.9rem',    // 14.4px (increased from 11.7px)
+    sm: '1rem',      // 16px (increased from 13.3px)
+    md: '1.1rem',    // 17.6px (increased from 14.7px)
+    lg: '1.2rem',    // 19.2px (increased from 16px)
+    xl: '1.3rem',    // 20.8px (increased from 17.3px)
+  },
+  
+  // Subtitle variants
+  subtitle: {
+    xs: '0.6rem',    // 11.2px (increased from 9.3px)
+    sm: '0.7rem',    // 12.8px (increased from 10.7px)
+    md: '0.8rem',    // 14.4px (increased from 12px)
+    lg: '0.9rem',      // 16px (increased from 13.3px)
+    xl: '1.0rem',    // 17.6px (increased from 14.7px)
+  },
+  
+  // Body text variants
+  body: {
+    xs: '0.6rem',    // 9.6px (increased from 8px)
+    sm: '0.7rem',    // 11.2px (increased from 9.3px)
+    md: '0.8rem',    // 12.8px (increased from 10.7px)
+    lg: '0.9rem',    // 14.4px (increased from 12px)
+    xl: '1rem',      // 16px (increased from 13.3px)
+  },
+  
+  // Small text variants
+  small: {
+    xs: '0.5rem',    // 8px (increased from 6.7px)
+    sm: '0.6rem',    // 9.6px (increased from 8px)
+    md: '0.7rem',    // 11.2px (increased from 9.3px)
+    lg: '0.8rem',    // 12.8px (increased from 10.7px)
+    xl: '0.9rem',    // 14.4px (increased from 12px)
+  },
+  
+  // Caption variants
+  caption: {
+    xs: '0.4rem',    // 6.4px (increased from 5.3px)
+    sm: '0.5rem',    // 8px (increased from 6.7px)
+    md: '0.6rem',    // 9.6px (increased from 8px)
+    lg: '0.7rem',    // 11.2px (increased from 9.3px)
+    xl: '0.8rem',    // 12.8px (increased from 10.7px)
+  },
+
+  // Chart title variants
+  chartTitle: {
+    xs: '0.6rem',   // 10.4px (increased from 8.5px)
+    sm: '0.7rem',   // 12px (increased from 9.6px)
+    md: '0.8rem',   // 13.6px (increased from 10.7px)
+    lg: '0.9rem',    // 14.4px (increased from 11.7px)
+    xl: '1.0rem',      // 16px (increased from 12.8px)
+  },
+  
+  // Chart subtitle variants
+  chartSubtitle: {
+    xs: '0.45rem',   // 8.8px (increased from 6.9px)
+    sm: '0.5rem',   // 9.6px (increased from 7.5px)
+    md: '0.6rem',   // 10.4px (increased from 8px)
+    lg: '0.7rem',   // 12px (increased from 9.1px)
+    xl: '0.8rem',   // 12.8px (increased from 10.1px)
+  },
+  
+  // Chart legend variants
+  chartLegend: {
+    xs: '0.45rem',   // 8.8px (increased from 6.9px)
+    sm: '0.55rem',   // 9.6px (increased from 7.5px)
+    md: '0.65rem',   // 10.4px (increased from 8px)
+    lg: '0.75rem',   // 12px (increased from 9.1px)
+    xl: '0.85rem',   // 12.8px (increased from 10.1px)
+  },
+  
+  // Chart tooltip variants
+  chartTooltip: {
+    xs: '0.4rem',   // 8.8px (increased from 6.9px)
+    sm: '0.5rem',   // 9.6px (increased from 7.5px)
+    md: '0.6rem',   // 10.4px (increased from 8px)
+    lg: '0.7rem',   // 12px (increased from 9.1px)
+    xl: '0.8rem',   // 12.8px (increased from 10.1px)
+  },
+  
+  // Card title variants
+  cardTitle: {
+    xs: '0.6rem',   // 10.4px (increased from 8.5px)
+    sm: '0.75rem',   // 12px (increased from 9.6px)
+    md: '0.85rem',   // 13.6px (increased from 10.7px)
+    lg: '0.95rem',    // 14.4px (increased from 11.7px)
+    xl: '1.00rem',      // 16px (increased from 12.8px)
+  },
+  
+  // Card value variants
+  cardValue: {
+    xs: '0.65rem',   // 10.4px (increased from 8.5px)
+    sm: '0.75rem',   // 12px (increased from 9.6px)
+    md: '0.85rem',   // 13.6px (increased from 10.7px)
+    lg: '0.95rem',      // 16px (increased from 12.8px)
+    xl: '1.2rem',   // 18.4px (increased from 14.9px)
+  },
+
+  cardValueLarge: {
+    xs: '0.75rem',   // 12px (increased from 9.6px)
+    sm: '0.85rem',   // 13.6px (increased from 10.7px)
+    md: '0.95rem',   // 16px (increased from 12.8px)
+    lg: '1.05rem',      // 18.4px (increased from 14.9px)
+    xl: '1.2rem',   // 19.2px (increased from 16px)
+  },
+
+  cardValueMedium: {
+    xs: '0.55rem',   // 10.4px (increased from 8.5px)
+    sm: '0.65rem',   // 12px (increased from 9.6px)
+    md: '0.75rem',   // 13.6px (increased from 10.7px)
+    lg: '0.75rem',      // 16px (increased from 12.8px)
+    xl: '0.85rem',   // 18.4px (increased from 14.9px)
+  },
+
+  cardValueSmall: {
+    xs: '0.5rem',   // 8.8px (increased from 6.9px)
+    sm: '0.6rem',   // 10.4px (increased from 8.5px)
+    md: '0.7rem',   // 12px (increased from 9.6px)
+    lg: '0.8rem',   // 13.6px (increased from 10.7px)
+    xl: '0.9rem',   // 16px (increased from 12.8px)
+  },
+
+  // Card label variants
+  cardLabel: {
+    xs: '0.55rem',   // 8.8px (increased from 6.9px)
+    sm: '0.6rem',    // 9.6px (increased from 7.5px)
+    md: '0.65rem',   // 10.4px (increased from 8px)
+    lg: '0.75rem',   // 12px (increased from 9.1px)
+    xl: '0.8rem',    // 12.8px (increased from 10.1px)
+  },
+
+  // Label small variants
+  labelSmall: {
+    xs: '0.45rem',   // 8.8px (increased from 6.9px)
+    sm: '0.45rem',   // 9.6px (increased from 7.5px)
+    md: '0.55rem',   // 10.4px (increased from 8px)
+    lg: '0.65rem',   // 12px (increased from 9.1px)
+    xl: '0.75rem',   // 12.8px (increased from 10.1px)
+  },
+  
+  // Tab variants
+  tab: {
+    xs: '0.6rem',    // 9.6px (increased from 7.5px)
+    sm: '0.7rem',    // 11.2px (increased from 8.5px)
+    md: '0.8rem',    // 12.8px (increased from 9.6px)
+    lg: '0.85rem',   // 13.6px (increased from 10.1px)
+    xl: '0.9rem',    // 14.4px (increased from 10.7px)
+  },
+  
+  // Button variants
+  button: {
+    xs: '0.50rem',   // 7.8px (reduced by 1/4 from 10.4px)
+    sm: '0.57rem',   // 9px (reduced by 1/4 from 12px)
+    md: '0.65rem',   // 10.2px (reduced by 1/4 from 13.6px)
+    lg: '0.70rem',   // 11.4px (reduced by 1/4 from 15.2px)
+    xl: '0.80rem',   // 12.6px (reduced by 1/4 from 16.8px)
+  }
+};
+
+// Helper function to get responsive font size
+export const getResponsiveFontSize = (variant: keyof typeof customTypography) => {
+  const sizes = customTypography[variant];
+  return {
+    xs: sizes.xs,
+    sm: sizes.sm,
+    md: sizes.md,
+    lg: sizes.lg,
+    xl: sizes.xl,
+  };
+};
+
+// Custom theme options
+const themeOptions: ThemeOptions = {
   palette: {
     primary: {
-      main: '#6366f1', // Soft indigo
-      light: '#a5b4fc',
-      dark: '#4f46e5',
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -44,7 +227,7 @@ export const customTheme = createTheme({
       paper: '#ffffff',
     },
     text: {
-      primary: '#374151', // Softer dark gray
+      primary: 'rgb(56, 63, 75)', // Softer dark gray
       secondary: '#9ca3af', // Lighter gray
     },
     grey: {
@@ -73,63 +256,192 @@ export const customTheme = createTheme({
       'sans-serif',
     ].join(','),
     h1: {
-      fontSize: '2.75rem',
-      fontWeight: 400,
+      fontSize: getResponsiveFontSize('header').md,
+      fontWeight: 500,
       lineHeight: 1.2,
-      letterSpacing: '-0.02em',
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('header').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('header').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('header').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('header').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('header').xl,
+      },
     },
+    
     h2: {
-      fontSize: '2rem',
-      fontWeight: 400,
+      fontSize: getResponsiveFontSize('title').md,
+      fontWeight: 500,
       lineHeight: 1.3,
-      letterSpacing: '-0.02em',
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('title').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('title').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('title').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('title').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('title').xl,
+      },
     },
+    
     h3: {
-      fontSize: '1.75rem',
+      fontSize: getResponsiveFontSize('subtitle').md,
+      fontWeight: 500,
+      lineHeight: 1.3,
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('subtitle').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('subtitle').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('subtitle').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('subtitle').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('subtitle').xl,
+      },
+    },
+    
+    h4: {
+      fontSize: getResponsiveFontSize('body').md,
       fontWeight: 500,
       lineHeight: 1.4,
-      letterSpacing: '-0.02em',
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('body').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('body').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('body').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('body').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('body').xl,
+      },
     },
-    h4: {
-      fontSize: '1.375rem',
-      fontWeight: 500,
-      lineHeight: 1.5,
-      letterSpacing: '-0.02em',
-    },
+    
     h5: {
-      fontSize: '1.125rem',
+      fontSize: getResponsiveFontSize('small').md,
       fontWeight: 500,
-      lineHeight: 1.6,
-      letterSpacing: '-0.01em',
+      lineHeight: 1.4,
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('small').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('small').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('small').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('small').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('small').xl,
+      },
     },
+    
     h6: {
-      fontSize: '1rem',
+      fontSize: getResponsiveFontSize('cardTitle').md,
       fontWeight: 500,
-      lineHeight: 1.7,
-      letterSpacing: '-0.01em',
+      lineHeight: 1.2,
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('cardTitle').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('cardTitle').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('cardTitle').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('cardTitle').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('cardTitle').xl,
+      },
     },
+    
     body1: {
-      fontSize: '1rem',
+      fontSize: getResponsiveFontSize('body').md,
       fontWeight: 400,
       lineHeight: 1.8,
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('body').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('body').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('body').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('body').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('body').xl,
+      },
     },
+    
     body2: {
-      fontSize: '0.875rem',
+      fontSize: getResponsiveFontSize('small').md,
       fontWeight: 400,
       lineHeight: 1.7,
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('small').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('small').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('small').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('small').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('small').xl,
+      },
     },
+    
     caption: {
-      fontSize: '0.75rem',
+      fontSize: getResponsiveFontSize('caption').md,
       fontWeight: 400,
       lineHeight: 1.6,
-      letterSpacing: '0.01em',
-    },
-    button: {
-      fontSize: '0.875rem',
-      fontWeight: 400,
-      lineHeight: 1.6,
-      letterSpacing: '0.01em',
-      textTransform: 'none',
+      '@media (min-width:0px)': {
+        fontSize: getResponsiveFontSize('caption').xs,
+      },
+      '@media (min-width:600px)': {
+        fontSize: getResponsiveFontSize('caption').sm,
+      },
+      '@media (min-width:900px)': {
+        fontSize: getResponsiveFontSize('caption').md,
+      },
+      '@media (min-width:1200px)': {
+        fontSize: getResponsiveFontSize('caption').lg,
+      },
+      '@media (min-width:1536px)': {
+        fontSize: getResponsiveFontSize('caption').xl,
+      },
     },
   },
   shape: {
@@ -162,64 +474,49 @@ export const customTheme = createTheme({
     '0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12)',
     '0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
   ],
+  
+  // Custom component overrides
   components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          scrollbarColor: '#6b6b6b #f5f5f5',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: '#f5f5f5',
-            width: 8,
-            height: 8,
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: '#6b6b6b',
-            minHeight: 24,
-            border: '2px solid #f5f5f5',
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus': {
-            backgroundColor: '#959595',
-          },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active': {
-            backgroundColor: '#959595',
-          },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#959595',
-          },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: '#f5f5f5',
-          },
-        },
-      },
-    },
-    MuiAppBar: {
+    MuiButton: {
       styleOverrides: {
         root: {
-          boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.12)',
+          fontSize: getResponsiveFontSize('button').md,
+          fontWeight: 600,
+          textTransform: 'none',
+          borderRadius: 8,
+          '@media (min-width:0px)': {
+            fontSize: getResponsiveFontSize('button').xs,
+          },
+          '@media (min-width:600px)': {
+            fontSize: getResponsiveFontSize('button').sm,
+          },
+          '@media (min-width:900px)': {
+            fontSize: getResponsiveFontSize('button').md,
+          },
+          '@media (min-width:1200px)': {
+            fontSize: getResponsiveFontSize('button').lg,
+          },
+          '@media (min-width:1536px)': {
+            fontSize: getResponsiveFontSize('button').xl,
+          },
         },
       },
     },
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          borderRight: '1px solid rgba(0, 0, 0, 0.12)',
-        },
-      },
-    },
+    
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-          border: '0.5px solid rgba(0, 0, 0, 0.04)',
+          borderRadius: 16,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           transition: 'all 0.3s ease-in-out',
           '&:hover': {
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-            transform: 'translateY(-0.5px)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            transform: 'translateY(-2px)',
           },
         },
       },
     },
+    
     MuiCardContent: {
       styleOverrides: {
         root: {
@@ -230,73 +527,36 @@ export const customTheme = createTheme({
         },
       },
     },
-    MuiButton: {
+    
+    MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
+          fontSize: getResponsiveFontSize('tab').md,
           fontWeight: 500,
-          borderRadius: 8,
-          padding: '6px 12px',
-          fontSize: '0.875rem',
-          transition: 'all 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-0.5px)',
+          textTransform: 'none',
+          '@media (min-width:0px)': {
+            fontSize: getResponsiveFontSize('tab').xs,
           },
-        },
-        contained: {
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-          '&:hover': {
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
+          '@media (min-width:600px)': {
+            fontSize: getResponsiveFontSize('tab').sm,
           },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 6,
-          fontWeight: 400,
-          fontSize: '0.75rem',
-          border: '0.5px solid rgba(0, 0, 0, 0.08)',
-        },
-      },
-    },
-    MuiListItemButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          margin: '2px 6px',
-          transition: 'all 0.3s ease-in-out',
-          '&:hover': {
-            backgroundColor: 'rgba(99, 102, 241, 0.06)',
-            transform: 'translateX(2px)',
+          '@media (min-width:900px)': {
+            fontSize: getResponsiveFontSize('tab').md,
           },
-          '&.Mui-selected': {
-            backgroundColor: 'rgba(99, 102, 241, 0.08)',
-            '&:hover': {
-              backgroundColor: 'rgba(99, 102, 241, 0.12)',
-            },
+          '@media (min-width:1200px)': {
+            fontSize: getResponsiveFontSize('tab').lg,
           },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-        },
-        elevation1: {
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        },
-        elevation2: {
-          boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-        },
-        elevation3: {
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+          '@media (min-width:1536px)': {
+            fontSize: getResponsiveFontSize('tab').xl,
+          },
         },
       },
     },
   },
-});
+};
 
-export default customTheme;
+// Create and export the theme
+export const customTheme = createTheme(themeOptions);
+
+// Export typography variants for direct use
+export { customTypography };

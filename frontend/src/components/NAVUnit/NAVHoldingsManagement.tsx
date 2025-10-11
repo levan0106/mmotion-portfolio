@@ -51,6 +51,7 @@ import { ConvertToFundModal } from '../Portfolio/ConvertToFundModal';
 import ConvertToPortfolioModal from '../Portfolio/ConvertToPortfolioModal';
 import SubscriptionModal from './SubscriptionModal';
 import RedemptionModal from './RedemptionModal';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 
 interface NAVHoldingsManagementProps {
   portfolio: Portfolio;
@@ -173,9 +174,9 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       <Card sx={{ mb: getUltraSpacing(3, 1) }}>
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 600 }}>
               Fund Summary
-            </Typography>
+            </ResponsiveTypography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Tooltip title="Recalculate NAV per Unit">
                 <IconButton 

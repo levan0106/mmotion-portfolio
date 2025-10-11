@@ -4,7 +4,8 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { AssetAllocationResponse } from '../../types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { getAssetTypeColor } from '../../config/chartColors';
@@ -41,15 +42,15 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
           boxShadow: 3,
           border: '1px solid #e0e0e0'
         }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <ResponsiveTypography variant="cardTitle">
             {data.name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="tableCell" color="text.secondary">
             Allocation: {formatPercentage(data.value)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="tableCell" color="text.secondary">
             Market Value: {formatCurrency(data.marketValue, baseCurrency)}
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       );
     }
@@ -80,21 +81,19 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
                 flexShrink: 0
               }}
             />
-            <Typography variant="caption" sx={{ 
-              fontSize: compact ? '0.65rem' : '0.75rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               lineHeight: 1.2,
               fontWeight: 500
             }}>
               {entry.value}
-            </Typography>
-            <Typography variant="caption" sx={{ 
-              fontSize: compact ? '0.6rem' : '0.7rem',
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="formHelper" sx={{ 
               lineHeight: 1.2,
               color: 'text.secondary',
               ml: 'auto'
             }}>
               {formatPercentage(entry.payload.value)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
         ))}
       </Box>
@@ -104,9 +103,9 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   if (!data || Object.keys(data.allocation).length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
           No asset allocation data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }

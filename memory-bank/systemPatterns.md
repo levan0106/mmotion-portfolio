@@ -44,6 +44,22 @@ flowchart LR
 - **Caching Strategy**: Enhanced caching with staleTime and cacheTime for better performance
 - **Background Sync**: Non-blocking global asset sync and market price updates
 
+### Typography System Pattern - **IMPLEMENTED** ✅
+- **Custom Theme**: Enhanced Material-UI theme with comprehensive responsive typography variants
+- **ResponsiveTypography Component**: Custom wrapper component for consistent typography application across all components
+- **Typography Variants**: Comprehensive set of typography variants including:
+  - **Page Elements**: pageHeader, pageTitle, pageSubtitle for main page content
+  - **Card Elements**: cardTitle, cardValue, cardValueLarge, cardLabel, cardSubtitle for card content
+  - **Table Elements**: tableHeaderSmall, tableCellSmall, tableHeaderXSmall, tableCellXSmall for responsive tables
+  - **Form Elements**: formHelper, labelSmall for form labels and helper text
+  - **Chart Elements**: chartTitle, chartSubtitle, chartLegend, chartTooltip for analytics components
+  - **Status Elements**: statusText for status indicators and notifications
+- **Responsive Design**: Breakpoint-based font sizing (xs, sm, md, lg, xl) for optimal display across all devices
+- **Visual Consistency**: Unified typography system ensuring consistent user experience across entire application
+- **Icon Responsive Design**: Fully responsive icons with breakpoint-based fontSize and container sizing
+- **Button Typography**: Responsive typography for all button components with conditional sizing
+- **Table Optimization**: Dynamic column widths with responsive typography for optimal data display
+
 ### Color System Integration Pattern - **IMPLEMENTED** ✅
 - **Centralized Color Management**: chartColors.ts provides consistent color scheme across all components
 - **Asset Type Color Mapping**: Proper mapping from chart colors to Material-UI chip colors

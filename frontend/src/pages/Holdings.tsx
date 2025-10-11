@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Typography,
   Card,
   CardContent,
   Grid,
@@ -42,6 +41,7 @@ import { useInvestorHoldings } from '../hooks/useInvestorHoldings';
 import { useAccount } from '../contexts/AccountContext';
 import { formatCurrency, formatPercentage, formatNumberWithSeparators } from '../utils/format';
 import HoldingDetailModal from '../components/Holdings/HoldingDetailModal';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 const Holdings: React.FC = () => {
   const navigate = useNavigate();
@@ -101,9 +101,9 @@ const Holdings: React.FC = () => {
         }}
       >
         <CircularProgress size={60} thickness={4} />
-        <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ mt: 2 }}>
           Loading your investment holdings...
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -120,12 +120,12 @@ const Holdings: React.FC = () => {
           }
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <ResponsiveTypography variant="cardTitle" gutterBottom>
           Failed to load holdings data
-        </Typography>
-        <Typography variant="body2">
+        </ResponsiveTypography>
+        <ResponsiveTypography variant="formHelper">
           {error}
-        </Typography>
+        </ResponsiveTypography>
         <Button onClick={handleRefresh} sx={{ mt: 1 }}>
           Try Again
         </Button>
@@ -177,11 +177,10 @@ const Holdings: React.FC = () => {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box>
-              <Typography 
-                variant="h3" 
+              <ResponsiveTypography 
+                variant="pageHeader" 
                 component="h1" 
                 sx={{ 
-                  fontWeight: 300,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
@@ -190,10 +189,10 @@ const Holdings: React.FC = () => {
                 }}
               >
                 Investment Holdings
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 300 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle">
                 Your investment portfolio holdings and performance
-              </Typography>
+              </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
@@ -249,39 +248,35 @@ const Holdings: React.FC = () => {
                       </Box>
                     </Box>
                     
-                    <Typography 
-                      variant="h4" 
+                    <ResponsiveTypography 
+                      variant="cardValueLarge" 
                       sx={{ 
-                        fontWeight: 600,
                         color: 'text.primary',
                         mb: 0.5,
                         lineHeight: 1.2
                       }}
                     >
                       {metric.value}
-                    </Typography>
+                    </ResponsiveTypography>
                     
-                    <Typography 
-                      variant="h6" 
+                    <ResponsiveTypography 
+                      variant="cardTitle" 
                       sx={{ 
-                        color: 'text.secondary',
-                        fontWeight: 500,
-                        mb: 0.5
+                        mb: 0.5,
+                        color: 'text.secondary'
                       }}
                     >
                       {metric.title}
-                    </Typography>
+                    </ResponsiveTypography>
                     
-                    <Typography 
-                      variant="body2" 
+                    <ResponsiveTypography 
+                      variant="cardLabel" 
                       sx={{ 
-                        color: 'text.secondary',
-                        opacity: 0.8,
-                        fontWeight: 400
+                        opacity: 0.8
                       }}
                     >
                       {metric.subtitle}
-                    </Typography>
+                    </ResponsiveTypography>
                   </CardContent>
                 </Card>
             </Grid>
@@ -292,12 +287,12 @@ const Holdings: React.FC = () => {
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 300, mb: 1 }}>
+              <ResponsiveTypography variant="pageTitle" component="h2" sx={{ mb: 1 }}>
                 Investment Holdings
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle">
                 Detailed view of your investment holdings across all portfolios
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
           
@@ -318,12 +313,12 @@ const Holdings: React.FC = () => {
               }}>
                 <AccountBalance sx={{ fontSize: 80, color: 'primary.main' }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 300, mb: 2, color: 'text.primary' }}>
+              <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
                 No Holdings Found
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
                 You don't have any investment holdings yet. Start investing by subscribing to available funds.
-              </Typography>
+              </ResponsiveTypography>
             </Card>
           ) : (
             <Card sx={{ 
@@ -337,15 +332,15 @@ const Holdings: React.FC = () => {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Portfolio</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Units</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Avg Cost/Unit</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Total Investment</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Current Value</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Unrealized P&L</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Realized P&L</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Return %</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Actions</TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Portfolio</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Units</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Avg Cost/Unit</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Total Investment</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Current Value</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Unrealized P&L</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Realized P&L</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Return %</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -367,55 +362,55 @@ const Holdings: React.FC = () => {
                             >
                               <TableCell>
                                 <Box>
-                                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
                                     {holding.portfolio?.name || 'Unknown Portfolio'}
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
+                                  </ResponsiveTypography>
+                                  <ResponsiveTypography variant="formHelper">
                                     {holding.portfolio?.baseCurrency || 'VND'}
-                                  </Typography>
+                                  </ResponsiveTypography>
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                                   {formatNumberWithSeparators(Number(holding.totalUnits), 3)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body1">
+                                <ResponsiveTypography variant="tableCell">
                                   {formatCurrency(Number(holding.avgCostPerUnit), displayCurrency)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                                   {formatCurrency(Number(holding.totalInvestment), displayCurrency)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                                   {formatCurrency(Number(holding.currentValue), displayCurrency)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
-                                <Typography 
-                                  variant="body1" 
+                                <ResponsiveTypography 
+                                  variant="tableCell" 
                                   sx={{ 
                                     fontWeight: 500,
                                     color: Number(holding.unrealizedPnL) >= 0 ? 'success.main' : 'error.main'
                                   }}
                                 >
                                   {formatCurrency(Number(holding.unrealizedPnL), displayCurrency)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
-                                <Typography 
-                                  variant="body1" 
+                                <ResponsiveTypography 
+                                  variant="tableCell" 
                                   sx={{ 
                                     fontWeight: 500,
                                     color: Number(holding.realizedPnL) >= 0 ? 'success.main' : 'error.main'
                                   }}
                                 >
                                   {formatCurrency(Number(holding.realizedPnL), displayCurrency)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </TableCell>
                               <TableCell>
                                 <Chip

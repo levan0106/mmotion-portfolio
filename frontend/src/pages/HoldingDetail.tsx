@@ -206,7 +206,7 @@ const HoldingDetail: React.FC = () => {
   const { holding, transactions, summary } = holdingDetail;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 1, mb: 2 }}>
+    <Container maxWidth="xl" sx={{ mt: 0.5, mb: 1 }}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Button
@@ -221,8 +221,8 @@ const HoldingDetail: React.FC = () => {
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          mb: 1.5,
-          p: 2,
+          mb: 1,
+          p: { xs: 1.5, sm: 2 },
           borderRadius: 2,
           background: '#f8f9fa',
           border: '1px solid #e9ecef'

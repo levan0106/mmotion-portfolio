@@ -6,7 +6,6 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Button,
   Dialog,
   DialogTitle,
@@ -38,6 +37,7 @@ import {
   Checkbox,
   ListItemText,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   AccountBalance as DepositIcon,
   AccountBalanceWallet as WithdrawIcon,
@@ -577,9 +577,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             transition: 'all 0.3s ease-in-out'
           }}
         >
-          <Typography variant={compact ? "h6" : "h4"} fontWeight="bold" color="primary" sx={{ fontSize: compact ? '1rem' : undefined }}>
+          <ResponsiveTypography 
+            variant="pageTitle" 
+          >
             Cash Flow Management
-          </Typography>
+          </ResponsiveTypography>
           <Box display="flex" gap={1}>
             <Tooltip title="Refresh Data">
               <IconButton onClick={() => { loadCashFlows(); loadAllCashFlows(); }} disabled={loading} color="primary">
@@ -597,7 +599,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                fontSize: compact ? '0.7rem' : undefined
+                ...(compact ? { fontSize: '0.7rem' } : {})
               }}
             >
               {compact ? "Deposit" : "Create Deposit"}
@@ -613,7 +615,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                fontSize: compact ? '0.7rem' : undefined
+                ...(compact ? { fontSize: '0.7rem' } : {})
               }}
             >
               {compact ? "Withdraw" : "Create Withdrawal"}
@@ -629,7 +631,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                fontSize: compact ? '0.7rem' : undefined
+                ...(compact ? { fontSize: '0.7rem' } : {})
               }}
             >
               {compact ? "Dividend" : "Create Dividend"}
@@ -653,7 +655,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 borderRadius: 2,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                fontSize: compact ? '0.7rem' : undefined
+                ...(compact ? { fontSize: '0.7rem' } : {})
               }}
             >
               {compact ? "Transfer" : "Transfer Cash"}
@@ -661,11 +663,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           </Box>
         </Box>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                <ResponsiveTypography variant="tableCell">
+                  {error}
+                </ResponsiveTypography>
+              </Alert>
+            )}
       </Box>
 
       {/* Soft & Gentle Financial Summary Cards */}
@@ -693,29 +697,50 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
                   boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-                  width: compact ? 32 : 48,
-                  height: compact ? 32 : 48,
+                  width: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
+                  height: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <DepositIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
+                  <DepositIcon sx={{ 
+                    color: 'white', 
+                    fontSize: {
+                      xs: compact ? 14 : 18,
+                      sm: compact ? 16 : 20,
+                      md: compact ? 18 : 22,
+                      lg: compact ? 20 : 24,
+                      xl: compact ? 22 : 26
+                    }
+                  }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                  <Typography color="#1e40af" variant="caption" sx={{ 
-                    fontSize: compact ? '0.6rem' : '0.75rem',
-                    fontWeight: 500,
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    color: '#1e40af',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
                     Total Inflows
-                  </Typography>
-                  <Typography variant="h4" color="#1e40af" fontWeight="600" sx={{ 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#1e40af',
                     fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(totalDeposits)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </Box>
             </CardContent>
@@ -745,29 +770,50 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
                   boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
-                  width: compact ? 32 : 48,
-                  height: compact ? 32 : 48,
+                  width: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
+                  height: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <WithdrawIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
+                  <WithdrawIcon sx={{ 
+                    color: 'white', 
+                    fontSize: {
+                      xs: compact ? 14 : 18,
+                      sm: compact ? 16 : 20,
+                      md: compact ? 18 : 22,
+                      lg: compact ? 20 : 24,
+                      xl: compact ? 22 : 26
+                    }
+                  }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                  <Typography color="#dc2626" variant="caption" sx={{ 
-                    fontSize: compact ? '0.6rem' : '0.75rem',
-                    fontWeight: 500,
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    color: '#dc2626',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
                     Total Outflows
-                  </Typography>
-                  <Typography variant="h4" color="#dc2626" fontWeight="600" sx={{ 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#dc2626',
                     fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(totalWithdrawals)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </Box>
             </CardContent>
@@ -809,29 +855,50 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   boxShadow: netCashFlow >= 0 
                     ? '0 2px 8px rgba(34, 197, 94, 0.2)'
                     : '0 2px 8px rgba(239, 68, 68, 0.2)',
-                  width: compact ? 32 : 48,
-                  height: compact ? 32 : 48,
+                    width: {
+                      xs: compact ? 28 : 40,
+                      sm: compact ? 32 : 42,
+                      md: compact ? 36 : 44,
+                      lg: compact ? 40 : 45,
+                      xl: compact ? 44 : 50
+                    },
+                    height: {
+                      xs: compact ? 28 : 40,
+                      sm: compact ? 32 : 42,
+                      md: compact ? 36 : 44,
+                      lg: compact ? 40 : 45,
+                      xl: compact ? 44 : 50
+                    },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <BalanceIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
+                  <BalanceIcon sx={{ 
+                    color: 'white', 
+                    fontSize: {
+                      xs: compact ? 14 : 18,
+                      sm: compact ? 16 : 20,
+                      md: compact ? 18 : 22,
+                      lg: compact ? 20 : 24,
+                      xl: compact ? 22 : 26
+                    }
+                  }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                  <Typography color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} variant="caption" sx={{ 
-                    fontSize: compact ? '0.6rem' : '0.75rem',
-                    fontWeight: 500,
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    color: netCashFlow >= 0 ? "#15803d" : "#dc2626",
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
                     Net Cash Flow
-                  </Typography>
-                  <Typography variant="h4" color={netCashFlow >= 0 ? "#15803d" : "#dc2626"} fontWeight="600" sx={{ 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: netCashFlow >= 0 ? "#15803d" : "#dc2626",
                     fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {formatCurrency(netCashFlow)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </Box>
             </CardContent>
@@ -861,29 +928,50 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #a855f7 0%, #c084fc 100%)',
                   boxShadow: '0 2px 8px rgba(168, 85, 247, 0.2)',
-                  width: compact ? 32 : 48,
-                  height: compact ? 32 : 48,
+                  width: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
+                  height: {
+                    xs: compact ? 28 : 40,
+                    sm: compact ? 32 : 42,
+                    md: compact ? 36 : 44,
+                    lg: compact ? 40 : 45,
+                    xl: compact ? 44 : 50
+                  },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <TimelineIcon sx={{ color: 'white', fontSize: compact ? 16 : 24 }} />
+                  <TimelineIcon sx={{ 
+                    color: 'white', 
+                    fontSize: {
+                      xs: compact ? 14 : 18,
+                      sm: compact ? 16 : 20,
+                      md: compact ? 18 : 22,
+                      lg: compact ? 20 : 24,
+                      xl: compact ? 22 : 26
+                    }
+                  }} />
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                  <Typography color="#7c3aed" variant="caption" sx={{ 
-                    fontSize: compact ? '0.6rem' : '0.75rem',
-                    fontWeight: 500,
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    color: '#7c3aed',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
                     Total Transactions
-                  </Typography>
-                  <Typography variant="h4" color="#7c3aed" fontWeight="600" sx={{ 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#7c3aed',
                     fontSize: compact ? '1rem' : '1.5rem',
                     mt: 0.5
                   }}>
                     {allCashFlows?.length || 0}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </Box>
             </CardContent>
@@ -908,7 +996,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               sx={{ 
                 textTransform: 'none', 
                 fontWeight: 600,
-                fontSize: compact ? '0.75rem' : '0.875rem',
+                ...(compact ? { fontSize: '0.75rem' } : { fontSize: '0.875rem' }),
                 py: compact ? 0.5 : 1.5,
                 px: compact ? 1 : 2
               }}
@@ -920,7 +1008,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               sx={{ 
                 textTransform: 'none', 
                 fontWeight: 600,
-                fontSize: compact ? '0.75rem' : '0.875rem',
+                ...(compact ? { fontSize: '0.75rem' } : { fontSize: '0.875rem' }),
                 py: compact ? 0.5 : 1.5,
                 px: compact ? 1 : 2
               }}
@@ -943,13 +1031,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               <Box sx={{ mb: compact ? 1.5 : 3 }}>
                 {/* Header */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 0.5 : 2}>
-                  <Typography variant={compact ? "subtitle2" : "h6"} fontWeight="600" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                  <ResponsiveTypography variant="pageTitle" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Cash Flow History
-                  </Typography>
+                  </ResponsiveTypography>
                   <Box display="flex" gap={1} alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="formHelper">
                       {filteredCashFlows.length} transactions
-                    </Typography>
+                    </ResponsiveTypography>
                     <Button
                       size="small"
                       variant="outlined"
@@ -1182,9 +1270,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 {/* Active Filters */}
                 {((dateFilters.startDate && !isNaN(dateFilters.startDate.getTime())) || (dateFilters.endDate && !isNaN(dateFilters.endDate.getTime())) || (filterTypes.length > 0 && !filterTypes.includes('ALL'))) && (
                   <Box sx={{ mb: 2, p: 1, backgroundColor: 'grey.100', borderRadius: 1 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }}>
                       Active filters:
-                    </Typography>
+                    </ResponsiveTypography>
                     <Box display="flex" gap={1} flexWrap="wrap">
                       {dateFilters.startDate && !isNaN(dateFilters.startDate.getTime()) && (
                         <Chip
@@ -1213,9 +1301,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 
                 {/* Summary */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="formHelper">
                     Total: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({filteredCashFlows.length} items)
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </Box>
 
@@ -1229,14 +1317,46 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                        <TableCell><strong>Type</strong></TableCell>
-                        <TableCell><strong>Amount</strong></TableCell>
-                        <TableCell><strong>Description</strong></TableCell>
-                        <TableCell><strong>Reference</strong></TableCell>
-                        <TableCell><strong>Funding Source</strong></TableCell>
-                        <TableCell><strong>Date</strong></TableCell>
-                        <TableCell><strong>Status</strong></TableCell>
-                        <TableCell><strong>Actions</strong></TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Type
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Amount
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Description
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Reference
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Funding Source
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Date
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Status
+                          </ResponsiveTypography>
+                        </TableCell>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
+                            Actions
+                          </ResponsiveTypography>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1252,32 +1372,34 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                             />
                           </TableCell>
                           <TableCell>
-                            <Typography
-                              color={cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'}
-                              
+                            <ResponsiveTypography
+                              variant="tableCellSmall"
+                              sx={{
+                                color: cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'
+                              }}
                             >
                               {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
+                            <ResponsiveTypography variant="tableCellSmall" noWrap sx={{ maxWidth: 220 }}>
                               {cashFlow.description}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
                               {cashFlow.reference || '-'}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
                               {cashFlow.fundingSource || '-'}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontSize: '12px' }}>
+                            <ResponsiveTypography variant="tableCellSmall">
                               {formatDate(cashFlow.flowDate)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
                             <Chip
@@ -1326,9 +1448,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 {pagination?.totalPages && pagination.totalPages > 1 && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, px: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <ResponsiveTypography variant="formHelper">
                         Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} entries
-                      </Typography>
+                      </ResponsiveTypography>
                       <FormControl size="small" sx={{ minWidth: 80 }}>
                         <InputLabel>Per page</InputLabel>
                         <Select
@@ -1427,7 +1549,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 <EditIcon color="primary" />
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <Typography variant="h6">Edit Cash Flow</Typography>
+                    <ResponsiveTypography variant="pageTitle">Edit Cash Flow</ResponsiveTypography>
                     <Chip
                       icon={getCashFlowDirectionIcon(editingCashFlow.type)}
                       label={`${formatTypeName(editingCashFlow.type)} - ${getCashFlowDirection(editingCashFlow.type)}`}
@@ -1436,9 +1558,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       variant="filled"
                     />
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="formHelper">
                     ID: {editingCashFlow.cashflowId?.slice(0, 8)}... | Type: {formatTypeName(editingCashFlow.type)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </>
             ) : (
@@ -1446,9 +1568,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 {getTypeIcon(dialogType)}
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <Typography variant="h6" color={getTypeColor(dialogType)}>
+                    <ResponsiveTypography variant="pageTitle" sx={{ color: getTypeColor(dialogType) }}>
                       Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow
-                    </Typography>
+                    </ResponsiveTypography>
                     <Chip
                       icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
                       label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
@@ -1457,9 +1579,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       variant="filled"
                     />
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="formHelper">
                     {getTypeDescription(dialogType)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </>
             )}
@@ -1469,25 +1591,25 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           <Box sx={{ pt: 1 }}>
             {editingCashFlow && (
               <Alert severity="info" sx={{ mb: 2 }}>
-                <Typography variant="body2">
+                <ResponsiveTypography variant="tableCell">
                   <strong>Editing:</strong> {editingCashFlow.description}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper">
                   Original Amount: {formatCurrency(editingCashFlow.amount)} | 
                   Type: {editingCashFlow.type} | 
                   Status: {editingCashFlow.status}
-                </Typography>
+                </ResponsiveTypography>
               </Alert>
             )}
             
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                <Typography variant="body2">
+                <ResponsiveTypography variant="tableCell">
                   <strong>Error:</strong> {error}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
                   Please check your input and try again.
-                </Typography>
+                </ResponsiveTypography>
               </Alert>
             )}
             
@@ -1505,9 +1627,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   {getTypeIcon(dialogType)}
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <Typography variant="body2" fontWeight="bold">
-                        {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
-                      </Typography>
+                    <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
+                      {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
+                    </ResponsiveTypography>
                       <Chip
                         icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
                         label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
@@ -1516,9 +1638,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                         variant="filled"
                       />
                     </Box>
-                    <Typography variant="caption" color="text.secondary">
+                    <ResponsiveTypography variant="formHelper">
                       {getTypeDescription(dialogType)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               </Alert>
@@ -1555,9 +1677,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <MenuItem value="GBP">GBP</MenuItem>
                     <MenuItem value="JPY">JPY</MenuItem>
                   </Select>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
                     Select the currency for this transaction
-                  </Typography>
+                  </ResponsiveTypography>
                 </FormControl>
                 
                 <FormControl fullWidth margin="normal">
@@ -1572,9 +1694,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <MenuItem value="CANCELLED">Cancelled</MenuItem>
                   </Select>
                   {editingCashFlow && (
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                    <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
                       Original Status: {editingCashFlow.status}
-                    </Typography>
+                    </ResponsiveTypography>
                   )}
                 </FormControl>
                 
@@ -1585,7 +1707,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
                   margin="normal"
                   placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
-                  helperText={`Source of funding for this transaction (optional)`}
+                  helperText="Source of funding for this transaction (optional)"
                   inputProps={{
                     style: { textTransform: 'uppercase' }
                   }}
@@ -1669,50 +1791,50 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <DeleteIcon color="error" />
-            <Typography variant="h6">Delete Cash Flow</Typography>
+            <ResponsiveTypography variant="pageTitle">Delete Cash Flow</ResponsiveTypography>
           </Box>
         </DialogTitle>
         <DialogContent>
-          <Typography>
+          <ResponsiveTypography variant="tableCell">
             Are you sure you want to delete this cash flow? This action cannot be undone.
-          </Typography>
+          </ResponsiveTypography>
           
           {cashFlowToDelete?.status === 'CANCELLED' && (
             <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="tableCell">
                 <strong>Warning:</strong> This cash flow is already cancelled and cannot be edited.
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
                 You can still delete it to remove it from the history.
-              </Typography>
+              </ResponsiveTypography>
             </Alert>
           )}
           
           {deleteError && (
             <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="tableCell">
                 <strong>Error:</strong> {deleteError}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
                 Please try again or contact support if the problem persists.
-              </Typography>
+              </ResponsiveTypography>
             </Alert>
           )}
           
           {cashFlowToDelete && (
             <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="tableCell">
                 <strong>Type:</strong> {cashFlowToDelete.type}
-              </Typography>
-              <Typography variant="body2">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell">
                 <strong>Amount:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
-              </Typography>
-              <Typography variant="body2">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell">
                 <strong>Description:</strong> {cashFlowToDelete.description}
-              </Typography>
-              <Typography variant="body2">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell">
                 <strong>Status:</strong> {cashFlowToDelete.status}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           )}
         </DialogContent>
@@ -1743,7 +1865,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <TransferIcon color="secondary" />
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <Typography variant="h6">Transfer Cash Between Sources</Typography>
+                <ResponsiveTypography variant="pageTitle">Transfer Cash Between Sources</ResponsiveTypography>
                 <Chip
                   icon={<TransferIcon />}
                   label="Internal Transfer"
@@ -1752,9 +1874,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   variant="filled"
                 />
               </Box>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="formHelper">
                 Move cash from one funding source to another
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         </DialogTitle>
@@ -1762,12 +1884,12 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           <Box sx={{ pt: 1 }}>
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                <Typography variant="body2">
+                <ResponsiveTypography variant="tableCell">
                   <strong>Error:</strong> {error}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
                   Please check your input and try again.
-                </Typography>
+                </ResponsiveTypography>
               </Alert>
             )}
             
@@ -1787,9 +1909,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
                     Select the source to transfer from
-                  </Typography>
+                  </ResponsiveTypography>
                 </FormControl>
                 
                 <FundingSourceInput
@@ -1847,15 +1969,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             {/* Transfer Summary */}
             {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                <Typography variant="body2" fontWeight="bold">
+                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
                   Transfer Summary:
-                </Typography>
-                <Typography variant="body2">
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="tableCell">
                   Moving <strong>{formatCurrency(transferData.amount)}</strong> from <strong>{transferData.fromSource}</strong> to <strong>{transferData.toSource}</strong>
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
                   This will create two cash flow records: one withdrawal from source and one deposit to destination.
-                </Typography>
+                </ResponsiveTypography>
               </Alert>
             )}
           </Box>

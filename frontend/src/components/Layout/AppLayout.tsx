@@ -757,7 +757,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       >
         <Toolbar />
         <Box sx={{ 
-          p: 4,
+          p: { xs: 1, sm: 2, md: 2.5 },
           position: 'relative',
           zIndex: 1,
         }}>

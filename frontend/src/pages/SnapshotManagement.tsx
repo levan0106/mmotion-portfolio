@@ -3,11 +3,12 @@
 import React from 'react';
 import {
   Box,
-  Typography,
   Paper,
+  useTheme,
 } from '@mui/material';
 import { SnapshotManagement } from '../components/Snapshot';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 const SnapshotManagementPage: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const SnapshotManagementPage: React.FC = () => {
 };
 
 const SnapshotManagementContent: React.FC = () => {
+  const theme = useTheme();
   return (
     <Box>
       {/* Page Header */}
@@ -28,12 +30,19 @@ const SnapshotManagementContent: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+              <ResponsiveTypography variant="pageHeader" component="h1" 
+              sx={{ 
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1,
+                filter: 'none' }}>
                 Asset Snapshot Management
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 1 }}>
                 Manage portfolio snapshots, view performance charts, and export/import data
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         </Box>

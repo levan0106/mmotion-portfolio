@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
-  Typography,
   Card,
   CardContent,
   CircularProgress,
@@ -41,6 +40,7 @@ import { usePortfolioChangeForAllPortfolios } from '../hooks/usePortfolioChange'
 import { useAccount } from '../contexts/AccountContext';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import PortfolioCard from '../components/Portfolio/PortfolioCard';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -65,9 +65,9 @@ const Dashboard: React.FC = () => {
         }}
       >
         <CircularProgress size={60} thickness={4} />
-        <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ mt: 2 }}>
           Loading Financial Dashboard...
-        </Typography>
+        </ResponsiveTypography>
         <LinearProgress sx={{ width: '200px', mt: 2, borderRadius: 1 }} />
       </Box>
     );
@@ -85,12 +85,12 @@ const Dashboard: React.FC = () => {
           }
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <ResponsiveTypography variant="cardTitle" gutterBottom>
           Failed to load dashboard data
-        </Typography>
-        <Typography variant="body2">
+        </ResponsiveTypography>
+        <ResponsiveTypography variant="formHelper">
           Please check your connection and try again.
-        </Typography>
+        </ResponsiveTypography>
       </Alert>
     );
   }
@@ -182,11 +182,9 @@ const Dashboard: React.FC = () => {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box>
-              <Typography 
-                variant="h3" 
-                component="h1" 
+              <ResponsiveTypography 
+                variant="pageHeader"
                 sx={{ 
-                  fontWeight: 300,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
@@ -195,10 +193,10 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 Financial Dashboard
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 300 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle">
                 Comprehensive portfolio management and investment analytics
-              </Typography>
+              </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
@@ -303,39 +301,36 @@ const Dashboard: React.FC = () => {
                       </Box>
                     </Box>
                     
-                    <Typography 
-                      variant="h4" 
+                    <ResponsiveTypography 
+                      variant="cardValueLarge" 
                       sx={{ 
-                        fontWeight: 600,
                         color: 'text.primary',
                         mb: 0.5,
                         lineHeight: 1.2
                       }}
                     >
                       {metric.value}
-                    </Typography>
+                    </ResponsiveTypography>
                     
-                    <Typography 
-                      variant="h6" 
+                    <ResponsiveTypography 
+                      variant="cardTitle" 
+                      color="text.secondary"
                       sx={{ 
-                        color: 'text.secondary',
-                        fontWeight: 500,
                         mb: 0.5
                       }}
                     >
                       {metric.title}
-                    </Typography>
+                    </ResponsiveTypography>
                     
-                    <Typography 
-                      variant="body2" 
+                    <ResponsiveTypography 
+                      variant="cardLabel" 
+                      color="text.secondary"
                       sx={{ 
-                        color: 'text.secondary',
-                        opacity: 0.8,
-                        fontWeight: 400
+                        opacity: 0.8
                       }}
-                    >
+                    > 
                       {metric.subtitle}
-                    </Typography>
+                    </ResponsiveTypography>
                   </CardContent>
                 </Card>
               </Slide>
@@ -356,37 +351,37 @@ const Dashboard: React.FC = () => {
                 <CardContent sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <ShowChart sx={{ mr: 2, color: 'primary.main' }} />
-                    <Typography variant="h5" sx={{ fontWeight: 500 }}>
+                    <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
                       Portfolio Performance Analytics
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 1.5, borderRadius: 2, background: alpha(theme.palette.success.main, 0.03) }}>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <ResponsiveTypography variant="formHelper" gutterBottom>
                           Best Performing Portfolio
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="cardTitle" sx={{ color: 'success.main' }}>
                           {portfolios.length > 0 ? portfolios.reduce((best, current) => 
                             (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
                           ).name : 'N/A'}
-                        </Typography>
-                        <Typography variant="body2" color="success.main" sx={{ fontWeight: 500 }}>
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="cardValueMedium" sx={{ color: 'success.main' }}>
                           {formatCurrency(
                             Math.max(...portfolios.map(p => Number(p.unrealizedInvestPnL) || 0)), 
                             displayCurrency
                           )}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Grid>
                     
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 1.5, borderRadius: 2, background: alpha(theme.palette.info.main, 0.03) }}>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <ResponsiveTypography variant="formHelper" gutterBottom>
                           Best Portfolio Cash
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'info.main' }}>
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="cardTitle" sx={{ color: 'info.main' }}>
                           {portfolios.length > 0 ? (() => {
                             const bestPortfolio = portfolios.reduce((best, current) => 
                               (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
@@ -396,15 +391,15 @@ const Dashboard: React.FC = () => {
                             const bestPortfolioCashPercentage = bestPortfolioTotalValue > 0 ? (bestPortfolioCash / bestPortfolioTotalValue) * 100 : 0;
                             return formatPercentage(bestPortfolioCashPercentage);
                           })() : 'N/A'}
-                        </Typography>
-                        <Typography variant="body2" color="info.main" sx={{ fontWeight: 500 }}>
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="cardValueMedium" sx={{ color: 'info.main' }}>
                           {portfolios.length > 0 ? (() => {
                             const bestPortfolio = portfolios.reduce((best, current) => 
                               (current.unrealizedInvestPnL || 0) > (best.unrealizedInvestPnL || 0) ? current : best
                             );
                             return formatCurrency(Number(bestPortfolio.cashBalance) || 0, displayCurrency);
                           })() : 'N/A'}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Grid>
                   </Grid>
@@ -422,46 +417,45 @@ const Dashboard: React.FC = () => {
                 <CardContent sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <PieChart sx={{ mr: 2, color: 'secondary.main' }} />
-                    <Typography variant="h5" sx={{ fontWeight: 500 }}>
+                    <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
                       Quick Insights
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Box sx={{ space: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <ResponsiveTypography variant="tableCell">
                         Average Portfolio Value:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValueMedium">
                         {formatCurrency(averagePortfolioValue, displayCurrency)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <ResponsiveTypography variant="tableCell">
                         Total Return:
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValueMedium" 
                         sx={{ 
-                          fontWeight: 600,
                           color: totalReturnPercentage >= 0 ? 'success.main' : 'error.main'
                         }}
                       >
                         {formatPercentage(totalReturnPercentage)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <ResponsiveTypography variant="tableCell">
                         Active Portfolios:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValueMedium">
                         {totalPortfolios}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5 }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <ResponsiveTypography variant="tableCell">
                         System Health:
-                      </Typography>
+                      </ResponsiveTypography>
                       <Chip label="Excellent" color="success" size="small" />
                     </Box>
                   </Box>
@@ -475,12 +469,12 @@ const Dashboard: React.FC = () => {
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 300, mb: 1 }}>
+              <ResponsiveTypography variant="pageTitle" component="h2" sx={{ mb: 1 }}>
                 Investment Portfolios
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle">
                 Manage and monitor your investment portfolios
-              </Typography>
+              </ResponsiveTypography>
             </Box>
             <Button
               variant="contained"
@@ -516,12 +510,12 @@ const Dashboard: React.FC = () => {
               }}>
                 <AccountBalance sx={{ fontSize: 80, color: 'primary.main' }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 300, mb: 2, color: 'text.primary' }}>
+              <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
                 No Portfolios Found
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
                 Start your investment journey by creating your first portfolio to track and manage your assets
-              </Typography>
+              </ResponsiveTypography>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}

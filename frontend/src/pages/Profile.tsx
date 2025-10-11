@@ -348,9 +348,9 @@ export const Profile: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 3 } }}>
       <Card>
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
             <Avatar

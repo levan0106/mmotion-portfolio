@@ -10,6 +10,7 @@ import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 const Portfolios: React.FC = () => {
   const navigate = useNavigate();
@@ -135,9 +136,11 @@ const Portfolios: React.FC = () => {
 
       {(isCreating || isUpdating || isDeleting) && (
         <Alert severity="info" sx={{ mt: 2 }}>
-          {isCreating && 'Creating portfolio...'}
-          {isUpdating && 'Updating portfolio...'}
-          {isDeleting && 'Deleting portfolio...'}
+          <ResponsiveTypography variant="formHelper">
+            {isCreating && 'Creating portfolio...'}
+            {isUpdating && 'Updating portfolio...'}
+            {isDeleting && 'Deleting portfolio...'}
+          </ResponsiveTypography>
         </Alert>
       )}
     </Box>

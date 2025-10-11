@@ -131,7 +131,7 @@ export const RoleDetails: React.FC<RoleDetailsProps> = ({
           {/* Basic Information & Metadata - Compact Layout */}
           <Grid item xs={12}>
             <Card sx={{ mb: 2 }}>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Grid container spacing={2}>
                   {/* Basic Information - Left Column */}
                   <Grid item xs={12} md={6}>

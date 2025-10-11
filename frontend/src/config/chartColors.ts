@@ -136,13 +136,13 @@ export const PNL_COLOR_SCHEMES = {
     negativeLight: '#FFF3E0',
   },
   purplePink: {
-    positive: '#9C27B0',
+    positive: '#5d2fd3', // '#9C27B0',
     negative: '#E91E63',
     positiveLight: '#E0F2F1',
     negativeLight: '#FCE4EC',
   },
   greenRed: {
-    positive: '#2E7D32',
+    positive: '#059669', // '#2E7D32',
     negative: '#D32F2F',
     positiveLight: '#E0F2F1',
     negativeLight: '#FFEBEE',

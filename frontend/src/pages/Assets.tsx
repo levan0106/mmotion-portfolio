@@ -5,7 +5,6 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import {
   Box,
-  Typography,
   Card,
   CardContent,
   Grid,
@@ -15,6 +14,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Paper,
   Chip,
   CircularProgress,
   Alert,
@@ -48,6 +48,7 @@ import { UserGuide } from '../components/Common/UserGuide';
 import { Asset, AssetFilters as AssetFiltersType } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
 import { getAssetTypeColor } from '../config/chartColors';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 // Memoized table row component for better performance
 const AssetTableRow = memo(({ 
@@ -98,12 +99,12 @@ const AssetTableRow = memo(({
     >
       <TableCell>
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600, color: 'text.primary' }}>
             {asset.name}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="formHelper">
             {asset.description || 'No description'}
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       </TableCell>
       <TableCell>
@@ -123,32 +124,32 @@ const AssetTableRow = memo(({
         />
       </TableCell>
       <TableCell>
-        <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
+        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
           {asset.symbol}
-        </Typography>
+        </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
           {Number(asset.totalQuantity) || 0}
-        </Typography>
+        </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
-          <Typography 
-            variant="body2" 
+          <ResponsiveTypography 
+            variant="tableCell" 
             sx={{ 
               fontWeight: 600, 
               color: priceComparison >= 0 ? 'success.main' : 'error.main'
             }}
           >
             Current: {formatCurrency(currentPrice, baseCurrency)}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="formHelper" sx={{ fontSize: '0.75rem' }}>
             Avg Cost: {formatCurrency(avgCost, baseCurrency)}
-          </Typography>
+          </ResponsiveTypography>
           {priceComparisonPercent !== 0 && (
-            <Typography 
-              variant="caption" 
+            <ResponsiveTypography 
+              variant="formHelper" 
               sx={{ 
                 fontSize: '0.7rem',
                 color: priceComparison >= 0 ? 'success.main' : 'error.main',
@@ -156,19 +157,19 @@ const AssetTableRow = memo(({
               }}
             >
               {priceComparison >= 0 ? '+' : ''}{priceComparisonPercent.toFixed(1)}%
-            </Typography>
+            </ResponsiveTypography>
           )}
         </Box>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: 'success.main' }}>
+        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600, color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
-        </Typography>
+        </ResponsiveTypography>
       </TableCell>
       <TableCell>
-        <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.secondary' }}>
+        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 400, color: 'text.secondary' }}>
           {formatDateTime(asset.updatedAt)}
-        </Typography>
+        </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'center' }}>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
@@ -325,36 +326,32 @@ const SummaryMetrics = memo(({
                   {metric.icon}
                 </Box>
               </Box>
-              <Typography 
-                variant="h5" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 sx={{ 
-                  fontWeight: 700, 
                   color: `${metric.color}.main`,
                   mb: 0.5
                 }}
               >
                 {metric.value}
-              </Typography>
-              <Typography 
-                variant="body2" 
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="cardTitle" 
                 sx={{ 
                   color: 'text.primary',
-                  fontWeight: 600,
                   mb: 0.5
                 }}
               >
                 {metric.title}
-              </Typography>
-              <Typography 
-                variant="body2" 
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="cardLabel" 
                 sx={{ 
-                  color: 'text.secondary',
-                  fontSize: '0.875rem',
-                  fontWeight: 400
+                  fontSize: '0.875rem'
                 }}
               >
                 {metric.subtitle}
-              </Typography>
+              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
@@ -365,8 +362,8 @@ const SummaryMetrics = memo(({
 
 SummaryMetrics.displayName = 'SummaryMetrics';
 
-// Memoized assets table component
-const AssetsTable = memo(({ 
+// Memoized assets list component
+const AssetsList = memo(({ 
   assets, 
   baseCurrency, 
   theme, 
@@ -383,61 +380,69 @@ const AssetsTable = memo(({
   onDelete: (asset: Asset) => void; 
   isLoadingDeleteInfo: boolean; 
 }) => {
-  const summaryMetrics = useMemo(() => {
-    const totalAssets = assets.length;
-    return { totalAssets };
-  }, [assets]);
+  // Removed unused summaryMetrics
 
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
+          <ResponsiveTypography variant="pageTitle" sx={{ mb: 1 }}>
             Asset Portfolio
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {summaryMetrics.totalAssets} assets in your portfolio
-          </Typography>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="pageSubtitle">
+            Detailed view of your assets across all portfolios
+          </ResponsiveTypography>
         </Box>
       </Box>
-
-      <Card 
-        variant="outlined" 
-        sx={{ 
-          borderRadius: 2, 
-          boxShadow: 1,
-          border: `0.5px solid ${alpha(theme.palette.divider, 0.5)}`
-        }}
-      >
-        <CardContent sx={{ p: 0 }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <TableHead sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 200 }}>Asset</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 100 }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 100 }}>Symbol</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 120, textAlign: 'right' }}>Quantity</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 150, textAlign: 'right' }}>Price Comparison</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 120, textAlign: 'right' }}>Total Value</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 140 }}>Last Updated</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary', minWidth: 120, textAlign: 'center' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {assets.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4 }}>
-                      <Typography variant="h6" color="text.primary" sx={{ mb: 1 }}>
-                        No Assets Found
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        You don't have any assets in your portfolio yet.
-                      </Typography>
-                    </TableCell>
+      
+      {assets.length === 0 ? (
+        <Card sx={{ 
+          p: 6, 
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          borderRadius: 3
+        }}>
+          <Box sx={{ 
+            p: 3,
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+            display: 'inline-flex',
+            mb: 3
+          }}>
+            <AccountBalanceWallet sx={{ fontSize: 80, color: 'primary.main' }} />
+          </Box>
+          <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
+            No Assets Found
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+            You don't have any assets in your portfolio yet. Start by adding assets to track your investments.
+          </ResponsiveTypography>
+        </Card>
+      ) : (
+        <Card sx={{ 
+          borderRadius: 3,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+          border: `0.5px solid ${alpha(theme.palette.divider, 0.08)}`,
+          backdropFilter: 'blur(10px)'
+        }}>
+          <CardContent sx={{ p: 0 }}>
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 0 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
+                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Asset</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Type</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Symbol</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Quantity</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Price Comparison</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Total Value</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Last Updated</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
                   </TableRow>
-                ) : (
-                  assets.map((asset) => (
+                </TableHead>
+                <TableBody>
+                  {assets.map((asset) => (
                     <AssetTableRow
                       key={asset.id}
                       asset={asset}
@@ -448,19 +453,18 @@ const AssetsTable = memo(({
                       onDelete={onDelete}
                       isLoadingDeleteInfo={isLoadingDeleteInfo}
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 });
 
-AssetsTable.displayName = 'AssetsTable';
+AssetsList.displayName = 'AssetsList';
 
 const Assets: React.FC = () => {
   const theme = useTheme();
@@ -638,7 +642,7 @@ const Assets: React.FC = () => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box>
         <Alert severity="error" sx={{ mb: 2 }}>
           Error loading assets: {error}
         </Alert>
@@ -655,25 +659,23 @@ const Assets: React.FC = () => {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box>
-              <Typography 
-                variant="h4" 
+              <ResponsiveTypography 
+                variant="pageHeader" 
                 sx={{ 
-                  fontWeight: 700, 
-                  color: 'text.primary',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                   mb: 1
                 }}
               >
                 Assets
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'text.secondary',
-                  fontWeight: 400
-                }}
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="pageSubtitle"
               >
                 Manage your portfolio assets
-              </Typography>
+              </ResponsiveTypography>
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -771,8 +773,8 @@ const Assets: React.FC = () => {
           </Box>
         )}
 
-        {/* Assets Table - Memoized Component */}
-        <AssetsTable 
+        {/* Assets List - Memoized Component */}
+        <AssetsList 
           assets={assets}
           baseCurrency={baseCurrency}
           theme={theme}

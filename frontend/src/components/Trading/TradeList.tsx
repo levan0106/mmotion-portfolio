@@ -126,7 +126,7 @@ export const TradeList: React.FC<TradeListProps> = ({
   const [sourceFilter, setSourceFilter] = useState<TradeSource | 'ALL'>('ALL');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
-  const [exchangeViewMode, setExchangeViewMode] = useState<'grid' | 'list'>('grid');
+  const [exchangeViewMode, setExchangeViewMode] = useState<'grid' | 'list'>('list');
 
   // Filter and search trades
   const filteredTrades = useMemo(() => {

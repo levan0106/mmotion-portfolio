@@ -249,7 +249,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
       <DialogTitle>
         {mode === 'create' ? 'Create New Role' : 'Edit Role'}
       </DialogTitle>
-      <DialogContent sx={{ p: 3 }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 2.5 } }}>
         {!!error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             Error occurred
@@ -260,7 +260,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
           {/* Left Column - Basic Info & Settings */}
           <Grid item xs={12} md={5}>
             {/* Basic Information */}
-            <Paper sx={{ p: 2, mb: 2 }}>
+            <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                 <Typography variant="h6">
                   Basic Information

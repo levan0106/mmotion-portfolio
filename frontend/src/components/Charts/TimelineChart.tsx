@@ -21,6 +21,7 @@ import {
 import { Box, Typography, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { formatPercentageValue, formatDateFns as formatDate } from '../../utils/format';
 import { getAssetTypeColor, RECHARTS_COLORS } from '../../config/chartColors';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 
 export interface TimelineDataPoint {
   date: string;
@@ -255,15 +256,13 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     <Box className={className} sx={sx}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box>
-          <Typography variant={compact ? "subtitle1" : "h6"} gutterBottom>
+          <ResponsiveTypography variant="chartTitle" gutterBottom>
             {title}
-          </Typography>
+          </ResponsiveTypography>
           {subtitle && (
-            <Typography variant="body2" color="text.secondary" sx={{ 
-              fontSize: compact ? '0.75rem' : undefined 
-            }}>
+            <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
               {subtitle}
-            </Typography>
+            </ResponsiveTypography>
           )}
         </Box>
         

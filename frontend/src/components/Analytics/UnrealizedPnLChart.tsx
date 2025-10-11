@@ -4,7 +4,8 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { TrendingUp, TrendingDown } from '@mui/icons-material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { getAssetTypeColor, getPnLColors, type PnLColorScheme } from '../../config/chartColors';
@@ -99,29 +100,28 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 flexShrink: 0
               }}
             />
-            <Typography variant="subtitle1" fontWeight="600" sx={{ fontSize: '0.9rem' }}>
+            <ResponsiveTypography variant="chartTitle">
               {data.name || 'Unknown'}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* P&L Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Unrealized P&L
-            </Typography>
+            </ResponsiveTypography>
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5, gap: 1 }}>
               {isProfit ? (
                 <TrendingUp sx={{ fontSize: 20, color: pnlColors.positive }} />
               ) : (
                 <TrendingDown sx={{ fontSize: 20, color: pnlColors.negative }} />
               )}
-              <Typography 
-                variant="h6" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 sx={{ 
                   color: isProfit ? pnlColors.positive : pnlColors.negative,
                   fontWeight: 'bold',
@@ -129,7 +129,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 }}
               >
                 {isProfit ? '+' : ''}{formatCurrency(data.unrealizedPnL || 0, baseCurrency)}
-              </Typography>
+              </ResponsiveTypography>
               <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -144,8 +144,8 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 ) : (
                   <TrendingDown sx={{ fontSize: 14, color: pnlColors.negative }} />
                 )}
-                <Typography 
-                  variant="body2" 
+                <ResponsiveTypography 
+                  variant="tableCell" 
                   sx={{ 
                     color: isProfit ? pnlColors.positive : pnlColors.negative,
                     fontWeight: 600,
@@ -153,28 +153,27 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                   }}
                 >
                   {isProfit ? '+' : ''}{formatPercentage(data.unrealizedPnLPercentage || 0)}
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Box>
           </Box>
 
             {/* Current Value Section */}
             <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: '0.7rem',
+              <ResponsiveTypography variant="formHelper" sx={{ 
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
                 Current Value
-              </Typography>
-              <Typography variant="body2" fontWeight="500" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell" sx={{ 
                 mt: 0.5,
                 fontSize: '0.85rem',
                 color: 'text.primary'
               }}>
                 {formatCurrency(data.marketValue || 0, baseCurrency)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
 
           {/* Performance Indicator */}
@@ -187,21 +186,21 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
             gap: 0.5
           }}>
             {isProfit ? (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#00C49F',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↗ PROFIT
-              </Typography>
+              </ResponsiveTypography>
             ) : (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#FF8042',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↘ LOSS
-              </Typography>
+              </ResponsiveTypography>
             )}
           </Box>
         </Box>
@@ -213,9 +212,9 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   if (!safeData || safeData.length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
           No data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -227,14 +226,11 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
       flexDirection: 'column',
       flex: 1
     }}>
-      <Typography variant="subtitle2" gutterBottom sx={{ 
-        mb: compact ? 1 : 2,
-        fontSize: compact ? '0.7rem' : '0.8rem',
-        fontWeight: 600,
+      <ResponsiveTypography variant="chartTitle" sx={{ 
         textAlign: 'center'
       }}>
         Unrealized P&L by Asset Type
-      </Typography>
+      </ResponsiveTypography>
       <Box sx={{ 
         flex: 1, 
         width: '100%',

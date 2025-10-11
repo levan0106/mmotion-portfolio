@@ -280,17 +280,17 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
     <Box sx={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-      p: 3
+      p: { xs: 1.5, sm: 2 }
     }}>
       {/* Header Section */}
       <Card sx={{ 
-        mb: 4,
+        mb: { xs: 2, sm: 3 },
         borderRadius: 3,
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white'
       }}>
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant="h3" component="h1" sx={{ 

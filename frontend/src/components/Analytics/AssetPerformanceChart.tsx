@@ -13,7 +13,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Paper } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
 interface AssetPerformanceDataPoint {
@@ -82,23 +83,22 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 flexShrink: 0
               }}
             />
-            <Typography variant="subtitle1" fontWeight="600" sx={{ fontSize: '0.9rem' }}>
+            <ResponsiveTypography variant="chartLegend">
               {data.assetType.toUpperCase()}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Performance Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Performance (Unrealized P&L)
-            </Typography>
-            <Typography 
-              variant="h6" 
+            </ResponsiveTypography>
+            <ResponsiveTypography 
+              variant="cardValue" 
               sx={{ 
                 color: isPositivePerformance ? '#00C49F' : '#FF8042',
                 fontWeight: 'bold',
@@ -107,42 +107,39 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
               }}
             >
               {isPositivePerformance ? '+' : ''}{formatPercentage(data.performance)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Value Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Total Value
-            </Typography>
-            <Typography variant="body2" fontWeight="500" sx={{ 
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
               fontSize: '0.85rem',
               color: 'text.primary'
             }}>
               {formatCurrency(data.value, baseCurrency)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Unrealized P&L Section */}
           {data.unrealizedPl !== undefined && (
             <Box sx={{ mb: 1.5 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: '0.7rem',
+              <ResponsiveTypography variant="formHelper" sx={{ 
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
                 Unrealized P&L
-              </Typography>
-              <Typography 
-                variant="body2" 
-                fontWeight="500" 
+              </ResponsiveTypography>
+              <ResponsiveTypography 
+                variant="tableCell" 
                 sx={{ 
                   mt: 0.5,
                   fontSize: '0.85rem',
@@ -150,28 +147,27 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 }}
               >
                 {isPositivePerformance ? '+' : ''}{formatCurrency(data.unrealizedPl, baseCurrency)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           )}
 
           {/* Position Count */}
           {data.positionCount && (
             <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: '0.7rem',
+              <ResponsiveTypography variant="formHelper" sx={{ 
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
                 Positions
-              </Typography>
-              <Typography variant="body2" fontWeight="500" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell" sx={{ 
                 mt: 0.5,
                 fontSize: '0.85rem',
                 color: 'text.primary'
               }}>
                 {data.positionCount} {data.positionCount === 1 ? 'position' : 'positions'}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           )}
 
@@ -185,21 +181,21 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
             gap: 0.5
           }}>
             {isPositivePerformance ? (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#00C49F',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↗ PROFIT
-              </Typography>
+              </ResponsiveTypography>
             ) : (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#FF8042',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↘ LOSS
-              </Typography>
+              </ResponsiveTypography>
             )}
           </Box>
         </Paper>
@@ -211,29 +207,21 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
   if (safeData.length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
           No performance data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
 
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom sx={{ 
-        fontSize: compact ? '0.7rem' : '0.8rem',
-        fontWeight: 600,
-        textAlign: 'center',
-        mb: compact ? 1 : 2
-      }}>
+      <ResponsiveTypography variant="chartTitle" >
         {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ 
-        mb: compact ? 1 : 2,
-        fontSize: compact ? '0.75rem' : undefined
-      }}>
+      </ResponsiveTypography>
+      <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
         Performance comparison across asset types
-      </Typography>
+      </ResponsiveTypography>
       <Box sx={{ height: compact ? 167 : 267 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={safeData} margin={{ 

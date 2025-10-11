@@ -7,8 +7,6 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CircularProgress,
   Box,
-  Container,
-  Typography,
   Tabs,
   Tab,
   Grid,
@@ -52,6 +50,8 @@ import {
   formatNumberWithSeparators 
 } from '../utils/format';
 import { CreateTradeDto } from '../types';
+import { useTypography } from '../theme/useTypography';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import './PortfolioDetail.styles.css';
 
 interface TabPanelProps {
@@ -72,7 +72,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
           {children}
         </Box>
       )}
@@ -88,6 +88,9 @@ const PortfolioDetail: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  
+  // Custom typography hook (for future use)
+  useTypography();
 
   // Handle tab parameter from URL
   useEffect(() => {
@@ -158,42 +161,41 @@ const PortfolioDetail: React.FC = () => {
 
   if (isPortfolioLoading) {
     return (
-      <Container maxWidth="xl">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (portfolioError || !portfolio) {
     return (
-      <Container maxWidth="xl">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-          <Typography color="error">
-            Failed to load portfolio. Please try again.
-          </Typography>
-        </Box>
-      </Container>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <ResponsiveTypography variant="errorText">
+          Failed to load portfolio. Please try again.
+        </ResponsiveTypography>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ scrollBehavior: 'smooth', py: 4, px: { xs: 2, sm: 3 } }}>
+    <Box sx={{ scrollBehavior: 'smooth' }}>
 
       {/* Sticky Header */}
       <Box
         sx={{
           position: 'sticky',
-          top: 30, // Position at very top
+          top: { xs: 0, sm: 20, md: 30 }, // Responsive top position
           zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: 3,
-          px: 3,
-          mb: 4,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          py: { xs: 1, sm: 1.5, md: 2 },
+          px: { xs: 1, sm: 1.5, md: 2 },
+          mb: { xs: 1.5, sm: 2, md: 3 },
+          boxShadow: { 
+            xs: '0 2px 8px rgba(0,0,0,0.08)', 
+            sm: '0 4px 12px rgba(0,0,0,0.1)' 
+          },
           backdropFilter: 'blur(10px)',
         }}
       >
@@ -203,23 +205,29 @@ const PortfolioDetail: React.FC = () => {
           justifyContent="space-between"
           sx={{
             flexDirection: { xs: 'column', sm: 'row' },
-            gap: { xs: 2, sm: 0 },
+            gap: { xs: 1.5, sm: 2, md: 0 },
+            width: '100%',
           }}
         >
-          <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-            <Typography variant="h4" gutterBottom>
+          <Box sx={{ 
+            textAlign: { xs: 'center', sm: 'left' },
+            width: { xs: '100%', sm: 'auto' },
+            flex: { sm: 1 }
+          }}>
+            <ResponsiveTypography variant="pageTitle" gutterBottom>
               {portfolio.name}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
               Portfolio Management & Trading
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box 
             display="flex" 
-            gap={2}
+            gap={{ xs: 1.5, sm: 2 }}
             sx={{
               flexDirection: { xs: 'column', sm: 'row' },
               width: { xs: '100%', sm: 'auto' },
+              flexShrink: 0,
             }}
           >
             <Button
@@ -228,11 +236,10 @@ const PortfolioDetail: React.FC = () => {
               onClick={handleBack}
               sx={{ 
                 borderRadius: 2, 
-                textTransform: 'none',
-                fontWeight: 600,
-                px: 3,
-                py: 1,
+                px: { xs: 2, sm: 3 },
+                py: { xs: 0.75, sm: 1 },
                 width: { xs: '100%', sm: 'auto' },
+                minWidth: { xs: 'auto', sm: '120px' },
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
                   transform: 'translateY(-1px)',
@@ -240,7 +247,9 @@ const PortfolioDetail: React.FC = () => {
                 }
               }}
             >
-              Back to Portfolios
+              <ResponsiveTypography variant="buttonText">
+                Back to Portfolios
+              </ResponsiveTypography>
             </Button>
             <Tooltip title="Refresh all portfolio data">
               <Button
@@ -250,11 +259,10 @@ const PortfolioDetail: React.FC = () => {
                 disabled={isRefreshingAll}
                 sx={{ 
                   borderRadius: 2, 
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1,
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 0.75, sm: 1 },
                   width: { xs: '100%', sm: 'auto' },
+                  minWidth: { xs: 'auto', sm: '120px' },
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
                     transform: 'translateY(-1px)',
@@ -262,7 +270,9 @@ const PortfolioDetail: React.FC = () => {
                   }
                 }}
               >
-                {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
+                <ResponsiveTypography variant="buttonText">
+                  {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
+                </ResponsiveTypography>
               </Button>
             </Tooltip>
             <Button
@@ -271,11 +281,10 @@ const PortfolioDetail: React.FC = () => {
               onClick={() => setShowCreateForm(true)}
               sx={{ 
                 borderRadius: 2, 
-                textTransform: 'none',
-                fontWeight: 600,
-                px: 3,
-                py: 1,
+                px: { xs: 2, sm: 3 },
+                py: { xs: 0.75, sm: 1 },
                 width: { xs: '100%', sm: 'auto' },
+                minWidth: { xs: 'auto', sm: '120px' },
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
                   transform: 'translateY(-1px)',
@@ -283,14 +292,16 @@ const PortfolioDetail: React.FC = () => {
                 }
               }}
             >
-              New Trade
+              <ResponsiveTypography variant="buttonText">
+                New Trade
+              </ResponsiveTypography>
             </Button>
           </Box>
         </Box>
       </Box>
 
       {/* Portfolio Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 6 }}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 4, sm: 6 } }}>
         {/* Portfolio Value & NAV */}
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -319,31 +330,42 @@ const PortfolioDetail: React.FC = () => {
             }}>
               <AccountBalance sx={{ fontSize: 32, opacity: 0.6, color: '#667eea' }} />
             </Box>
-             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+             <CardContent sx={{ 
+               height: '100%', 
+               display: 'flex', 
+               flexDirection: 'column', 
+               justifyContent: 'space-between', 
+               p: { xs: 2, sm: 2.5, md: 3 } 
+             }}>
                <Box>
-                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
                    Portfolio Value
-                 </Typography>
-                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                 </ResponsiveTypography>
+                 <ResponsiveTypography variant="cardSubtitle">
                    Giá trị tài sản & NAV
-                 </Typography>
+                 </ResponsiveTypography>
                </Box>
-               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+               <Box sx={{ 
+                 display: 'flex', 
+                 flexDirection: { xs: 'column', sm: 'row' },
+                 gap: { xs: 1.5, sm: 2 }, 
+                 mt: 2 
+               }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Investment Value
-                   </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   </ResponsiveTypography>
+                   <ResponsiveTypography variant="cardValue">
                      {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }} ellipsis>
                      Current NAV (+cash)
-                   </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   </ResponsiveTypography>
+                   <ResponsiveTypography variant="cardValue" ellipsis>
                      {formatCurrency(portfolio.totalAllValue, portfolio.baseCurrency)}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
                </Box>
              </CardContent>
@@ -389,47 +411,52 @@ const PortfolioDetail: React.FC = () => {
                 <TrendingDown sx={{ fontSize: 32, opacity: 0.6, color: '#f43f5e' }} />
               }
             </Box>
-             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+             <CardContent sx={{ 
+               height: '100%', 
+               display: 'flex', 
+               flexDirection: 'column', 
+               justifyContent: 'space-between', 
+               p: { xs: 2, sm: 2.5, md: 3 } 
+             }}>
                <Box>
-                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
                    Performance
-                 </Typography>
-                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                 </ResponsiveTypography>
+                 <ResponsiveTypography variant="cardSubtitle">
                    Tổng & Lợi nhuận hàng năm
-                 </Typography>
+                 </ResponsiveTypography>
                </Box>
-               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+               <Box sx={{ 
+                 display: 'flex', 
+                 flexDirection: { xs: 'column', sm: 'row' },
+                 gap: { xs: 1.5, sm: 2 }, 
+                 mt: 2 
+               }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Total Return
-                   </Typography>
-                   <Typography 
-                     variant="h6" 
+                   </ResponsiveTypography>
+                   <ResponsiveTypography 
+                     variant="cardValue"
                      sx={{ 
-                       fontWeight: 700, 
-                       fontSize: '1.2rem', 
-                       lineHeight: 1.2,
                        color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
                      {performanceData ? formatPercentage(performanceData.totalReturn) : 'N/A'}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Annualized
-                   </Typography>
-                   <Typography 
-                     variant="h6" 
+                   </ResponsiveTypography>
+                   <ResponsiveTypography 
+                     variant="cardValue"
                      sx={{ 
-                       fontWeight: 700, 
-                       fontSize: '1.2rem', 
-                       lineHeight: 1.2,
                        color: (performanceData?.annualizedReturn || 0) >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
                      {performanceData ? formatPercentage(performanceData.annualizedReturn) : 'N/A'}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
                </Box>
              </CardContent>
@@ -464,31 +491,42 @@ const PortfolioDetail: React.FC = () => {
             }}>
               <TrendingUp sx={{ fontSize: 32, opacity: 0.6, color: '#22c55e' }} />
             </Box>
-             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+             <CardContent sx={{ 
+               height: '100%', 
+               display: 'flex', 
+               flexDirection: 'column', 
+               justifyContent: 'space-between', 
+               p: { xs: 2, sm: 2.5, md: 3 } 
+             }}>
                <Box>
-                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
                    Trading Activity
-                 </Typography>
-                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                 </ResponsiveTypography>
+                 <ResponsiveTypography variant="cardSubtitle">
                    Giao dịch & Khối lượng
-                 </Typography>
+                 </ResponsiveTypography>
                </Box>
-               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+               <Box sx={{ 
+                 display: 'flex', 
+                 flexDirection: { xs: 'column', sm: 'row' },
+                 gap: { xs: 1.5, sm: 2 }, 
+                 mt: 2 
+               }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Total Trades
-                   </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   </ResponsiveTypography>
+                   <ResponsiveTypography variant="cardValue">
                      {formatNumberWithSeparators(totalTrades, 0)}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Total Volume
-                   </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#1a1a1a' }}>
+                   </ResponsiveTypography>
+                   <ResponsiveTypography variant="cardValue">
                      {formatCurrency(totalTradeVolume, portfolio?.baseCurrency || 'VND')}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
                </Box>
              </CardContent>
@@ -534,39 +572,52 @@ const PortfolioDetail: React.FC = () => {
                 <TrendingDown sx={{ fontSize: 32, opacity: 0.6, color: '#f43f5e' }} />
               }
             </Box>
-             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 3 }}>
+             <CardContent sx={{ 
+               height: '100%', 
+               display: 'flex', 
+               flexDirection: 'column', 
+               justifyContent: 'space-between', 
+               p: { xs: 2, sm: 2.5, md: 3 } 
+             }}>
                <Box>
-                 <Typography variant="h6" sx={{ color: '#1a1a1a', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
                    P&L & Costs
-                 </Typography>
-                 <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.8rem', fontWeight: 300 }}>
+                 </ResponsiveTypography>
+                 <ResponsiveTypography variant="cardSubtitle">
                    Lợi nhuận & Chi phí
-                 </Typography>
+                 </ResponsiveTypography>
                </Box>
-               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+               <Box sx={{ 
+                 display: 'flex', 
+                 flexDirection: { xs: 'column', sm: 'row' },
+                 gap: { xs: 1.5, sm: 2 }, 
+                 mt: 2 
+               }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Realized P&L
-                   </Typography>
-                   <Typography 
-                     variant="h6" 
+                   </ResponsiveTypography>
+                   <ResponsiveTypography 
+                     variant="cardValue"
                      sx={{ 
-                       fontWeight: 700, 
-                       fontSize: '1.2rem', 
-                       lineHeight: 1.2,
                        color: portfolio.realizedInvestPnL >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
                      {formatCurrency(portfolio.realizedInvestPnL || 0, portfolio?.baseCurrency || 'VND')}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
-                 <Box sx={{ flex: 1 }}>
-                   <Typography variant="body2" sx={{ color: '#666666', fontSize: '0.85rem', mb: 0.8, fontWeight: 300 }}>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
                      Fees & Taxes
-                   </Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#ea580c' }}>
+                   </ResponsiveTypography>
+                   <ResponsiveTypography 
+                     variant="cardValue"
+                     sx={{ 
+                       color: '#ea580c'
+                     }}
+                   >
                      {formatCurrency(totalTradeFeesAndTaxes, portfolio?.baseCurrency || 'VND')}
-                   </Typography>
+                   </ResponsiveTypography>
                  </Box>
                </Box>
              </CardContent>
@@ -589,7 +640,14 @@ const PortfolioDetail: React.FC = () => {
           marginTop: 2, // Add margin from cards
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          px: { xs: 1, sm: 2 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 }
+        }}>
           {/* Tabs */}
           <Tabs 
             value={tabValue} 
@@ -597,11 +655,14 @@ const PortfolioDetail: React.FC = () => {
             aria-label="portfolio tabs"
             sx={{
               minHeight: '48px',
+              width: { xs: '100%', sm: 'auto' },
               '& .MuiTab-root': {
                 minHeight: '48px',
                 fontWeight: 600,
                 textTransform: 'none',
-                fontSize: '0.95rem',
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },
+                minWidth: { xs: 'auto', sm: '120px' },
+                px: { xs: 1, sm: 2 },
               },
             }}
           >
@@ -740,7 +801,7 @@ const PortfolioDetail: React.FC = () => {
           defaultPortfolioId={portfolioId!}
         />
       </ModalWrapper>
-    </Container>
+    </Box>
   );
 };
 

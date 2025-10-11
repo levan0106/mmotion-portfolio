@@ -5,7 +5,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Tabs,
   Tab,
@@ -148,16 +147,16 @@ const Trading: React.FC = () => {
 
   if (!portfolioId) {
     return (
-      <Container maxWidth="lg">
+      <Box>
         <Typography variant="h4" gutterBottom>
           Portfolio not found
         </Typography>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <Box>
       <Box sx={{ mb: 4 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box>
@@ -409,7 +408,7 @@ const Trading: React.FC = () => {
           </Box>
         </Box>
       )}
-    </Container>
+    </Box>
   );
 };
 

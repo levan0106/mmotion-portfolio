@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Container,
-  Typography,
   Button,
   Grid,
   Card,
@@ -12,6 +10,8 @@ import {
   Fab,
   Tabs,
   Tab,
+  Paper,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,6 +35,7 @@ import { useRoles } from '../hooks/useRoles';
 import { Role } from '../services/api.role';
 import { User, UserApi } from '../services/api.user';
 import { UserRoleApi } from '../services/api.role';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,6 +70,7 @@ export const RoleManagement: React.FC = () => {
 };
 
 const RoleManagementContent: React.FC = () => {
+  const theme = useTheme();
   const { roles, isLoading, error, assignPermissions, isAssigningPermissions } = useRoles();
   // const { users, isLoading: isLoadingUsers, error: usersError } = useUsers();
   const [tabValue, setTabValue] = useState(0);
@@ -239,48 +241,64 @@ const RoleManagementContent: React.FC = () => {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Box sx={{ mt: 2 }}>
         <Alert severity="error">
           Error loading roles: {error instanceof Error ? error.message : 'Unknown error'}
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Box>
       
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <ResponsiveTypography 
+          variant="pageHeader" 
+          component="h1" 
+          sx={{ 
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 1,
+            filter: 'none'
+          }}
+        >
           Role & Permission Management
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+        </ResponsiveTypography>
+        <ResponsiveTypography variant="pageSubtitle">
           Manage user roles and permissions for the system
-        </Typography>
+        </ResponsiveTypography>
       </Box>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab
+      {/* Tabs */}
+      <Paper sx={{ mb: 2 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          sx={{ px: 2 }}
+        >
+          <Tab 
             icon={<SecurityIcon />}
             label="Roles"
             id="role-tab-0"
             aria-controls="role-tabpanel-0"
           />
-          <Tab
+          <Tab 
             icon={<PersonIcon />}
             label="Users"
             id="role-tab-1"
             aria-controls="role-tabpanel-1"
           />
-          <Tab
+          <Tab 
             icon={<SettingsIcon />}
             label="Settings"
             id="role-tab-2"
             aria-controls="role-tabpanel-2"
           />
         </Tabs>
-      </Box>
+      </Paper>
 
       <TabPanel value={tabValue} index={0}>
         <Grid container spacing={3}>
@@ -288,9 +306,9 @@ const RoleManagementContent: React.FC = () => {
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h6">
+                  <ResponsiveTypography variant="cardTitle">
                     System Roles
-                  </Typography>
+                  </ResponsiveTypography>
                   <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -318,9 +336,9 @@ const RoleManagementContent: React.FC = () => {
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h6">
+                  <ResponsiveTypography variant="cardTitle">
                     System Users
-                  </Typography>
+                  </ResponsiveTypography>
                   <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -419,6 +437,6 @@ const RoleManagementContent: React.FC = () => {
       >
         <AddIcon />
       </Fab>
-    </Container>
+    </Box>
   );
 };

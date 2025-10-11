@@ -5,7 +5,6 @@ import {
   Tabs,
   Tab,
   Paper,
-  Container,
   Grid,
   Card,
   CardContent,
@@ -60,7 +59,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Settings
@@ -238,7 +237,7 @@ const Settings: React.FC = () => {
           </Grid>
         </TabPanel>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 

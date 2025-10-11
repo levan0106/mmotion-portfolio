@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Box, Paper, Typography, Stack } from '@mui/material';
+import { Box, Paper, Typography, Stack } from '@mui/material';
 import GlobalAssetManagement from '../components/GlobalAssetManagement';
 import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
 import { UpdatePriceByDateButton } from '../components/AssetPrice';
@@ -143,7 +143,7 @@ const GlobalAssetsContent: React.FC = () => {
   const errorMessage = error ? (error as Error)?.message || String(error) : undefined;
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Box>
       {/* Auto Sync Toggle Section */}
       <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -198,7 +198,7 @@ const GlobalAssetsContent: React.FC = () => {
         onTestProvider={handleTestProvider}
         onUpdateConfig={handleUpdateConfig}
       />
-    </Container>
+    </Box>
   );
 };
 

@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import {
   CircularProgress,
   Fab,
+  useTheme,
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -18,6 +19,7 @@ import PortfolioCard from './PortfolioCard';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 import './PortfolioList.styles.css';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 
 interface PortfolioListProps {
   onViewPortfolio: (portfolioId: string) => void;
@@ -32,6 +34,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
   onDeletePortfolio,
   onCreatePortfolio,
 }) => {
+  const theme = useTheme();
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
   const [searchTerm] = useState('');
@@ -71,7 +74,14 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
     <div className="portfolio-list">
       {/* Header */}
       <div className="portfolio-list__header">
-        <h1 className="portfolio-list__title">Portfolios</h1>
+        <ResponsiveTypography variant="pageHeader"
+        sx={{ 
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          mb: 1
+        }}>Portfolios</ResponsiveTypography>
         {onCreatePortfolio && (
           <button
             className="portfolio-list__create-btn"

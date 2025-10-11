@@ -13,7 +13,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Typography, Paper, FormControl, Select, MenuItem } from '@mui/material';
+import { Box, Paper, FormControl, Select, MenuItem } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
 interface RiskReturnDataPoint {
@@ -93,23 +94,22 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
                 flexShrink: 0
               }}
             />
-            <Typography variant="subtitle1" fontWeight="600" sx={{ fontSize: '0.9rem' }}>
+            <ResponsiveTypography variant="cardTitle" sx={{ fontSize: '0.9rem' }}>
               {data.assetType.toUpperCase()}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Return Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Return (Bubble Size)
-            </Typography>
-            <Typography 
-              variant="h6" 
+            </ResponsiveTypography>
+            <ResponsiveTypography 
+              variant="cardValue" 
               sx={{ 
                 color: isPositiveReturn ? '#00C49F' : '#FF8042',
                 fontWeight: 'bold',
@@ -118,66 +118,62 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               }}
             >
               {isPositiveReturn ? '+' : ''}{formatPercentage(data.return)}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.65rem',
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="formHelper" sx={{ 
               fontStyle: 'italic',
               mt: 0.5,
               display: 'block'
             }}>
               Larger bubble = Higher return performance (better investment)
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Risk Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Risk (Volatility)
-            </Typography>
-            <Typography variant="body2" fontWeight="500" sx={{ 
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
               fontSize: '0.85rem',
               color: 'text.primary'
             }}>
               {formatPercentage(data.risk)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Value Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Portfolio Value
-            </Typography>
-            <Typography variant="body2" fontWeight="500" sx={{ 
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
               fontSize: '0.85rem',
               color: 'text.primary'
             }}>
               {formatCurrency(data.value, baseCurrency)}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Performance Rating Section */}
           <Box sx={{ mb: 1.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              fontSize: '0.7rem',
+            <ResponsiveTypography variant="formHelper" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
               Performance Rating
-            </Typography>
-            <Typography variant="body2" fontWeight="500" sx={{ 
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
               fontSize: '0.85rem',
               color: data.return > 0 ? 'success.main' : data.return < -5 ? 'error.main' : 'warning.main'
@@ -186,7 +182,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
                data.return > 5 ? 'Good' : 
                data.return > 0 ? 'Positive' : 
                data.return > -5 ? 'Poor' : 'Very Poor'}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
 
           {/* Performance Indicator */}
@@ -199,21 +195,21 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
             gap: 0.5
           }}>
             {isPositiveReturn ? (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#00C49F',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↗ HIGH RETURN
-              </Typography>
+              </ResponsiveTypography>
             ) : (
-              <Typography variant="caption" sx={{ 
+              <ResponsiveTypography variant="statusText" sx={{ 
                 color: '#FF8042',
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↘ LOW RETURN
-              </Typography>
+              </ResponsiveTypography>
             )}
           </Box>
         </Paper>
@@ -225,9 +221,9 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
   if (data.length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <Typography variant={compact ? "body2" : "h6"} color="text.secondary">
+        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
           No risk-return data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -276,18 +272,14 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: compact ? 1 : 2 }}>
         <Box>
-          <Typography variant="subtitle2" gutterBottom sx={{ 
-            fontSize: compact ? '0.7rem' : '0.8rem',
-            fontWeight: 600,
+          <ResponsiveTypography variant="chartTitle" sx={{ 
             mb: 0
           }}>
             {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ 
-            fontSize: compact ? '0.75rem' : undefined
-          }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
             Risk vs Return analysis of portfolio assets
-          </Typography>
+          </ResponsiveTypography>
         </Box>
         
         {onPeriodChange && (
@@ -313,13 +305,12 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
         )}
       </Box>
       
-      <Typography variant="caption" color="text.secondary" sx={{ 
+      <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ 
         mb: compact ? 1 : 2,
-        fontSize: compact ? '0.65rem' : '0.7rem',
         fontStyle: 'italic'
       }}>
         • Bubble size represents return performance - larger bubbles indicate higher returns (better performance)
-      </Typography>
+      </ResponsiveTypography>
       <Box sx={{ height: compact ? 167 : 267 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ 
