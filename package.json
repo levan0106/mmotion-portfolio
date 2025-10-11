@@ -42,7 +42,9 @@
     "cleanup:fund-data": "npx ts-node scripts/cleanup-fund-data.ts",
     "portfolio:list": "npx ts-node scripts/list-portfolios.ts",
     "portfolio:cleanup": "npx ts-node scripts/portfolio-cleanup-wrapper.ts",
-    "portfolio:cleanup:help": "npx ts-node -e \"console.log('Usage: npm run portfolio:cleanup <portfolioId>'); console.log('Example: npm run portfolio:cleanup 550e8400-e29b-41d4-a716-446655440001'); console.log(''); console.log('To list all portfolios first:'); console.log('  npm run portfolio:list');\""
+    "portfolio:cleanup:help": "npx ts-node -e \"console.log('Usage: npm run portfolio:cleanup <portfolioId>'); console.log('Example: npm run portfolio:cleanup 550e8400-e29b-41d4-a716-446655440001'); console.log(''); console.log('To list all portfolios first:'); console.log('  npm run portfolio:list');\"",
+    "backup:database": "powershell -ExecutionPolicy Bypass -File scripts/backup-restore-database.ps1",
+    "backup:database:transfer": "cmd /c \"powershell -ExecutionPolicy Bypass -File ./scripts/backup-restore-database.ps1 -TargetServer ec2-34-228-198-131.compute-1.amazonaws.com -TargetUser ec2-user -TargetPath /home/ec2-user/mmotion-portfolio/backups/\""
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

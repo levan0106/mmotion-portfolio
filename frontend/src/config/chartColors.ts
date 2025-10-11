@@ -17,7 +17,7 @@ export const CHART_COLORS: AssetTypeColors = {
   BOND: '#059669',       // Emerald
   GOLD: '#ff9800',       // Orange/Yellow
   CRYPTO: '#dc3532',     // Rose
-  DEPOSITS: '#1377c7',   // Sky blue
+  DEPOSITS: '#5d2fd3',   // purple
 };
 
 // Extended color palette for additional asset types
