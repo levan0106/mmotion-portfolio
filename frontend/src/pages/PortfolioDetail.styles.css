@@ -3,6 +3,28 @@
  * Clean and responsive layout for portfolio details
  */
 
+/* Global responsive fixes for tablet */
+@media (max-width: 1024px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  .MuiContainer-root {
+    max-width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  .MuiGrid-container {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  .MuiGrid-item {
+    padding: 8px !important;
+  }
+}
+
 @keyframes modalSlideIn {
   from {
     opacity: 0;
@@ -265,9 +287,60 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+/* Tablet and small desktop */
+@media (max-width: 1024px) and (min-width: 769px) {
   .portfolio-detail {
     padding: 1.25rem;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .portfolio-detail__header {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .portfolio-detail__title {
+    font-size: 1.75rem;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .portfolio-detail__actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .portfolio-detail__summary {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .portfolio-detail__tabs {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .portfolio-detail__tabs-list {
+    flex-wrap: wrap;
+  }
+
+  .portfolio-detail__tab {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
+  .portfolio-detail {
+    padding: 1.25rem;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   .portfolio-detail__header {

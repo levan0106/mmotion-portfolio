@@ -728,7 +728,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             >
               <MenuIcon />
             </IconButton>
-            <Box>
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
                 Portfolio Management System
               </Typography>

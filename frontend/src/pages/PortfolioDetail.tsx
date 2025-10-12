@@ -92,6 +92,11 @@ const PortfolioDetail: React.FC = () => {
   // Custom typography hook (for future use)
   useTypography();
 
+  // Scroll to top when component mounts or portfolioId changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [portfolioId]);
+
   // Handle tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get('tab');
@@ -99,6 +104,8 @@ const PortfolioDetail: React.FC = () => {
       const tabIndex = parseInt(tabParam, 10);
       if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 5) {
         setTabValue(tabIndex);
+        // Scroll to top when tab is set from URL
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [searchParams]);
@@ -119,6 +126,8 @@ const PortfolioDetail: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // Scroll to top when changing tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCreateTrade = async (data: CreateTradeDto) => {
@@ -178,7 +187,9 @@ const PortfolioDetail: React.FC = () => {
   }
 
   return (
-    <Box sx={{ scrollBehavior: 'smooth' }}>
+    <Box sx={{ 
+      scrollBehavior: 'smooth',
+    }}>
 
       {/* Sticky Header */}
       <Box
@@ -217,7 +228,7 @@ const PortfolioDetail: React.FC = () => {
             <ResponsiveTypography variant="pageTitle" gutterBottom>
               {portfolio.name}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
               Portfolio Management & Trading
             </ResponsiveTypography>
           </Box>
@@ -235,6 +246,7 @@ const PortfolioDetail: React.FC = () => {
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
               sx={{ 
+                display: { xs: 'none', sm: 'flex' },
                 borderRadius: 2, 
                 px: { xs: 2, sm: 3 },
                 py: { xs: 0.75, sm: 1 },
@@ -258,6 +270,7 @@ const PortfolioDetail: React.FC = () => {
                 onClick={handleRefreshAll}
                 disabled={isRefreshingAll}
                 sx={{ 
+                  display: { xs: 'none', sm: 'flex' },
                   borderRadius: 2, 
                   px: { xs: 2, sm: 3 },
                   py: { xs: 0.75, sm: 1 },
@@ -301,7 +314,15 @@ const PortfolioDetail: React.FC = () => {
       </Box>
 
       {/* Portfolio Summary Cards */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 4 } }}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ 
+        mb: { xs: 2, sm: 4 },
+        maxWidth: '100%',
+        margin: 0,
+        '& .MuiGrid-item': {
+          paddingLeft: { xs: '8px', sm: '12px', md: '16px' },
+          paddingTop: { xs: '8px', sm: '12px', md: '16px' }
+        }
+      }}>
         {/* Portfolio Value & NAV */}
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -629,7 +650,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 110, // Position below header
+          top: { xs: 40, sm: 110, md: 110 }, // Fixed position for sticky to work
           zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -655,6 +676,7 @@ const PortfolioDetail: React.FC = () => {
             sx={{
               minHeight: '30px',
               width: { xs: '100%', sm: 'auto' },
+              overflow: 'auto',
               '& .MuiTab-root': {
                 minHeight: '30px',
                 fontWeight: 600,
@@ -662,6 +684,10 @@ const PortfolioDetail: React.FC = () => {
                 fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },
                 minWidth: { xs: 'auto', sm: '120px' },
                 px: { xs: 1, sm: 2 },
+                flexShrink: 0,
+              },
+              '& .MuiTabs-scrollButtons': {
+                display: { xs: 'flex', sm: 'none' },
               },
             }}
           >
