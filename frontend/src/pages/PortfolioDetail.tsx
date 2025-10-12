@@ -195,7 +195,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: 10, sm: 30, md: 45 }, // Responsive top position
+          top: { xs: 10, sm: 45, md: 45 }, // Responsive top position
           zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -373,10 +373,10 @@ const PortfolioDetail: React.FC = () => {
                  mt: 2 
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }} ellipsis>
                      Investment Value
                    </ResponsiveTypography>
-                   <ResponsiveTypography variant="cardValue">
+                   <ResponsiveTypography variant="cardValue" ellipsis>
                      {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                    </ResponsiveTypography>
                  </Box>
