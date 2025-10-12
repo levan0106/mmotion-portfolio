@@ -63,6 +63,23 @@ export const formatCurrency = (
     }).format(0);
   }
   
+  // Check if user wants full format (from localStorage)
+  const showFull = localStorage.getItem('currency-show-full') === 'true';
+  
+  // Special formatting for VND with "tr" suffix for millions (only if not showing full)
+  if (currency === 'VND' && Math.abs(numAmount) >= 1000000 && !showFull) {
+    const trAmount = numAmount / 1000000;
+    const formattedTr = new Intl.NumberFormat(locale, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
+    }).format(trAmount);
+    
+    if (showSymbol) {
+      return `${formattedTr}tr ₫`;
+    }
+    return `${formattedTr}tr`;
+  }
+  
   // Format the number
   const formattedNumber = new Intl.NumberFormat(locale, {
     minimumFractionDigits: precision,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   InputAdornment,
@@ -50,6 +50,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
 }) => {
   const [displayValue, setDisplayValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Update display value when value prop changes (only when not focused)
   useEffect(() => {
@@ -61,6 +62,14 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
       }
     }
   }, [value, isFocused]);
+
+  // Set cursor to end when displayValue changes and input is focused
+  useEffect(() => {
+    if (isFocused && inputRef.current && inputRef.current.value) {
+      const length = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(length, length);
+    }
+  }, [displayValue, isFocused]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -105,6 +114,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     } else {
       setDisplayValue('');
     }
+    
     onFocus?.();
   };
 
@@ -126,6 +136,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
 
   return (
     <TextField
+      ref={inputRef}
       fullWidth={fullWidth}
       label={label}
       value={displayValue}

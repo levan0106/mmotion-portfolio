@@ -850,7 +850,7 @@ export class BasicPriceService {
         where: {
           assetId: In(assetIds),
         },
-        relations: ['asset'], // Include asset relation for additional data if needed
+        relations: ['globalAsset'], // Include globalAsset relation for additional data if needed
       });
 
       // Create a map for O(1) lookup

@@ -51,6 +51,7 @@ import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import CurrencyToggle from '../Common/CurrencyToggle';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -744,6 +745,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Currency Format Toggle */}
+            <CurrencyToggle 
+              onToggle={(showFull) => {
+                // Force re-render of currency displays
+                window.dispatchEvent(new CustomEvent('currency-format-changed', { 
+                  detail: { showFull } 
+                }));
+              }}
+              size="small"
+              color="default"
+            />
+            
             {/* Current Account Info */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2 }}>
               <Box sx={{ position: 'relative' }}>
