@@ -3,7 +3,6 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Grid,
   FormControl,
   InputLabel,
@@ -19,6 +18,7 @@ import {
   CircularProgress,
   Chip,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
@@ -234,75 +234,75 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             minWidth: 280,
           }}
         >
-          <Typography variant="subtitle2" fontWeight="bold" color="primary" gutterBottom>
+          <ResponsiveTypography variant="cardTitle" color="primary" gutterBottom>
             {label}
-          </Typography>
+          </ResponsiveTypography>
           
           {/* Monthly Performance Chart Tooltip */}
           {data?.month && (
             <>
               {/* P&L Summary */}
               <Box sx={{ mb: 1.5 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
                   P&L Summary
-                </Typography>
+                </ResponsiveTypography>
                 <Box sx={{ pl: 1 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Total P&L:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" color={data.pnl >= 0 ? 'success.main' : 'error.main'}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color={data.pnl >= 0 ? 'success.main' : 'error.main'}>
                       {formatCurrency(data.pnl || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Realized P&L:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium" color={data.realizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.realizedPnl >= 0 ? 'success.main' : 'error.main'}>
                       {formatCurrency(data.realizedPnl || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Unrealized P&L:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium" color={data.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}>
                       {formatCurrency(data.unrealizedPnl || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               </Box>
 
               {/* Trading Statistics */}
               <Box sx={{ mb: 1.5, pt: 1, borderTop: '1px solid #f0f0f0' }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
                   Trading Statistics
-                </Typography>
+                </ResponsiveTypography>
                 <Box sx={{ pl: 1 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Trades:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
                       {data.trades || 0}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Win Rate:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
                       {formatPercentage(data.winRate || 0, 1, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Volume:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
                       {formatCurrency(data.totalVolume || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               </Box>
@@ -314,33 +314,33 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           {data?.name && !data?.month && (
             <>
               <Box sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
                   Asset Performance
-                </Typography>
+                </ResponsiveTypography>
                 <Box sx={{ pl: 1 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Symbol:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" color="primary">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color="primary">
                       {data.name}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       P&L:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" color={data.originalValue >= 0 ? 'success.main' : 'error.main'}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color={data.originalValue >= 0 ? 'success.main' : 'error.main'}>
                       {formatCurrency(data.originalValue || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Percentage:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium" color={data.percentage >= 0 ? 'success.main' : 'error.main'}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.percentage >= 0 ? 'success.main' : 'error.main'}>
                       {formatPercentage(data.percentage || 0, 2, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               </Box>
@@ -348,9 +348,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Additional info for asset performance */}
               {data?.fullName && (
                 <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #f0f0f0' }}>
-                  <Typography variant="caption" color="text.secondary">
+                  <ResponsiveTypography variant="formHelper" color="text.secondary">
                     {data.fullName}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               )}
             </>
@@ -385,7 +385,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading analysis...</Typography>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>Loading analysis...</ResponsiveTypography>
       </Box>
     );
   }
@@ -420,12 +420,12 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 4}>
         <Box>
-          <Typography variant={isCompactMode ? "h5" : "h4"} component="h1" gutterBottom sx={{ fontSize: isCompactMode ? '0.9rem' : undefined }}>
+          <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
             Trading Analysis
-          </Typography>
-          <Typography variant={isCompactMode ? "body2" : "body1"} color="text.secondary" sx={{ fontSize: isCompactMode ? '0.75rem' : undefined }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
             Comprehensive performance insights and analytics
-          </Typography>
+          </ResponsiveTypography>
         </Box>
         <Box display="flex" gap={2}>
           <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -479,22 +479,20 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography 
-                    variant="body2" 
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
                   >
                     Total P&L
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="cardValue" 
                     color={analysis.pnlSummary.totalPnl >= 0 ? 'success.main' : 'error.main'} 
                     fontWeight="bold"
-                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
                   >
                     {formatCurrency(analysis.pnlSummary.totalPnl, currency, {}, locale)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box
                   sx={{
@@ -511,30 +509,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {!isCompactMode && (
                 <Box sx={{ mb: 2 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Realized P&L:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
+                      variant="tableCell" 
                       color={(analysis.pnlSummary as any).totalRealizedPnl >= 0 ? 'success.main' : 'error.main'}
                       fontWeight="medium"
-                      sx={{ fontSize: '0.875rem' }}
                     >
                       {formatCurrency((analysis.pnlSummary as any).totalRealizedPnl, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Unrealized P&L:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
+                      variant="tableCell" 
                       color={(analysis.pnlSummary as any).totalUnrealizedPnl >= 0 ? 'success.main' : 'error.main'}
                       fontWeight="medium"
-                      sx={{ fontSize: '0.875rem' }}
                     >
                       {formatCurrency((analysis.pnlSummary as any).totalUnrealizedPnl, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               )}
@@ -571,22 +567,20 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography 
-                    variant="body2" 
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
                   >
                     Trading Statistics
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="cardValue" 
                     color="primary" 
                     fontWeight="bold"
-                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
                   >
                     {formatNumber(analysis.statistics.totalTrades, 0, locale)} Trades
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
@@ -604,28 +598,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {!isCompactMode && (
                 <Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Buy Trades:
-                    </Typography>
-                    <Typography variant="body2" color="success.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="success.main" fontWeight="medium">
                       {analysis.statistics.buyTrades}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Sell Trades:
-                    </Typography>
-                    <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="error.main" fontWeight="medium">
                       {analysis.statistics.sellTrades}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Total Volume:
-                    </Typography>
-                    <Typography variant="body2" color="info.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="info.main" fontWeight="medium">
                       {formatCurrency(analysis.statistics.totalVolume, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               )}
@@ -651,22 +645,20 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Header */}
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
                 <Box>
-                  <Typography 
-                    variant="body2" 
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: isCompactMode ? '0.7rem' : '0.8rem' }}
                   >
                     Risk Metrics
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="cardValue" 
                     color="warning.main" 
                     fontWeight="bold"
-                    sx={{ fontSize: isCompactMode ? '1.1rem' : '1.5rem' }}
                   >
                     {analysis.riskMetrics.volatility?.toFixed(2) || 'N/A'}%
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
@@ -684,28 +676,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {!isCompactMode && (
                 <Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Max Drawdown:
-                    </Typography>
-                    <Typography variant="body2" color="error.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="error.main" fontWeight="medium">
                       {formatCurrency(analysis.riskMetrics.maxDrawdown || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       VaR 95%:
-                    </Typography>
-                    <Typography variant="body2" color="warning.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="warning.main" fontWeight="medium">
                       {formatCurrency(analysis.riskMetrics.var95 || 0, currency, {}, locale)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    <ResponsiveTypography variant="formHelper" color="text.secondary">
                       Sharpe Ratio:
-                    </Typography>
-                    <Typography variant="body2" color="primary.main" fontWeight="medium" sx={{ fontSize: '0.875rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="tableCell" color="primary.main" fontWeight="medium">
                       {analysis.riskMetrics.sharpeRatio?.toFixed(2) || 'N/A'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
               )}
@@ -732,12 +724,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
-                <Typography 
-                  variant="h6"
-                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
-                >
+                <ResponsiveTypography variant="chartTitle">
                   Monthly Performance
-                </Typography>
+                </ResponsiveTypography>
                 <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
                     label="Total P&L"
@@ -858,16 +847,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               {/* Header with Toggle Controls */}
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 1.5 : 3}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    fontWeight: 600, 
-                    color: 'text.primary',
-                    fontSize: isCompactMode ? '0.9rem' : '1.25rem'
-                  }}
-                >
+                <ResponsiveTypography variant="chartTitle">
                   Asset Performance
-                </Typography>
+                </ResponsiveTypography>
                 <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
                     label="Pie Chart"
@@ -972,29 +954,26 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                               }
                               label={
                                 <Box display="flex" alignItems="center" gap={0.5}>
-                                  <Typography 
-                                    variant="caption" 
+                                  <ResponsiveTypography 
+                                    variant="formHelper" 
                                     fontWeight="bold"
-                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                                   >
                                     {entry.name}
-                                  </Typography>
-                                  <Typography 
-                                    variant="caption" 
+                                  </ResponsiveTypography>
+                                  <ResponsiveTypography 
+                                    variant="formHelper" 
                                     fontWeight="bold"
-                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                                     color={entry.originalValue >= 0 ? 'success.main' : 'error.main'}
                                   >
                                     {entry.formattedValue}
-                                  </Typography>
-                                  <Typography 
-                                    variant="caption" 
+                                  </ResponsiveTypography>
+                                  <ResponsiveTypography 
+                                    variant="formHelper" 
                                     color="primary" 
                                     fontWeight="bold"
-                                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                                   >
                                     ({formatPercentage(percentage, 1, locale)})
-                                  </Typography>
+                                  </ResponsiveTypography>
                                 </Box>
                               }
                               variant="outlined"
@@ -1019,41 +998,37 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 </Box>
               ) : (
                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={isCompactMode ? 200 : 300}>
-                  <Typography 
+                  <ResponsiveTypography 
+                    variant="pageSubtitle" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: isCompactMode ? '0.75rem' : '0.875rem' }}
                   >
                     No asset performance data available
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary"
-                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   >
                     Debug: assetChartData length = {assetChartData?.length || 0}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary"
-                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   >
                     Analysis has assetPerformance: {analysis?.assetPerformance ? 'Yes' : 'No'}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary"
-                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   >
                     Has positive values: {assetChartData?.some(item => item.value > 0) ? 'Yes' : 'No'}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="formHelper" 
                     color="text.secondary"
-                    sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   >
                     Values: {assetChartData?.map(item => `${item.name}: ${item.value}`).join(', ')}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               )}
             </CardContent>
@@ -1079,12 +1054,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
-                <Typography 
-                  variant="h6"
-                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
-                >
+                <ResponsiveTypography variant="chartTitle">
                   Top Performing Trades
-                </Typography>
+                </ResponsiveTypography>
                 <Chip
                   label="Best"
                   color="success"
@@ -1132,20 +1104,18 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       <TableRow key={trade.tradeId}>
                         <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Box>
-                            <Typography 
-                              variant="body2" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               fontWeight="medium"
-                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
                             >
                               {trade.assetSymbol}
-                            </Typography>
-                            <Typography 
-                              variant="caption" 
+                            </ResponsiveTypography>
+                            <ResponsiveTypography 
+                              variant="formHelper" 
                               color="text.secondary"
-                              sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                             >
                               {trade.assetName}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </TableCell>
                         <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
@@ -1196,12 +1166,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
-                <Typography 
-                  variant="h6"
-                  sx={{ fontSize: isCompactMode ? '0.9rem' : '1.25rem' }}
-                >
+                <ResponsiveTypography variant="chartTitle">
                   Worst Performing Trades
-                </Typography>
+                </ResponsiveTypography>
                 <Chip
                   label="Worst"
                   color="error"
@@ -1249,20 +1216,18 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       <TableRow key={trade.tradeId}>
                         <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Box>
-                            <Typography 
-                              variant="body2" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               fontWeight="medium"
-                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
                             >
                               {trade.assetSymbol}
-                            </Typography>
-                            <Typography 
-                              variant="caption" 
+                            </ResponsiveTypography>
+                            <ResponsiveTypography 
+                              variant="formHelper" 
                               color="text.secondary"
-                              sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                             >
                               {trade.assetName}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </TableCell>
                         <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
@@ -1313,16 +1278,15 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             }
           }}>
             <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
-              <Typography 
-                variant="h6" 
+              <ResponsiveTypography 
+                variant="chartTitle" 
                 gutterBottom
                 sx={{ 
-                  fontSize: isCompactMode ? '0.9rem' : '1.25rem',
                   mb: isCompactMode ? 1.5 : 2
                 }}
               >
                 Asset Performance Details
-              </Typography>
+              </ResponsiveTypography>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
@@ -1384,67 +1348,61 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         <TableRow key={asset.assetId || asset.name} hover>
                           <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box>
-                              <Typography 
-                                variant="body2" 
-                                fontWeight="bold"
-                                sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
-                              >
-                                {asset.name}
-                              </Typography>
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
-                              >
-                                {asset.fullName}
-                              </Typography>
+                            <ResponsiveTypography 
+                              variant="tableCell" 
+                              fontWeight="bold"
+                            >
+                              {asset.name}
+                            </ResponsiveTypography>
+                            <ResponsiveTypography 
+                              variant="formHelper" 
+                              color="text.secondary"
+                            >
+                              {asset.fullName}
+                            </ResponsiveTypography>
                             </Box>
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
                             fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
-                            <Typography variant="body2">
+                            <ResponsiveTypography variant="tableCell">
                               {formatNumber(asset.quantity, 2, locale)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
                             fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
-                            <Typography variant="body2">
+                            <ResponsiveTypography variant="tableCell">
                               {formatCurrency(asset.avgCost, currency, {}, locale)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
                             fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
-                            <Typography variant="body2">
+                            <ResponsiveTypography variant="tableCell">
                               {formatCurrency(asset.marketValue, currency, {}, locale)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
                             fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
-                            <Typography 
-                              variant="body2" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               fontWeight="bold"
                               color={asset.value >= 0 ? 'success.main' : 'error.main'}
-                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
                             >
                               {asset.formattedValue}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box display="flex" alignItems="center" gap={isCompactMode ? 0.5 : 1}>
-                              <Typography 
-                                variant="body2"
-                                sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
-                              >
+                              <ResponsiveTypography variant="tableCell">
                                 {asset.trades}
-                              </Typography>
+                              </ResponsiveTypography>
                               <Chip
                                 label={asset.winRate >= 50 ? 'Win' : 'Loss'}
                                 size={isCompactMode ? "small" : "medium"}
@@ -1458,25 +1416,24 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             py: isCompactMode ? 0.5 : 1,
                             fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
-                            <Typography 
-                              variant="body2" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               fontWeight="bold"
-                              sx={{ fontSize: isCompactMode ? '0.7rem' : '0.875rem' }}
                             >
                               {asset.formattedWinRate}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
                         <TableCell colSpan={7} align="center" sx={{ py: isCompactMode ? 2 : 4 }}>
-                          <Typography 
+                          <ResponsiveTypography 
+                            variant="pageSubtitle" 
                             color="text.secondary"
-                            sx={{ fontSize: isCompactMode ? '0.75rem' : '0.875rem' }}
                           >
                             No asset performance data available
-                          </Typography>
+                          </ResponsiveTypography>
                         </TableCell>
                       </TableRow>
                     )}
@@ -1521,7 +1478,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading analysis...</Typography>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>Loading analysis...</ResponsiveTypography>
       </Box>
     );
   }

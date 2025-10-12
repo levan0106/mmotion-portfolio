@@ -25,7 +25,7 @@ interface CopyPortfolioModalProps {
 
 export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
   open,
-  onClose: _onClose, // Rename to avoid unused warning
+  onClose,
   sourcePortfolio,
   onPortfolioCopied,
   onModalClose,
@@ -37,7 +37,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
   const handleClose = () => {
     setNewPortfolioName('');
     setError(null);
-    //onClose();
+    onClose();
   };
 
   const handleCopy = async () => {
@@ -82,21 +82,13 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only prevent event if clicking on the backdrop, not on the content
-    if (e.target === e.currentTarget) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
 
   return (
     <Dialog 
       open={open} 
-      onClose={() => {}} // Prevent auto close
+      onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      onClick={handleBackdropClick}
       PaperProps={{
         sx: {
           borderRadius: 2,
@@ -110,17 +102,13 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
         gap: 1,
         pb: 1,
         borderBottom: '1px solid #e0e0e0'
-      }} onClick={(e) => e.stopPropagation()}>
+      }}>
         <ContentCopy color="primary" />
         <Typography variant="h6" component="div">
           Copy Portfolio
         </Typography>
         <Button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleClose();
-          }}
+          onClick={handleClose}
           sx={{ 
             ml: 'auto', 
             minWidth: 'auto', 
@@ -135,7 +123,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
         </Button>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: 3 }} onClick={(e) => e.stopPropagation()}>
+      <DialogContent sx={{ pt: 3 }}>
         {sourcePortfolio && (
           <Box sx={{ mb: 3 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -158,8 +146,6 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
           value={newPortfolioName}
           onChange={(e) => setNewPortfolioName(e.target.value)}
           onKeyPress={handleKeyPress}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
           disabled={loading}
           sx={{
             '& .MuiOutlinedInput-root': {
@@ -196,24 +182,16 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, pt: 1 }} onClick={(e) => e.stopPropagation()}>
+      <DialogActions sx={{ p: 3, pt: 1 }}>
         <Button 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleClose();
-          }} 
+          onClick={handleClose}
           disabled={loading}
           sx={{ mr: 1 }}
         >
           Cancel
         </Button>
         <Button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleCopy();
-          }}
+          onClick={handleCopy}
           variant="contained"
           disabled={loading || !newPortfolioName.trim()}
           startIcon={loading ? <CircularProgress size={16} /> : <ContentCopy />}

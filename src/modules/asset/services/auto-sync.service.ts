@@ -375,7 +375,7 @@ export class AutoSyncService {
   private loadAutoSyncStatus(): void {
     // Use the same config as scheduled-price-update.service.ts for consistency
     this.autoSyncEnabled = this.configService.get<string>('AUTO_SYNC_ENABLED', 'false') === 'true';
-    this.syncInterval = parseInt(this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '15'), 10);
+    this.syncInterval = parseInt(this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60'), 10);
     this.cronExpression = this.generateCronExpression(this.syncInterval);
     
     this.logger.log(`[AutoSyncService] Auto sync status loaded: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, interval: ${this.syncInterval} minutes (using PRICE_UPDATE_INTERVAL_MINUTES config)`);

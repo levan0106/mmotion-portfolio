@@ -319,10 +319,13 @@ const Report: React.FC = () => {
                           size="small"
                           color="primary"
                           variant="outlined"
+                          sx={{
+                            fontSize: '0.65rem'
+                          }}
                         />
                       ) : column.key === 'pnl' ? (
                         <ResponsiveTypography 
-                          variant="tableCellSmall" 
+                          variant="tableCell" 
                           sx={{ 
                             fontWeight: 400,
                             color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
@@ -337,7 +340,7 @@ const Report: React.FC = () => {
                         </ResponsiveTypography>
                       ) : column.key.includes('value') || column.key.includes('total') || column.key === 'capitalValue' ? (
                         <ResponsiveTypography 
-                          variant="tableCellSmall" 
+                          variant="tableCell" 
                           sx={{ 
                             fontWeight: 400,
                             color: Number(row[column.key]) >= 0 ? 'success.main' : 'error.main',
@@ -352,7 +355,7 @@ const Report: React.FC = () => {
                         </ResponsiveTypography>
                       ) : column.key === 'count' ? (
                         <ResponsiveTypography 
-                          variant="tableCellSmall" 
+                          variant="tableCell" 
                           sx={{ 
                             fontWeight: 400,
                             // Use extra small on very small screens
@@ -652,8 +655,9 @@ const Report: React.FC = () => {
                         {formatCurrency(row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
-                        variant="formHelper"
+                        variant="tableCellSmall"
                         sx={{
+                          color: 'text.secondary',
                           // Use extra small on very small screens
                           '@media (max-width: 600px)': {
                             fontSize: '0.5rem !important',
@@ -682,7 +686,7 @@ const Report: React.FC = () => {
                         {formatCurrency(value, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
-                        variant="formHelper" 
+                        variant="tableCellSmall" 
                         sx={{ 
                           color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
                           // Use extra small on very small screens
@@ -726,8 +730,9 @@ const Report: React.FC = () => {
                         {formatCurrency(row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
-                        variant="formHelper"
+                        variant="tableCellSmall"
                         sx={{
+                          color: 'text.secondary',
                           // Use extra small on very small screens
                           '@media (max-width: 600px)': {
                             fontSize: '0.5rem !important',
@@ -756,7 +761,7 @@ const Report: React.FC = () => {
                         {formatCurrency(value, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
-                        variant="formHelper" 
+                        variant="tableCellSmall" 
                         sx={{ 
                           color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
                           // Use extra small on very small screens

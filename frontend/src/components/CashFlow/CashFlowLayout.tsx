@@ -74,7 +74,6 @@ interface CashFlow {
   reference?: string;
   status: string;
   flowDate: string;
-  effectiveDate?: string;
   currency?: string;
   fundingSource?: string;
   createdAt: string;
@@ -124,7 +123,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     amount: '',
     description: '',
     reference: '',
-    effectiveDate: '',
     currency: 'VND',
     flowDate: '',
     status: 'COMPLETED',
@@ -241,7 +239,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         description: formData.description,
         reference: formData.reference || undefined,
         flowDate: formData.flowDate ? new Date(formData.flowDate).toISOString() : undefined,
-        effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate).toISOString() : undefined,
         currency: formData.currency,
         status: formData.status,
         fundingSource: formData.fundingSource || undefined,
@@ -396,7 +393,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       amount: '',
       description: '',
       reference: '',
-      effectiveDate: '',
       currency: 'VND',
       flowDate: getCurrentLocalDateTime(),
       status: 'COMPLETED',
@@ -474,13 +470,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     
     // Format dates for input
     const flowDate = new Date(cashFlow.flowDate);
-    const effectiveDate = cashFlow.effectiveDate ? new Date(cashFlow.effectiveDate) : null;
     
     setFormData({
       amount: cashFlow.amount.toString(),
       description: cashFlow.description || '',
       reference: cashFlow.reference || '',
-      effectiveDate: effectiveDate ? effectiveDate.toISOString().slice(0, 16) : '',
       currency: cashFlow.currency || 'VND',
       flowDate: flowDate.toISOString().slice(0, 16),
       status: cashFlow.status || 'COMPLETED',
@@ -1646,121 +1640,115 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               </Alert>
             )}
             
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
               {/* Left Column */}
               <Grid item xs={12} md={6}>
-                <MoneyInput
-                  value={parseFloat(formData.amount) || 0}
-                  onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
-                  label="Amount"
-                  placeholder="Enter amount (e.g., 1,000,000)"
-                  required
-                  currency={formData.currency}
-                  helperText={
-                    editingCashFlow 
-                      ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
-                      : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'
-                  }
-                  error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
-                />
-                
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Currency</InputLabel>
-                  <Select
-                    value={formData.currency}
-                    label="Currency"
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                  >
-                    <MenuItem value="VND">VND</MenuItem>
-                    <MenuItem value="USD">USD</MenuItem>
-                    <MenuItem value="EUR">EUR</MenuItem>
-                    <MenuItem value="GBP">GBP</MenuItem>
-                    <MenuItem value="JPY">JPY</MenuItem>
-                  </Select>
-                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    Select the currency for this transaction
-                  </ResponsiveTypography>
-                </FormControl>
-                
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={formData.status}
-                    label="Status"
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <MenuItem value="COMPLETED">Completed</MenuItem>
-                    <MenuItem value="PENDING">Pending</MenuItem>
-                    <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                  </Select>
-                  {editingCashFlow && (
+                <Box sx={{ pr: { md: 1.5 } }}>
+                  <MoneyInput
+                    value={parseFloat(formData.amount) || 0}
+                    onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
+                    label="Amount"
+                    placeholder="Enter amount (e.g., 1,000,000)"
+                    required
+                    currency={formData.currency}
+                    margin="normal"
+                    helperText={
+                      editingCashFlow 
+                        ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
+                        : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'
+                    }
+                    error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
+                  />
+                  
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel>Currency</InputLabel>
+                    <Select
+                      value={formData.currency}
+                      label="Currency"
+                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    >
+                      <MenuItem value="VND">VND</MenuItem>
+                      <MenuItem value="USD">USD</MenuItem>
+                      <MenuItem value="EUR">EUR</MenuItem>
+                      <MenuItem value="GBP">GBP</MenuItem>
+                      <MenuItem value="JPY">JPY</MenuItem>
+                    </Select>
                     <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                      Original Status: {editingCashFlow.status}
+                      Select the currency for this transaction
                     </ResponsiveTypography>
-                  )}
-                </FormControl>
-                
-                <TextField
-                  fullWidth
-                  label="Funding Source (Optional)"
-                  value={formData.fundingSource}
-                  onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
-                  margin="normal"
-                  placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
-                  helperText="Source of funding for this transaction (optional)"
-                  inputProps={{
-                    style: { textTransform: 'uppercase' }
-                  }}
-                />
+                  </FormControl>
+                  
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={formData.status}
+                      label="Status"
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    >
+                      <MenuItem value="COMPLETED">Completed</MenuItem>
+                      <MenuItem value="PENDING">Pending</MenuItem>
+                      <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                    </Select>
+                    {editingCashFlow && (
+                      <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
+                        Original Status: {editingCashFlow.status}
+                      </ResponsiveTypography>
+                    )}
+                  </FormControl>
+                  
+                  <TextField
+                    fullWidth
+                    label="Funding Source (Optional)"
+                    value={formData.fundingSource}
+                    onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
+                    margin="normal"
+                    placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+                    helperText="Source of funding for this transaction (optional)"
+                    inputProps={{
+                      style: { textTransform: 'uppercase' }
+                    }}
+                  />
+                </Box>
               </Grid>
               
               {/* Right Column */}
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Flow Date"
-                  type="datetime-local"
-                  value={formData.flowDate}
-                  onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  helperText="When this transaction occurred"
-                />
-                
-                <TextField
-                  fullWidth
-                  label="Effective Date (Optional)"
-                  type="datetime-local"
-                  value={formData.effectiveDate}
-                  onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  helperText="When this transaction takes effect"
-                />
-                
-                <TextField
-                  fullWidth
-                  label="Reference (Optional)"
-                  value={formData.reference}
-                  onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                  margin="normal"
-                  helperText="External reference number or ID (optional)"
-                />
-                
-                <TextField
-                  fullWidth
-                  label="Description (Optional)"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  margin="normal"
-                  multiline
-                  rows={3}
-                  helperText={
-                    editingCashFlow 
-                      ? `Original: "${editingCashFlow.description}"`
-                      : 'Enter a description for this cash flow (optional)'
-                  }
-                />
+                <Box sx={{ pl: { md: 1.5 } }}>
+                  <TextField
+                    fullWidth
+                    label="Flow Date"
+                    type="datetime-local"
+                    value={formData.flowDate}
+                    onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
+                    margin="normal"
+                    InputLabelProps={{ shrink: true }}
+                    helperText="When this transaction occurred"
+                  />
+                  
+                  <TextField
+                    fullWidth
+                    label="Reference (Optional)"
+                    value={formData.reference}
+                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                    margin="normal"
+                    helperText="External reference number or ID (optional)"
+                  />
+                  
+                  <TextField
+                    fullWidth
+                    label="Description (Optional)"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    margin="normal"
+                    multiline
+                    rows={3}
+                    helperText={
+                      editingCashFlow 
+                        ? `Original: "${editingCashFlow.description}"`
+                        : 'Enter a description for this cash flow (optional)'
+                    }
+                  />
+                </Box>
               </Grid>
               
             </Grid>
@@ -1893,76 +1881,81 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               </Alert>
             )}
             
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
               {/* Left Column */}
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth margin="normal" required>
-                  <InputLabel>From Source</InputLabel>
-                  <Select
-                    value={transferData.fromSource}
-                    label="From Source"
-                    onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
-                  >
-                    {getFundingSources().map((source) => (
-                      <MenuItem key={source} value={source}>
-                        {source}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    Select the source to transfer from
-                  </ResponsiveTypography>
-                </FormControl>
-                
-                <FundingSourceInput
-                  value={transferData.toSource}
-                  onChange={(toSource) => setTransferData({ ...transferData, toSource })}
-                  existingSources={getFundingSources()}
-                  label="To Source"
-                  placeholder="Type or select funding source..."
-                  required
-                  allowNew={true}
-                />
-                
-                <MoneyInput
-                  value={transferData.amount}
-                  onChange={(amount) => setTransferData({ ...transferData, amount })}
-                  label="Transfer Amount"
-                  placeholder="Enter amount (e.g., 1,000,000)"
-                  required
-                  error={!!(transferData.amount && transferData.amount <= 0)}
-                  helperText={
-                    transferData.amount > 0 
-                      ? `Transferring ${formatCurrency(transferData.amount)}` 
-                      : 'Enter the amount to transfer'
-                  }
-                />
+                <Box sx={{ pr: { md: 1.5 } }}>
+                  <FormControl fullWidth margin="normal" required>
+                    <InputLabel>From Source</InputLabel>
+                    <Select
+                      value={transferData.fromSource}
+                      label="From Source"
+                      onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
+                    >
+                      {getFundingSources().map((source) => (
+                        <MenuItem key={source} value={source}>
+                          {source}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
+                      Select the source to transfer from
+                    </ResponsiveTypography>
+                  </FormControl>
+                  
+                  <FundingSourceInput
+                    value={transferData.toSource}
+                    onChange={(toSource) => setTransferData({ ...transferData, toSource })}
+                    existingSources={getFundingSources()}
+                    label="To Source"
+                    placeholder="Type or select funding source..."
+                    required
+                    allowNew={true}
+                  />
+                  
+                  <MoneyInput
+                    value={transferData.amount}
+                    onChange={(amount) => setTransferData({ ...transferData, amount })}
+                    label="Transfer Amount"
+                    placeholder="Enter amount (e.g., 1,000,000)"
+                    required
+                    margin="normal"
+                    error={!!(transferData.amount && transferData.amount <= 0)}
+                    helperText={
+                      transferData.amount > 0 
+                        ? `Transferring ${formatCurrency(transferData.amount)}` 
+                        : 'Enter the amount to transfer'
+                    }
+                  />
+                </Box>
               </Grid>
               
               {/* Right Column */}
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Transfer Date"
-                  type="datetime-local"
-                  value={transferData.transferDate}
-                  onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  helperText="When this transfer occurred"
-                />
-                
-                <TextField
-                  fullWidth
-                  label="Description (Optional)"
-                  value={transferData.description}
-                  onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
-                  margin="normal"
-                  multiline
-                  rows={3}
-                  placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
-                  helperText="Enter a description for this transfer (optional)"
-                />
+                <Box sx={{ pl: { md: 1.5 } }}>
+                  <TextField
+                    fullWidth
+                    label="Transfer Date"
+                    type="datetime-local"
+                    value={transferData.transferDate}
+                    onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
+                    margin="normal"
+                    InputLabelProps={{ shrink: true }}
+                    helperText="When this transfer occurred"
+                  />
+                  
+                  <TextField
+                    fullWidth
+                    label="Description (Optional)"
+                    value={transferData.description}
+                    onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
+                    margin="normal"
+                    multiline
+                    rows={3}
+                    placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
+                    helperText="Enter a description for this transfer (optional)"
+                  />
+                </Box>
               </Grid>
             </Grid>
 

@@ -306,7 +306,7 @@ const Dashboard: React.FC = () => {
                       sx={{ 
                         color: 'text.primary',
                         mb: 0.5,
-                        lineHeight: 1.2
+                        fontWeight: 800
                       }}
                     >
                       {metric.value}

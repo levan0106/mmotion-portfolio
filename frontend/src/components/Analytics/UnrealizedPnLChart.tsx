@@ -211,10 +211,17 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
 
   if (!safeData || safeData.length === 0) {
     return (
-      <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
-          No data available
+      <Box>
+        <ResponsiveTypography variant="chartTitle" sx={{ 
+          textAlign: 'center'
+        }}>
+          Unrealized P&L by Asset Type
         </ResponsiveTypography>
+        <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
+          <ResponsiveTypography variant="formHelper" color="text.secondary">
+            No data available
+          </ResponsiveTypography>
+        </Box>
       </Box>
     );
   }

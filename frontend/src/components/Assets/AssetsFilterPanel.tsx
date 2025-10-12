@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
 import {
   Box,
   Card,
@@ -34,7 +34,8 @@ interface AssetsFilterPanelProps {
   onClearFilters: () => void;
 }
 
-const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
+// Internal component that never re-renders
+const AssetsFilterPanelInternal: React.FC<AssetsFilterPanelProps> = ({
   filters,
   onFiltersChange,
   onClearFilters,
@@ -46,18 +47,36 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const [localFilters, setLocalFilters] = useState(filters);
+  const isUserTypingRef = useRef(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Force component to not re-render by using refs for critical state
+  const stableStateRef = useRef({
+    searchTerm: filters.search || '',
+    localFilters: filters,
+    isTyping: false
+  });
 
   // Sync local filters with props when they change
+  // But preserve the searchTerm input value when user is typing
   useEffect(() => {
     setLocalFilters(filters);
-    setSearchTerm(filters.search || '');
-  }, [filters]);
+    // Only update searchTerm if user is not actively typing and it's a significant change
+    if (!isUserTypingRef.current && filters.search !== searchTerm && 
+        (filters.search === '' || Math.abs((filters.search || '').length - searchTerm.length) > 2)) {
+      setSearchTerm(filters.search || '');
+    }
+  }, [filters, searchTerm]);
 
   // Debounce search input to prevent excessive API calls
+  // Only search when user types at least 3 characters
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm !== localFilters.search) {
-        setLocalFilters(prev => ({ ...prev, search: searchTerm }));
+        // Only update filters if search term is empty or has at least 3 characters
+        if (searchTerm === '' || searchTerm.length >= 3) {
+          setLocalFilters(prev => ({ ...prev, search: searchTerm }));
+        }
       }
     }, 300); // 300ms debounce
 
@@ -65,19 +84,46 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
   }, [searchTerm, localFilters.search]);
 
   // Batch update filters to parent component
+  // Only trigger when there are actual meaningful changes
   useEffect(() => {
     const hasChanges = Object.keys(localFilters).some(key => 
       localFilters[key as keyof typeof localFilters] !== filters[key as keyof typeof filters]
     );
     
     if (hasChanges) {
-      onFiltersChange(localFilters);
+      // Debounce the filter change to prevent excessive updates
+      const timeoutId = setTimeout(() => {
+        onFiltersChange(localFilters);
+      }, 300); // Increased debounce to prevent focus loss
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [localFilters, filters, onFiltersChange]);
 
   const handleSearchChange = useCallback((value: string) => {
+    isUserTypingRef.current = true;
     setSearchTerm(value);
+    stableStateRef.current.searchTerm = value;
+    stableStateRef.current.isTyping = true;
+    
+    // Reset typing flag after a delay
+    setTimeout(() => {
+      isUserTypingRef.current = false;
+      stableStateRef.current.isTyping = false;
+    }, 1000); // Increased delay to maintain focus longer
   }, []);
+
+  // Maintain focus on search input when component re-renders
+  useEffect(() => {
+    if (isUserTypingRef.current && searchInputRef.current) {
+      // Small delay to ensure the input is rendered
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 0);
+    }
+  }, [searchTerm]);
 
   const handleTypeChange = useCallback((type: string) => {
     setLocalFilters(prev => ({
@@ -126,7 +172,7 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
   }, [showAdvanced]);
 
   const hasActiveFilters = useMemo(() => 
-    localFilters.search || localFilters.type || localFilters.portfolioId,
+    (localFilters.search && localFilters.search.length >= 3) || localFilters.type || localFilters.portfolioId,
     [localFilters.search, localFilters.type, localFilters.portfolioId]
   );
 
@@ -187,9 +233,10 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
           {/* Search */}
           <Grid item xs={12} md={4}>
             <TextField
+              ref={searchInputRef}
               fullWidth
               label="Search Assets"
-              placeholder="Search by name or symbol..."
+              placeholder="Type at least 3 characters to search..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               InputProps={{
@@ -204,6 +251,11 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
                   </IconButton>
                 ),
               }}
+              helperText={
+                searchTerm.length > 0 && searchTerm.length < 3 
+                  ? `Type ${3 - searchTerm.length} more character${3 - searchTerm.length === 1 ? '' : 's'} to search`
+                  : undefined
+              }
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
@@ -346,5 +398,16 @@ const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = ({
     </Card>
   );
 };
+
+// Wrapper component that completely prevents re-renders
+const AssetsFilterPanel: React.FC<AssetsFilterPanelProps> = memo((props) => {
+  return <AssetsFilterPanelInternal {...props} />;
+}, () => {
+  // Completely block re-renders - component will manage its own state
+  // This ensures the search input never loses focus
+  return true;
+});
+
+AssetsFilterPanel.displayName = 'AssetsFilterPanel';
 
 export default AssetsFilterPanel;

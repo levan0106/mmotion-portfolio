@@ -17,6 +17,7 @@ export interface UseAssetsReturn {
   assets: Asset[];
   loading: boolean;
   error: string | null;
+  filters: AssetFilters;
   pagination: {
     page: number;
     limit: number;
@@ -45,6 +46,24 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Load filters from localStorage on initialization
+  const getStoredFilters = (): AssetFilters => {
+    try {
+      const stored = localStorage.getItem('assets-filters');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Only use stored filters if they belong to the same user
+        if (parsed.createdBy === accountId) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load stored filters:', error);
+    }
+    return {};
+  };
+  
   const [filters, setFiltersState] = useState<AssetFilters>({
     createdBy: accountId, // Use current user ID by default
     search: '',
@@ -55,6 +74,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
     page: 1,
     sortBy: 'name',
     sortOrder: 'ASC',
+    ...getStoredFilters(),
     ...initialFilters,
   });
 
@@ -177,6 +197,14 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
   // Set filters and trigger fetch
   const setFilters = useCallback((newFilters: AssetFilters) => {
     setFiltersState(newFilters);
+    
+    // Save filters to localStorage
+    try {
+      localStorage.setItem('assets-filters', JSON.stringify(newFilters));
+    } catch (error) {
+      console.warn('Failed to save filters to localStorage:', error);
+    }
+    
     if (autoFetch) {
       fetchAssets(newFilters);
     } else {
@@ -470,6 +498,7 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
     assets,
     loading,
     error,
+    filters,
     pagination,
     setFilters,
     updateFilter,

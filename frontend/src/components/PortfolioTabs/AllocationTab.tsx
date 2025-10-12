@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Grid, CircularProgress, Card, CardContent } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
 import { 
   AccountBalance, 
   TrendingUp, 
@@ -176,14 +177,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
-            border: '1px solid #e3f2fd',
-            borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            '&:hover': {
-              transform: 'translateY(-3px)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-              transition: 'all 0.3s ease-in-out'
-            }
+            ...applyBorderHover((portfolio.totalInvestValue || 0) >= 0 ? 'card' : 'alert', {
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'all 0.3s ease-in-out'
+              }
+            })
           }}>
             <Box sx={{ 
               position: 'absolute', 
@@ -202,17 +203,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
-                {/* <Box sx={{ 
-                  p: getUltraSpacing(1, 0.5), 
-                  backgroundColor: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)', 
-                  borderRadius: 2,
-                  mr: getUltraSpacing(1.5, 1),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box> */}
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Total Investment
                 </ResponsiveTypography>
@@ -236,16 +226,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
-            border: (portfolio.unrealizedInvestPnL || 0) >= 0 
-              ? '1px solid #c8e6c9'
-              : '1px solid #ffcdd2',
-            borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            '&:hover': {
-              transform: 'translateY(-3px)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-              transition: 'all 0.3s ease-in-out'
-            }
+            ...applyBorderHover((portfolio.unrealizedInvestPnL || 0) >= 0 ? 'card' : 'alert', {
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'all 0.3s ease-in-out'
+              }
+            })
           }}>
             <Box sx={{ 
               position: 'absolute', 
@@ -269,22 +257,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
-                {/* <Box sx={{ 
-                  p: getUltraSpacing(1, 0.5), 
-                  backgroundColor: (portfolio.unrealizedInvestPnL || 0) >= 0 
-                    ? 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)'
-                    : 'linear-gradient(135deg, #f44336 0%, #ff9800 100%)', 
-                  borderRadius: 2,
-                  mr: getUltraSpacing(1.5, 1),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {(portfolio.unrealizedInvestPnL || 0) >= 0 ? 
-                    <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} /> : 
-                    <TrendingDown sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                  }
-                </Box> */}
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Unrealized P&L
                 </ResponsiveTypography>
@@ -309,14 +281,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
-            border: '1px solid #e1bee7',
-            borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            '&:hover': {
-              transform: 'translateY(-3px)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-              transition: 'all 0.3s ease-in-out'
-            }
+            ...applyBorderHover('card', {
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'all 0.3s ease-in-out'
+              }
+            })
           }}>
             <Box sx={{ 
               position: 'absolute', 
@@ -335,17 +307,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
-                {/* <Box sx={{ 
-                  p: getUltraSpacing(1, 0.5), 
-                  backgroundColor: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 100%)', 
-                  borderRadius: 2,
-                  mr: getUltraSpacing(1.5, 1),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box> */}
+                
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Cash Balance
                 </ResponsiveTypography>
@@ -367,14 +329,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
-            border: '1px solid #c8e6c9',
-            borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            '&:hover': {
-              transform: 'translateY(-3px)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-              transition: 'all 0.3s ease-in-out'
-            }
+            ...applyBorderHover('card', {
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'all 0.3s ease-in-out'
+              }
+            })
           }}>
             <Box sx={{ 
               position: 'absolute', 
@@ -393,17 +355,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             </Box>
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
-                {/* <Box sx={{ 
-                  p: getUltraSpacing(1, 0.5), 
-                  backgroundColor: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)', 
-                  borderRadius: 2,
-                  mr: getUltraSpacing(1.5, 1),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <TrendingUp sx={{ fontSize: isCompactMode ? 18 : 22, color: 'white' }} />
-                </Box> */}
+                
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
                   Asset Classes
                 </ResponsiveTypography>
@@ -441,13 +393,12 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(1.5, 0.5), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
+            boxShadow: 0,
             height: '100%', // Fill grid item height
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center' // Center the pie chart
+            alignItems: 'center', // Center the pie chart
+            ...applyBorderStyle('chart')
           }}>
             <ResponsiveTypography variant="chartTitle" sx={{ 
               mb: getUltraSpacing(1, 0.5),
@@ -476,12 +427,11 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(1.5, 0.5), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
+            boxShadow: 0,
             height: '100%', // Fill grid item height
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            ...applyBorderStyle('chart')
           }}>
             {assetPerformanceLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
@@ -508,13 +458,12 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(1.5, 0.5), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
+            boxShadow: 0,
             height: '100%', // Fill grid item height
             minHeight: 250, // Minimum height, auto expand based on data
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            ...applyBorderStyle('chart')
           }}>
             <ResponsiveTypography variant="chartTitle" sx={{ 
               mb: getUltraSpacing(1, 0.5),
@@ -604,7 +553,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 </Box>
               </Box>
             ) : (
-              <ResponsiveTypography variant="formHelper">
+              <ResponsiveTypography variant="formHelper" sx={{ textAlign: 'center', mt: 2 }}>
                 No allocation data available
               </ResponsiveTypography>
             )}
@@ -625,10 +574,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       <Box sx={{ 
         p: getUltraSpacing(2, 1), 
         backgroundColor: 'white', 
-        borderRadius: 2, 
-        boxShadow: 1,
-        border: '1px solid #e0e0e0',
-        mb: getUltraSpacing(4, 2)
+        //boxShadow: 1,
+        mb: getUltraSpacing(4, 2),
+        ...applyBorderStyle('section')
       }}>
         {isAssetDetailLoading ? (
           <Box display="flex" justifyContent="center" p={2}>
@@ -661,10 +609,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(2, 1), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
-            height: '100%'
+            boxShadow: 0,
+            height: '100%',
+            ...applyBorderStyle('chart')
           }}>
             {isRiskReturnLoading ? (
               <Box display="flex" justifyContent="center" p={2}>
@@ -691,10 +638,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(2, 1), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
-            height: '100%'
+            boxShadow: 0,
+            height: '100%',
+            ...applyBorderStyle('chart')
           }}>
             {assetPerformanceLoading ? (
               <Box display="flex" justifyContent="center" p={2}>
@@ -732,11 +678,10 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(2, 1), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
+            boxShadow: 0,
             height: '100%',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            ...applyBorderStyle('chart')
           }}>
             {isDiversificationLoading ? (
               <Box display="flex" justifyContent="center" p={2}>
@@ -757,10 +702,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <Box sx={{ 
             p: getUltraSpacing(2, 1), 
             backgroundColor: 'white', 
-            borderRadius: 2, 
-            boxShadow: 1,
-            border: '1px solid #e0e0e0',
-            height: '100%'
+            boxShadow: 0,
+            height: '100%',
+            ...applyBorderStyle('chart')
           }}>
             {isAllocationTimelineLoading ? (
               <Box display="flex" justifyContent="center" p={2}>

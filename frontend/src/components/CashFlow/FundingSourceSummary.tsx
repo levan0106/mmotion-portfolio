@@ -41,7 +41,6 @@ interface CashFlow {
   reference?: string;
   status: string;
   flowDate: string;
-  effectiveDate?: string;
   currency?: string;
   fundingSource?: string;
   createdAt: string;

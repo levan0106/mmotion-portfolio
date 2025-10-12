@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Typography, CircularProgress } from '@mui/material';
+import { Box, Grid, CircularProgress } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { usePortfolioAnalytics } from '../../hooks/usePortfolios';
 import { apiService } from '../../services/api';
 import NAVSummary from '../Analytics/NAVSummary';
@@ -151,10 +152,10 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       backgroundColor: 'background.paper',
       minHeight: '80vh',
       pt: 0,
-      px: getUltraSpacing(2, 1)
+      px: { xs: getUltraSpacing(1, 0.5), sm: getUltraSpacing(2, 1), md: getUltraSpacing(2, 1) }
     }}>
       {/* NAV Summary Section */}
-      <Box sx={{ mb: getUltraSpacing(4, 2) }}>
+      <Box sx={{ mb: { xs: getUltraSpacing(2, 1), sm: getUltraSpacing(3, 1.5), md: getUltraSpacing(4, 2) } }}>
         <NAVSummary
           navValue={portfolio.totalAllValue || portfolio.totalValue || 0}
           totalValue={portfolio.totalAssetValue || 0}
@@ -168,7 +169,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         />
 
         {/* NAV History Chart */}
-        <Box sx={{ mb: getUltraSpacing(3, 1) }}>
+        <Box sx={{ mb: { xs: getUltraSpacing(2, 1), sm: getUltraSpacing(2.5, 1), md: getUltraSpacing(3, 1) } }}>
           <NAVHistoryChart
             portfolioId={portfolioId}
             baseCurrency={portfolio.baseCurrency}
@@ -178,37 +179,60 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         </Box>
         
         {/* Side-by-Side Performance Views */}
-        <Grid container spacing={getUltraSpacing(2, 1)}>
+        <Grid container spacing={{ xs: getUltraSpacing(1, 0.5), sm: getUltraSpacing(2, 1), md: getUltraSpacing(2, 1) }}>
           {/* Fund Manager View - TWR */}
-          <Grid item xs={12} lg={6}>
+          <Grid item xs={12} sm={12} md={6} lg={6}>
             {/* Header */}
             <Box sx={{ 
               display: 'flex', 
-              alignItems: 'center', 
-              gap: 1.5, 
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),
-              p: 1.5,
+              p: { xs: 1, sm: 1.5 },
               backgroundColor: 'primary.50',
               borderRadius: 1.5,
               border: '1px solid',
-              borderColor: 'primary.200'
+              borderColor: 'primary.200',
+              flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <Box sx={{ 
-                p: 0.8, 
+                p: { xs: 0.6, sm: 0.8 }, 
                 backgroundColor: 'primary.main', 
                 borderRadius: 1,
                 color: 'white',
-                fontSize: '0.9rem'
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                alignSelf: { xs: 'flex-start', sm: 'center' }
               }}>
                 🏢
               </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <ResponsiveTypography 
+                  variant="cardTitle" 
+                  sx={{ 
+                    color: 'primary.main', 
+                    mb: 0.5
+                  }}
+                >
                   Fund Manager View
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography 
+                  variant="formHelper" 
+                  color="text.secondary" 
+                  sx={{ 
+                    display: { xs: 'none', sm: 'block' }
+                  }}
+                >
                   TWR - Pure investment management performance
-                </Typography>
+                </ResponsiveTypography>
+                <ResponsiveTypography 
+                  variant="formHelper" 
+                  color="text.secondary" 
+                  sx={{ 
+                    display: { xs: 'block', sm: 'none' }
+                  }}
+                >
+                  TWR Performance
+                </ResponsiveTypography>
               </Box>
             </Box>
             
@@ -218,7 +242,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : benchmarkError ? (
-              <Typography color="error" variant="body2">{benchmarkError}</Typography>
+              <ResponsiveTypography color="error" variant="errorText">{benchmarkError}</ResponsiveTypography>
             ) : (
               <BenchmarkComparison 
                 data={benchmarkData?.data || []} 
@@ -237,35 +261,58 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           </Grid>
 
           {/* Individual Investor View - MWR */}
-          <Grid item xs={12} lg={6}>
+          <Grid item xs={12} sm={12} md={6} lg={6}>
             {/* Header */}
             <Box sx={{ 
               display: 'flex', 
-              alignItems: 'center', 
-              gap: 1.5, 
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),
-              p: 1.5,
+              p: { xs: 1, sm: 1.5 },
               backgroundColor: 'success.50',
               borderRadius: 1.5,
               border: '1px solid',
-              borderColor: 'success.200'
+              borderColor: 'success.200',
+              flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <Box sx={{ 
-                p: 0.8, 
+                p: { xs: 0.6, sm: 0.8 }, 
                 backgroundColor: 'success.main', 
                 borderRadius: 1,
                 color: 'white',
-                fontSize: '0.9rem'
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                alignSelf: { xs: 'flex-start', sm: 'center' }
               }}>
                 👤
               </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'success.main', mb: 0.5 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <ResponsiveTypography 
+                  variant="cardTitle" 
+                  sx={{ 
+                    color: 'success.main', 
+                    mb: 0.5
+                  }}
+                >
                   Individual Investor View
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography 
+                  variant="formHelper" 
+                  color="text.secondary" 
+                  sx={{ 
+                    display: { xs: 'none', sm: 'block' }
+                  }}
+                >
                   MWR - Actual investor returns with cash flows
-                </Typography>
+                </ResponsiveTypography>
+                <ResponsiveTypography 
+                  variant="formHelper" 
+                  color="text.secondary" 
+                  sx={{ 
+                    display: { xs: 'block', sm: 'none' }
+                  }}
+                >
+                  MWR Performance
+                </ResponsiveTypography>
               </Box>
             </Box>
             
@@ -275,7 +322,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                 <CircularProgress size={24} />
               </Box>
             ) : mwrBenchmarkError ? (
-              <Typography color="error" variant="body2">{mwrBenchmarkError}</Typography>
+              <ResponsiveTypography color="error" variant="errorText">{mwrBenchmarkError}</ResponsiveTypography>
             ) : (
               <MWRBenchmarkComparison 
                 data={mwrBenchmarkData?.data || []} 
@@ -293,7 +340,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       </Box>
       
       {/* Trading Analysis Section */}
-      <Box sx={{ mb: getUltraSpacing(4, 2) }}>
+      <Box sx={{ mb: { xs: getUltraSpacing(2, 1), sm: getUltraSpacing(3, 1.5), md: getUltraSpacing(4, 2) } }}>
         <TradeAnalysisContainer 
           portfolioId={portfolioId} 
           isCompactMode={isCompactMode}
@@ -301,13 +348,13 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       </Box>
       
       {/* Risk Metrics Section */}
-      <Box sx={{ mb: getUltraSpacing(4, 2) }}>
+      <Box sx={{ mb: { xs: getUltraSpacing(2, 1), sm: getUltraSpacing(3, 1.5), md: getUltraSpacing(4, 2) } }}>
         {isRiskMetricsLoading ? (
           <Box display="flex" justifyContent="center" p={2}>
             <CircularProgress size={24} />
           </Box>
         ) : riskMetricsError ? (
-          <Typography color="error" variant="body2">{riskMetricsError}</Typography>
+          <ResponsiveTypography color="error" variant="errorText">{riskMetricsError}</ResponsiveTypography>
         ) : (
           <RiskMetricsDashboard 
             data={riskMetricsData?.data || {}}

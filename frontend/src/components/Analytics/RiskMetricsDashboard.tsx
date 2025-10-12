@@ -5,12 +5,12 @@
 import React from 'react';
 import {
   Box,
-  Typography,
   Grid,
   Card,
   CardContent,
   Chip,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   TrendingDown,
   Security,
@@ -46,13 +46,12 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
   if (!data) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <Typography 
-          variant="h6" 
+        <ResponsiveTypography 
+          variant="pageSubtitle" 
           color="text.secondary"
-          sx={{ fontSize: compact ? '0.9rem' : '1.25rem' }}
         >
           No risk metrics data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -114,21 +113,20 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
 
   return (
     <Box>
-      <Typography 
-        variant="h6" 
+      <ResponsiveTypography 
+        variant="cardTitle" 
         gutterBottom
-        sx={{ fontSize: compact ? '0.9rem' : '1.25rem' }}
       >
         {title}
-      </Typography>
+      </ResponsiveTypography>
       {!compact && (
-        <Typography 
-          variant="body2" 
+        <ResponsiveTypography 
+          variant="formHelper" 
           color="text.secondary" 
           sx={{ mb: 3 }}
         >
           Comprehensive risk analysis and portfolio health metrics
-        </Typography>
+        </ResponsiveTypography>
       )}
       
       <Grid container spacing={compact ? 1 : 3}>
@@ -147,23 +145,21 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           }}>
             <CardContent sx={{ p: compact ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
-                <Typography 
-                  variant="subtitle2" 
+                <ResponsiveTypography 
+                  variant="formHelper" 
                   color="text.secondary"
-                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
                 >
                   Value at Risk (95%)
-                </Typography>
+                </ResponsiveTypography>
                 {getRiskIcon(varLevel)}
               </Box>
-              <Typography 
-                variant="h4" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 color="primary" 
                 fontWeight="bold"
-                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
               >
                 {formatPercentage(data.var95)}
-              </Typography>
+              </ResponsiveTypography>
               <Chip 
                 label={varLevel.toUpperCase()} 
                 color={getRiskColor(varLevel) as any}
@@ -192,23 +188,21 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           }}>
             <CardContent sx={{ p: compact ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
-                <Typography 
-                  variant="subtitle2" 
+                <ResponsiveTypography 
+                  variant="formHelper" 
                   color="text.secondary"
-                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
                 >
                   Sharpe Ratio
-                </Typography>
+                </ResponsiveTypography>
                 {getRiskIcon(sharpeLevel)}
               </Box>
-              <Typography 
-                variant="h4" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 color="primary" 
                 fontWeight="bold"
-                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
               >
                 {(data.sharpeRatio || 0).toFixed(2)}
-              </Typography>
+              </ResponsiveTypography>
               <Chip 
                 label={sharpeLevel.toUpperCase()} 
                 color={getRiskColor(sharpeLevel) as any}
@@ -237,23 +231,21 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           }}>
             <CardContent sx={{ p: compact ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
-                <Typography 
-                  variant="subtitle2" 
+                <ResponsiveTypography 
+                  variant="formHelper" 
                   color="text.secondary"
-                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
                 >
                   Volatility
-                </Typography>
+                </ResponsiveTypography>
                 {getRiskIcon(volatilityLevel)}
               </Box>
-              <Typography 
-                variant="h4" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 color="primary" 
                 fontWeight="bold"
-                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
               >
                 {formatPercentage(data.volatility)}
-              </Typography>
+              </ResponsiveTypography>
               <Chip 
                 label={volatilityLevel.toUpperCase()} 
                 color={getRiskColor(volatilityLevel) as any}
@@ -282,23 +274,21 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           }}>
             <CardContent sx={{ p: compact ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
-                <Typography 
-                  variant="subtitle2" 
+                <ResponsiveTypography 
+                  variant="formHelper" 
                   color="text.secondary"
-                  sx={{ fontSize: compact ? '0.7rem' : '0.875rem' }}
                 >
                   Max Drawdown
-                </Typography>
+                </ResponsiveTypography>
                 {getRiskIcon(drawdownLevel)}
               </Box>
-              <Typography 
-                variant="h4" 
+              <ResponsiveTypography 
+                variant="cardValue" 
                 color="primary" 
                 fontWeight="bold"
-                sx={{ fontSize: compact ? '1.1rem' : '2.125rem' }}
               >
                 {formatPercentage(data.maxDrawdown)}
-              </Typography>
+              </ResponsiveTypography>
               <Chip 
                 label={drawdownLevel.toUpperCase()} 
                 color={getRiskColor(drawdownLevel) as any}
@@ -326,84 +316,75 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               }
             }}>
               <CardContent sx={{ p: 2 }}>
-                <Typography 
-                  variant="h6" 
+                <ResponsiveTypography 
+                  variant="cardTitle" 
                   gutterBottom
-                  sx={{ fontSize: '1.25rem' }}
                 >
                   Additional Risk Metrics
-                </Typography>
+                </ResponsiveTypography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6} md={3}>
                     <Box>
-                      <Typography 
-                        variant="body2" 
+                      <ResponsiveTypography 
+                        variant="formHelper" 
                         color="text.secondary" 
                         gutterBottom
-                        sx={{ fontSize: '0.875rem' }}
                       >
                         VaR (99%)
-                      </Typography>
-                      <Typography 
-                        variant="h6"
-                        sx={{ fontSize: '1.25rem' }}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValue"
                       >
                         {formatPercentage(data.var99)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
                     <Box>
-                      <Typography 
-                        variant="body2" 
+                      <ResponsiveTypography 
+                        variant="formHelper" 
                         color="text.secondary" 
                         gutterBottom
-                        sx={{ fontSize: '0.875rem' }}
                       >
                         Beta
-                      </Typography>
-                      <Typography 
-                        variant="h6"
-                        sx={{ fontSize: '1.25rem' }}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValue"
                       >
                         {(data.beta || 0).toFixed(2)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
                     <Box>
-                      <Typography 
-                        variant="body2" 
+                      <ResponsiveTypography 
+                        variant="formHelper" 
                         color="text.secondary" 
                         gutterBottom
-                        sx={{ fontSize: '0.875rem' }}
                       >
                         Calmar Ratio
-                      </Typography>
-                      <Typography 
-                        variant="h6"
-                        sx={{ fontSize: '1.25rem' }}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValue"
                       >
                         {(data.calmarRatio || 0).toFixed(2)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
                     <Box>
-                      <Typography 
-                        variant="body2" 
+                      <ResponsiveTypography 
+                        variant="formHelper" 
                         color="text.secondary" 
                         gutterBottom
-                        sx={{ fontSize: '0.875rem' }}
                       >
                         Sortino Ratio
-                      </Typography>
-                      <Typography 
-                        variant="h6"
-                        sx={{ fontSize: '1.25rem' }}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
+                        variant="cardValue"
                       >
                         {(data.sortinoRatio || 0).toFixed(2)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                 </Grid>

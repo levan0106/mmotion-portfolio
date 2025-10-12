@@ -144,16 +144,14 @@ const AssetTableRow = memo(({
           >
             Current: {formatCurrency(currentPrice, baseCurrency)}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="formHelper" sx={{ fontSize: '0.75rem' }}>
+          <ResponsiveTypography variant="formHelper">
             Avg Cost: {formatCurrency(avgCost, baseCurrency)}
           </ResponsiveTypography>
           {priceComparisonPercent !== 0 && (
             <ResponsiveTypography 
               variant="formHelper" 
               sx={{ 
-                fontSize: '0.7rem',
-                color: priceComparison >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 500
+                color: priceComparison >= 0 ? 'success.main' : 'error.main'
               }}
             >
               {priceComparison >= 0 ? '+' : ''}{priceComparisonPercent.toFixed(1)}%
@@ -162,7 +160,7 @@ const AssetTableRow = memo(({
         </Box>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
-        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600, color: 'success.main' }}>
+        <ResponsiveTypography variant="tableCell" sx={{ color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
         </ResponsiveTypography>
       </TableCell>
@@ -469,7 +467,7 @@ AssetsList.displayName = 'AssetsList';
 const Assets: React.FC = () => {
   const theme = useTheme();
   const { accountId, baseCurrency } = useAccount();
-  const { assets, loading, error, refresh, updateAsset, createAsset, deleteAsset, setFilters: setApiFilters } = useAssets({ 
+  const { assets, loading, error, filters, refresh, updateAsset, createAsset, deleteAsset, setFilters: setApiFilters } = useAssets({ 
     initialFilters: { 
       createdBy: accountId,
       limit: 50,
@@ -546,7 +544,7 @@ const Assets: React.FC = () => {
     });
     
     // Reset filtering state after a short delay
-    setTimeout(() => setIsFiltering(false), 100);
+    setTimeout(() => setIsFiltering(false), 200);
   }, [setApiFilters, accountId]);
 
   const handleClearFilters = useCallback(() => {
@@ -561,7 +559,7 @@ const Assets: React.FC = () => {
       createdBy: accountId,
     };
     setApiFilters(clearedFilters);
-    setTimeout(() => setIsFiltering(false), 100);
+    setTimeout(() => setIsFiltering(false), 200);
   }, [setApiFilters, accountId]);
 
   const handleFiltersToggle = useCallback((show: boolean) => {
@@ -753,15 +751,7 @@ const Assets: React.FC = () => {
         {showFilters && (
           <Box sx={{ mb: 3 }}>
             <AssetsFilterPanel
-              filters={{
-                search: '',
-                type: undefined,
-                portfolioId: undefined,
-                sortBy: 'name',
-                sortOrder: 'ASC',
-                limit: 100,
-                createdBy: accountId,
-              }}
+              filters={filters}
               onFiltersChange={handleFiltersChange}
               onClearFilters={handleClearFilters}
             />

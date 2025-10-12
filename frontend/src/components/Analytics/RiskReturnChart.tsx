@@ -305,12 +305,12 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
         )}
       </Box>
       
-      <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ 
+      {/* <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ 
         mb: compact ? 1 : 2,
         fontStyle: 'italic'
       }}>
         • Bubble size represents return performance - larger bubbles indicate higher returns (better performance)
-      </ResponsiveTypography>
+      </ResponsiveTypography> */}
       <Box sx={{ height: compact ? 167 : 267 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ 

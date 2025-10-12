@@ -1,5 +1,92 @@
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 
+// Extend ThemeOptions to include custom borders
+declare module '@mui/material/styles' {
+  interface Theme {
+    borders: typeof customBorders;
+  }
+  interface ThemeOptions {
+    borders?: typeof customBorders;
+  }
+}
+
+// Custom border system for consistent styling
+const customBorders = {
+  // Border radius variants
+  radius: {
+    xs: '4px',
+    sm: '6px', 
+    md: '8px',
+    lg: '12px',
+    xl: '16px',
+  },
+  
+  // Border width variants
+  width: {
+    thin: '1px',
+    normal: '2px',
+    thick: '3px',
+  },
+  
+  // Border color variants
+  colors: {
+    light: '#e0e0e0',
+    medium: '#bdbdbd',
+    dark: '#757575',
+    primary: '#1976d2',
+    secondary: '#dc004e',
+    success: '#2e7d32',
+    warning: '#ed6c02',
+    error: '#d32f2f',
+    info: '#0288d1',
+  },
+  
+  // Predefined border styles
+  styles: {
+    // Card borders
+    card: {
+      border: '1px solid #e0e0e0',
+      borderRadius: '8px',
+    },
+    
+    // Section borders
+    section: {
+      border: '1px solid #e3f2fd',
+      borderRadius: '8px',
+    },
+    
+    // Input borders
+    input: {
+      border: '1px solid #bdbdbd',
+      borderRadius: '4px',
+    },
+    
+    // Button borders
+    button: {
+      border: '1px solid #1976d2',
+      borderRadius: '6px',
+    },
+    
+    // Alert borders
+    alert: {
+      border: '1px solid #ffcdd2',
+      borderRadius: '4px',
+    },
+    
+    // Chart borders
+    chart: {
+      border: '1px solid #e0e0e0',
+      borderRadius: '8px',
+    },
+    
+    // Table borders
+    table: {
+      border: '1px solid #e0e0e0',
+      borderRadius: '4px',
+    },
+  },
+};
+
 // Custom typography variants for responsive design
 const customTypography = {
   // Header variants
@@ -45,6 +132,15 @@ const customTypography = {
     md: '0.7rem',    // 11.2px (increased from 9.3px)
     lg: '0.8rem',    // 12.8px (increased from 10.7px)
     xl: '0.9rem',    // 14.4px (increased from 12px)
+  },
+
+  // XSmall text variants
+  xSmall: {
+    xs: '0.4rem',    // 6.4px (increased from 5.3px)
+    sm: '0.45rem',    // 8px (increased from 6.7px)
+    md: '0.55rem',    // 9.6px (increased from 8px)
+    lg: '0.65rem',    // 11.2px (increased from 9.3px)
+    xl: '0.75rem',    // 12.8px (increased from 10.7px)
   },
   
   // Caption variants
@@ -114,8 +210,8 @@ const customTypography = {
     xs: '0.75rem',   // 12px (increased from 9.6px)
     sm: '0.85rem',   // 13.6px (increased from 10.7px)
     md: '0.95rem',   // 16px (increased from 12.8px)
-    lg: '1.05rem',      // 18.4px (increased from 14.9px)
-    xl: '1.2rem',   // 19.2px (increased from 16px)
+    lg: '1.15rem',      // 18.4px (increased from 14.9px)
+    xl: '1.25rem',   // 19.2px (increased from 16px)
   },
 
   cardValueMedium: {
@@ -185,6 +281,9 @@ export const getResponsiveFontSize = (variant: keyof typeof customTypography) =>
 
 // Custom theme options
 const themeOptions: ThemeOptions = {
+  // Add custom border system to theme
+  borders: customBorders,
+  
   palette: {
     primary: {
       main: '#1976d2',
@@ -245,14 +344,7 @@ const themeOptions: ThemeOptions = {
   },
   typography: {
     fontFamily: [
-      '"SF Pro Display"',
-      '"SF Pro Text"',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'system-ui',
-      '"Helvetica Neue"',
-      'Arial',
+      'Open Sans',
       'sans-serif',
     ].join(','),
     h1: {

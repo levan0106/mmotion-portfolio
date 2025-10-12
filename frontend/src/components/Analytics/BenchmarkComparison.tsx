@@ -16,7 +16,6 @@ import {
 } from 'recharts';
 import { 
   Box, 
-  Typography, 
   Paper, 
   Grid, 
   Card, 
@@ -28,6 +27,7 @@ import {
   Tooltip,
   IconButton
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
 import { TrendingUp, TrendingDown, CompareArrows, InfoOutlined } from '@mui/icons-material';
 
@@ -93,17 +93,17 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
     if (active && payload && payload.length) {
       return (
         <Paper sx={{ p: 2, boxShadow: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <ResponsiveTypography variant="chartTooltip" gutterBottom>
             {formatDate(label)}
-          </Typography>
+          </ResponsiveTypography>
           {payload.map((entry: any, index: number) => (
-            <Typography key={index} variant="body2" color={entry.color}>
+            <ResponsiveTypography key={index} variant="chartTooltip" sx={{ wordBreak: 'break-word', color: entry.color }}>
               {entry.name}: {formatPercentage(entry.value)}
-            </Typography>
+            </ResponsiveTypography>
           ))}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <ResponsiveTypography variant="chartTooltip" color="text.secondary" sx={{ mt: 1 }}>
             Difference: {formatPercentage(payload[0]?.payload?.difference || 0)}
-          </Typography>
+          </ResponsiveTypography>
         </Paper>
       );
     }
@@ -126,9 +126,9 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   if (data.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
+        <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
           No benchmark data available
-        </Typography>
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -145,24 +145,24 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
         }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 0 }}>
+            <ResponsiveTypography variant="chartTitle" gutterBottom sx={{ mb: 0 }}>
               {title}
-            </Typography>
+            </ResponsiveTypography>
             <Tooltip
               title={
                 <Box sx={{ p: 1 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                  <ResponsiveTypography variant="chartTitle" sx={{ mb: 1 }} ellipsis={false}>
                     Ghi chú cho nhà đầu tư:
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
                     <strong>TWR</strong> phản ánh năng lực quản lý quỹ, đã loại bỏ ảnh hưởng của dòng tiền.
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
                     <strong>MWR</strong> phản ánh lợi nhuận thực tế của từng nhà đầu tư, có thể khác nhau tùy thời điểm nạp/rút vốn.
-                  </Typography>
-                  <Typography variant="body2">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper" ellipsis={false}>
                     NĐT nên so sánh MWR cá nhân với TWR quỹ để hiểu rõ sự khác biệt.
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               }
               arrow
@@ -192,13 +192,13 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               </IconButton>
             </Tooltip>
           </Box>
-          <Typography variant="body2" color="text.secondary">
+          <ResponsiveTypography variant="formHelper" color="text.secondary">
             Portfolio performance vs {benchmarkName}
-          </Typography>
+          </ResponsiveTypography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>TWR Period</InputLabel>
+          <FormControl size="small" sx={{ minWidth: 80 }}>
+            <InputLabel sx={{ fontSize: '0.75rem' }}>TWR Period</InputLabel>
             <Select
               value={twrPeriod}
               label="TWR Period"
@@ -206,21 +206,25 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  fontSize: '0.875rem'
+                  fontSize: '0.75rem'
+                },
+                '& .MuiSelect-select': {
+                  fontSize: '0.75rem',
+                  py: 0.5
                 }
               }}
             >
-              <MenuItem value="1D">1 Day TWR</MenuItem>
-              <MenuItem value="1W">1 Week TWR</MenuItem>
-              <MenuItem value="1M">1 Month TWR</MenuItem>
-              <MenuItem value="3M">3 Months TWR</MenuItem>
-              <MenuItem value="6M">6 Months TWR</MenuItem>
-              <MenuItem value="1Y">1 Year TWR</MenuItem>
-              <MenuItem value="YTD">YTD TWR</MenuItem>
+              <MenuItem value="1D" sx={{ fontSize: '0.75rem' }}>1 Day TWR</MenuItem>
+              <MenuItem value="1W" sx={{ fontSize: '0.75rem' }}>1 Week TWR</MenuItem>
+              <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month TWR</MenuItem>
+              <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months TWR</MenuItem>
+              <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months TWR</MenuItem>
+              <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year TWR</MenuItem>
+              <MenuItem value="YTD" sx={{ fontSize: '0.75rem' }}>YTD TWR</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Timeframe</InputLabel>
+          <FormControl size="small" sx={{ minWidth: 80 }}>
+            <InputLabel sx={{ fontSize: '0.75rem' }}>Timeframe</InputLabel>
             <Select
               value={timeframe}
               label="Timeframe"
@@ -228,17 +232,21 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  fontSize: '0.875rem'
+                  fontSize: '0.75rem'
+                },
+                '& .MuiSelect-select': {
+                  fontSize: '0.75rem',
+                  py: 0.5
                 }
               }}
             >
-              <MenuItem value="1M">1 Month</MenuItem>
-              <MenuItem value="3M">3 Months</MenuItem>
-              <MenuItem value="6M">6 Months</MenuItem>
-              <MenuItem value="1Y">1 Year</MenuItem>
-              <MenuItem value="2Y">2 Years</MenuItem>
-              <MenuItem value="5Y">5 Years</MenuItem>
-              <MenuItem value="ALL">All Time</MenuItem>
+              <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month</MenuItem>
+              <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months</MenuItem>
+              <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months</MenuItem>
+              <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year</MenuItem>
+              <MenuItem value="2Y" sx={{ fontSize: '0.75rem' }}>2 Years</MenuItem>
+              <MenuItem value="5Y" sx={{ fontSize: '0.75rem' }}>5 Years</MenuItem>
+              <MenuItem value="ALL" sx={{ fontSize: '0.75rem' }}>All Time</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -251,18 +259,17 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingUp color="primary" sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    Portfolio
-                  </Typography>
+                  <ResponsiveTypography variant="formHelper" color="text.secondary">
+                    Portfolio 
+                  </ResponsiveTypography>
                 </Box>
-                <Typography 
-                  variant="body1" 
+                <ResponsiveTypography 
+                  variant="cardValue" 
                   color={portfolioReturn >= 0 ? "success.main" : "error.main"} 
                   fontWeight="bold"
-                  sx={{ fontSize: '0.9rem' }}
                 >
                   {formatPercentage(portfolioReturn)}
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -271,18 +278,17 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingUp color="info" sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <ResponsiveTypography variant="formHelper" color="text.secondary">
                     {benchmarkName}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
-                <Typography 
-                  variant="body1" 
+                <ResponsiveTypography 
+                  variant="cardValue" 
                   color={benchmarkReturn >= 0 ? "success.main" : "error.main"} 
                   fontWeight="bold"
-                  sx={{ fontSize: '0.9rem' }}
                 >
                   {formatPercentage(benchmarkReturn)}
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -291,18 +297,17 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <ResponsiveTypography variant="formHelper" color="text.secondary">
                     Excess
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
-                <Typography 
-                  variant="body1" 
+                <ResponsiveTypography 
+                  variant="cardValue" 
                   color={excessReturn >= 0 ? "success.main" : "error.main"} 
                   fontWeight="bold"
-                  sx={{ fontSize: '0.9rem' }}
                 >
                   {formatPercentage(excessReturn)}
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -311,13 +316,13 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingDown color="warning" sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <ResponsiveTypography variant="formHelper" color="text.secondary">
                     Tracking Error
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
-                <Typography variant="body1" color="warning.main" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                <ResponsiveTypography variant="cardValue" color="warning.main" fontWeight="bold">
                   {formatPercentage(trackingError)}
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>

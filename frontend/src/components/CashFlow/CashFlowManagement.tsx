@@ -39,7 +39,6 @@ interface CashFlow {
   reference?: string;
   status: string;
   flowDate: string;
-  effectiveDate?: string;
   fundingSource?: string;
 }
 
@@ -62,7 +61,6 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
     amount: '',
     description: '',
     reference: '',
-    effectiveDate: '',
     fundingSource: '',
   });
 
@@ -93,14 +91,13 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
         amount: parseFloat(formData.amount),
         description: formData.description,
         reference: formData.reference || undefined,
-        effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate) : undefined,
         fundingSource: formData.fundingSource || undefined,
       };
 
       await apiService.createCashFlow(portfolioId, accountId, dialogType, payload);
 
       // Reset form and close dialog
-      setFormData({ amount: '', description: '', reference: '', effectiveDate: '', fundingSource: '' });
+      setFormData({ amount: '', description: '', reference: '', fundingSource: '' });
       setDialogOpen(false);
       
       // Reload data
@@ -310,15 +307,6 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
               inputProps={{
                 style: { textTransform: 'uppercase' }
               }}
-            />
-            <TextField
-              fullWidth
-              label="Effective Date (Optional)"
-              type="datetime-local"
-              value={formData.effectiveDate}
-              onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
             />
           </Box>
         </DialogContent>

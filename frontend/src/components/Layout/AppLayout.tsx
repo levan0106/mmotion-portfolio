@@ -43,13 +43,35 @@ import {
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
   Security as SecurityIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 
-const drawerWidth = 240;
+// Responsive drawer widths based on screen size
+const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
+  if (isCollapsed) {
+    return {
+      xs: 56,   // Mobile collapsed
+      sm: 60,   // Tablet collapsed  
+      md: 64,   // Desktop collapsed
+      lg: 64,   // Large desktop collapsed
+      xl: 64,   // Extra large collapsed
+    };
+  }
+  
+  return {
+    xs: 200,   // Mobile expanded
+    sm: 220,   // Tablet expanded
+    md: 200,   // Desktop expanded
+    lg: 220,   // Large desktop expanded
+    xl: 240,   // Extra large expanded
+  };
+};
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -142,14 +164,27 @@ const menuItems = [
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [drawerCollapsed, setDrawerCollapsed] = useState(false);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
   const { hasAnyPermission, hasAnyRole } = usePermissions();
 
+  // Auto-collapse on smaller screens
+  React.useEffect(() => {
+    if (isTablet) {
+      setDrawerCollapsed(true);
+    }
+  }, [isTablet]);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleDrawerCollapse = () => {
+    setDrawerCollapsed(!drawerCollapsed);
   };
 
   const handleNavigation = (path: string) => {
@@ -164,7 +199,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Professional Header */}
       <Box
         sx={{
-          p: 3,
+          p: drawerCollapsed ? 1.5 : 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           color: 'white',
           position: 'relative',
@@ -181,88 +216,106 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', zIndex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: drawerCollapsed ? 1 : 2, position: 'relative', zIndex: 1 }}>
           <Avatar
             sx={{
               bgcolor: 'rgba(255,255,255,0.15)',
-              mr: 2,
-              width: 48,
-              height: 48,
+              mr: drawerCollapsed ? 0 : 2,
+              width: drawerCollapsed ? 32 : 48,
+              height: drawerCollapsed ? 32 : 48,
               border: '1px solid rgba(255,255,255,0.15)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}
           >
-            <PortfolioIcon sx={{ fontSize: 28 }} />
+            <PortfolioIcon sx={{ fontSize: drawerCollapsed ? 20 : 28 }} />
           </Avatar>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'flex-start',
-            justifyContent: 'center'
-          }}>
-            <Typography 
-              variant="h5" 
-              noWrap 
-              component="div" 
-              sx={{ 
-                fontWeight: 600, 
-                mb: 0.25,
-                background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '0.5px'
-              }}
-            >
-              MMO
-            </Typography>
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              px: 1,
-              py: 0.25,
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: 1,
-              border: '1px solid rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(10px)'
+          {!drawerCollapsed && (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'flex-start',
+              justifyContent: 'center'
             }}>
-              <Typography 
-                variant="caption" 
+              <ResponsiveTypography 
+                variant="cardTitle" 
+                noWrap 
+                component="div" 
                 sx={{ 
-                  opacity: 0.9, 
-                  fontWeight: 500,
-                  fontSize: '0.7rem',
-                  letterSpacing: '0.3px',
-                  textTransform: 'uppercase'
+                  mb: 0.25,
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '0.5px'
                 }}
               >
-                v1.0.0-beta
-              </Typography>
+                MMO
+              </ResponsiveTypography>
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.25,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 1,
+                border: '1px solid rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <ResponsiveTypography 
+                  variant="formHelper"
+                  sx={{ 
+                    color: 'white',
+                    opacity: 0.9, 
+                    fontWeight: 500,
+                    fontSize: {
+                      xs: '0.4rem',    
+                      sm: '0.4rem',    
+                      md: '0.45rem',   
+                      lg: '0.55rem',    
+                      xl: '0.65rem',
+                    },
+                    letterSpacing: '0.3px',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  v1.0.0-beta
+                </ResponsiveTypography>
+              </Box>
             </Box>
-          </Box>
+          )}
         </Box>
         
         {/* System Status Indicator */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1, 
-          position: 'relative', 
-          zIndex: 1,
-          mt: 2
-        }}>
+        {!drawerCollapsed && (
           <Box sx={{ 
-            width: 8, 
-            height: 8, 
-            borderRadius: '50%', 
-            bgcolor: 'rgba(34, 197, 94, 0.8)',
-            boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)'
-          }} />
-          <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 300 }}>
-            System Online • Real-time Data
-          </Typography>
-        </Box>
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1, 
+            position: 'relative', 
+            zIndex: 1,
+            mt: 2
+          }}>
+            <Box sx={{ 
+              width: 8, 
+              height: 8, 
+              borderRadius: '50%', 
+              bgcolor: 'rgba(34, 197, 94, 0.8)',
+              boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)'
+            }} />
+            <ResponsiveTypography variant="formHelper" sx={{ opacity: 0.9, fontWeight: 300,
+              fontSize: {
+                xs: '0.4rem',    
+                sm: '0.45rem',    
+                md: '0.55rem',   
+                lg: '0.65rem',    
+                xl: '0.75rem',
+              },
+             }}>
+              System Online • Real-time Data
+            </ResponsiveTypography>
+          </Box>
+        )}
       </Box>
 
       {/* Professional Navigation */}
@@ -291,86 +344,123 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             })
             .map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
-              <ListItemButton
-                  selected={location.pathname === item.path}
-                  onClick={() => handleNavigation(item.path)}
-                  sx={{
-                    borderRadius: 1.5,
-                    mx: 0.25,
-                    py: 0.75,
-                    px: 1,
-                    transition: 'all 0.2s ease-in-out',
-                    position: 'relative',
-                    '&.Mui-selected': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.12),
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.18),
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: theme.palette.primary.main,
-                        transform: 'scale(1.1)',
-                      },
-                      '& .MuiListItemText-primary': {
-                        color: theme.palette.primary.main,
-                        fontWeight: 500,
-                      },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        left: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 4,
-                        height: 24,
-                        bgcolor: theme.palette.primary.main,
-                        borderRadius: '0 2px 2px 0',
-                      }
-                    },
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08),
-                      transform: 'translateX(4px)',
-                      '& .MuiListItemIcon-root': {
-                        transform: 'scale(1.05)',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ 
-                    minWidth: 44,
-                    transition: 'all 0.2s ease-in-out',
-                  }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={item.text}
-                    primaryTypographyProps={{
-                      variant: 'body2',
-                      fontWeight: location.pathname === item.path ? 500 : 300,
-                      fontSize: '0.875rem',
-                    }}
-                  />
-                  {item.badge && (
-                    <Chip
-                      label={item.badge}
-                      size="small"
-                      color="primary"
-                      sx={{ 
-                        height: 22, 
-                        fontSize: '0.7rem',
-                        fontWeight: 400,
-                        borderRadius: 2,
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                        color: 'white',
-                        '& .MuiChip-label': {
-                          px: 1,
+              <Tooltip 
+                title={drawerCollapsed ? item.text : ''} 
+                placement="right"
+                arrow
+              >
+                <ListItemButton
+                    selected={location.pathname === item.path}
+                    onClick={() => handleNavigation(item.path)}
+                    sx={{
+                      borderRadius: 1.5,
+                      mx: 0.25,
+                      py: 0.75,
+                      px: drawerCollapsed ? 0.5 : 1,
+                      transition: 'all 0.2s ease-in-out',
+                      position: 'relative',
+                      justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                      '&.Mui-selected': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.primary.main, 0.18),
+                        },
+                        '& .MuiListItemIcon-root': {
+                          color: theme.palette.primary.main,
+                          transform: 'scale(1.1)',
+                        },
+                        '& .MuiListItemText-primary': {
+                          color: theme.palette.primary.main,
+                          fontWeight: 500,
+                        },
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          left: 0,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: 4,
+                          height: 24,
+                          bgcolor: theme.palette.primary.main,
+                          borderRadius: '0 2px 2px 0',
                         }
-                      }}
-                    />
-                  )}
-                  </ListItemButton>
+                      },
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.08),
+                        transform: drawerCollapsed ? 'scale(1.05)' : 'translateX(4px)',
+                        '& .MuiListItemIcon-root': {
+                          transform: 'scale(1.05)',
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ 
+                      minWidth: drawerCollapsed ? 32 : 44,
+                      transition: 'all 0.2s ease-in-out',
+                    }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    {!drawerCollapsed && (
+                      <>
+                        <ListItemText 
+                          primary={item.text}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontWeight: location.pathname === item.path ? 500 : 300,
+                            fontSize: '0.875rem',
+                          }}
+                        />
+                        {item.badge && (
+                          <Chip
+                            label={item.badge}
+                            size="small"
+                            color="primary"
+                            sx={{ 
+                              height: 22, 
+                              fontSize: '0.7rem',
+                              fontWeight: 400,
+                              borderRadius: 2,
+                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                              color: 'white',
+                              '& .MuiChip-label': {
+                                px: 1,
+                              }
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                    </ListItemButton>
+              </Tooltip>
               </ListItem>
           ))}
         </List>
+      </Box>
+
+      {/* Collapse Toggle Button */}
+      <Box sx={{ 
+        p: 1, 
+        display: 'flex', 
+        justifyContent: 'center',
+        borderTop: 1,
+        borderColor: 'divider',
+        background: alpha(theme.palette.background.paper, 0.5),
+      }}>
+        <Tooltip title={drawerCollapsed ? 'Expand menu' : 'Collapse menu'} placement="right">
+          <IconButton
+            onClick={handleDrawerCollapse}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main',
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              },
+              transition: 'all 0.2s ease-in-out',
+            }}
+          >
+            {drawerCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* User Info - Bottom Left */}
@@ -382,29 +472,35 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         borderRadius: '12px 0 0 0',
       }}>
         {/* User Profile Section */}
-        <Box 
-          onClick={() => {
-            if (currentUser) {
-              navigate('/profile');
-            }
-          }}
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            mb: 0.5,
-            p: 1,
-            borderRadius: 2,
-            background: alpha(theme.palette.background.paper, 0.3),
-            transition: 'all 0.2s ease-in-out',
-            position: 'relative',
-            cursor: currentUser ? 'pointer' : 'default',
-            '&:hover': {
-              background: alpha(theme.palette.background.paper, 0.5),
-              transform: 'translateY(-1px)',
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
-            }
-          }}
+        <Tooltip 
+          title={drawerCollapsed ? (currentUser?.fullName || currentUser?.username || 'User') : ''} 
+          placement="right"
+          arrow
         >
+          <Box 
+            onClick={() => {
+              if (currentUser) {
+                navigate('/profile');
+              }
+            }}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 0.5,
+              p: drawerCollapsed ? 0.5 : 1,
+              borderRadius: 2,
+              background: alpha(theme.palette.background.paper, 0.3),
+              transition: 'all 0.2s ease-in-out',
+              position: 'relative',
+              cursor: currentUser ? 'pointer' : 'default',
+              justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+              '&:hover': {
+                background: alpha(theme.palette.background.paper, 0.5),
+                transform: 'translateY(-1px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
+              }
+            }}
+          >
           {/* Profile Completion Indicator */}
           {currentUser && !currentUser.isProfileComplete && !currentUser.isPasswordSet && (
             <Box sx={{
@@ -440,9 +536,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
 
           <Avatar sx={{ 
-            width: 40, 
-            height: 40, 
-            mr: 2,
+            width: drawerCollapsed ? 32 : 40, 
+            height: drawerCollapsed ? 32 : 40, 
+            mr: drawerCollapsed ? 0 : 2,
             border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
             boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -455,132 +551,137 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <AccountIcon sx={{ color: 'primary.main' }} />
             )}
           </Avatar>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {!drawerCollapsed && (
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 500, 
+                    color: 'text.primary',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {currentUser?.fullName || currentUser?.username || 'User'}
+                </Typography>
+                {currentUser?.isProfileComplete ? (
+                  <Tooltip title="Profile complete" placement="top">
+                    <CheckCircleIcon 
+                      sx={{ 
+                        fontSize: 16, 
+                        color: 'success.main',
+                        opacity: 0.8,
+                      }} 
+                    />
+                  </Tooltip>
+                ) : currentUser?.isPasswordSet ? (
+                  <Tooltip title="Password set, profile optional" placement="top">
+                    <CheckCircleIcon 
+                      sx={{ 
+                        fontSize: 16, 
+                        color: 'info.main',
+                        opacity: 0.8,
+                      }} 
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Profile needs completion" placement="top">
+                    <EditIcon 
+                      sx={{ 
+                        fontSize: 16, 
+                        color: 'warning.main',
+                        opacity: 0.8,
+                      }} 
+                    />
+                  </Tooltip>
+                )}
+              </Box>
               <Typography 
-                variant="body2" 
+                variant="caption" 
+                color="text.secondary" 
                 sx={{ 
-                  fontWeight: 500, 
-                  color: 'text.primary',
+                  fontWeight: 400,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  display: 'block',
                 }}
               >
-                {currentUser?.fullName || currentUser?.username || 'User'}
+                {currentUser?.email || currentUser?.username || 'No email'}
               </Typography>
-              {currentUser?.isProfileComplete ? (
-                <Tooltip title="Profile complete" placement="top">
-                  <CheckCircleIcon 
-                    sx={{ 
-                      fontSize: 16, 
-                      color: 'success.main',
-                      opacity: 0.8,
-                    }} 
-                  />
-                </Tooltip>
-              ) : currentUser?.isPasswordSet ? (
-                <Tooltip title="Password set, profile optional" placement="top">
-                  <CheckCircleIcon 
-                    sx={{ 
-                      fontSize: 16, 
-                      color: 'info.main',
-                      opacity: 0.8,
-                    }} 
-                  />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Profile needs completion" placement="top">
-                  <EditIcon 
-                    sx={{ 
-                      fontSize: 16, 
-                      color: 'warning.main',
-                      opacity: 0.8,
-                    }} 
-                  />
-                </Tooltip>
+              {currentUser && !currentUser.isProfileComplete && (
+                <Typography 
+                  variant="caption" 
+                  color="warning.main" 
+                  sx={{ 
+                    fontWeight: 500,
+                    display: 'block',
+                    mt: 0.5,
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Complete your profile
+                </Typography>
               )}
             </Box>
-            <Typography 
-              variant="caption" 
-              color="text.secondary" 
-              sx={{ 
-                fontWeight: 400,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                display: 'block',
-              }}
-            >
-              {currentUser?.email || currentUser?.username || 'No email'}
-            </Typography>
-            {currentUser && !currentUser.isProfileComplete && (
-              <Typography 
-                variant="caption" 
-                color="warning.main" 
-                sx={{ 
-                  fontWeight: 500,
-                  display: 'block',
-                  mt: 0.5,
-                  fontSize: '0.7rem',
-                }}
-              >
-                Complete your profile
-              </Typography>
-            )}
-          </Box>
+          )}
         </Box>
+        </Tooltip>
 
         {/* Action Buttons */}
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 1.5,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <Tooltip title="Settings" placement="top">
-            <IconButton 
-              size="small" 
-              sx={{ 
-                color: 'text.secondary',
-                background: alpha(theme.palette.background.paper, 0.3),
-                '&:hover': {
-                  color: 'primary.main',
-                  background: alpha(theme.palette.primary.main, 0.1),
-                  transform: 'scale(1.05)',
-                },
-                transition: 'all 0.2s ease-in-out',
-                borderRadius: 2,
-                width: 36,
-                height: 36,
-              }}
-            >
-              <SettingsIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Sign Out" placement="top">
-            <IconButton 
-              size="small" 
-              onClick={logout}
-              sx={{ 
-                color: 'error.main',
-                background: alpha(theme.palette.error.main, 0.1),
-                '&:hover': {
-                  background: alpha(theme.palette.error.main, 0.15),
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.2)}`,
-                },
-                transition: 'all 0.2s ease-in-out',
-                borderRadius: 2,
-                width: 36,
-                height: 36,
-              }}
-            >
-              <LogoutIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        {!drawerCollapsed && (
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1.5,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <Tooltip title="Settings" placement="top">
+              <IconButton 
+                size="small" 
+                sx={{ 
+                  color: 'text.secondary',
+                  background: alpha(theme.palette.background.paper, 0.3),
+                  '&:hover': {
+                    color: 'primary.main',
+                    background: alpha(theme.palette.primary.main, 0.1),
+                    transform: 'scale(1.05)',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                  borderRadius: 2,
+                  width: 36,
+                  height: 36,
+                }}
+              >
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            
+            <Tooltip title="Sign Out" placement="top">
+              <IconButton 
+                size="small" 
+                onClick={logout}
+                sx={{ 
+                  color: 'error.main',
+                  background: alpha(theme.palette.error.main, 0.1),
+                  '&:hover': {
+                    background: alpha(theme.palette.error.main, 0.15),
+                    transform: 'scale(1.05)',
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.2)}`,
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                  borderRadius: 2,
+                  width: 36,
+                  height: 36,
+                }}
+              >
+                <LogoutIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -592,8 +693,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         position="fixed"
         elevation={0}
         sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
+          width: { 
+            xs: '100%',
+            sm: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            md: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
+            lg: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
+            xl: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
+          },
+          ml: { 
+            xs: 0,
+            sm: `${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px`,
+            md: `${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px`,
+            lg: `${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px`,
+            xl: `${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px`,
+          },
           bgcolor: 'white',
           color: 'text.primary',
           borderBottom: 1,
@@ -601,6 +714,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           zIndex: theme.zIndex.appBar,
           backdropFilter: 'blur(10px)',
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
+          transition: 'all 0.3s ease-in-out',
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -707,7 +821,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </AppBar>
       <Box
         component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        sx={{ 
+          width: { 
+            xs: 0,
+            sm: drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
+            md: drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
+            lg: drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
+            xl: drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
+          }, 
+          flexShrink: { sm: 0 } 
+        }}
         aria-label="navigation"
       >
         <Drawer
@@ -718,8 +841,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: getDrawerWidth(theme, false).xs,
+            },
           }}
         >
           {drawer}
@@ -727,8 +853,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: {
+                sm: drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
+                md: drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
+                lg: drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
+                xl: drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
+              },
+              transition: 'width 0.3s ease-in-out',
+            },
           }}
           open
         >
@@ -739,10 +874,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          width: { 
+            xs: '100%',
+            sm: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            md: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
+            lg: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
+            xl: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
+          },
           background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
           minHeight: '100vh',
           position: 'relative',
+          transition: 'all 0.3s ease-in-out',
           '&::before': {
             content: '""',
             position: 'absolute',

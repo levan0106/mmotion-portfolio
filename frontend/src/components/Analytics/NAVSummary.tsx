@@ -9,6 +9,7 @@ import {
   Tooltip,
   IconButton
 } from '@mui/material';
+import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
 import {
   TrendingUp,
   TrendingDown,
@@ -133,14 +134,14 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
     <Card sx={{ 
       mb: getUltraSpacing(3, 1),
       background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-      border: '1px solid #e9ecef',
-      borderRadius: 3,
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-      transition: 'all 0.3s ease-in-out',
-      '&:hover': {
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
-        transform: 'translateY(-2px)'
-      }
+      ...applyBorderHover('card', {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
+          transform: 'translateY(-2px)'
+        }
+      })
     }}>
       <CardContent sx={{ p: getUltraSpacing(3, 1.5) }}>
         {/* Header */}
@@ -204,20 +205,20 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
             <Box sx={{
               p: getUltraSpacing(2.5, 1.5),
               backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-              borderRadius: 2.5,
-              border: '2px solid #e3f2fd',
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: isCompactMode ? '3px' : '4px',
-                background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)'
-              }
+              ...applyBorderStyle('section', {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: isCompactMode ? '3px' : '4px',
+                  background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)'
+                }
+              })
             }}>
               <Typography variant="caption" color="text.secondary" sx={{ 
                 fontSize: isCompactMode ? '0.7rem' : '0.8rem',
@@ -258,20 +259,20 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
             <Box sx={{
               p: getUltraSpacing(2.5, 1.5),
               backgroundColor: 'linear-gradient(135deg, #fff3e0 0%, #ffffff 100%)',
-              borderRadius: 2.5,
-              border: '2px solid #ffcc02',
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: isCompactMode ? '3px' : '4px',
-                background: 'linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)'
-              }
+              ...applyBorderStyle('card', {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: isCompactMode ? '3px' : '4px',
+                  background: 'linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)'
+                }
+              })
             }}>
               <Typography variant="caption" color="text.secondary" sx={{ 
                 fontSize: isCompactMode ? '0.7rem' : '0.8rem',
@@ -336,20 +337,20 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
               <Box sx={{
                 p: getUltraSpacing(2, 1.5),
                 backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-                borderRadius: 2.5,
-                border: '2px solid #e3f2fd',
                 textAlign: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: isCompactMode ? '3px' : '4px',
-                  background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)'
-                }
+                ...applyBorderStyle('section', {
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: isCompactMode ? '3px' : '4px',
+                    background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)'
+                  }
+                })
               }}>
                 <Typography variant="caption" color="text.secondary" sx={{ 
                   fontSize: isCompactMode ? '0.7rem' : '0.8rem',
@@ -477,20 +478,10 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         <Box sx={{ 
           mt: getUltraSpacing(2, 1.5),
           p: getUltraSpacing(2, 1.5),
-          backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-          borderRadius: 2,
-          border: '1px solid #dee2e6',
+          //backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
           position: 'relative',
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: isCompactMode ? '1px' : '2px',
-            background: 'linear-gradient(90deg, #6c757d 0%, #adb5bd 100%)'
-          }
+          
         }}>
           <Typography variant="body2" color="text.secondary" sx={{ 
             fontSize: isCompactMode ? '0.7rem' : '0.85rem',

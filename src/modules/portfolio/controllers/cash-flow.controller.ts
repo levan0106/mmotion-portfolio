@@ -218,18 +218,23 @@ export class CashFlowController {
       amount: number; 
       description: string; 
       reference?: string; 
+      flowDate?: string;
       effectiveDate?: Date;
+      currency?: string;
       fundingSource?: string;
     },
   ) {
+    const flowDate = createDepositDto.flowDate ? new Date(createDepositDto.flowDate) : undefined;
+    const effectiveDate = createDepositDto.effectiveDate || flowDate;
+    
     return await this.cashFlowService.createCashFlow(
       portfolioId,
       'DEPOSIT' as any,
       createDepositDto.amount,
       createDepositDto.description,
       createDepositDto.reference,
-      createDepositDto.effectiveDate,
-      'VND', // Default currency
+      effectiveDate,
+      createDepositDto.currency || 'VND',
       createDepositDto.fundingSource,
     );
   }
@@ -250,18 +255,23 @@ export class CashFlowController {
       amount: number; 
       description: string; 
       reference?: string; 
+      flowDate?: string;
       effectiveDate?: Date;
+      currency?: string;
       fundingSource?: string;
     },
   ) {
+    const flowDate = createWithdrawalDto.flowDate ? new Date(createWithdrawalDto.flowDate) : undefined;
+    const effectiveDate = createWithdrawalDto.effectiveDate || flowDate;
+    
     return await this.cashFlowService.createCashFlow(
       portfolioId,
       'WITHDRAWAL' as any,
       createWithdrawalDto.amount,
       createWithdrawalDto.description,
       createWithdrawalDto.reference,
-      createWithdrawalDto.effectiveDate,
-      'VND', // Default currency
+      effectiveDate,
+      createWithdrawalDto.currency || 'VND',
       createWithdrawalDto.fundingSource,
     );
   }
@@ -282,18 +292,23 @@ export class CashFlowController {
       amount: number; 
       description: string; 
       reference?: string; 
+      flowDate?: string;
       effectiveDate?: Date;
+      currency?: string;
       fundingSource?: string;
     },
   ) {
+    const flowDate = createDividendDto.flowDate ? new Date(createDividendDto.flowDate) : undefined;
+    const effectiveDate = createDividendDto.effectiveDate || flowDate;
+    
     return await this.cashFlowService.createCashFlow(
       portfolioId,
       'DIVIDEND' as any,
       createDividendDto.amount,
       createDividendDto.description,
       createDividendDto.reference,
-      createDividendDto.effectiveDate,
-      'VND', // Default currency
+      effectiveDate,
+      createDividendDto.currency || 'VND',
       createDividendDto.fundingSource,
     );
   }

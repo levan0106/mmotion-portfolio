@@ -103,7 +103,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   if (!data || Object.keys(data.allocation).length === 0) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
-        <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
+        <ResponsiveTypography variant="formHelper" color="text.secondary">
           No asset allocation data available
         </ResponsiveTypography>
       </Box>

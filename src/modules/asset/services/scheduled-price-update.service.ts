@@ -23,7 +23,7 @@ export class ScheduledPriceUpdateService {
     private readonly loggingService: LoggingService,
     private readonly configService: ConfigService,
   ) {
-    const configValue = this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '15');
+    const configValue = this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60');
     this.updateIntervalMinutes = parseInt(configValue, 10);
     this.autoSyncEnabled = this.configService.get<string>('AUTO_SYNC_ENABLED', 'false') === 'true';
     

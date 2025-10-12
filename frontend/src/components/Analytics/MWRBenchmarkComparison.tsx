@@ -16,7 +16,6 @@ import {
 } from 'recharts';
 import { 
   Box, 
-  Typography, 
   Paper, 
   Grid, 
   Card, 
@@ -28,6 +27,7 @@ import {
   Tooltip,
   IconButton
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
 import { TrendingUp, TrendingDown, InfoOutlined } from '@mui/icons-material';
 
@@ -104,17 +104,17 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
     if (active && payload && payload.length) {
       return (
         <Paper sx={{ p: 2, boxShadow: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <ResponsiveTypography variant="cardTitle" gutterBottom>
             {formatDate(label)}
-          </Typography>
+          </ResponsiveTypography>
           {payload.map((entry: any, index: number) => (
-            <Typography key={index} variant="body2" color={entry.color}>
+            <ResponsiveTypography key={index} variant="tableCell" color={entry.color}>
               {entry.name}: {formatPercentage(entry.value)}
-            </Typography>
+            </ResponsiveTypography>
           ))}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ mt: 1 }}>
             Difference: {formatPercentage(payload[0]?.payload?.difference || 0)}
-          </Typography>
+          </ResponsiveTypography>
         </Paper>
       );
     }
@@ -138,24 +138,24 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
         }}>
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" gutterBottom sx={{ mb: 0 }}>
+              <ResponsiveTypography variant="chartTitle" sx={{ mb: 0 }}>
                 {title}
-              </Typography>
+              </ResponsiveTypography>
               <Tooltip
                 title={
                   <Box sx={{ p: 1 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    <ResponsiveTypography variant="chartTitle" sx={{ mb: 1 }} ellipsis={false}>
                       Ghi chú cho nhà đầu tư:
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
                       <strong>MWR</strong> phản ánh lợi nhuận thực tế của từng nhà đầu tư, có thể khác nhau tùy thời điểm nạp/rút vốn.
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
                       <strong>TWR</strong> phản ánh năng lực quản lý quỹ, đã loại bỏ ảnh hưởng của dòng tiền.
-                    </Typography>
-                    <Typography variant="body2">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="formHelper" ellipsis={false}>
                       NĐT nên so sánh MWR cá nhân với TWR quỹ để hiểu rõ sự khác biệt.
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 }
                 arrow
@@ -185,13 +185,13 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 </IconButton>
               </Tooltip>
             </Box>
-            <Typography variant="body2" color="text.secondary">
+            <ResponsiveTypography variant="formHelper" color="text.secondary">
               Portfolio performance vs {benchmarkName}
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>MWR Period</InputLabel>
+            <FormControl size="small" sx={{ minWidth: 80 }}>
+              <InputLabel sx={{ fontSize: '0.75rem' }}>MWR Period</InputLabel>
               <Select
                 value={selectedMwrPeriod}
                 onChange={handleMWRPeriodChange}
@@ -199,21 +199,25 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                    fontSize: '0.875rem'
+                    fontSize: '0.75rem'
+                  },
+                  '& .MuiSelect-select': {
+                    fontSize: '0.75rem',
+                    py: 0.5
                   }
                 }}
               >
-                <MenuItem value="1D">1 Day MWR</MenuItem>
-                <MenuItem value="1W">1 Week MWR</MenuItem>
-                <MenuItem value="1M">1 Month MWR</MenuItem>
-                <MenuItem value="3M">3 Months MWR</MenuItem>
-                <MenuItem value="6M">6 Months MWR</MenuItem>
-                <MenuItem value="1Y">1 Year MWR</MenuItem>
-                <MenuItem value="YTD">YTD MWR</MenuItem>
+                <MenuItem value="1D" sx={{ fontSize: '0.75rem' }}>1 Day MWR</MenuItem>
+                <MenuItem value="1W" sx={{ fontSize: '0.75rem' }}>1 Week MWR</MenuItem>
+                <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month MWR</MenuItem>
+                <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months MWR</MenuItem>
+                <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months MWR</MenuItem>
+                <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year MWR</MenuItem>
+                <MenuItem value="YTD" sx={{ fontSize: '0.75rem' }}>YTD MWR</MenuItem>
               </Select>
             </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Timeframe</InputLabel>
+            <FormControl size="small" sx={{ minWidth: 80 }}>
+              <InputLabel sx={{ fontSize: '0.75rem' }}>Timeframe</InputLabel>
               <Select
                 value={timeframe}
                 onChange={handleTimeframeChange}
@@ -221,17 +225,21 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                    fontSize: '0.875rem'
+                    fontSize: '0.75rem'
+                  },
+                  '& .MuiSelect-select': {
+                    fontSize: '0.75rem',
+                    py: 0.5
                   }
                 }}
               >
-                <MenuItem value="1M">1 Month</MenuItem>
-                <MenuItem value="3M">3 Months</MenuItem>
-                <MenuItem value="6M">6 Months</MenuItem>
-                <MenuItem value="1Y">1 Year</MenuItem>
-                <MenuItem value="2Y">2 Years</MenuItem>
-                <MenuItem value="5Y">5 Years</MenuItem>
-                <MenuItem value="ALL">All Time</MenuItem>
+                <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month</MenuItem>
+                <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months</MenuItem>
+                <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months</MenuItem>
+                <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year</MenuItem>
+                <MenuItem value="2Y" sx={{ fontSize: '0.75rem' }}>2 Years</MenuItem>
+                <MenuItem value="5Y" sx={{ fontSize: '0.75rem' }}>5 Years</MenuItem>
+                <MenuItem value="ALL" sx={{ fontSize: '0.75rem' }}>All Time</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -242,24 +250,24 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
           <Grid item xs={4}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="body1" color="primary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                <ResponsiveTypography variant="cardValue" color="primary" fontWeight="bold">
                   {formatPercentage(portfolioReturn)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper" color="text.secondary">
                   Portfolio (MWR)
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={4}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="body1" color="secondary" fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
+                <ResponsiveTypography variant="cardValue" color="secondary" fontWeight="bold">
                   {formatPercentage(benchmarkReturn)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="formHelper" color="text.secondary">
                   {benchmarkName}
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -269,18 +277,17 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
                   {isOutperforming && <TrendingUp color="success" sx={{ fontSize: 16 }} />}
                   {isUnderperforming && <TrendingDown color="error" sx={{ fontSize: 16 }} />}
-                  <Typography 
-                    variant="body1" 
+                  <ResponsiveTypography 
+                    variant="cardValue" 
                     color={isOutperforming ? 'success.main' : isUnderperforming ? 'error.main' : 'text.secondary'}
                     fontWeight="bold"
-                    sx={{ fontSize: '0.9rem' }}
                   >
                     {formatPercentage(difference)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <ResponsiveTypography variant="formHelper" color="text.secondary">
                   Difference
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -327,9 +334,9 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
           </ResponsiveContainer>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                 No data available for MWR chart
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           )}
         </Box>
