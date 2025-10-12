@@ -273,7 +273,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   fontWeight: 400,
                   px: isCompactMode ? 1 : 2,
                   py: isCompactMode ? 0.5 : 1,
-                  fontSize: isCompactMode ? '0.7rem' : undefined,
+                  fontSize: isCompactMode ? '0.65rem' : '0.75rem',
                   borderColor: 'rgba(160, 174, 192, 0.25)',
                   '&:hover': {
                     borderColor: '#4a5568',

@@ -19,7 +19,7 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
   customVariant,
   overrides = {},
   sx = {},
-  ellipsis = true,
+  ellipsis = false,
   maxLines,
   children,
   ...props

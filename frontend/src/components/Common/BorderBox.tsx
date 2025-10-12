@@ -60,7 +60,6 @@ export const BorderBox: React.FC<BorderBoxProps> = ({
   }
   
   // Use predefined border style
-  const borderStyleConfig = borderStyles.getBorderStyle(borderStyle);
   const radius = borderStyles.getRadius(borderSize);
   const color = borderStyles.getColor(borderColor);
   const width = borderStyles.getWidth(borderWidth);

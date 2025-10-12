@@ -32,7 +32,7 @@ export const useTypography = () => {
     // Chart typography
     chartTitle: (overrides: any = {}) => getTypographySx('chartTitle', {
       fontWeight: 400,
-      lineHeight: 1.7,
+      lineHeight: 1.3,
       color: 'text.primary',
       ...overrides,
     }),
@@ -61,47 +61,50 @@ export const useTypography = () => {
     // Card typography
     cardTitle: (overrides: any = {}) => getTypographySx('cardTitle', {
       fontWeight: 600,
-      lineHeight: 1.7,
+      lineHeight: 1.3,
       //color: 'text.primary',
       ...overrides,
     }),
     
     cardValue: (overrides: any = {}) => getTypographySx('cardValue', {
       fontWeight: 700,
-      lineHeight: 1.7,
-      wordBreak: 'break-word',
+      lineHeight: 1.2,
       ...overrides,
     }),
 
     cardValueLarge: (overrides: any = {}) => getTypographySx('cardValueLarge', {
       fontWeight: 700,
-      lineHeight: 1.7,
-      wordBreak: 'break-word',
+      lineHeight: 1.2,
       ...overrides,
     }),
     cardValueMedium: (overrides: any = {}) => getTypographySx('cardValueMedium', {
       fontWeight: 500,
-      lineHeight: 1.7,
-      wordBreak: 'break-word',
+      lineHeight: 1.3,
       ...overrides,
     }),
     cardValueSmall: (overrides: any = {}) => getTypographySx('cardValueSmall', {
       fontWeight: 500,
-      lineHeight: 1.7,
-      wordBreak: 'break-word',
+      lineHeight: 1.3,
       ...overrides,
     }),
     
     cardLabel: (overrides: any = {}) => getTypographySx('cardLabel', {
       fontWeight: 400,
-      lineHeight: 1.7,
+      lineHeight: 1.3,
       color: 'rgb(156, 163, 175)',
       ...overrides,
     }),
 
     labelSmall: (overrides: any = {}) => getTypographySx('labelSmall', {
       fontWeight: 400,
-      lineHeight: 1.6,
+      lineHeight: 1.3,
+      color: 'rgb(156, 163, 175)',
+      ...overrides,
+    }),
+
+    labelXSmall: (overrides: any = {}) => getTypographySx('xSmall', {
+      fontWeight: 400,
+      lineHeight: 1.3,
       color: 'rgb(156, 163, 175)',
       ...overrides,
     }),
@@ -116,14 +119,14 @@ export const useTypography = () => {
     // Header typography
     pageHeader: (overrides: any = {}) => getTypographySx('header', {
       fontWeight: 300,
-      lineHeight: 1.6,
+      lineHeight: 1.3,
       color: '#1a1a1a',
       ...overrides,
     }),
     
     pageTitle: (overrides: any = {}) => getTypographySx('title', {
       fontWeight: 600,
-      lineHeight: 1.6,
+      lineHeight: 1.3,
       color: '#1a1a1a',
       ...overrides,
     }),
@@ -185,11 +188,11 @@ export const useTypography = () => {
       lineHeight: 1.4,
       color: '#333333',
       fontSize: {
-        xs: '0.6rem',
-        sm: '0.65rem',
-        md: '0.7rem',
-        lg: '0.75rem',
-        xl: '0.8rem',
+        xs: '0.625rem', // 10px (mobile readable)
+        sm: '0.7rem',   // 11.2px
+        md: '0.75rem',  // 12px
+        lg: '0.8rem',   // 12.8px
+        xl: '0.875rem', // 14px
       },
       ...overrides,
     }),
@@ -199,11 +202,11 @@ export const useTypography = () => {
       lineHeight: 1.4,
       color: '#1a1a1a',
       fontSize: {
-        xs: '0.50rem',
-        sm: '0.55rem',
-        md: '0.60rem',
-        lg: '0.65rem',
-        xl: '0.70rem',
+        xs: '0.625rem', // 10px (mobile readable)
+        sm: '0.7rem',   // 11.2px
+        md: '0.75rem',  // 12px
+        lg: '0.8rem',   // 12.8px
+        xl: '0.875rem', // 14px
       },
       ...overrides,
     }),
@@ -214,11 +217,11 @@ export const useTypography = () => {
       lineHeight: 1.2,
       color: '#333333',
       fontSize: {
-        xs: '0.55rem',
-        sm: '0.6rem',
-        md: '0.65rem',
-        lg: '0.7rem',
-        xl: '0.75rem',
+        xs: '0.625rem', // 10px (mobile readable)
+        sm: '0.7rem',   // 11.2px
+        md: '0.75rem',  // 12px
+        lg: '0.8rem',   // 12.8px
+        xl: '0.875rem', // 14px
       },
       ...overrides,
     }),
@@ -228,11 +231,11 @@ export const useTypography = () => {
       lineHeight: 1.2,
       color: '#1a1a1a',
       fontSize: {
-        xs: '0.55rem',
-        sm: '0.6rem',
-        md: '0.65rem',
-        lg: '0.7rem',
-        xl: '0.75rem',
+        xs: '0.625rem', // 10px (mobile readable)
+        sm: '0.7rem',   // 11.2px
+        md: '0.75rem',  // 12px
+        lg: '0.8rem',   // 12.8px
+        xl: '0.875rem', // 14px
       },
       ...overrides,
     }),

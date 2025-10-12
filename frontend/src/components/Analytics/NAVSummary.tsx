@@ -3,13 +3,13 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Grid,
   Chip,
   Tooltip,
   IconButton
 } from '@mui/material';
 import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   TrendingUp,
   TrendingDown,
@@ -162,23 +162,20 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <AccountBalance sx={{ fontSize: isCompactMode ? 24 : 28, color: 'white' }} />
+              <AccountBalance sx={{ fontSize: isCompactMode ? 18 : 20, color: 'white' }} />
             </Box>
             <Box>
-              <Typography variant="h5" sx={{ 
+              <ResponsiveTypography variant="pageTitle" sx={{ 
                 fontWeight: 700, 
                 color: 'text.primary',
-                fontSize: isCompactMode ? '1rem' : '1.4rem',
                 mb: isCompactMode ? 0.25 : 0.5
               }}>
                 NAV Summary
-              </Typography>
+              </ResponsiveTypography>
               {!isCompactMode && (
-                <Typography variant="body2" color="text.secondary" sx={{
-                  fontSize: '0.85rem'
-                }}>
+                <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                   Net Asset Value Overview
-                </Typography>
+                </ResponsiveTypography>
               )}
             </Box>
           </Box>
@@ -220,26 +217,23 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 }
               })
             }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: isCompactMode ? '0.7rem' : '0.8rem',
+              <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: isCompactMode ? 0.5 : 1,
                 color: '#6c757d'
               }}>
                 NAV Tổng
-              </Typography>
-              <Typography variant="h4" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValueLarge" sx={{ 
                 fontWeight: 800,
                 color: 'primary.main',
-                fontSize: isCompactMode ? '1.1rem' : '1.8rem',
                 mt: isCompactMode ? 0.5 : 1,
                 mb: isCompactMode ? 0.25 : 0.5
               }}>
                 {formatCurrency(navValue, baseCurrency)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ 
-                fontSize: isCompactMode ? '0.65rem' : '0.8rem',
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                 fontWeight: 500,
                 backgroundColor: growthColor === 'success' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
                 color: growthColor === 'success' ? '#4caf50' : '#f44336',
@@ -249,7 +243,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 display: 'inline-block'
               }}>
                 {growthIndicator}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Grid>
 
@@ -274,26 +268,23 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 }
               })
             }}>
-              <Typography variant="caption" color="text.secondary" sx={{ 
-                fontSize: isCompactMode ? '0.7rem' : '0.8rem',
+              <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: isCompactMode ? 0.5 : 1,
                 color: '#6c757d'
               }}>
                 NAV/Unit
-              </Typography>
-              <Typography variant="h4" sx={{ 
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValueLarge" sx={{ 
                 fontWeight: 800,
                 color: '#ff9800',
-                fontSize: isCompactMode ? '1.1rem' : '1.8rem',
                 mt: isCompactMode ? 0.5 : 1,
                 mb: isCompactMode ? 0.25 : 0.5
               }}>
                 {formatCurrency(navPerUnit, baseCurrency)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ 
-                fontSize: isCompactMode ? '0.65rem' : '0.8rem',
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                 fontWeight: 500,
                 backgroundColor: 'rgba(255, 152, 0, 0.1)',
                 color: '#ff9800',
@@ -303,7 +294,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 display: 'inline-block'
               }}>
                 Lợi ích mỗi NĐT
-              </Typography>
+              </ResponsiveTypography>
               
               {/* Info Tooltip for NAV/Unit */}
               <Tooltip 
@@ -324,7 +315,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                     }
                   }}
                 >
-                  <InfoOutlined sx={{ fontSize: isCompactMode ? 14 : 16, color: '#ff9800' }} />
+                  <InfoOutlined sx={{ fontSize: isCompactMode ? 12 : 14, color: '#ff9800' }} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -352,8 +343,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                   }
                 })
               }}>
-                <Typography variant="caption" color="text.secondary" sx={{ 
-                  fontSize: isCompactMode ? '0.7rem' : '0.8rem',
+                <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: isCompactMode ? 0.5 : 1,
@@ -362,7 +352,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                   display: 'block'
                 }}>
                   Tăng trưởng NAV/Unit
-                </Typography>
+                </ResponsiveTypography>
 
                 {/* Horizontal Layout for Growth Metrics */}
                 <Box sx={{ 
@@ -383,28 +373,25 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                         : 'rgba(158, 158, 158, 0.05)',
                     borderRadius: 1
                   }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ 
-                      fontSize: isCompactMode ? '0.65rem' : '0.7rem',
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                       fontWeight: 500,
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
                       Gần nhất
-                    </Typography>
-                    <Typography variant="h6" sx={{ 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardValue" sx={{ 
                       fontWeight: 700,
                       color: isNavPerUnitPeriodGrowing ? '#4caf50' : navPerUnitPeriodGrowth < 0 ? '#f44336' : '#9e9e9e',
-                      fontSize: isCompactMode ? '0.85rem' : '1rem',
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
                       {navPerUnitPeriodGrowth > 0 ? '+' : ''}{navPerUnitPeriodGrowth.toFixed(2)}%
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ 
-                      fontSize: isCompactMode ? '0.6rem' : '0.7rem',
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                       fontWeight: 500,
                       color: isNavPerUnitPeriodGrowing ? '#4caf50' : navPerUnitPeriodGrowth < 0 ? '#f44336' : '#9e9e9e'
                     }}>
                       {formatCurrency(navPerUnitPeriodGrowthValue, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
 
                   {/* Divider */}
@@ -426,28 +413,25 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                         : 'rgba(158, 158, 158, 0.05)',
                     borderRadius: 1
                   }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ 
-                      fontSize: isCompactMode ? '0.65rem' : '0.7rem',
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                       fontWeight: 500,
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
                       Từ đầu
-                    </Typography>
-                    <Typography variant="h6" sx={{ 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardValue" sx={{ 
                       fontWeight: 700,
                       color: isNavPerUnitTotalGrowing ? '#4caf50' : navPerUnitTotalGrowth < 0 ? '#f44336' : '#9e9e9e',
-                      fontSize: isCompactMode ? '0.85rem' : '1rem',
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
                       {navPerUnitTotalGrowth > 0 ? '+' : ''}{navPerUnitTotalGrowth.toFixed(2)}%
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ 
-                      fontSize: isCompactMode ? '0.6rem' : '0.7rem',
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
                       fontWeight: 500,
                       color: isNavPerUnitTotalGrowing ? '#4caf50' : navPerUnitTotalGrowth < 0 ? '#f44336' : '#9e9e9e'
                     }}>
                       {formatCurrency(navPerUnitTotalGrowthValue, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
                 
@@ -465,7 +449,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                   backgroundColor: 'rgba(25, 118, 210, 0.1)'
                 }}>
                   <TrendingUp sx={{ 
-                    fontSize: isCompactMode ? 16 : 20, 
+                    fontSize: isCompactMode ? 14 : 16, 
                     color: '#1976d2' 
                   }} />
                 </Box>
@@ -483,15 +467,14 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
           overflow: 'hidden',
           
         }}>
-          <Typography variant="body2" color="text.secondary" sx={{ 
-            fontSize: isCompactMode ? '0.7rem' : '0.85rem',
+          <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ 
             display: 'block',
             textAlign: 'center',
             fontWeight: 500,
             lineHeight: isCompactMode ? 1.4 : 1.6
           }}>
             💡 <strong>NAV Tổng</strong> = Tiền mặt + Giá trị tài sản | <strong>NAV/Unit</strong> = NAV Tổng ÷ Số đơn vị quỹ
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       </CardContent>
     </Card>

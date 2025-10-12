@@ -4,10 +4,6 @@ import {
   Card,
   CardContent,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +15,7 @@ import {
   Chip,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
 import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
@@ -428,34 +425,34 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           </ResponsiveTypography>
         </Box>
         <Box display="flex" gap={2}>
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel>Timeframe</InputLabel>
-            <Select
-              value={selectedTimeframe}
-              label="Timeframe"
-              onChange={(e) => onTimeframeChange?.(e.target.value)}
-              sx={{ borderRadius: 2 }}
-            >
-              <MenuItem value="ALL">All Time</MenuItem>
-              <MenuItem value="1M">1 Month</MenuItem>
-              <MenuItem value="3M">3 Months</MenuItem>
-              <MenuItem value="6M">6 Months</MenuItem>
-              <MenuItem value="1Y">1 Year</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel>Metric</InputLabel>
-            <Select
-              value={selectedMetric}
-              label="Metric"
-              onChange={(e) => onMetricChange?.(e.target.value)}
-              sx={{ borderRadius: 2 }}
-            >
-              <MenuItem value="pnl">P&L</MenuItem>
-              <MenuItem value="trades">Trades</MenuItem>
-              <MenuItem value="winrate">Win Rate</MenuItem>
-            </Select>
-          </FormControl>
+          <ResponsiveFormSelect
+            compact={isCompactMode}
+            size="small"
+            options={[
+              { value: 'ALL', label: 'All Time' },
+              { value: '1M', label: '1 Month' },
+              { value: '3M', label: '3 Months' },
+              { value: '6M', label: '6 Months' },
+              { value: '1Y', label: '1 Year' },
+            ]}
+            value={selectedTimeframe}
+            onChange={(value) => onTimeframeChange?.(String(value))}
+            formControlSx={{ minWidth: 140 }}
+            selectSx={{ borderRadius: 2 }}
+          />
+          <ResponsiveFormSelect
+            compact={isCompactMode}
+            size="small"
+            options={[
+              { value: 'pnl', label: 'P&L' },
+              { value: 'trades', label: 'Trades' },
+              { value: 'winrate', label: 'Win Rate' },
+            ]}
+            value={selectedMetric}
+            onChange={(value) => onMetricChange?.(String(value))}
+            formControlSx={{ minWidth: 140 }}
+            selectSx={{ borderRadius: 2 }}
+          />
         </Box>
       </Box>
 
@@ -1042,7 +1039,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         <Grid item xs={12} md={6}>
           <Card sx={{ 
             boxShadow: 2, 
-            height: isCompactMode ? 300 : 500,
+            minHeight: 100,
+            maxHeight: isCompactMode ? 400 : 600,
             background: 'white',
             border: '1px solid #c8e6c9',
             borderRadius: 2,
@@ -1065,7 +1063,26 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                 />
               </Box>
-              <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+              <TableContainer sx={{ 
+                flex: 1, 
+                overflow: 'auto',
+                maxHeight: isCompactMode ? 300 : 450,
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                  height: '6px'
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: '#f1f1f1',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#c1c1c1',
+                  borderRadius: '3px',
+                  '&:hover': {
+                    backgroundColor: '#a8a8a8'
+                  }
+                }
+              }}>
                 <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
@@ -1154,7 +1171,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         <Grid item xs={12} md={6}>
           <Card sx={{ 
             boxShadow: 2, 
-            height: isCompactMode ? 300 : 500,
+            minHeight: 100,
+            maxHeight: isCompactMode ? 400 : 600,
             background: 'white',
             border: '1px solid #ffcdd2',
             borderRadius: 2,
@@ -1177,7 +1195,26 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                 />
               </Box>
-              <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+              <TableContainer sx={{ 
+                flex: 1, 
+                overflow: 'auto',
+                maxHeight: isCompactMode ? 300 : 450,
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                  height: '6px'
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: '#f1f1f1',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#c1c1c1',
+                  borderRadius: '3px',
+                  '&:hover': {
+                    backgroundColor: '#a8a8a8'
+                  }
+                }
+              }}>
                 <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
                   <TableHead>
                     <TableRow sx={{ bgcolor: 'grey.50' }}>

@@ -20,14 +20,11 @@ import {
   Grid, 
   Card, 
   CardContent, 
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Tooltip,
   IconButton
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
 import { formatPercentage, formatDateFns as formatDate } from '../../utils/format';
 import { TrendingUp, TrendingDown, CompareArrows, InfoOutlined } from '@mui/icons-material';
 
@@ -197,58 +194,38 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
           </ResponsiveTypography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 80 }}>
-            <InputLabel sx={{ fontSize: '0.75rem' }}>TWR Period</InputLabel>
-            <Select
-              value={twrPeriod}
-              label="TWR Period"
-              onChange={(e) => handleTwrPeriodChange(e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  fontSize: '0.75rem'
-                },
-                '& .MuiSelect-select': {
-                  fontSize: '0.75rem',
-                  py: 0.5
-                }
-              }}
-            >
-              <MenuItem value="1D" sx={{ fontSize: '0.75rem' }}>1 Day TWR</MenuItem>
-              <MenuItem value="1W" sx={{ fontSize: '0.75rem' }}>1 Week TWR</MenuItem>
-              <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month TWR</MenuItem>
-              <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months TWR</MenuItem>
-              <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months TWR</MenuItem>
-              <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year TWR</MenuItem>
-              <MenuItem value="YTD" sx={{ fontSize: '0.75rem' }}>YTD TWR</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 80 }}>
-            <InputLabel sx={{ fontSize: '0.75rem' }}>Timeframe</InputLabel>
-            <Select
-              value={timeframe}
-              label="Timeframe"
-              onChange={(e) => handleTimeframeChange(e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  fontSize: '0.75rem'
-                },
-                '& .MuiSelect-select': {
-                  fontSize: '0.75rem',
-                  py: 0.5
-                }
-              }}
-            >
-              <MenuItem value="1M" sx={{ fontSize: '0.75rem' }}>1 Month</MenuItem>
-              <MenuItem value="3M" sx={{ fontSize: '0.75rem' }}>3 Months</MenuItem>
-              <MenuItem value="6M" sx={{ fontSize: '0.75rem' }}>6 Months</MenuItem>
-              <MenuItem value="1Y" sx={{ fontSize: '0.75rem' }}>1 Year</MenuItem>
-              <MenuItem value="2Y" sx={{ fontSize: '0.75rem' }}>2 Years</MenuItem>
-              <MenuItem value="5Y" sx={{ fontSize: '0.75rem' }}>5 Years</MenuItem>
-              <MenuItem value="ALL" sx={{ fontSize: '0.75rem' }}>All Time</MenuItem>
-            </Select>
-          </FormControl>
+          <ResponsiveFormSelect
+            compact={false}
+            size="small"
+            options={[
+              { value: '1D', label: '1 Day TWR' },
+              { value: '1W', label: '1 Week TWR' },
+              { value: '1M', label: '1 Month TWR' },
+              { value: '3M', label: '3 Months TWR' },
+              { value: '6M', label: '6 Months TWR' },
+              { value: '1Y', label: '1 Year TWR' },
+              { value: 'YTD', label: 'YTD TWR' },
+            ]}
+            value={twrPeriod}
+            onChange={(value) => handleTwrPeriodChange(String(value))}
+            formControlSx={{ minWidth: 80 }}
+          />
+          <ResponsiveFormSelect
+            compact={false}
+            size="small"
+            options={[
+              { value: '1M', label: '1 Month' },
+              { value: '3M', label: '3 Months' },
+              { value: '6M', label: '6 Months' },
+              { value: '1Y', label: '1 Year' },
+              { value: '2Y', label: '2 Years' },
+              { value: '5Y', label: '5 Years' },
+              { value: 'ALL', label: 'All Time' },
+            ]}
+            value={timeframe}
+            onChange={(value) => handleTimeframeChange(String(value))}
+            formControlSx={{ minWidth: 80 }}
+          />
         </Box>
         </Box>
 

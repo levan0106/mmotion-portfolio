@@ -4,7 +4,6 @@ import {
   borderStyles, 
   createBorder, 
   applyBorderStyle, 
-  applyBorderHover,
   borderCombinations 
 } from '../../utils/borderUtils';
 import BorderBox from './BorderBox';
@@ -34,7 +33,7 @@ export const BorderExamples: React.FC = () => {
                       {name.charAt(0).toUpperCase() + name.slice(1)} Border
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {style.border} | {style.borderRadius}
+                      {('border' in style ? style.border : 'No border')} | {('borderRadius' in style ? style.borderRadius : 'No radius')}
                     </Typography>
                   </CardContent>
                 </Card>

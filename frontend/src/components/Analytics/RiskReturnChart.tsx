@@ -13,8 +13,9 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Paper, FormControl, Select, MenuItem } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
 interface RiskReturnDataPoint {
@@ -283,25 +284,17 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
         </Box>
         
         {onPeriodChange && (
-          <FormControl size="small" sx={{ minWidth: compact ? 60 : 70 }}>
-            <Select
-              value={localPeriod}
-              onChange={handlePeriodChange}
-              displayEmpty
-              sx={{ 
-                fontSize: compact ? '0.6rem' : '0.7rem',
-                height: compact ? '28px' : '32px',
-                '& .MuiSelect-select': {
-                  py: compact ? 0.3 : 0.5,
-                  px: compact ? 0.8 : 1
-                }
-              }}
-            >
-              <MenuItem value="1M" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>1M</MenuItem>
-              <MenuItem value="3M" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>3M</MenuItem>
-              <MenuItem value="1Y" sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}>1Y</MenuItem>
-            </Select>
-          </FormControl>
+          <ResponsiveFormSelect
+            compact={compact}
+            size="small"
+            options={[
+              { value: '1M', label: '1M' },
+              { value: '3M', label: '3M' },
+              { value: '1Y', label: '1Y' },
+            ]}
+            value={localPeriod}
+            onChange={handlePeriodChange}
+          />
         )}
       </Box>
       

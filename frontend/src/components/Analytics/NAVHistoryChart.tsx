@@ -3,11 +3,7 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Grid,
-  FormControl,
-  Select,
-  MenuItem,
   CircularProgress,
   Chip,
   Tooltip,
@@ -34,6 +30,8 @@ import {
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
 
 interface NAVHistoryData {
   date: string;
@@ -223,21 +221,13 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               <AccountBalance sx={{ color: 'white', fontSize: compact ? 18 : 20 }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ 
-                fontWeight: 700, 
-                color: '#1a1a1a',
-                fontSize: compact ? '1rem' : '1.1rem'
-              }}>
+              <ResponsiveTypography variant="pageTitle" >
                 NAV Performance History
-              </Typography>
+              </ResponsiveTypography>
               {!compact && (
-                <Typography variant="body2" sx={{ 
-                  color: '#666',
-                  fontSize: '0.8rem',
-                  mt: -0.5
-                }}>
+                <ResponsiveTypography variant="pageSubtitle" >
                   Net Asset Value evolution over time
-                </Typography>
+                </ResponsiveTypography>
               )}
             </Box>
             <Tooltip title="Track portfolio value changes and performance metrics">
@@ -266,51 +256,39 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               }}
             />
             
-            <FormControl size="small" sx={{ minWidth: compact ? 70 : 85 }}>
-              <Select
-                value={timeframe}
-                onChange={handleTimeframeChange}
-                displayEmpty
-                sx={{
-                  fontSize: compact ? '0.7rem' : '0.8rem',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#e0e0e0'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#1976d2'
-                  }
-                }}
-              >
-                {timeframeOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: compact ? '0.7rem' : '0.8rem' }}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <ResponsiveFormSelect
+              compact={compact}
+              size="small"
+              options={timeframeOptions}
+              value={timeframe}
+              onChange={(value) => handleTimeframeChange({ target: { value: String(value) } })}
+              formControlSx={{ minWidth: compact ? 70 : 85 }}
+              selectSx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#e0e0e0'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2'
+                }
+              }}
+            />
 
-            <FormControl size="small" sx={{ minWidth: compact ? 80 : 95 }}>
-              <Select
-                value={granularity}
-                onChange={handleGranularityChange}
-                displayEmpty
-                sx={{
-                  fontSize: compact ? '0.7rem' : '0.8rem',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#e0e0e0'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#1976d2'
-                  }
-                }}
-              >
-                {granularityOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: compact ? '0.7rem' : '0.8rem' }}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <ResponsiveFormSelect
+              compact={compact}
+              size="small"
+              options={granularityOptions}
+              value={granularity}
+              onChange={(value) => handleGranularityChange({ target: { value: String(value) } })}
+              formControlSx={{ minWidth: compact ? 80 : 95 }}
+              selectSx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#e0e0e0'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2'
+                }
+              }}
+            />
           </Box>
         </Box>
 
@@ -331,12 +309,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               }
             }}>
               <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
+                <ResponsiveTypography variant="cardValueLarge" color="primary" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {formatCurrency(currentNAV, baseCurrency)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                   Current NAV
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -363,18 +341,17 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: compact ? 0.25 : 0.5 }}>
                   {isPositive && <TrendingUp color="success" sx={{ fontSize: compact ? 16 : 18 }} />}
                   {!isPositive && <TrendingDown color="error" sx={{ fontSize: compact ? 16 : 18 }} />}
-                  <Typography
-                    variant="h6"
+                  <ResponsiveTypography
+                    variant="cardValueLarge"
                     color={isPositive ? 'success.main' : 'error.main'}
                     fontWeight="bold"
-                    sx={{ fontSize: compact ? '0.85rem' : '1rem' }}
                   >
                     {formatPercentage(totalReturn)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
+                <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                   Total Return
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -394,12 +371,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               }
             }}>
               <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="h6" color="warning.main" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
+                <ResponsiveTypography variant="cardValueLarge" color="warning.main" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {formatPercentage(maxDrawdown)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                   Max Drawdown
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -419,12 +396,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               }
             }}>
               <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
-                <Typography variant="h6" color="info.main" fontWeight="bold" sx={{ fontSize: compact ? '0.85rem' : '1rem', mb: compact ? 0.25 : 0.5 }}>
+                <ResponsiveTypography variant="cardValueLarge" color="info.main" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {data.length}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 500 }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                   Data Points
-                </Typography>
+                </ResponsiveTypography>
               </CardContent>
             </Card>
           </Grid>
@@ -435,9 +412,9 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           <Box display="flex" justifyContent="center" alignItems="center" p={getUltraSpacing(6, 3)}>
             <Box sx={{ textAlign: 'center' }}>
               <CircularProgress size={compact ? 24 : 32} sx={{ color: '#1976d2', mb: getUltraSpacing(2, 1) }} />
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: compact ? '0.75rem' : '0.875rem' }}>
+              <ResponsiveTypography variant="cardLabel" color="text.secondary">
                 Loading NAV history data...
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         ) : error ? (
@@ -448,12 +425,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             borderRadius: 2,
             border: '1px solid #ffcdd2'
           }}>
-            <Typography color="error" variant="body1" sx={{ fontWeight: 500, fontSize: compact ? '0.85rem' : '1rem' }}>
+            <ResponsiveTypography color="error" variant="cardTitle" fontWeight={500}>
               {error}
-            </Typography>
-            <Typography color="error" variant="body2" sx={{ mt: 1, fontSize: compact ? '0.7rem' : '0.875rem' }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography color="error" variant="cardLabel" sx={{ mt: 1 }}>
               Unable to load NAV history data
-            </Typography>
+            </ResponsiveTypography>
           </Box>
         ) : data.length === 0 ? (
           <Box sx={{ 
@@ -463,12 +440,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             borderRadius: 2,
             border: '1px solid #e0e0e0'
           }}>
-            <Typography color="text.secondary" variant="body1" sx={{ fontWeight: 500, fontSize: compact ? '0.85rem' : '1rem' }}>
+            <ResponsiveTypography color="text.secondary" variant="cardTitle" fontWeight={500}>
               No NAV history data available
-            </Typography>
-            <Typography color="text.secondary" variant="body2" sx={{ mt: 1, fontSize: compact ? '0.7rem' : '0.875rem' }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography color="text.secondary" variant="cardLabel" sx={{ mt: 1 }}>
               Historical data will appear here once available
-            </Typography>
+            </ResponsiveTypography>
           </Box>
         ) : (
           <Box sx={{ 

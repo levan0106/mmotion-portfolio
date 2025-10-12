@@ -197,7 +197,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
       {/* Legend */}
       {!compact && (
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ fontWeight: 600 }}>
+          <ResponsiveTypography variant="chartLegend" color="text.secondary" sx={{ fontWeight: 600 }}>
             Correlation Level:
           </ResponsiveTypography>
         {[
@@ -217,7 +217,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                 border: '1px solid rgba(0,0,0,0.1)'
               }} 
             />
-            <ResponsiveTypography variant="formHelper" color="text.secondary">
+            <ResponsiveTypography variant="chartLegend" color="text.secondary" sx={{ fontSize: compact ? '0.6rem!important' : '0.75rem!important' }}>
               {item.label}
             </ResponsiveTypography>
           </Box>

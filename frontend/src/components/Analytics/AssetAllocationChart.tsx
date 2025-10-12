@@ -42,13 +42,13 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
           boxShadow: 3,
           border: '1px solid #e0e0e0'
         }}>
-          <ResponsiveTypography variant="cardTitle">
+          <ResponsiveTypography variant="chartTooltip" sx={{ fontWeight: 600 }}>
             {data.name}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="tableCell" color="text.secondary">
+          <ResponsiveTypography variant="cardValueMedium" color="text.secondary">
             Allocation: {formatPercentage(data.value)}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="tableCell" color="text.secondary">
+          <ResponsiveTypography variant="cardValueMedium" color="text.secondary">
             Market Value: {formatCurrency(data.marketValue, baseCurrency)}
           </ResponsiveTypography>
         </Box>
@@ -57,46 +57,66 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
     return null;
   };
 
-  const CustomLegend = ({ payload }: any) => {
+  // Custom label function to display labels outside pie slices
+  const renderCustomLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: any) => {
+    if (percent < 0.03) return null; // Don't show labels for slices smaller than 3%
+    
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 20; // Position labels outside the pie
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        gap: compact ? 0.5 : 0.8,
-        alignItems: 'flex-start'
-      }}>
-        {payload.map((entry: any, index: number) => (
-          <Box key={index} sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: compact ? 0.4 : 0.6,
-            width: '100%'
-          }}>
-            <Box
-              sx={{
-                width: compact ? 8 : 10,
-                height: compact ? 8 : 10,
-                backgroundColor: entry.color,
-                borderRadius: '50%',
-                flexShrink: 0
-              }}
-            />
-            <ResponsiveTypography variant="formHelper" sx={{ 
-              lineHeight: 1.2,
-              fontWeight: 500
-            }}>
-              {entry.value}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="formHelper" sx={{ 
-              lineHeight: 1.2,
-              color: 'text.secondary',
-              ml: 'auto'
-            }}>
-              {formatPercentage(entry.payload.value)}
-            </ResponsiveTypography>
-          </Box>
-        ))}
-      </Box>
+      <text 
+        x={x} 
+        y={y} 
+        fill="#333" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={compact ? 10 : 12}
+        fontWeight="600"
+        style={{ 
+          pointerEvents: 'none'
+        }}
+      >
+        {`${name} ${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
+
+  // Custom label line function for better visual connection
+  const renderLabelLine = ({ cx, cy, midAngle, outerRadius, percent }: any) => {
+    if (percent < 0.03) {
+      // Return invisible line for small slices
+      return (
+        <line
+          x1={cx}
+          y1={cy}
+          x2={cx}
+          y2={cy}
+          stroke="transparent"
+          strokeWidth={0}
+        />
+      );
+    }
+    
+    const RADIAN = Math.PI / 180;
+    const x1 = cx + outerRadius * Math.cos(-midAngle * RADIAN);
+    const y1 = cy + outerRadius * Math.sin(-midAngle * RADIAN);
+    const x2 = cx + (outerRadius + 20) * Math.cos(-midAngle * RADIAN);
+    const y2 = cy + (outerRadius + 20) * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke="#666"
+        strokeWidth={1}
+        strokeDasharray="2,2"
+        style={{ pointerEvents: 'none' }}
+      />
     );
   };
 
@@ -113,46 +133,33 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   return (
     <Box sx={{ 
       width: '100%',
-      minHeight: compact ? 133 : 200,
+      minHeight: compact ? 250 : 300,
       display: 'flex', 
       alignItems: 'center',
       justifyContent: 'center',
       flex: 1
     }}>
-      <Box sx={{ width: '100%', maxWidth: 300 }}>
-        <ResponsiveContainer width="100%" height={compact ? 200 : 250}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={false}
-              outerRadius={compact ? 60 : 90}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-      </Box>
-      <Box sx={{ 
-        width: compact ? 120 : 150, 
-        ml: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center'
-      }}>
-        <CustomLegend payload={chartData.map((entry) => ({
-          value: entry.name,
-          color: entry.color,
-          payload: { value: entry.value }
-        }))} />
-      </Box>
+      <ResponsiveContainer width="100%" height={compact ? 250 : 300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={renderLabelLine}
+            label={renderCustomLabel}
+            outerRadius={compact ? 80 : 100}
+            fill="#8884d8"
+            dataKey="value"
+            stroke="#fff"
+            strokeWidth={1}
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
     </Box>
   );
 };

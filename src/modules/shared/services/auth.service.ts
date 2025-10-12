@@ -37,17 +37,19 @@ export class AuthService {
    * Login or register user with progressive authentication
    */
   async loginOrRegister(username: string, password?: string): Promise<LoginResult> {
-    this.logger.log(`Login/Register attempt for username: ${username}`);
+    // Normalize username: lowercase, trim, and remove all spaces
+    const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
+    this.logger.log(`Login/Register attempt for username: ${normalizedUsername}`);
 
     let user = await this.userRepository.findOne({ 
-      where: { username },
+      where: { username: normalizedUsername },
       relations: ['accounts']
     });
 
     if (!user) {
       // Create new user
-      this.logger.log(`Creating new user: ${username}`);
-      const result = await this.createUserWithMainAccount(username);
+      this.logger.log(`Creating new user: ${normalizedUsername}`);
+      const result = await this.createUserWithMainAccount(normalizedUsername);
       return result;
     }
 
@@ -74,7 +76,7 @@ export class AuthService {
     // Generate JWT token
     const token = this.generateToken(user);
 
-    this.logger.log(`User ${username} logged in successfully`);
+    this.logger.log(`User ${normalizedUsername} logged in successfully`);
     return { user, account: mainAccount, token };
   }
 
@@ -324,8 +326,11 @@ export class AuthService {
     requiresPassword: boolean;
     isProfileComplete: boolean;
   }> {
+    // Normalize username: lowercase, trim, and remove all spaces
+    const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
+    
     const user = await this.userRepository.findOne({
-      where: { username },
+      where: { username: normalizedUsername },
     });
 
     if (!user) {

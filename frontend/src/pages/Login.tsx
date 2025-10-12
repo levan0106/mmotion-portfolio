@@ -69,9 +69,12 @@ export const Login: React.FC = () => {
       return;
     }
 
+    // Normalize username: lowercase, trim, and remove all spaces
+    const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
+
     // Validate username format (letters, numbers, hyphens, and underscores only)
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-    if (!usernameRegex.test(username.trim())) {
+    if (!usernameRegex.test(normalizedUsername)) {
       setError('Username must contain only letters, numbers, hyphens (-), and underscores (_)');
       return;
     }
@@ -82,11 +85,11 @@ export const Login: React.FC = () => {
     try {
       // If we're in username step, check user status first
       if (currentStep === 'username') {
-        const userStatus = await authService.checkUserStatus(username);
+        const userStatus = await authService.checkUserStatus(normalizedUsername);
         
         if (!userStatus.exists) {
           // User doesn't exist, try to create new user
-          const authResponse = await authService.loginOrRegister(username, '');
+          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
           navigate('/');
@@ -101,7 +104,7 @@ export const Login: React.FC = () => {
           return;
         } else {
           // User exists but doesn't need password, login directly
-          const authResponse = await authService.loginOrRegister(username, '');
+          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
           navigate('/');
@@ -118,7 +121,7 @@ export const Login: React.FC = () => {
         }
         
         try {
-          const authResponse = await authService.loginOrRegister(username, password);
+          const authResponse = await authService.loginOrRegister(normalizedUsername, password);
           
           // Double check: if user requires password but we got here, something is wrong
           if (authResponse.user?.isPasswordSet && !password) {
@@ -183,13 +186,16 @@ export const Login: React.FC = () => {
     setError(null);
     setLoading(true);
     
+    // Normalize username: lowercase, trim, and remove all spaces
+    const normalizedUsername = user.username.toLowerCase().trim().replace(/\s+/g, '');
+    
     try {
       // Check user status first
-      const userStatus = await authService.checkUserStatus(user.username);
+      const userStatus = await authService.checkUserStatus(normalizedUsername);
       
       if (!userStatus.exists) {
         // User doesn't exist, try to create new user
-        const authResponse = await authService.loginOrRegister(user.username, '');
+        const authResponse = await authService.loginOrRegister(normalizedUsername, '');
         authService.saveUserSession(authResponse);
         await updateAuthState();
         navigate('/');
@@ -205,7 +211,7 @@ export const Login: React.FC = () => {
       } else {
         // User exists but doesn't need password, login directly
         try {
-          const authResponse = await authService.loginOrRegister(user.username, '');
+          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
           navigate('/');
@@ -456,7 +462,7 @@ export const Login: React.FC = () => {
                             sx={{ 
                               borderRadius: 1,
                               mb: 0.5,
-                              border: '1px solid',
+                              //border: '1px solid',
                               borderColor: 'divider',
                               backgroundColor: 'background.paper',
                               '&:hover': {

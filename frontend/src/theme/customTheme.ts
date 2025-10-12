@@ -118,152 +118,152 @@ const customTypography = {
   
   // Body text variants
   body: {
-    xs: '0.6rem',    // 9.6px (increased from 8px)
-    sm: '0.7rem',    // 11.2px (increased from 9.3px)
-    md: '0.8rem',    // 12.8px (increased from 10.7px)
-    lg: '0.9rem',    // 14.4px (increased from 12px)
-    xl: '1rem',      // 16px (increased from 13.3px)
+    xs: '0.875rem',  // 14px (mobile standard minimum)
+    sm: '0.9rem',    // 14.4px
+    md: '1rem',      // 16px (desktop standard)
+    lg: '1.1rem',    // 17.6px
+    xl: '1.2rem',    // 19.2px
   },
   
   // Small text variants
   small: {
-    xs: '0.5rem',    // 8px (increased from 6.7px)
-    sm: '0.6rem',    // 9.6px (increased from 8px)
-    md: '0.7rem',    // 11.2px (increased from 9.3px)
-    lg: '0.8rem',    // 12.8px (increased from 10.7px)
-    xl: '0.9rem',    // 14.4px (increased from 12px)
+    xs: '0.75rem',   // 12px (mobile readable minimum)
+    sm: '0.8rem',    // 12.8px
+    md: '0.875rem',  // 14px
+    lg: '0.9rem',    // 14.4px
+    xl: '1rem',      // 16px
   },
 
   // XSmall text variants
   xSmall: {
-    xs: '0.4rem',    // 6.4px (increased from 5.3px)
-    sm: '0.45rem',    // 8px (increased from 6.7px)
-    md: '0.55rem',    // 9.6px (increased from 8px)
-    lg: '0.65rem',    // 11.2px (increased from 9.3px)
-    xl: '0.75rem',    // 12.8px (increased from 10.7px)
+    xs: '0.625rem',  // 10px (mobile readable minimum)
+    sm: '0.65rem',    // 10.4px
+    md: '0.7rem',    // 11.2px
+    lg: '0.75rem',     // 12px
+    xl: '0.8rem',   // 12.8px
   },
   
   // Caption variants
   caption: {
-    xs: '0.4rem',    // 6.4px (increased from 5.3px)
-    sm: '0.5rem',    // 8px (increased from 6.7px)
-    md: '0.6rem',    // 9.6px (increased from 8px)
-    lg: '0.7rem',    // 11.2px (increased from 9.3px)
-    xl: '0.8rem',    // 12.8px (increased from 10.7px)
+    xs: '0.625rem',  // 10px (mobile readable minimum)
+    sm: '0.7rem',    // 11.2px
+    md: '0.75rem',   // 12px
+    lg: '0.8rem',    // 12.8px
+    xl: '0.875rem',  // 14px
   },
 
   // Chart title variants
   chartTitle: {
-    xs: '0.6rem',   // 10.4px (increased from 8.5px)
-    sm: '0.7rem',   // 12px (increased from 9.6px)
-    md: '0.8rem',   // 13.6px (increased from 10.7px)
-    lg: '0.9rem',    // 14.4px (increased from 11.7px)
-    xl: '1.0rem',      // 16px (increased from 12.8px)
+    xs: '0.75rem',  // 12px (mobile readable)
+    sm: '0.8rem',   // 12.8px
+    md: '0.875rem', // 14px
+    lg: '0.9rem',   // 14.4px
+    xl: '1rem',     // 16px
   },
   
   // Chart subtitle variants
   chartSubtitle: {
-    xs: '0.45rem',   // 8.8px (increased from 6.9px)
-    sm: '0.5rem',   // 9.6px (increased from 7.5px)
-    md: '0.6rem',   // 10.4px (increased from 8px)
-    lg: '0.7rem',   // 12px (increased from 9.1px)
-    xl: '0.8rem',   // 12.8px (increased from 10.1px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
   
   // Chart legend variants
   chartLegend: {
-    xs: '0.45rem',   // 8.8px (increased from 6.9px)
-    sm: '0.55rem',   // 9.6px (increased from 7.5px)
-    md: '0.65rem',   // 10.4px (increased from 8px)
-    lg: '0.75rem',   // 12px (increased from 9.1px)
-    xl: '0.85rem',   // 12.8px (increased from 10.1px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
   
   // Chart tooltip variants
   chartTooltip: {
-    xs: '0.4rem',   // 8.8px (increased from 6.9px)
-    sm: '0.5rem',   // 9.6px (increased from 7.5px)
-    md: '0.6rem',   // 10.4px (increased from 8px)
-    lg: '0.7rem',   // 12px (increased from 9.1px)
-    xl: '0.8rem',   // 12.8px (increased from 10.1px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
   
   // Card title variants
   cardTitle: {
-    xs: '0.6rem',   // 10.4px (increased from 8.5px)
-    sm: '0.75rem',   // 12px (increased from 9.6px)
-    md: '0.85rem',   // 13.6px (increased from 10.7px)
-    lg: '0.95rem',    // 14.4px (increased from 11.7px)
-    xl: '1.00rem',      // 16px (increased from 12.8px)
+    xs: '0.75rem',  // 12px (mobile readable)
+    sm: '0.8rem',   // 12.8px
+    md: '0.875rem', // 14px
+    lg: '0.9rem',   // 14.4px
+    xl: '1rem',     // 16px
   },
   
   // Card value variants
   cardValue: {
-    xs: '0.65rem',   // 10.4px (increased from 8.5px)
-    sm: '0.75rem',   // 12px (increased from 9.6px)
-    md: '0.85rem',   // 13.6px (increased from 10.7px)
-    lg: '0.95rem',      // 16px (increased from 12.8px)
-    xl: '1.2rem',   // 18.4px (increased from 14.9px)
+    xs: '0.875rem', // 14px (mobile readable)
+    sm: '0.9rem',   // 14.4px
+    md: '1rem',     // 16px
+    lg: '1.1rem',   // 17.6px
+    xl: '1.2rem',   // 19.2px
   },
 
   cardValueLarge: {
-    xs: '0.75rem',   // 12px (increased from 9.6px)
-    sm: '0.85rem',   // 13.6px (increased from 10.7px)
-    md: '0.95rem',   // 16px (increased from 12.8px)
-    lg: '1.15rem',      // 18.4px (increased from 14.9px)
-    xl: '1.25rem',   // 19.2px (increased from 16px)
+    xs: '1rem',     // 16px (mobile readable)
+    sm: '1.1rem',   // 17.6px
+    md: '1.2rem',   // 19.2px
+    lg: '1.3rem',   // 20.8px
+    xl: '1.4rem',   // 22.4px
   },
 
   cardValueMedium: {
-    xs: '0.55rem',   // 10.4px (increased from 8.5px)
-    sm: '0.65rem',   // 12px (increased from 9.6px)
-    md: '0.75rem',   // 13.6px (increased from 10.7px)
-    lg: '0.75rem',      // 16px (increased from 12.8px)
-    xl: '0.85rem',   // 18.4px (increased from 14.9px)
+    xs: '0.75rem',  // 12px (mobile readable)
+    sm: '0.8rem',   // 12.8px
+    md: '0.875rem', // 14px
+    lg: '0.9rem',   // 14.4px
+    xl: '1rem',     // 16px
   },
 
   cardValueSmall: {
-    xs: '0.5rem',   // 8.8px (increased from 6.9px)
-    sm: '0.6rem',   // 10.4px (increased from 8.5px)
-    md: '0.7rem',   // 12px (increased from 9.6px)
-    lg: '0.8rem',   // 13.6px (increased from 10.7px)
-    xl: '0.9rem',   // 16px (increased from 12.8px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
 
   // Card label variants
   cardLabel: {
-    xs: '0.55rem',   // 8.8px (increased from 6.9px)
-    sm: '0.6rem',    // 9.6px (increased from 7.5px)
-    md: '0.65rem',   // 10.4px (increased from 8px)
-    lg: '0.75rem',   // 12px (increased from 9.1px)
-    xl: '0.8rem',    // 12.8px (increased from 10.1px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
 
   // Label small variants
   labelSmall: {
-    xs: '0.45rem',   // 8.8px (increased from 6.9px)
-    sm: '0.45rem',   // 9.6px (increased from 7.5px)
-    md: '0.55rem',   // 10.4px (increased from 8px)
-    lg: '0.65rem',   // 12px (increased from 9.1px)
-    xl: '0.75rem',   // 12.8px (increased from 10.1px)
+    xs: '0.625rem', // 10px (mobile readable)
+    sm: '0.7rem',   // 11.2px
+    md: '0.75rem',  // 12px
+    lg: '0.8rem',   // 12.8px
+    xl: '0.875rem', // 14px
   },
   
   // Tab variants
   tab: {
-    xs: '0.6rem',    // 9.6px (increased from 7.5px)
-    sm: '0.7rem',    // 11.2px (increased from 8.5px)
-    md: '0.8rem',    // 12.8px (increased from 9.6px)
-    lg: '0.85rem',   // 13.6px (increased from 10.1px)
-    xl: '0.9rem',    // 14.4px (increased from 10.7px)
+    xs: '0.75rem',  // 12px (mobile readable)
+    sm: '0.8rem',   // 12.8px
+    md: '0.875rem', // 14px
+    lg: '0.9rem',   // 14.4px
+    xl: '1rem',     // 16px
   },
   
   // Button variants
   button: {
-    xs: '0.50rem',   // 7.8px (reduced by 1/4 from 10.4px)
-    sm: '0.57rem',   // 9px (reduced by 1/4 from 12px)
-    md: '0.65rem',   // 10.2px (reduced by 1/4 from 13.6px)
-    lg: '0.70rem',   // 11.4px (reduced by 1/4 from 15.2px)
-    xl: '0.80rem',   // 12.6px (reduced by 1/4 from 16.8px)
+    xs: '0.75rem',  // 12px (mobile readable)
+    sm: '0.8rem',   // 12.8px
+    md: '0.875rem', // 14px
+    lg: '0.9rem',   // 14.4px
+    xl: '1rem',     // 16px
   }
 };
 
@@ -476,7 +476,7 @@ const themeOptions: ThemeOptions = {
     body1: {
       fontSize: getResponsiveFontSize('body').md,
       fontWeight: 400,
-      lineHeight: 1.8,
+      lineHeight: 1.5,
       '@media (min-width:0px)': {
         fontSize: getResponsiveFontSize('body').xs,
       },
@@ -497,7 +497,7 @@ const themeOptions: ThemeOptions = {
     body2: {
       fontSize: getResponsiveFontSize('small').md,
       fontWeight: 400,
-      lineHeight: 1.7,
+      lineHeight: 1.4,
       '@media (min-width:0px)': {
         fontSize: getResponsiveFontSize('small').xs,
       },
@@ -518,7 +518,7 @@ const themeOptions: ThemeOptions = {
     caption: {
       fontSize: getResponsiveFontSize('caption').md,
       fontWeight: 400,
-      lineHeight: 1.6,
+      lineHeight: 1.3,
       '@media (min-width:0px)': {
         fontSize: getResponsiveFontSize('caption').xs,
       },

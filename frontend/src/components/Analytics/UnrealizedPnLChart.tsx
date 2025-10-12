@@ -107,12 +107,12 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
 
           {/* P&L Section */}
           <Box sx={{ mb: 1.5 }}>
-            <ResponsiveTypography variant="formHelper" sx={{ 
+            <ResponsiveTypography variant="chartTooltip" sx={{ 
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Unrealized P&L
+              Unrealized P&L 
             </ResponsiveTypography>
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5, gap: 1 }}>
               {isProfit ? (
@@ -121,11 +121,10 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 <TrendingDown sx={{ fontSize: 20, color: pnlColors.negative }} />
               )}
               <ResponsiveTypography 
-                variant="cardValue" 
+                variant="cardValueMedium" 
                 sx={{ 
                   color: isProfit ? pnlColors.positive : pnlColors.negative,
                   fontWeight: 'bold',
-                  fontSize: '1.1rem'
                 }}
               >
                 {isProfit ? '+' : ''}{formatCurrency(data.unrealizedPnL || 0, baseCurrency)}
@@ -149,7 +148,6 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                   sx={{ 
                     color: isProfit ? pnlColors.positive : pnlColors.negative,
                     fontWeight: 600,
-                    fontSize: '0.8rem'
                   }}
                 >
                   {isProfit ? '+' : ''}{formatPercentage(data.unrealizedPnLPercentage || 0)}
@@ -160,7 +158,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
 
             {/* Current Value Section */}
             <Box>
-              <ResponsiveTypography variant="formHelper" sx={{ 
+              <ResponsiveTypography variant="chartTooltip" sx={{ 
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 fontWeight: 500
@@ -169,7 +167,6 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
               </ResponsiveTypography>
               <ResponsiveTypography variant="tableCell" sx={{ 
                 mt: 0.5,
-                fontSize: '0.85rem',
                 color: 'text.primary'
               }}>
                 {formatCurrency(data.marketValue || 0, baseCurrency)}
@@ -179,24 +176,22 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
           {/* Performance Indicator */}
           <Box sx={{ 
             position: 'absolute',
-            top: 8,
-            right: 8,
+            top: 10,
+            right: 10,
             display: 'flex',
             alignItems: 'center',
             gap: 0.5
           }}>
             {isProfit ? (
-              <ResponsiveTypography variant="statusText" sx={{ 
+              <ResponsiveTypography variant="chartTooltip" sx={{ 
                 color: '#00C49F',
-                fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↗ PROFIT
               </ResponsiveTypography>
             ) : (
-              <ResponsiveTypography variant="statusText" sx={{ 
+              <ResponsiveTypography variant="chartTooltip" sx={{ 
                 color: '#FF8042',
-                fontSize: '0.7rem',
                 fontWeight: 600
               }}>
                 ↘ LOSS

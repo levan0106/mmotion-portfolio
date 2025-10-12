@@ -448,7 +448,8 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    mb: 1
+                    mb: 1,
+                    fontSize: '0.7rem!important'
                   }}
                 >
                   {asset.name}
@@ -466,7 +467,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   border: '1px solid rgba(25, 118, 210, 0.12)'
                 }}>
                   <Box>
-                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                       Allocation
                     </ResponsiveTypography>
                     <ResponsiveTypography 
@@ -495,11 +496,10 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                 <Box sx={{ 
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: 0.5,
-                  fontSize: '0.7rem'
+                  gap: 0.5
                 }}>
                   <Box>
-                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                       Qty
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
@@ -508,7 +508,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   </Box>
                   
                   <Box>
-                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                       Market Price
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
@@ -529,7 +529,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   border: `1px solid ${getPnLColor(asset.unrealizedPl)}30`
                 }}>
                   <Box>
-                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                       Unrealized P&L
                     </ResponsiveTypography>
                       <ResponsiveTypography 
@@ -555,7 +555,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                       {formatPercentage(asset.unrealizedPlPercentage)}
                     </ResponsiveTypography>
                     <ResponsiveTypography 
-                      variant="labelSmall" 
+                      variant="labelXSmall" 
                       color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
                     >
                       {asset.unrealizedPl >= 0 ? 'Profit' : 'Loss'}
