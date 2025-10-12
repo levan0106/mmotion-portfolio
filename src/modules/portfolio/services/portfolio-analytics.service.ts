@@ -408,7 +408,7 @@ export class PortfolioAnalyticsService {
       const monthsToLookBack = Math.min(months, 12);
       
       const cacheKey = `allocation-timeline:${portfolioId}:${monthsToLookBack}:${granularity}`;
-      const CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache for real data
+      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for better performance
       
       // Try to get from cache first (if enabled)
       if (this.CACHE_ENABLED) {

@@ -9,7 +9,6 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Button,
   Grid,
   Table,
@@ -139,12 +138,12 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
         <Card sx={{ mb: getUltraSpacing(3, 1) }}>
           <CardContent sx={{ p: getUltraSpacing(2, 1.5), textAlign: 'center' }}>
             <AccountBalanceIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="cardTitle" gutterBottom>
               Portfolio is not a Fund
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
               This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.
-            </Typography>
+            </ResponsiveTypography>
             <Button 
               variant="contained" 
               startIcon={<AccountBalanceIcon />}
@@ -210,56 +209,56 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           <Grid container spacing={getUltraSpacing(2, 1)}>
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   NAV per Unit
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'primary.main' }}>
                   {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency)}
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   Total Outstanding Units
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                   {formatNumberWithSeparators(portfolio.totalOutstandingUnits || 0, 3)}
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   Number of Investors
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                   {formatNumberWithSeparators(holdings.length, 0)}
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   Total P&L (current value - capital)
-                </Typography>
-                <Typography 
-                  variant="h6" 
+                </ResponsiveTypography>
+                <ResponsiveTypography 
+                  variant="cardValue" 
                   sx={{ 
                     fontWeight: 600,
                     color: totalPnL >= 0 ? 'success.main' : 'error.main'
                   }}
                 >
                   {formatCurrency(totalPnL, portfolio.baseCurrency)}
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   Last NAV Update
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
                   {portfolio.lastNavDate 
                     ? new Date(portfolio.lastNavDate).toLocaleDateString('vi-VN', {
                         year: 'numeric',
@@ -270,7 +269,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                       })
                     : 'N/A'
                   }
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Grid>
           </Grid>
@@ -315,16 +314,18 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       {/* Error Alert */}
       {error && (
         <Alert severity="error" sx={{ mb: getUltraSpacing(2, 1) }}>
-          {error}
+          <ResponsiveTypography variant="tableCell">
+            {error}
+          </ResponsiveTypography>
         </Alert>
       )}
 
       {/* Investor Holdings Table */}
       <Card>
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+          <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, mb: 2 }}>
             Investor Holdings
-          </Typography>
+          </ResponsiveTypography>
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -332,26 +333,42 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             </Box>
           ) : holdings.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="body1" color="text.secondary">
+              <ResponsiveTypography variant="tableCell" color="text.secondary">
                 No investor holdings found
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary" sx={{ mt: 1 }}>
                 Create the first subscription to start tracking investor holdings
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           ) : (
             <TableContainer component={Paper} variant="outlined">
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Investor</TableCell>
-                    <TableCell align="right">Units</TableCell>
-                    <TableCell align="right">Avg Cost</TableCell>
-                    <TableCell align="right">Total Investment</TableCell>
-                    <TableCell align="right">Current Value</TableCell>
-                    <TableCell align="right">Unrealized P&L</TableCell>
-                    <TableCell align="right">Return %</TableCell>
-                    <TableCell align="center">Actions</TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableHeaderSmall">Investor</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Avg Cost</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Total Investment</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Current Value</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Unrealized P&L</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <ResponsiveTypography variant="tableHeaderSmall">Return %</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <ResponsiveTypography variant="tableHeaderSmall">Actions</ResponsiveTypography>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -364,25 +381,33 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                       <TableRow key={holding.holdingId}>
                         <TableCell>
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
                               {holding.account?.name || 'Unknown'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="labelSmall" color="text.secondary">
                               {holding.account?.email || 'No email'}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </TableCell>
                         <TableCell align="right">
-                          {formatNumberWithSeparators(holding.totalUnits, 3)}
+                          <ResponsiveTypography variant="tableCell">
+                            {formatNumberWithSeparators(holding.totalUnits, 3)}
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell align="right">
-                          {formatCurrency(holding.avgCostPerUnit, portfolio.baseCurrency)}
+                          <ResponsiveTypography variant="tableCell">
+                            {formatCurrency(holding.avgCostPerUnit, portfolio.baseCurrency)}
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell align="right">
-                          {formatCurrency(holding.totalInvestment, portfolio.baseCurrency)}
+                          <ResponsiveTypography variant="tableCell">
+                            {formatCurrency(holding.totalInvestment, portfolio.baseCurrency)}
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell align="right">
-                          {formatCurrency(holding.currentValue, portfolio.baseCurrency)}
+                          <ResponsiveTypography variant="tableCell">
+                            {formatCurrency(holding.currentValue, portfolio.baseCurrency)}
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell align="right">
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
@@ -391,15 +416,15 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                             ) : (
                               <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
                             )}
-                            <Typography 
-                              variant="body2" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               sx={{ 
                                 color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main',
                                 fontWeight: 600
                               }}
                             >
                               {formatCurrency(holding.unrealizedPnL, portfolio.baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </TableCell>
                         <TableCell align="right">

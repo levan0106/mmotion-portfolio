@@ -6,7 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Button,
-  Typography,
   Box,
   Grid,
   Alert,
@@ -14,6 +13,7 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   Edit as EditIcon,
 } from '@mui/icons-material';
@@ -172,15 +172,15 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
     >
       <Box sx={{ pt: 1 }}>
         {/* Transaction Info */}
-        <Box sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 2 }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <Box sx={{ mb: 3, backgroundColor: 'grey.50', borderRadius: 2 }}>
+          <ResponsiveTypography variant="pageTitle" color="text.secondary" gutterBottom>
             Transaction Information
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Transaction Type
-              </Typography>
+              </ResponsiveTypography>
               <Chip
                 label={transaction.transaction.holdingType}
                 color={isSubscription ? 'success' : 'warning'}
@@ -189,12 +189,12 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
               />
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
         </Box>
@@ -290,42 +290,42 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
 
         {/* Calculation Summary */}
         <Box sx={{ mt: 3, p: 2, backgroundColor: 'info.50', borderRadius: 2, border: '1px solid', borderColor: 'info.200' }}>
-          <Typography variant="subtitle2" color="info.main" gutterBottom>
+          <ResponsiveTypography variant="pageSubtitle" color="info.main" gutterBottom>
             Calculation Summary
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Units
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary">
                 {formatNumberWithSeparators(formData.units, 3)}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 Calculated Amount
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency((formData.units || 0) * navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
           {Math.abs((formData.units || 0) * navPerUnit - (formData.amount || 0)) > 0.01 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="labelSmall">
                 Note: The calculated amount ({formatCurrency((formData.units || 0) * navPerUnit, 'VND')}) 
                 differs from the entered amount ({formatCurrency(formData.amount || 0, 'VND')}). 
                 This may be due to fees or rounding differences.
-              </Typography>
+              </ResponsiveTypography>
             </Alert>
           )}
         </Box>
@@ -333,32 +333,34 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
+            <ResponsiveTypography variant="tableCell">
+              {error}
+            </ResponsiveTypography>
           </Alert>
         )}
 
         {/* Date Awareness Notice */}
         <Alert severity="info" sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 400 }}>
+          <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 400 }}>
             📅 Data Recalculation Notice
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
             When you update this transaction, the system will automatically recalculate:
-          </Typography>
+          </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <Typography component="li" variant="body2">
+            <ResponsiveTypography component="li" variant="labelSmall">
               Portfolio NAV per unit and total outstanding units
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               Holding metrics (units, investment, P&L) as of the transaction date
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               All related cash flow records
-            </Typography>
+            </ResponsiveTypography>
           </Box>
-          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
             Recalculation will be based on the transaction date: <strong>{formData.transactionDate || 'Current date'}</strong>
-          </Typography>
+          </ResponsiveTypography>
         </Alert>
       </Box>
     </ModalWrapper>

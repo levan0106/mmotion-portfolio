@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Container,
-  Typography,
   Card,
   CardContent,
   Grid,
@@ -28,6 +27,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import {
   ArrowBack,
   TrendingUp,
@@ -180,7 +180,9 @@ const HoldingDetail: React.FC = () => {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          <ResponsiveTypography variant="tableCell">
+            {error}
+          </ResponsiveTypography>
         </Alert>
         <Button
           variant="outlined"
@@ -197,7 +199,9 @@ const HoldingDetail: React.FC = () => {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="info">
-          No holding details found
+          <ResponsiveTypography variant="tableCell">
+            No holding details found
+          </ResponsiveTypography>
         </Alert>
       </Container>
     );
@@ -237,12 +241,12 @@ const HoldingDetail: React.FC = () => {
               <AccountBalance />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 700, color: 'primary.main' }}>
                 {holding.account?.name}
-              </Typography>
-              <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 500 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Investment in {holding.portfolio?.name}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
           
@@ -279,9 +283,9 @@ const HoldingDetail: React.FC = () => {
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
               <CardContent sx={{ p: 2 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                   Portfolio Performance
-                </Typography>
+                </ResponsiveTypography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} md={3}>
                     <Box sx={{ 
@@ -289,12 +293,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>
                         {formatCurrency(holding.currentValue, 'VND')}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Current Value
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -303,12 +307,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
                         {formatCurrency(holding.totalInvestment, 'VND')}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Total Investment
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -319,13 +323,13 @@ const HoldingDetail: React.FC = () => {
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                         {getPnLIcon(holding.unrealizedPnL)}
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                        <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
                           {formatCurrency(holding.unrealizedPnL, 'VND')}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Unrealized P&L
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -336,13 +340,13 @@ const HoldingDetail: React.FC = () => {
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                         {getPnLIcon(summary.returnPercentage)}
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: summary.returnPercentage >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                        <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: summary.returnPercentage >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
                           {formatPercentage(summary.returnPercentage, 2)}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Return %
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                 </Grid>
@@ -356,9 +360,9 @@ const HoldingDetail: React.FC = () => {
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
               <CardContent sx={{ p: 2 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                   Transaction Summary
-                </Typography>
+                </ResponsiveTypography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} md={3}>
                     <Box sx={{ 
@@ -366,12 +370,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'primary.main' }}>
                         {summary.totalTransactions}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Total Transactions
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -380,12 +384,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'success.main' }}>
                         {summary.totalSubscriptions}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Subscriptions
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -394,12 +398,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'warning.main' }}>
                         {summary.totalRedemptions}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Redemptions
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                   <Grid item xs={6} md={3}>
@@ -408,12 +412,12 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
+                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'info.main' }}>
                         {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                         Units Subscribed
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Grid>
                 </Grid>
@@ -431,9 +435,9 @@ const HoldingDetail: React.FC = () => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}>
             <CardContent sx={{ p: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                 Holding Details
-              </Typography>
+              </ResponsiveTypography>
               <List dense>
                 <ListItem sx={{ 
                   px: 0, 
@@ -505,9 +509,9 @@ const HoldingDetail: React.FC = () => {
       }}>
         <CardContent sx={{ p: 0 }}>
           <Box sx={{ p: 2, pb: 0 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, color: 'text.primary' }}>
               Transaction History
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <TableContainer>
             <Table>
@@ -515,13 +519,27 @@ const HoldingDetail: React.FC = () => {
                 <TableRow sx={{ 
                   background: '#f8f9fa'
                 }}>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Type</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Units</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>NAV per Unit</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>Amount</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Description</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Date</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Type</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">NAV per Unit</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Amount</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Description</ResponsiveTypography>
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    <ResponsiveTypography variant="tableHeaderSmall">Actions</ResponsiveTypography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -536,7 +554,9 @@ const HoldingDetail: React.FC = () => {
                     }}
                   >
                     <TableCell sx={{ fontWeight: 500, color: 'text.primary' }}>
-                      {format(new Date(transaction.createdAt), 'dd/MM/yyyy')}
+                      <ResponsiveTypography variant="tableCellSmall">
+                        {format(new Date(transaction.createdAt), 'dd/MM/yyyy')}
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -547,16 +567,24 @@ const HoldingDetail: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="right" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                      {formatNumberWithSeparators(transaction.units, 3)}
+                      <ResponsiveTypography variant="tableCellSmall">
+                        {formatNumberWithSeparators(transaction.units, 3)}
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                      {formatCurrency(transaction.navPerUnit, 'VND')}
+                      <ResponsiveTypography variant="tableCellSmall">
+                        {formatCurrency(transaction.navPerUnit, 'VND')}
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                      {formatCurrency(transaction.amount, 'VND')}
+                      <ResponsiveTypography variant="tableCellSmall">
+                        {formatCurrency(transaction.amount, 'VND')}
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell sx={{ color: 'text.secondary' }}>
-                      {cashFlow?.description || 'N/A'}
+                      <ResponsiveTypography variant="tableCellSmall">
+                        {cashFlow?.description || 'N/A'}
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
@@ -570,7 +598,7 @@ const HoldingDetail: React.FC = () => {
                             px: 1,
                             py: 0.5,
                             textTransform: 'none',
-                            fontSize: '0.75rem'
+                            fontSize: '0.75rem!important'
                           }}
                         >
                           Edit
@@ -586,7 +614,7 @@ const HoldingDetail: React.FC = () => {
                             px: 1,
                             py: 0.5,
                             textTransform: 'none',
-                            fontSize: '0.75rem'
+                            fontSize: '0.75rem!important'
                           }}
                         >
                           Delete
@@ -630,51 +658,51 @@ const HoldingDetail: React.FC = () => {
           Confirm Delete Transaction
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
+          <ResponsiveTypography variant="tableCell" sx={{ mb: 2 }}>
             Are you sure you want to delete this transaction? This action cannot be undone.
-          </Typography>
+          </ResponsiveTypography>
           {transactionToDelete && (
             <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+              <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 600, mb: 1 }}>
                 Transaction Details:
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 <strong>Type:</strong> {transactionToDelete.transaction.holdingType}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 <strong>Units:</strong> {formatNumberWithSeparators(transactionToDelete.transaction.units, 3)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 <strong>Amount:</strong> {formatCurrency(transactionToDelete.transaction.amount, 'VND')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 <strong>Date:</strong> {format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy')}
-              </Typography>
+              </ResponsiveTypography>
             </Card>
           )}
 
           {/* Date Awareness Notice */}
           <Alert severity="warning" sx={{ mt: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 500 }}>
               ⚠️ Data Recalculation Impact
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
               Deleting this transaction will trigger automatic recalculation of:
-            </Typography>
+            </ResponsiveTypography>
             <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-              <Typography component="li" variant="body2">
+              <ResponsiveTypography component="li" variant="labelSmall">
                 Portfolio NAV per unit and total outstanding units
-              </Typography>
-              <Typography component="li" variant="body2">
+              </ResponsiveTypography>
+              <ResponsiveTypography component="li" variant="labelSmall">
                 All holding metrics (units, investment, P&L) will be recalculated from remaining transactions
-              </Typography>
-              <Typography component="li" variant="body2">
+              </ResponsiveTypography>
+              <ResponsiveTypography component="li" variant="labelSmall">
                 Associated cash flow records will be removed
-              </Typography>
+              </ResponsiveTypography>
             </Box>
-            <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+            <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
               Recalculation will be based on the original transaction date: <strong>{transactionToDelete ? format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy') : 'N/A'}</strong>
-            </Typography>
+            </ResponsiveTypography>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

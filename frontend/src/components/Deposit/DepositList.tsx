@@ -166,7 +166,7 @@ const DepositList: React.FC<DepositListProps> = ({
         <TableHead>
           <TableRow>
             <TableCell>Ngân hàng</TableCell>
-            <TableCell>Số tài khoản</TableCell>
+            {/* <TableCell>Số tài khoản</TableCell> */}
             <TableCell align="right">Số tiền gốc</TableCell>
             <TableCell align="right">Lãi suất</TableCell>
             <TableCell align="center">Kỳ hạn</TableCell>
@@ -194,11 +194,11 @@ const DepositList: React.FC<DepositListProps> = ({
                   </Box>
                 </TableCell>
                 
-                <TableCell>
+                {/* <TableCell>
                   <Typography variant="body2" fontFamily="monospace">
                     {deposit.accountNumber || 'N/A'}
                   </Typography>
-                </TableCell>
+                </TableCell> */}
                 
                 <TableCell align="right">
                   <Typography variant="body2" fontWeight="medium">
@@ -239,6 +239,9 @@ const DepositList: React.FC<DepositListProps> = ({
                       }
                       color={getStatusColor(deposit)}
                       size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                      }}
                     />                   
                   </Box>
                 </TableCell>
@@ -268,7 +271,7 @@ const DepositList: React.FC<DepositListProps> = ({
                           e.stopPropagation();
                           onSettle(deposit);
                         }}
-                        sx={{ minWidth: 'auto', px: 1 }}
+                        sx={{ minWidth: 'auto', px: 1, fontSize: '0.7rem!important' }}
                       >
                         Tất toán
                       </Button>

@@ -200,7 +200,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 { value: 'YTD', label: 'YTD MWR' },
               ]}
               value={selectedMwrPeriod}
-              onChange={handleMWRPeriodChange}
+              onChange={(value) => handleMWRPeriodChange({ target: { value: String(value) } })}
               formControlSx={{ minWidth: 80 }}
             />
             <ResponsiveFormSelect
@@ -216,7 +216,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 { value: 'ALL', label: 'All Time' },
               ]}
               value={timeframe}
-              onChange={handleTimeframeChange}
+              onChange={(value) => handleTimeframeChange({ target: { value: String(value) } })}
               formControlSx={{ minWidth: 80 }}
             />
           </Box>

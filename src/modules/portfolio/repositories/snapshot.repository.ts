@@ -71,6 +71,44 @@ export class SnapshotRepository {
   }
 
   /**
+   * Find snapshots optimized for analytics queries - PERFORMANCE OPTIMIZED
+   */
+  async findManyForAnalytics(options: SnapshotQueryOptions): Promise<AssetAllocationSnapshot[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('snapshot')
+      .select([
+        'snapshot.id',
+        'snapshot.portfolioId',
+        'snapshot.assetId',
+        'snapshot.assetSymbol',
+        'snapshot.assetType',
+        'snapshot.snapshotDate',
+        'snapshot.granularity',
+        'snapshot.currentValue',
+        'snapshot.allocationPercentage'
+      ])
+      .where('snapshot.portfolioId = :portfolioId', { portfolioId: options.portfolioId })
+      .andWhere('snapshot.isActive = :isActive', { isActive: true });
+
+    if (options.granularity) {
+      queryBuilder.andWhere('snapshot.granularity = :granularity', { granularity: options.granularity });
+    }
+
+    if (options.startDate) {
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) >= :startDate', { startDate: normalizeDateToString(options.startDate) });
+    }
+
+    if (options.endDate) {
+      queryBuilder.andWhere('DATE(snapshot.snapshotDate) <= :endDate', { endDate: normalizeDateToString(options.endDate) });
+    }
+
+    // Optimized ordering for analytics
+    queryBuilder.orderBy('snapshot.snapshotDate', 'ASC');
+
+    return await queryBuilder.getMany();
+  }
+
+  /**
    * Find snapshots with pagination
    */
   async findManyWithPagination(
@@ -373,13 +411,38 @@ export class SnapshotRepository {
   }
 
   /**
-   * Create query builder with options
+   * Create query builder with options - OPTIMIZED for performance
    */
   private createQueryBuilder(options: SnapshotQueryOptions): SelectQueryBuilder<AssetAllocationSnapshot> {
     const queryBuilder = this.repository
       .createQueryBuilder('snapshot')
-      .leftJoinAndSelect('snapshot.portfolio', 'portfolio')
-      .leftJoinAndSelect('snapshot.asset', 'asset');
+      // PERFORMANCE FIX: Remove unnecessary joins for analytics queries
+      // Only load relationships when explicitly needed
+      .select([
+        'snapshot.id',
+        'snapshot.portfolioId',
+        'snapshot.assetId',
+        'snapshot.assetSymbol',
+        'snapshot.assetType',
+        'snapshot.snapshotDate',
+        'snapshot.granularity',
+        'snapshot.quantity',
+        'snapshot.currentPrice',
+        'snapshot.currentValue',
+        'snapshot.costBasis',
+        'snapshot.avgCost',
+        'snapshot.realizedPl',
+        'snapshot.unrealizedPl',
+        'snapshot.totalPl',
+        'snapshot.allocationPercentage',
+        'snapshot.portfolioTotalValue',
+        'snapshot.returnPercentage',
+        'snapshot.dailyReturn',
+        'snapshot.cumulativeReturn',
+        'snapshot.isActive',
+        'snapshot.createdAt',
+        'snapshot.updatedAt'
+      ]);
 
     if (options.portfolioId) {
       queryBuilder.andWhere('snapshot.portfolioId = :portfolioId', { portfolioId: options.portfolioId });

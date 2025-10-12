@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { Box, Typography, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { formatPercentageValue, formatDateFns as formatDate } from '../../utils/format';
 import { getAssetTypeColor, RECHARTS_COLORS } from '../../config/chartColors';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
@@ -119,9 +119,9 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
 
       return (
         <Paper sx={{ p: 2, boxShadow: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <ResponsiveTypography variant="chartSubtitle" gutterBottom>
             {formatDate(label)}
-          </Typography>
+          </ResponsiveTypography>
           {uniqueEntries.map((entry: any, index: number) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
               <Box
@@ -134,15 +134,56 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                   flexShrink: 0
                 }}
               />
-              <Typography variant="body2" sx={{ flex: 1 }}>
+              <ResponsiveTypography variant="chartTooltip" sx={{ flex: 1 }}>
                 {entry.dataKey}: {tooltipFormatter(entry.value)}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           ))}
         </Paper>
       );
     }
     return null;
+  };
+
+  const CustomLegend = ({ payload }: any) => {
+    if (!payload || payload.length === 0) return null;
+
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: compact ? 1 : 1.5, 
+        justifyContent: 'center',
+        mt: compact ? 1 : 2,
+        px: compact ? 1 : 2
+      }}>
+        {payload.map((entry: any, index: number) => (
+          <Box key={index} sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: compact ? 0.5 : 0.75,
+            px: compact ? 0.75 : 1,
+            py: compact ? 0.25 : 0.5,
+            borderRadius: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            border: '1px solid rgba(0, 0, 0, 0.1)'
+          }}>
+            <Box
+              sx={{
+                width: compact ? 8 : 10,
+                height: compact ? 8 : 10,
+                backgroundColor: entry.color,
+                borderRadius: '50%',
+                flexShrink: 0
+              }}
+            />
+            <ResponsiveTypography variant="chartLegend">
+              {entry.value}
+            </ResponsiveTypography>
+          </Box>
+        ))}
+      </Box>
+    );
   };
 
   const renderChart = () => {
@@ -168,7 +209,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
       ),
       grid: showGrid ? <CartesianGrid strokeDasharray="3 3" /> : null,
       tooltip: showTooltip ? <Tooltip content={<CustomTooltip />} /> : null,
-      legend: showLegend ? <Legend /> : null,
+      legend: showLegend ? <Legend content={<CustomLegend />} /> : null,
     };
 
     if (chartType === 'line') {

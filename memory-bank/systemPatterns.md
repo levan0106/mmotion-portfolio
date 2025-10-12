@@ -44,10 +44,21 @@ flowchart LR
 - **Caching Strategy**: Enhanced caching with staleTime and cacheTime for better performance
 - **Background Sync**: Non-blocking global asset sync and market price updates
 
-### Typography System Pattern - **IMPLEMENTED** ✅
-- **Custom Theme**: Enhanced Material-UI theme with comprehensive responsive typography variants
+### ResponsiveTypography System Pattern - **IMPLEMENTED** ✅
+- **Custom Theme Enhancement**: Enhanced Material-UI theme with comprehensive responsive typography variants
 - **ResponsiveTypography Component**: Custom wrapper component for consistent typography application across all components
 - **Typography Variants**: Comprehensive set of typography variants including:
+  - **Page Elements**: pageTitle, pageSubtitle, pageHeader
+  - **Card Elements**: cardTitle, cardValue, cardValueLarge, cardValueMedium, cardValueSmall, cardLabel
+  - **Table Elements**: tableHeaderSmall, tableCell, tableCellSmall
+  - **Form Elements**: formHelper, labelSmall, labelXSmall
+  - **Chart Elements**: chartTitle, chartSubtitle, chartLegend, chartTooltip
+- **Responsive Font Sizes**: Breakpoint-based font sizing (xs, sm, md, lg, xl) for optimal display across all devices
+- **Mobile Optimization**: Font sizes optimized to meet mobile readability standards (minimum 10px for small text, 14px for body text)
+- **Component Integration**: Applied across all major components including charts, tables, forms, and modals
+- **Event Handler Integration**: Proper TypeScript support and event handling for all form components
+- **Modal Enhancement**: Enhanced modal sizes (xl with 90vh height) for better data display
+- **Table Grouping**: Integrated with table grouping functionality for improved user experience
   - **Page Elements**: pageHeader, pageTitle, pageSubtitle for main page content
   - **Card Elements**: cardTitle, cardValue, cardValueLarge, cardLabel, cardSubtitle for card content
   - **Table Elements**: tableHeaderSmall, tableCellSmall, tableHeaderXSmall, tableCellXSmall for responsive tables

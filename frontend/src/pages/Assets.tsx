@@ -99,7 +99,7 @@ const AssetTableRow = memo(({
     >
       <TableCell>
         <Box>
-          <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600, color: 'text.primary' }}>
             {asset.name}
           </ResponsiveTypography>
           <ResponsiveTypography variant="formHelper">
@@ -124,19 +124,19 @@ const AssetTableRow = memo(({
         />
       </TableCell>
       <TableCell>
-        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
           {asset.symbol}
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
-        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
           {Number(asset.totalQuantity) || 0}
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
           <ResponsiveTypography 
-            variant="tableCell" 
+            variant="tableCellSmall" 
             sx={{ 
               fontWeight: 600, 
               color: priceComparison >= 0 ? 'success.main' : 'error.main'
@@ -160,12 +160,12 @@ const AssetTableRow = memo(({
         </Box>
       </TableCell>
       <TableCell sx={{ textAlign: 'right' }}>
-        <ResponsiveTypography variant="tableCell" sx={{ color: 'success.main' }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
         </ResponsiveTypography>
       </TableCell>
       <TableCell>
-        <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 400, color: 'text.secondary' }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary' }}>
           {formatDateTime(asset.updatedAt)}
         </ResponsiveTypography>
       </TableCell>
@@ -429,14 +429,14 @@ const AssetsList = memo(({
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Asset</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Type</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Symbol</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Quantity</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Price Comparison</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Total Value</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Last Updated</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Asset</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Type</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Symbol</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Quantity</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Price Comparison</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Total Value</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Last Updated</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

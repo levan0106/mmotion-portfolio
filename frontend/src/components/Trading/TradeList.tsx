@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import {
   Box,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -38,14 +37,17 @@ import {
   Search as SearchIcon,
   ViewModule as GridViewIcon,
   ViewList as ListViewIcon,
-  AccountBalance as ExchangeIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   Assessment as AssessmentIcon,
   ShowChart as ChartIcon,
   AccountBalanceWallet as WalletIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { FIFOTooltip } from '../Common';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types';
 import { useTrades, useDeleteTrade, useTradeDetails, useUpdateTrade } from '../../hooks/useTrading';
@@ -127,6 +129,8 @@ export const TradeList: React.FC<TradeListProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [exchangeViewMode, setExchangeViewMode] = useState<'grid' | 'list'>('list');
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
+  const [groupByDate, setGroupByDate] = useState<boolean>(true);
 
   // Filter and search trades
   const filteredTrades = useMemo(() => {
@@ -143,6 +147,54 @@ export const TradeList: React.FC<TradeListProps> = ({
       return matchesSearch && matchesSide && matchesType && matchesSource;
     });
   }, [trades, searchTerm, sideFilter, typeFilter, sourceFilter]);
+
+  // Group trades by date
+  const groupedTrades = useMemo(() => {
+    if (!groupByDate) {
+      return { 'All Trades': filteredTrades };
+    }
+
+    const groups: Record<string, Trade[]> = {};
+    filteredTrades.forEach((trade) => {
+      const dateKey = format(parseISO(trade.tradeDate.toString()), 'yyyy-MM-dd');
+      
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(trade);
+    });
+
+    // Sort dates in descending order (newest first)
+    const sortedGroups: Record<string, Trade[]> = {};
+    Object.keys(groups)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      .forEach(dateKey => {
+        const displayDate = format(parseISO(dateKey), 'MMM dd, yyyy');
+        sortedGroups[displayDate] = groups[dateKey];
+      });
+
+    return sortedGroups;
+  }, [filteredTrades, groupByDate]);
+
+  // Toggle date collapse
+  const toggleDateCollapse = (dateKey: string) => {
+    const newCollapsed = new Set(collapsedDates);
+    if (newCollapsed.has(dateKey)) {
+      newCollapsed.delete(dateKey);
+    } else {
+      newCollapsed.add(dateKey);
+    }
+    setCollapsedDates(newCollapsed);
+  };
+
+  // Toggle all dates collapse
+  const toggleAllDatesCollapse = () => {
+    if (collapsedDates.size === Object.keys(groupedTrades).length) {
+      setCollapsedDates(new Set());
+    } else {
+      setCollapsedDates(new Set(Object.keys(groupedTrades)));
+    }
+  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, trade: Trade) => {
     event.stopPropagation(); // Prevent row click event
@@ -178,8 +230,8 @@ export const TradeList: React.FC<TradeListProps> = ({
 
   const getSideIcon = (side: TradeSide) => {
     return side === TradeSide.BUY ? 
-      <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} /> : 
-      <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />;
+      <TrendingUpIcon sx={{ fontSize: 14, color: 'success.main' }} /> : 
+      <TrendingDownIcon sx={{ fontSize: 14, color: 'error.main' }} />;
   };
 
   return (
@@ -188,9 +240,9 @@ export const TradeList: React.FC<TradeListProps> = ({
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 1 : 3}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0 }}>
-            <Typography variant={isCompactMode ? "h6" : "h4"} fontWeight="bold" component="h2">
+            <ResponsiveTypography variant={isCompactMode ? "cardTitle" : "pageTitle"} fontWeight="bold" component="h2">
               Trade Summary
-            </Typography>
+            </ResponsiveTypography>
             <FIFOTooltip 
               placement="top" 
               size="small" 
@@ -198,9 +250,9 @@ export const TradeList: React.FC<TradeListProps> = ({
             />
           </Box>
           {!isCompactMode && (
-            <Typography variant="body1" color="text.secondary">
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
               Manage and track all your trading activities
-            </Typography>
+            </ResponsiveTypography>
           )}
         </Box>
         <Box display="flex" gap={0.5}>
@@ -303,41 +355,40 @@ export const TradeList: React.FC<TradeListProps> = ({
                     <CardContent sx={{ p: isCompactMode ? 1 : 2 }}>
                       {/* Exchange Name */}
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: isCompactMode ? 0.5 : 1 }}>
-                        <ExchangeIcon sx={{ 
+                        {/* <ExchangeIcon sx={{ 
                           mr: isCompactMode ? 0.5 : 1, 
                           color: '#1e40af',
                           fontSize: isCompactMode ? 18 : 22,
                           filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
-                        }} />
-                        <Typography variant={isCompactMode ? "body1" : "h6"} fontWeight="600" sx={{ 
-                          color: '#1e293b',
+                        }} /> */}
+                        <ResponsiveTypography variant={isCompactMode ? "cardLabel" : "cardTitle"} fontWeight="600" sx={{ 
+                          color: 'primary.main',
                           textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                           letterSpacing: '0.025em'
                         }}>
                           {exchange.exchange}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                       
                       {/* Total Volume */}
                       <Box sx={{ mb: isCompactMode ? 1 : 2, textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: isCompactMode ? 0.5 : 1 }}>
-                          <Typography variant={isCompactMode ? "h6" : "h5"} fontWeight="700" sx={{ 
+                          <ResponsiveTypography variant={isCompactMode ? "cardValueSmall" : "cardValue"} fontWeight="700" sx={{ 
                             color: '#1e293b',
                             textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                             letterSpacing: '-0.025em'
                           }}>
                             {formatCurrency(exchange.totalVolume)}
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
-                        <Typography variant={isCompactMode ? "caption" : "body2"} sx={{ 
+                        <ResponsiveTypography variant="labelSmall" sx={{ 
                           color: '#64748b',
                           fontWeight: 500,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                          letterSpacing: '0.05em'
                         }}>
                           Total Volume
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                       
                       {/* Stats Grid - Compact */}
@@ -359,24 +410,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                           }}>
                             <AssessmentIcon sx={{ color: '#3b82f6', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                             <Box>
-                              <Typography variant="caption" sx={{ 
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#64748b',
-                                fontWeight: 600,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
-                                fontSize: '0.7rem',
                                 lineHeight: 1.2
                               }}>
                                 Trades
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
                                 fontWeight: 700,
                                 lineHeight: 1.2,
                                 textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                               }}>
                                 {exchange.totalTrades}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </Box>
 
@@ -395,24 +444,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                           }}>
                             <WalletIcon sx={{ color: '#f59e0b', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                             <Box>
-                              <Typography variant="caption" sx={{ 
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#64748b',
-                                fontWeight: 600,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
-                                fontSize: '0.7rem',
                                 lineHeight: 1.2
                               }}>
                                 Fees
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
                                 fontWeight: 700,
                                 lineHeight: 1.2,
                                 textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                               }}>
                                 {formatCurrency(exchange.totalFees)}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </Box>
                         </Box>
@@ -438,24 +485,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                               <TrendingDownIcon sx={{ color: '#dc2626', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                             )}
                             <Box>
-                              <Typography variant="caption" sx={{ 
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#64748b',
-                                fontWeight: 600,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
-                                fontSize: '0.7rem',
                                 lineHeight: 1.2
                               }}>
                                 P&L
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: exchange.totalRealizedPL >= 0 ? '#16a34a' : '#dc2626',
                                 fontWeight: 700,
                                 lineHeight: 1.2,
                                 textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                               }}>
                                 {formatCurrency(exchange.totalRealizedPL)}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </Box>
 
@@ -474,24 +519,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                           }}>
                             <ChartIcon sx={{ color: '#8b5cf6', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                             <Box>
-                              <Typography variant="caption" sx={{ 
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#64748b',
-                                fontWeight: 600,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
-                                fontSize: '0.7rem',
                                 lineHeight: 1.2
                               }}>
                                 Return
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
                                 fontWeight: 700,
                                 lineHeight: 1.2,
                                 textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                               }}>
                                 {exchange.totalVolume > 0 ? (exchange.totalRealizedPL / exchange.totalVolume * 100).toFixed(1) : 0}%
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </Box>
                         </Box>
@@ -514,23 +557,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                         }}>
                           <TrendingUpIcon sx={{ color: '#16a34a', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                           <Box>
-                            <Typography variant="body2" sx={{ 
+                            <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#16a34a',
-                              fontWeight: 700,
+                              textTransform: 'uppercase',
                               lineHeight: 1.2,
                               textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                             }}>
                               {exchange.buyTrades} Buy
-                            </Typography>
-                            <Typography variant="caption" sx={{ 
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#64748b',
                               fontWeight: 500,
-                              fontSize: '0.7rem',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em'
                             }}>
                               {formatCurrency(exchange.buyVolume)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </Box>
 
@@ -549,23 +591,22 @@ export const TradeList: React.FC<TradeListProps> = ({
                         }}>
                           <TrendingDownIcon sx={{ color: '#dc2626', fontSize: 16, filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))' }} />
                           <Box>
-                            <Typography variant="body2" sx={{ 
+                            <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#dc2626',
-                              fontWeight: 700,
+                              textTransform: 'uppercase',
                               lineHeight: 1.2,
                               textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                             }}>
                               {exchange.sellTrades} Sell
-                            </Typography>
-                            <Typography variant="caption" sx={{ 
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#64748b',
                               fontWeight: 500,
-                              fontSize: '0.7rem',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em'
                             }}>
                               {formatCurrency(exchange.sellVolume)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </Box>
                       </Box>
@@ -578,12 +619,12 @@ export const TradeList: React.FC<TradeListProps> = ({
               {exchangeList.length === 0 && (
                 <Grid item xs={12}>
                   <Card variant="outlined" sx={{ textAlign: 'center', py: 4 }}>
-                    <Typography variant="h6" color="text.secondary">
+                    <ResponsiveTypography variant="cardTitle" color="text.secondary">
                       No exchange data available
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary">
                       Exchange information will appear here when trades are recorded
-                    </Typography>
+                    </ResponsiveTypography>
                   </Card>
                 </Grid>
               )}
@@ -593,12 +634,12 @@ export const TradeList: React.FC<TradeListProps> = ({
             <Box>
               {exchangeList.length === 0 ? (
                 <Card variant="outlined" sx={{ textAlign: 'center', py: isCompactMode ? 2 : 4 }}>
-                  <Typography variant={isCompactMode ? "body1" : "h6"} color="text.secondary">
+                  <ResponsiveTypography variant={isCompactMode ? "cardLabel" : "cardTitle"} color="text.secondary">
                     No exchange data available
-                  </Typography>
-                  <Typography variant={isCompactMode ? "caption" : "body2"} color="text.secondary">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant={isCompactMode ? "labelSmall" : "cardLabel"} color="text.secondary">
                     Exchange information will appear here when trades are recorded
-                  </Typography>
+                  </ResponsiveTypography>
                 </Card>
               ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
@@ -629,58 +670,58 @@ export const TradeList: React.FC<TradeListProps> = ({
                         >
                           <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box>
-                              <Typography variant={isCompactMode ? "body2" : "body1"} fontWeight="medium">
+                              <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                                 {exchange.exchange}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </TableCell>
                           <TableCell align="right" sx={{ py: isCompactMode ? 0.5 : 1 }}>
-                            <Typography variant={isCompactMode ? "body2" : "body1"} fontWeight="medium">
+                            <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                               {formatCurrency(exchange.totalVolume)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: isCompactMode ? 0.5 : 1 }}>
-                            <Typography variant={isCompactMode ? "body2" : "body1"}>
+                            <ResponsiveTypography variant={"tableCell"}>
                               {exchange.totalTrades}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: isCompactMode ? 0.5 : 1 }}>
-                            <Typography variant={isCompactMode ? "body2" : "body1"}>
+                            <ResponsiveTypography variant={"tableCell"}>
                               {formatCurrency(exchange.totalFees)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: isCompactMode ? 0.5 : 1 }}>
-                            <Typography 
-                              variant={isCompactMode ? "body2" : "body1"} 
+                            <ResponsiveTypography 
+                              variant={"tableCell"} 
                               fontWeight="medium"
                               color={exchange.totalRealizedPL >= 0 ? 'success.main' : 'error.main'}
                             >
                               {formatCurrency(exchange.totalRealizedPL)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: isCompactMode ? 0.5 : 1 }}>
-                            <Typography variant={isCompactMode ? "body2" : "body1"} fontWeight="medium">
+                            <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                               {exchange.totalVolume > 0 ? (exchange.totalRealizedPL / exchange.totalVolume * 100).toFixed(1) : 0}%
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell align="center" sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box sx={{ textAlign: 'center' }}>
-                              <Typography variant={isCompactMode ? "caption" : "body2"} fontWeight="medium">
+                              <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                                 {exchange.buyTrades}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                                 {formatCurrency(exchange.buyVolume)}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </TableCell>
                           <TableCell align="center" sx={{ py: isCompactMode ? 0.5 : 1 }}>
                             <Box sx={{ textAlign: 'center' }}>
-                              <Typography variant={isCompactMode ? "caption" : "body2"} fontWeight="medium">
+                              <ResponsiveTypography variant={"cardLabel"} fontWeight="medium">
                                 {exchange.sellTrades}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}>
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                                 {formatCurrency(exchange.sellVolume)}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </TableCell>
                         </TableRow>
@@ -698,10 +739,35 @@ export const TradeList: React.FC<TradeListProps> = ({
       <Box sx={{ mb: isCompactMode ? 2 : 3 }}>
         {/* Title and Action Buttons */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 3}>
-          <Typography variant={isCompactMode ? "h6" : "h5"} fontWeight="600" color="text.primary">
-            Trade List
-          </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <ResponsiveTypography variant={isCompactMode ? "cardTitle" : "pageTitle"} fontWeight="600" color="text.primary">
+              Trade List
+            </ResponsiveTypography>
+            {groupByDate && Object.keys(groupedTrades).length > 1 && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                onClick={toggleAllDatesCollapse}
+                sx={{ 
+                  textTransform: 'none',
+                  minWidth: isCompactMode ? 60 : 80,
+                  px: isCompactMode ? 1 : 2
+                }}
+              >
+                {isCompactMode ? (collapsedDates.size === Object.keys(groupedTrades).length ? 'E' : 'C') : (collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All')}
+              </Button>
+            )}
+          </Box>
           <Box display="flex" gap={2}>
+            <Button
+              variant={groupByDate ? 'contained' : 'outlined'}
+              startIcon={<CalendarIcon />}
+              onClick={() => setGroupByDate(!groupByDate)}
+              sx={{ textTransform: 'none' }}
+            >
+              Group by Date
+            </Button>
             <Button
               variant="outlined"
               startIcon={<FilterIcon />}
@@ -833,7 +899,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                 <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
                     <CircularProgress size={40} />
-                    <Typography color="text.secondary">Loading trades...</Typography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary">Loading trades...</ResponsiveTypography>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -841,12 +907,12 @@ export const TradeList: React.FC<TradeListProps> = ({
               <TableRow>
                 <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-                    <Typography variant="h6" color="text.secondary">
+                    <ResponsiveTypography variant="cardTitle" color="text.secondary">
                       No trades found
-                    </Typography>
-                    <Typography color="text.secondary">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary">
                       No trades match your current filter criteria.
-                    </Typography>
+                    </ResponsiveTypography>
                     <Button
                       variant="outlined"
                       startIcon={<AddIcon />}
@@ -859,7 +925,50 @@ export const TradeList: React.FC<TradeListProps> = ({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTrades.map((trade) => (
+              Object.entries(groupedTrades).map(([dateKey, trades]) => (
+                <React.Fragment key={dateKey}>
+                  {/* Date Header Row */}
+                  {groupByDate && (
+                    <TableRow 
+                      sx={{ 
+                        bgcolor: 'grey.100',
+                        '&:hover': { bgcolor: 'grey.200' },
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => toggleDateCollapse(dateKey)}
+                    >
+                      <TableCell 
+                        colSpan={12} 
+                        sx={{ 
+                          py: isCompactMode ? 1 : 1.5,
+                          borderBottom: '2px solid',
+                          borderBottomColor: 'primary.main'
+                        }}
+                      >
+                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <CalendarIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                            <ResponsiveTypography variant="cardTitle" fontWeight="600" color="primary.main">
+                              {dateKey}
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                              ({trades.length} {trades.length === 1 ? 'trade' : 'trades'})
+                            </ResponsiveTypography>
+                          </Box>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {collapsedDates.has(dateKey) ? (
+                              <ExpandMoreIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                            ) : (
+                              <ExpandLessIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                            )}
+                          </Box>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  
+                  {/* Trade Rows */}
+                  {!collapsedDates.has(dateKey) && trades.map((trade) => (
                 <TableRow 
                   key={trade.tradeId} 
                   hover
@@ -873,29 +982,29 @@ export const TradeList: React.FC<TradeListProps> = ({
                   }}
                 >
                     <TableCell sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"}>
+                      <ResponsiveTypography variant={"tableCell"}>
                         {format(parseISO(trade.tradeDate.toString()), 'MMM dd, yyyy')}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                         {format(parseISO(trade.tradeDate.toString()), 'HH:mm')}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell sx={{ py: isCompactMode ? 1 : 2 }}>
                       <Box>
-                        <Typography variant={isCompactMode ? "caption" : "body2"} fontWeight="medium">
+                        <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                           {trade.assetSymbol || trade.asset?.symbol || 'N/A'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                           {trade.assetName || trade.asset?.name || 'N/A'}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </TableCell>
                     <TableCell sx={{ py: isCompactMode ? 1 : 2 }}>
                       <Chip
                         label={trade.side}
                         color={getSideColor(trade.side)}
-                        size={isCompactMode ? "small" : "medium"}
-                        icon={<span style={{ fontSize: '14px' }}>{getSideIcon(trade.side)}</span>}
+                        size={isCompactMode ? "small" : "small"}
+                        icon={getSideIcon(trade.side)}
                         sx={{
                           fontWeight: 600,
                           '& .MuiChip-icon': {
@@ -905,49 +1014,49 @@ export const TradeList: React.FC<TradeListProps> = ({
                       />
                     </TableCell>
                     <TableCell sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"} color="text.secondary">
+                      <ResponsiveTypography variant={"tableCell"} color="text.secondary">
                         {trade.exchange || '-'}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"} color="text.secondary">
+                      <ResponsiveTypography variant={"tableCell"} color="text.secondary">
                         {trade.fundingSource || '-'}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"}>
+                      <ResponsiveTypography variant={"tableCell"}>
                         {formatNumber(trade.quantity, 2)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"}>
+                      <ResponsiveTypography variant={"tableCell"}>
                         {formatCurrency(trade.price)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"} fontWeight="medium">
+                      <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                         {formatCurrency(Number(trade.totalValue) || (trade.quantity * trade.price))}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"}>
+                      <ResponsiveTypography variant={"tableCell"}>
                         {formatCurrency((Number(trade.fee) || 0) + (Number(trade.tax) || 0))}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Typography variant={isCompactMode ? "caption" : "body2"} fontWeight="medium">
+                      <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                         {formatCurrency(Number(trade.totalCost) || ((trade.quantity * trade.price) + (Number(trade.fee) || 0) + (Number(trade.tax) || 0)))}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right" sx={{ py: isCompactMode ? 1 : 2 }}>
                       {trade.realizedPl !== undefined && (
-                        <Typography
-                          variant={isCompactMode ? "caption" : "body2"}
+                        <ResponsiveTypography
+                          variant={"tableCell"}
                           color={trade.realizedPl >= 0 ? 'success.main' : 'error.main'}
                           fontWeight="medium"
                         >
                           {formatCurrency(Number(trade.realizedPl) || 0)}
-                        </Typography>
+                        </ResponsiveTypography>
                       )}
                     </TableCell>
                     <TableCell align="center" sx={{ py: isCompactMode ? 1 : 2 }}>
@@ -967,9 +1076,11 @@ export const TradeList: React.FC<TradeListProps> = ({
                       </Tooltip>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
+                  ))}
+                </React.Fragment>
+              ))
+            )}
+          </TableBody>
           </Table>
         </TableContainer>
 
@@ -1102,7 +1213,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading trades...</Typography>
+        <ResponsiveTypography variant="cardLabel" sx={{ ml: 2 }}>Loading trades...</ResponsiveTypography>
       </Box>
     );
   }

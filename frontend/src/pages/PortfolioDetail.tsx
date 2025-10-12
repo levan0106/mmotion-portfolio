@@ -184,7 +184,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: 0, sm: 20, md: 30 }, // Responsive top position
+          top: { xs: 10, sm: 30, md: 45 }, // Responsive top position
           zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -629,7 +629,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: 100, // Position below header
+          top: 110, // Position below header
           zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',

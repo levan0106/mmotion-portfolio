@@ -393,7 +393,7 @@ export class SnapshotService {
   }
 
   /**
-   * Get timeline data for portfolio
+   * Get timeline data for portfolio - OPTIMIZED for analytics
    */
   async getTimelineData(query: SnapshotTimelineQuery): Promise<AssetAllocationSnapshot[]> {
 
@@ -409,7 +409,8 @@ export class SnapshotService {
       orderDirection: 'ASC',
     };
 
-    return await this.snapshotRepo.findMany(options);
+    // PERFORMANCE FIX: Use optimized analytics query for better performance
+    return await this.snapshotRepo.findManyForAnalytics(options);
   }
 
   // /**
@@ -654,7 +655,7 @@ export class SnapshotService {
   }
 
   /**
-   * Generate timeline from DAILY snapshots and aggregate them based on granularity
+   * Generate timeline from DAILY snapshots and aggregate them based on granularity - OPTIMIZED
    */
   private async generateTimelineFromDailySnapshots(
     portfolioId: string,
@@ -676,10 +677,7 @@ export class SnapshotService {
         return [];
       }
 
-      // Generate date range based on granularity
-      const dateRange = this.generateDateRangeFromMinDate(startDate, endDate, granularity);
-      
-      // Group daily snapshots by date
+      // PERFORMANCE FIX: Pre-calculate allocations for all dates to avoid repeated calculations
       const snapshotsByDate = new Map<string, AssetAllocationSnapshot[]>();
       dailySnapshots.forEach(snapshot => {
         const snapshotDate = snapshot.snapshotDate instanceof Date 
@@ -693,7 +691,17 @@ export class SnapshotService {
         snapshotsByDate.get(dateKey)!.push(snapshot);
       });
 
-      // Process each date with carry-forward logic
+      // PERFORMANCE FIX: Calculate allocations once for all dates with data
+      const allocationsByDate = new Map<string, { [assetType: string]: number }>();
+      for (const [dateKey, snapshots] of snapshotsByDate) {
+        const allocation = await this.calculateAnalyticsAllocationFromSnapshots(snapshots);
+        allocationsByDate.set(dateKey, allocation);
+      }
+
+      // Generate date range based on granularity
+      const dateRange = this.generateDateRangeFromMinDate(startDate, endDate, granularity);
+      
+      // Process each date with optimized carry-forward logic
       const timelineData: { date: string; [key: string]: string | number }[] = [];
       let lastAllocation: { [assetType: string]: number } = {};
 
@@ -715,7 +723,7 @@ export class SnapshotService {
             const checkDate = new Date(date);
             checkDate.setDate(checkDate.getDate() + i);
             const checkDateKey = checkDate.toISOString().split('T')[0];
-            if (snapshotsByDate.has(checkDateKey)) {
+            if (allocationsByDate.has(checkDateKey)) {
               foundDate = checkDateKey;
               break;
             }
@@ -725,12 +733,10 @@ export class SnapshotService {
           }
         }
 
-        const daySnapshots = snapshotsByDate.get(searchDate) || [];
+        // PERFORMANCE FIX: Use pre-calculated allocations instead of recalculating
         let currentAllocation: { [assetType: string]: number } = {};
-
-        if (daySnapshots.length > 0) {
-          // Calculate allocation from snapshot data for this day
-          currentAllocation = await this.calculateAnalyticsAllocationFromSnapshots(daySnapshots);
+        if (allocationsByDate.has(searchDate)) {
+          currentAllocation = allocationsByDate.get(searchDate)!;
           lastAllocation = { ...currentAllocation }; // Update last known allocation
         } else {
           // Simple carry-forward: use last known allocation
@@ -855,53 +861,23 @@ export class SnapshotService {
 
 
   /**
-   * Calculate asset allocation from snapshot data (analytics version)
+   * Calculate asset allocation from snapshot data (analytics version) - OPTIMIZED
    */
   private async calculateAnalyticsAllocationFromSnapshots(snapshots: AssetAllocationSnapshot[]): Promise<{ [assetType: string]: number }> {
     const allocation: { [assetType: string]: number } = {};
     const assetTypeMap = new Map<string, { value: number; count: number }>();
 
-    // Get asset types from database for each snapshot
+    // PERFORMANCE FIX: Use snapshot.assetType directly instead of N+1 queries
+    // The assetType is already stored in the snapshot, no need to query the database
     for (const snapshot of snapshots) {
-      try {
-        // Get asset type from database using assetId
-        const asset = await this.assetService.findById(snapshot.assetId);
-        if (!asset) {
-          this.logger.warn(`Asset not found for ID: ${snapshot.assetId}, using symbol mapping as fallback`);
-          // Fallback to symbol mapping if asset not found
-          const assetType = "TODO"; // TODO: Get asset type from symbol
-          if (!assetTypeMap.has(assetType)) {
-            assetTypeMap.set(assetType, { value: 0, count: 0 });
-          }
-          const current = assetTypeMap.get(assetType)!;
-          current.value += Number(snapshot.currentValue || 0);
-          current.count += 1;
-          continue;
-        }
-
-        const assetType = asset.type; // Use actual asset type from database
-        this.logger.debug(`Asset ${snapshot.assetSymbol} (${snapshot.assetId}) has type: ${assetType}`);
-        
-        if (!assetTypeMap.has(assetType)) {
-          assetTypeMap.set(assetType, { value: 0, count: 0 });
-        }
-        const current = assetTypeMap.get(assetType)!;
-        // Use snapshot values instead of real-time calculations
-        current.value += Number(snapshot.currentValue || 0);
-        current.count += 1;
-      } catch (error) 
-      // error: Asset not found for ID, using symbol mapping as fallback
-      {
-        this.logger.error(`Error getting asset type for snapshot ${snapshot.id}:`, error);
-        // Fallback to symbol mapping
-        const assetType = "TODO"; // TODO: Get asset type from symbol
-        if (!assetTypeMap.has(assetType)) {
-          assetTypeMap.set(assetType, { value: 0, count: 0 });
-        }
-        const current = assetTypeMap.get(assetType)!;
-        current.value += Number(snapshot.currentValue || 0);
-        current.count += 1;
+      const assetType = snapshot.assetType || 'UNKNOWN';
+      
+      if (!assetTypeMap.has(assetType)) {
+        assetTypeMap.set(assetType, { value: 0, count: 0 });
       }
+      const current = assetTypeMap.get(assetType)!;
+      current.value += Number(snapshot.currentValue || 0);
+      current.count += 1;
     }
 
     // Calculate total value from snapshots

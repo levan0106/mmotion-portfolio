@@ -175,7 +175,7 @@ export const useTypography = () => {
       ...overrides,
     }),
     
-    tableCell: (overrides: any = {}) => getTypographySx('xSmall', {
+    tableCell: (overrides: any = {}) => getTypographySx('small', {
       fontWeight: 400,
       lineHeight: 1.4,
       color: '#1a1a1a',
@@ -197,7 +197,7 @@ export const useTypography = () => {
       ...overrides,
     }),
     
-    tableCellSmall: (overrides: any = {}) => getTypographySx('caption', {
+    tableCellSmall: (overrides: any = {}) => getTypographySx('xSmall', {
       fontWeight: 300,
       lineHeight: 1.4,
       color: '#1a1a1a',

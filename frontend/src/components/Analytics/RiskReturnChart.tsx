@@ -45,8 +45,8 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
 }) => {
   const [localPeriod, setLocalPeriod] = useState(selectedPeriod);
 
-  const handlePeriodChange = (event: any) => {
-    const newPeriod = event.target.value;
+  const handlePeriodChange = (value: string | number) => {
+    const newPeriod = String(value);
     setLocalPeriod(newPeriod);
     if (onPeriodChange) {
       onPeriodChange(newPeriod);

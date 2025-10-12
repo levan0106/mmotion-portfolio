@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePortfolio } from '../../hooks/usePortfolios';
@@ -56,6 +56,9 @@ import {
   SwapHoriz as TransferIcon,
   DateRange as DateRangeIcon,
   FilterList as FilterIcon,
+  CalendarToday as CalendarIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -134,6 +137,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
+  const [groupByDate, setGroupByDate] = useState<boolean>(true);
 
   // Handler để xóa item từ filter
   const handleRemoveFilterType = (valueToRemove: string) => {
@@ -368,6 +373,60 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   // Cash flows are already filtered by server
   const filteredCashFlows = cashFlows || [];
 
+  // Group cash flows by date
+  const groupedCashFlows = useMemo(() => {
+    if (!groupByDate) {
+      return { 'All Transactions': filteredCashFlows };
+    }
+
+    const groups: Record<string, CashFlow[]> = {};
+    filteredCashFlows.forEach((cashFlow) => {
+      const date = new Date(cashFlow.flowDate);
+      const dateKey = date.toISOString().split('T')[0]; // yyyy-MM-dd format
+      
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(cashFlow);
+    });
+
+    // Sort dates in descending order (newest first)
+    const sortedGroups: Record<string, CashFlow[]> = {};
+    Object.keys(groups)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      .forEach(dateKey => {
+        const date = new Date(dateKey);
+        const displayDate = date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: '2-digit' 
+        });
+        sortedGroups[displayDate] = groups[dateKey];
+      });
+
+    return sortedGroups;
+  }, [filteredCashFlows, groupByDate]);
+
+  // Toggle date collapse
+  const toggleDateCollapse = (dateKey: string) => {
+    const newCollapsed = new Set(collapsedDates);
+    if (newCollapsed.has(dateKey)) {
+      newCollapsed.delete(dateKey);
+    } else {
+      newCollapsed.add(dateKey);
+    }
+    setCollapsedDates(newCollapsed);
+  };
+
+  // Toggle all dates collapse
+  const toggleAllDatesCollapse = () => {
+    if (collapsedDates.size === Object.keys(groupedCashFlows).length) {
+      setCollapsedDates(new Set());
+    } else {
+      setCollapsedDates(new Set(Object.keys(groupedCashFlows)));
+    }
+  };
+
   // Calculate total amount for filtered cash flows
   const filteredTotal = filteredCashFlows
     .filter(cf => cf.status === 'COMPLETED')
@@ -593,7 +652,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem' } : {})
+                ...(compact ? { fontSize: '0.7rem!important' } : {
+                  fontSize:{
+                  xs: '0.65rem!important',
+                  sm: '0.65rem!important',
+                  md: '0.7rem!important',
+                  lg: '0.75rem!important',
+                  xl: '0.8rem!important'
+                }
+                })
               }}
             >
               {compact ? "Deposit" : "Create Deposit"}
@@ -609,7 +676,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem' } : {})
+                ...(compact ? { fontSize: '0.7rem!important' } : {
+                  fontSize:{
+                  xs: '0.65rem!important',
+                  sm: '0.65rem!important',
+                  md: '0.7rem!important',
+                  lg: '0.75rem!important',
+                  xl: '0.8rem!important'
+                }
+                })
               }}
             >
               {compact ? "Withdraw" : "Create Withdrawal"}
@@ -625,8 +700,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 mr: compact ? 0.5 : 1,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem' } : {})
-              }}
+                ...(compact ? { fontSize: '0.7rem!important' } : {
+                  fontSize:{
+                  xs: '0.65rem!important',
+                  sm: '0.65rem!important',
+                  md: '0.7rem!important',
+                  lg: '0.75rem!important',
+                  xl: '0.8rem!important'
+                }
+                })
+                }}
+              
             >
               {compact ? "Dividend" : "Create Dividend"}
             </Button>
@@ -649,7 +733,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 borderRadius: 2,
                 px: compact ? 1 : 2,
                 py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem' } : {})
+                ...(compact ? { fontSize: '0.7rem!important' } : {
+                  fontSize:{
+                  xs: '0.65rem!important',
+                  sm: '0.65rem!important',
+                  md: '0.7rem!important',
+                  lg: '0.75rem!important',
+                  xl: '0.8rem!important'
+                }
+                })
               }}
             >
               {compact ? "Transfer" : "Transfer Cash"}
@@ -691,7 +783,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   borderRadius: '50%', 
                   background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
                   boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-                  width: {
+                  maxWidth: {
                     xs: compact ? 28 : 40,
                     sm: compact ? 32 : 42,
                     md: compact ? 36 : 44,
@@ -1234,9 +1326,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     >
                       Reset
                     </Button>
-                  
-                  {/* Actions */}
-                  <Box display="flex" gap={1}>
+                    
                     <Button
                       size="small"
                       variant="contained"
@@ -1244,8 +1334,32 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       onClick={handleApplyFilters}
                       disabled={loading}
                     >
-                      Filter
+                      Search
                     </Button>
+                  
+                  {/* Actions */}
+                  <Box display="flex" gap={1}>
+                    
+                    <Button
+                      variant={groupByDate ? 'contained' : 'outlined'}
+                      startIcon={<CalendarIcon />}
+                      onClick={() => setGroupByDate(!groupByDate)}
+                      size="small"
+                      sx={{ textTransform: 'none' }}
+                    >
+                      Group by Date
+                    </Button>
+                    
+                    {groupByDate && Object.keys(groupedCashFlows).length > 1 && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={toggleAllDatesCollapse}
+                        sx={{ textTransform: 'none' }}
+                      >
+                        {collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                      </Button>
+                    )}
                     
                     <Button
                       variant="outlined"
@@ -1354,85 +1468,130 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredCashFlows.map((cashFlow) => (
-                        <TableRow key={cashFlow.cashflowId} hover>
-                          <TableCell>
-                            <Chip
-                              {...(getTypeIcon(cashFlow.type) && { icon: getTypeIcon(cashFlow.type) })}
-                              label={formatTypeName(cashFlow.type)}
-                              color={getTypeColor(cashFlow.type) as any}
-                              size="small"
-                              variant="outlined"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <ResponsiveTypography
-                              variant="tableCellSmall"
-                              sx={{
-                                color: cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'
+                      {Object.entries(groupedCashFlows).map(([dateKey, cashFlows]) => (
+                        <React.Fragment key={dateKey}>
+                          {/* Date Header Row */}
+                          {groupByDate && (
+                            <TableRow 
+                              sx={{ 
+                                bgcolor: 'grey.100',
+                                '&:hover': { bgcolor: 'grey.200' },
+                                cursor: 'pointer'
                               }}
+                              onClick={() => toggleDateCollapse(dateKey)}
                             >
-                              {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
-                            </ResponsiveTypography>
-                          </TableCell>
-                          <TableCell>
-                            <ResponsiveTypography variant="tableCellSmall" noWrap sx={{ maxWidth: 220 }}>
-                              {cashFlow.description}
-                            </ResponsiveTypography>
-                          </TableCell>
-                          <TableCell>
-                            <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
-                              {cashFlow.reference || '-'}
-                            </ResponsiveTypography>
-                          </TableCell>
-                          <TableCell>
-                            <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
-                              {cashFlow.fundingSource || '-'}
-                            </ResponsiveTypography>
-                          </TableCell>
-                          <TableCell>
-                            <ResponsiveTypography variant="tableCellSmall">
-                              {formatDate(cashFlow.flowDate)}
-                            </ResponsiveTypography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={cashFlow.status}
-                              color={
-                                cashFlow.status === 'COMPLETED' ? 'success' :
-                                cashFlow.status === 'PENDING' ? 'warning' :
-                                cashFlow.status === 'CANCELLED' ? 'error' : 'default'
-                              }
-                              size="small"
-                              variant="filled"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <Tooltip title={cashFlow.status === 'CANCELLED' ? 'Cannot edit cancelled cash flow' : 'Edit'}>
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleEditCashFlow(cashFlow)}
-                                    color="primary"
-                                    disabled={cashFlow.status === 'CANCELLED'}
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton
+                              <TableCell 
+                                colSpan={8} 
+                                sx={{ 
+                                  py: compact ? 1 : 1.5,
+                                  borderBottom: '2px solid',
+                                  borderBottomColor: 'primary.main'
+                                }}
+                              >
+                                <Box display="flex" alignItems="center" justifyContent="space-between">
+                                  <Box display="flex" alignItems="center" gap={1}>
+                                    <CalendarIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                                    <ResponsiveTypography variant="cardTitle" fontWeight="600" color="primary.main">
+                                      {dateKey}
+                                    </ResponsiveTypography>
+                                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                                      ({cashFlows.length} {cashFlows.length === 1 ? 'transaction' : 'transactions'})
+                                    </ResponsiveTypography>
+                                  </Box>
+                                  <Box display="flex" alignItems="center" gap={1}>
+                                    {collapsedDates.has(dateKey) ? (
+                                      <ExpandMoreIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                                    ) : (
+                                      <ExpandLessIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                                    )}
+                                  </Box>
+                                </Box>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          
+                          {/* Cash Flow Rows */}
+                          {!collapsedDates.has(dateKey) && cashFlows.map((cashFlow) => (
+                            <TableRow key={cashFlow.cashflowId} hover>
+                              <TableCell>
+                                <Chip
+                                  {...(getTypeIcon(cashFlow.type) && { icon: getTypeIcon(cashFlow.type) })}
+                                  label={formatTypeName(cashFlow.type)}
+                                  color={getTypeColor(cashFlow.type) as any}
                                   size="small"
-                                  onClick={() => handleDeleteCashFlow(cashFlow)}
-                                  color="error"
+                                  variant="outlined"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <ResponsiveTypography
+                                  variant="tableCellSmall"
+                                  sx={{
+                                    color: cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'
+                                  }}
                                 >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
+                                  {formatCurrency(cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? cashFlow.amount : -cashFlow.amount)}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <ResponsiveTypography variant="tableCellSmall" noWrap sx={{ maxWidth: 220 }}>
+                                  {cashFlow.description}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
+                                  {cashFlow.reference || '-'}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'text.secondary' }}>
+                                  {cashFlow.fundingSource || '-'}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <ResponsiveTypography variant="tableCellSmall">
+                                  {formatDate(cashFlow.flowDate)}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={cashFlow.status}
+                                  color={
+                                    cashFlow.status === 'COMPLETED' ? 'success' :
+                                    cashFlow.status === 'PENDING' ? 'warning' :
+                                    cashFlow.status === 'CANCELLED' ? 'error' : 'default'
+                                  }
+                                  size="small"
+                                  variant="filled"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  <Tooltip title={cashFlow.status === 'CANCELLED' ? 'Cannot edit cancelled cash flow' : 'Edit'}>
+                                    <span>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => handleEditCashFlow(cashFlow)}
+                                        color="primary"
+                                        disabled={cashFlow.status === 'CANCELLED'}
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </IconButton>
+                                    </span>
+                                  </Tooltip>
+                                  <Tooltip title="Delete">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleDeleteCashFlow(cashFlow)}
+                                      color="error"
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </TableBody>
                   </Table>

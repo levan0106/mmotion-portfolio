@@ -632,7 +632,7 @@ const Report: React.FC = () => {
                 title="By Exchange/Platform"
                 data={reportData.assets.byExchange}
                 columns={[
-                  { key: 'exchange', label: 'Exchange/Platform' },
+                  { key: 'exchange', label: 'Exchange' },
                   { key: 'count', label: 'Capital Value', align: 'right' },
                   { key: 'total', label: 'Current Value', align: 'right' },
                   { key: 'percentage', label: 'Share', align: 'right' },

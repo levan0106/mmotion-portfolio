@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogActions,
   Box,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -31,6 +30,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   Close as CloseIcon,
   TrendingUp,
@@ -132,7 +132,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth="xl"
       fullWidth
       PaperProps={{
         sx: {
@@ -140,6 +140,8 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
           backdropFilter: 'blur(10px)',
           border: `0.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+          maxHeight: '90vh',
+          height: '90vh'
         }
       }}
     >
@@ -150,12 +152,12 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 600, color: 'text.primary' }}>
               {holdingName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
               Subscription & Redemption History
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tooltip title="Refresh">
@@ -170,7 +172,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0 }}>
+      <DialogContent sx={{ p: 0, overflow: 'auto', flex: 1 }}>
         {isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
             <CircularProgress size={60} thickness={4} />
@@ -180,12 +182,12 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             severity="error" 
             sx={{ m: 3, borderRadius: 2 }}
           >
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="cardTitle" gutterBottom>
               Failed to load holding details
-            </Typography>
-            <Typography variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell">
               {error}
-            </Typography>
+            </ResponsiveTypography>
             <Button onClick={fetchHoldingDetail} sx={{ mt: 1 }}>
               Try Again
             </Button>
@@ -194,9 +196,9 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
           <Box>
             {/* Summary Metrics */}
             <Box sx={{ p: 3, pb: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 Summary
-              </Typography>
+              </ResponsiveTypography>
               <Grid container spacing={2}>
                 {summaryMetrics.map((metric, index) => (
                   <Grid item xs={12} sm={6} md={3} key={index}>
@@ -222,16 +224,16 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                           >
                             {React.cloneElement(metric.icon, { sx: { fontSize: 18 } })}
                           </Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                          <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                             {metric.title}
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
                           {metric.value}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="labelSmall" color="text.secondary">
                           {metric.subtitle}
-                        </Typography>
+                        </ResponsiveTypography>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -243,9 +245,9 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
 
             {/* Transaction History */}
             <Box sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 Transaction History
-              </Typography>
+              </ResponsiveTypography>
               
               {holdingDetail.transactions.length === 0 ? (
                 <Box sx={{ 
@@ -256,24 +258,36 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 }}>
                   <AccountBalanceWallet sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary">
+                  <ResponsiveTypography variant="cardTitle" color="text.secondary">
                     No transactions found
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardLabel" color="text.secondary">
                     This holding doesn't have any subscription or redemption transactions yet.
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Type</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Units</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>NAV per Unit</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Amount</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">Type</ResponsiveTypography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">NAV per Unit</ResponsiveTypography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">Amount</ResponsiveTypography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">Date</ResponsiveTypography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          <ResponsiveTypography variant="tableHeaderSmall">Description</ResponsiveTypography>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -303,55 +317,55 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                                 {React.cloneElement(getTransactionIcon(item.transaction), { sx: { fontSize: 16 } })}
                               </Box>
                               <Box>
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
                                   {getTransactionLabel(item.transaction)}
-                                </Typography>
-                                <Chip
+                                </ResponsiveTypography>
+                                {/* <Chip
                                   label={item.transaction.holdingType}
                                   size="small"
                                   color={getTransactionColor(item.transaction)}
                                   sx={{ fontSize: '0.7rem', height: 20 }}
-                                />
+                                /> */}
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {formatNumberWithSeparators(Number(item.transaction.units), 3)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body1">
+                            <ResponsiveTypography variant="tableCell">
                               {formatCurrency(Number(item.transaction.navPerUnit), 'VND')}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography 
-                              variant="body1" 
+                            <ResponsiveTypography 
+                              variant="tableCell" 
                               sx={{ 
                                 fontWeight: 600,
                                 color: item.transaction.holdingType === 'SUBSCRIBE' ? 'success.main' : 'error.main'
                               }}
                             >
                               {formatCurrency(Number(item.transaction.amount), 'VND')}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {format(parseISO(item.transaction.createdAt), 'MMM dd, yyyy')}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="labelSmall" color="text.secondary">
                               {format(parseISO(item.transaction.createdAt), 'HH:mm')}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" color="text.secondary">
+                            <ResponsiveTypography variant="tableCell" color="text.secondary">
                               {item.cashFlow?.description || 'No description'}
-                            </Typography>
+                            </ResponsiveTypography>
                             {item.cashFlow?.fundingSource && (
-                              <Typography variant="caption" color="text.secondary">
+                              <ResponsiveTypography variant="labelXSmall" color="text.secondary">
                                 Source: {item.cashFlow.fundingSource}
-                              </Typography>
+                              </ResponsiveTypography>
                             )}
                           </TableCell>
                         </TableRow>
