@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   InputAdornment,
@@ -61,6 +61,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
 }) => {
   const [displayValue, setDisplayValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Format number with thousands separator and decimal places
   const formatNumber = (num: number): string => {
@@ -167,6 +168,14 @@ const NumberInput: React.FC<NumberInputProps> = ({
     } else {
       setDisplayValue('');
     }
+    
+    // Auto-select all text when focusing (especially useful for Tab navigation)
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.select();
+      }
+    }, 0);
+    
     onFocus?.();
   };
 
@@ -201,6 +210,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
 
   return (
     <TextField
+      ref={inputRef}
       fullWidth={fullWidth}
       label={label}
       value={displayValue}

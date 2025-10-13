@@ -425,31 +425,31 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
               icon={<PortfolioIcon />} 
               iconPosition="start" 
               label="Portfolio Summary" 
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 120, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<PerformanceIcon />} 
               iconPosition="start" 
               label="Portfolio Performance" 
-              sx={{ minWidth: 160 }}
+              sx={{ minWidth: 160, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<AssetGroupIcon />} 
               iconPosition="start" 
               label="Asset Group Performance" 
-              sx={{ minWidth: 180 }}
+              sx={{ minWidth: 180, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<AssetIcon />} 
               iconPosition="start" 
               label="Asset Performance" 
-              sx={{ minWidth: 160 }}
+              sx={{ minWidth: 160, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<TrendingUpIcon />} 
               iconPosition="start" 
               label="Asset Snapshots" 
-              sx={{ minWidth: 140 }}
+              sx={{ minWidth: 140, fontWeight: 600, letterSpacing: '0.3px' }}
             />
           </Tabs>
           
@@ -461,6 +461,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
               startIcon={<RefreshIcon />}
               onClick={handleRefresh}
               disabled={loading || portfolioSnapshotsLoading || performanceLoading}
+              sx={{ fontWeight: 600, letterSpacing: '0.3px' }}
             >
               Refresh Data
             </Button>

@@ -1,12 +1,11 @@
 import React from 'react';
-import { Typography, TypographyProps, SxProps, Theme } from '@mui/material';
+import { Typography, TypographyProps } from '@mui/material';
 import { useTypography } from '../../theme/useTypography';
 
-interface ResponsiveTypographyProps extends Omit<TypographyProps, 'sx' | 'variant'> {
-  variant?: keyof ReturnType<typeof useTypography>['variants'];
+interface ResponsiveTypographyProps extends Omit<TypographyProps, 'variant'> {
+  variant?: keyof ReturnType<typeof useTypography>['variants'] | TypographyProps['variant'];
   customVariant?: keyof ReturnType<typeof useTypography>['getFontSize'];
   overrides?: any;
-  sx?: SxProps<Theme>;
   ellipsis?: boolean;
   maxLines?: number;
 }
@@ -15,14 +14,14 @@ interface ResponsiveTypographyProps extends Omit<TypographyProps, 'sx' | 'varian
  * Responsive Typography component that uses custom typography variants
  */
 export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
-  variant = 'body1',
+  variant,
   customVariant,
   overrides = {},
   sx = {},
   ellipsis = true,
   maxLines,
   children,
-  ...props
+  ...restProps
 }) => {
   const { variants, getTypographySx } = useTypography();
   
@@ -64,9 +63,16 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
     return { ...baseSx, ...sx };
   };
   
+  // Determine which variant to pass to Typography
+  // Only pass Material-UI variants to Typography, not custom variants
+  const isCustomVariant = variant && variants[variant as keyof typeof variants];
+  const typographyVariant = (customVariant || isCustomVariant) ? 'body2' : 
+    (variant as TypographyProps['variant']);
+  
   return (
     <Typography
-      {...props}
+      {...restProps}
+      variant={typographyVariant}
       sx={getSx()}
     >
       {children}

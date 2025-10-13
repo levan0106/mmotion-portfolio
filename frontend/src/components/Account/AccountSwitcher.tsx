@@ -145,25 +145,21 @@ export const AccountSwitcher: React.FC = () => {
             endIcon={<ArrowDropDownIcon />}
             disabled={loading}
             sx={{
-              minWidth: 80,
               height: 36,
               justifyContent: 'space-between',
               textTransform: 'none',
               borderRadius: 1.5,
-              px: 1.5,
-              py: 0.5,
+              //px: 1.5,
+              //py: 0.5,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: 1 }}>
+            {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: 1 }}>
               <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography variant="body2" noWrap sx={{ fontSize: '0.8rem', lineHeight: 1.2 }}>
                   {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
                 </Typography>
-                {/* <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem', lineHeight: 1.2 }}>
-                  ({currentAccount?.baseCurrency || 'VND'})
-                </Typography> */}
               </Box>
-            </Box>
+            </Box> */}
           </Button>
         </Tooltip>
 

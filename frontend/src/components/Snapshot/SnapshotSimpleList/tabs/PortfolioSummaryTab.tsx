@@ -8,13 +8,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
   Chip,
   Alert,
   CircularProgress,
 } from '@mui/material';
 import { formatCurrency, formatPercentage, formatDate } from '../../../../utils/format';
 import { PaginationControls } from '../../../Common/PaginationControls';
+import { ResponsiveTypography } from '../../../Common/ResponsiveTypography';
 
 interface PortfolioSummaryTabProps {
   portfolioSnapshots: any[];
@@ -42,12 +42,18 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
 }) => {
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+      <ResponsiveTypography 
+        variant="pageTitle" 
+        sx={{ mb: 2, color: 'primary.main' }}
+      >
         Portfolio Summary Snapshots
-      </Typography>
-      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+      </ResponsiveTypography>
+      <ResponsiveTypography 
+        variant="pageSubtitle" 
+        sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.6 }}
+      >
         Cash balance được lấy từ bảng portfolio_snapshots.cash_balance có thể khác với cách tính trong tab Portfolio Performance.
-      </Typography>
+      </ResponsiveTypography>
 
       {portfolioSnapshotsLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
@@ -67,61 +73,59 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
                 <TableCell sx={{ 
-                  fontWeight: 600, 
-                  fontSize: '0.7rem', 
-                  py: 0.5, 
+                  py: 1, 
                   minWidth: 100,
                   position: 'sticky',
                   left: 0,
-                  backgroundColor: 'grey.50',
                   zIndex: 1,
                   borderRight: '1px solid',
-                  borderColor: 'divider'
-                }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Portfolio</TableCell>
+                  borderColor: 'divider',
+                  letterSpacing: '0.5px'
+                }}><ResponsiveTypography variant="tableHeaderSmall" >Date</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Portfolio</ResponsiveTypography></TableCell>
                 {/* Portfolio Level (Assets + Deposits) */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Value</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Portfolio Invested</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio P&L</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio Unrealized</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Portfolio Realized</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Total Portfolio Value</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Total Portfolio Invested</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio P&L</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Unrealized</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Realized</ResponsiveTypography></TableCell>
                 {/* Asset Level (Assets Only) */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Asset Value</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Total Asset Invested</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset P&L</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset Unrealized</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Asset Realized</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Total Asset Value</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Total Asset Invested</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset P&L</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Unrealized</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Realized</ResponsiveTypography></TableCell>
                 {/* Deposit Level */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Deposits</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Value</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Principal</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Interest</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Unrealized</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Deposit Realized</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposits</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposit Value</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposit Principal</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposit Interest</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposit Unrealized</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Deposit Realized</ResponsiveTypography></TableCell>
                 {/* Cash Level */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 140 }} align="right">Cash</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 140, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Cash</ResponsiveTypography></TableCell>
                 {/* Fund Management */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }} align="right">Outstanding Units</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }} align="right">NAV per Unit</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 100 }} align="right">Investors</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="center">Is Fund</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Outstanding Units</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 100, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >NAV per Unit</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 100, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Investors</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="center"><ResponsiveTypography variant="tableHeaderSmall" >Is Fund</ResponsiveTypography></TableCell>
                 {/* Portfolio Performance Metrics (Assets + Deposits) */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Daily %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Weekly %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio Monthly %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Portfolio YTD %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Portfolio Vol %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Portfolio Max DD</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Daily %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Weekly %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Monthly %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio YTD %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Vol %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Max DD</ResponsiveTypography></TableCell>
                 {/* Asset Performance Metrics (Assets Only) */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Daily %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Weekly %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset Monthly %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Asset YTD %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Asset Vol %</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 70 }} align="right">Asset Max DD</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Assets</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 60 }} align="right">Active</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Type</TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Daily %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Weekly %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Monthly %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset YTD %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Vol %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Max DD</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 60, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Assets</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 60, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Active</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Type</ResponsiveTypography></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -134,213 +138,194 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                     py: 0.5,
                     position: 'sticky',
                     left: 0,
-                    backgroundColor: 'background.paper',
                     zIndex: 1,
                     borderRight: '1px solid',
                     borderColor: 'divider'
                   }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
-                      {formatDate(snapshot.snapshotDate)}
-                    </Typography>
+                     <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
+                       {formatDate(snapshot.snapshotDate)}
+                     </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio */}
-                  <TableCell sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
                       {snapshot.portfolioName}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Total Portfolio Value */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                       {formatCurrency(Number(snapshot.totalPortfolioValue || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Total Portfolio Invested */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatCurrency(Number(snapshot.totalPortfolioInvested || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.totalPortfolioPl && Number(snapshot.totalPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall"
+                      sx={{ color: snapshot.totalPortfolioPl && Number(snapshot.totalPortfolioPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.totalPortfolioPl && Number(snapshot.totalPortfolioPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.totalPortfolioPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Unrealized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall"
+                      sx={{ color: snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.unrealizedPortfolioPl && Number(snapshot.unrealizedPortfolioPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.unrealizedPortfolioPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Realized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.realizedPortfolioPl && Number(snapshot.realizedPortfolioPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.realizedPortfolioPl && Number(snapshot.realizedPortfolioPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.realizedPortfolioPl && Number(snapshot.realizedPortfolioPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.realizedPortfolioPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Total Asset Value */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall">
                       {formatCurrency(Number(snapshot.totalAssetValue || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Total Asset Invested */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatCurrency(Number(snapshot.totalAssetInvested || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.totalAssetPl && Number(snapshot.totalAssetPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.totalAssetPl && Number(snapshot.totalAssetPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.totalAssetPl && Number(snapshot.totalAssetPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.totalAssetPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Unrealized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.unrealizedAssetPl && Number(snapshot.unrealizedAssetPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.unrealizedAssetPl && Number(snapshot.unrealizedAssetPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.unrealizedAssetPl && Number(snapshot.unrealizedAssetPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.unrealizedAssetPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Realized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.realizedAssetPl && Number(snapshot.realizedAssetPl) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.realizedAssetPl && Number(snapshot.realizedAssetPl) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.realizedAssetPl && Number(snapshot.realizedAssetPl) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.realizedAssetPl || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Count */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {snapshot.totalDepositCount || 0}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Value */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatCurrency(Number(snapshot.totalDepositValue || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Principal */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatCurrency(Number(snapshot.totalDepositPrincipal || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Interest */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.totalDepositInterest && Number(snapshot.totalDepositInterest) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.totalDepositInterest || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Unrealized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.unrealizedDepositPnL && Number(snapshot.unrealizedDepositPnL) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.unrealizedDepositPnL && Number(snapshot.unrealizedDepositPnL) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.unrealizedDepositPnL && Number(snapshot.unrealizedDepositPnL) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.unrealizedDepositPnL || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Deposit Realized P&L */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.realizedDepositPnL && Number(snapshot.realizedDepositPnL) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.realizedDepositPnL && Number(snapshot.realizedDepositPnL) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.realizedDepositPnL && Number(snapshot.realizedDepositPnL) >= 0 ? '+' : ''}
                       {formatCurrency(Number(snapshot.realizedDepositPnL || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Cash Balance */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatCurrency(Number(snapshot.cashBalance || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Fund Management */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {Number(snapshot.totalOutstandingUnits || 0).toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'primary.main' }}>
                       {formatCurrency(Number(snapshot.navPerUnit || 0), baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {Number(snapshot.numberOfInvestors || 0).toLocaleString()}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
-                  <TableCell align="center" sx={{ py: 0.5 }}>
+                  <TableCell align="center" sx={{ py: 1 }}>
                     <Chip 
                       label={snapshot.isFund ? 'Yes' : 'No'} 
                       size="small" 
@@ -350,163 +335,143 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                   </TableCell>
                   
                   {/* Portfolio Daily Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.portfolioDailyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Weekly Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.portfolioWeeklyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Monthly Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.portfolioMonthlyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio YTD Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.portfolioYtdReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Volatility % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatPercentage(Number(snapshot.portfolioVolatility || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Portfolio Max Drawdown % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color="error.main"
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: 'error.main' }}
                     >
                       -{formatPercentage(Number(snapshot.portfolioMaxDrawdown || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
 
                   {/* Asset Daily Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.assetDailyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Weekly Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.assetWeeklyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Monthly Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.assetMonthlyReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset YTD Return % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color={snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? 'success.main' : 'error.main'}
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? '+' : ''}
                       {formatPercentage(Number(snapshot.assetYtdReturn || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Volatility % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {formatPercentage(Number(snapshot.assetVolatility || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Max Drawdown % */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={600}
-                      sx={{ fontSize: '0.7rem' }}
-                      color="error.main"
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: 'error.main' }}
                     >
                       -{formatPercentage(Number(snapshot.assetMaxDrawdown || 0))}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Asset Count */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {snapshot.assetCount || 0}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Active Asset Count */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
+                    <ResponsiveTypography variant="tableCellSmall" >
                       {snapshot.activeAssetCount || 0}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   
                   {/* Granularity Type */}
-                  <TableCell align="right" sx={{ py: 0.5 }}>
+                  <TableCell align="right" sx={{ py: 1 }}>
                     <Chip 
                       label={snapshot.granularity} 
                       size="small" 
@@ -521,10 +486,10 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
           </Table>
         </TableContainer>
       ) : (
-        <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
-          <Typography variant="body2">
+        <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+          <ResponsiveTypography variant="pageSubtitle" sx={{ fontWeight: 500, letterSpacing: '0.3px' }}>
             No portfolio snapshots available
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       )}
       

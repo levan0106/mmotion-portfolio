@@ -9,7 +9,6 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Typography,
   Chip,
   IconButton,
   Tooltip,
@@ -25,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { formatCurrency, formatPercentage, formatDate, formatNumber } from '../../../../utils/format';
 import { SnapshotResponse } from '../../../../types/snapshot.types';
+import { ResponsiveTypography } from '../../../Common/ResponsiveTypography';
 
 interface SnapshotAssetSnapshotTabProps {
   transformedSnapshots: any[];
@@ -117,22 +117,22 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                       {allExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                   </Tooltip>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  <ResponsiveTypography variant="tableHeaderSmall" sx={{ letterSpacing: '0.3px' }}>
                     Date
-                  </Typography>
+                  </ResponsiveTypography>
                   <Box sx={{ flexGrow: 1 }} />
                 </Box>
               </TableCell>
-              <TableCell>Asset</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Value</TableCell>
-              <TableCell>Total P&L</TableCell>
-              <TableCell>Unrealized P&L</TableCell>
-              <TableCell>Realized P&L</TableCell>
-              <TableCell>Return %</TableCell>
-              <TableCell>Granularity</TableCell>
-              {showActions && <TableCell>Actions</TableCell>}
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Asset</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Quantity</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Price</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Value</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Total P&L</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Unrealized P&L</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Realized P&L</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Return %</ResponsiveTypography></TableCell>
+              <TableCell sx={{ letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Granularity</ResponsiveTypography></TableCell>
+              {showActions && <TableCell><ResponsiveTypography variant="tableHeaderSmall" >Actions</ResponsiveTypography></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -195,17 +195,17 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                         }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
                               {formatDate(date)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Box>
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             {getAssetTypeIcon(assetType)}
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.3px' }}>
                               {assetType.toUpperCase()}
-                            </Typography>
+                            </ResponsiveTypography>
                             <Chip
                               label={`${typeSnapshots.length} assets`}
                               size="small"
@@ -215,60 +215,48 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatNumber(totalQuantity, 4)}
-                          </Typography>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
+                              {formatNumber(totalQuantity, 4)}
+                            </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(avgPrice, baseCurrency)}
-                          </Typography>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
+                              {formatCurrency(avgPrice, baseCurrency)}
+                            </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(totalValue, baseCurrency)}
-                          </Typography>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
+                              {formatCurrency(totalValue, baseCurrency)}
+                            </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ fontWeight: 500 }}
-                            color={totalPl >= 0 ? 'success.main' : 'error.main'}
-                          >
-                            {totalPl >= 0 ? '+' : ''}{formatCurrency(totalPl, baseCurrency)}
-                          </Typography>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: totalPl >= 0 ? 'success.main' : 'error.main' }}
+                            >
+                              {totalPl >= 0 ? '+' : ''}{formatCurrency(totalPl, baseCurrency)}
+                            </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ fontWeight: 500 }}
-                            color={totalUnrealizedPl >= 0 ? 'success.main' : 'error.main'}
+                          <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: totalUnrealizedPl >= 0 ? 'success.main' : 'error.main' }}
                           >
                             {totalUnrealizedPl >= 0 ? '+' : ''}{formatCurrency(totalUnrealizedPl, baseCurrency)}
-                          </Typography>
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ fontWeight: 500 }}
-                            color={totalRealizedPl >= 0 ? 'success.main' : 'error.main'}
+                          <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: totalRealizedPl >= 0 ? 'success.main' : 'error.main' }}
                           >
                             {totalRealizedPl >= 0 ? '+' : ''}{formatCurrency(totalRealizedPl, baseCurrency)}
-                          </Typography>
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ fontWeight: 500 }}
-                            color={avgReturn >= 0 ? 'success.main' : 'error.main'}
+                          <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: avgReturn >= 0 ? 'success.main' : 'error.main' }}
                           >
                             {avgReturn >= 0 ? '+' : ''}{formatPercentage(avgReturn)}
-                          </Typography>
+                          </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                             {typeSnapshots[0]?.granularity || 'DAILY'}
-                          </Typography>
+                          </ResponsiveTypography>
                         </TableCell>
                         {showActions && (
                           <TableCell>
@@ -313,66 +301,54 @@ const SnapshotAssetSnapshotTab: React.FC<SnapshotAssetSnapshotTabProps> = ({
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <TrendingUpIcon fontSize="small" color="primary" />
-                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                                 {snapshot.displayName}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                               {formatNumber(Number(snapshot.quantity || 0), 4)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                               {formatCurrency(Number(snapshot.currentPrice || 0), baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                               {formatCurrency(Number(snapshot.currentValue || 0), baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ fontWeight: 500 }}
-                              color={Number(snapshot.totalPl || 0) >= 0 ? 'success.main' : 'error.main'}
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: Number(snapshot.totalPl || 0) >= 0 ? 'success.main' : 'error.main' }}
                             >
                               {Number(snapshot.totalPl || 0) >= 0 ? '+' : ''}{formatCurrency(Number(snapshot.totalPl || 0), baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ fontWeight: 500 }}
-                              color={Number(snapshot.unrealizedPl || 0) >= 0 ? 'success.main' : 'error.main'}
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: Number(snapshot.unrealizedPl || 0) >= 0 ? 'success.main' : 'error.main' }}
                             >
                               {Number(snapshot.unrealizedPl || 0) >= 0 ? '+' : ''}{formatCurrency(Number(snapshot.unrealizedPl || 0), baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ fontWeight: 500 }}
-                              color={Number(snapshot.realizedPl || 0) >= 0 ? 'success.main' : 'error.main'}
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: Number(snapshot.realizedPl || 0) >= 0 ? 'success.main' : 'error.main' }}
                             >
                               {Number(snapshot.realizedPl || 0) >= 0 ? '+' : ''}{formatCurrency(Number(snapshot.realizedPl || 0), baseCurrency)}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ fontWeight: 500 }}
-                              color={Number(snapshot.returnPercentage || 0) >= 0 ? 'success.main' : 'error.main'}
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px', color: Number(snapshot.returnPercentage || 0) >= 0 ? 'success.main' : 'error.main' }}
                             >
                               {Number(snapshot.returnPercentage || 0) >= 0 ? '+' : ''}{formatPercentage(Number(snapshot.returnPercentage || 0))}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.1px' }}>
                               {snapshot.granularity}
-                            </Typography>
+                            </ResponsiveTypography>
                           </TableCell>
                           {showActions && (
                             <TableCell>

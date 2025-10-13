@@ -115,6 +115,13 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
       setDisplayValue('');
     }
     
+    // Auto-select all text when focusing (especially useful for Tab navigation)
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.select();
+      }
+    }, 0);
+    
     onFocus?.();
   };
 

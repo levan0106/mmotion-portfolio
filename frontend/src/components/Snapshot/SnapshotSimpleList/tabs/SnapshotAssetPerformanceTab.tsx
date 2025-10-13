@@ -8,13 +8,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
   Chip,
   CircularProgress,
 } from '@mui/material';
 import { formatPercentage, formatDate } from '../../../../utils/format';
 import { PaginationControls } from '../../../Common/PaginationControls';
 import { PaginatedResponse } from '../../../../hooks/usePagination';
+import { ResponsiveTypography } from '../../../Common/ResponsiveTypography';
 
 interface SnapshotAssetPerformanceTabProps {
   assetPerformanceData: PaginatedResponse<any>;
@@ -31,9 +31,9 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
 }) => {
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+      <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'primary.main' }}>
         Asset Performance Snapshots
-      </Typography>
+      </ResponsiveTypography>
       
       {performanceLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
@@ -47,62 +47,61 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
                 <TableCell sx={{ 
-                  fontWeight: 600, 
-                  fontSize: '0.7rem', 
-                  py: 0.5, 
+                  py: 1, 
                   minWidth: 100,
                   position: 'sticky',
                   left: 0,
                   backgroundColor: 'grey.50',
                   zIndex: 1,
                   borderRight: '1px solid',
-                  borderColor: 'divider'
-                }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 120 }}>Asset Symbol</TableCell>
+                  borderColor: 'divider',
+                  letterSpacing: '0.5px'
+                }}><ResponsiveTypography variant="tableHeaderSmall" >Date</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 1, minWidth: 120, letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Asset Symbol</ResponsiveTypography></TableCell>
                 {/* TWR Metrics */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1D</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1W</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 6M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR 1Y</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">TWR YTD</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 1D</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 1W</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 6M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR 1Y</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >TWR YTD</ResponsiveTypography></TableCell>
                 {/* IRR Metrics */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 6M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR 1Y</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">IRR YTD</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >IRR 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >IRR 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >IRR 6M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >IRR 1Y</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >IRR YTD</ResponsiveTypography></TableCell>
                 {/* Alpha Metrics */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 6M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha 1Y</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Alpha YTD</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Alpha 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Alpha 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Alpha 6M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Alpha 1Y</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Alpha YTD</ResponsiveTypography></TableCell>
         {/* Beta Metrics - REMOVED due to calculation issues */}
-        {/* <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1M</TableCell>
-        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 3M</TableCell>
-        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 6M</TableCell>
-        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta 1Y</TableCell>
-        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Beta YTD</TableCell> */}
+        {/* <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right">Beta 1M</TableCell>
+        <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right">Beta 3M</TableCell>
+        <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right">Beta 6M</TableCell>
+        <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right">Beta 1Y</TableCell>
+        <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right">Beta YTD</TableCell> */}
                 {/* Sharpe Ratio */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Sharpe 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Sharpe 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Sharpe 1Y</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Sharpe 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Sharpe 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Sharpe 1Y</ResponsiveTypography></TableCell>
                 {/* Volatility */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Volatility 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Volatility 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Volatility 1Y</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Volatility 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Volatility 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Volatility 1Y</ResponsiveTypography></TableCell>
                 {/* Max Drawdown */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Max DD 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Max DD 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Max DD 1Y</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Max DD 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Max DD 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Max DD 1Y</ResponsiveTypography></TableCell>
                 {/* Risk-Adjusted Return */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Risk Adj 1M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Risk Adj 3M</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }} align="right">Risk Adj 1Y</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Risk Adj 1M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Risk Adj 3M</ResponsiveTypography></TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Risk Adj 1Y</ResponsiveTypography></TableCell>
                 {/* Granularity moved to end */}
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', py: 0.5, minWidth: 80 }}>Granularity</TableCell>
+                <TableCell sx={{ py: 0.5, minWidth: 80 }}><ResponsiveTypography variant="tableHeaderSmall" >Granularity</ResponsiveTypography></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -119,317 +118,291 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
                     borderRight: '1px solid',
                     borderColor: 'divider'
                   }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
                       {formatDate(snapshot.snapshotDate)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
                       {snapshot.assetSymbol || 'Unknown'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* TWR Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR1D && Number(snapshot.assetTWR1D) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1D && Number(snapshot.assetTWR1D) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR1D && Number(snapshot.assetTWR1D) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR1D)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR1W)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR1M && Number(snapshot.assetTWR1M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR1M && Number(snapshot.assetTWR1M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR3M && Number(snapshot.assetTWR3M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR3M && Number(snapshot.assetTWR3M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR6M && Number(snapshot.assetTWR6M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR6M && Number(snapshot.assetTWR6M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR6M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWR1Y && Number(snapshot.assetTWR1Y) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWR1Y && Number(snapshot.assetTWR1Y) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWR1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetTWRYTD && Number(snapshot.assetTWRYTD) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetTWRYTD && Number(snapshot.assetTWRYTD) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetTWRYTD)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* IRR Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetIRR1M && Number(snapshot.assetIRR1M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetIRR1M && Number(snapshot.assetIRR1M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetIRR1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetIRR3M && Number(snapshot.assetIRR3M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetIRR3M && Number(snapshot.assetIRR3M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetIRR3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetIRR6M && Number(snapshot.assetIRR6M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetIRR6M && Number(snapshot.assetIRR6M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetIRR6M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetIRR1Y && Number(snapshot.assetIRR1Y) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetIRR1Y && Number(snapshot.assetIRR1Y) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetIRR1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetIRRYTD && Number(snapshot.assetIRRYTD) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetIRRYTD && Number(snapshot.assetIRRYTD) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetIRRYTD)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Alpha Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetAlpha1M && Number(snapshot.assetAlpha1M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetAlpha1M && Number(snapshot.assetAlpha1M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetAlpha1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetAlpha3M && Number(snapshot.assetAlpha3M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetAlpha3M && Number(snapshot.assetAlpha3M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetAlpha3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetAlpha6M && Number(snapshot.assetAlpha6M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetAlpha6M && Number(snapshot.assetAlpha6M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetAlpha6M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetAlpha1Y && Number(snapshot.assetAlpha1Y) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetAlpha1Y && Number(snapshot.assetAlpha1Y) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetAlpha1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetAlphaYTD && Number(snapshot.assetAlphaYTD) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetAlphaYTD && Number(snapshot.assetAlphaYTD) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetAlphaYTD)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Beta Values */}
                   {/* Beta Metrics - REMOVED due to calculation issues */}
                   {/* <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.assetBeta1M) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.assetBeta3M) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.assetBeta6M) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.assetBeta1Y) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {(parseFloat(snapshot.assetBetaYTD) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell> */}
                   {/* Sharpe Ratio Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetSharpeRatio1M && Number(snapshot.assetSharpeRatio1M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {(parseFloat(snapshot.assetSharpeRatio1M) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetSharpeRatio3M && Number(snapshot.assetSharpeRatio3M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {(parseFloat(snapshot.assetSharpeRatio3M) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetSharpeRatio1Y && Number(snapshot.assetSharpeRatio1Y) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {(parseFloat(snapshot.assetSharpeRatio1Y) || 0).toFixed(2)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Volatility Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {formatPercentage(snapshot.assetVolatility1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {formatPercentage(snapshot.assetVolatility3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                       {formatPercentage(snapshot.assetVolatility1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Max Drawdown Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color="error.main"
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: 'error.main' }}
                     >
                       -{formatPercentage(snapshot.assetMaxDrawdown1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color="error.main"
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: 'error.main' }}
                     >
                       -{formatPercentage(snapshot.assetMaxDrawdown3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color="error.main"
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: 'error.main' }}
                     >
                       -{formatPercentage(snapshot.assetMaxDrawdown1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Risk-Adjusted Return Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetRiskAdjustedReturn1M && Number(snapshot.assetRiskAdjustedReturn1M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetRiskAdjustedReturn1M && Number(snapshot.assetRiskAdjustedReturn1M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetRiskAdjustedReturn1M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetRiskAdjustedReturn3M && Number(snapshot.assetRiskAdjustedReturn3M) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetRiskAdjustedReturn3M && Number(snapshot.assetRiskAdjustedReturn3M) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetRiskAdjustedReturn3M)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-                      color={snapshot.assetRiskAdjustedReturn1Y && Number(snapshot.assetRiskAdjustedReturn1Y) >= 0 ? 'success.main' : 'error.main'}
+                    <ResponsiveTypography 
+                      variant="tableCellSmall" 
+                      sx={{ color: snapshot.assetTWR1W && Number(snapshot.assetTWR1W) >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {snapshot.assetRiskAdjustedReturn1Y && Number(snapshot.assetRiskAdjustedReturn1Y) >= 0 ? '+' : ''}
                       {formatPercentage(snapshot.assetRiskAdjustedReturn1Y)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   {/* Granularity moved to end */}
                   <TableCell sx={{ py: 0.5 }}>
@@ -447,10 +420,10 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
           </Table>
         </TableContainer>
       ) : (
-        <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
-          <Typography variant="body2">
+        <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+          <ResponsiveTypography variant="pageSubtitle" sx={{ letterSpacing: '0.3px' }}>
             No asset performance snapshots available
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       )}
       
