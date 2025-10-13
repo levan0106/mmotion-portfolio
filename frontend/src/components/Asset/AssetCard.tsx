@@ -12,7 +12,23 @@ import {
 } from '../../utils/format';
 import { AssetTypeLabels } from '../../types/asset.types';
 import { useAccount } from '../../contexts/AccountContext';
-import './AssetCard.styles.css';
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Chip,
+  Box,
+  Tooltip,
+} from '@mui/material';
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Remove as RemoveIcon,
+} from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 
 export interface AssetCardProps {
   asset: Asset;
@@ -31,7 +47,6 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   onView,
   showActions = true,
   compact = false,
-  className = '',
 }) => {
   const { baseCurrency } = useAccount();
   const performance = {
@@ -56,128 +71,194 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   };
 
   return (
-    <div 
-      className={`asset-card ${compact ? 'asset-card--compact' : ''} ${className}`}
+    <Card 
+      sx={{ 
+        cursor: 'pointer',
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: 3,
+        },
+        ...(compact && {
+          '& .MuiCardContent-root': {
+            padding: 1.5,
+          },
+        }),
+      }}
       onClick={handleCardClick}
     >
-      {/* Header */}
-      <div className="asset-card__header">
-        <div className="asset-card__title">
-          {asset.symbol && (
-            <span className="asset-card__code">{asset.symbol}</span>
+      <CardContent>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box>
+            {asset.symbol && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {asset.symbol}
+              </Typography>
+            )}
+            <Typography variant="h6" component="h3" sx={{ fontWeight: 'medium' }}>
+              {asset.name}
+            </Typography>
+          </Box>
+          
+          <Chip 
+            label={AssetTypeLabels[asset.type as keyof typeof AssetTypeLabels] || asset.type}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        </Box>
+
+        {/* Content */}
+        <Box sx={{ mb: 2 }}>
+          {/* Value Information */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Total Value
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Current Price
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  {formatCurrency(asset.currentPrice || 0, baseCurrency)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Quantity
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  {formatNumber(Number(asset.totalQuantity) || 0, 2)}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Performance */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+              Performance
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {performance.isGaining ? (
+                <TrendingUpIcon color="success" fontSize="small" />
+              ) : performance.isLosing ? (
+                <TrendingDownIcon color="error" fontSize="small" />
+              ) : (
+                <RemoveIcon color="disabled" fontSize="small" />
+              )}
+              <Box>
+                <Typography 
+                  variant="body2" 
+                  color={performance.isGaining ? 'success.main' : performance.isLosing ? 'error.main' : 'text.secondary'}
+                  sx={{ fontWeight: 'medium' }}
+                >
+                  {formatCurrency(performance.valueChange, baseCurrency)}
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  color={performance.isGaining ? 'success.main' : performance.isLosing ? 'error.main' : 'text.secondary'}
+                >
+                  {formatPercentage(performance.valueChangePercentage, 2)}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Additional Info - Compact */}
+          {!compact && (
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Updated
+                </Typography>
+                <Typography variant="body2">
+                  {new Date(asset.updatedAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Trades
+                </Typography>
+                <Chip
+                  label={asset.hasTrades ? 'Yes' : 'No'}
+                  size="small"
+                  color={asset.hasTrades ? 'success' : 'default'}
+                  variant="outlined"
+                />
+              </Box>
+            </Box>
           )}
-          <h3 className="asset-card__name">{asset.name}</h3>
-        </div>
-        
-        <div className="asset-card__type">
-          <span className={`asset-type asset-type--${asset.type.toLowerCase()}`}>
-            {AssetTypeLabels[asset.type as keyof typeof AssetTypeLabels] || asset.type}
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="asset-card__content">
-        {/* Value Information - Original Layout */}
-        <div className="asset-card__value">
-          <div className="value-item value-item--primary">
-            <label>Total Value</label>
-            <span className="value-item__primary">
-              {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
-            </span>
-          </div>
-
-          <div className="value-item">
-            <label>Current Price</label>
-            <span className="value-item__primary">
-              {formatCurrency(asset.currentPrice || 0, baseCurrency)}
-            </span>
-          </div>
-
-          <div className="value-item">
-            <label>Quantity</label>
-            <span className="value-item__primary">
-              {formatNumber(Number(asset.totalQuantity) || 0, 2)}
-            </span>
-          </div>
-        </div>
-
-        {/* Performance */}
-        <div className="asset-card__performance">
-          <div className="performance-item">
-            <label>Performance</label>
-            <div className={`performance ${performance.isGaining ? 'performance--positive' : performance.isLosing ? 'performance--negative' : ''}`}>
-              <span className="performance__value">
-                {formatCurrency(performance.valueChange, baseCurrency)}
-              </span>
-              <span className="performance__percentage">
-                {formatPercentage(performance.valueChangePercentage, 2)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Info - Compact */}
-        {!compact && (
-          <div className="asset-card__info">
-            <div className="info-item">
-              <label>Updated</label>
-              <span>{new Date(asset.updatedAt).toLocaleDateString()}</span>
-            </div>
-            <div className="info-item">
-              <label>Trades</label>
-              <span className={asset.hasTrades ? 'status status--active' : 'status status--inactive'}>
-                {asset.hasTrades ? 'Yes' : 'No'}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
+        </Box>
+      </CardContent>
 
       {/* Actions */}
       {showActions && (
-        <div className="asset-card__actions">
-          <button
+        <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+          <ResponsiveButton
             onClick={handleEditClick}
-            className="btn btn--small btn--secondary"
-            title="Edit Asset"
+            icon={<EditIcon />}
+            mobileText="Edit"
+            desktopText="Edit"
+            variant="outlined"
+            size="small"
           >
             Edit
-          </button>
-          <button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleDeleteClick}
-            className="btn btn--small btn--danger"
-            title="Delete Asset"
+            icon={<DeleteIcon />}
+            mobileText="Delete"
+            desktopText="Delete"
+            variant="outlined"
+            color="error"
+            size="small"
           >
             Delete
-          </button>
-        </div>
+          </ResponsiveButton>
+        </CardActions>
       )}
 
       {/* Status Indicators */}
-      <div className="asset-card__indicators">
+      <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 0.5 }}>
         {asset.hasTrades && (
-          <span className="indicator indicator--trades" title="Has trading activity">
-            ●
-          </span>
+          <Tooltip title="Has trading activity">
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'success.main',
+              }}
+            />
+          </Tooltip>
         )}
         {performance.isGaining && (
-          <span className="indicator indicator--gaining" title="Positive performance">
-            ▲
-          </span>
+          <Tooltip title="Positive performance">
+            <TrendingUpIcon color="success" fontSize="small" />
+          </Tooltip>
         )}
         {performance.isLosing && (
-          <span className="indicator indicator--losing" title="Negative performance">
-            ▼
-          </span>
+          <Tooltip title="Negative performance">
+            <TrendingDownIcon color="error" fontSize="small" />
+          </Tooltip>
         )}
         {!performance.isGaining && !performance.isLosing && (
-          <span className="indicator indicator--neutral" title="Neutral performance">
-            ●
-          </span>
+          <Tooltip title="Neutral performance">
+            <RemoveIcon color="disabled" fontSize="small" />
+          </Tooltip>
         )}
-      </div>
-    </div>
+      </Box>
+    </Card>
   );
 };
 

@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
   Box,
   Grid,
   Alert,
@@ -17,6 +16,7 @@ import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   Edit as EditIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { FundUnitTransactionWithCashFlow } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -138,22 +138,24 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
 
   const modalActions = (
     <>
-      <Button 
+      <ResponsiveButton 
         onClick={handleClose}
         disabled={loading}
         size="large"
       >
         Cancel
-      </Button>
-      <Button 
+      </ResponsiveButton>
+      <ResponsiveButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={loading}
         size="large"
-        startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+        icon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+        mobileText="Update"
+        desktopText="Update Transaction"
       >
         {loading ? 'Updating...' : 'Update Transaction'}
-      </Button>
+      </ResponsiveButton>
     </>
   );
 

@@ -6,7 +6,6 @@ import {
   Typography,
   Grid,
   TextField,
-  Button,
   FormControl,
   InputLabel,
   Select,
@@ -37,6 +36,7 @@ import {
   Refresh as RefreshIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from './Common';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useForm, Controller } from 'react-hook-form';
@@ -449,11 +449,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                       Track all price changes and updates for this asset
                     </Typography>
                   </Box>
-                  <Button
+                  <ResponsiveButton
                     onClick={() => setUpdateDialogOpen(true)}
                     variant="contained"
-                    startIcon={<EditIcon />}
+                    icon={<EditIcon />}
                     disabled={loading}
+                    mobileText="Update"
+                    desktopText="Update Price"
                     sx={{
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       fontWeight: 600,
@@ -468,7 +470,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     }}
                   >
                     Update Price
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
 
                 {/* Stats Bar */}
@@ -485,11 +487,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                   <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
                     {priceHistory.length} Price Records
                   </Typography>
-                  <Button
+                  <ResponsiveButton
                     variant="outlined"
-                    startIcon={<RefreshIcon />}
+                    icon={<RefreshIcon />}
                     onClick={handlePriceHistoryRefresh}
                     disabled={historyLoading}
+                    mobileText="Refresh"
+                    desktopText="Refresh"
                     sx={{
                       borderColor: '#667eea',
                       color: '#667eea',
@@ -501,7 +505,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     }}
                   >
                     Refresh
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
 
                 {historyError ? (
@@ -732,8 +736,11 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
             <Box>
               Update Price - {asset.symbol}
             </Box>
-            <Button
+            <ResponsiveButton
               onClick={() => setUpdateDialogOpen(false)}
+              icon={<CloseIcon />}
+              mobileText=""
+              desktopText=""
               sx={{
                 color: 'white',
                 minWidth: 'auto',
@@ -745,7 +752,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
               }}
             >
               <CloseIcon />
-            </Button>
+            </ResponsiveButton>
           </DialogTitle>
           <form onSubmit={handleSubmit(handlePriceUpdate)}>
             <DialogContent sx={{ p: 4 }}>
@@ -914,11 +921,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
               borderTop: '1px solid rgba(0,0,0,0.1)',
               justifyContent: 'flex-end'
             }}>
-              <Button
+              <ResponsiveButton
                 type="submit"
                 variant="contained"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+                icon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+                mobileText={loading ? 'Updating...' : 'Update'}
+                desktopText={loading ? 'Updating...' : 'Update Price'}
                 sx={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   fontWeight: 700,
@@ -932,7 +941,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                 }}
               >
                 {loading ? 'Updating...' : 'Update Price'}
-              </Button>
+              </ResponsiveButton>
             </DialogActions>
           </form>
         </Dialog>

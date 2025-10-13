@@ -9,7 +9,6 @@ import {
   Box,
   Card,
   CardContent,
-  Button,
   Grid,
   Table,
   TableBody,
@@ -35,6 +34,7 @@ import {
   Calculate as CalculateIcon,
   Transform as ConvertIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { 
   formatCurrency, 
   formatPercentage, 
@@ -144,14 +144,16 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
               This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.
             </ResponsiveTypography>
-            <Button 
+            <ResponsiveButton 
               variant="contained" 
-              startIcon={<AccountBalanceIcon />}
+              icon={<AccountBalanceIcon />}
+              mobileText="Convert"
+              desktopText="Convert to Fund"
               onClick={() => setConvertModalOpen(true)}
               disabled={loading}
             >
               {loading ? <CircularProgress size={20} /> : 'Convert to Fund'}
-            </Button>
+            </ResponsiveButton>
           </CardContent>
         </Card>
 
@@ -281,32 +283,38 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Button
+              <ResponsiveButton
                 variant="contained"
-                startIcon={<AddIcon />}
+                icon={<AddIcon />}
+                mobileText="New"
+                desktopText="New Subscription"
                 onClick={() => setSubscriptionModalOpen(true)}
                 sx={{ minWidth: 150 }}
               >
                 New Subscription
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={<RemoveIcon />}
+                icon={<RemoveIcon />}
+                mobileText="Process"
+                desktopText="Process Redemption"
                 onClick={() => setRedemptionModalOpen(true)}
                 sx={{ minWidth: 150 }}
               >
                 Process Redemption
-              </Button>
+              </ResponsiveButton>
             </Box>
-            <Button
+            <ResponsiveButton
               variant="outlined"
               color="warning"
-              startIcon={<ConvertIcon />}
+              icon={<ConvertIcon />}
+              mobileText="Convert"
+              desktopText="Convert to Portfolio"
               onClick={() => setConvertToPortfolioModalOpen(true)}
               sx={{ minWidth: 150 }}
             >
               Convert to Portfolio
-            </Button>
+            </ResponsiveButton>
           </Box>
         </CardContent>
       </Card>

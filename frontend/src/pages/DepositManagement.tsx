@@ -4,7 +4,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
   TextField,
   MenuItem,
   Paper,
@@ -15,6 +14,7 @@ import {
   InputAdornment,
   useTheme,
 } from '@mui/material';
+import { ResponsiveButton } from '../components/Common';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -263,24 +263,28 @@ const DepositManagement: React.FC = () => {
           </ResponsiveTypography>
         </Box>
         <Box display="flex" gap={2} sx={{ ml: 2 }}>
-          <Button
+          <ResponsiveButton
             variant="outlined"
-            startIcon={<RefreshIcon />}
+            icon={<RefreshIcon />}
             onClick={() => {
               queryClient.invalidateQueries(['deposits']);
               queryClient.invalidateQueries(['deposit-analytics']);
             }}
+            mobileText="Refresh"
+            desktopText="Làm mới"
           >
             Làm mới
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             variant="contained"
-            startIcon={<AddIcon />}
+            icon={<AddIcon />}
             onClick={() => setDepositFormOpen(true)}
             disabled={createDepositMutation.isLoading || selectedPortfolioId === 'ALL'}
+            mobileText="Tạo"
+            desktopText="Tạo tiền gửi mới"
           >
             Tạo tiền gửi mới
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
 
@@ -335,17 +339,19 @@ const DepositManagement: React.FC = () => {
           </Grid>
           
           <Grid item xs={12} sm={6} md={3}>
-            <Button
+            <ResponsiveButton
               fullWidth
               variant="outlined"
-              startIcon={<FilterIcon />}
+              icon={<FilterIcon />}
               onClick={() => {
                 setSearchTerm('');
                 setStatusFilter('ALL');
               }}
+              mobileText="Clear"
+              desktopText="Xóa bộ lọc"
             >
               Xóa bộ lọc
-            </Button>
+            </ResponsiveButton>
           </Grid>
         </Grid>
       </Paper>

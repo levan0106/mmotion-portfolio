@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -18,6 +17,7 @@ import {
   CircularProgress,
   IconButton,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
@@ -226,21 +226,26 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 2, pt: 1 }}>
-        <Button 
+        <ResponsiveButton 
           onClick={handleClose} 
           disabled={loading}
           color="inherit"
+          icon={<CircularProgress />}
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={handleSubmit}
           variant="contained"
           disabled={loading || !formData.name || !formData.email}
-          startIcon={loading && <CircularProgress size={16} />}
+          icon={loading ? <CircularProgress size={16} /> : <CircularProgress />}
+          mobileText={loading ? 'Updating...' : 'Update'}
+          desktopText={loading ? 'Updating...' : 'Update Account'}
         >
           {loading ? 'Updating...' : 'Update Account'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

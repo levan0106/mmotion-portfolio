@@ -9,7 +9,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
   Grid,
   Chip,
   IconButton,
@@ -17,6 +16,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import {
   Search as SearchIcon,
   Clear as ClearIcon,
@@ -205,15 +205,17 @@ const AssetsFilterPanelInternal: React.FC<AssetsFilterPanelProps> = ({
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {hasActiveFilters && (
-              <Button
+              <ResponsiveButton
                 variant="outlined"
                 size="small"
-                startIcon={<ClearIcon />}
+                icon={<ClearIcon />}
                 onClick={handleClearFilters}
+                mobileText="Clear"
+                desktopText="Clear All"
                 sx={{ textTransform: 'none' }}
               >
                 Clear All
-              </Button>
+              </ResponsiveButton>
             )}
             <IconButton
               onClick={toggleAdvanced}

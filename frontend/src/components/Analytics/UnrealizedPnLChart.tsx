@@ -226,7 +226,8 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
       minHeight: compact ? 133 : 200,
       display: 'flex',
       flexDirection: 'column',
-      flex: 1
+      flex: 1,
+      px: { xs: 0, sm: 1 }
     }}>
       <ResponsiveTypography variant="chartTitle" sx={{ 
         textAlign: 'center'
@@ -238,14 +239,15 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
         width: '100%',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
       }}>
         <ResponsiveContainer width="100%" height={compact ? 200 : 250}>
         <BarChart data={chartData} margin={{ 
-          top: compact ? 5 : 10, 
-          right: compact ? 5 : 10, 
-          left: compact ? 5 : 10, 
-          bottom: compact ? 5 : 10 
+          top: compact ? 2 : 10, 
+          right: compact ? 0 : 10, 
+          left: compact ? 0 : 10, 
+          bottom: compact ? 2 : 10 
         }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 

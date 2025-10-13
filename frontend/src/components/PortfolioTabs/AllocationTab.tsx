@@ -166,7 +166,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       backgroundColor: 'background.paper',
       minHeight: '80vh',
       pt: 0,
-      px: getUltraSpacing(2, 1)
+      px: { xs: 0.5, sm: getUltraSpacing(2, 1) }
     }}>
       {/* Professional Portfolio Overview Section */}
       <Grid container spacing={getUltraSpacing(3, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
@@ -391,7 +391,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         {/* Asset Allocation Pie Chart - Column 1 */}
         <Grid item xs={12} md={4}>
           <Box sx={{ 
-            p: getUltraSpacing(1.5, 0.5), 
+            p: { xs: 0.5, sm: getUltraSpacing(1.5, 0.5) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%', // Fill grid item height
@@ -425,7 +425,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         {/* Unrealized P&L Chart - Column 2 */}
         <Grid item xs={12} md={4}>
           <Box sx={{ 
-            p: getUltraSpacing(1.5, 0.5), 
+            p: { xs: 0, sm: getUltraSpacing(1.5, 0.5) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%', // Fill grid item height
@@ -456,7 +456,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         {/* Allocation Summary - Column 3 */}
         <Grid item xs={12} md={4}>
           <Box sx={{ 
-            p: getUltraSpacing(1.5, 0.5), 
+            p: { xs: 0.5, sm: getUltraSpacing(1.5, 0.5) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%', // Fill grid item height
@@ -572,7 +572,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         Asset Detail Summary
       </ResponsiveTypography>
       <Box sx={{ 
-        p: getUltraSpacing(2, 1), 
+        p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
         backgroundColor: 'white', 
         //boxShadow: 1,
         mb: getUltraSpacing(4, 2),
@@ -607,7 +607,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
-            p: getUltraSpacing(2, 1), 
+            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%',
@@ -636,7 +636,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         </Grid>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
-            p: getUltraSpacing(2, 1), 
+            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%',
@@ -676,7 +676,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
-            p: getUltraSpacing(2, 1), 
+            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%',
@@ -700,7 +700,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         </Grid>
         <Grid item xs={12} md={6}>
           <Box sx={{ 
-            p: getUltraSpacing(2, 1), 
+            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%',

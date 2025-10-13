@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Alert,
   CircularProgress,
   Container,
@@ -31,6 +30,7 @@ import {
   Delete as DeleteIcon,
   ArrowBack,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../components/Common';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAccount } from '../contexts/AccountContext';
@@ -389,14 +389,16 @@ export const Login: React.FC = () => {
               </Box>
             )}
 
-            <Button
+            <ResponsiveButton
               type="button"
               fullWidth
               variant="contained"
               size="large"
               onClick={handleLogin}
               disabled={(!username.trim() || loading) || (currentStep === 'password' && !password.trim())}
-              startIcon={loading ? <CircularProgress size={20} /> : <LoginIcon />}
+              icon={loading ? <CircularProgress size={20} /> : <LoginIcon />}
+              mobileText={loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
+              desktopText={loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
               sx={{
                 py: 1.5,
                 fontSize: '1.1rem',
@@ -417,7 +419,7 @@ export const Login: React.FC = () => {
               }}
             >
               {loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
-            </Button>
+            </ResponsiveButton>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="caption" color="text.secondary">
@@ -443,13 +445,15 @@ export const Login: React.FC = () => {
                       Recent Users - Quick Login
                     </Typography>
                   </Box>
-                  <Button
+                  <ResponsiveButton
                     size="small"
                     onClick={toggleHistory}
+                    mobileText={showHistory ? 'Hide' : 'Show'}
+                    desktopText={`${showHistory ? 'Hide' : 'Show'} (${userHistory.length})`}
                     sx={{ textTransform: 'none' }}
                   >
                     {showHistory ? 'Hide' : 'Show'} ({userHistory.length})
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
 
                 {showHistory && (

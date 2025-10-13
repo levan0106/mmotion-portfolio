@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Button,
   Grid,
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import {
   Paper,
   useTheme,
 } from '@mui/material';
+import { ResponsiveButton } from '../components/Common';
 import {
   Add as AddIcon,
   Security as SecurityIcon,
@@ -309,13 +309,15 @@ const RoleManagementContent: React.FC = () => {
                   <ResponsiveTypography variant="cardTitle">
                     System Roles
                   </ResponsiveTypography>
-                  <Button
+                  <ResponsiveButton
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    icon={<AddIcon />}
                     onClick={handleCreateRole}
+                    mobileText="Create"
+                    desktopText="Create Role"
                   >
                     Create Role
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
                 <RoleList
                   onEditRole={handleEditRole}
@@ -339,13 +341,15 @@ const RoleManagementContent: React.FC = () => {
                   <ResponsiveTypography variant="cardTitle">
                     System Users
                   </ResponsiveTypography>
-                  <Button
+                  <ResponsiveButton
                     variant="contained"
-                    startIcon={<AddIcon />}
+                    icon={<AddIcon />}
                     onClick={handleCreateUser}
+                    mobileText="Create"
+                    desktopText="Create User"
                   >
                     Create User
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
                 <UserList
                   onEditUser={handleEditUser}

@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Grid,
   MenuItem,
@@ -15,6 +14,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import MoneyInput from '../Common/MoneyInput';
 import NumberInput from '../Common/NumberInput';
+import { ResponsiveButton } from '../Common';
+import { Save } from '@mui/icons-material';
 
 interface DepositFormProps {
   open: boolean;
@@ -397,16 +398,19 @@ const DepositForm: React.FC<DepositFormProps> = ({
         </DialogContent>
         
         <DialogActions>
-          <Button onClick={onClose} disabled={isSubmitting}>
+          <ResponsiveButton onClick={onClose} disabled={isSubmitting}>
             Hủy
-          </Button>
-          <Button 
+          </ResponsiveButton>
+          <ResponsiveButton 
             type="submit" 
             variant="contained" 
             disabled={isSubmitting}
+            icon={<Save />}
+            mobileText="Save"
+            desktopText="Save"
           >
             {isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật' : 'Tạo')}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </form>
     </Dialog>

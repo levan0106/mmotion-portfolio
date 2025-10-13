@@ -11,11 +11,9 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Typography,
   Box,
   CircularProgress,
   Alert,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -25,6 +23,8 @@ import {
   Avatar,
   Stack,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
@@ -188,41 +188,41 @@ const DepositList: React.FC<DepositListProps> = ({
                 <TableCell>
                   <Box display="flex" alignItems="center" gap={1}>
                     <BankIcon color="primary" fontSize="small" />
-                    <Typography variant="body2" fontWeight="medium">
+                    <ResponsiveTypography variant="body2" fontWeight="medium">
                       {deposit.bankName || 'N/A'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </TableCell>
                 
                 {/* <TableCell>
-                  <Typography variant="body2" fontFamily="monospace">
+                  <ResponsiveTypography variant="body2" fontFamily="monospace">
                     {deposit.accountNumber || 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </TableCell> */}
                 
                 <TableCell align="right">
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
                     {formatCurrency(deposit.principal || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </TableCell>
                 
                 <TableCell align="right">
                   <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                     <InterestIcon fontSize="small" color="primary" />
-                    <Typography variant="body2">
+                    <ResponsiveTypography variant="body2">
                       {deposit.interestRate ? `${deposit.interestRate}%` : 'N/A'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </TableCell>
                 
                 <TableCell align="center">
                   <Box display="flex" flexDirection="column" alignItems="center" gap={0.5}>
-                    <Typography variant="body2" fontWeight="medium">
+                    <ResponsiveTypography variant="body2" fontWeight="medium">
                       {deposit.termDescription || 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="caption" color="text.secondary">
                       {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </TableCell>
                 
@@ -247,26 +247,28 @@ const DepositList: React.FC<DepositListProps> = ({
                 </TableCell>
                 
                 <TableCell align="right">
-                  <Typography variant="body2" color="primary" fontWeight="medium">
+                  <ResponsiveTypography variant="body2" color="primary" fontWeight="medium">
                     {formatCurrency(deposit.accruedInterest || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </TableCell>
                 
                 <TableCell align="right">
-                  <Typography variant="body2" fontWeight="bold" color="success.main">
+                  <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                     {formatCurrency(deposit.totalValue || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </TableCell>
                 
                 <TableCell align="center">
                   <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
                     {/* Settle Button */}
                     {deposit.canBeSettled && onSettle && (
-                      <Button
+                      <ResponsiveButton
                         size="small"
                         variant="contained"
                         color="success"
-                        startIcon={<MoneyIcon />}
+                        icon={<MoneyIcon />}
+                        mobileText="Tất toán"
+                        desktopText="Tất toán"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSettle(deposit);
@@ -274,7 +276,7 @@ const DepositList: React.FC<DepositListProps> = ({
                         sx={{ minWidth: 'auto', px: 1, fontSize: '0.7rem!important' }}
                       >
                         Tất toán
-                      </Button>
+                      </ResponsiveButton>
                     )}
                     
                     {/* More Actions Menu - Always on the right */}
@@ -351,12 +353,12 @@ const DepositList: React.FC<DepositListProps> = ({
               <DeleteIcon />
             </Avatar>
             <Box>
-              <Typography variant="h6" fontWeight="bold">
+              <ResponsiveTypography variant="h6" fontWeight="bold">
                 Xác nhận xóa tiền gửi
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="body2" color="text.secondary">
                 Hành động này không thể hoàn tác
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         </DialogTitle>
@@ -369,49 +371,49 @@ const DepositList: React.FC<DepositListProps> = ({
                   <Box display="flex" alignItems="center" gap={2}>
                     <BankIcon color="primary" />
                     <Box>
-                      <Typography variant="h6" fontWeight="bold">
+                      <ResponsiveTypography variant="h6" fontWeight="bold">
                         {depositToDelete.bankName || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" fontFamily="monospace">
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="body2" color="text.secondary" fontFamily="monospace">
                         {depositToDelete.accountNumber || 'N/A'}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="body2" color="text.secondary">
                       Số tiền gốc:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" fontWeight="bold">
                       {formatCurrency(depositToDelete.principal || 0)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="body2" color="text.secondary">
                       Lãi suất:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" fontWeight="bold">
                       {depositToDelete.interestRate ? `${depositToDelete.interestRate}%` : 'N/A'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="body2" color="text.secondary">
                       Kỳ hạn:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" fontWeight="bold">
                       {depositToDelete.termDescription || 'N/A'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="body2" color="text.secondary">
                       Tổng giá trị:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" color="success.main">
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                       {formatCurrency(depositToDelete.totalValue || 0)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Stack>
               </CardContent>
@@ -419,32 +421,37 @@ const DepositList: React.FC<DepositListProps> = ({
           )}
           
           <Alert severity="warning" sx={{ mt: 2 }}>
-            <Typography variant="body2" fontWeight="bold">
+            <ResponsiveTypography variant="body2" fontWeight="bold">
               Cảnh báo:
-            </Typography>
-            <Typography variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="body2">
               Bạn sắp xóa vĩnh viễn tiền gửi này. Tất cả dữ liệu liên quan sẽ bị mất và không thể khôi phục.
-            </Typography>
+            </ResponsiveTypography>
           </Alert>
         </DialogContent>
         
         <DialogActions sx={{ p: 3, gap: 1 }}>
-          <Button
+          <ResponsiveButton
             onClick={handleDeleteCancel}
             variant="outlined"
             size="large"
+            icon={<EditIcon />}
+            mobileText="Hủy bỏ"
+            desktopText="Hủy bỏ"
           >
             Hủy bỏ
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleDeleteConfirm}
             variant="contained"
             color="error"
             size="large"
-            startIcon={<DeleteIcon />}
+            icon={<DeleteIcon />}
+            mobileText="Xóa vĩnh viễn"
+            desktopText="Xóa vĩnh viễn"
           >
             Xóa vĩnh viễn
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </TableContainer>

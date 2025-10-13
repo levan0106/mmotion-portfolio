@@ -6,7 +6,6 @@ import {
   Paper,
   Tabs,
   Tab,
-  Button,
   Typography,
   Tooltip,
   IconButton,
@@ -30,6 +29,7 @@ import {
   Delete as DeleteIcon,
   BarChart as PerformanceIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { SnapshotSimpleList } from './SnapshotSimpleList';
 import { SnapshotForm } from './SnapshotForm';
 import { SnapshotDashboard } from './SnapshotDashboard';
@@ -417,37 +417,43 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<SnapshotIcon />}
+              icon={<SnapshotIcon />}
+              mobileText="Create"
+              desktopText="Create Portfolio Snapshots"
               onClick={() => setBulkCreateModalOpen(true)}
               size="small"
               sx={{ px: 2, textTransform: 'none' }}
             >
               Create Portfolio Snapshots
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="outlined"
               color="warning"
-              startIcon={<RefreshIcon />}
+              icon={<RefreshIcon />}
+              mobileText="Recalc"
+              desktopText="Recalculate All"
               onClick={handleBulkRecalculate}
               disabled={viewMode !== 'list'}
               size="small"
               sx={{ px: 2 }}
             >
               Recalculate All
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="outlined"
               color="error"
-              startIcon={<DeleteIcon />}
+              icon={<DeleteIcon />}
+              mobileText="Delete"
+              desktopText="Delete Snapshots"
               onClick={() => setDeleteModalOpen(true)}
               disabled={!selectedPortfolioId}
               size="small"
               sx={{ px: 2 }}
             >
               Delete Snapshots
-            </Button>
+            </ResponsiveButton>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

@@ -152,7 +152,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       backgroundColor: 'background.paper',
       minHeight: '80vh',
       pt: 0,
-      px: { xs: getUltraSpacing(1, 0.5), sm: getUltraSpacing(2, 1), md: getUltraSpacing(2, 1) }
+      px: { xs: 0.5, sm: getUltraSpacing(2, 1), md: getUltraSpacing(2, 1) }
     }}>
       {/* NAV Summary Section */}
       <Box sx={{ mb: { xs: getUltraSpacing(2, 1), sm: getUltraSpacing(3, 1.5), md: getUltraSpacing(4, 2) } }}>
@@ -188,7 +188,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               alignItems: { xs: 'flex-start', sm: 'center' },
               gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),
-              p: { xs: 1, sm: 1.5 },
+              p: { xs: 0.5, sm: 1.5 },
               backgroundColor: 'primary.50',
               borderRadius: 1.5,
               border: '1px solid',
@@ -196,7 +196,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <Box sx={{ 
-                p: { xs: 0.6, sm: 0.8 }, 
+                p: { xs: 0.4, sm: 0.8 }, 
                 backgroundColor: 'primary.main', 
                 borderRadius: 1,
                 color: 'white',
@@ -268,7 +268,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               alignItems: { xs: 'flex-start', sm: 'center' },
               gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),
-              p: { xs: 1, sm: 1.5 },
+              p: { xs: 0.5, sm: 1.5 },
               backgroundColor: 'success.50',
               borderRadius: 1.5,
               border: '1px solid',
@@ -276,7 +276,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               flexDirection: { xs: 'column', sm: 'row' }
             }}>
               <Box sx={{ 
-                p: { xs: 0.6, sm: 0.8 }, 
+                p: { xs: 0.4, sm: 0.8 }, 
                 backgroundColor: 'success.main', 
                 borderRadius: 1,
                 color: 'white',

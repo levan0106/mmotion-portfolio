@@ -96,7 +96,12 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
         </>
       )}
       
-      <Box sx={{ overflowX: 'auto', overflowY: 'hidden' }}>
+      <Box sx={{ 
+        overflowX: 'auto', 
+        overflowY: 'hidden',
+        px: { xs: 0, sm: 1 },
+        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+      }}>
         <Box sx={{ minWidth: compact ? 300 : 400, overflow: 'hidden' }}>
           {/* Header row */}
           <Grid container spacing={compact ? 0.25 : 0.5} sx={{ mb: compact ? 0.5 : 1 }}>

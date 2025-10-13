@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Box,
   Typography,
   TextField,
@@ -19,6 +18,7 @@ import {
   Search as SearchIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { Role } from '../../services/api.role';
 import { useUsers } from '../../hooks/useUsers';
 
@@ -204,12 +204,12 @@ export const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
               {/* Bulk Actions */}
               <Box display="flex" gap={1} mb={2}>
-                <Button size="small" onClick={handleSelectAll} variant="outlined">
+                <ResponsiveButton size="small" onClick={handleSelectAll} variant="outlined">
                   Select All
-                </Button>
-                <Button size="small" onClick={handleDeselectAll} variant="outlined">
+                </ResponsiveButton>
+                <ResponsiveButton size="small" onClick={handleDeselectAll} variant="outlined">
                   Clear All
-                </Button>
+                </ResponsiveButton>
               </Box>
 
               {/* Expiration Date */}
@@ -344,17 +344,19 @@ export const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>
+        <ResponsiveButton onClick={onClose}>
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           variant="contained"
           onClick={handleAssign}
           disabled={isLoading || selectedUsers.length === 0}
-          startIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+          icon={isLoading ? <CircularProgress size={16} /> : undefined}
+          mobileText="Assign"
+          desktopText={`Assign ${selectedUsers.length} User${selectedUsers.length !== 1 ? 's' : ''}`}
         >
           {isLoading ? 'Assigning...' : `Assign ${selectedUsers.length} User${selectedUsers.length !== 1 ? 's' : ''}`}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

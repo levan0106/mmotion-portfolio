@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   List,
   ListItem,
   ListItemText,
@@ -16,6 +15,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -158,13 +158,15 @@ export const AccountManagement: React.FC = () => {
             <Typography variant="h5" component="h1">
               Account Management
             </Typography>
-            <Button
+            <ResponsiveButton
               variant="contained"
-              startIcon={<AddIcon />}
+              icon={<AddIcon />}
               onClick={() => setCreateModalOpen(true)}
+              mobileText="Create"
+              desktopText="Create Account"
             >
               Create Account
-            </Button>
+            </ResponsiveButton>
           </Box>
 
           {error && (

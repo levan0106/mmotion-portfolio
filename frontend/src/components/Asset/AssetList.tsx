@@ -17,7 +17,32 @@ import {
   sortAssets, 
   calculateAssetPerformance 
 } from '../../utils/asset.utils';
-import './AssetList.styles.css';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  Alert,
+  TableSortLabel,
+} from '@mui/material';
+import { ResponsiveTypography } from '../Common';
+import {
+  Refresh as RefreshIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Remove as RemoveIcon,
+} from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 
 export interface AssetListProps {
   portfolioId?: string;
@@ -42,7 +67,6 @@ export const AssetList: React.FC<AssetListProps> = ({
   onAssetEdit,
   onAssetDelete,
   showActions = true,
-  className = '',
 }) => {
   const { baseCurrency } = useAccount();
   
@@ -99,206 +123,263 @@ export const AssetList: React.FC<AssetListProps> = ({
   // Render loading state
   if (loading && assets.length === 0) {
     return (
-      <div className={`asset-list ${className}`}>
-        <div className="asset-list__loading">
-          <div className="spinner" />
-          <p>Loading assets...</p>
-        </div>
-      </div>
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <CircularProgress />
+        <ResponsiveTypography variant="body1" sx={{ mt: 2 }}>
+          Loading assets...
+        </ResponsiveTypography>
+      </Box>
     );
   }
 
   // Render error state
   if (error) {
     return (
-      <div className={`asset-list ${className}`}>
-        <div className="asset-list__error">
-          <p>Error: {error}</p>
-          <button onClick={handleRefresh} className="btn btn--primary">
-            Retry
-          </button>
-        </div>
-      </div>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Error: {error}
+        </Alert>
+        <ResponsiveButton
+          onClick={handleRefresh}
+          icon={<RefreshIcon />}
+          mobileText="Retry"
+          desktopText="Retry"
+          variant="contained"
+        >
+          Retry
+        </ResponsiveButton>
+      </Box>
     );
   }
 
   return (
-    <div className={`asset-list ${className}`}>
+    <Box sx={{ p: 2 }}>
       {/* Header */}
-      <div className="asset-list__header">
-        <div className="asset-list__title">
-          <h2>Assets ({assets.length})</h2>
-          <button 
-            onClick={handleRefresh} 
-            className="btn btn--secondary btn--icon"
-            disabled={loading}
-          >
-            <span className="icon">↻</span>
-            Refresh
-          </button>
-        </div>
-
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <ResponsiveTypography variant="h5" component="h2">
+          Assets ({assets.length})
+        </ResponsiveTypography>
+        <ResponsiveButton
+          onClick={handleRefresh}
+          icon={<RefreshIcon />}
+          mobileText="Refresh"
+          desktopText="Refresh"
+          variant="outlined"
+          disabled={loading}
+        >
+          Refresh
+        </ResponsiveButton>
+      </Box>
 
       {/* Table */}
-      <div className="asset-list__table-container">
-        <table className="asset-list__table">
-          <thead>
-            <tr>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('name')}
-              >
-                Name {sortBy === 'name' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('type')}
-              >
-                Type {sortBy === 'type' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('totalValue')}
-              >
-                Value {sortBy === 'totalValue' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('totalQuantity')}
-              >
-                Quantity {sortBy === 'totalQuantity' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('currentPrice')}
-              >
-                Market Price {sortBy === 'currentPrice' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              <th>Performance</th>
-              <th 
-                className="sortable"
-                onClick={() => handleSort('updatedAt')}
-              >
-                Updated {sortBy === 'updatedAt' && (sortOrder === 'ASC' ? '↑' : '↓')}
-              </th>
-              {showActions && <th>Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
+      <TableContainer component={Paper} sx={{ mb: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'name'}
+                  direction={sortBy === 'name' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'type'}
+                  direction={sortBy === 'type' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('type')}
+                >
+                  Type
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'totalValue'}
+                  direction={sortBy === 'totalValue' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('totalValue')}
+                >
+                  Value
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'totalQuantity'}
+                  direction={sortBy === 'totalQuantity' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('totalQuantity')}
+                >
+                  Quantity
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'currentPrice'}
+                  direction={sortBy === 'currentPrice' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('currentPrice')}
+                >
+                  Market Price
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Performance</TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === 'updatedAt'}
+                  direction={sortBy === 'updatedAt' ? sortOrder.toLowerCase() as 'asc' | 'desc' : 'asc'}
+                  onClick={() => handleSort('updatedAt')}
+                >
+                  Updated
+                </TableSortLabel>
+              </TableCell>
+              {showActions && <TableCell>Actions</TableCell>}
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {processedAssets.length === 0 ? (
-              <tr>
-                <td colSpan={showActions ? 8 : 7} className="asset-list__empty">
-                  No assets found
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={showActions ? 8 : 7} sx={{ textAlign: 'center', py: 4 }}>
+                  <ResponsiveTypography variant="tableCell" color="text.secondary">
+                    No assets found
+                  </ResponsiveTypography>
+                </TableCell>
+              </TableRow>
             ) : (
               processedAssets.map((asset) => {
                 const performance = calculateAssetPerformance(asset);
                 return (
-                  <tr 
+                  <TableRow 
                     key={asset.id}
-                    className="asset-list__row"
+                    hover
                     onClick={() => onAssetSelect?.(asset)}
+                    sx={{ cursor: 'pointer' }}
                   >
-                    <td className="asset-list__cell asset-list__cell--name">
-                      <div className="asset-name">
-                        <div className="asset-name__primary">{asset.name}</div>
+                    <TableCell>
+                      <Box>
+                        <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                          {asset.name}
+                        </ResponsiveTypography>
                         {asset.symbol && (
-                          <div className="asset-name__secondary">{asset.symbol}</div>
+                          <ResponsiveTypography variant="caption" color="text.secondary">
+                            {asset.symbol}
+                          </ResponsiveTypography>
                         )}
-                      </div>
-                    </td>
-                    <td className="asset-list__cell">
-                      <span className={`asset-type asset-type--${asset.type.toLowerCase()}`}>
-                        {assetTypes.find(t => t.value === asset.type)?.label || asset.type}
-                      </span>
-                    </td>
-                    <td className="asset-list__cell asset-list__cell--value">
-                      <div className="value-display">
-                        <div className="value-display__primary">
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={assetTypes.find(t => t.value === asset.type)?.label || asset.type}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <ResponsiveTypography variant="tableCell" fontWeight="medium">
                           {formatCurrency(Number(asset.totalValue) || 0)}
-                        </div>
+                        </ResponsiveTypography>
                         {asset.currentValue && asset.currentValue !== asset.initialValue && (
-                          <div className="value-display__secondary">
+                          <ResponsiveTypography variant="caption" color="text.secondary">
                             Initial: {formatCurrency(asset.initialValue || 0)}
-                          </div>
+                          </ResponsiveTypography>
                         )}
-                      </div>
-                    </td>
-                    <td className="asset-list__cell">
-                      <div className="quantity-display">
-                        <div className="quantity-display__primary">
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <ResponsiveTypography variant="tableCell" fontWeight="medium">
                           {formatNumber(Number(asset.totalQuantity) || 0, 2)}
-                        </div>
+                        </ResponsiveTypography>
                         {asset.currentQuantity && asset.currentQuantity !== asset.initialQuantity && (
-                          <div className="quantity-display__secondary">
+                          <ResponsiveTypography variant="caption" color="text.secondary">
                             Initial: {formatNumber(asset.initialQuantity || 0, 2)}
-                          </div>
+                          </ResponsiveTypography>
                         )}
-                      </div>
-                    </td>
-                    <td className="asset-list__cell">
-                      <div className="price-display">
-                        <div className="price-display__primary price-display__primary--current">
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <ResponsiveTypography variant="tableCell" fontWeight="medium">
                           {formatCurrency(Number(asset.currentPrice) || 0)}
-                        </div>
+                        </ResponsiveTypography>
                         {asset.avgCost !== undefined && asset.avgCost > 0 && asset.avgCost !== asset.currentPrice && (
-                          <div className="price-display__secondary">
+                          <ResponsiveTypography variant="caption" color="text.secondary">
                             Avg: {formatCurrency(Number(asset.avgCost) || 0)}
-                          </div>
+                          </ResponsiveTypography>
                         )}
-                      </div>
-                    </td>
-                    <td className="asset-list__cell">
-                      <div className={`performance ${performance.isGaining ? 'performance--positive' : performance.isLosing ? 'performance--negative' : ''}`}>
-                        <div className="performance__value">
-                          {formatCurrency(performance.valueChange, baseCurrency)}
-                        </div>
-                        <div className="performance__percentage">
-                          {formatPercentage(performance.valueChangePercentage, 2)}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="asset-list__cell">
-                      {new Date(asset.updatedAt).toLocaleDateString()}
-                    </td>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {performance.isGaining ? (
+                          <TrendingUpIcon color="success" fontSize="small" />
+                        ) : performance.isLosing ? (
+                          <TrendingDownIcon color="error" fontSize="small" />
+                        ) : (
+                          <RemoveIcon color="disabled" fontSize="small" />
+                        )}
+                        <Box>
+                          <ResponsiveTypography 
+                            variant="tableCell" 
+                            color={performance.isGaining ? 'success.main' : performance.isLosing ? 'error.main' : 'text.secondary'}
+                            fontWeight="medium"
+                          >
+                            {formatCurrency(performance.valueChange, baseCurrency)}
+                          </ResponsiveTypography>
+                          <ResponsiveTypography 
+                            variant="caption" 
+                            color={performance.isGaining ? 'success.main' : performance.isLosing ? 'error.main' : 'text.secondary'}
+                          >
+                            {formatPercentage(performance.valueChangePercentage, 2)}
+                          </ResponsiveTypography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCell">
+                        {new Date(asset.updatedAt).toLocaleDateString()}
+                      </ResponsiveTypography>
+                    </TableCell>
                     {showActions && (
-                      <td className="asset-list__cell asset-list__cell--actions">
-                        <div className="action-buttons">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAssetEdit?.(asset);
-                            }}
-                            className="btn btn--small btn--secondary"
-                            title="Edit Asset"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAssetDelete?.(asset);
-                            }}
-                            className="btn btn--small btn--danger"
-                            title="Delete Asset"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Tooltip title="Edit Asset">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onAssetEdit?.(asset);
+                              }}
+                              color="primary"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Asset">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onAssetDelete?.(asset);
+                              }}
+                              color="error"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Pagination removed - handled by parent component */}
-    </div>
+    </Box>
   );
 };
 

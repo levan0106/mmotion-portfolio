@@ -7,7 +7,26 @@ import React from 'react';
 import { Asset, AssetType } from '../../types/asset.types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { useAccount } from '../../contexts/AccountContext';
-import './AssetAnalytics.styles.css';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Paper,
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+} from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 
 export interface AssetAnalyticsProps {
   assets: Asset[];
@@ -25,7 +44,6 @@ export const AssetAnalytics: React.FC<AssetAnalyticsProps> = ({
   assets,
   statistics,
   onClose,
-  className = '',
 }) => {
   const { baseCurrency } = useAccount();
   // Calculate performance metrics
@@ -73,168 +91,269 @@ export const AssetAnalytics: React.FC<AssetAnalyticsProps> = ({
   }, [assets]);
 
   return (
-    <div className={`asset-analytics ${className}`}>
-      <div className="asset-analytics__header">
-        <div className="asset-analytics__title">
-          <h3>Asset Analytics</h3>
-          <p>Comprehensive portfolio insights and performance metrics</p>
-        </div>
+    <Paper sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Box>
+          <Typography variant="h5" component="h3" gutterBottom>
+            Asset Analytics
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Comprehensive portfolio insights and performance metrics
+          </Typography>
+        </Box>
         {onClose && (
-          <button
+          <ResponsiveButton
             onClick={onClose}
-            className="btn btn--outline btn--icon"
-            aria-label="Close analytics"
+            icon={<CloseIcon />}
+            mobileText="Close"
+            desktopText="Close"
+            variant="outlined"
+            size="small"
           >
             ×
-          </button>
+          </ResponsiveButton>
         )}
-      </div>
+      </Box>
 
-      <div className="asset-analytics__content">
+      <Box>
         {/* Performance Overview */}
-        <div className="analytics-section">
-          <div className="analytics-section__header">
-            <h4>Performance Overview</h4>
-            <p>Average returns across different time periods</p>
-          </div>
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-card__value">
-                {performanceMetrics.averageDailyReturn.toFixed(2)}%
-              </div>
-              <div className="metric-card__label">Daily Return</div>
-              <div className="metric-card__trend">
-                {performanceMetrics.averageDailyReturn >= 0 ? '↗' : '↘'}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card__value">
-                {performanceMetrics.averageWeeklyReturn.toFixed(2)}%
-              </div>
-              <div className="metric-card__label">Weekly Return</div>
-              <div className="metric-card__trend">
-                {performanceMetrics.averageWeeklyReturn >= 0 ? '↗' : '↘'}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card__value">
-                {performanceMetrics.averageMonthlyReturn.toFixed(2)}%
-              </div>
-              <div className="metric-card__label">Monthly Return</div>
-              <div className="metric-card__trend">
-                {performanceMetrics.averageMonthlyReturn >= 0 ? '↗' : '↘'}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card__value">
-                {performanceMetrics.averageYearlyReturn.toFixed(2)}%
-              </div>
-              <div className="metric-card__label">Yearly Return</div>
-              <div className="metric-card__trend">
-                {performanceMetrics.averageYearlyReturn >= 0 ? '↗' : '↘'}
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Performance Overview
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Average returns across different time periods
+              </Typography>
+            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color={performanceMetrics.averageDailyReturn >= 0 ? 'success.main' : 'error.main'}>
+                      {performanceMetrics.averageDailyReturn.toFixed(2)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Daily Return
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      {performanceMetrics.averageDailyReturn >= 0 ? (
+                        <TrendingUpIcon color="success" />
+                      ) : (
+                        <TrendingDownIcon color="error" />
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color={performanceMetrics.averageWeeklyReturn >= 0 ? 'success.main' : 'error.main'}>
+                      {performanceMetrics.averageWeeklyReturn.toFixed(2)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Weekly Return
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      {performanceMetrics.averageWeeklyReturn >= 0 ? (
+                        <TrendingUpIcon color="success" />
+                      ) : (
+                        <TrendingDownIcon color="error" />
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color={performanceMetrics.averageMonthlyReturn >= 0 ? 'success.main' : 'error.main'}>
+                      {performanceMetrics.averageMonthlyReturn.toFixed(2)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Monthly Return
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      {performanceMetrics.averageMonthlyReturn >= 0 ? (
+                        <TrendingUpIcon color="success" />
+                      ) : (
+                        <TrendingDownIcon color="error" />
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color={performanceMetrics.averageYearlyReturn >= 0 ? 'success.main' : 'error.main'}>
+                      {performanceMetrics.averageYearlyReturn.toFixed(2)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Yearly Return
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      {performanceMetrics.averageYearlyReturn >= 0 ? (
+                        <TrendingUpIcon color="success" />
+                      ) : (
+                        <TrendingDownIcon color="error" />
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
 
         {/* Asset Type Distribution */}
-        <div className="analytics-section">
-          <div className="analytics-section__header">
-            <h4>Asset Type Distribution</h4>
-            <p>Portfolio allocation across different asset types</p>
-          </div>
-          <div className="distribution-chart">
-            {Object.entries(statistics.assetsByType).map(([type, count]) => {
-              const percentage = statistics.totalAssets > 0 ? (count / statistics.totalAssets) * 100 : 0;
-              return (
-                <div key={type} className="distribution-item">
-                  <div className="distribution-item__label">
-                    <span className="distribution-item__type">{type}</span>
-                    <span className="distribution-item__count">{count} assets</span>
-                  </div>
-                  <div className="distribution-item__bar">
-                    <div
-                      className="distribution-item__fill"
-                      style={{ width: `${percentage}%` }}
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Asset Type Distribution
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Portfolio allocation across different asset types
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {Object.entries(statistics.assetsByType).map(([type, count]) => {
+                const percentage = statistics.totalAssets > 0 ? (count / statistics.totalAssets) * 100 : 0;
+                return (
+                  <Box key={type}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {type}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {count} assets
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {percentage.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={percentage}
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: 'grey.200',
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 4,
+                        },
+                      }}
                     />
-                  </div>
-                  <div className="distribution-item__percentage">
-                    {percentage.toFixed(1)}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                  </Box>
+                );
+              })}
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Value Distribution */}
-        <div className="analytics-section">
-          <div className="analytics-section__header">
-            <h4>Value Distribution</h4>
-            <p>Asset distribution across value ranges</p>
-          </div>
-          <div className="distribution-chart">
-            {valueDistribution.map((range, index) => {
-              const percentage = statistics.totalAssets > 0 ? (range.count / statistics.totalAssets) * 100 : 0;
-              return (
-                <div key={index} className="distribution-item">
-                  <div className="distribution-item__label">
-                    <span className="distribution-item__type">{range.label}</span>
-                    <span className="distribution-item__count">{range.count} assets</span>
-                  </div>
-                  <div className="distribution-item__bar">
-                    <div
-                      className="distribution-item__fill"
-                      style={{ width: `${percentage}%` }}
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Value Distribution
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Asset distribution across value ranges
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {valueDistribution.map((range, index) => {
+                const percentage = statistics.totalAssets > 0 ? (range.count / statistics.totalAssets) * 100 : 0;
+                return (
+                  <Box key={index}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {range.label}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {range.count} assets
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {percentage.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={percentage}
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: 'grey.200',
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 4,
+                        },
+                      }}
                     />
-                  </div>
-                  <div className="distribution-item__percentage">
-                    {percentage.toFixed(1)}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                  </Box>
+                );
+              })}
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Top Performers */}
-        <div className="analytics-section">
-          <div className="analytics-section__header">
-            <h4>Top Performers</h4>
-            <p>Best performing assets based on yearly returns</p>
-          </div>
-          <div className="performers-list">
+        <Card>
+          <CardContent>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Top Performers
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Best performing assets based on yearly returns
+              </Typography>
+            </Box>
             {topPerformers.length > 0 ? (
-              topPerformers.map((asset, index) => (
-                <div key={asset.id} className="performer-item">
-                  <div className="performer-item__rank">
-                    <span className="rank-number">#{index + 1}</span>
-                  </div>
-                  <div className="performer-item__info">
-                    <div className="performer-item__name">{asset.name}</div>
-                    <div className="performer-item__code">{asset.symbol}</div>
-                  </div>
-                  <div className="performer-item__performance">
-                    <div className={`performer-item__return ${
-                      (asset.performance?.yearly || 0) >= 0 ? 'positive' : 'negative'
-                    }`}>
-                      {formatPercentage(asset.performance?.yearly || 0, 2)}
-                    </div>
-                    <div className="performer-item__value">
-                      {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
-                    </div>
-                  </div>
-                </div>
-              ))
+              <List>
+                {topPerformers.map((asset, index) => (
+                  <ListItem key={asset.id} sx={{ px: 0 }}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'primary.main' }}>
+                        {index + 1}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={asset.name}
+                      secondary={asset.symbol}
+                    />
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography 
+                        variant="body2" 
+                        color={(asset.performance?.yearly || 0) >= 0 ? 'success.main' : 'error.main'}
+                        fontWeight="medium"
+                      >
+                        {formatPercentage(asset.performance?.yearly || 0, 2)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
             ) : (
-              <div className="empty-state">
-                <p>No performance data available</p>
-              </div>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No performance data available
+                </Typography>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardContent>
+        </Card>
+      </Box>
+    </Paper>
   );
 };
 

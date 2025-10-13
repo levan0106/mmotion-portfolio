@@ -6,9 +6,9 @@ import {
   Box,
   Typography,
   Chip,
-  Button,
   Alert,
 } from '@mui/material';
+import { ResponsiveButton } from './ResponsiveButton';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Asset } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
@@ -273,14 +273,16 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                 {isLoadingMore ? (
                   <CircularProgress size={20} />
                 ) : (
-                  <Button
+                  <ResponsiveButton
                     variant="text"
-                    startIcon={<ExpandMoreIcon />}
+                    icon={<ExpandMoreIcon />}
                     onClick={() => handleOptionClick(option)}
                     disabled={isLoadingMore}
+                    mobileText="Load more..."
+                    desktopText="Load more assets..."
                   >
                     Load more assets...
-                  </Button>
+                  </ResponsiveButton>
                 )}
               </li>
             );
@@ -335,14 +337,17 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                 No assets found for "{searchTerm}"
               </Typography>
               {showCreateOption && onCreateAsset && (
-                <Button
+                <ResponsiveButton
                   variant="text"
                   size="small"
                   onClick={onCreateAsset}
+                  icon={<ExpandMoreIcon />}
+                  mobileText="Create"
+                  desktopText="Create new asset"
                   sx={{ mt: 1 }}
                 >
                   Create new asset
-                </Button>
+                </ResponsiveButton>
               )}
             </Box>
           ) : (
@@ -351,14 +356,17 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                 No assets available
               </Typography>
               {showCreateOption && onCreateAsset && (
-                <Button
+                <ResponsiveButton
                   variant="text"
                   size="small"
                   onClick={onCreateAsset}
+                  icon={<ExpandMoreIcon />}
+                  mobileText="Create"
+                  desktopText="Create new asset"
                   sx={{ mt: 1 }}
                 >
                   Create new asset
-                </Button>
+                </ResponsiveButton>
               )}
             </Box>
           )

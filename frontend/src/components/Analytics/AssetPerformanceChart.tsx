@@ -222,12 +222,16 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
       <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
         Performance comparison across asset types
       </ResponsiveTypography>
-      <Box sx={{ height: compact ? 167 : 267 }}>
+      <Box sx={{ 
+        height: compact ? 167 : 267,
+        px: { xs: 0, sm: 1 },
+        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+      }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={safeData} margin={{ 
             top: compact ? 10 : 20, 
-            right: compact ? 15 : 30, 
-            left: compact ? 10 : 20, 
+            right: compact ? 0 : 30, 
+            left: compact ? 0 : 20, 
             bottom: compact ? 5 : 5 
           }}>
             <CartesianGrid strokeDasharray="3 3" />

@@ -13,7 +13,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Button,
   CircularProgress,
   Alert,
   Avatar,
@@ -27,6 +26,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import { ResponsiveButton } from '../components/Common';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import {
   ArrowBack,
@@ -184,13 +184,15 @@ const HoldingDetail: React.FC = () => {
             {error}
           </ResponsiveTypography>
         </Alert>
-        <Button
+        <ResponsiveButton
           variant="outlined"
-          startIcon={<ArrowBack />}
+          icon={<ArrowBack />}
           onClick={() => navigate(-1)}
+          mobileText="Back"
+          desktopText="Go Back"
         >
           Go Back
-        </Button>
+        </ResponsiveButton>
       </Container>
     );
   }
@@ -213,14 +215,16 @@ const HoldingDetail: React.FC = () => {
     <Container maxWidth="xl" sx={{ mt: 0.5, mb: 1 }}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
-        <Button
+        <ResponsiveButton
           variant="text"
-          startIcon={<ArrowBack />}
+          icon={<ArrowBack />}
           onClick={handleBackNavigation}
+          mobileText="Back"
+          desktopText="Back to Portfolio"
           sx={{ mb: 1.5, textTransform: 'none' }}
         >
           Back to Portfolio
-        </Button>
+        </ResponsiveButton>
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -250,12 +254,14 @@ const HoldingDetail: React.FC = () => {
             </Box>
           </Box>
           
-          <Button
+          <ResponsiveButton
             variant="contained"
             color="primary"
-            startIcon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
+            icon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
             onClick={handleRecalculateNav}
             disabled={recalculateLoading}
+            mobileText={recalculateLoading ? 'Recalculating...' : 'Recalculate'}
+            desktopText={recalculateLoading ? 'Recalculating...' : 'Recalculate NAV'}
             sx={{
               minWidth: '160px',
               textTransform: 'none',
@@ -267,7 +273,7 @@ const HoldingDetail: React.FC = () => {
             }}
           >
             {recalculateLoading ? 'Recalculating...' : 'Recalculate NAV'}
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
 
@@ -588,11 +594,13 @@ const HoldingDetail: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
-                        <Button
+                        <ResponsiveButton
                           variant="outlined"
                           size="small"
-                          startIcon={<EditIcon />}
+                          icon={<EditIcon />}
                           onClick={() => handleEditTransaction({ transaction, cashFlow })}
+                          mobileText="Edit"
+                          desktopText="Edit"
                           sx={{ 
                             minWidth: 'auto',
                             px: 1,
@@ -602,13 +610,15 @@ const HoldingDetail: React.FC = () => {
                           }}
                         >
                           Edit
-                        </Button>
-                        <Button
+                        </ResponsiveButton>
+                        <ResponsiveButton
                           variant="outlined"
                           color="error"
                           size="small"
-                          startIcon={<DeleteIcon />}
+                          icon={<DeleteIcon />}
                           onClick={() => handleDeleteTransaction({ transaction, cashFlow })}
+                          mobileText="Delete"
+                          desktopText="Delete"
                           sx={{ 
                             minWidth: 'auto',
                             px: 1,
@@ -618,7 +628,7 @@ const HoldingDetail: React.FC = () => {
                           }}
                         >
                           Delete
-                        </Button>
+                        </ResponsiveButton>
                       </Stack>
                     </TableCell>
                   </TableRow>
@@ -706,23 +716,27 @@ const HoldingDetail: React.FC = () => {
           </Alert>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button 
+          <ResponsiveButton 
             onClick={handleCancelDelete} 
             disabled={deleteLoading}
             size="large"
+            mobileText="Cancel"
+            desktopText="Cancel"
           >
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleConfirmDelete}
             variant="contained"
             color="error"
             disabled={deleteLoading}
             size="large"
-            startIcon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+            icon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+            mobileText={deleteLoading ? 'Deleting...' : 'Delete'}
+            desktopText={deleteLoading ? 'Deleting...' : 'Delete Transaction'}
           >
             {deleteLoading ? 'Deleting...' : 'Delete Transaction'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Container>

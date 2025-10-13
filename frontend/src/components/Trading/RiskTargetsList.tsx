@@ -13,7 +13,6 @@ import {
   Paper,
   Chip,
   IconButton,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -36,6 +35,7 @@ import {
   FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { RiskTargetResponseDto } from '../../types/trading';
+import { ResponsiveButton } from '../Common';
 
 export interface RiskTargetsListProps {
   riskTargets: RiskTargetResponseDto[];
@@ -157,22 +157,26 @@ export const RiskTargetsList: React.FC<RiskTargetsListProps> = ({
             Risk Targets
           </Typography>
           <Box display="flex" gap={2}>
-            <Button
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<FilterIcon />}
+              icon={<FilterIcon />}
+              mobileText="Filter"
+              desktopText="Filters"
               onClick={() => {
                 // Toggle filter visibility
               }}
             >
               Filters
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="contained"
-              startIcon={<SecurityIcon />}
+              icon={<SecurityIcon />}
+              mobileText="Set"
+              desktopText="Set Risk Targets"
               onClick={onCreate}
             >
               Set Risk Targets
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
 

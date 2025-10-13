@@ -9,7 +9,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
   Grid,
   Alert,
   CircularProgress,
@@ -17,6 +16,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -865,15 +865,17 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             {/* Submit Button */}
             {showSubmitButton && (
               <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-                <Button
+                <ResponsiveButton
                   type="submit"
                   variant="contained"
                   disabled={!isValid || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} /> : null}
+                  icon={isLoading ? <CircularProgress size={20} /> : null}
+                  mobileText={isLoading ? 'Processing...' : mode === 'create' ? 'Create' : 'Update'}
+                  desktopText={isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
                 >
                   {isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
-                </Button>
+                </ResponsiveButton>
               </Box>
             )}
           </form>

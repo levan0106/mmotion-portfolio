@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Box,
   IconButton,
   Typography,
@@ -12,6 +11,7 @@ import {
   Alert,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import TradeDetails from './TradeDetails';
 
 export interface TradeDetailsModalProps {
@@ -120,13 +120,16 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
         py: 1.5,
         px: 2
       }}>
-        <Button 
+        <ResponsiveButton 
           onClick={onClose}
           variant="contained"
+          icon={<CloseIcon />}
+          mobileText="Close"
+          desktopText="Close"
           sx={{ textTransform: 'none', px: 3 }}
         >
           Close
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

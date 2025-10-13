@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   TextField,
   Alert,
   CircularProgress,
@@ -15,6 +14,7 @@ import {
   Collapse,
   Grid,
 } from '@mui/material';
+import { ResponsiveButton } from '../components/Common';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
@@ -388,13 +388,15 @@ export const Profile: React.FC = () => {
               </Typography>
             </Box>
             {!isEditing && (
-              <Button
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={<EditIcon />}
+                icon={<EditIcon />}
                 onClick={handleEdit}
+                mobileText="Edit"
+                desktopText="Edit Profile"
               >
                 Edit Profile
-              </Button>
+              </ResponsiveButton>
             )}
           </Box>
 
@@ -463,13 +465,15 @@ export const Profile: React.FC = () => {
 
           {/* Advanced Information */}
           <Box sx={{ mt: 3 }}>
-            <Button
+            <ResponsiveButton
               onClick={() => setShowAdvanced(!showAdvanced)}
-              endIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              icon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              mobileText="Advanced"
+              desktopText="Advanced Information"
               sx={{ mb: 2 }}
             >
               Advanced Information
-            </Button>
+            </ResponsiveButton>
             <Collapse in={showAdvanced}>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
@@ -519,22 +523,26 @@ export const Profile: React.FC = () => {
           {/* Action Buttons */}
           {isEditing && (
             <Box sx={{ display: 'flex', gap: 2, mt: 4, mb: 4 }}>
-              <Button
+              <ResponsiveButton
                 variant="contained"
                 onClick={handleSave}
                 disabled={saving}
-                startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                mobileText={saving ? 'Saving...' : 'Save'}
+                desktopText={saving ? 'Saving...' : 'Save Changes'}
               >
                 {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="outlined"
                 onClick={handleCancel}
                 disabled={saving || (user && !user.isProfileComplete)}
-                startIcon={<CancelIcon />}
+                icon={<CancelIcon />}
+                mobileText="Cancel"
+                desktopText="Cancel"
               >
                 Cancel
-              </Button>
+              </ResponsiveButton>
             </Box>
           )}
 
@@ -550,13 +558,15 @@ export const Profile: React.FC = () => {
                 Set a password to secure your account
               </Typography>
               {!showPassword ? (
-                <Button
+                <ResponsiveButton
                   variant="outlined"
-                  startIcon={<LockIcon />}
+                  icon={<LockIcon />}
                   onClick={() => setShowPassword(true)}
+                  mobileText="Set"
+                  desktopText="Set Password"
                 >
                   Set Password
-                </Button>
+                </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
                   <TextField
@@ -569,23 +579,27 @@ export const Profile: React.FC = () => {
                     sx={{ mb: 2 }}
                   />
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
+                    <ResponsiveButton
                       variant="contained"
                       onClick={handleSetPassword}
                       disabled={saving || !passwordData.password}
-                      startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                      icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                      mobileText={saving ? 'Setting...' : 'Set'}
+                      desktopText={saving ? 'Setting...' : 'Set Password'}
                     >
                       {saving ? 'Setting...' : 'Set Password'}
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       variant="outlined"
                       onClick={() => {
                         setShowPassword(false);
                         setPasswordData({ password: '' });
                       }}
+                      mobileText="Cancel"
+                      desktopText="Cancel"
                     >
                       Cancel
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </Box>
               )}
@@ -596,13 +610,15 @@ export const Profile: React.FC = () => {
                 Password is set. You can change it below.
               </Typography>
               {!showChangePassword ? (
-                <Button
+                <ResponsiveButton
                   variant="outlined"
-                  startIcon={<LockIcon />}
+                  icon={<LockIcon />}
                   onClick={() => setShowChangePassword(true)}
+                  mobileText="Change"
+                  desktopText="Change Password"
                 >
                   Change Password
-                </Button>
+                </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
                   <TextField
@@ -623,23 +639,27 @@ export const Profile: React.FC = () => {
                     sx={{ mb: 2 }}
                   />
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
+                    <ResponsiveButton
                       variant="contained"
                       onClick={handleChangePassword}
                       disabled={saving || !changePasswordData.currentPassword || !changePasswordData.newPassword}
-                      startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                      icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                      mobileText={saving ? 'Changing...' : 'Change'}
+                      desktopText={saving ? 'Changing...' : 'Change Password'}
                     >
                       {saving ? 'Changing...' : 'Change Password'}
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       variant="outlined"
                       onClick={() => {
                         setShowChangePassword(false);
                         setChangePasswordData({ currentPassword: '', newPassword: '' });
                       }}
+                      mobileText="Cancel"
+                      desktopText="Cancel"
                     >
                       Cancel
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </Box>
               )}

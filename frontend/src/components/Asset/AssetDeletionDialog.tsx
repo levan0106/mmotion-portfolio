@@ -9,12 +9,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { Asset } from '../../types/asset.types';
 
 export interface AssetDeletionDialogProps {
@@ -104,23 +104,28 @@ export const AssetDeletionDialog: React.FC<AssetDeletionDialogProps> = ({
       </DialogContent>
 
       <DialogActions>
-        <Button
+        <ResponsiveButton
           onClick={handleClose}
           disabled={loading}
           color="inherit"
+          icon={<CircularProgress />}
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
+        </ResponsiveButton>
         
-        <Button
+        <ResponsiveButton
           onClick={handleConfirm}
           disabled={loading}
           color="error"
           variant="contained"
-          startIcon={loading ? <CircularProgress size={16} /> : null}
+          icon={loading ? <CircularProgress size={16} /> : <CircularProgress />}
+          mobileText={loading ? 'Deleting...' : 'Delete'}
+          desktopText={loading ? 'Deleting...' : 'Delete Asset'}
         >
           {loading ? 'Deleting...' : 'Delete Asset'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

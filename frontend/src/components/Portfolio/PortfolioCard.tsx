@@ -18,8 +18,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Typography,
   Box,
   Alert,
   CircularProgress,
@@ -27,10 +25,14 @@ import {
   Checkbox,
   useTheme,
   useMediaQuery,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { Portfolio } from '../../types';
 import { formatCurrency } from '../../utils/format';
 import { CopyPortfolioModal } from './CopyPortfolioModal';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import './PortfolioCard.styles.css';
 
 interface PortfolioCardProps {
@@ -149,7 +151,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               ) : (
                 <AccountBalanceWallet className="portfolio-card__type-icon portfolio-card__type-icon--individual" />
               )}
-              <h2 className="portfolio-card__title">{portfolio.name}</h2>
+              <ResponsiveTypography variant="cardTitle" className="portfolio-card__title">
+                {portfolio.name}
+              </ResponsiveTypography>
             </div>
             <div className="portfolio-card__type-badge" style={{ display: isMobile ? 'none' : 'block' }}>
               {isFund ? 'Fund' : 'Individual'}
@@ -164,26 +168,34 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
           <div className="portfolio-card__total-value">
             <AccountBalance className="portfolio-card__total-value-icon" />
             <div>
-              <div className="portfolio-card__total-value-amount">
+              <ResponsiveTypography variant="cardValue" className="portfolio-card__total-value-amount">
                 {formatCurrency(Number(portfolio.totalAllValue) || 0, portfolio.baseCurrency)}
-              </div>
-              <div className="portfolio-card__total-value-label">Investment Value</div>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
+                Investment Value
+              </ResponsiveTypography>
             </div>
           </div>
 
           <div className="portfolio-card__pl-section">
-            <div className="portfolio-card__pl-item">
+            <div className="portfolio-card__pl-item" >
               <div className="portfolio-card__pl-header">
                 {isPositivePL ? (
                   <TrendingUp className={`portfolio-card__pl-icon portfolio-card__pl-icon--positive`} />
                 ) : (
                   <TrendingDown className={`portfolio-card__pl-icon portfolio-card__pl-icon--negative`} />
                 )}
-                <div className={`portfolio-card__pl-amount ${isPositivePL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}>
+                <ResponsiveTypography 
+                  variant="cardValueMedium" 
+                  sx={{ fontWeight: 600 }}
+                  className={`portfolio-card__pl-amount ${isPositivePL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}
+                >
                   {formatCurrency(Number(portfolio.unrealizedInvestPnL) || 0, portfolio.baseCurrency)}
-                </div>
+                </ResponsiveTypography>
               </div>
-              <div className="portfolio-card__pl-label">Unrealized P&L</div>
+              <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
+                Unrealized P&L
+              </ResponsiveTypography>
             </div>
 
             <div className="portfolio-card__pl-item">
@@ -193,63 +205,82 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 ) : (
                   <TrendingDown className={`portfolio-card__pl-icon portfolio-card__pl-icon--negative`} />
                 )}
-                <div className={`portfolio-card__pl-amount ${isPositiveRealizedPL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}>
+                <ResponsiveTypography 
+                  variant="cardValueMedium" 
+                  sx={{ fontWeight: 600 }}
+                  className={`portfolio-card__pl-amount ${isPositiveRealizedPL ? 'portfolio-card__pl-amount--positive' : 'portfolio-card__pl-amount--negative'}`}
+                >
                   {formatCurrency(Number(portfolio.realizedInvestPnL) || 0, portfolio.baseCurrency)}
-                </div>
+                </ResponsiveTypography>
               </div>
-              <div className="portfolio-card__pl-label">Realized P&L</div>
+              <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
+                Realized P&L
+              </ResponsiveTypography>
             </div>
           </div>
 
           <div className="portfolio-card__cash-balance">
-            <div className="portfolio-card__cash-label">Cash Balance</div>
-            <div className="portfolio-card__cash-amount">
+            <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
+              Cash Balance
+            </ResponsiveTypography>
+            <ResponsiveTypography 
+                  variant="cardValueMedium" 
+                  sx={{ fontWeight: 600 }} className="portfolio-card__cash-amount">
               {formatCurrency(Number(portfolio.cashBalance) || 0, portfolio.baseCurrency)}
-            </div>
+            </ResponsiveTypography>
           </div>
         </div>
       </div>
 
       <div className="portfolio-card__actions">
-        {/* <button
-          className="portfolio-card__view-btn"
-          onClick={handleViewButtonClick}
-        >
-          <Visibility />
-          View Details
-        </button> */}
         {onEdit && (
-          <button
-            className="portfolio-card__edit-btn"
-            onClick={handleEdit}
-          >
-            <Edit />
-            {!isMobile && 'Edit'}
-          </button>
+          <Tooltip title="Edit Portfolio">
+            <IconButton
+              onClick={handleEdit}
+              color="primary"
+              size="small"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  color: 'white',
+                },
+              }}
+            >
+              <Edit />
+            </IconButton>
+          </Tooltip>
         )}
-        <button
-          className="portfolio-card__copy-btn"
-          onClick={handleCopy}
-          onMouseDown={(e) => e.preventDefault()}
-          onMouseUp={(e) => e.preventDefault()}
-          title="Copy Portfolio"
-          type="button"
-        >
-          <ContentCopy />
-          {!isMobile && 'Copy'}
-        </button>
-        {onDelete && (
-          <button
-            className="portfolio-card__delete-btn"
-            onClick={handleDelete}
-            onMouseDown={(e) => e.preventDefault()}
-            onMouseUp={(e) => e.preventDefault()}
-            title="Delete Portfolio"
-            type="button"
+        <Tooltip title="Copy Portfolio">
+          <IconButton
+            onClick={handleCopy}
+            color="secondary"
+            size="small"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'secondary.light',
+                color: 'white',
+              },
+            }}
           >
-            <DeleteIcon />
-            {!isMobile && 'Delete'}
-          </button>
+            <ContentCopy />
+          </IconButton>
+        </Tooltip>
+        {onDelete && (
+          <Tooltip title="Delete Portfolio">
+            <IconButton
+              onClick={handleDelete}
+              color="error"
+              size="small"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'error.light',
+                  color: 'white',
+                },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         )}
       </div>
 
@@ -271,37 +302,37 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>
             <DeleteIcon color="error" />
-            <Typography variant="h6">Delete Portfolio</Typography>
+            <ResponsiveTypography variant="h6">Delete Portfolio</ResponsiveTypography>
           </Box>
         </DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
-            <Typography variant="body2" fontWeight="bold">
+            <ResponsiveTypography variant="body2" fontWeight="bold">
               This action cannot be undone!
-            </Typography>
+            </ResponsiveTypography>
           </Alert>
-          <Typography variant="body1" paragraph>
+                <ResponsiveTypography variant="body1" paragraph>
             Are you sure you want to delete the portfolio <strong>"{portfolio.name}"</strong>?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2" color="text.secondary" paragraph>
             This will permanently delete:
-          </Typography>
+                </ResponsiveTypography>
           <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
-            <Typography component="li" variant="body2" color="text.secondary">
+            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
               All trades and trade details
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
               All cash flows and deposits
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
               All performance snapshots and analytics data
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
               All investor holdings (if this is a fund)
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
               All historical data and reports
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           
           {/* Confirmation Checkbox */}
@@ -321,30 +352,35 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 />
               }
               label={
-                <Typography variant="body2" color="error" fontWeight="bold">
+                <ResponsiveTypography variant="formHelper" 
+                sx={{  color: "error.main", fontWeight: "bold" }}
+                ellipsis={false}
+                >
                   Tôi hiểu rằng hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan
-                </Typography>
+                </ResponsiveTypography>
               }
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button
+          <ResponsiveButton
             onClick={handleDeleteCancel}
             disabled={isDeleting}
             color="inherit"
           >
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleDeleteConfirm}
             disabled={isDeleting || !deleteConfirmationChecked}
             color="error"
             variant="contained"
-            startIcon={isDeleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+            icon={isDeleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+            mobileText="Delete"
+            desktopText="Delete Portfolio"
           >
             {isDeleting ? 'Deleting...' : 'Delete Portfolio'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </div>

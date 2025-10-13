@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -27,6 +26,7 @@ import {
   Schedule as ScheduleIcon,
   DateRange as DateRangeIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { SnapshotGranularity } from '../../types/snapshot.types';
 import { snapshotService } from '../../services/snapshot.service';
 
@@ -326,23 +326,25 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1 }}>
-        <Button
+        <ResponsiveButton
           onClick={handleClose}
           disabled={isDeleting}
           sx={{ textTransform: 'none' }}
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={handleDelete}
           variant="contained"
           color="error"
-          startIcon={<DeleteIcon />}
+          icon={<DeleteIcon />}
+          mobileText="Delete"
+          desktopText="Delete Snapshots"
           disabled={isDeleting}
           sx={{ textTransform: 'none' }}
         >
           {isDeleting ? 'Deleting...' : 'Delete Snapshots'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

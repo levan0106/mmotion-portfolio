@@ -304,13 +304,17 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
       }}>
         • Bubble size represents return performance - larger bubbles indicate higher returns (better performance)
       </ResponsiveTypography> */}
-      <Box sx={{ height: compact ? 167 : 267 }}>
+      <Box sx={{ 
+        height: compact ? 167 : 267,
+        px: { xs: 0, sm: 1 },
+        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+      }}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ 
             top: compact ? 10 : 20, 
-            right: compact ? 10 : 20, 
+            right: compact ? 0 : 20, 
             bottom: compact ? 10 : 20, 
-            left: compact ? 10 : 20 
+            left: compact ? 0 : 20 
           }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

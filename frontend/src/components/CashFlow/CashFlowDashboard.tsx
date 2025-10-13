@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -42,6 +41,7 @@ import {
   TrendingDown as TrendingDownIcon,
   AccountBalance as BalanceIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { formatCurrency, formatDate } from '../../utils/format';
 import CashFlowChart from './CashFlowChart';
 
@@ -569,14 +569,18 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button
+          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText="Cancel" desktopText="Cancel">
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.amount || !formData.description}
+            mobileText={loading ? 'Creating...' : 'Create'}
+            desktopText={loading ? 'Creating...' : 'Create'}
           >
             {loading ? 'Creating...' : 'Create'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Box>

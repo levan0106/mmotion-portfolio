@@ -12,7 +12,6 @@ import {
   TableRow,
   Paper,
   Alert,
-  Button,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -22,6 +21,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types/trading';
 import { formatCurrency, formatNumber } from '../../utils/format';
+import { ResponsiveButton } from '../Common';
 
 export interface TradeDetail {
   detailId: string;
@@ -163,9 +163,11 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
           </Box>
           <Box display="flex" gap={1}>
             {onEdit && (
-              <Button
+              <ResponsiveButton
                 variant="contained"
-                startIcon={<EditIcon />}
+                icon={<EditIcon />}
+                mobileText="Edit"
+                desktopText="Edit Trade"
                 onClick={() => onEdit(trade)}
                 size="small"
                 sx={{ 
@@ -176,7 +178,7 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                 }}
               >
                 Edit Trade
-              </Button>
+              </ResponsiveButton>
             )}
           </Box>
         </Box>

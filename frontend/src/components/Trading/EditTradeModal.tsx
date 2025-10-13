@@ -1,12 +1,11 @@
 import React, { useRef } from 'react';
 import {
-  Button,
   Box,
-  CircularProgress,
 } from '@mui/material';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Close as CloseIcon } from '@mui/icons-material';
 import TradeForm, { TradeFormData } from './TradeForm';
 import { ModalWrapper } from '../Common/ModalWrapper';
+import { ResponsiveButton } from '../Common';
 
 export interface EditTradeModalProps {
   open: boolean;
@@ -56,18 +55,23 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
       loading={isLoading}
       actions={
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button 
+          <ResponsiveButton 
             onClick={onClose} 
             disabled={isLoading}
+            icon={<CloseIcon />}
+            mobileText="Cancel"
+            desktopText="Cancel"
             sx={{ textTransform: 'none' }}
           >
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleUpdateClick}
             variant="contained"
             disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={20} /> : null}
+            icon={<EditIcon />}
+            mobileText="Update"
+            desktopText="Update Trade"
             sx={{ 
               textTransform: 'none',
               fontWeight: 600,
@@ -75,7 +79,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
             }}
           >
             {isLoading ? 'Updating...' : 'Update Trade'}
-          </Button>
+          </ResponsiveButton>
         </Box>
       }
     >

@@ -8,7 +8,31 @@ import { AssetType, AssetFilters as AssetFiltersType } from '../../types/asset.t
 import { AssetTypeLabels } from '../../types/asset.types';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
-import './AssetFilters.styles.css';
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Checkbox,
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Grid,
+  Paper,
+  Divider,
+} from '@mui/material';
+import { ResponsiveTypography } from '../Common';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Clear as ClearIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+} from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 
 export interface AssetFiltersProps {
   filters: AssetFiltersType;
@@ -23,7 +47,6 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
   filters,
   onFiltersChange,
   onClearFilters,
-  className = '',
   showAdvanced = false,
   onToggleAdvanced,
 }) => {
@@ -142,302 +165,329 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({
   const hasActiveFilters = searchTerm || selectedType !== 'ALL' || selectedPortfolio !== 'ALL' || hasTrades !== undefined || valueRange.min || valueRange.max;
 
   return (
-    <div className={`asset-filters ${className}`}>
+    <Paper sx={{ p: 2, mb: 2 }}>
       {/* Basic Filters */}
-      <div className="asset-filters__basic">
-        <div className="asset-filters__search">
-          <input
-            type="text"
+      <Box sx={{ mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+          <TextField
+            fullWidth
             placeholder="Search assets..."
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="input input--search"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => handleSearchChange('')}
-              className="btn btn--icon btn--clear"
-              title="Clear search"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div className="asset-filters__type">
-          <select
-            value={selectedType}
-            onChange={(e) => handleTypeChange(e.target.value as AssetType | 'ALL')}
-            className="select"
-          >
-            <option value="ALL">All Types</option>
-            {Object.entries(AssetTypeLabels).map(([type, label]) => (
-              <option key={type} value={type}>
-                {label as string}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="asset-filters__portfolio">
-          <select
-            value={selectedPortfolio}
-            onChange={(e) => handlePortfolioChange(e.target.value)}
-            className="select"
-            disabled={portfoliosLoading}
-          >
-            <option value="ALL">All Portfolios</option>
-            {portfolios?.map((portfolio) => (
-              <option key={portfolio.portfolioId} value={portfolio.portfolioId}>
-                {portfolio.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="asset-filters__has-trades">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={hasTrades === true}
-              onChange={(e) => handleHasTradesChange(e.target.checked ? true : undefined)}
-              className="checkbox"
-            />
-            <span className="checkbox-text">Has Trades</span>
-          </label>
-        </div>
-
-        <div className="asset-filters__sort">
-          <select
-            value={`${sortBy}-${sortOrder}`}
-            onChange={(e) => {
-              const [field, order] = e.target.value.split('-');
-              setSortBy(field);
-              setSortOrder(order as 'ASC' | 'DESC');
-              onFiltersChange({
-                ...filters,
-                sortBy: field,
-                sortOrder: order as 'ASC' | 'DESC',
-              });
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+              endAdornment: searchTerm && (
+                <ResponsiveButton
+                  size="small"
+                  onClick={() => handleSearchChange('')}
+                  sx={{ minWidth: 'auto', p: 0.5 }}
+                  icon={<ClearIcon fontSize="small" />}
+                  mobileText=""
+                  desktopText=""
+                >
+                  <ClearIcon fontSize="small" />
+                </ResponsiveButton>
+              ),
             }}
-            className="select"
-          >
-            <option value="name-ASC">Name A-Z</option>
-            <option value="name-DESC">Name Z-A</option>
-            <option value="totalValue-ASC">Value Low-High</option>
-            <option value="totalValue-DESC">Value High-Low</option>
-            <option value="totalQuantity-ASC">Quantity Low-High</option>
-            <option value="totalQuantity-DESC">Quantity High-Low</option>
-            <option value="updatedAt-ASC">Oldest First</option>
-            <option value="updatedAt-DESC">Newest First</option>
-          </select>
-        </div>
+            size="small"
+          />
+        </Box>
 
-        <div className="asset-filters__limit">
-          <select
-            value={limit}
-            onChange={(e) => handleLimitChange(Number(e.target.value))}
-            className="select select--small"
-          >
-            <option value={10}>10 per page</option>
-            <option value={25}>25 per page</option>
-            <option value={50}>50 per page</option>
-            <option value={100}>100 per page</option>
-          </select>
-        </div>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Asset Type</InputLabel>
+              <Select
+                value={selectedType}
+                onChange={(e) => handleTypeChange(e.target.value as AssetType | 'ALL')}
+                label="Asset Type"
+              >
+                <MenuItem value="ALL">All Types</MenuItem>
+                {Object.entries(AssetTypeLabels).map(([type, label]) => (
+                  <MenuItem key={type} value={type}>
+                    {label as string}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-        <div className="asset-filters__actions">
-          <button
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Portfolio</InputLabel>
+              <Select
+                value={selectedPortfolio}
+                onChange={(e) => handlePortfolioChange(e.target.value)}
+                label="Portfolio"
+                disabled={portfoliosLoading}
+              >
+                <MenuItem value="ALL">All Portfolios</MenuItem>
+                {portfolios?.map((portfolio) => (
+                  <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
+                    {portfolio.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={hasTrades === true}
+                  onChange={(e) => handleHasTradesChange(e.target.checked ? true : undefined)}
+                />
+              }
+              label="Has Trades"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field);
+                  setSortOrder(order as 'ASC' | 'DESC');
+                  onFiltersChange({
+                    ...filters,
+                    sortBy: field,
+                    sortOrder: order as 'ASC' | 'DESC',
+                  });
+                }}
+                label="Sort By"
+              >
+                <MenuItem value="name-ASC">Name A-Z</MenuItem>
+                <MenuItem value="name-DESC">Name Z-A</MenuItem>
+                <MenuItem value="totalValue-ASC">Value Low-High</MenuItem>
+                <MenuItem value="totalValue-DESC">Value High-Low</MenuItem>
+                <MenuItem value="totalQuantity-ASC">Quantity Low-High</MenuItem>
+                <MenuItem value="totalQuantity-DESC">Quantity High-Low</MenuItem>
+                <MenuItem value="updatedAt-ASC">Oldest First</MenuItem>
+                <MenuItem value="updatedAt-DESC">Newest First</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Per Page</InputLabel>
+              <Select
+                value={limit}
+                onChange={(e) => handleLimitChange(Number(e.target.value))}
+                label="Per Page"
+              >
+                <MenuItem value={10}>10 per page</MenuItem>
+                <MenuItem value={25}>25 per page</MenuItem>
+                <MenuItem value={50}>50 per page</MenuItem>
+                <MenuItem value={100}>100 per page</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <ResponsiveButton
             onClick={handleToggleAdvanced}
-            className="btn btn--secondary"
+            icon={<FilterListIcon />}
+            mobileText={showAdvanced ? 'Hide' : 'Show'}
+            desktopText={showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+            variant="outlined"
           >
             {showAdvanced ? 'Hide' : 'Show'} Advanced
-          </button>
+          </ResponsiveButton>
           
           {hasActiveFilters && (
-            <button
+            <ResponsiveButton
               onClick={handleClearFilters}
-              className="btn btn--outline"
+              icon={<ClearIcon />}
+              mobileText="Clear"
+              desktopText="Clear All"
+              variant="outlined"
             >
               Clear All
-            </button>
+            </ResponsiveButton>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="asset-filters__advanced">
-          <div className="asset-filters__advanced-header">
-            <h4>Advanced Filters</h4>
-          </div>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <ResponsiveTypography variant="h6">Advanced Filters</ResponsiveTypography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <ResponsiveTypography variant="subtitle2" gutterBottom>
+                  Value Range
+                </ResponsiveTypography>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <TextField
+                    type="number"
+                    placeholder="Min value"
+                    value={valueRange.min}
+                    onChange={(e) => handleValueRangeChange('min', e.target.value)}
+                    size="small"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                  <ResponsiveTypography variant="body2">to</ResponsiveTypography>
+                  <TextField
+                    type="number"
+                    placeholder="Max value"
+                    value={valueRange.max}
+                    onChange={(e) => handleValueRangeChange('max', e.target.value)}
+                    size="small"
+                    inputProps={{ min: 0, step: 0.01 }}
+                  />
+                </Box>
+              </Grid>
 
-          <div className="asset-filters__advanced-content">
-            <div className="filter-group">
-              <label>Value Range</label>
-              <div className="value-range">
-                <input
-                  type="number"
-                  placeholder="Min value"
-                  value={valueRange.min}
-                  onChange={(e) => handleValueRangeChange('min', e.target.value)}
-                  className="input input--small"
-                  min="0"
-                  step="0.01"
-                />
-                <span>to</span>
-                <input
-                  type="number"
-                  placeholder="Max value"
-                  value={valueRange.max}
-                  onChange={(e) => handleValueRangeChange('max', e.target.value)}
-                  className="input input--small"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-            </div>
+              <Grid item xs={12} md={6}>
+                <ResponsiveTypography variant="subtitle2" gutterBottom>
+                  Sort Options
+                </ResponsiveTypography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Sort by</InputLabel>
+                      <Select
+                        value={sortBy}
+                        onChange={(e) => {
+                          setSortBy(e.target.value);
+                          onFiltersChange({
+                            ...filters,
+                            sortBy: e.target.value,
+                          });
+                        }}
+                        label="Sort by"
+                      >
+                        <MenuItem value="name">Name</MenuItem>
+                        <MenuItem value="type">Type</MenuItem>
+                        <MenuItem value="totalValue">Total Value</MenuItem>
+                        <MenuItem value="totalQuantity">Total Quantity</MenuItem>
+                        <MenuItem value="createdAt">Created Date</MenuItem>
+                        <MenuItem value="updatedAt">Updated Date</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Order</InputLabel>
+                      <Select
+                        value={sortOrder}
+                        onChange={(e) => {
+                          setSortOrder(e.target.value as 'ASC' | 'DESC');
+                          onFiltersChange({
+                            ...filters,
+                            sortOrder: e.target.value as 'ASC' | 'DESC',
+                          });
+                        }}
+                        label="Order"
+                      >
+                        <MenuItem value="ASC">Ascending</MenuItem>
+                        <MenuItem value="DESC">Descending</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </Grid>
 
-            <div className="filter-group">
-              <label>Sort Options</label>
-              <div className="sort-options">
-                <div className="sort-field">
-                  <label>Sort by:</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                      onFiltersChange({
-                        ...filters,
-                        sortBy: e.target.value,
-                      });
-                    }}
-                    className="select select--small"
+              <Grid item xs={12} md={6}>
+                <ResponsiveTypography variant="subtitle2" gutterBottom>
+                  Results per page
+                </ResponsiveTypography>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Per Page</InputLabel>
+                  <Select
+                    value={limit}
+                    onChange={(e) => handleLimitChange(Number(e.target.value))}
+                    label="Per Page"
                   >
-                    <option value="name">Name</option>
-                    <option value="type">Type</option>
-                    <option value="totalValue">Total Value</option>
-                    <option value="totalQuantity">Total Quantity</option>
-                    <option value="createdAt">Created Date</option>
-                    <option value="updatedAt">Updated Date</option>
-                  </select>
-                </div>
-                <div className="sort-order">
-                  <label>Order:</label>
-                  <select
-                    value={sortOrder}
-                    onChange={(e) => {
-                      setSortOrder(e.target.value as 'ASC' | 'DESC');
-                      onFiltersChange({
-                        ...filters,
-                        sortOrder: e.target.value as 'ASC' | 'DESC',
-                      });
-                    }}
-                    className="select select--small"
-                  >
-                    <option value="ASC">Ascending</option>
-                    <option value="DESC">Descending</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="filter-group">
-              <label>Results per page</label>
-              <select
-                value={limit}
-                onChange={(e) => handleLimitChange(Number(e.target.value))}
-                className="select select--small"
-              >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={250}>250</option>
-                <option value={500}>500</option>
-              </select>
-            </div>
-          </div>
-        </div>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                    <MenuItem value={100}>100</MenuItem>
+                    <MenuItem value={250}>250</MenuItem>
+                    <MenuItem value={500}>500</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
       )}
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
-        <div className="asset-filters__summary">
-          <div className="active-filters">
-            <span className="active-filters__label">Active filters:</span>
-            <div className="active-filters__tags">
-              {searchTerm && (
-                <span className="filter-tag">
-                  Search: "{searchTerm}"
-                  <button
-                    onClick={() => handleSearchChange('')}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {selectedType !== 'ALL' && (
-                <span className="filter-tag">
-                  Type: {AssetTypeLabels[selectedType]}
-                  <button
-                    onClick={() => handleTypeChange('ALL')}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {selectedPortfolio !== 'ALL' && (
-                <span className="filter-tag">
-                  Portfolio: {portfolios?.find(p => p.id === selectedPortfolio)?.name || selectedPortfolio}
-                  <button
-                    onClick={() => handlePortfolioChange('ALL')}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {hasTrades !== undefined && (
-                <span className="filter-tag">
-                  Has Trades: {hasTrades ? 'Yes' : 'No'}
-                  <button
-                    onClick={() => handleHasTradesChange(undefined)}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {valueRange.min && (
-                <span className="filter-tag">
-                  Min: {valueRange.min}
-                  <button
-                    onClick={() => handleValueRangeChange('min', '')}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {valueRange.max && (
-                <span className="filter-tag">
-                  Max: {valueRange.max}
-                  <button
-                    onClick={() => handleValueRangeChange('max', '')}
-                    className="filter-tag__remove"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        <Box sx={{ mt: 2 }}>
+          <Divider sx={{ mb: 2 }} />
+          <ResponsiveTypography variant="subtitle2" gutterBottom>
+            Active filters:
+          </ResponsiveTypography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {searchTerm && (
+              <Chip
+                label={`Search: "${searchTerm}"`}
+                onDelete={() => handleSearchChange('')}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {selectedType !== 'ALL' && (
+              <Chip
+                label={`Type: ${AssetTypeLabels[selectedType]}`}
+                onDelete={() => handleTypeChange('ALL')}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {selectedPortfolio !== 'ALL' && (
+              <Chip
+                label={`Portfolio: ${portfolios?.find(p => p.id === selectedPortfolio)?.name || selectedPortfolio}`}
+                onDelete={() => handlePortfolioChange('ALL')}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {hasTrades !== undefined && (
+              <Chip
+                label={`Has Trades: ${hasTrades ? 'Yes' : 'No'}`}
+                onDelete={() => handleHasTradesChange(undefined)}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {valueRange.min && (
+              <Chip
+                label={`Min: ${valueRange.min}`}
+                onDelete={() => handleValueRangeChange('min', '')}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {valueRange.max && (
+              <Chip
+                label={`Max: ${valueRange.max}`}
+                onDelete={() => handleValueRangeChange('max', '')}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+          </Box>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 };
 

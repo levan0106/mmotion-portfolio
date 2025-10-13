@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Button,
   Alert,
   Dialog,
   DialogTitle,
@@ -35,6 +34,7 @@ import GlobalAssetForm from './GlobalAssetForm';
 import GlobalAssetList from './GlobalAssetList';
 import AssetPriceManagement from './AssetPriceManagement';
 import MarketDataDashboard from './MarketDataDashboard';
+import { ResponsiveButton } from './Common';
 
 // Import hooks
 import { useDeleteGlobalAsset } from '../hooks/useGlobalAssets';
@@ -267,9 +267,9 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   if (error) {
     return (
       <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={onRefresh}>
+        <ResponsiveButton color="inherit" size="small" onClick={onRefresh} mobileText="Retry" desktopText="Retry">
           Retry
-        </Button>
+        </ResponsiveButton>
       }>
         {error}
       </Alert>
@@ -323,11 +323,13 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={<RefreshIcon />}
+                icon={<RefreshIcon />}
                 onClick={onRefresh}
                 disabled={loading}
+                mobileText="Refresh"
+                desktopText="Refresh"
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.1)',
                   borderColor: 'rgba(255,255,255,0.3)',
@@ -343,12 +345,14 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 }}
               >
                 Refresh
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
-                startIcon={<AddIcon />}
+                icon={<AddIcon />}
                 onClick={handleCreateAsset}
                 disabled={loading}
+                mobileText="Add"
+                desktopText="Add Asset"
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.9)',
                   color: '#667eea',
@@ -365,7 +369,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 }}
               >
                 Add Asset
-              </Button>
+              </ResponsiveButton>
             </Box>
           </Box>
         </CardContent>
@@ -778,9 +782,9 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handlePriceManagementClose}>
+            <ResponsiveButton onClick={handlePriceManagementClose} mobileText="Close" desktopText="Close">
               Close
-            </Button>
+            </ResponsiveButton>
           </DialogActions>
         </Dialog>
       )}
@@ -959,20 +963,24 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
           borderTop: '1px solid',
           borderColor: 'divider'
         }}>
-          <Button
+          <ResponsiveButton
             onClick={handleCancelDelete}
             variant="outlined"
             disabled={deleteLoading}
+            mobileText="Cancel"
+            desktopText="Cancel"
             sx={{ minWidth: 100 }}
           >
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleConfirmDelete}
             variant="contained"
             color="error"
             disabled={deleteLoading}
-            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+            icon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+            mobileText={deleteLoading ? 'Deleting...' : 'Delete'}
+            desktopText={deleteLoading ? 'Deleting...' : 'Delete Asset'}
             sx={{ 
               minWidth: 120,
               fontWeight: 600,
@@ -982,7 +990,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             }}
           >
             {deleteLoading ? 'Deleting...' : 'Delete Asset'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
 

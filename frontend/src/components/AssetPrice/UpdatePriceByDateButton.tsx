@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { History } from '@mui/icons-material';
 import { UpdatePriceByDateModal } from './UpdatePriceByDateModal';
 import { BulkUpdateResult } from '../../hooks/useAssetPriceBulk';
@@ -39,16 +40,18 @@ export const UpdatePriceByDateButton: React.FC<UpdatePriceByDateButtonProps> = (
   return (
     <>
       <Tooltip title="Cập nhật giá từ dữ liệu lịch sử theo ngày được chọn">
-        <Button
+        <ResponsiveButton
           variant={variant}
           size={size}
           disabled={disabled}
           fullWidth={fullWidth}
+          icon={<History />}
+          mobileText="Cập nhật giá"
+          desktopText="Cập nhật giá theo ngày"
           onClick={handleOpenModal}
-          startIcon={<History />}
         >
           Cập nhật giá theo ngày
-        </Button>
+        </ResponsiveButton>
       </Tooltip>
 
       <UpdatePriceByDateModal

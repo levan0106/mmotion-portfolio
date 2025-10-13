@@ -267,32 +267,34 @@ const PortfolioDetail: React.FC = () => {
               </ResponsiveTypography>
             </ResponsiveButton>
             <Tooltip title="Refresh all portfolio data">
-              <ResponsiveButton
-                variant="outlined"
-                icon={<RefreshIcon />}
-                startIcon={<RefreshIcon />}
-                onClick={handleRefreshAll}
-                disabled={isRefreshingAll}
-                mobileText="Refresh"
-                desktopText="Refresh All"
-                sx={{ 
-                  display: { xs: 'none', sm: 'flex' },
-                  borderRadius: 2, 
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 0.75, sm: 1 },
-                  width: { xs: '100%', sm: 'auto' },
-                  minWidth: { xs: 'auto', sm: '120px' },
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                  }
-                }}
-              >
-                <ResponsiveTypography variant="buttonText">
-                  {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
-                </ResponsiveTypography>
-              </ResponsiveButton>
+              <span>
+                <ResponsiveButton
+                  variant="outlined"
+                  icon={<RefreshIcon />}
+                  startIcon={<RefreshIcon />}
+                  onClick={handleRefreshAll}
+                  disabled={isRefreshingAll}
+                  mobileText="Refresh"
+                  desktopText="Refresh All"
+                  sx={{ 
+                    display: { xs: 'none', sm: 'flex' },
+                    borderRadius: 2, 
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 0.75, sm: 1 },
+                    width: { xs: '100%', sm: 'auto' },
+                    minWidth: { xs: 'auto', sm: '120px' },
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                    }
+                  }}
+                >
+                  <ResponsiveTypography variant="buttonText">
+                    {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
+                  </ResponsiveTypography>
+                </ResponsiveButton>
+              </span>
             </Tooltip>
             <ResponsiveButton
               variant="contained"
@@ -659,7 +661,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: 40, sm: 110, md: 110 }, // Fixed position for sticky to work
+          top: { xs: 40, sm: 110, md: 120 }, // Fixed position for sticky to work
           zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -674,29 +676,50 @@ const PortfolioDetail: React.FC = () => {
           justifyContent: 'space-between', 
           alignItems: 'center', 
           px: { xs: 1, sm: 2 },
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 2, sm: 0 }
+          flexDirection: 'row',
+          gap: { xs: 1, sm: 2 },
+          flexWrap: 'nowrap'
         }}>
           {/* Tabs */}
           <Tabs 
             value={tabValue} 
             onChange={handleTabChange} 
             aria-label="portfolio tabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
-              minHeight: '30px',
-              width: { xs: '100%', sm: 'auto' },
+              minHeight: '40px',
+              width: { xs: 'calc(100% - 50px)', sm: 'auto' },
               overflow: 'auto',
+              flex: 1,
+              '& .MuiTabs-flexContainer': {
+                gap: { xs: 0.5, sm: 1 },
+              },
               '& .MuiTab-root': {
-                minHeight: '30px',
+                minHeight: '40px',
                 fontWeight: 600,
                 textTransform: 'none',
-                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },
-                minWidth: { xs: 'auto', sm: '120px' },
-                px: { xs: 1, sm: 2 },
+                fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
+                minWidth: { xs: '80px', sm: '100px', md: '120px' },
+                px: { xs: 0.75, sm: 1.5, md: 2 },
+                py: { xs: 0.5, sm: 1 },
                 flexShrink: 0,
+                whiteSpace: 'nowrap',
+                '& .MuiTab-iconWrapper': {
+                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                  marginRight: { xs: 0.25, sm: 0.5 },
+                },
               },
               '& .MuiTabs-scrollButtons': {
-                display: { xs: 'flex', sm: 'none' },
+                display: { xs: 'flex', sm: 'flex' },
+                '&.Mui-disabled': {
+                  opacity: 0.3,
+                },
+              },
+              '& .MuiTabs-indicator': {
+                height: 3,
+                borderRadius: '3px 3px 0 0',
               },
             }}
           >

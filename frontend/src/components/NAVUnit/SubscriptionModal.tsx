@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
   Typography,
   Box,
   Grid,
@@ -20,6 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Add as AddIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { SubscribeToFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -201,22 +201,24 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
   const modalActions = (
     <>
-      <Button 
+      <ResponsiveButton 
         onClick={handleClose}
         disabled={loading}
         size="large"
       >
         Cancel
-      </Button>
-      <Button 
+      </ResponsiveButton>
+      <ResponsiveButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={!isFormValid}
         size="large"
-        startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+        icon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+        mobileText="Create"
+        desktopText="Create Subscription"
       >
         {loading ? 'Creating...' : 'Create Subscription'}
-      </Button>
+      </ResponsiveButton>
     </>
   );
 

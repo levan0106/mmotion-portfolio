@@ -8,7 +8,6 @@ import {
   LinearProgress,
   Tabs,
   Tab,
-  Button,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -23,6 +22,7 @@ import {
   Assessment as AssetIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../../Common';
 import { useSnapshots } from '../../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../../hooks/usePortfolioSnapshots';
 import { usePortfolios } from '../../../hooks/usePortfolios';
@@ -455,16 +455,18 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
           
           {/* Refresh Button */}
           <Box sx={{ p: 1 }}>
-            <Button
+            <ResponsiveButton
               variant="outlined"
               size="small"
-              startIcon={<RefreshIcon />}
+              icon={<RefreshIcon />}
+              mobileText="Refresh"
+              desktopText="Refresh Data"
               onClick={handleRefresh}
               disabled={loading || portfolioSnapshotsLoading || performanceLoading}
               sx={{ fontWeight: 600, letterSpacing: '0.3px' }}
             >
               Refresh Data
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
 

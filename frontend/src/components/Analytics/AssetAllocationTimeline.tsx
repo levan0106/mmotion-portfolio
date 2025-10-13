@@ -36,7 +36,10 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
   };
 
   return (
-    <Box>
+    <Box sx={{
+      px: { xs: 0, sm: 1 },
+      mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+    }}>
       {showGranularitySelector && onGranularityChange && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: compact ? 0.5 : 0.8 }}>
           <GranularitySelector

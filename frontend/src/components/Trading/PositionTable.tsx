@@ -23,7 +23,6 @@ import {
   Menu,
   ListItemIcon,
   ListItemText,
-  Button,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -33,6 +32,7 @@ import {
   FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { PositionResponseDto } from '../../types/trading';
+import { ResponsiveButton } from '../Common';
 
 export interface PositionTableProps {
   positions: PositionResponseDto[];
@@ -157,15 +157,17 @@ export const PositionTable: React.FC<PositionTableProps> = ({
             Portfolio Positions
           </Typography>
           <Box display="flex" gap={2}>
-            <Button
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<FilterIcon />}
+              icon={<FilterIcon />}
+              mobileText="Filter"
+              desktopText="Filters"
               onClick={() => {
                 // Toggle filter visibility
               }}
             >
               Filters
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
 

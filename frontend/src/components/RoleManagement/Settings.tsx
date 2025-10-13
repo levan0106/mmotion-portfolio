@@ -7,7 +7,6 @@ import {
   Grid,
   Switch,
   FormControlLabel,
-  Button,
   Chip,
   List,
   ListItem,
@@ -39,6 +38,7 @@ import { useRoles } from '../../hooks/useRoles';
 import { usePermissions } from '../../hooks/usePermissions';
 import { SettingsApi, SystemSettings } from '../../services/api.settings';
 import { ToastService } from '../../services/toast';
+import { ResponsiveButton } from '../Common';
 
 interface SettingsProps {
   // Props for settings configuration
@@ -185,13 +185,15 @@ export const Settings: React.FC<SettingsProps> = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           Failed to load settings: {settingsError}
         </Alert>
-        <Button 
+        <ResponsiveButton 
           variant="contained" 
           onClick={() => window.location.reload()}
-          startIcon={<RefreshIcon />}
+          icon={<RefreshIcon />}
+          mobileText="Retry"
+          desktopText="Retry"
         >
           Retry
-        </Button>
+        </ResponsiveButton>
       </Box>
     );
   }
@@ -316,13 +318,15 @@ export const Settings: React.FC<SettingsProps> = () => {
                     Role Management
                   </Typography>
                 </Box>
-                <Button
+                <ResponsiveButton
                   size="small"
-                  startIcon={<AddIcon />}
+                  icon={<AddIcon />}
+                  mobileText="Add Role"
+                  desktopText="Add Role"
                   onClick={() => setCreateRoleDialogOpen(true)}
                 >
                   Add Role
-                </Button>
+                </ResponsiveButton>
               </Box>
               
               {isLoadingRoles ? (
@@ -371,13 +375,15 @@ export const Settings: React.FC<SettingsProps> = () => {
                     Permission Management
                   </Typography>
                 </Box>
-                <Button
+                <ResponsiveButton
                   size="small"
-                  startIcon={<AddIcon />}
+                  icon={<AddIcon />}
+                  mobileText="Add Permission"
+                  desktopText="Add Permission"
                   onClick={() => setCreatePermissionDialogOpen(true)}
                 >
                   Add Permission
-                </Button>
+                </ResponsiveButton>
               </Box>
               
               {isLoadingPermissions ? (
@@ -504,28 +510,34 @@ export const Settings: React.FC<SettingsProps> = () => {
                   </Typography>
                 </Box>
                 <Box display="flex" gap={2}>
-                  <Button
+                  <ResponsiveButton
                     variant="outlined"
-                    startIcon={<RefreshIcon />}
+                    icon={<RefreshIcon />}
+                    mobileText="Refresh System"
+                    desktopText="Refresh System"
                     onClick={() => window.location.reload()}
                   >
                     Refresh System
-                  </Button>
-                  <Button
+                  </ResponsiveButton>
+                  <ResponsiveButton
                     variant="outlined"
-                    startIcon={<WarningIcon />}
+                    icon={<WarningIcon />}
+                    mobileText="Bulk Actions"
+                    desktopText="Bulk Actions"
                     onClick={() => setBulkActionDialogOpen(true)}
                   >
                     Bulk Actions
-                  </Button>
-                  <Button
+                  </ResponsiveButton>
+                  <ResponsiveButton
                     variant="contained"
-                    startIcon={<SaveIcon />}
+                    icon={<SaveIcon />}
+                    mobileText="Save Settings"
+                    desktopText="Save Settings"
                     onClick={handleSaveSettings}
                     disabled={isSaving}
                   >
                     {isSaving ? 'Saving...' : 'Save Settings'}
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
               </Box>
               
@@ -561,8 +573,8 @@ export const Settings: React.FC<SettingsProps> = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateRoleDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateRole} variant="contained">Create</Button>
+          <ResponsiveButton onClick={() => setCreateRoleDialogOpen(false)}>Cancel</ResponsiveButton>
+          <ResponsiveButton onClick={handleCreateRole} variant="contained">Create</ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -581,8 +593,8 @@ export const Settings: React.FC<SettingsProps> = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreatePermissionDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreatePermission} variant="contained">Create</Button>
+          <ResponsiveButton onClick={() => setCreatePermissionDialogOpen(false)}>Cancel</ResponsiveButton>
+          <ResponsiveButton onClick={handleCreatePermission} variant="contained">Create</ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -604,8 +616,8 @@ export const Settings: React.FC<SettingsProps> = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setBulkActionDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleBulkAction} variant="contained">Execute</Button>
+          <ResponsiveButton onClick={() => setBulkActionDialogOpen(false)}>Cancel</ResponsiveButton>
+          <ResponsiveButton onClick={handleBulkAction} variant="contained">Execute</ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Box>

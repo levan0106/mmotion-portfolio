@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   Alert,
@@ -21,6 +20,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { 
   Warning as WarningIcon,
   AccountBalance as PortfolioIcon,
@@ -209,24 +209,29 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1 }}>
-        <Button
+        <ResponsiveButton
           onClick={onCancel}
           disabled={isDeleting}
           variant="outlined"
           size="large"
+          icon={<CircularProgress />}
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={onConfirm}
           disabled={isDeleting || !isConfirmed}
           variant="contained"
           color="error"
           size="large"
-          startIcon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+          icon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+          mobileText={isDeleting ? 'Deleting...' : 'Delete'}
+          desktopText={isDeleting ? 'Deleting...' : (tradeCount > 0 || portfolios.length > 0 ? 'Delete Asset & Impacted Data' : 'Delete Asset')}
         >
           {isDeleting ? 'Deleting...' : (tradeCount > 0 || portfolios.length > 0 ? 'Delete Asset & Impacted Data' : 'Delete Asset')}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

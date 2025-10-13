@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Button,
   Box,
   Typography,
   Alert,
@@ -14,6 +13,7 @@ import {
 import { ContentCopy, Close } from '@mui/icons-material';
 import { apiService } from '../../services/api';
 import { Portfolio } from '../../types';
+import { ResponsiveButton } from '../Common';
 
 interface CopyPortfolioModalProps {
   open: boolean;
@@ -107,8 +107,11 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
         <Typography variant="h6" component="div">
           Copy Portfolio
         </Typography>
-        <Button
+        <ResponsiveButton
           onClick={handleClose}
+          icon={<Close />}
+          mobileText=""
+          desktopText=""
           sx={{ 
             ml: 'auto', 
             minWidth: 'auto', 
@@ -120,7 +123,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
           }}
         >
           <Close />
-        </Button>
+        </ResponsiveButton>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 3 }}>
@@ -183,25 +186,29 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1 }}>
-        <Button 
+        <ResponsiveButton 
           onClick={handleClose}
           disabled={loading}
+          mobileText="Cancel"
+          desktopText="Cancel"
           sx={{ mr: 1 }}
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={handleCopy}
           variant="contained"
           disabled={loading || !newPortfolioName.trim()}
-          startIcon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
+          icon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
+          mobileText={loading ? 'Copying...' : 'Copy'}
+          desktopText={loading ? 'Copying...' : 'Copy Portfolio'}
           sx={{
             borderRadius: 1,
             px: 3,
           }}
         >
           {loading ? 'Copying...' : 'Copy Portfolio'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

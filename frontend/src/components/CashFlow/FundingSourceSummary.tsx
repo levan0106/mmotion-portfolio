@@ -3,13 +3,11 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   Grid,
   Avatar,
   Divider,
   Alert,
   Skeleton,
-  Button,
   ButtonGroup,
   Table,
   TableBody,
@@ -20,6 +18,8 @@ import {
   Paper,
   Chip,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common';
 import {
   AccountBalance as BankIcon,
   AccountBalanceWallet as WalletIcon,
@@ -153,7 +153,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
   if (loading) {
     return (
       <Box sx={{ mb: getUltraSpacing(3, 1.5) }}>
-        <Typography 
+        <ResponsiveTypography 
           variant={isCompactMode ? "h6" : "h5"} 
           gutterBottom 
           sx={{ 
@@ -164,7 +164,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
           }}
         >
           Funding Source Summary
-        </Typography>
+        </ResponsiveTypography>
         <Grid container spacing={getUltraSpacing(2, 1)}>
           {[1, 2, 3].map((i) => (
             <Grid item xs={12} sm={6} md={4} key={i}>
@@ -185,7 +185,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
   if (fundingSourceData.length === 0) {
     return (
       <Box sx={{ mb: getUltraSpacing(3, 1.5) }}>
-        <Typography 
+        <ResponsiveTypography 
           variant={isCompactMode ? "h6" : "h5"} 
           gutterBottom 
           sx={{ 
@@ -196,11 +196,11 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
           }}
         >
           Funding Source Summary
-        </Typography>
+        </ResponsiveTypography>
         <Alert severity="info" sx={{ borderRadius: 2 }}>
-          <Typography variant="body2">
+          <ResponsiveTypography variant="body2">
             No funding source data available. Add funding sources to your cash flows to see the summary.
-          </Typography>
+          </ResponsiveTypography>
         </Alert>
       </Box>
     );
@@ -242,7 +242,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 <WalletIcon sx={{ color: 'white', fontSize: isCompactMode ? 18 : 24 }} />
               </Box>
               <Box>
-                <Typography 
+                <ResponsiveTypography 
                   variant={isCompactMode ? "subtitle1" : "h5"} 
                   sx={{ 
                     fontWeight: 500, 
@@ -252,14 +252,14 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   }}
                 >
                   Funding Source Summary
-                </Typography>
-                <Typography 
+                </ResponsiveTypography>
+                <ResponsiveTypography 
                   variant="body2" 
                   color="text.secondary"
                   sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                 >
                   Track cash flows by funding source
-                </Typography>
+                </ResponsiveTypography>
               </Box>
             </Box>
             
@@ -282,10 +282,12 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 }
               }}
             >
-              <Button
-                startIcon={<GridViewIcon />}
+              <ResponsiveButton
+                icon={<GridViewIcon />}
                 onClick={() => setViewMode('grid')}
                 variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+                mobileText="Grid"
+                desktopText="Grid"
                 sx={{
                   backgroundColor: viewMode === 'grid' ? '#4a5568' : 'transparent',
                   color: viewMode === 'grid' ? 'white' : '#718096',
@@ -298,11 +300,13 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 }}
               >
                 {isCompactMode ? "Grid" : "Grid View"}
-              </Button>
-              <Button
-                startIcon={<ListViewIcon />}
+              </ResponsiveButton>
+              <ResponsiveButton
+                icon={<ListViewIcon />}
                 onClick={() => setViewMode('list')}
                 variant={viewMode === 'list' ? 'contained' : 'outlined'}
+                mobileText="List"
+                desktopText="List"
                 sx={{
                   backgroundColor: viewMode === 'list' ? '#4a5568' : 'transparent',
                   color: viewMode === 'list' ? 'white' : '#718096',
@@ -315,7 +319,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 }}
               >
                 {isCompactMode ? "List" : "List View"}
-              </Button>
+              </ResponsiveButton>
             </ButtonGroup>
           </Box>
       
@@ -351,7 +355,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                       {getFundingSourceIcon(sourceData.source)}
                     </Avatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography 
+                      <ResponsiveTypography 
                         variant={isCompactMode ? "body2" : "body1"} 
                         fontWeight="bold" 
                         noWrap
@@ -361,14 +365,14 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                         }}
                       >
                         {sourceData.source}
-                      </Typography>
-                      <Typography 
+                      </ResponsiveTypography>
+                      <ResponsiveTypography 
                         variant="caption" 
                         color="text.secondary"
                         sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                       >
                         {sourceData.transactionCount} transactions
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
 
@@ -376,14 +380,14 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
 
                   {/* Net Amount */}
                   <Box sx={{ mb: getUltraSpacing(1, 0.5) }}>
-                    <Typography 
+                    <ResponsiveTypography 
                       variant="caption" 
                       color="text.secondary"
                       sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                     >
                       Net Amount
-                    </Typography>
-                    <Typography 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography 
                       variant={isCompactMode ? "h6" : "h5"} 
                       fontWeight="bold"
                       sx={{ 
@@ -392,7 +396,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                       }}
                     >
                       {formatCurrency(sourceData.netAmount)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
 
                   {/* Inflow/Outflow */}
@@ -401,57 +405,57 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                       <Box sx={{ textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                           <TrendingUpIcon sx={{ color: 'success.main', fontSize: isCompactMode ? 16 : 20, mr: 0.5 }} />
-                          <Typography 
+                          <ResponsiveTypography 
                             variant="caption" 
                             color="text.secondary"
                             sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                           >
                             Inflow
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
-                        <Typography 
+                        <ResponsiveTypography 
                           variant={isCompactMode ? "body2" : "body1"} 
                           fontWeight="bold"
                           color="success.main"
                           sx={{ fontSize: isCompactMode ? '0.8rem' : undefined }}
                         >
                           {formatCurrency(sourceData.totalInflow)}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box sx={{ textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                           <TrendingDownIcon sx={{ color: 'error.main', fontSize: isCompactMode ? 16 : 20, mr: 0.5 }} />
-                          <Typography 
+                          <ResponsiveTypography 
                             variant="caption" 
                             color="text.secondary"
                             sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                           >
                             Outflow
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
-                        <Typography 
+                        <ResponsiveTypography 
                           variant={isCompactMode ? "body2" : "body1"} 
                           fontWeight="bold"
                           color="error.main"
                           sx={{ fontSize: isCompactMode ? '0.8rem' : undefined }}
                         >
                           {formatCurrency(sourceData.totalOutflow)}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Grid>
                   </Grid>
 
                   {/* Last Transaction */}
                   <Box sx={{ mt: getUltraSpacing(1, 0.5), pt: getUltraSpacing(1, 0.5), borderTop: '1px solid', borderColor: 'divider' }}>
-                    <Typography 
+                    <ResponsiveTypography 
                       variant="caption" 
                       color="text.secondary"
                       sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                     >
                       Last Transaction: {formatDate(sourceData.lastTransactionDate)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </CardContent>
               </Card>
@@ -486,29 +490,29 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                       >
                         {getFundingSourceIcon(sourceData.source)}
                       </Avatar>
-                      <Typography variant="body2" fontWeight="bold">
+                      <ResponsiveTypography variant="body2" fontWeight="bold">
                         {sourceData.source}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography
+                    <ResponsiveTypography
                       variant="body2"
                       fontWeight="bold"
                       color={sourceData.netAmount >= 0 ? 'success.main' : 'error.main'}
                     >
                       {formatCurrency(sourceData.netAmount)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography variant="body2" color="success.main" fontWeight="bold">
+                    <ResponsiveTypography variant="body2" color="success.main" fontWeight="bold">
                       {formatCurrency(sourceData.totalInflow)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography variant="body2" color="error.main" fontWeight="bold">
+                    <ResponsiveTypography variant="body2" color="error.main" fontWeight="bold">
                       {formatCurrency(sourceData.totalOutflow)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="center">
                     <Chip 
@@ -519,9 +523,9 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                     />
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color="text.secondary">
+                    <ResponsiveTypography variant="body2" color="text.secondary">
                       {formatDate(sourceData.lastTransactionDate)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </TableCell>
                 </TableRow>
               ))}

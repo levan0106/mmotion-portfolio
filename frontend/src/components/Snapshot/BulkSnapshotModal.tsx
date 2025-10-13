@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   FormControl,
   InputLabel,
@@ -30,6 +29,7 @@ import {
   Error as ErrorIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import { SnapshotGranularity } from '../../types/snapshot.types';
@@ -365,15 +365,15 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
 
           {/* Date Range Mode Toggle */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Button
+            <ResponsiveButton
               variant={useDateRange ? 'contained' : 'outlined'}
               onClick={() => setUseDateRange(!useDateRange)}
               disabled={isCreating}
-              startIcon={<AddIcon />}
+              icon={<AddIcon />}
               size="small"
             >
               {useDateRange ? 'Date Range Mode' : 'Single Date Mode'}
-            </Button>
+            </ResponsiveButton>
             <Typography variant="body2" color="text.secondary">
               {useDateRange ? 'Create snapshots for multiple dates' : 'Create snapshot for a single date'}
             </Typography>
@@ -486,23 +486,25 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1 }}>
-        <Button
+        <ResponsiveButton
           variant="outlined"
           onClick={handleReset}
           disabled={isCreating}
           sx={{ textTransform: 'none' }}
         >
           Reset
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           variant="contained"
-          startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+          icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+          mobileText="Create"
+          desktopText="Create Snapshot"
           onClick={handleCreateSnapshot}
           disabled={!selectedPortfolioId || !startDate || !granularity || isCreating || isLoadingPortfolios}
           sx={{ textTransform: 'none', minWidth: 140 }}
         >
           {isCreating ? 'Creating...' : 'Create Snapshot'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

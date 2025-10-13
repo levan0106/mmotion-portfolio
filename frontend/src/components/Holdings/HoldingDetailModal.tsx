@@ -19,7 +19,6 @@ import {
   Paper,
   CircularProgress,
   Alert,
-  Button,
   IconButton,
   Tooltip,
   alpha,
@@ -39,6 +38,7 @@ import {
   Assessment,
   Refresh,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
 import { format, parseISO } from 'date-fns';
@@ -187,9 +187,9 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             <ResponsiveTypography variant="tableCell">
               {error}
             </ResponsiveTypography>
-            <Button onClick={fetchHoldingDetail} sx={{ mt: 1 }}>
+            <ResponsiveButton onClick={fetchHoldingDetail} sx={{ mt: 1 }}>
               Try Again
-            </Button>
+            </ResponsiveButton>
           </Alert>
         ) : holdingDetail ? (
           <Box>
@@ -379,9 +379,9 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
+        <ResponsiveButton onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
           Close
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

@@ -5,7 +5,6 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   FormControl,
   InputLabel,
   Select,
@@ -24,6 +23,7 @@ import {
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { PortfolioWithSnapshots } from '../../types/snapshot.types';
 import { apiService } from '../../services/api';
 
@@ -252,23 +252,25 @@ export const BulkSnapshotCreator: React.FC<BulkSnapshotCreatorProps> = ({
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button
+          <ResponsiveButton
             variant="outlined"
             onClick={handleReset}
             disabled={isCreating}
             sx={{ textTransform: 'none' }}
           >
             Reset
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             variant="contained"
-            startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+            icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+            mobileText="Create"
+            desktopText="Create Snapshot"
             onClick={handleCreateSnapshot}
             disabled={!selectedPortfolioId || !snapshotDate || isCreating}
             sx={{ textTransform: 'none', minWidth: 140 }}
           >
             {isCreating ? 'Creating...' : 'Create Snapshot'}
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
     </Paper>

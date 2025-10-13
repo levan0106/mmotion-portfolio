@@ -226,7 +226,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
         <Grid container spacing={1.5} sx={{ mb: 2 }}>
           <Grid item xs={4}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } }, textAlign: 'center', width: '100%' }}>
                 <ResponsiveTypography variant="cardValue" color="primary" fontWeight="bold">
                   {formatPercentage(portfolioReturn)}
                 </ResponsiveTypography>
@@ -238,7 +238,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
           </Grid>
           <Grid item xs={4}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } }, textAlign: 'center', width: '100%' }}>
                 <ResponsiveTypography variant="cardValue" color="secondary" fontWeight="bold">
                   {formatPercentage(benchmarkReturn)}
                 </ResponsiveTypography>
@@ -250,7 +250,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
           </Grid>
           <Grid item xs={4}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } }, textAlign: 'center', width: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
                   {isOutperforming && <TrendingUp color="success" sx={{ fontSize: 16 }} />}
                   {isUnderperforming && <TrendingDown color="error" sx={{ fontSize: 16 }} />}
@@ -271,10 +271,20 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
         </Grid>
 
         {/* Chart */}
-        <Box sx={{ height: 267, mb: 3 }}>
+        <Box sx={{ 
+          height: 267, 
+          mb: 3,
+          px: { xs: 0, sm: 1 },
+          mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+        }}>
           {data && data.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={data} margin={{ 
+                top: 20, 
+                right: 30, 
+                left: 20, 
+                bottom: 5 
+              }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"

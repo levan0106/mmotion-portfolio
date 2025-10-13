@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -10,7 +9,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Typography,
   Box,
   Chip,
   CircularProgress,
@@ -19,6 +17,8 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common';
 import {
   Search as SearchIcon,
   Add as AddIcon,
@@ -190,17 +190,19 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
 
   const modalActions = (
     <Box sx={{ display: 'flex', gap: 1 }}>
-      <Button onClick={onClose}>
+      <ResponsiveButton onClick={onClose} icon={<></>} mobileText="Hủy" desktopText="Hủy">
         Hủy
-      </Button>
-      <Button
+      </ResponsiveButton>
+      <ResponsiveButton
         variant="contained"
         onClick={handleBulkCreate}
         disabled={selectedAssets.length === 0 || isCreating}
-        startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+        icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+        mobileText={isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length}`}
+        desktopText={isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length} Assets`}
       >
         {isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length} Assets`}
-      </Button>
+      </ResponsiveButton>
     </Box>
   );
 
@@ -225,7 +227,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
               overflow: 'hidden'
             }}>
-              <Button
+              <ResponsiveButton
                 fullWidth
                 onClick={() => setShowHelp(!showHelp)}
                 sx={{
@@ -238,21 +240,23 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                     backgroundColor: alpha(theme.palette.info.main, 0.12)
                   }
                 }}
-                startIcon={showHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                icon={showHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                mobileText="💡 Hướng dẫn"
+                desktopText="💡 Hướng dẫn sử dụng"
               >
                 💡 Hướng dẫn sử dụng
-              </Button>
+              </ResponsiveButton>
               
               {showHelp && (
                 <Box sx={{ p: 3, pt: 0 }}>
-                  <Typography variant="body2" sx={{ 
+                  <ResponsiveTypography variant="body2" sx={{ 
                     color: 'text.secondary', 
                     fontWeight: 500,
                     lineHeight: 1.6
                   }}>
                     Chọn các assets từ danh sách mẫu để tạo nhanh trong portfolio của bạn. 
                     Danh sách chỉ hiển thị các assets mà bạn chưa sở hữu. Bạn cũng có thể tìm kiếm theo tên hoặc symbol.
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               )}
             </Box>
@@ -289,14 +293,17 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={2}>
-                  <Button
+                  <ResponsiveButton
                     fullWidth
                     variant="outlined"
                     onClick={handleSelectAll}
                     disabled={loading || filteredAssets.length === 0}
+                    icon={<></>}
+                    mobileText={selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
+                    desktopText={selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
                   >
                     {selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-                  </Button>
+                  </ResponsiveButton>
                 </Grid>
               </Grid>
             </Box>
@@ -318,9 +325,9 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               </Alert>
             ) : (
               <Box>
-                <Typography variant="subtitle2" gutterBottom>
+                <ResponsiveTypography variant="subtitle2" gutterBottom>
                   Tìm thấy {filteredAssets.length} assets chưa có trong portfolio
-                </Typography>
+                </ResponsiveTypography>
                 <List sx={{ maxHeight: 400, overflow: 'auto' }}>
                   {filteredAssets.map((asset: any) => (
                     <ListItem
@@ -342,9 +349,9 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                       <ListItemText
                         primary={
                           <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="body1" fontWeight="medium">
+                            <ResponsiveTypography variant="body1" fontWeight="medium">
                               {asset.symbol}
-                            </Typography>
+                            </ResponsiveTypography>
                             <Chip
                               label={AssetTypeLabels[asset.type as keyof typeof AssetTypeLabels]}
                               size="small"

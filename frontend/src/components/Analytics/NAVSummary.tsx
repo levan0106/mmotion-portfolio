@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Grid,
-  Chip,
   Tooltip,
   IconButton
 } from '@mui/material';
@@ -12,7 +11,6 @@ import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   TrendingUp,
-  TrendingDown,
   InfoOutlined,
   AccountBalance
 } from '@mui/icons-material';
@@ -67,7 +65,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   const isGrowing = navValue > 0;
   const growthIndicator = isGrowing ? 'Tăng trưởng' : 'Suy giảm';
   const growthColor = isGrowing ? 'success' : 'error';
-  const GrowthIcon = isGrowing ? TrendingUp : TrendingDown;
+  // const GrowthIcon = isGrowing ? TrendingUp : TrendingDown;
 
   // Fetch NAV history data
   useEffect(() => {
@@ -143,7 +141,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         }
       })
     }}>
-      <CardContent sx={{ p: getUltraSpacing(3, 1.5) }}>
+      <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(3, 1.5) } }}>
         {/* Header */}
         <Box sx={{ 
           display: 'flex', 
@@ -155,7 +153,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: isCompactMode ? 1 : 1.5 }}>
             <Box sx={{
-              p: isCompactMode ? 1 : 1.5,
+              p: { xs: 0.5, sm: isCompactMode ? 1 : 1.5 },
               backgroundColor: 'primary.main',
               borderRadius: 2,
               display: 'flex',
@@ -180,19 +178,6 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
             </Box>
           </Box>
           
-          <Chip
-            icon={<GrowthIcon />}
-            label={growthIndicator}
-            color={growthColor}
-            size={isCompactMode ? "small" : "medium"}
-            sx={{ 
-              fontWeight: 600,
-              fontSize: isCompactMode ? '0.7rem' : '0.8rem',
-              px: isCompactMode ? 1.5 : 2,
-              py: isCompactMode ? 0.5 : 1,
-              height: 'auto'
-            }}
-          />
         </Box>
 
         {/* NAV Information Grid */}

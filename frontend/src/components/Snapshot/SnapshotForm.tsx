@@ -9,7 +9,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
   Grid,
   LinearProgress,
   alpha,
@@ -28,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { SnapshotFormData, SnapshotGranularity, CreateSnapshotRequest, UpdateSnapshotRequest } from '../../types/snapshot.types';
 import { formatPercentage } from '../../utils/format';
+import { ResponsiveButton } from '../Common';
 
 interface SnapshotFormProps {
   initialData?: Partial<SnapshotFormData>;
@@ -426,24 +426,28 @@ export const SnapshotForm: React.FC<SnapshotFormProps> = ({
             {/* Form Actions */}
             <Divider sx={{ my: 2 }} />
             <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={<CancelIcon />}
+                icon={<CancelIcon />}
+                mobileText="Cancel"
+                desktopText="Cancel"
                 onClick={onCancel}
                 disabled={loading}
                 sx={{ textTransform: 'none', minWidth: 100 }}
               >
                 Cancel
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 type="submit"
                 variant="contained"
-                startIcon={<SaveIcon />}
+                icon={<SaveIcon />}
+                mobileText="Save"
+                desktopText={isEdit ? 'Update Snapshot' : 'Create Snapshot'}
                 disabled={loading}
                 sx={{ textTransform: 'none', minWidth: 140 }}
               >
                 {loading ? 'Saving...' : (isEdit ? 'Update Snapshot' : 'Create Snapshot')}
-              </Button>
+              </ResponsiveButton>
             </Stack>
           </Box>
         </CardContent>

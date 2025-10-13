@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
   Typography,
   Box,
   Grid,
@@ -20,6 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Remove as RemoveIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { RedeemFromFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -159,23 +159,25 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
 
   const modalActions = (
     <>
-      <Button 
+      <ResponsiveButton 
         onClick={handleClose}
         disabled={loading}
         size="large"
       >
         Cancel
-      </Button>
-      <Button 
+      </ResponsiveButton>
+      <ResponsiveButton 
         onClick={handleSubmit} 
         variant="contained" 
         color="error"
         disabled={!isFormValid}
         size="large"
-        startIcon={loading ? <CircularProgress size={20} /> : <RemoveIcon />}
+        icon={loading ? <CircularProgress size={20} /> : <RemoveIcon />}
+        mobileText="Process"
+        desktopText="Process Redemption"
       >
         {loading ? 'Processing...' : 'Process Redemption'}
-      </Button>
+      </ResponsiveButton>
     </>
   );
 

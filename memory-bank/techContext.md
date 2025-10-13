@@ -6,6 +6,9 @@
 - **TypeScript**: Type safety và better developer experience
 - **Material-UI (MUI)**: Component library với enhanced custom theme và responsive typography system
 - **Material Design Icons**: Professional icon system với consistent design language
+- **Mobile Layout Optimization**: Responsive tab navigation với mobile-optimized sizing và touch-friendly interactions
+- **Material-UI Component Migration**: Consistent use of Material-UI components (IconButton, Tooltip) for better mobile experience
+- **Mobile-First CSS**: Breakpoint-based styling với mobile-first approach cho optimal mobile experience
 - **Recharts**: Data visualization cho portfolio analytics
 - **React Query**: Data fetching và caching
 - **React Router**: Client-side routing

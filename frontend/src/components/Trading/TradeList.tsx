@@ -10,7 +10,6 @@ import {
   Paper,
   Chip,
   IconButton,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -46,9 +45,8 @@ import {
   ExpandLess as ExpandLessIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
-import { FIFOTooltip } from '../Common';
+import { FIFOTooltip, ResponsiveButton } from '../Common';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types';
 import { useTrades, useDeleteTrade, useTradeDetails, useUpdateTrade } from '../../hooks/useTrading';
@@ -257,11 +255,13 @@ export const TradeList: React.FC<TradeListProps> = ({
           )}
         </Box>
         <Box display="flex" gap={0.5}>
-          <Button
+          <ResponsiveButton
             variant={exchangeViewMode === 'grid' ? 'contained' : 'outlined'}
             size="small"
-            startIcon={<GridViewIcon />}
+            icon={<GridViewIcon />}
             onClick={() => setExchangeViewMode('grid')}
+            mobileText="G"
+            desktopText="Grid"
             sx={{ 
               textTransform: 'none',
               minWidth: isCompactMode ? 60 : 80,
@@ -269,12 +269,14 @@ export const TradeList: React.FC<TradeListProps> = ({
             }}
           >
             {isCompactMode ? 'G' : 'Grid'}
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             variant={exchangeViewMode === 'list' ? 'contained' : 'outlined'}
             size="small"
-            startIcon={<ListViewIcon />}
+            icon={<ListViewIcon />}
             onClick={() => setExchangeViewMode('list')}
+            mobileText="L"
+            desktopText="List"
             sx={{ 
               textTransform: 'none',
               minWidth: isCompactMode ? 60 : 80,
@@ -282,7 +284,7 @@ export const TradeList: React.FC<TradeListProps> = ({
             }}
           >
             {isCompactMode ? 'L' : 'List'}
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
 
@@ -745,11 +747,13 @@ export const TradeList: React.FC<TradeListProps> = ({
               Trade List
             </ResponsiveTypography>
             {groupByDate && Object.keys(groupedTrades).length > 1 && (
-              <Button
+              <ResponsiveButton
                 variant="outlined"
                 size="small"
-                startIcon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                icon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
                 onClick={toggleAllDatesCollapse}
+                mobileText={collapsedDates.size === Object.keys(groupedTrades).length ? 'E' : 'C'}
+                desktopText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
                 sx={{ 
                   textTransform: 'none',
                   minWidth: isCompactMode ? 60 : 80,
@@ -757,7 +761,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                 }}
               >
                 {isCompactMode ? (collapsedDates.size === Object.keys(groupedTrades).length ? 'E' : 'C') : (collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All')}
-              </Button>
+              </ResponsiveButton>
             )}
           </Box>
           <Box display="flex" gap={2}>
@@ -923,14 +927,16 @@ export const TradeList: React.FC<TradeListProps> = ({
                     <ResponsiveTypography variant="cardLabel" color="text.secondary">
                       No trades match your current filter criteria.
                     </ResponsiveTypography>
-                    <Button
+                    <ResponsiveButton
                       variant="outlined"
-                      startIcon={<AddIcon />}
+                      icon={<AddIcon />}
                       onClick={onCreate}
+                      mobileText="Add"
+                      desktopText="Create First Trade"
                       sx={{ mt: 1 }}
                     >
                       Create First Trade
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </TableCell>
               </TableRow>

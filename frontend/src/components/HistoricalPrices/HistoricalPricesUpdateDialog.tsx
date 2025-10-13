@@ -4,8 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Typography,
   Box,
   Stack,
   Grid,
@@ -25,13 +23,20 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
+import { ResponsiveTypography, ResponsiveButton } from '../Common';
 import {
   History as HistoryIcon,
   Warning as WarningIcon,
   Info as InfoIcon,
   CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
+  Check as CheckIcon,
+  Clear as ClearIcon,
+  Close as CloseIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -243,9 +248,9 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
       case 'date':
         return (
           <Stack spacing={3}>
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="h6" gutterBottom>
               Chọn khoảng thời gian cập nhật
-            </Typography>
+            </ResponsiveTypography>
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <DatePicker
@@ -277,12 +282,12 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
       case 'assets':
         return (
           <Stack spacing={3}>
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="h6" gutterBottom>
               Chọn tài sản cần cập nhật
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Chọn các tài sản cần cập nhật giá lịch sử. Bạn có thể chọn tất cả hoặc chọn từng tài sản cụ thể.
-            </Typography>
+            </ResponsiveTypography>
             
             {assetsLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -299,32 +304,38 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
             ) : (
               <>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="body2" color="text.secondary">
                     Tổng cộng: {globalAssets.length} tài sản | 
                     Đã chọn: {selectedAssets.length}
-                  </Typography>
+                  </ResponsiveTypography>
                   <Box>
-                    <Button
+                    <ResponsiveButton
                       size="small"
+                      icon={<CheckIcon />}
+                      mobileText="Chọn tất cả"
+                      desktopText="Chọn tất cả"
                       onClick={() => handleSelectAll(true)}
                       sx={{ mr: 1 }}
                     >
                       Chọn tất cả
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       size="small"
+                      icon={<ClearIcon />}
+                      mobileText="Bỏ chọn tất cả"
+                      desktopText="Bỏ chọn tất cả"
                       onClick={() => handleSelectAll(false)}
                     >
                       Bỏ chọn tất cả
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </Box>
 
                 {/* Asset Type Selection */}
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
+                  <ResponsiveTypography variant="subtitle2" gutterBottom>
                     Chọn theo loại tài sản:
-                  </Typography>
+                  </ResponsiveTypography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {getAssetTypes().map(type => {
                       const { total, selected } = getSelectedCountByType(type);
@@ -375,7 +386,7 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                           size="small"
                         />
                         <Box sx={{ ml: 1, flex: 1 }}>
-                          <Typography 
+                          <ResponsiveTypography 
                             variant="body2" 
                             fontWeight="medium"
                             sx={{ 
@@ -383,8 +394,8 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                             }}
                           >
                             {asset.symbol} - {asset.name}
-                          </Typography>
-                          <Typography 
+                          </ResponsiveTypography>
+                          <ResponsiveTypography 
                             variant="caption" 
                             sx={{ 
                               color: 'text.secondary',
@@ -392,13 +403,13 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                             }}
                           >
                             Loại: {asset.type}
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
                       </Box>
                       <Box sx={{ textAlign: 'right', minWidth: 180 }}>
                         {asset.assetPrice ? (
                           <>
-                            <Typography 
+                            <ResponsiveTypography 
                               variant="body2"
                               sx={{ 
                                 fontSize: '0.875rem',
@@ -406,8 +417,8 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                               }}
                             >
                               Giá hiện tại: {formatCurrency(asset.assetPrice.currentPrice)} {asset.currency}
-                            </Typography>
-                            <Typography 
+                            </ResponsiveTypography>
+                            <ResponsiveTypography 
                               variant="caption" 
                               sx={{ 
                                 color: 'text.secondary',
@@ -415,10 +426,10 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                               }}
                             >
                               {asset.selected ? 'Đã chọn' : 'Chưa chọn'} • {asset.assetPrice.priceSource}
-                            </Typography>
+                            </ResponsiveTypography>
                           </>
                         ) : (
-                          <Typography 
+                          <ResponsiveTypography 
                             variant="body2"
                             sx={{ 
                               fontSize: '0.875rem',
@@ -426,7 +437,7 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                             }}
                           >
                             {asset.selected ? 'Đã chọn' : 'Chưa chọn'} • Chưa có giá
-                          </Typography>
+                          </ResponsiveTypography>
                         )}
                       </Box>
                     </Box>
@@ -440,47 +451,47 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
       case 'confirm':
         return (
           <Stack spacing={3}>
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="h6" gutterBottom>
               Xác nhận cập nhật giá
-            </Typography>
+            </ResponsiveTypography>
             
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" gutterBottom>
+                <ResponsiveTypography variant="subtitle1" gutterBottom>
                   Thông tin cập nhật
-                </Typography>
+                </ResponsiveTypography>
                 <Stack spacing={1}>
-                  <Typography variant="body2">
+                  <ResponsiveTypography variant="body2">
                     <strong>Khoảng thời gian:</strong> {startDate?.toLocaleDateString('vi-VN')} - {endDate?.toLocaleDateString('vi-VN')}
-                  </Typography>
-                  <Typography variant="body2">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2">
                     <strong>Số tài sản đã chọn:</strong> {selectedAssets.length} tài sản
-                  </Typography>
-                  <Typography variant="body2">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2">
                     <strong>Force Update:</strong> {forceUpdate ? 'Có' : 'Không'}
-                  </Typography>
-                  <Typography variant="body2">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2">
                     <strong>Cleanup:</strong> {
                       cleanup === 'none' ? 'Không xóa' :
                       cleanup === 'external_api' ? 'Chỉ xóa External API' :
                       'Xóa toàn bộ'
                     }
-                  </Typography>
+                  </ResponsiveTypography>
                 </Stack>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" gutterBottom>
+                <ResponsiveTypography variant="subtitle1" gutterBottom>
                   Danh sách tài sản sẽ được cập nhật
-                </Typography>
+                </ResponsiveTypography>
                 <Box sx={{ maxHeight: 200, overflow: 'auto' }}>
                   {selectedAssets.map((asset) => (
                     <Box key={asset.id} sx={{ display: 'flex', alignItems: 'center', py: 0.5 }}>
-                      <Typography variant="body2">
+                      <ResponsiveTypography variant="body2">
                         {asset.symbol} - {asset.name} ({asset.type})
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                   ))}
                 </Box>
@@ -491,13 +502,15 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <Button
+                  <ResponsiveButton
                     size="small"
+                    icon={<InfoIcon />}
+                    mobileText="Tùy chọn nâng cao"
+                    desktopText="Tùy chọn nâng cao"
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    startIcon={showAdvanced ? <InfoIcon /> : <InfoIcon />}
                   >
                     Tùy chọn nâng cao
-                  </Button>
+                  </ResponsiveButton>
                 </Box>
 
                 {showAdvanced && (
@@ -512,12 +525,12 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                       }
                       label={
                         <Box>
-                          <Typography variant="body2">
+                          <ResponsiveTypography variant="body2">
                             Force Update - Luôn thêm record mới (giữ lại lịch sử)
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </ResponsiveTypography>
+                          <ResponsiveTypography variant="caption" color="text.secondary">
                             Nếu chọn, hệ thống sẽ luôn thêm các bản ghi giá mới, giữ lại các bản ghi cũ
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
                       }
                     />
@@ -551,59 +564,59 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
       case 'result':
         return (
           <Stack spacing={3}>
-            <Typography variant="h6" gutterBottom>
+            <ResponsiveTypography variant="h6" gutterBottom>
               Kết quả cập nhật giá lịch sử
-            </Typography>
+            </ResponsiveTypography>
             
             {updateError ? (
               <Alert severity="error">
-                <Typography variant="subtitle2" gutterBottom>
+                <ResponsiveTypography variant="subtitle2" gutterBottom>
                   Cập nhật thất bại
-                </Typography>
-                <Typography variant="body2">
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2">
                   {updateError.message}
-                </Typography>
+                </ResponsiveTypography>
               </Alert>
             ) : updateResult ? (
               <Stack spacing={2}>
                 <Alert severity={updateResult.success > 0 ? "success" : "error"}>
-                  <Typography variant="subtitle2" gutterBottom>
+                  <ResponsiveTypography variant="subtitle2" gutterBottom>
                     {updateResult.success > 0 ? "Cập nhật thành công!" : "Cập nhật thất bại"}
-                  </Typography>
-                  <Typography variant="body2">
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2">
                     Đã xử lý {updateResult.totalRecords} bản ghi cho {updateResult.success} tài sản.
-                  </Typography>
+                  </ResponsiveTypography>
                   {updateResult.failed > 0 && (
-                    <Typography variant="body2" color="warning.main">
+                    <ResponsiveTypography variant="body2" color="warning.main">
                       {updateResult.failed} tài sản cập nhật thất bại.
-                    </Typography>
+                    </ResponsiveTypography>
                   )}
                 </Alert>
 
                 {/* Chi tiết kết quả */}
                 <Card>
                   <CardContent>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <ResponsiveTypography variant="subtitle2" gutterBottom>
                       Chi tiết kết quả:
-                    </Typography>
+                    </ResponsiveTypography>
                     <Stack spacing={1}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Tổng số bản ghi:</Typography>
-                        <Typography variant="body2" fontWeight="medium">
+                        <ResponsiveTypography variant="body2">Tổng số bản ghi:</ResponsiveTypography>
+                        <ResponsiveTypography variant="body2" fontWeight="medium">
                           {updateResult.totalRecords}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Thành công:</Typography>
-                        <Typography variant="body2" color="success.main" fontWeight="medium">
+                        <ResponsiveTypography variant="body2">Thành công:</ResponsiveTypography>
+                        <ResponsiveTypography variant="body2" color="success.main" fontWeight="medium">
                           {updateResult.success}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Thất bại:</Typography>
-                        <Typography variant="body2" color="error.main" fontWeight="medium">
+                        <ResponsiveTypography variant="body2">Thất bại:</ResponsiveTypography>
+                        <ResponsiveTypography variant="body2" color="error.main" fontWeight="medium">
                           {updateResult.failed}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Stack>
                   </CardContent>
@@ -613,13 +626,13 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                 {updateResult.processedSymbols && updateResult.processedSymbols.length > 0 && (
                   <Card>
                     <CardContent>
-                      <Typography variant="subtitle2" gutterBottom>
+                      <ResponsiveTypography variant="subtitle2" gutterBottom>
                         Tài sản đã xử lý:
-                      </Typography>
+                      </ResponsiveTypography>
                       <Stack spacing={1}>
                         {updateResult.processedSymbols.map((symbol: any, index: number) => (
                           <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2">{symbol.symbol}</Typography>
+                            <ResponsiveTypography variant="body2">{symbol.symbol}</ResponsiveTypography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Chip 
                                 label={`${symbol.recordCount} bản ghi`} 
@@ -628,9 +641,9 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                                 variant="outlined"
                               />
                               {symbol.dateRange && (
-                                <Typography variant="caption" color="text.secondary">
+                                <ResponsiveTypography variant="caption" color="text.secondary">
                                   {symbol.dateRange.start} - {symbol.dateRange.end}
-                                </Typography>
+                                </ResponsiveTypography>
                               )}
                             </Box>
                           </Box>
@@ -644,13 +657,13 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                 {updateResult.errors && updateResult.errors.length > 0 && (
                   <Card>
                     <CardContent>
-                      <Typography variant="subtitle2" gutterBottom color="error">
+                      <ResponsiveTypography variant="subtitle2" gutterBottom color="error">
                         Lỗi chi tiết:
-                      </Typography>
+                      </ResponsiveTypography>
                       <Stack spacing={1}>
                         {updateResult.errors.map((error: string, index: number) => (
                           <Alert key={index} severity="error" sx={{ py: 0.5 }}>
-                            <Typography variant="body2">{error}</Typography>
+                            <ResponsiveTypography variant="body2">{error}</ResponsiveTypography>
                           </Alert>
                         ))}
                       </Stack>
@@ -686,16 +699,19 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <HistoryIcon color="primary" />
-              <Typography variant="h6">Cập nhật giá lịch sử</Typography>
+              <ResponsiveTypography variant="h6">Cập nhật giá lịch sử</ResponsiveTypography>
             </Box>
-            <Button
+            <ResponsiveButton
               onClick={onClose}
               color="secondary"
               size="small"
+              icon={<CloseIcon />}
+              mobileText="Hủy"
+              desktopText="Hủy"
               sx={{ minWidth: 'auto', px: 1 }}
             >
               Hủy
-            </Button>
+            </ResponsiveButton>
           </Box>
         </DialogTitle>
         
@@ -727,7 +743,7 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
           {step === 'result' ? (
             <>
               {updateError && (
-                <Button
+                <ResponsiveButton
                   onClick={() => {
                     setStep('date');
                     setUpdateError(null);
@@ -735,62 +751,76 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
                   }}
                   color="secondary"
                   variant="outlined"
+                  icon={<RefreshIcon />}
+                  mobileText="Thử lại"
+                  desktopText="Thử lại"
                   sx={{ mr: 1 }}
                 >
                   Thử lại
-                </Button>
+                </ResponsiveButton>
               )}
-              <Button
+              <ResponsiveButton
                 onClick={() => {
                   onSuccess?.(updateResult);
                   onClose();
                 }}
                 color="primary"
                 variant="contained"
+                icon={<CheckCircleIcon />}
+                mobileText="Hoàn thành"
+                desktopText="Hoàn thành"
               >
                 Hoàn thành
-              </Button>
+              </ResponsiveButton>
             </>
           ) : (
             <>
-              <Button
+              <ResponsiveButton
                 onClick={onClose}
                 color="inherit"
+                icon={<CloseIcon />}
+                mobileText="Hủy"
+                desktopText="Hủy"
               >
                 Hủy
-              </Button>
+              </ResponsiveButton>
               
               <Box sx={{ flex: 1 }} />
               
-              <Button
+              <ResponsiveButton
                 onClick={() => {
                   if (step === 'assets') setStep('date');
                   else if (step === 'confirm') setStep('assets');
                 }}
                 disabled={step === 'date'}
+                icon={<ArrowBackIcon />}
+                mobileText="Quay lại"
+                desktopText="Quay lại"
                 sx={{ mr: 1 }}
               >
                 Quay lại
-              </Button>
+              </ResponsiveButton>
               
-              <Button
+              <ResponsiveButton
                 onClick={() => {
                   if (step === 'date' && startDate && endDate) setStep('assets');
                   else if (step === 'assets' && selectedAssets.length > 0) setStep('confirm');
                   else if (step === 'confirm') handleSubmit();
                 }}
                 variant="contained"
+                icon={step === 'confirm' && isProcessing ? <CircularProgress size={20} color="inherit" /> : <ArrowForwardIcon />}
+                mobileText={step === 'confirm' ? (isProcessing ? 'Đang cập nhật...' : 'Xác nhận cập nhật') : 'Tiếp theo'}
+                desktopText={step === 'confirm' ? (isProcessing ? 'Đang cập nhật...' : 'Xác nhận cập nhật') : 'Tiếp theo'}
                 disabled={
                   (step === 'date' && (!startDate || !endDate)) ||
                   (step === 'assets' && selectedAssets.length === 0) ||
                   (step === 'confirm' && isProcessing)
                 }
-                startIcon={step === 'confirm' && isProcessing ? <CircularProgress size={20} color="inherit" /> : null}
               >
                 {step === 'date' && 'Tiếp theo'}
                 {step === 'assets' && 'Tiếp theo'}
                 {step === 'confirm' && (isProcessing ? 'Đang cập nhật...' : 'Xác nhận cập nhật')}
-              </Button>
+              </ResponsiveButton>
             </>
           )}
         </DialogActions>

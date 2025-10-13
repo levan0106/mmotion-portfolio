@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Button,
   FormControl,
   InputLabel,
   Select,
@@ -22,6 +21,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../../types';
 import { useAccount } from '../../contexts/AccountContext';
+import { ResponsiveButton } from '../Common';
 
 interface PortfolioFormProps {
   open: boolean;
@@ -192,16 +192,18 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={isLoading}>
+          <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText="Cancel" desktopText="Cancel">
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             type="submit"
             variant="contained"
             disabled={isLoading}
+            mobileText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            desktopText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
           >
             {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </form>
     </Dialog>

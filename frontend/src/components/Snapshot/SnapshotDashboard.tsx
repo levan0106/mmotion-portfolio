@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   FormControl,
   InputLabel,
   Select,
@@ -34,6 +33,7 @@ import {
   Refresh as RefreshIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { useSnapshotStatistics, useSnapshotAggregatedTimeline } from '../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../hooks/usePortfolioSnapshots';
 import { SnapshotGranularity } from '../../types/snapshot.types';
@@ -159,22 +159,26 @@ export const SnapshotDashboard: React.FC<SnapshotDashboardProps> = ({
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
+            <ResponsiveButton
               variant="contained"
-              startIcon={<RefreshIcon />}
+              icon={<RefreshIcon />}
+              mobileText="Create"
+              desktopText="Create Snapshot"
               onClick={onSnapshotCreate}
               sx={{ textTransform: 'none' }}
             >
               Create Snapshot
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<TimelineIcon />}
+              icon={<TimelineIcon />}
+              mobileText="Manage"
+              desktopText="Manage Snapshots"
               onClick={onSnapshotManage}
               sx={{ textTransform: 'none' }}
             >
               Manage Snapshots
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
       </Paper>

@@ -199,7 +199,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
         transition: 'all 0.3s ease-in-out'
       }
     }}>
-      <CardContent sx={{ p: getUltraSpacing(3, 1.5) }}>
+      <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(3, 1.5) } }}>
         {/* Professional Header */}
         <Box sx={{ 
           display: 'flex', 
@@ -308,7 +308,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 transition: 'all 0.2s ease-in-out'
               }
             }}>
-              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, '&:last-child': { pb: { xs: 0.5, sm: getUltraSpacing(2, 1) } }, textAlign: 'center', width: '100%' }}>
                 <ResponsiveTypography variant="cardValueLarge" color="primary" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {formatCurrency(currentNAV, baseCurrency)}
                 </ResponsiveTypography>
@@ -337,7 +337,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 transition: 'all 0.2s ease-in-out'
               }
             }}>
-              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, '&:last-child': { pb: { xs: 0.5, sm: getUltraSpacing(2, 1) } }, textAlign: 'center', width: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: compact ? 0.25 : 0.5 }}>
                   {isPositive && <TrendingUp color="success" sx={{ fontSize: compact ? 16 : 18 }} />}
                   {!isPositive && <TrendingDown color="error" sx={{ fontSize: compact ? 16 : 18 }} />}
@@ -370,7 +370,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 transition: 'all 0.2s ease-in-out'
               }
             }}>
-              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, '&:last-child': { pb: { xs: 0.5, sm: getUltraSpacing(2, 1) } }, textAlign: 'center', width: '100%' }}>
                 <ResponsiveTypography variant="cardValueLarge" color="warning.main" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {formatPercentage(maxDrawdown)}
                 </ResponsiveTypography>
@@ -395,7 +395,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 transition: 'all 0.2s ease-in-out'
               }
             }}>
-              <CardContent sx={{ p: getUltraSpacing(2, 1), '&:last-child': { pb: getUltraSpacing(2, 1) }, textAlign: 'center', width: '100%' }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, '&:last-child': { pb: { xs: 0.5, sm: getUltraSpacing(2, 1) } }, textAlign: 'center', width: '100%' }}>
                 <ResponsiveTypography variant="cardValueLarge" color="info.main" fontWeight="bold" sx={{ mb: compact ? 0.25 : 0.5 }}>
                   {data.length}
                 </ResponsiveTypography>
@@ -452,11 +452,17 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             height: compact ? 250 : 350,
             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
             borderRadius: 2,
-            p: getUltraSpacing(2, 1),
-            border: '1px solid #e0e0e0'
+            p: { xs: 0.5, sm: getUltraSpacing(2, 1) },
+            border: '1px solid #e0e0e0',
+            mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
           }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={processedData} margin={{ top: compact ? 15 : 20, right: compact ? 20 : 30, left: compact ? 15 : 20, bottom: compact ? 15 : 20 }}>
+              <ComposedChart data={processedData} margin={{ 
+                top: compact ? 15 : 20, 
+                right: compact ? 0 : 30, 
+                left: compact ? 0 : 20, 
+                bottom: compact ? 15 : 20 
+              }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.6} />
                 <XAxis
                   dataKey="date"

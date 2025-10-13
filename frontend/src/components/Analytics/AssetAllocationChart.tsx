@@ -137,7 +137,9 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
       display: 'flex', 
       alignItems: 'center',
       justifyContent: 'center',
-      flex: 1
+      flex: 1,
+      px: { xs: 0, sm: 1 },
+      mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
     }}>
       <ResponsiveContainer width="100%" height={compact ? 250 : 300}>
         <PieChart>

@@ -21,7 +21,6 @@ import {
   CircularProgress,
   Paper,
   TableSortLabel,
-  Button,
   Grid,
   InputAdornment,
   Menu,
@@ -41,6 +40,7 @@ import {
   Refresh as RefreshIcon,
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from './Common';
 
 // Types
 interface GlobalAsset {
@@ -272,9 +272,9 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
   if (error) {
     return (
       <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={onRefresh}>
+        <ResponsiveButton color="inherit" size="small" onClick={onRefresh} mobileText="Retry" desktopText="Retry">
           Retry
-        </Button>
+        </ResponsiveButton>
       }>
         {error}
       </Alert>
@@ -336,15 +336,17 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={2}>
-            <Button
+            <ResponsiveButton
               fullWidth
               variant="outlined"
-              startIcon={<RefreshIcon />}
+              icon={<RefreshIcon />}
               onClick={onRefresh}
               disabled={loading}
+              mobileText="Refresh"
+              desktopText="Refresh"
             >
               Refresh
-            </Button>
+            </ResponsiveButton>
           </Grid>
         </Grid>
       </Paper>

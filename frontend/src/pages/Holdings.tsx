@@ -19,12 +19,12 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Button,
   IconButton,
   Tooltip,
   alpha,
   useTheme,
 } from '@mui/material';
+import { ResponsiveButton } from '../components/Common';
 import {
   AccountBalanceWallet,
   TrendingUp,
@@ -126,9 +126,9 @@ const Holdings: React.FC = () => {
         <ResponsiveTypography variant="formHelper">
           {error}
         </ResponsiveTypography>
-        <Button onClick={handleRefresh} sx={{ mt: 1 }}>
+        <ResponsiveButton onClick={handleRefresh} mobileText="Try Again" desktopText="Try Again" sx={{ mt: 1 }}>
           Try Again
-        </Button>
+        </ResponsiveButton>
       </Alert>
     );
   }
@@ -195,14 +195,16 @@ const Holdings: React.FC = () => {
               </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={<Refresh />}
+                icon={<Refresh />}
                 onClick={handleRefresh}
+                mobileText="Refresh"
+                desktopText="Refresh"
                 sx={{ borderRadius: 2 }}
               >
                 Refresh
-              </Button>
+              </ResponsiveButton>
             </Box>
           </Box>
         </Box>

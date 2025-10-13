@@ -6,7 +6,6 @@ import {
   Box,
   Card,
   CardContent,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -60,6 +59,7 @@ import {
   CalendarToday as CalendarIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -724,10 +724,12 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             >
               {compact ? "Dividend" : "Create Dividend"}
             </ResponsiveButton>
-            <Button
+            <ResponsiveButton
               variant="contained"
               color="secondary"
-              startIcon={<TransferIcon />}
+              icon={<TransferIcon />}
+              mobileText="Transfer"
+              desktopText="Transfer Cash"
               onClick={() => {
                 setTransferData({
                   fromSource: '',
@@ -755,7 +757,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               }}
             >
               {compact ? "Transfer" : "Transfer Cash"}
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
 
@@ -1134,15 +1136,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <ResponsiveTypography variant="formHelper">
                       {filteredCashFlows.length} transactions
                     </ResponsiveTypography>
-                    <Button
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
-                      startIcon={<RefreshIcon />}
+                      icon={<RefreshIcon />}
+                      mobileText="Refresh"
+                      desktopText="Refresh"
                       onClick={() => { loadCashFlows(); loadAllCashFlows(); }}
                       disabled={loading}
                     >
                       Refresh
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </Box>
                 
@@ -1179,21 +1183,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }}
                       format="dd/MM/yyyy"
                     />
-                    <Button
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<ClearIcon />}
+                      mobileText="Clear"
+                      desktopText="Clear"
                       onClick={() => setDateFilters({ startDate: null, endDate: null })}
                       disabled={!dateFilters.startDate && !dateFilters.endDate}
                     >
                       Clear
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                   
                   {/* Quick Date Buttons */}
                   <Box display="flex" gap={1}>
-                    <Button
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<CalendarIcon />}
+                      mobileText="7d"
+                      desktopText="7 days"
                       onClick={() => {
                         const today = new Date();
                         const last7Days = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -1201,10 +1211,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }}
                     >
                       7 days
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<CalendarIcon />}
+                      mobileText="30d"
+                      desktopText="30 days"
                       onClick={() => {
                         const today = new Date();
                         const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -1212,10 +1225,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }}
                     >
                       30 days
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<CalendarIcon />}
+                      mobileText="90d"
+                      desktopText="90 days"
                       onClick={() => {
                         const today = new Date();
                         const last90Days = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
@@ -1223,7 +1239,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }}
                     >
                       90 days
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                   
                   {/* Type Filter */}
@@ -1320,60 +1336,75 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       </MenuItem>
                     </Select>
                   </FormControl>
-                  <Button
+                  <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<FilterIcon />}
+                      mobileText="All"
+                      desktopText="All Types"
                       onClick={() => setFilterTypes(['ALL'])}
                       disabled={filterTypes.includes('ALL')}
                     >
                       All Types
-                    </Button>
-                    <Button
+                    </ResponsiveButton>
+                    <ResponsiveButton
                       size="small"
                       variant="outlined"
+                      icon={<ClearIcon />}
+                      mobileText="Reset"
+                      desktopText="Reset"
                       onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT', 'DEPOSIT_CREATION'])}
                       disabled={filterTypes.length === 11 && !filterTypes.includes('ALL')}
                     >
                       Reset
-                    </Button>
+                    </ResponsiveButton>
                     
-                    <Button
+                    <ResponsiveButton
                       size="small"
                       variant="contained"
-                      startIcon={<FilterIcon />}
+                      icon={<FilterIcon />}
+                      mobileText="Search"
+                      desktopText="Search"
                       onClick={handleApplyFilters}
                       disabled={loading}
                     >
                       Search
-                    </Button>
+                    </ResponsiveButton>
                   
                   {/* Actions */}
                   <Box display="flex" gap={1}>
                     
-                    <Button
+                    <ResponsiveButton
                       variant={groupByDate ? 'contained' : 'outlined'}
-                      startIcon={<CalendarIcon />}
+                      icon={<CalendarIcon />}
+                      mobileText="Group"
+                      desktopText="Group by Date"
                       onClick={() => setGroupByDate(!groupByDate)}
                       size="small"
                       sx={{ textTransform: 'none' }}
                     >
                       Group by Date
-                    </Button>
+                    </ResponsiveButton>
                     
                     {groupByDate && Object.keys(groupedCashFlows).length > 1 && (
-                      <Button
+                      <ResponsiveButton
                         size="small"
                         variant="outlined"
+                        icon={collapsedDates.size === Object.keys(groupedCashFlows).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                        mobileText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand' : 'Collapse'}
+                        desktopText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
                         onClick={toggleAllDatesCollapse}
                         sx={{ textTransform: 'none' }}
                       >
                         {collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
-                      </Button>
+                      </ResponsiveButton>
                     )}
                     
-                    <Button
+                    <ResponsiveButton
                       variant="outlined"
-                      startIcon={<DownloadIcon />}
+                      icon={<DownloadIcon />}
+                      mobileText="Export"
+                      desktopText="Export"
                       size="small"
                       onClick={() => {
                         const csvContent = generateCSV(filteredCashFlows);
@@ -1381,7 +1412,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }}
                     >
                       Export
-                    </Button>
+                    </ResponsiveButton>
                   </Box>
                 </Box>
                 
@@ -1924,19 +1955,28 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            resetFormWithAutoFlowDate();
-            setDialogOpen(false);
-            setError(null);
-          }}>Cancel</Button>
-          <Button
+          <ResponsiveButton 
+            onClick={() => {
+              resetFormWithAutoFlowDate();
+              setDialogOpen(false);
+              setError(null);
+            }}
+            icon={<CancelIcon />}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
+            icon={editingCashFlow ? <EditIcon /> : <AddIcon />}
+            mobileText={loading ? (editingCashFlow ? 'Updating...' : 'Creating...') : (editingCashFlow ? 'Update' : 'Create')}
+            desktopText={loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
             disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
-            startIcon={editingCashFlow ? <EditIcon /> : <AddIcon />}
           >
             {loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -1996,19 +2036,28 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            setDeleteDialogOpen(false);
-            setDeleteError(null);
-          }}>Cancel</Button>
-          <Button 
+          <ResponsiveButton 
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setDeleteError(null);
+            }}
+            icon={<CancelIcon />}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton 
             onClick={confirmDelete} 
             color="error" 
             variant="contained"
+            icon={loading ? null : <DeleteIcon />}
+            mobileText={loading ? 'Deleting...' : 'Delete'}
+            desktopText={loading ? 'Deleting...' : 'Delete'}
             disabled={loading}
-            startIcon={loading ? null : <DeleteIcon />}
           >
             {loading ? 'Deleting...' : 'Delete'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -2145,14 +2194,24 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            setTransferDialogOpen(false);
-            setError(null);
-          }}>Cancel</Button>
-          <Button
+          <ResponsiveButton 
+            onClick={() => {
+              setTransferDialogOpen(false);
+              setError(null);
+            }}
+            icon={<CancelIcon />}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleTransferCash}
             variant="contained"
             color="secondary"
+            icon={<TransferIcon />}
+            mobileText={loading ? 'Transferring...' : 'Transfer'}
+            desktopText={loading ? 'Transferring...' : 'Transfer Cash'}
             disabled={
               loading || 
               !transferData.fromSource || 
@@ -2160,10 +2219,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               transferData.amount <= 0 || 
               transferData.fromSource === transferData.toSource
             }
-            startIcon={<TransferIcon />}
           >
             {loading ? 'Transferring...' : 'Transfer Cash'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Box>

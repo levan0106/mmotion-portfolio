@@ -199,7 +199,7 @@ const customTypography = {
   
   // Card value variants
   cardValue: {
-    xs: '0.875rem', // 14px (mobile readable)
+    xs: '1rem',     // 16px (increased for mobile readability)
     sm: '0.9rem',   // 14.4px
     md: '1rem',     // 16px
     lg: '1.1rem',   // 17.6px
@@ -207,7 +207,7 @@ const customTypography = {
   },
 
   cardValueLarge: {
-    xs: '1rem',     // 16px (mobile readable)
+    xs: '1.125rem', // 18px (increased for mobile readability)
     sm: '1.1rem',   // 17.6px
     md: '1.2rem',   // 19.2px
     lg: '1.3rem',   // 20.8px
@@ -215,7 +215,7 @@ const customTypography = {
   },
 
   cardValueMedium: {
-    xs: '0.75rem',  // 12px (mobile readable)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
@@ -223,7 +223,7 @@ const customTypography = {
   },
 
   cardValueSmall: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px

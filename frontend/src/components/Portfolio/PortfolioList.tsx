@@ -15,6 +15,7 @@ import {
   MonetizationOn as MonetizationOnIcon,
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import PortfolioCard from './PortfolioCard';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
@@ -83,13 +84,15 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           mb: 1
         }}>Portfolios</ResponsiveTypography>
         {onCreatePortfolio && (
-          <button
+          <ResponsiveButton
             className="portfolio-list__create-btn"
             onClick={onCreatePortfolio}
+            icon={<AddIcon />}
+            mobileText="Create"
+            desktopText="Create Portfolio"
           >
-            <AddIcon />
             Create Portfolio
-          </button>
+          </ResponsiveButton>
         )}
       </div>
 
@@ -176,19 +179,21 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           
           {onCreatePortfolio && portfolios.length === 0 && (
             <div className="portfolio-list__empty-actions">
-              <button
+              <ResponsiveButton
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--primary"
                 onClick={onCreatePortfolio}
+                icon={<AddIcon />}
+                mobileText="Create"
+                desktopText="Create Your First Portfolio"
               >
-                <AddIcon />
                 Create Your First Portfolio
-              </button>
-              <button
+              </ResponsiveButton>
+              <ResponsiveButton
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--secondary"
                 onClick={() => {/* Add help/tutorial action */}}
               >
                 Learn More
-              </button>
+              </ResponsiveButton>
             </div>
           )}
         </div>

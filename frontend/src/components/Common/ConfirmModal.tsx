@@ -4,12 +4,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   IconButton,
   Divider,
 } from '@mui/material';
+import { ResponsiveButton } from './ResponsiveButton';
 import {
   Close as CloseIcon,
   Warning as WarningIcon,
@@ -125,10 +125,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       <Divider />
 
       <DialogActions sx={{ p: 3, gap: 2 }}>
-        <Button
+        <ResponsiveButton
           onClick={onClose}
           variant="outlined"
           disabled={isLoading}
+          icon={<CloseIcon />}
+          mobileText={cancelText}
+          desktopText={cancelText}
           sx={{
             textTransform: 'none',
             px: 3,
@@ -138,12 +141,15 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           }}
         >
           {cancelText}
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={onConfirm}
           variant="contained"
           color={confirmColor}
           disabled={isLoading}
+          icon={type === 'delete' ? <DeleteIcon /> : <WarningIcon />}
+          mobileText={isLoading ? 'Processing...' : confirmText}
+          desktopText={isLoading ? 'Processing...' : confirmText}
           sx={{
             textTransform: 'none',
             px: 3,
@@ -154,7 +160,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           }}
         >
           {isLoading ? 'Processing...' : confirmText}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   Alert,
@@ -20,6 +19,7 @@ import {
 import {
   Transform as ConvertIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { Portfolio } from '../../types';
 
 interface ConvertToPortfolioModalProps {
@@ -143,22 +143,24 @@ const ConvertToPortfolioModal: React.FC<ConvertToPortfolioModalProps> = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button
+        <ResponsiveButton
           onClick={handleClose}
           disabled={isConverting}
           color="inherit"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={handleConvert}
           disabled={isConverting || !confirmationChecked}
           color="warning"
           variant="contained"
-          startIcon={isConverting ? <CircularProgress size={16} /> : <ConvertIcon />}
+          icon={isConverting ? <CircularProgress size={16} /> : <ConvertIcon />}
+          mobileText="Convert"
+          desktopText="Convert to Portfolio"
         >
           {isConverting ? 'Converting...' : 'Convert to Portfolio'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

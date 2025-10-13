@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Checkbox,
   Box,
   Typography,
@@ -13,6 +12,7 @@ import {
   Paper,
   Grid,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import {
   DatePicker,
   LocalizationProvider,
@@ -180,15 +180,17 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
           </LocalizationProvider>
         </Box>
         <Box sx={{ mt: 1 }}>
-          <Button
+          <ResponsiveButton
             variant="contained"
             onClick={loadAssets}
             disabled={!targetDate || loading}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
+            icon={loading ? <CircularProgress size={20} /> : <Refresh />}
+            mobileText="Tải"
+            desktopText="Tải dữ liệu"
             size="large"
           >
             {loading ? 'Đang tải...' : 'Tải dữ liệu'}
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
 
@@ -216,19 +218,25 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
               Không có dữ liệu: {assets.filter(a => !a.hasHistoricalData).length}
             </Typography>
             <Box>
-              <Button
+              <ResponsiveButton
                 size="small"
                 onClick={() => handleSelectAll(true)}
+                icon={<CheckCircle />}
+                mobileText="Chọn"
+                desktopText="Chọn có dữ liệu"
                 sx={{ mr: 1 }}
               >
                 Chọn có dữ liệu
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 size="small"
                 onClick={() => handleSelectAll(false)}
+                icon={<Error />}
+                mobileText="Bỏ chọn"
+                desktopText="Bỏ chọn tất cả"
               >
                 Bỏ chọn tất cả
-              </Button>
+              </ResponsiveButton>
             </Box>
           </Box>
 
@@ -313,13 +321,16 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
           </Box>
 
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <Button
+            <ResponsiveButton
               variant="contained"
               onClick={() => setStep('confirm')}
               disabled={assets.filter(a => a.selected).length === 0}
+              icon={<CheckCircle />}
+              mobileText={`Tiếp tục (${assets.filter(a => a.selected).length})`}
+              desktopText={`Tiếp tục (${assets.filter(a => a.selected).length} tài sản)`}
             >
               Tiếp tục ({assets.filter(a => a.selected).length} tài sản)
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
       )}
@@ -495,17 +506,24 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
       case 'confirm':
         return (
           <>
-            <Button onClick={() => setStep('date')}>
+            <ResponsiveButton 
+              onClick={() => setStep('date')}
+              icon={<Error />}
+              mobileText="Quay lại"
+              desktopText="Quay lại"
+            >
               Quay lại
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="contained"
               onClick={handleBulkUpdate}
               disabled={loading || assetsWithData.length === 0}
-              startIcon={loading ? <CircularProgress size={20} /> : <Refresh />}
+              icon={loading ? <CircularProgress size={20} /> : <Refresh />}
+              mobileText={loading ? 'Đang cập nhật...' : 'Cập nhật'}
+              desktopText={loading ? 'Đang cập nhật...' : 'Cập nhật giá'}
             >
               {loading ? 'Đang cập nhật...' : 'Cập nhật giá'}
-            </Button>
+            </ResponsiveButton>
           </>
         );
       
@@ -539,9 +557,12 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
             <History sx={{ mr: 1.5, fontSize: '1.5rem' }} />
             Cập nhật giá theo ngày lịch sử
           </Box>
-          <Button
+          <ResponsiveButton
             onClick={handleClose}
             size="small"
+            icon={<Error />}
+            mobileText="✕"
+            desktopText="✕"
             sx={{ 
               color: 'white',
               minWidth: 'auto',
@@ -553,7 +574,7 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
             }}
           >
             ✕
-          </Button>
+          </ResponsiveButton>
         </Box>
       </DialogTitle>
       

@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -17,6 +16,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
@@ -149,9 +149,12 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
         <Typography variant="h6" component="div">
           Create New Account
         </Typography>
-        <Button
+        <ResponsiveButton
           onClick={handleClose}
           disabled={loading}
+          icon={<CloseIcon />}
+          mobileText=""
+          desktopText=""
           sx={{ 
             minWidth: 'auto', 
             p: 1,
@@ -159,7 +162,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           }}
         >
           <CloseIcon />
-        </Button>
+        </ResponsiveButton>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
@@ -226,21 +229,25 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 2, pt: 1 }}>
-        <Button 
+        <ResponsiveButton 
           onClick={handleClose} 
           disabled={loading}
           color="inherit"
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           onClick={handleSubmit}
           variant="contained"
           disabled={loading || !formData.name}
-          startIcon={loading && <CircularProgress size={16} />}
+          icon={loading && <CircularProgress size={16} />}
+          mobileText={loading ? 'Creating...' : 'Create'}
+          desktopText={loading ? 'Creating...' : 'Create Account'}
         >
           {loading ? 'Creating...' : 'Create Account'}
-        </Button>
+        </ResponsiveButton>
       </DialogActions>
     </Dialog>
   );

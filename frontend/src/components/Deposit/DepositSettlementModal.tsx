@@ -4,17 +4,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Grid,
   Box,
-  Typography,
   Alert,
   Card,
   CardContent,
   Avatar,
   Paper,
 } from '@mui/material';
+import { ResponsiveTypography, ResponsiveButton } from '../Common';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -23,6 +22,7 @@ import {
   TrendingUp as InterestIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -149,12 +149,12 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
               <InterestIcon sx={{ color: 'white', fontSize: 20 }} />
             </Avatar>
             <Box>
-              <Typography variant="h6" fontWeight="bold">
+              <ResponsiveTypography variant="h6" fontWeight="bold">
                 Tất toán tiền gửi
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
                 Xác nhận và hoàn tất việc tất toán
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
         </DialogTitle>
@@ -180,12 +180,12 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                     <BankIcon sx={{ fontSize: 18 }} />
                   </Avatar>
                   <Box>
-                    <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '1rem' }}>
+                    <ResponsiveTypography variant="h6" fontWeight="bold" sx={{ fontSize: '1rem' }}>
                       Thông tin tất toán
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                       Chi tiết tiền gửi và thông tin tất toán
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Box>
                 
@@ -193,9 +193,9 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                   {/* Deposit Info - Compact */}
                   <Grid item xs={12} md={6}>
                     <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
+                      <ResponsiveTypography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
                         Thông tin tiền gửi
-                      </Typography>
+                      </ResponsiveTypography>
                       
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
                         {/* Bank & Term Information */}
@@ -204,25 +204,25 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                             <Grid item xs={12}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <BankIcon fontSize="small" color="primary" />
-                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
                                   {deposit.bankName || 'N/A'}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
-                              <Typography variant="body2" color="text.secondary" fontFamily="monospace" sx={{ fontSize: '0.75rem', ml: 3, mb: 1 }}>
+                              <ResponsiveTypography variant="body2" color="text.secondary" fontFamily="monospace" sx={{ fontSize: '0.75rem', ml: 3, mb: 1 }}>
                                 {deposit.accountNumber || 'N/A'}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Grid>
                             
                             <Grid item xs={12}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <ScheduleIcon fontSize="small" color="primary" />
-                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
                                   {deposit.termDescription || 'N/A'}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', ml: 3 }}>
+                              <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', ml: 3 }}>
                                 {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
-                              </Typography>
+                              </ResponsiveTypography>
                             </Grid>
                           </Grid>
                         </Box>
@@ -232,42 +232,42 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                           <Grid container spacing={1.5}>
                             <Grid item xs={6}>
                               <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
                                   Gốc
-                                </Typography>
-                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                </ResponsiveTypography>
+                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
                                   {formatCurrency(Number(deposit.principal) || 0)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
                             </Grid>
                             <Grid item xs={6}>
                               <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
                                   Lãi suất
-                                </Typography>
-                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                </ResponsiveTypography>
+                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
                                   {deposit.interestRate ? `${deposit.interestRate}%/năm` : 'N/A'}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
                             </Grid>
                             <Grid item xs={6}>
                               <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
                                   Lãi tích lũy
-                                </Typography>
-                                <Typography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                </ResponsiveTypography>
+                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
                                   {formatCurrency(Number(deposit.accruedInterest) || 0)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
                             </Grid>
                             <Grid item xs={6}>
                               <Box sx={{ p: 1, bgcolor: 'success.light', borderRadius: 1, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
+                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
                                   Tổng
-                                </Typography>
-                                <Typography variant="body2" color="success.dark" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                                </ResponsiveTypography>
+                                <ResponsiveTypography variant="body2" color="success.dark" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
                                   {formatCurrency(Number(deposit.totalValue) || 0)}
-                                </Typography>
+                                </ResponsiveTypography>
                               </Box>
                             </Grid>
                           </Grid>
@@ -279,9 +279,9 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
                   {/* Settlement Form - Compact */}
                   <Grid item xs={12} md={6}>
                     <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
+                      <ResponsiveTypography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
                         Thông tin tất toán
-                      </Typography>
+                      </ResponsiveTypography>
                       
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
                         <Grid container spacing={2}>
@@ -384,15 +384,15 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
             }}>
               <Box display="flex" alignItems="center" justifyContent="center" gap={1.5}>
                 <Box>
-                    <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.5rem', mb: 0.5 }}>
+                    <ResponsiveTypography variant="h4" sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.5rem', mb: 0.5 }}>
                       Tổng nhận được
-                    </Typography>
-                    <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold', fontSize: '2rem', mb: 1 }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="h3" sx={{ color: 'white', fontWeight: 'bold', fontSize: '2rem', mb: 1 }}>
                       {formatCurrency(calculateTotalSettlement(Number(deposit.principal) || 0, Number(actualInterest) || 0))}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'white', opacity: 0.8, fontSize: '0.7rem' }}>
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" sx={{ color: 'white', opacity: 0.8, fontSize: '0.7rem' }}>
                       (Gốc: {formatCurrency(Number(deposit.principal) || 0)} + Lãi: {formatCurrency(Number(actualInterest) || 0)})
-                    </Typography>
+                    </ResponsiveTypography>
                 </Box>
               </Box>
             </Paper>
@@ -400,11 +400,14 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
         </DialogContent>
         
         <DialogActions sx={{ p: 2, bgcolor: 'grey.50', gap: 1.5 }}>
-          <Button 
+          <ResponsiveButton 
             onClick={onClose} 
             disabled={isSubmitting}
             variant="outlined"
             size="medium"
+            icon={<EditIcon />}
+            mobileText="Hủy"
+            desktopText="Hủy"
             sx={{ 
               minWidth: 100, 
               borderRadius: 1, 
@@ -413,14 +416,16 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
             }}
           >
             Hủy
-          </Button>
-          <Button 
+          </ResponsiveButton>
+          <ResponsiveButton 
             type="submit" 
             variant="contained" 
             color="success"
             disabled={isSubmitting || (actualInterest || 0) < 0}
             size="medium"
-            startIcon={isSubmitting ? undefined : <CheckIcon />}
+            icon={isSubmitting ? undefined : <CheckIcon />}
+            mobileText="Xác nhận tất toán"
+            desktopText="Xác nhận tất toán"
             sx={{ 
               minWidth: 160, 
               borderRadius: 1, 
@@ -433,7 +438,7 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
             }}
           >
             {isSubmitting ? 'Đang tất toán...' : 'Xác nhận tất toán'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </form>
     </Dialog>

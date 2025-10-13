@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import {
   Box,
   TextField,
-  Button,
   Grid,
   FormControl,
   InputLabel,
@@ -16,6 +15,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveButton, ResponsiveTypography } from '../Common';
 import { CreateAssetRequest, Asset, AssetType } from '../../types/asset.types';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
 import { useAccount } from '../../contexts/AccountContext';
@@ -132,7 +132,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
   return (
     <div className="asset-form">
       <div className="asset-form__header">
-        <h2>{submitText}</h2>
+        <ResponsiveTypography variant="h2" component="h2">{submitText}</ResponsiveTypography>
         <button
           type="button"
           onClick={onCancel}
@@ -306,22 +306,28 @@ export const AssetForm: React.FC<AssetFormProps> = ({
       </Grid>
       
       <div className="asset-form__actions">
-        <Button
+        <ResponsiveButton
           type="button"
           variant="outlined"
           onClick={onCancel}
           size="large"
+          icon={<CircularProgress />}
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ResponsiveButton
           type="submit"
           variant="contained"
           size="large"
           disabled={_loading}
+          icon={<CircularProgress />}
+          mobileText={_loading ? 'Đang xử lý...' : submitText}
+          desktopText={_loading ? 'Đang xử lý...' : submitText}
         >
           {_loading ? 'Đang xử lý...' : submitText}
-        </Button>
+        </ResponsiveButton>
       </div>
         </Box>
       </div>

@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   Grid,
-  Button,
   Chip,
   LinearProgress,
   Alert,
@@ -36,6 +35,7 @@ import {
   Divider,
   Tooltip,
 } from '@mui/material';
+import { ResponsiveButton } from './Common';
 import {
   Refresh as RefreshIcon,
   PlayArrow as PlayIcon,
@@ -292,9 +292,9 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
   if (error) {
     return (
       <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={onRefresh}>
+        <ResponsiveButton color="inherit" size="small" onClick={onRefresh} mobileText="Retry" desktopText="Retry">
           Retry
-        </Button>
+        </ResponsiveButton>
       }>
         {error}
       </Alert>
@@ -330,11 +330,13 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
+              <ResponsiveButton
                 variant="outlined"
-                startIcon={isRefreshing ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
+                icon={isRefreshing ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
                 onClick={handleRefresh}
                 disabled={isRefreshing || loading}
+                mobileText={isRefreshing ? 'Refreshing...' : 'Refresh'}
+                desktopText={isRefreshing ? 'Refreshing...' : 'Refresh'}
                 sx={{
                   color: 'white',
                   borderColor: 'rgba(255,255,255,0.3)',
@@ -348,12 +350,14 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                 }}
               >
                 {isRefreshing ? 'Refreshing...' : 'Refresh'}
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
-                startIcon={isUpdatingAll ? <CircularProgress size={20} color="inherit" /> : <PlayIcon />}
+                icon={isUpdatingAll ? <CircularProgress size={20} color="inherit" /> : <PlayIcon />}
                 onClick={handleUpdateAll}
                 disabled={isUpdatingAll || loading}
+                mobileText={isUpdatingAll ? 'Updating...' : 'Update All'}
+                desktopText={isUpdatingAll ? 'Updating...' : 'Update All Prices'}
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.2)',
                   color: 'white',
@@ -368,7 +372,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                 }}
               >
                 {isUpdatingAll ? 'Updating...' : 'Update All Prices'}
-              </Button>
+              </ResponsiveButton>
               <Tooltip title="Settings">
                 <IconButton 
                   onClick={() => setSettingsDialogOpen(true)}
@@ -664,11 +668,13 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                             <MenuItem value="JP">🇯🇵 Japan</MenuItem>
                           </Select>
                         </FormControl>
-                        <Button
+                        <ResponsiveButton
                           variant="contained"
                           onClick={handleUpdateByNation}
                           disabled={!selectedNation || isUpdatingByNation || loading}
-                          startIcon={isUpdatingByNation ? <CircularProgress size={20} color="inherit" /> : undefined}
+                          icon={isUpdatingByNation ? <CircularProgress size={20} color="inherit" /> : undefined}
+                          mobileText={isUpdatingByNation ? 'Updating...' : 'Update'}
+                          desktopText={isUpdatingByNation ? 'Updating...' : 'Update Nation'}
                           fullWidth
                           sx={{
                             mt: 2,
@@ -682,7 +688,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                           }}
                         >
                           {isUpdatingByNation ? 'Updating...' : 'Update Nation'}
-                        </Button>
+                        </ResponsiveButton>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -723,11 +729,13 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                             <MenuItem value="LSE">🏛️ London Stock Exchange</MenuItem>
                           </Select>
                         </FormControl>
-                        <Button
+                        <ResponsiveButton
                           variant="contained"
                           onClick={handleUpdateByMarket}
                           disabled={!selectedMarket || isUpdatingByMarket || loading}
-                          startIcon={isUpdatingByMarket ? <CircularProgress size={20} color="inherit" /> : undefined}
+                          icon={isUpdatingByMarket ? <CircularProgress size={20} color="inherit" /> : undefined}
+                          mobileText={isUpdatingByMarket ? 'Updating...' : 'Update'}
+                          desktopText={isUpdatingByMarket ? 'Updating...' : 'Update Market'}
                           fullWidth
                           sx={{
                             mt: 2,
@@ -741,7 +749,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                           }}
                         >
                           {isUpdatingByMarket ? 'Updating...' : 'Update Market'}
-                        </Button>
+                        </ResponsiveButton>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -910,12 +918,14 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Button
+                            <ResponsiveButton
                               variant="outlined"
                               size="small"
                               onClick={() => handleTestProvider(provider.name)}
                               disabled={testingProvider === provider.name || loading}
-                              startIcon={testingProvider === provider.name ? <CircularProgress size={16} color="inherit" /> : undefined}
+                              icon={testingProvider === provider.name ? <CircularProgress size={16} color="inherit" /> : undefined}
+                              mobileText={testingProvider === provider.name ? 'Testing...' : 'Test'}
+                              desktopText={testingProvider === provider.name ? 'Testing...' : 'Test Connection'}
                               sx={{
                                 borderColor: '#667eea',
                                 color: '#667eea',
@@ -927,7 +937,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                               }}
                             >
                               {testingProvider === provider.name ? 'Testing...' : 'Test Connection'}
-                            </Button>
+                            </ResponsiveButton>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -1216,8 +1226,11 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
             <Box>
               Market Data Settings
             </Box>
-            <Button
+            <ResponsiveButton
               onClick={() => setSettingsDialogOpen(false)}
+              icon={<CloseIcon />}
+              mobileText=""
+              desktopText=""
               sx={{
                 color: 'white',
                 minWidth: 'auto',
@@ -1229,7 +1242,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
               }}
             >
               <CloseIcon />
-            </Button>
+            </ResponsiveButton>
           </DialogTitle>
           <DialogContent sx={{ p: 4 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#667eea' }}>
@@ -1263,8 +1276,10 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
             borderTop: '1px solid rgba(0,0,0,0.1)',
             justifyContent: 'flex-end'
           }}>
-            <Button 
+            <ResponsiveButton 
               onClick={() => setSettingsDialogOpen(false)}
+              mobileText="Cancel"
+              desktopText="Cancel"
               sx={{
                 color: '#667eea',
                 fontWeight: 600,
@@ -1274,9 +1289,11 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
               }}
             >
               Cancel
-            </Button>
-            <Button 
+            </ResponsiveButton>
+            <ResponsiveButton 
               variant="contained"
+              mobileText="Save"
+              desktopText="Save Settings"
               sx={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 fontWeight: 600,
@@ -1289,7 +1306,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
               }}
             >
               Save Settings
-            </Button>
+            </ResponsiveButton>
           </DialogActions>
         </Dialog>
       </Box>

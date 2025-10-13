@@ -18,7 +18,6 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Button,
   IconButton,
   Tooltip,
   alpha,
@@ -645,9 +644,12 @@ const Assets: React.FC = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           Error loading assets: {error}
         </Alert>
-        <Button onClick={handleRefresh} variant="contained">
+        <ResponsiveButton onClick={handleRefresh} variant="contained">
+          icon={<Refresh />}
+          mobileText="Retry"
+          desktopText="Retry"
           Retry
-        </Button>
+        </ResponsiveButton>
       </Box>
     );
   }
@@ -678,9 +680,9 @@ const Assets: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button
+              <ResponsiveButton
                 variant={showFilters ? "contained" : "outlined"}
-                startIcon={<FilterList />}
+                icon={<FilterList />}
                 onClick={() => handleFiltersToggle(!showFilters)}
                 sx={{ 
                   borderRadius: 2,
@@ -689,11 +691,10 @@ const Assets: React.FC = () => {
                 }}
               >
                 Filters {showFilters && '(Active)'}
-              </Button>
+              </ResponsiveButton>
               <ResponsiveButton
                 variant="outlined"
                 icon={<Refresh />}
-                startIcon={<Refresh />}
                 onClick={handleRefresh}
                 mobileText="Refresh"
                 desktopText="Refresh Data"
@@ -701,9 +702,9 @@ const Assets: React.FC = () => {
                 Refresh Data
               </ResponsiveButton>
               <Tooltip title="Chọn nhiều assets từ danh sách mẫu - Nhanh và dễ dàng">
-                <Button
+                <ResponsiveButton
                   variant="outlined"
-                  startIcon={<Add />}
+                  icon={<Add />}
                   onClick={handleBulkCreateClick}
                   sx={{ 
                     borderRadius: 2,
@@ -712,13 +713,12 @@ const Assets: React.FC = () => {
                   }}
                 >
                   Quick Create
-                </Button>
+                </ResponsiveButton>
               </Tooltip>
               <Tooltip title="Tạo asset mới với thông tin chi tiết">
                 <ResponsiveButton
                   variant="contained"
                   icon={<Add />}
-                  startIcon={<Add />}
                   onClick={handleCreateAsset}
                   mobileText="Add"
                   desktopText="Add Asset"

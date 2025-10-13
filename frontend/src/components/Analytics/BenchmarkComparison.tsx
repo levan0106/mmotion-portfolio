@@ -233,7 +233,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
         <Grid container spacing={1.5} sx={{ mb: 2 }}>
           <Grid item xs={6} sm={3}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingUp color="primary" sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
@@ -252,7 +252,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
           </Grid>
           <Grid item xs={6} sm={3}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingUp color="info" sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
@@ -271,7 +271,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
           </Grid>
           <Grid item xs={6} sm={3}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
@@ -290,7 +290,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
           </Grid>
           <Grid item xs={6} sm={3}>
             <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingDown color="warning" sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
@@ -306,9 +306,19 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
         </Grid>
 
         {/* Performance Comparison Chart */}
-        <Box sx={{ height: 267, mb: 3 }}>
+        <Box sx={{ 
+          height: 267, 
+          mb: 3,
+          px: { xs: 0, sm: 1 },
+          mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+        }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <LineChart data={data} margin={{ 
+            top: 20, 
+            right: 30, 
+            left: 20, 
+            bottom: 5 
+          }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"

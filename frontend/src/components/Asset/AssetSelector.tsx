@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Box,
   Typography,
@@ -18,6 +17,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import { Asset, CreateAssetRequest } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
 import { useAccount } from '../../contexts/AccountContext';
@@ -229,17 +229,25 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose}>
+        <ResponsiveButton 
+          onClick={handleClose}
+          icon={<CircularProgress />}
+          mobileText="Cancel"
+          desktopText="Cancel"
+        >
           Cancel
-        </Button>
+        </ResponsiveButton>
         {tabValue === 0 && (
-          <Button
+          <ResponsiveButton
             onClick={handleConfirmSelect}
             variant="contained"
             disabled={!selectedAsset}
+            icon={<CircularProgress />}
+            mobileText="Add"
+            desktopText="Add Selected Asset"
           >
             Add Selected Asset
-          </Button>
+          </ResponsiveButton>
         )}
       </DialogActions>
     </Dialog>

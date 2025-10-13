@@ -407,6 +407,96 @@
   }
 }
 
+  /* Mobile tab improvements */
+@media (max-width: 768px) {
+  /* Tab container improvements */
+  .MuiTabs-root {
+    width: calc(100% - 50px) !important;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 1rem;
+    flex: 1;
+  }
+
+  /* Compact mode toggle positioning */
+  .MuiIconButton-root {
+    flex-shrink: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin-left: 0.5rem !important;
+  }
+
+  .MuiTabs-flexContainer {
+    gap: 0.25rem !important;
+    padding: 0.25rem;
+  }
+
+  .MuiTab-root {
+    min-width: 70px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.7rem !important;
+    min-height: 36px !important;
+  }
+
+  .MuiTab-root .MuiTab-iconWrapper {
+    font-size: 0.9rem !important;
+    margin-right: 0.25rem !important;
+  }
+
+  .MuiTabs-scrollButtons {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Tab content improvements */
+  .MuiTabPanel-root {
+    padding: 0.75rem !important;
+  }
+
+  /* Mobile-specific content improvements */
+  .MuiGrid-container {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .MuiGrid-item {
+    padding: 0.25rem !important;
+  }
+
+  /* Chart containers on mobile */
+  .MuiCard-root {
+    margin: 0.25rem !important;
+    padding: 0.5rem !important;
+  }
+
+  .MuiCardContent-root {
+    padding: 0.5rem !important;
+  }
+
+  /* Responsive typography in tabs */
+  .MuiTypography-root {
+    font-size: 0.8rem !important;
+  }
+
+  /* Button improvements for mobile */
+  .MuiButton-root {
+    min-height: 36px !important;
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  /* Table improvements for mobile */
+  .MuiTable-root {
+    font-size: 0.7rem !important;
+  }
+
+  .MuiTableCell-root {
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.7rem !important;
+  }
+}
+
 @media (max-width: 480px) {
   .portfolio-detail {
     padding: 0.75rem;
@@ -418,7 +508,23 @@
 
   .portfolio-detail__actions {
     flex-direction: column;
-    gap: 0.75rem;
+  }
+
+  /* Very small screen adjustments */
+  .MuiTabs-root {
+    width: calc(100% - 45px) !important;
+  }
+
+  .MuiIconButton-root {
+    width: 36px !important;
+    height: 36px !important;
+    margin-left: 0.25rem !important;
+  }
+
+  .MuiTab-root {
+    min-width: 60px !important;
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.65rem !important;
   }
 
   .portfolio-detail__edit-btn,

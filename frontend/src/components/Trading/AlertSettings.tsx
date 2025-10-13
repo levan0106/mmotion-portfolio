@@ -7,7 +7,6 @@ import {
   Switch,
   FormControlLabel,
   TextField,
-  Button,
   Grid,
   Divider,
   Alert,
@@ -21,6 +20,8 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { ResponsiveButton } from '../Common';
+import { Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
 
 // Validation schema
 const alertSettingsSchema = yup.object({
@@ -423,22 +424,28 @@ export const AlertSettings: React.FC<AlertSettingsProps> = ({
             <Grid item xs={12}>
               <Box display="flex" gap={2} justifyContent="flex-end">
                 {onCancel && (
-                  <Button
+                  <ResponsiveButton
                     variant="outlined"
+                    icon={<CloseIcon />}
+                    mobileText="Cancel"
+                    desktopText="Cancel"
                     onClick={onCancel}
                     disabled={isLoading}
                   >
                     Cancel
-                  </Button>
+                  </ResponsiveButton>
                 )}
-                <Button
+                <ResponsiveButton
                   type="submit"
                   variant="contained"
                   size="large"
+                  icon={<SaveIcon />}
+                  mobileText="Save"
+                  desktopText="Save Alert Settings"
                   disabled={!isValid || isLoading}
                 >
                   {isLoading ? 'Saving...' : 'Save Alert Settings'}
-                </Button>
+                </ResponsiveButton>
               </Box>
             </Grid>
           </Grid>

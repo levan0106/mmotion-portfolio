@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Button,
-  Typography,
   Grid,
   Card,
   CardContent,
@@ -12,6 +10,7 @@ import {
   Tab,
   Paper,
 } from '@mui/material';
+import { ResponsiveTypography, ResponsiveButton } from '../Common';
 import {
   Add as AddIcon,
   AccountBalance as BankIcon,
@@ -205,12 +204,14 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
     <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 2 : 3}>
-        <Typography variant={compact ? "h5" : "h4"} fontWeight="bold" sx={{ fontSize: compact ? '1.1rem' : undefined }}>
+        <ResponsiveTypography variant={compact ? "h5" : "h4"} fontWeight="bold" sx={{ fontSize: compact ? '1.1rem' : undefined }}>
           Quản Lý Tiền Gửi
-        </Typography>
-        <Button
+        </ResponsiveTypography>
+        <ResponsiveButton
           variant="contained"
-          startIcon={<AddIcon />}
+          icon={<AddIcon />}
+          mobileText="Tạo mới"
+          desktopText="Tạo tiền gửi mới"
           onClick={() => setDepositFormOpen(true)}
           disabled={createDepositMutation.isLoading}
           size={compact ? "small" : "medium"}
@@ -221,7 +222,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
           }}
         >
           {compact ? "Tạo mới" : "Tạo tiền gửi mới"}
-        </Button>
+        </ResponsiveButton>
       </Box>
 
       {/* Analytics Cards */}
@@ -236,21 +237,21 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
               }}>
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <BankIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
-                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                  <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Tổng quan
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng số tiền gửi:</Typography>
-                  <Typography variant="body2" fontWeight="medium">{analytics?.totalDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng số tiền gửi:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">{analytics?.totalDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Đang hoạt động:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="info.main">{analytics?.activeDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">Đang hoạt động:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color="info.main">{analytics?.activeDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Đã tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="warning.main">{analytics?.settledDeposits || 0}</Typography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">Đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color="warning.main">{analytics?.settledDeposits || 0}</ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -265,27 +266,27 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
               }}>
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <InterestIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
-                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                  <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Tổng giá trị
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng giá trị:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="success.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng giá trị:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                     {formatCurrency(analytics?.totalValue)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Tổng gốc:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng gốc:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
                     {formatCurrency(analytics?.totalPrincipal || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Lãi suất TB:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="secondary.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi suất TB:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color="secondary.main">
                     {analytics?.averageInterestRate ? `${formatPercentage(analytics.averageInterestRate)}` : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -300,27 +301,27 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
               }}>
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <SettledIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
-                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                  <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Lãi đã tất toán
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Lãi đã tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="success.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                     {formatCurrency(analytics?.totalSettledInterest || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Số lượng:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="warning.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color="warning.main">
                     {analytics?.settledDeposits || 0} deposits
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Trung bình:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
                     {analytics?.settledDeposits ? formatCurrency((analytics?.totalSettledInterest || 0) / analytics.settledDeposits) : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -335,27 +336,27 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
               }}>
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <TrendingUpIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
-                  <Typography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
+                  <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Lãi chưa tất toán
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Lãi chưa tất toán:</Typography>
-                  <Typography variant="body2" fontWeight="bold" color="primary.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi chưa tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="bold" color="primary.main">
                     {formatCurrency(analytics?.totalAccruedInterest || 0)}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2" color="text.secondary">Số lượng:</Typography>
-                  <Typography variant="body2" fontWeight="medium" color="info.main">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color="info.main">
                     {analytics?.activeDeposits || 0} deposits
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">Trung bình:</Typography>
-                  <Typography variant="body2" fontWeight="medium">
+                  <ResponsiveTypography variant="body2" color="text.secondary">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
                     {analytics?.activeDeposits ? formatCurrency((analytics?.totalAccruedInterest || 0) / analytics.activeDeposits) : 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>

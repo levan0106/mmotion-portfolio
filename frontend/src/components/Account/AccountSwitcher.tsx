@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Button,
   Menu,
   MenuItem,
   Typography,
@@ -13,9 +12,9 @@ import {
   Tooltip,
   IconButton,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import {
   AccountBalance as AccountIcon,
-  ArrowDropDown as ArrowDropDownIcon,
   Star as StarIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
@@ -138,11 +137,12 @@ export const AccountSwitcher: React.FC = () => {
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Tooltip title="Switch Account">
-          <Button
+          <ResponsiveButton
             onClick={handleClick}
             variant="outlined"
-            startIcon={<AccountIcon />}
-            endIcon={<ArrowDropDownIcon />}
+            icon={<AccountIcon />}
+            mobileText="Account"
+            desktopText={loading ? 'Switching...' : (currentAccount?.name || 'Account')}
             disabled={loading}
             sx={{
               height: 36,
@@ -153,14 +153,8 @@ export const AccountSwitcher: React.FC = () => {
               //py: 0.5,
             }}
           >
-            {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: 1 }}>
-              <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="body2" noWrap sx={{ fontSize: '0.8rem', lineHeight: 1.2 }}>
-                  {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
-                </Typography>
-              </Box>
-            </Box> */}
-          </Button>
+            {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
+          </ResponsiveButton>
         </Tooltip>
 
       </Box>

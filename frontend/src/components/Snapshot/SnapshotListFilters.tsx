@@ -12,7 +12,6 @@ import {
   TextField,
   Chip,
   Stack,
-  Button,
   Divider,
 } from '@mui/material';
 import {
@@ -24,6 +23,7 @@ import {
   Category as CategoryIcon,
 } from '@mui/icons-material';
 import { SnapshotGranularity } from '../../types/snapshot.types';
+import { ResponsiveButton } from '../Common';
 
 export interface SnapshotListFilters {
   viewMode: 'portfolio' | 'asset' | 'assetType';
@@ -110,16 +110,18 @@ const SnapshotListFilters: React.FC<SnapshotListFiltersProps> = ({
             Filter & View Options
           </Typography>
         </Box>
-        <Button
+        <ResponsiveButton
           variant="outlined"
           size="small"
-          startIcon={<ClearIcon />}
+          icon={<ClearIcon />}
+          mobileText="Clear"
+          desktopText="Clear All"
           onClick={handleClearFilters}
           disabled={loading}
           sx={{ textTransform: 'none' }}
         >
           Clear All
-        </Button>
+        </ResponsiveButton>
       </Box>
 
       {/* View Mode Selection */}

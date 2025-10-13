@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -29,6 +28,7 @@ import {
   TrendingUp as DividendIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
+import { ResponsiveButton } from '../Common';
 import { formatCurrency, formatDate } from '../../utils/format';
 
 interface CashFlow {
@@ -158,41 +158,47 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h4" fontWeight="bold">Cash Flow Management</Typography>
             <Box>
-              <Button
+              <ResponsiveButton
                 variant="contained"
                 color="success"
-                startIcon={<DepositIcon />}
+                icon={<DepositIcon />}
                 onClick={() => {
                   setDialogType('deposit');
                   setDialogOpen(true);
                 }}
+                mobileText="Deposit"
+                desktopText="Deposit"
                 sx={{ mr: 1 }}
               >
                 Deposit
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
                 color="error"
-                startIcon={<WithdrawIcon />}
+                icon={<WithdrawIcon />}
                 onClick={() => {
                   setDialogType('withdrawal');
                   setDialogOpen(true);
                 }}
+                mobileText="Withdraw"
+                desktopText="Withdraw"
                 sx={{ mr: 1 }}
               >
                 Withdraw
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
                 color="info"
-                startIcon={<DividendIcon />}
+                icon={<DividendIcon />}
                 onClick={() => {
                   setDialogType('dividend');
                   setDialogOpen(true);
                 }}
+                mobileText="Dividend"
+                desktopText="Dividend"
               >
                 Dividend
-              </Button>
+              </ResponsiveButton>
             </Box>
           </Box>
 
@@ -311,14 +317,18 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button
+          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText="Cancel" desktopText="Cancel">
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.amount || !formData.description}
+            mobileText={loading ? 'Creating...' : 'Create'}
+            desktopText={loading ? 'Creating...' : 'Create'}
           >
             {loading ? 'Creating...' : 'Create'}
-          </Button>
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Box>

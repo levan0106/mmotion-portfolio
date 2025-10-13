@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
+import { ResponsiveTypography } from './ResponsiveTypography';
+import { ResponsiveButton } from './ResponsiveButton';
 import { Security as SecurityIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -93,9 +95,9 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
       }}>
         <Box sx={{ textAlign: 'center' }}>
           <CircularProgress size={48} sx={{ mb: 2 }} />
-          <Typography variant="body1" color="text.secondary">
+          <ResponsiveTypography variant="body1" color="text.secondary">
             Checking permissions...
-          </Typography>
+          </ResponsiveTypography>
         </Box>
       </Box>
     );
@@ -143,35 +145,35 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     }}>
       <Box sx={{ textAlign: 'center', maxWidth: 500 }}>
         <SecurityIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
-        <Typography variant="h5" gutterBottom>
+        <ResponsiveTypography variant="h5" gutterBottom>
           Access Denied
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        </ResponsiveTypography>
+        <ResponsiveTypography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           You don't have the required access to this resource.
-        </Typography>
+        </ResponsiveTypography>
         
         {/* {hasPermissionRequirements && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {requireAll ? 'All' : 'At least one of the'} following permissions are required:
-            </Typography>
+            </ResponsiveTypography>
             {requiredPermissions.map((perm, index) => (
-              <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
+              <ResponsiveTypography key={index} variant="body2" sx={{ mb: 0.5 }}>
                 • {perm}
-              </Typography>
+              </ResponsiveTypography>
             ))}
           </Box>
         )}
 
         {hasRoleRequirements && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {requireAllRoles ? 'All' : 'At least one of the'} following roles are required:
-            </Typography>
+            </ResponsiveTypography>
             {requiredRoles.map((roleName, index) => (
-              <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
+              <ResponsiveTypography key={index} variant="body2" sx={{ mb: 0.5 }}>
                 • {roleName}
-              </Typography>
+              </ResponsiveTypography>
             ))}
           </Box>
         )}
@@ -182,13 +184,15 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
           </Typography>
         )} */}
 
-        <Button
+        <ResponsiveButton
           variant="contained"
-          startIcon={<ArrowBackIcon />}
+          icon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
+          mobileText="Back"
+          desktopText="Go Back"
         >
           Go Back
-        </Button>
+        </ResponsiveButton>
       </Box>
     </Box>
   );

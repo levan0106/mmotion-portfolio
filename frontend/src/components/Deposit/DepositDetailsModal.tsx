@@ -4,8 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Typography,
   Box,
   Grid,
   Chip,
@@ -17,6 +15,8 @@ import {
   Paper,
   LinearProgress,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common';
 import {
   Close as CloseIcon,
   AccountBalance as BankIcon,
@@ -130,12 +130,12 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
               <BankIcon sx={{ fontSize: 28 }} />
             </Avatar>
             <Box>
-              <Typography variant="h5" component="div" fontWeight="bold">
+              <ResponsiveTypography variant="h5" component="div" fontWeight="bold">
                 Chi tiết tiền gửi
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="body2" sx={{ opacity: 0.9 }}>
                 {deposit.bankName || 'N/A'} - {deposit.accountNumber || 'N/A'}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           </Box>
           <IconButton 
@@ -204,18 +204,18 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                   </Stack>
                 </Grid>
                 <Grid item xs={12} md={8}>
-                  <Typography variant="h6" gutterBottom>
+                  <ResponsiveTypography variant="h6" gutterBottom>
                     {deposit.termDescription || 'N/A'}
-                  </Typography>
+                  </ResponsiveTypography>
                   {deposit.status === 'ACTIVE' && deposit.daysUntilMaturity !== undefined && (
                     <Box sx={{ mt: 1 }}>
                       <Box display="flex" justifyContent="space-between" mb={1}>
-                        <Typography variant="body2" color="text.secondary">
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           Tiến độ đến hạn
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           {Math.max(0, 100 - (deposit.daysUntilMaturity / 365) * 100).toFixed(1)}%
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                       <LinearProgress 
                         variant="determinate" 
@@ -236,60 +236,60 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                 <CardContent sx={{ p: 2 }}>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
                     <MoneyIcon color="primary" />
-                    <Typography variant="h6" color="primary" fontWeight="bold">
+                    <ResponsiveTypography variant="h6" color="primary" fontWeight="bold">
                       Thông tin tài chính
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Stack spacing={2}>
                     <Paper sx={{ p: 1.5, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      <ResponsiveTypography variant="body2" sx={{ opacity: 0.9 }}>
                         Số tiền gốc
-                      </Typography>
-                      <Typography variant="h4" fontWeight="bold">
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="h4" fontWeight="bold">
                         {formatCurrency(deposit.principal || 0)}
-                      </Typography>
+                      </ResponsiveTypography>
                     </Paper>
 
                     <Box display="flex" gap={1.5}>
                       <Paper sx={{ p: 1.5, flex: 1, textAlign: 'center' }}>
                         <TrendingUpIcon color="success" sx={{ fontSize: 28, mb: 0.5 }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           Lãi suất
-                        </Typography>
-                        <Typography variant="h5" color="success.main" fontWeight="bold">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="h5" color="success.main" fontWeight="bold">
                           {deposit.interestRate ? `${deposit.interestRate}%/năm` : 'N/A'}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Paper>
                       <Paper sx={{ p: 1.5, flex: 1, textAlign: 'center' }}>
                         <MoneyIcon color="info" sx={{ fontSize: 28, mb: 0.5 }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           Lãi tích lũy
-                        </Typography>
-                        <Typography variant="h5" color="info.main" fontWeight="bold">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="h5" color="info.main" fontWeight="bold">
                           {formatCurrency(deposit.accruedInterest || 0)}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Paper>
                     </Box>
 
                     <Box display="flex" gap={1.5}>
                       <Paper sx={{ p: 1.5, flex: 1, background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', color: 'white' }}>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        <ResponsiveTypography variant="body2" sx={{ opacity: 0.9 }}>
                           Tổng giá trị
-                        </Typography>
-                        <Typography variant="h4" fontWeight="bold">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="h4" fontWeight="bold">
                           {formatCurrency(deposit.totalValue || 0)}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Paper>
 
                       {deposit.actualInterest && (
                         <Paper sx={{ p: 1.5, flex: 1, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          <ResponsiveTypography variant="body2" sx={{ opacity: 0.9 }}>
                             Lãi thực tế (đã tất toán)
-                          </Typography>
-                          <Typography variant="h4" fontWeight="bold">
+                          </ResponsiveTypography>
+                          <ResponsiveTypography variant="h4" fontWeight="bold">
                             {formatCurrency(deposit.actualInterest)}
-                          </Typography>
+                          </ResponsiveTypography>
                         </Paper>
                       )}
                     </Box>
@@ -304,9 +304,9 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                 <CardContent sx={{ p: 2 }}>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
                     <CalendarIcon color="primary" />
-                    <Typography variant="h6" color="primary" fontWeight="bold">
+                    <ResponsiveTypography variant="h6" color="primary" fontWeight="bold">
                       Thông tin thời gian
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                   
                   <Stack spacing={1.5}>
@@ -315,12 +315,12 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                         <CalendarIcon />
                       </Avatar>
                       <Box>
-                        <Typography variant="body2" color="text.secondary">
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           Ngày bắt đầu
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="body1" fontWeight="medium">
                           {formatDate(deposit.startDate, 'short')}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Box>
 
@@ -329,12 +329,12 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                         <CheckCircleIcon />
                       </Avatar>
                       <Box>
-                        <Typography variant="body2" color="text.secondary">
+                        <ResponsiveTypography variant="body2" color="text.secondary">
                           Ngày kết thúc
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="body1" fontWeight="medium">
                           {formatDate(deposit.endDate, 'short')}
-                        </Typography>
+                        </ResponsiveTypography>
                       </Box>
                     </Box>
 
@@ -344,12 +344,12 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                           <CheckCircleIcon />
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" color="text.secondary">
+                          <ResponsiveTypography variant="body2" color="text.secondary">
                             Ngày tất toán
-                          </Typography>
-                          <Typography variant="body1" fontWeight="medium">
+                          </ResponsiveTypography>
+                          <ResponsiveTypography variant="body1" fontWeight="medium">
                             {formatDate(deposit.settledAt, 'short')}
-                          </Typography>
+                          </ResponsiveTypography>
                         </Box>
                       </Box>
                     )}
@@ -365,21 +365,21 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
                   <CardContent sx={{ p: 2 }}>
                     <Box display="flex" alignItems="center" gap={1} mb={2}>
                       <NotesIcon color="primary" />
-                      <Typography variant="h6" color="primary" fontWeight="bold">
+                      <ResponsiveTypography variant="h6" color="primary" fontWeight="bold">
                         Thông tin bổ sung
-                      </Typography>
+                      </ResponsiveTypography>
                     </Box>
                     
                     <Grid container spacing={2}>
                       {deposit.notes && (
                         <Grid item xs={12}>
                           <Paper sx={{ p: 1.5, bgcolor: 'grey.50' }}>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <ResponsiveTypography variant="body2" color="text.secondary" gutterBottom>
                               Ghi chú
-                            </Typography>
-                            <Typography variant="body1" fontWeight="medium">
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="body1" fontWeight="medium">
                               {deposit.notes}
-                            </Typography>
+                            </ResponsiveTypography>
                           </Paper>
                         </Grid>
                       )}
@@ -393,7 +393,7 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 2, bgcolor: 'grey.50', gap: 1 }}>
-        <Button 
+        <ResponsiveButton 
           onClick={onClose} 
           variant="outlined" 
           size="large"
@@ -405,15 +405,17 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
           }}
         >
           Đóng
-        </Button>
+        </ResponsiveButton>
         
         {deposit.canBeEdited && onEdit && (
-          <Button 
+          <ResponsiveButton 
             onClick={() => onEdit(deposit)} 
             variant="contained" 
             color="primary"
             size="large"
-            startIcon={<EditIcon />}
+            icon={<EditIcon />}
+          mobileText="Edit"
+          desktopText="Edit Deposit"
             sx={{ 
               minWidth: 140,
               borderRadius: 2,
@@ -422,11 +424,11 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
             }}
           >
             Chỉnh sửa
-          </Button>
+          </ResponsiveButton>
         )}
         
         {deposit.canBeSettled && onSettle && (
-          <Button 
+          <ResponsiveButton 
             onClick={() => onSettle(deposit)} 
             variant="contained" 
             color="success"
@@ -440,7 +442,7 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
             }}
           >
             Tất toán
-          </Button>
+          </ResponsiveButton>
         )}
       </DialogActions>
     </Dialog>

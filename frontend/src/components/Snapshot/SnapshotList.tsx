@@ -12,7 +12,6 @@ import {
   TableRow,
   TablePagination,
   Typography,
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -35,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useSnapshots } from '../../hooks/useSnapshots';
 import { SnapshotResponse, SnapshotQueryParams, SnapshotGranularity } from '../../types/snapshot.types';
+import { ResponsiveButton } from '../Common';
 
 interface SnapshotListProps {
   portfolioId?: string;
@@ -140,9 +140,9 @@ export const SnapshotList: React.FC<SnapshotListProps> = ({
         <Alert 
           severity="error" 
           action={
-            <Button color="inherit" size="small" onClick={clearError}>
+            <ResponsiveButton color="inherit" size="small" icon={<DeleteIcon />} mobileText="Dismiss" desktopText="Dismiss" onClick={clearError}>
               Dismiss
-            </Button>
+            </ResponsiveButton>
           }
         >
           Error: {error}

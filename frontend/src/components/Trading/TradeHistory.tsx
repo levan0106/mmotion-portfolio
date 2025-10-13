@@ -24,8 +24,8 @@ import {
   Menu,
   ListItemIcon,
   ListItemText,
-  Button,
 } from '@mui/material';
+import { ResponsiveButton } from '../Common';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
@@ -222,22 +222,26 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
             Trade History
           </Typography>
           <Box display="flex" gap={2}>
-            <Button
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<FilterIcon />}
+              icon={<FilterIcon />}
               onClick={() => {
                 // Toggle filter visibility
               }}
+              mobileText="Filters"
+              desktopText="Filters"
             >
               Filters
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="outlined"
-              startIcon={<DownloadIcon />}
+              icon={<DownloadIcon />}
               onClick={onExport}
+              mobileText="Export"
+              desktopText="Export"
             >
               Export
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
 
