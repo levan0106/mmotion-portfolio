@@ -13,7 +13,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -32,6 +31,7 @@ import { TradeAnalysisContainer } from '../components/Trading/TradeAnalysis';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { CreateTradeDto, TradeFormData } from '../types';
 import { formatCurrency } from '../utils/format';
+import { ResponsiveButton } from '../components/Common';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -167,10 +167,13 @@ const Trading: React.FC = () => {
               Manage your trades, analyze performance, and track positions
             </Typography>
           </Box>
-          <Button
+          <ResponsiveButton
             variant="outlined"
+            icon={<ArrowBackIcon />}
             startIcon={<ArrowBackIcon />}
             onClick={handleBackToPortfolio}
+            mobileText="Back"
+            desktopText="Back to Portfolio"
             sx={{
               borderRadius: 2,
               textTransform: 'none',
@@ -179,7 +182,7 @@ const Trading: React.FC = () => {
             }}
           >
             Back to Portfolio
-          </Button>
+          </ResponsiveButton>
         </Box>
       </Box>
 

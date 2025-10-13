@@ -25,6 +25,8 @@ import {
   CircularProgress,
   FormControlLabel,
   Checkbox,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { Portfolio } from '../../types';
 import { formatCurrency } from '../../utils/format';
@@ -46,6 +48,8 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   onDelete,
   onPortfolioCopied,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -147,7 +151,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               )}
               <h2 className="portfolio-card__title">{portfolio.name}</h2>
             </div>
-            <div className="portfolio-card__type-badge">
+            <div className="portfolio-card__type-badge" style={{ display: isMobile ? 'none' : 'block' }}>
               {isFund ? 'Fund' : 'Individual'}
             </div>
           </div>
@@ -220,7 +224,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             onClick={handleEdit}
           >
             <Edit />
-            Edit
+            {!isMobile && 'Edit'}
           </button>
         )}
         <button
@@ -232,7 +236,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
           type="button"
         >
           <ContentCopy />
-          Copy
+          {!isMobile && 'Copy'}
         </button>
         {onDelete && (
           <button
@@ -244,7 +248,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             type="button"
           >
             <DeleteIcon />
-            Delete
+            {!isMobile && 'Delete'}
           </button>
         )}
       </div>

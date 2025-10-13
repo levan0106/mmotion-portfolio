@@ -11,7 +11,6 @@ import {
   CardContent,
   CircularProgress,
   Alert,
-  Button,
   Chip,
   LinearProgress,
   alpha,
@@ -41,6 +40,7 @@ import { useAccount } from '../contexts/AccountContext';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import PortfolioCard from '../components/Portfolio/PortfolioCard';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { ResponsiveButton } from '../components/Common';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -199,17 +199,23 @@ const Dashboard: React.FC = () => {
               </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
+              <ResponsiveButton
                 variant="outlined"
+                icon={<Refresh />}
                 startIcon={<Refresh />}
+                mobileText="Refresh"
+                desktopText="Refresh Data"
                 sx={{ borderRadius: 2 }}
               >
                 Refresh Data
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
+                icon={<AddIcon />}
                 startIcon={<AddIcon />}
                 onClick={handleCreatePortfolio}
+                mobileText="New"
+                desktopText="New Portfolio"
                 sx={{ 
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -219,7 +225,7 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 New Portfolio
-              </Button>
+              </ResponsiveButton>
             </Box>
           </Box>
           
@@ -476,11 +482,14 @@ const Dashboard: React.FC = () => {
                 Manage and monitor your investment portfolios
               </ResponsiveTypography>
             </Box>
-            <Button
+            <ResponsiveButton
               variant="contained"
+              icon={<AddIcon />}
               startIcon={<AddIcon />}
               onClick={handleCreatePortfolio}
               size="large"
+              mobileText="Create"
+              desktopText="Create New Portfolio"
               sx={{ 
                 borderRadius: 2,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -490,7 +499,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               Create New Portfolio
-            </Button>
+            </ResponsiveButton>
           </Box>
           
           {portfolios.length === 0 ? (
@@ -516,11 +525,14 @@ const Dashboard: React.FC = () => {
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
                 Start your investment journey by creating your first portfolio to track and manage your assets
               </ResponsiveTypography>
-              <Button
+              <ResponsiveButton
                 variant="contained"
+                icon={<AddIcon />}
                 startIcon={<AddIcon />}
                 onClick={handleCreatePortfolio}
                 size="large"
+                mobileText="Create"
+                desktopText="Create Your First Portfolio"
                 sx={{ 
                   borderRadius: 2,
                   px: 4,
@@ -532,7 +544,7 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 Create Your First Portfolio
-              </Button>
+              </ResponsiveButton>
             </Card>
           ) : (
             <Grid container spacing={3}>

@@ -48,6 +48,7 @@ import {
 } from '@mui/icons-material';
 import { FIFOTooltip } from '../Common';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveButton } from '../Common';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types';
 import { useTrades, useDeleteTrade, useTradeDetails, useUpdateTrade } from '../../hooks/useTrading';
@@ -760,32 +761,41 @@ export const TradeList: React.FC<TradeListProps> = ({
             )}
           </Box>
           <Box display="flex" gap={2}>
-            <Button
+            <ResponsiveButton
               variant={groupByDate ? 'contained' : 'outlined'}
+              icon={<CalendarIcon />}
               startIcon={<CalendarIcon />}
               onClick={() => setGroupByDate(!groupByDate)}
+              mobileText="Group"
+              desktopText="Group by Date"
               sx={{ textTransform: 'none' }}
             >
               Group by Date
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="outlined"
+              icon={<FilterIcon />}
               startIcon={<FilterIcon />}
               onClick={() => {
                 // Toggle filter visibility
               }}
+              mobileText="Filter"
+              desktopText="Filters"
               sx={{ textTransform: 'none' }}
             >
               Filters
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="contained"
+              icon={<AddIcon />}
               startIcon={<AddIcon />}
               onClick={onCreate}
+              mobileText="New"
+              desktopText="New Trade"
               sx={{ textTransform: 'none' }}
             >
               New Trade
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
         

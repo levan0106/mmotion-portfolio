@@ -49,6 +49,7 @@ import { Asset, AssetFilters as AssetFiltersType } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
 import { getAssetTypeColor } from '../config/chartColors';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { ResponsiveButton } from '../components/Common';
 
 // Memoized table row component for better performance
 const AssetTableRow = memo(({ 
@@ -689,18 +690,16 @@ const Assets: React.FC = () => {
               >
                 Filters {showFilters && '(Active)'}
               </Button>
-              <Button
+              <ResponsiveButton
                 variant="outlined"
+                icon={<Refresh />}
                 startIcon={<Refresh />}
                 onClick={handleRefresh}
-                sx={{ 
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
+                mobileText="Refresh"
+                desktopText="Refresh Data"
               >
-                Refresh
-              </Button>
+                Refresh Data
+              </ResponsiveButton>
               <Tooltip title="Chọn nhiều assets từ danh sách mẫu - Nhanh và dễ dàng">
                 <Button
                   variant="outlined"
@@ -716,18 +715,16 @@ const Assets: React.FC = () => {
                 </Button>
               </Tooltip>
               <Tooltip title="Tạo asset mới với thông tin chi tiết">
-                <Button
+                <ResponsiveButton
                   variant="contained"
+                  icon={<Add />}
                   startIcon={<Add />}
                   onClick={handleCreateAsset}
-                  sx={{ 
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 500
-                  }}
+                  mobileText="Add"
+                  desktopText="Add Asset"
                 >
                   Add Asset
-                </Button>
+                </ResponsiveButton>
               </Tooltip>
 
               {/* User Guide Component */}

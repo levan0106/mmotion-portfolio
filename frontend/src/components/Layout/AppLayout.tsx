@@ -169,23 +169,32 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [drawerCollapsed, setDrawerCollapsed] = useState(false);
+  const [drawerCollapsed, setDrawerCollapsed] = useState(isTablet);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
   const { hasAnyPermission, hasAnyRole } = usePermissions();
 
   // Auto-collapse on smaller screens
   React.useEffect(() => {
-    if (isTablet) {
+    if (isMobile) {
+      setDrawerCollapsed(false); // Always expanded on mobile
+      setMobileOpen(false); // Close mobile drawer when screen becomes mobile
+    } else if (isTablet) {
       setDrawerCollapsed(true);
+    } else {
+      // On desktop, allow user to control collapse state
+      // Don't force collapse on desktop
     }
-  }, [isTablet]);
+  }, [isMobile, isTablet]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const handleDrawerCollapse = () => {
-    setDrawerCollapsed(!drawerCollapsed);
+    // Don't allow collapse toggle on mobile - always keep expanded
+    if (!isMobile) {
+      setDrawerCollapsed(!drawerCollapsed);
+    }
   };
 
   const handleNavigation = (path: string) => {
@@ -195,12 +204,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     }
   };
 
+  // Force expanded state on mobile
+  const isDrawerCollapsed = isMobile ? false : drawerCollapsed;
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Professional Header */}
       <Box
         sx={{
-          p: drawerCollapsed ? 1.5 : 3,
+          p: isDrawerCollapsed ? 1.5 : 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           color: 'white',
           position: 'relative',
@@ -217,20 +229,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: drawerCollapsed ? 1 : 2, position: 'relative', zIndex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: isDrawerCollapsed ? 1 : 2, position: 'relative', zIndex: 1 }}>
           <Avatar
             sx={{
               bgcolor: 'rgba(255,255,255,0.15)',
-              mr: drawerCollapsed ? 0 : 2,
-              width: drawerCollapsed ? 32 : 48,
-              height: drawerCollapsed ? 32 : 48,
+              mr: isDrawerCollapsed ? 0 : 2,
+              width: isDrawerCollapsed ? 32 : 48,
+              height: isDrawerCollapsed ? 32 : 48,
               border: '1px solid rgba(255,255,255,0.15)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}
           >
-            <PortfolioIcon sx={{ fontSize: drawerCollapsed ? 20 : 28 }} />
+            <PortfolioIcon sx={{ fontSize: isDrawerCollapsed ? 20 : 28 }} />
           </Avatar>
-          {!drawerCollapsed && (
+          {!isDrawerCollapsed && (
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
@@ -288,7 +300,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Box>
         
         {/* System Status Indicator */}
-        {!drawerCollapsed && (
+        {!isDrawerCollapsed && (
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -346,7 +358,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             .map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
               <Tooltip 
-                title={drawerCollapsed ? item.text : ''} 
+                title={isDrawerCollapsed ? item.text : ''} 
                 placement="right"
                 arrow
               >
@@ -357,10 +369,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       borderRadius: 1.5,
                       mx: 0.25,
                       py: 0.75,
-                      px: drawerCollapsed ? 0.5 : 1,
+                      px: isDrawerCollapsed ? 0.5 : 1,
                       transition: 'all 0.2s ease-in-out',
                       position: 'relative',
-                      justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                      justifyContent: isDrawerCollapsed ? 'center' : 'flex-start',
                       '&.Mui-selected': {
                         bgcolor: alpha(theme.palette.primary.main, 0.12),
                         '&:hover': {
@@ -388,7 +400,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       },
                       '&:hover': {
                         bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        transform: drawerCollapsed ? 'scale(1.05)' : 'translateX(4px)',
+                        transform: isDrawerCollapsed ? 'scale(1.05)' : 'translateX(4px)',
                         '& .MuiListItemIcon-root': {
                           transform: 'scale(1.05)',
                         },
@@ -396,12 +408,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     }}
                   >
                     <ListItemIcon sx={{ 
-                      minWidth: drawerCollapsed ? 32 : 44,
+                      minWidth: isDrawerCollapsed ? 32 : 44,
                       transition: 'all 0.2s ease-in-out',
                     }}>
                       {item.icon}
                     </ListItemIcon>
-                    {!drawerCollapsed && (
+                    {!isDrawerCollapsed && (
                       <>
                         <ListItemText 
                           primary={item.text}
@@ -438,31 +450,33 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </List>
       </Box>
 
-      {/* Collapse Toggle Button */}
-      <Box sx={{ 
-        p: 1, 
-        display: 'flex', 
-        justifyContent: 'center',
-        borderTop: 1,
-        borderColor: 'divider',
-        background: alpha(theme.palette.background.paper, 0.5),
-      }}>
-        <Tooltip title={drawerCollapsed ? 'Expand menu' : 'Collapse menu'} placement="right">
-          <IconButton
-            onClick={handleDrawerCollapse}
-            sx={{
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'primary.main',
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              },
-              transition: 'all 0.2s ease-in-out',
-            }}
-          >
-            {drawerCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        </Tooltip>
-      </Box>
+      {/* Collapse Toggle Button - Only show on desktop */}
+      {!isMobile && (
+        <Box sx={{ 
+          p: 1, 
+          display: 'flex', 
+          justifyContent: 'center',
+          borderTop: 1,
+          borderColor: 'divider',
+          background: alpha(theme.palette.background.paper, 0.5),
+        }}>
+          <Tooltip title={isDrawerCollapsed ? 'Expand menu' : 'Collapse menu'} placement="right">
+            <IconButton
+              onClick={handleDrawerCollapse}
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'primary.main',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              {isDrawerCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
 
       {/* User Info - Bottom Left */}
       <Box sx={{ 
@@ -474,7 +488,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       }}>
         {/* User Profile Section */}
         <Tooltip 
-          title={drawerCollapsed ? (currentUser?.fullName || currentUser?.username || 'User') : ''} 
+          title={isDrawerCollapsed ? (currentUser?.fullName || currentUser?.username || 'User') : ''} 
           placement="right"
           arrow
         >
@@ -488,13 +502,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               display: 'flex', 
               alignItems: 'center', 
               mb: 0.5,
-              p: drawerCollapsed ? 0.5 : 1,
+              p: isDrawerCollapsed ? 0.5 : 1,
               borderRadius: 2,
               background: alpha(theme.palette.background.paper, 0.3),
               transition: 'all 0.2s ease-in-out',
               position: 'relative',
               cursor: currentUser ? 'pointer' : 'default',
-              justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+              justifyContent: isDrawerCollapsed ? 'center' : 'flex-start',
               '&:hover': {
                 background: alpha(theme.palette.background.paper, 0.5),
                 transform: 'translateY(-1px)',
@@ -537,9 +551,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
 
           <Avatar sx={{ 
-            width: drawerCollapsed ? 32 : 40, 
-            height: drawerCollapsed ? 32 : 40, 
-            mr: drawerCollapsed ? 0 : 2,
+            width: isDrawerCollapsed ? 32 : 40, 
+            height: isDrawerCollapsed ? 32 : 40, 
+            mr: isDrawerCollapsed ? 0 : 2,
             border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
             boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -552,7 +566,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <AccountIcon sx={{ color: 'primary.main' }} />
             )}
           </Avatar>
-          {!drawerCollapsed && (
+          {!isDrawerCollapsed && (
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography 
@@ -632,7 +646,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Tooltip>
 
         {/* Action Buttons */}
-        {!drawerCollapsed && (
+        {!isDrawerCollapsed && (
           <Box sx={{ 
             display: 'flex', 
             gap: 1.5,
@@ -696,17 +710,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         sx={{
           width: { 
             xs: '100%',
-            sm: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
-            md: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
-            lg: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
-            xl: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
+            sm: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            md: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
+            lg: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
+            xl: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
           },
           ml: { 
             xs: 0,
-            sm: `${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px`,
-            md: `${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px`,
-            lg: `${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px`,
-            xl: `${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px`,
+            sm: `${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px`,
+            md: `${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px`,
+            lg: `${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px`,
+            xl: `${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px`,
           },
           bgcolor: 'white',
           color: 'text.primary',
@@ -837,10 +851,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         sx={{ 
           width: { 
             xs: 0,
-            sm: drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
-            md: drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
-            lg: drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
-            xl: drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
+            sm: isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
+            md: isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
+            lg: isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
+            xl: isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
           }, 
           flexShrink: { sm: 0 } 
         }}
@@ -855,10 +869,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: getDrawerWidth(theme, false).xs,
-            },
+             '& .MuiDrawer-paper': { 
+               boxSizing: 'border-box', 
+               width: getDrawerWidth(theme, false).xs, // Always expanded on mobile
+             },
           }}
         >
           {drawer}
@@ -870,10 +884,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             '& .MuiDrawer-paper': { 
               boxSizing: 'border-box', 
               width: {
-                sm: drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
-                md: drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
-                lg: drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
-                xl: drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
+                sm: isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
+                md: isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
+                lg: isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
+                xl: isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
               },
               transition: 'width 0.3s ease-in-out',
             },
@@ -889,10 +903,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           flexGrow: 1,
           width: { 
             xs: '100%',
-            sm: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
-            md: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
-            lg: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
-            xl: `calc(100% - ${drawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
+            sm: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            md: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
+            lg: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
+            xl: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
           },
           background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
           minHeight: '100vh',

@@ -12,7 +12,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
   Tooltip,
   IconButton,
 } from '@mui/material';
@@ -52,6 +51,7 @@ import {
 import { CreateTradeDto } from '../types';
 import { useTypography } from '../theme/useTypography';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { ResponsiveButton } from '../components/Common';
 import './PortfolioDetail.styles.css';
 
 interface TabPanelProps {
@@ -241,10 +241,13 @@ const PortfolioDetail: React.FC = () => {
               flexShrink: 0,
             }}
           >
-            <Button
+            <ResponsiveButton
               variant="outlined"
+              icon={<ArrowBackIcon />}
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
+              mobileText="Back"
+              desktopText="Back to Portfolios"
               sx={{ 
                 display: { xs: 'none', sm: 'flex' },
                 borderRadius: 2, 
@@ -262,13 +265,16 @@ const PortfolioDetail: React.FC = () => {
               <ResponsiveTypography variant="buttonText">
                 Back to Portfolios
               </ResponsiveTypography>
-            </Button>
+            </ResponsiveButton>
             <Tooltip title="Refresh all portfolio data">
-              <Button
+              <ResponsiveButton
                 variant="outlined"
+                icon={<RefreshIcon />}
                 startIcon={<RefreshIcon />}
                 onClick={handleRefreshAll}
                 disabled={isRefreshingAll}
+                mobileText="Refresh"
+                desktopText="Refresh All"
                 sx={{ 
                   display: { xs: 'none', sm: 'flex' },
                   borderRadius: 2, 
@@ -286,12 +292,15 @@ const PortfolioDetail: React.FC = () => {
                 <ResponsiveTypography variant="buttonText">
                   {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
                 </ResponsiveTypography>
-              </Button>
+              </ResponsiveButton>
             </Tooltip>
-            <Button
+            <ResponsiveButton
               variant="contained"
+              icon={<AddIcon />}
               startIcon={<AddIcon />}
               onClick={() => setShowCreateForm(true)}
+              mobileText="New"
+              desktopText="New Trade"
               sx={{ 
                 borderRadius: 2, 
                 px: { xs: 2, sm: 3 },
@@ -308,7 +317,7 @@ const PortfolioDetail: React.FC = () => {
               <ResponsiveTypography variant="buttonText">
                 New Trade
               </ResponsiveTypography>
-            </Button>
+            </ResponsiveButton>
           </Box>
         </Box>
       </Box>
@@ -356,10 +365,10 @@ const PortfolioDetail: React.FC = () => {
                display: 'flex', 
                flexDirection: 'column', 
                justifyContent: 'space-between', 
-               p: { xs: 2, sm: 2.5, md: 3 } 
+               p: { xs: 1.5, sm: 2.5, md: 3 } 
              }}>
                <Box>
-                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
                    Portfolio Value
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
@@ -368,12 +377,12 @@ const PortfolioDetail: React.FC = () => {
                </Box>
                <Box sx={{ 
                  display: 'flex', 
-                 flexDirection: { xs: 'column', sm: 'row' },
-                 gap: { xs: 1.5, sm: 2 }, 
+                 flexDirection: { xs: 'row', sm: 'row' },
+                 gap: { xs: 1, sm: 2 }, 
                  mt: 2 
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }} ellipsis>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }} ellipsis>
                      Investment Value
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue" ellipsis>
@@ -381,7 +390,7 @@ const PortfolioDetail: React.FC = () => {
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }} ellipsis>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }} ellipsis>
                      Current NAV (+cash)
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue" ellipsis>
@@ -437,10 +446,10 @@ const PortfolioDetail: React.FC = () => {
                display: 'flex', 
                flexDirection: 'column', 
                justifyContent: 'space-between', 
-               p: { xs: 2, sm: 2.5, md: 3 } 
+               p: { xs: 1.5, sm: 2.5, md: 3 } 
              }}>
                <Box>
-                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
                    Performance
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
@@ -449,12 +458,12 @@ const PortfolioDetail: React.FC = () => {
                </Box>
                <Box sx={{ 
                  display: 'flex', 
-                 flexDirection: { xs: 'column', sm: 'row' },
-                 gap: { xs: 1.5, sm: 2 }, 
+                 flexDirection: { xs: 'row', sm: 'row' },
+                 gap: { xs: 1, sm: 2 }, 
                  mt: 2 
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Total Return
                    </ResponsiveTypography>
                    <ResponsiveTypography 
@@ -467,7 +476,7 @@ const PortfolioDetail: React.FC = () => {
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Annualized
                    </ResponsiveTypography>
                    <ResponsiveTypography 
@@ -517,10 +526,10 @@ const PortfolioDetail: React.FC = () => {
                display: 'flex', 
                flexDirection: 'column', 
                justifyContent: 'space-between', 
-               p: { xs: 2, sm: 2.5, md: 3 } 
+               p: { xs: 1.5, sm: 2.5, md: 3 } 
              }}>
                <Box>
-                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
                    Trading Activity
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
@@ -529,12 +538,12 @@ const PortfolioDetail: React.FC = () => {
                </Box>
                <Box sx={{ 
                  display: 'flex', 
-                 flexDirection: { xs: 'column', sm: 'row' },
-                 gap: { xs: 1.5, sm: 2 }, 
+                 flexDirection: { xs: 'row', sm: 'row' },
+                 gap: { xs: 1, sm: 2 }, 
                  mt: 2 
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Total Trades
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue">
@@ -542,7 +551,7 @@ const PortfolioDetail: React.FC = () => {
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Total Volume
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue">
@@ -598,10 +607,10 @@ const PortfolioDetail: React.FC = () => {
                display: 'flex', 
                flexDirection: 'column', 
                justifyContent: 'space-between', 
-               p: { xs: 2, sm: 2.5, md: 3 } 
+               p: { xs: 1.5, sm: 2.5, md: 3 } 
              }}>
                <Box>
-                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
+                 <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
                    P&L & Costs
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
@@ -610,12 +619,12 @@ const PortfolioDetail: React.FC = () => {
                </Box>
                <Box sx={{ 
                  display: 'flex', 
-                 flexDirection: { xs: 'column', sm: 'row' },
-                 gap: { xs: 1.5, sm: 2 }, 
+                 flexDirection: { xs: 'row', sm: 'row' },
+                 gap: { xs: 1, sm: 2 }, 
                  mt: 2 
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Realized P&L
                    </ResponsiveTypography>
                    <ResponsiveTypography 
@@ -628,7 +637,7 @@ const PortfolioDetail: React.FC = () => {
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: 0.8 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      Fees & Taxes
                    </ResponsiveTypography>
                    <ResponsiveTypography 

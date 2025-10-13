@@ -38,6 +38,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveButton } from '../Common';
 import {
   AccountBalance as DepositIcon,
   AccountBalanceWallet as WithdrawIcon,
@@ -641,12 +642,15 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
-            <Button
+            <ResponsiveButton
               variant="contained"
               color="success"
+              icon={<DepositIcon />}
               startIcon={<DepositIcon />}
               onClick={() => handleCreateCashFlow('deposit')}
               size={compact ? "small" : "medium"}
+              mobileText="Deposit"
+              desktopText="Create Deposit"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -664,13 +668,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               }}
             >
               {compact ? "Deposit" : "Create Deposit"}
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="contained"
               color="error"
+              icon={<WithdrawIcon />}
               startIcon={<WithdrawIcon />}
               onClick={() => handleCreateCashFlow('withdrawal')}
               size={compact ? "small" : "medium"}
+              mobileText="Withdraw"
+              desktopText="Create Withdrawal"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -688,13 +695,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               }}
             >
               {compact ? "Withdraw" : "Create Withdrawal"}
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="contained"
               color="info"
+              icon={<DividendIcon />}
               startIcon={<DividendIcon />}
               onClick={() => handleCreateCashFlow('dividend')}
               size={compact ? "small" : "medium"}
+              mobileText="Dividend"
+              desktopText="Create Dividend"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -713,7 +723,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               
             >
               {compact ? "Dividend" : "Create Dividend"}
-            </Button>
+            </ResponsiveButton>
             <Button
               variant="contained"
               color="secondary"
