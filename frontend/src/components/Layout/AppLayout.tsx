@@ -165,7 +165,7 @@ const menuItems = [
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -179,7 +179,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       setDrawerCollapsed(false); // Always expanded on mobile
       setMobileOpen(false); // Close mobile drawer when screen becomes mobile
     } else if (isTablet) {
-      setDrawerCollapsed(true);
+      setDrawerCollapsed(false); // Not used on tablet
+      setMobileOpen(false); // Close mobile drawer when screen becomes tablet
     } else {
       // On desktop, allow user to control collapse state
       // Don't force collapse on desktop
@@ -192,6 +193,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   const handleDrawerCollapse = () => {
     // Don't allow collapse toggle on mobile - always keep expanded
+    // Allow toggle on tablet and desktop
     if (!isMobile) {
       setDrawerCollapsed(!drawerCollapsed);
     }
@@ -199,12 +201,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    if (isMobile) {
+    if (isMobile || isTablet) {
       setMobileOpen(false);
     }
   };
 
-  // Force expanded state on mobile
+  // Force expanded state on mobile, allow toggle on tablet and desktop
   const isDrawerCollapsed = isMobile ? false : drawerCollapsed;
 
   const drawer = (
@@ -451,7 +453,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Collapse Toggle Button - Only show on desktop */}
-      {!isMobile && (
+      {!isMobile && !isTablet && (
         <Box sx={{ 
           p: 1, 
           display: 'flex', 
@@ -710,14 +712,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         sx={{
           width: { 
             xs: '100%',
-            sm: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            sm: '100%', // Tablet uses temporary drawer, so full width
             md: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
             lg: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
             xl: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
           },
           ml: { 
             xs: 0,
-            sm: `${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px`,
+            sm: 0, // Tablet uses temporary drawer, so no margin
             md: `${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px`,
             lg: `${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px`,
             xl: `${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px`,
@@ -851,7 +853,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         sx={{ 
           width: { 
             xs: 0,
-            sm: isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm,
+            sm: 0, // Tablet uses temporary drawer, so no width
             md: isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md,
             lg: isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg,
             xl: isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
@@ -868,7 +870,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { xs: 'block', md: 'none' },
              '& .MuiDrawer-paper': { 
                boxSizing: 'border-box', 
                width: getDrawerWidth(theme, false).xs, // Always expanded on mobile
@@ -880,7 +882,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': { 
               boxSizing: 'border-box', 
               width: {
@@ -903,7 +905,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           flexGrow: 1,
           width: { 
             xs: '100%',
-            sm: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).sm : getDrawerWidth(theme, false).sm}px)`,
+            sm: '100%', // Tablet uses temporary drawer, so full width
             md: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).md : getDrawerWidth(theme, false).md}px)`,
             lg: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).lg : getDrawerWidth(theme, false).lg}px)`,
             xl: `calc(100% - ${isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl}px)`,
