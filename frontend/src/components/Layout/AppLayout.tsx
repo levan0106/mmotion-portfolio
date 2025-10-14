@@ -19,7 +19,6 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
-  Badge,
   Chip,
   Tooltip,
   alpha,
@@ -34,7 +33,6 @@ import {
   Settings as SettingsIcon,
   Assessment as ReportsIcon,
   Assessment as AssessmentIcon,
-  Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   AccountBalanceWallet as DepositIcon,
@@ -52,6 +50,7 @@ import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import CurrencyToggle from '../Common/CurrencyToggle';
+import { NotificationBell, NotificationManager } from '../Notification';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -837,13 +836,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </Box>
             </Box>
 
-            <Tooltip title="Notifications">
-              <IconButton color="inherit">
-                <Badge badgeContent={3} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <NotificationBell />
 
             <AccountSwitcher />
           </Box>
@@ -934,6 +927,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           zIndex: 1,
         }}>
           {children}
+          {currentUser && <NotificationManager userId={currentUser.userId} />}
         </Box>
       </Box>
     </Box>

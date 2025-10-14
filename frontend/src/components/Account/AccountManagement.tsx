@@ -3,7 +3,6 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   List,
   ListItem,
   ListItemText,
@@ -15,6 +14,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
 import {
   Edit as EditIcon,
@@ -154,10 +154,7 @@ export const AccountManagement: React.FC = () => {
     <Box sx={{ p: 2 }}>
       <Card>
         <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h5" component="h1">
-              Account Management
-            </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
             <ResponsiveButton
               variant="contained"
               icon={<AddIcon />}
@@ -224,12 +221,12 @@ export const AccountManagement: React.FC = () => {
                     <ListItemText
                       primary={
                         <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.25 }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                          <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
                             {account.name}
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                          </ResponsiveTypography>
+                          <ResponsiveTypography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
                             {account.email}
-                          </Typography>
+                          </ResponsiveTypography>
                           {account.isMainAccount && (
                             <Chip
                               label="Main"
@@ -350,9 +347,9 @@ export const AccountManagement: React.FC = () => {
 
           {accounts.length === 0 && !loading && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="body1" color="text.secondary">
+              <ResponsiveTypography variant="body1" color="text.secondary">
                 No accounts found. Create your first account to get started.
-              </Typography>
+              </ResponsiveTypography>
             </Box>
           )}
         </CardContent>

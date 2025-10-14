@@ -13,6 +13,7 @@ import { SnapshotModule } from './modules/portfolio/snapshot.module';
 import { PortfolioSnapshotModule } from './modules/portfolio/portfolio-snapshot.module';
 import { DepositModule } from './modules/portfolio/deposit.module';
 import { ReportModule } from './modules/report/report.module';
+import { NotificationModule } from './notification/notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestLoggingController } from './test-logging.controller';
@@ -40,6 +41,7 @@ import { TestLoggingController } from './test-logging.controller';
       entities: [
         __dirname + '/modules/**/*.entity{.ts,.js}',
         __dirname + '/modules/shared/entities/*.entity{.ts,.js}',
+        __dirname + '/notification/*.entity{.ts,.js}',
       ],
       migrations: [__dirname + '/migrations/*{.ts,.js}'],
       synchronize: false, // Disable synchronize, use migrations only
@@ -66,6 +68,7 @@ import { TestLoggingController } from './test-logging.controller';
       PortfolioSnapshotModule,
       DepositModule,
       ReportModule,
+      NotificationModule,
   ],
   controllers: [AppController, TestLoggingController],
   providers: [AppService],

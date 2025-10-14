@@ -29,6 +29,7 @@ import { RoleManagement } from './pages/RoleManagement';
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
 import { ToastProvider } from './components/Common/ToastProvider';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -110,9 +111,11 @@ const App: React.FC = () => {
         <CssBaseline />
         <AccountProvider>
           <ToastProvider>
-            <Router>
-              <AppContent />
-            </Router>
+            <NotificationProvider>
+              <Router>
+                <AppContent />
+              </Router>
+            </NotificationProvider>
           </ToastProvider>
         </AccountProvider>
         <ReactQueryDevtools initialIsOpen={false} />

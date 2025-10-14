@@ -196,7 +196,16 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
     >
         <Box sx={{ pt: 2 }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2,
+                '& .MuiAlert-message': {
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                }
+              }}
+            >
               {error}
             </Alert>
           )}

@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { Account } from '../entities/account.entity';
 import { AutoRoleAssignmentService } from './auto-role-assignment.service';
+import { NotificationGateway } from '../../../notification/notification.gateway';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
@@ -31,6 +32,7 @@ export class AuthService {
     private readonly accountRepository: Repository<Account>,
     private readonly jwtService: JwtService,
     private readonly autoRoleAssignmentService: AutoRoleAssignmentService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   /**
@@ -108,6 +110,47 @@ export class AuthService {
     } catch (error) {
       this.logger.warn(`Failed to auto-assign default role to user ${username}: ${error.message}`);
       // Don't throw error - user creation should succeed even if role assignment fails
+    }
+
+    // Send welcome notification
+    try {
+      await this.notificationGateway.sendSystemNotification(
+        user.userId,
+        'Welcome to Portfolio Management System!',
+        `Hello ${username}! Welcome to our portfolio management platform. Your demo account is ready. Start by creating your first portfolio.`,
+        '/portfolios',
+        {
+          type: 'welcome',
+          userId: user.userId,
+          username: username,
+          isDemo: true,
+        }
+      );
+      this.logger.log(`Sent welcome notification to demo user: ${username}`);
+    } catch (error) {
+      this.logger.warn(`Failed to send welcome notification to demo user ${username}: ${error.message}`);
+      // Don't throw error - user creation should succeed even if notification fails
+    }
+
+    // Send public portfolios notification
+    try {
+      await this.notificationGateway.sendSystemNotification(
+        user.userId,
+        'Explore Public Portfolio Templates',
+        `Discover our collection of public portfolio templates! These templates are created by experienced users and can help you get started quickly. Browse templates, see their structure, and create your own portfolio based on successful strategies.`,
+        '/portfolios?tab=templates',
+        {
+          type: 'system',
+          userId: user.userId,
+          username: username,
+          isDemo: true,
+          action: 'explore_public_portfolios',
+        }
+      );
+      this.logger.log(`Sent public portfolios notification to demo user: ${username}`);
+    } catch (error) {
+      this.logger.warn(`Failed to send public portfolios notification to demo user ${username}: ${error.message}`);
+      // Don't throw error - user creation should succeed even if notification fails
     }
 
     // Generate JWT token

@@ -176,6 +176,41 @@ class ApiService {
     return response.data;
   }
 
+  // Admin notification methods
+  async broadcastNotification(data: {
+    title: string;
+    message: string;
+    type?: string;
+    actionUrl?: string;
+    priority?: string;
+    targetUsers?: string[];
+    targetRole?: string;
+    sendToAll?: boolean;
+  }): Promise<{ message: string; sentCount: number }> {
+    const response = await this.api.post('/api/v1/notifications/admin/broadcast', data);
+    return response.data;
+  }
+
+  async getUsers(): Promise<any[]> {
+    try {
+      const response = await this.api.get('/api/v1/users');
+      
+      // Handle different response formats
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data.users)) {
+        return response.data.users;
+      } else {
+        // Unexpected response format
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      // Return empty array on error
+      return [];
+    }
+  }
+
   // Portfolio analytics endpoints
   // async getPortfolioNav(portfolioId: string): Promise<{ navValue: number; totalValue: number }> {
   //   const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav`);

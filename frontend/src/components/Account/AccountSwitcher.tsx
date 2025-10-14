@@ -116,10 +116,7 @@ export const AccountSwitcher: React.FC = () => {
   const getCurrencySymbol = (currency: string) => {
     const symbols: Record<string, string> = {
       'VND': '₫',
-      'USD': '$',
-      'EUR': '€',
-      'GBP': '£',
-      'JPY': '¥',
+      'USD': '$'
     };
     return symbols[currency] || currency;
   };
@@ -136,25 +133,29 @@ export const AccountSwitcher: React.FC = () => {
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip title="Switch Account">
+        <Tooltip title={loading ? 'Switching...' : (currentAccount?.name || 'Switch Account')}>
           <span>
             <ResponsiveButton
               onClick={handleClick}
               variant="outlined"
               icon={<AccountIcon />}
-              mobileText="Account"
-              desktopText={loading ? 'Switching...' : (currentAccount?.name || 'Account')}
+              mobileText=""
+              desktopText=""
               disabled={loading}
+              forceIconOnly={true}
+              responsiveSizing={false}
               sx={{
-                height: 36,
-                justifyContent: 'space-between',
+                height: 35,
+                maxWidth: 35,
+                minWidth: 35,
+                justifyContent: 'center',
                 textTransform: 'none',
                 borderRadius: 1.5,
-                //px: 1.5,
-                //py: 0.5,
+                px: 0.5,
+                py: 0.5
               }}
             >
-              {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
+              {loading ? 'Switching...' : ''}
             </ResponsiveButton>
           </span>
         </Tooltip>

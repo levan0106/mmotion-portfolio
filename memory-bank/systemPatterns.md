@@ -28,6 +28,16 @@ flowchart LR
 - **Responsive Tab Navigation**: Scrollable tabs with mobile-optimized sizing and touch-friendly interactions
 - **Compact Mode Toggle Alignment**: Fixed positioning to stay on same row as tabs across all screen sizes
 - **Material-UI Component Migration**: Consistent use of Material-UI components for better mobile experience
+
+### ResponsiveButton Component Pattern - **IMPLEMENTED** ✅
+- **Default Behavior**: ResponsiveButton applies different minWidth based on screen size
+  - Mobile: `minWidth: shouldShowIconOnly ? 'auto' : '120px'` (line 89)
+  - Desktop: `minWidth: '120px'` (line 100) - always 120px on desktop
+- **Override Methods**: Use forceIconOnly and responsiveSizing props to bypass default behavior
+- **Style Override**: Apply sx prop with !important to force custom styles
+- **Icon-Only Implementation**: Use forceIconOnly={true} and responsiveSizing={false} for compact buttons
+- **Button Dimensions**: Fixed dimensions (35x35px) for proper icon proportion
+- **Tooltip Enhancement**: Display text in tooltip instead of button content
 - **Portfolio Card Optimization**: Material-UI IconButton components with tooltips and hover effects
 - **Left Alignment Standard**: Portfolio names and titles aligned to left for better readability
 - **Mobile-First CSS**: Breakpoint-based styling with mobile-first approach

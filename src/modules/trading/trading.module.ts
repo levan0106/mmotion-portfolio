@@ -31,6 +31,7 @@ import { AssetValueCalculatorService } from '../asset/services/asset-value-calcu
 import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 import { SharedModule } from '../shared/shared.module';
+import { NotificationModule } from '../../notification/notification.module';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -53,6 +54,7 @@ import { SharedModule } from '../shared/shared.module';
     MarketDataModule,
     forwardRef(() => AssetModule),
     SharedModule,
+    NotificationModule,
     // Import CacheModule conditionally
     ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
       ttl: parseInt(process.env.CACHE_TTL) || 300000,

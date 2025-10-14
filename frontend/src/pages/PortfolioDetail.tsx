@@ -190,13 +190,15 @@ const PortfolioDetail: React.FC = () => {
   return (
     <Box sx={{ 
       scrollBehavior: 'smooth',
+      position: 'relative', // Ensure proper positioning context
+      minHeight: '100vh', // Ensure full height
     }}>
 
       {/* Sticky Header */}
       <Box
         sx={{
-          position: 'sticky',
-          top: { xs: 10, sm: 45, md: 45 }, // Responsive top position
+          //position: 'sticky',
+          //top: { xs: 10, sm: 45, md: 45 }, // Responsive top position
           zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -638,7 +640,7 @@ const PortfolioDetail: React.FC = () => {
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: 40, sm: 110, md: 120 }, // Fixed position for sticky to work
+          top: { xs: 40, sm: 60, md: 60 }, // Fixed position for sticky to work
           zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
@@ -837,22 +839,32 @@ const PortfolioDetail: React.FC = () => {
       </ModalWrapper>
 
       {/* Floating Action Button for Quick Create Trade */}
-      <Tooltip title="Create New Trade" placement="left" arrow>
+      <Tooltip 
+        title="Create New Trade" 
+        placement="left" 
+        arrow
+        sx={{ zIndex: 1301 }}
+      >
         <Fab
           color="primary"
           aria-label="add trade"
           onClick={() => setShowCreateForm(true)}
           sx={{
             position: 'fixed',
-            bottom: 24,
-            right: 24,
+            bottom: { xs: 16, sm: 24 },
+            right: { xs: 16, sm: 24 },
             boxShadow: 3,
             '&:hover': {
               boxShadow: 6,
               transform: 'scale(1.05)',
             },
             transition: 'all 0.2s ease-in-out',
-            zIndex: 1000,
+            zIndex: 1300,
+            display: 'flex',
+            width: { xs: 48, sm: 56 },
+            height: { xs: 48, sm: 56 },
+            minWidth: { xs: 48, sm: 56 },
+            minHeight: { xs: 48, sm: 56 },
           }}
         >
           <AddIcon />

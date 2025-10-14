@@ -17,6 +17,7 @@ import { PortfolioValueCalculatorService } from '../../portfolio/services/portfo
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
+import { NotificationGateway } from '../../../notification/notification.gateway';
 
 
 export interface TradeMatchingResult {
@@ -51,6 +52,7 @@ export class TradingService {
     private readonly cashFlowService: CashFlowService,
     private readonly portfolioCalculationService: PortfolioCalculationService,
     private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   /**
@@ -190,6 +192,37 @@ export class TradingService {
 
     // Invalidate all related caches
     await this.invalidateAllRelatedCaches(savedTrade.portfolioId, savedTrade.assetId);
+
+    // Send notification
+    try {
+      const portfolio = await this.portfolioRepo.findOne({
+        where: { portfolioId: savedTrade.portfolioId },
+      });
+      
+      if (portfolio) {
+        const title = `Trade ${savedTrade.side} Successful`;
+        const message = `Successfully ${savedTrade.side.toLowerCase()}ed ${savedTrade.quantity} units at ${savedTrade.price} ${portfolio.baseCurrency}`;
+        const actionUrl = `/portfolios/${savedTrade.portfolioId}/trading`;
+        
+        await this.notificationGateway.sendTradeNotification(
+          portfolio.accountId,
+          title,
+          message,
+          actionUrl,
+          {
+            tradeId: savedTrade.tradeId,
+            assetId: savedTrade.assetId,
+            portfolioId: savedTrade.portfolioId,
+            side: savedTrade.side,
+            quantity: savedTrade.quantity,
+            price: savedTrade.price,
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error sending trade notification:', error);
+      // Don't throw error to avoid breaking trade creation
+    }
 
     return savedTrade;
   }

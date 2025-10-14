@@ -30,6 +30,7 @@ import { PermissionGuard } from './guards/permission.guard';
 import { RoleGuard } from './guards/role.guard';
 import { Deposit } from '../portfolio/entities/deposit.entity';
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
+import { NotificationModule } from '../../notification/notification.module';
 
 /**
  * Shared module for common entities and services.
@@ -43,6 +44,7 @@ import { Portfolio } from '../portfolio/entities/portfolio.entity';
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '24h' },
     }),
+    NotificationModule,
   ],
   controllers: [
     AccountController, 

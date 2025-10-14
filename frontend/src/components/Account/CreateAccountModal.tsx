@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
@@ -12,12 +8,13 @@ import {
   FormControlLabel,
   Switch,
   Box,
-  Typography,
   Alert,
   CircularProgress,
 } from '@mui/material';
 import { ResponsiveButton } from '../Common';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
+import { ModalWrapper } from '../Common/ModalWrapper';
+import { AccountBalance as AccountIcon } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
 
@@ -128,89 +125,90 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <ModalWrapper
+      open={open}
       onClose={handleClose}
+      title="Create New Account"
+      icon={<AccountIcon />}
+      loading={loading}
       maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        }
-      }}
+      size="medium"
+      actions={
+        <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+          <ResponsiveButton 
+            onClick={handleClose} 
+            disabled={loading}
+            color="inherit"
+            mobileText="Cancel"
+            desktopText="Cancel"
+            sx={{ flex: 1 }}
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={loading || !formData.name}
+            icon={loading && <CircularProgress size={16} />}
+            mobileText={loading ? 'Creating...' : 'Create'}
+            desktopText={loading ? 'Creating...' : 'Create Account'}
+            sx={{ flex: 1 }}
+          >
+            {loading ? 'Creating...' : 'Create Account'}
+          </ResponsiveButton>
+        </Box>
+      }
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        pb: 1
-      }}>
-        <Typography variant="h6" component="div">
-          Create New Account
-        </Typography>
-        <ResponsiveButton
-          onClick={handleClose}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Box component="form" onSubmit={handleSubmit}>
+        <ResponsiveTypography variant="pageTitle" sx={{ mt: 2 }}>
+          Account Information
+        </ResponsiveTypography>
+        
+        <TextField
+          fullWidth
+          label="Account Holder Name"
+          value={formData.name}
+          onChange={handleInputChange('name')}
+          margin="normal"
+          required
           disabled={loading}
-          icon={<CloseIcon />}
-          mobileText=""
-          desktopText=""
-          sx={{ 
-            minWidth: 'auto', 
-            p: 1,
-            '&:hover': { backgroundColor: 'error.light', color: 'white' }
-          }}
-        >
-          <CloseIcon />
-        </ResponsiveButton>
-      </DialogTitle>
+          helperText="Enter the full name of the account holder"
+        />
 
-      <DialogContent sx={{ pt: 2 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+        <TextField
+          fullWidth
+          label="Email Address (Optional)"
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange('email')}
+          margin="normal"
+          disabled={loading}
+          helperText="Optional: Enter email address for account identification"
+        />
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
-            fullWidth
-            label="Account Holder Name"
-            value={formData.name}
-            onChange={handleInputChange('name')}
-            margin="normal"
-            required
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>Base Currency</InputLabel>
+          <Select
+            value={formData.baseCurrency}
+            onChange={handleInputChange('baseCurrency')}
+            label="Base Currency"
             disabled={loading}
-            helperText="Enter the full name of the account holder"
-          />
+          >
+            {CURRENCY_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-          <TextField
-            fullWidth
-            label="Email Address (Optional)"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange('email')}
-            margin="normal"
-            disabled={loading}
-            helperText="Optional: Enter email address for account identification"
-          />
-
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel>Base Currency</InputLabel>
-            <Select
-              value={formData.baseCurrency}
-              onChange={handleInputChange('baseCurrency')}
-              label="Base Currency"
-              disabled={loading}
-            >
-              {CURRENCY_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
+        <Box sx={{ mt: 2 }}>
           <FormControlLabel
             control={
               <Switch
@@ -219,37 +217,18 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                 disabled={loading}
               />
             }
-            label="Can invest in funds"
-            sx={{ mt: 2 }}
+            label={
+              <ResponsiveTypography variant="body2">
+                Can invest in funds
+              </ResponsiveTypography>
+            }
           />
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          <ResponsiveTypography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
             Enable this if this account can invest in fund portfolios
-          </Typography>
+          </ResponsiveTypography>
         </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ p: 2, pt: 1 }}>
-        <ResponsiveButton 
-          onClick={handleClose} 
-          disabled={loading}
-          color="inherit"
-          mobileText="Cancel"
-          desktopText="Cancel"
-        >
-          Cancel
-        </ResponsiveButton>
-        <ResponsiveButton
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={loading || !formData.name}
-          icon={loading && <CircularProgress size={16} />}
-          mobileText={loading ? 'Creating...' : 'Create'}
-          desktopText={loading ? 'Creating...' : 'Create Account'}
-        >
-          {loading ? 'Creating...' : 'Create Account'}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ModalWrapper>
   );
 };
 

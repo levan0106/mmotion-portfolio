@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Typography,
   Tabs,
   Tab,
   Paper,
@@ -10,13 +9,17 @@ import {
   CardContent,
   CardHeader,
 } from '@mui/material';
+import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import {
   AccountBalance as AccountIcon,
   Security as SecurityIcon,
   Notifications as NotificationsIcon,
   Palette as ThemeIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { AccountManagement } from '../components/Account';
+import { AdminMessageSender } from '../components/Admin/AdminMessageSender';
+import { usePermissions } from '../hooks/usePermissions';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,7 +56,9 @@ function a11yProps(index: number) {
 
 const Settings: React.FC = () => {
   const [value, setValue] = useState(0);
-
+  const { hasRole } = usePermissions();
+  const isAdmin = hasRole('admin') || hasRole('super_admin');
+  
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -61,12 +66,12 @@ const Settings: React.FC = () => {
   return (
     <Box>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
           Settings
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+        </ResponsiveTypography>
+        <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
           Manage your account settings and preferences
-        </Typography>
+        </ResponsiveTypography>
       </Box>
 
       <Paper sx={{ width: '100%' }}>
@@ -102,29 +107,37 @@ const Settings: React.FC = () => {
               iconPosition="start"
               {...a11yProps(3)}
             />
+            {isAdmin && (
+              <Tab
+                icon={<AdminIcon />}
+                label="Admin Messages"
+                iconPosition="start"
+                {...a11yProps(4)}
+              />
+            )}
           </Tabs>
         </Box>
 
         <TabPanel value={value} index={0}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
+            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               Account Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
               Manage your accounts, create new accounts, and update account information.
-            </Typography>
+            </ResponsiveTypography>
           </Box>
             <AccountManagement />
         </TabPanel>
 
         <TabPanel value={value} index={1}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
+            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               Security Settings
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
               Manage your security preferences and authentication settings.
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           
           <Grid container spacing={3}>
@@ -135,9 +148,9 @@ const Settings: React.FC = () => {
                   subheader="Change your password"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Update your password to keep your account secure.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
@@ -148,9 +161,9 @@ const Settings: React.FC = () => {
                   subheader="Add an extra layer of security"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Enable 2FA to protect your account with an additional security layer.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
@@ -159,12 +172,12 @@ const Settings: React.FC = () => {
 
         <TabPanel value={value} index={2}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
+            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               Notification Settings
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
               Configure how you receive notifications and alerts.
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           
           <Grid container spacing={3}>
@@ -175,9 +188,9 @@ const Settings: React.FC = () => {
                   subheader="Manage email alerts"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Choose which email notifications you want to receive.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
@@ -188,9 +201,9 @@ const Settings: React.FC = () => {
                   subheader="Browser notifications"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Control browser push notifications for real-time updates.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
@@ -199,12 +212,12 @@ const Settings: React.FC = () => {
 
         <TabPanel value={value} index={3}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
+            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               Appearance Settings
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
               Customize the look and feel of your application.
-            </Typography>
+            </ResponsiveTypography>
           </Box>
           
           <Grid container spacing={3}>
@@ -215,9 +228,9 @@ const Settings: React.FC = () => {
                   subheader="Choose your preferred theme"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Switch between light and dark themes.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
@@ -228,14 +241,20 @@ const Settings: React.FC = () => {
                   subheader="Select your language"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                     Choose your preferred language for the interface.
-                  </Typography>
+                  </ResponsiveTypography>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
         </TabPanel>
+
+        {isAdmin && (
+          <TabPanel value={value} index={4}>
+            <AdminMessageSender />
+          </TabPanel>
+        )}
       </Paper>
     </Box>
   );

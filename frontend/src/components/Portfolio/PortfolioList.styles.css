@@ -219,12 +219,13 @@
 
 .portfolio-list__empty-btn--primary {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  color: #ffffff !important;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .portfolio-list__empty-btn--primary:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff !important;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }

@@ -21,6 +21,16 @@ interface PermissionGuardProps {
   // UI options
   fallback?: React.ReactNode;
   showAccessDenied?: boolean;
+  // Hide mode - simply hide component if no permission
+  hide?: boolean;
+  // Alternative content when hidden
+  hiddenContent?: React.ReactNode;
+  // Quick mode - simplified API for common use cases
+  mode?: 'hide' | 'show' | 'fallback' | 'deny';
+  // Quick role check (shorthand for roles prop)
+  admin?: boolean;
+  // Quick permission check (shorthand for permissions prop)
+  can?: string | string[];
 }
 
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
@@ -33,7 +43,12 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   requireAllRoles = false,
   requireBoth = false,
   fallback,
-  showAccessDenied = true
+  showAccessDenied = true,
+  hide = false,
+  hiddenContent,
+  mode = 'deny',
+  admin = false,
+  can
 }) => {
   const { hasPermission, hasAnyPermission, hasAllPermissions, hasRole, hasAnyRole, hasAllRoles, isLoading } = usePermissions();
   const navigate = useNavigate();
@@ -46,25 +61,29 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
       let hasPermissionAccess = true;
       let hasRoleAccess = true;
 
+      // Handle quick mode props
+      const effectiveRoles = admin ? ['admin', 'super_admin'] : roles;
+      const effectivePermissions = can ? (Array.isArray(can) ? can : [can]) : permissions;
+
       // Check permission access
       if (permission) {
         hasPermissionAccess = hasPermission(permission);
-      } else if (permissions) {
+      } else if (effectivePermissions && effectivePermissions.length > 0) {
         if (requireAll) {
-          hasPermissionAccess = hasAllPermissions(permissions);
+          hasPermissionAccess = hasAllPermissions(effectivePermissions);
         } else {
-          hasPermissionAccess = hasAnyPermission(permissions);
+          hasPermissionAccess = hasAnyPermission(effectivePermissions);
         }
       }
 
       // Check role access
       if (role) {
         hasRoleAccess = hasRole(role);
-      } else if (roles) {
+      } else if (effectiveRoles && effectiveRoles.length > 0) {
         if (requireAllRoles) {
-          hasRoleAccess = hasAllRoles(roles);
+          hasRoleAccess = hasAllRoles(effectiveRoles);
         } else {
-          hasRoleAccess = hasAnyRole(roles);
+          hasRoleAccess = hasAnyRole(effectiveRoles);
         }
       }
 
@@ -81,7 +100,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
       setAccessResult(hasAccess);
       setIsChecking(false);
     }
-  }, [isLoading, permission, permissions, requireAll, role, roles, requireAllRoles, requireBoth, hasPermission, hasAnyPermission, hasAllPermissions, hasRole, hasAnyRole, hasAllRoles]);
+  }, [isLoading, permission, permissions, requireAll, role, roles, requireAllRoles, requireBoth, hasPermission, hasAnyPermission, hasAllPermissions, hasRole, hasAnyRole, hasAllRoles, admin, can]);
 
   // Show loading while checking permissions
   if (isLoading || isChecking) {
@@ -106,6 +125,25 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   // Show children if access is granted
   if (accessResult === true) {
     return <>{children}</>;
+  }
+
+  // Handle different modes
+  switch (mode) {
+    case 'hide':
+      return hiddenContent ? <>{hiddenContent}</> : null;
+    case 'show':
+      return <>{children}</>;
+    case 'fallback':
+      return fallback ? <>{fallback}</> : null;
+    case 'deny':
+    default:
+      // Continue with existing logic
+      break;
+  }
+
+  // Legacy hide mode: simply hide component if no permission
+  if (hide) {
+    return hiddenContent ? <>{hiddenContent}</> : null;
   }
 
   // Show fallback if provided
@@ -200,3 +238,22 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
 // MultiPermissionGuard is now integrated into PermissionGuard
 // Use PermissionGuard with permissions prop instead
+
+// Simple wrapper for hiding components based on permissions
+export const HideIfNoPermission: React.FC<{
+  children: React.ReactNode;
+  roles?: string[];
+  permissions?: string[];
+  fallback?: React.ReactNode;
+}> = ({ children, roles, permissions, fallback }) => {
+  return (
+    <PermissionGuard
+      roles={roles}
+      permissions={permissions}
+      hide={true}
+      hiddenContent={fallback}
+    >
+      {children}
+    </PermissionGuard>
+  );
+};

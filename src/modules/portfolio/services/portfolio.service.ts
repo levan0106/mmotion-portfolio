@@ -1452,10 +1452,28 @@ export class PortfolioService {
    * Get all public portfolios
    */
   async getPublicPortfolios(): Promise<Portfolio[]> {
-    return this.portfolioRepository.find({
+    const portfolios = await this.portfolioRepository.find({
       where: { visibility: 'PUBLIC' },
-      relations: ['trades', 'cashFlows', 'deposits'],
+      relations: ['trades', 'cashFlows', 'deposits', 'account', 'account.user'],
       order: { createdAt: 'DESC' }
+    });
+
+    // Map portfolios to include creator information
+    return portfolios.map(portfolio => {
+      const portfolioData = portfolio as any;
+      
+      // Check if creator is "tungle" and set creatorName to "system"
+      if (portfolio.account?.user?.username?.toLowerCase() === 'tungle' || 
+          portfolio.account?.user?.username?.toLowerCase() === 'admin' ||
+          portfolio.account?.user?.username?.toLowerCase() === 'sadmin') {
+        portfolioData.creatorName = 'system';
+      } else {
+        // Use fullName or email as creatorName
+        portfolioData.creatorName = portfolio.account?.user?.username || 
+                                   'Unknown';
+      }
+      
+      return portfolioData;
     });
   }
 

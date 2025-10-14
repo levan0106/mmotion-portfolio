@@ -41,6 +41,20 @@ export interface Portfolio extends BaseEntity {
   cashBalance: number;
   unrealizedPl: number; // Keep for backward compatibility
   realizedPl: number; // Keep for backward compatibility
+  // Creator information for public portfolios
+  creatorName?: string;
+  creatorEmail?: string;
+  // Account and User information
+  account?: {
+    accountId: string;
+    name: string;
+    email: string;
+    user?: {
+      userId: string;
+      fullName?: string;
+      email: string;
+    };
+  };
   
   // New explicit value and P&L fields
   totalAssetValue: number;
@@ -65,7 +79,6 @@ export interface Portfolio extends BaseEntity {
   description?: string;
   
   // Related data
-  account?: Account;
   portfolioAssets?: PortfolioAsset[];
   navSnapshots?: NavSnapshot[];
   cashFlows?: CashFlow[];

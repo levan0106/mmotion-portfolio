@@ -7,7 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Alert } from '@mui/material';
 import PortfolioList from '../components/Portfolio/PortfolioList';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
-import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
+import { PublicPortfolioSelector } from '../components/Portfolio/PublicPortfolioSelector';
+import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
@@ -19,8 +20,21 @@ const Portfolios: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPortfolio, setEditingPortfolio] = useState<string | null>(null);
   const [formError, setFormError] = useState<string>('');
+  const [isPublicTemplateSelectorOpen, setIsPublicTemplateSelectorOpen] = useState(false);
 
   const { accountId } = useAccount();
+
+  const {
+    portfolios,
+    createPortfolio,
+    updatePortfolio,
+    deletePortfolio,
+    refetch,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    isLoading,
+  } = usePortfolios(accountId);
 
   // Auto-open form when navigating to /portfolios/new
   useEffect(() => {
@@ -32,16 +46,16 @@ const Portfolios: React.FC = () => {
       navigate('/portfolios', { replace: true });
     }
   }, [location.pathname, navigate]);
-  const {
-    portfolios,
-    createPortfolio,
-    updatePortfolio,
-    deletePortfolio,
-    refetch,
-    isCreating,
-    isUpdating,
-    isDeleting,
-  } = usePortfolios(accountId);
+
+  // Auto-open public template selector when tab=templates and no portfolios
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const tab = urlParams.get('tab');
+    
+    if (tab === 'templates' && portfolios.length === 0 && !isLoading) {
+      setIsPublicTemplateSelectorOpen(true);
+    }
+  }, [location.search, portfolios.length, isLoading]);
 
   const handleViewPortfolio = (portfolioId: string) => {
     navigate(`/portfolios/${portfolioId}`);
@@ -87,7 +101,21 @@ const Portfolios: React.FC = () => {
       
       handleCloseForm();
     } catch (error: any) {
-      setFormError(error.response?.data?.message || 'An error occurred. Please try again.');
+      console.error('Portfolio form error:', error);
+      
+      // Handle specific error cases
+      if (error.response?.data?.message) {
+        const errorMessage = error.response.data.message;
+        
+        // Format duplicate name error for better UX
+        if (errorMessage.includes('already exists for this account')) {
+          setFormError(`Portfolio name "${data.name}" is already taken. Please choose a different name.`);
+        } else {
+          setFormError(errorMessage);
+        }
+      } else {
+        setFormError('An error occurred while saving the portfolio. Please try again.');
+      }
     }
   };
 
@@ -106,8 +134,61 @@ const Portfolios: React.FC = () => {
       
       handleCloseForm();
     } catch (error: any) {
-      setFormError(error.response?.data?.message || 'Failed to copy portfolio. Please try again.');
+      console.error('Copy from public error:', error);
+      
+      // Handle specific error cases
+      if (error.response?.data?.message) {
+        const errorMessage = error.response.data.message;
+        
+        // Format duplicate name error for better UX
+        if (errorMessage.includes('already exists for this account')) {
+          setFormError(`Portfolio name "${name}" is already taken. Please choose a different name.`);
+        } else {
+          setFormError(errorMessage);
+        }
+      } else {
+        setFormError('Failed to copy portfolio template. Please try again.');
+      }
     }
+  };
+
+  const handleSelectPublicTemplate = async (portfolio: Portfolio) => {
+    try {
+      setFormError('');
+      
+      const portfolioName = `${portfolio.templateName || portfolio.name} (Copy)`;
+      
+      await apiService.copyFromPublicPortfolio({
+        sourcePortfolioId: portfolio.portfolioId,
+        targetAccountId: accountId!,
+        name: portfolioName
+      });
+      
+      // Refetch portfolios to show the new copied portfolio
+      await refetch();
+      
+      setIsPublicTemplateSelectorOpen(false);
+    } catch (error: any) {
+      console.error('Select public template error:', error);
+      
+      // Handle specific error cases
+      if (error.response?.data?.message) {
+        const errorMessage = error.response.data.message;
+        
+        // Format duplicate name error for better UX
+        if (errorMessage.includes('already exists for this account')) {
+          setFormError(`Portfolio name "${portfolio.templateName || portfolio.name} (Copy)" is already taken. Please try a different template.`);
+        } else {
+          setFormError(errorMessage);
+        }
+      } else {
+        setFormError('Failed to copy portfolio template. Please try again.');
+      }
+    }
+  };
+
+  const handleClosePublicTemplateSelector = () => {
+    setIsPublicTemplateSelectorOpen(false);
   };
 
   // Get the portfolio data for editing
@@ -157,6 +238,12 @@ const Portfolios: React.FC = () => {
         isEditing={!!editingPortfolio}
         isLoading={isCreating || isUpdating}
         error={formError}
+      />
+
+      <PublicPortfolioSelector
+        open={isPublicTemplateSelectorOpen}
+        onClose={handleClosePublicTemplateSelector}
+        onSelect={handleSelectPublicTemplate}
       />
 
       {(isCreating || isUpdating || isDeleting) && (
