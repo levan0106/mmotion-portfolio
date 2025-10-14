@@ -188,11 +188,13 @@ const PortfolioDetail: React.FC = () => {
   }
 
   return (
-    <Box sx={{ 
-      scrollBehavior: 'smooth',
-      position: 'relative', // Ensure proper positioning context
-      minHeight: '100vh', // Ensure full height
-    }}>
+    <Box 
+      className="portfolio-detail"
+      sx={{ 
+        scrollBehavior: 'smooth',
+        position: 'relative', // Ensure proper positioning context
+        minHeight: '100vh', // Ensure full height
+      }}>
 
       {/* Sticky Header */}
       <Box

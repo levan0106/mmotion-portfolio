@@ -16,6 +16,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -869,7 +870,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   type="submit"
                   variant="contained"
                   disabled={!isValid || isLoading}
-                  icon={isLoading ? <CircularProgress size={20} /> : null}
+                  icon={isLoading ? <CircularProgress size={20} /> : mode === 'create' ? <AddIcon /> : <EditIcon />}
                   mobileText={isLoading ? 'Processing...' : mode === 'create' ? 'Create' : 'Update'}
                   desktopText={isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}

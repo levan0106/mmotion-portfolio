@@ -702,29 +702,33 @@ const Assets: React.FC = () => {
                 Refresh Data
               </ResponsiveButton>
               <Tooltip title="Chọn nhiều assets từ danh sách mẫu - Nhanh và dễ dàng">
-                <ResponsiveButton
-                  variant="outlined"
-                  icon={<Add />}
-                  onClick={handleBulkCreateClick}
-                  sx={{ 
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 500
-                  }}
-                >
-                  Quick Create
-                </ResponsiveButton>
+                <span>
+                  <ResponsiveButton
+                    variant="outlined"
+                    icon={<Add />}
+                    onClick={handleBulkCreateClick}
+                    sx={{ 
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 500
+                    }}
+                  >
+                    Quick Create
+                  </ResponsiveButton>
+                </span>
               </Tooltip>
               <Tooltip title="Tạo asset mới với thông tin chi tiết">
-                <ResponsiveButton
-                  variant="contained"
-                  icon={<Add />}
-                  onClick={handleCreateAsset}
-                  mobileText="Add"
-                  desktopText="Add Asset"
-                >
-                  Add Asset
-                </ResponsiveButton>
+                <span>
+                  <ResponsiveButton
+                    variant="contained"
+                    icon={<Add />}
+                    onClick={handleCreateAsset}
+                    mobileText="Add"
+                    desktopText="Add Asset"
+                  >
+                    Add Asset
+                  </ResponsiveButton>
+                </span>
               </Tooltip>
 
               {/* User Guide Component */}

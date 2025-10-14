@@ -152,7 +152,9 @@ export const AccountSwitcher: React.FC = () => {
                 textTransform: 'none',
                 borderRadius: 1.5,
                 px: 0.5,
-                py: 0.5
+                py: 0.5,
+                mr: { xs: 0, sm: 0.5 },
+                ml: { xs: 0.5, sm: 0 }
               }}
             >
               {loading ? 'Switching...' : ''}

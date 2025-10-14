@@ -760,7 +760,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </Box>
           </Box>
           
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 },
+            flexWrap: 'nowrap'
+          }}>
             {/* Currency Format Toggle */}
             <CurrencyToggle 
               onToggle={(showFull) => {
@@ -774,20 +779,36 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             />
             
             {/* Current Account Info */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2 }}>
+            <Box sx={{ 
+              display: 'flex',
+              alignItems: 'center', 
+              gap: { xs: 0.5, sm: 1 }, 
+              mr: { xs: 1, sm: 2 }
+            }}>
               <Box sx={{ position: 'relative' }}>
-                <Avatar sx={{ 
-                  width: 32, 
-                  height: 32, 
-                  fontSize: '0.875rem',
-                  ...(currentAccount?.isMainAccount && {
-                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                    border: '2px solid',
-                    borderColor: 'primary.main',
-                  })
-                }}>
-                  {accountLoading ? '...' : (currentAccount?.name || 'User').split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)}
-                </Avatar>
+                <Tooltip title="Click to go to Home" placement="bottom" arrow>
+                  <Avatar 
+                    sx={{ 
+                      width: 32, 
+                      height: 32, 
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        boxShadow: 2,
+                      },
+                      ...(currentAccount?.isMainAccount && {
+                        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                        border: '2px solid',
+                        borderColor: 'primary.main',
+                      })
+                    }}
+                    onClick={() => navigate('/')}
+                  >
+                    {accountLoading ? '...' : (currentAccount?.name || 'User').split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)}
+                  </Avatar>
+                </Tooltip>
                 {currentAccount?.isMainAccount && (
                   <Box
                     sx={{
@@ -809,7 +830,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   </Box>
                 )}
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <Box sx={{ 
+                display: { xs: 'none', sm: 'flex' }, // Hide text info on mobile, show only on desktop
+                flexDirection: 'column', 
+                alignItems: 'flex-start' 
+              }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                     {accountLoading ? 'Loading...' : (currentAccount?.name || 'User')}

@@ -62,6 +62,8 @@ const CurrencyToggle: React.FC<CurrencyToggleProps> = ({
         onClick={handleToggle}
         sx={{
           color: iconColors[color],
+          mr: { xs: 0, sm: 0.5 },
+          ml: { xs: 0.5, sm: 0 },
           '&:hover': {
             color: 'primary.main',
             backgroundColor: 'primary.light',

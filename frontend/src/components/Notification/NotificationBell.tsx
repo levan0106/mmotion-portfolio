@@ -129,7 +129,10 @@ export const NotificationBell: React.FC = () => {
       <IconButton
         color="inherit"
         onClick={handleClick}
-        sx={{ mr: 1 }}
+        sx={{ 
+          mr: { xs: 0, sm: 1 },
+          ml: { xs: 0.5, sm: 0 }
+        }}
       >
         <Badge badgeContent={unreadCount} color="error">
           <NotificationsIcon />

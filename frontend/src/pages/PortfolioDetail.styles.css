@@ -3,24 +3,24 @@
  * Clean and responsive layout for portfolio details
  */
 
-/* Global responsive fixes for tablet */
+/* Portfolio-specific responsive fixes for tablet */
 @media (max-width: 1024px) {
-  body {
+  .portfolio-detail {
     overflow-x: hidden;
   }
   
-  .MuiContainer-root {
+  .portfolio-detail .MuiContainer-root {
     max-width: 100% !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
   
-  .MuiGrid-container {
+  .portfolio-detail .MuiGrid-container {
     margin: 0 !important;
     width: 100% !important;
   }
   
-  .MuiGrid-item {
+  .portfolio-detail .MuiGrid-item {
     padding: 8px !important;
   }
 }
@@ -409,8 +409,8 @@
 
   /* Mobile tab improvements */
 @media (max-width: 768px) {
-  /* Tab container improvements */
-  .MuiTabs-root {
+  /* Tab container improvements - scoped to portfolio-detail */
+  .portfolio-detail .MuiTabs-root {
     width: calc(100% - 50px) !important;
     border-bottom: 1px solid #e5e7eb;
     background: #f8fafc;
@@ -419,79 +419,79 @@
     flex: 1;
   }
 
-  /* Compact mode toggle positioning */
-  .MuiIconButton-root {
+  /* Compact mode toggle positioning - scoped to portfolio-detail */
+  .portfolio-detail .MuiIconButton-root {
     flex-shrink: 0 !important;
     width: 40px !important;
     height: 40px !important;
     margin-left: 0.5rem !important;
   }
 
-  .MuiTabs-flexContainer {
+  .portfolio-detail .MuiTabs-flexContainer {
     gap: 0.25rem !important;
     padding: 0.25rem;
   }
 
-  .MuiTab-root {
+  .portfolio-detail .MuiTab-root {
     min-width: 70px !important;
     padding: 0.5rem 0.75rem !important;
     font-size: 0.7rem !important;
     min-height: 36px !important;
   }
 
-  .MuiTab-root .MuiTab-iconWrapper {
+  .portfolio-detail .MuiTab-root .MuiTab-iconWrapper {
     font-size: 0.9rem !important;
     margin-right: 0.25rem !important;
   }
 
-  .MuiTabs-scrollButtons {
+  .portfolio-detail .MuiTabs-scrollButtons {
     width: 32px !important;
     height: 32px !important;
   }
 
-  /* Tab content improvements */
-  .MuiTabPanel-root {
+  /* Tab content improvements - scoped to portfolio-detail */
+  .portfolio-detail .MuiTabPanel-root {
     padding: 0.75rem !important;
   }
 
-  /* Mobile-specific content improvements */
-  .MuiGrid-container {
+  /* Mobile-specific content improvements - scoped to portfolio-detail */
+  .portfolio-detail .MuiGrid-container {
     margin: 0 !important;
     width: 100% !important;
   }
 
-  .MuiGrid-item {
+  .portfolio-detail .MuiGrid-item {
     padding: 0.25rem !important;
   }
 
-  /* Chart containers on mobile */
-  .MuiCard-root {
+  /* Chart containers on mobile - scoped to portfolio-detail */
+  .portfolio-detail .MuiCard-root {
     margin: 0.25rem !important;
     padding: 0.5rem !important;
   }
 
-  .MuiCardContent-root {
+  .portfolio-detail .MuiCardContent-root {
     padding: 0.5rem !important;
   }
 
-  /* Responsive typography in tabs */
-  .MuiTypography-root {
+  /* Responsive typography in tabs - scoped to PortfolioDetail only */
+  .portfolio-detail .MuiTypography-root {
     font-size: 0.8rem !important;
   }
 
-  /* Button improvements for mobile */
-  .MuiButton-root {
+  /* Button improvements for mobile - scoped to portfolio-detail */
+  .portfolio-detail .MuiButton-root {
     min-height: 36px !important;
     font-size: 0.75rem !important;
     padding: 0.5rem 0.75rem !important;
   }
 
-  /* Table improvements for mobile */
-  .MuiTable-root {
+  /* Table improvements for mobile - scoped to portfolio-detail */
+  .portfolio-detail .MuiTable-root {
     font-size: 0.7rem !important;
   }
 
-  .MuiTableCell-root {
+  .portfolio-detail .MuiTableCell-root {
     padding: 0.5rem 0.25rem !important;
     font-size: 0.7rem !important;
   }
@@ -510,18 +510,18 @@
     flex-direction: column;
   }
 
-  /* Very small screen adjustments */
-  .MuiTabs-root {
+  /* Very small screen adjustments - scoped to portfolio-detail */
+  .portfolio-detail .MuiTabs-root {
     width: calc(100% - 45px) !important;
   }
 
-  .MuiIconButton-root {
+  .portfolio-detail .MuiIconButton-root {
     width: 36px !important;
     height: 36px !important;
     margin-left: 0.25rem !important;
   }
 
-  .MuiTab-root {
+  .portfolio-detail .MuiTab-root {
     min-width: 60px !important;
     padding: 0.4rem 0.6rem !important;
     font-size: 0.65rem !important;
