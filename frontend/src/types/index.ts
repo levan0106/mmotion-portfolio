@@ -59,10 +59,18 @@ export interface Portfolio extends BaseEntity {
   navPerUnit?: number;
   lastNavDate?: string;
   
+  // Visibility fields
+  visibility?: 'PRIVATE' | 'PUBLIC';
+  templateName?: string;
+  description?: string;
+  
+  // Related data
   account?: Account;
   portfolioAssets?: PortfolioAsset[];
   navSnapshots?: NavSnapshot[];
   cashFlows?: CashFlow[];
+  trades?: any[]; // Keep for compatibility with public portfolio components
+  deposits?: any[]; // Keep for compatibility with public portfolio components
 }
 
 export interface PortfolioAsset {
@@ -103,12 +111,18 @@ export interface CreatePortfolioDto {
   baseCurrency: string;
   fundingSource?: string;
   accountId: string;
+  visibility?: 'PRIVATE' | 'PUBLIC';
+  templateName?: string;
+  description?: string;
 }
 
 export interface UpdatePortfolioDto {
   name?: string;
   baseCurrency?: string;
   fundingSource?: string;
+  visibility?: 'PRIVATE' | 'PUBLIC';
+  templateName?: string;
+  description?: string;
 }
 
 // API Response types

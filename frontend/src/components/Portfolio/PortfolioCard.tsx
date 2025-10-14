@@ -12,12 +12,9 @@ import {
   AccountBalanceWallet,
   Business,
   Delete as DeleteIcon,
+  Public,
 } from '@mui/icons-material';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
   Alert,
   CircularProgress,
@@ -28,7 +25,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ModalWrapper } from '../Common';
 import { Portfolio } from '../../types';
 import { formatCurrency } from '../../utils/format';
 import { CopyPortfolioModal } from './CopyPortfolioModal';
@@ -69,6 +66,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   };
 
   const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation(); // Prevent card click
     if (onEdit) {
       onEdit(portfolio.portfolioId);
@@ -154,6 +152,18 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               <ResponsiveTypography variant="cardTitle" className="portfolio-card__title">
                 {portfolio.name}
               </ResponsiveTypography>
+              {portfolio.visibility === 'PUBLIC' && (
+                <Tooltip title="Public Portfolio - Can be copied by other users">
+                  <Public 
+                    className="portfolio-card__public-icon" 
+                    style={{ 
+                      color: '#1976d2', 
+                      marginLeft: '8px',
+                      fontSize: '18px'
+                    }} 
+                  />
+                </Tooltip>
+              )}
             </div>
             <div className="portfolio-card__type-badge" style={{ display: isMobile ? 'none' : 'block' }}>
               {isFund ? 'Fund' : 'Individual'}
@@ -292,97 +302,98 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         onModalClose={handleCopyModalClose}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
+      {/* Delete Confirmation Modal */}
+      <ModalWrapper
         open={deleteModalOpen}
         onClose={handleDeleteCancel}
+        title="Delete Portfolio"
+        icon={<DeleteIcon color="error" />}
+        loading={isDeleting}
         maxWidth="sm"
-        fullWidth
+        fullWidth={true}
+        titleColor="error"
+        actions={
+          <>
+            <ResponsiveButton
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+              color="inherit"
+            >
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting || !deleteConfirmationChecked}
+              color="error"
+              variant="contained"
+              icon={isDeleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+              mobileText="Delete"
+              desktopText="Delete Portfolio"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Portfolio'}
+            </ResponsiveButton>
+          </>
+        }
       >
-        <DialogTitle>
-          <Box display="flex" alignItems="center" gap={1}>
-            <DeleteIcon color="error" />
-            <ResponsiveTypography variant="h6">Delete Portfolio</ResponsiveTypography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            <ResponsiveTypography variant="body2" fontWeight="bold">
-              This action cannot be undone!
-            </ResponsiveTypography>
-          </Alert>
-                <ResponsiveTypography variant="body1" paragraph>
-            Are you sure you want to delete the portfolio <strong>"{portfolio.name}"</strong>?
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="body2" color="text.secondary" paragraph>
-            This will permanently delete:
-                </ResponsiveTypography>
-          <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
-            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-              All trades and trade details
-            </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-              All cash flows and deposits
-            </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-              All performance snapshots and analytics data
-            </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-              All investor holdings (if this is a fund)
-            </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-              All historical data and reports
-            </ResponsiveTypography>
-          </Box>
-          
-          {/* Confirmation Checkbox */}
-          <Box sx={{ 
-            border: '1px solid #e0e0e0', 
-            borderRadius: 1, 
-            p: 2, 
-            backgroundColor: '#fafafa',
-            mb: 2 
-          }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={deleteConfirmationChecked}
-                  onChange={(e) => setDeleteConfirmationChecked(e.target.checked)}
-                  color="error"
-                />
-              }
-              label={
-                <ResponsiveTypography variant="formHelper" 
-                sx={{  color: "error.main", fontWeight: "bold" }}
-                ellipsis={false}
-                >
-                  Tôi hiểu rằng hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan
-                </ResponsiveTypography>
-              }
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <ResponsiveButton
-            onClick={handleDeleteCancel}
-            disabled={isDeleting}
-            color="inherit"
-          >
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton
-            onClick={handleDeleteConfirm}
-            disabled={isDeleting || !deleteConfirmationChecked}
-            color="error"
-            variant="contained"
-            icon={isDeleting ? <CircularProgress size={16} /> : <DeleteIcon />}
-            mobileText="Delete"
-            desktopText="Delete Portfolio"
-          >
-            {isDeleting ? 'Deleting...' : 'Delete Portfolio'}
-          </ResponsiveButton>
-        </DialogActions>
-      </Dialog>
+        <Alert severity="warning" sx={{ mb: 2, mt: 2 }}>
+          <ResponsiveTypography variant="body2" fontWeight="bold">
+            This action cannot be undone!
+          </ResponsiveTypography>
+        </Alert>
+        
+        <ResponsiveTypography variant="body1" paragraph>
+          Are you sure you want to delete the portfolio <strong>"{portfolio.name}"</strong>?
+        </ResponsiveTypography>
+        
+        <ResponsiveTypography variant="body2" color="text.secondary" paragraph>
+          This will permanently delete:
+        </ResponsiveTypography>
+        
+        <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
+          <ResponsiveTypography component="li" variant="body2" color="text.secondary">
+            All trades and trade details
+          </ResponsiveTypography>
+          <ResponsiveTypography component="li" variant="body2" color="text.secondary">
+            All cash flows and deposits
+          </ResponsiveTypography>
+          <ResponsiveTypography component="li" variant="body2" color="text.secondary">
+            All performance snapshots and analytics data
+          </ResponsiveTypography>
+          <ResponsiveTypography component="li" variant="body2" color="text.secondary">
+            All investor holdings (if this is a fund)
+          </ResponsiveTypography>
+          <ResponsiveTypography component="li" variant="body2" color="text.secondary">
+            All historical data and reports
+          </ResponsiveTypography>
+        </Box>
+        
+        {/* Confirmation Checkbox */}
+        <Box sx={{ 
+          border: '1px solid #e0e0e0', 
+          borderRadius: 1, 
+          p: 2, 
+          backgroundColor: '#fafafa',
+          mb: 2 
+        }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={deleteConfirmationChecked}
+                onChange={(e) => setDeleteConfirmationChecked(e.target.checked)}
+                color="error"
+              />
+            }
+            label={
+              <ResponsiveTypography variant="formHelper" 
+              sx={{  color: "error.main", fontWeight: "bold" }}
+              ellipsis={false}
+              >
+                Tôi hiểu rằng hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan
+              </ResponsiveTypography>
+            }
+          />
+        </Box>
+      </ModalWrapper>
     </div>
   );
 };

@@ -99,6 +99,26 @@ export class PortfolioController {
   }
 
   /**
+   * Get all public portfolios (templates)
+   */
+  @Get('public-templates')
+  @ApiOperation({ 
+    summary: 'Get all public portfolios',
+    description: 'Retrieves all public portfolio templates that can be copied by other users.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Public portfolios retrieved successfully',
+    schema: {
+      type: 'array',
+      items: { $ref: '#/components/schemas/Portfolio' }
+    }
+  })
+  async getPublicPortfolios(): Promise<Portfolio[]> {
+    return this.portfolioService.getPublicPortfolios();
+  }
+
+  /**
    * Create a new portfolio.
    */
   @Post()
@@ -212,6 +232,171 @@ export class PortfolioController {
     return this.portfolioService.copyPortfolio(
       copyPortfolioDto.sourcePortfolioId,
       copyPortfolioDto.name
+    );
+  }
+
+
+  /**
+   * Copy a public portfolio to current account
+   */
+  @Post('copy-from-public')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ 
+    summary: 'Copy a public portfolio',
+    description: 'Creates a new portfolio by copying from a public portfolio template.',
+  })
+  @ApiBody({
+    description: 'Copy from public portfolio data',
+    schema: {
+      type: 'object',
+      properties: {
+        sourcePortfolioId: { type: 'string', format: 'uuid', description: 'Source public portfolio ID' },
+        targetAccountId: { type: 'string', format: 'uuid', description: 'Target account ID' },
+        name: { type: 'string', description: 'Name for the new portfolio' }
+      },
+      required: ['sourcePortfolioId', 'targetAccountId', 'name']
+    }
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Portfolio copied successfully from public template',
+    schema: {
+      type: 'object',
+      properties: {
+        portfolioId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440004' },
+        accountId: { type: 'string', example: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5' },
+        name: { type: 'string', example: 'Growth Portfolio Copy' },
+        baseCurrency: { type: 'string', example: 'VND' },
+        visibility: { type: 'string', example: 'PRIVATE' },
+        createdAt: { type: 'string', example: '2024-12-19T10:30:00.000Z' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Bad request - validation failed or portfolio not public',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { type: 'string', example: 'Portfolio is not public and cannot be copied' },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Source portfolio not found',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { type: 'string', example: 'Source portfolio with ID 550e8400-e29b-41d4-a716-446655440000 not found' },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async copyFromPublicPortfolio(@Body() copyFromPublicDto: { sourcePortfolioId: string; targetAccountId: string; name: string }): Promise<Portfolio> {
+    return this.portfolioService.copyPublicPortfolio(
+      copyFromPublicDto.sourcePortfolioId,
+      copyFromPublicDto.targetAccountId,
+      copyFromPublicDto.name
+    );
+  }
+
+  /**
+   * Update portfolio visibility
+   */
+  @Put(':id/visibility')
+  @ApiOperation({ 
+    summary: 'Update portfolio visibility',
+    description: 'Updates portfolio visibility (PRIVATE/PUBLIC) and template information.',
+  })
+  @ApiParam({ name: 'id', description: 'Portfolio ID' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
+  @ApiBody({
+    description: 'Portfolio visibility update data',
+    schema: {
+      type: 'object',
+      properties: {
+        visibility: { type: 'string', enum: ['PRIVATE', 'PUBLIC'], description: 'Portfolio visibility' },
+        templateName: { type: 'string', description: 'Template name (required for PUBLIC)' },
+        description: { type: 'string', description: 'Template description (optional for PUBLIC)' }
+      },
+      required: ['visibility']
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Portfolio visibility updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        portfolioId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440004' },
+        visibility: { type: 'string', example: 'PUBLIC' },
+        templateName: { type: 'string', example: 'Growth Strategy Template' },
+        description: { type: 'string', example: 'A balanced growth portfolio strategy' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Bad request - validation failed',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { type: 'string', example: 'Template name is required for public portfolios' },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Portfolio does not belong to account',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: 'Portfolio does not belong to account' },
+        error: { type: 'string', example: 'Forbidden' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio not found',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { type: 'string', example: 'Portfolio with ID 550e8400-e29b-41d4-a716-446655440000 not found' },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async updatePortfolioVisibility(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('accountId') accountId: string,
+    @Body() visibilityDto: { visibility: 'PRIVATE' | 'PUBLIC'; templateName?: string; description?: string }
+  ): Promise<Portfolio> {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Validate portfolio ownership
+    await this.accountValidationService.validatePortfolioOwnership(id, accountId);
+    
+    // Validate template name for public portfolios
+    if (visibilityDto.visibility === 'PUBLIC' && !visibilityDto.templateName) {
+      throw new BadRequestException('Template name is required for public portfolios');
+    }
+    
+    return this.portfolioService.updatePortfolioVisibility(
+      id,
+      visibilityDto.visibility,
+      visibilityDto.templateName,
+      visibilityDto.description
     );
   }
 
@@ -377,7 +562,8 @@ export class PortfolioController {
     @Query('months', new ParseIntPipe({ optional: true })) months?: number,
     @Query('granularity') granularity?: string,
   ): Promise<any> {
-    const monthsToLookBack = months || 12;
+    // Limit history data to maximum 12 months (1 year)
+    const monthsToLookBack = Math.min(months || 12, 12);
     const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(endDate.getMonth() - monthsToLookBack);

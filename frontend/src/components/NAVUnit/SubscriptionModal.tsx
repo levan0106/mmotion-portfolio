@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   Box,
   Grid,
   Alert,
@@ -19,7 +18,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Add as AddIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ResponsiveTypography } from '../Common';
 import { SubscribeToFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -186,15 +185,6 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                      formData.amount > 0 && 
                      !loading;
 
-  // Additional validation for custom account ID
-  // const hasValidAccountId = formData.accountId && formData.accountId.trim() !== '';
-  // const hasValidAmount = formData.amount > 0;
-  // const hasValidUnits = calculatedUnits > 0;
-  // const isNotLoading = !loading;
-
-  // Enhanced validation for custom account ID
-  // Debug logging for form validation
-  // Test validation logic
   if (formData.accountId && formData.accountId.trim() !== '') {
   } else {
   }
@@ -238,25 +228,25 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       <Box sx={{ pt: 1 }}>
         {/* Fund Information */}
         <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <ResponsiveTypography variant="pageTitle" sx={{ color: 'text.secondary' }} gutterBottom>
             Fund Information
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Fund Name
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {portfolio.name}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
         </Card>
@@ -365,40 +355,40 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
         {/* Calculation Summary */}
         <Card variant="outlined" sx={{ mt: 3, p: 2, backgroundColor: 'info.50', border: '1px solid', borderColor: 'info.200' }}>
-          <Typography variant="subtitle2" color="info.main" gutterBottom>
+          <ResponsiveTypography variant="pageTitle" sx={{ color: 'info.main' }} gutterBottom>
             Calculation Summary
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Calculated Units
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatNumberWithSeparators(calculatedUnits, 3)}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Investment Amount
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(formData.amount, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
           {calculatedUnits > 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="labelSmall">
                 Units are automatically calculated based on the investment amount and current NAV per unit.
-              </Typography>
+              </ResponsiveTypography>
             </Alert>
           )}
         </Card>
@@ -412,26 +402,26 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
         {/* Date Awareness Notice */}
         <Alert severity="info" sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 500 }}>
             📅 Data Impact Notice
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
             Creating this subscription will automatically update:
-          </Typography>
+          </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <Typography component="li" variant="body2">
+            <ResponsiveTypography component="li" variant="labelSmall">
               Portfolio NAV per unit and total outstanding units
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               Investor holding metrics (units, investment, P&L)
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               Cash flow records and portfolio balance
-            </Typography>
+            </ResponsiveTypography>
           </Box>
-          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
             All calculations will be based on current date and current NAV per unit
-          </Typography>
+          </ResponsiveTypography>
         </Alert>
       </Box>
     </ModalWrapper>

@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Box,
   Typography,
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { ContentCopy, Close } from '@mui/icons-material';
+import { ContentCopy } from '@mui/icons-material';
 import { apiService } from '../../services/api';
 import { Portfolio } from '../../types';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ModalWrapper } from '../Common';
 
 interface CopyPortfolioModalProps {
   open: boolean;
@@ -84,132 +80,95 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
 
 
   return (
-    <Dialog 
-      open={open} 
+    <ModalWrapper
+      open={open}
       onClose={handleClose}
+      title="Copy Portfolio"
+      icon={<ContentCopy color="primary" />}
+      loading={loading}
       maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        }
-      }}
-    >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1,
-        pb: 1,
-        borderBottom: '1px solid #e0e0e0'
-      }}>
-        <ContentCopy color="primary" />
-        <Typography variant="h6" component="div">
-          Copy Portfolio
-        </Typography>
-        <ResponsiveButton
-          onClick={handleClose}
-          icon={<Close />}
-          mobileText=""
-          desktopText=""
-          sx={{ 
-            ml: 'auto', 
-            minWidth: 'auto', 
-            p: 0.5,
-            color: 'text.secondary',
-            '&:hover': {
-              backgroundColor: 'action.hover',
-            }
-          }}
-        >
-          <Close />
-        </ResponsiveButton>
-      </DialogTitle>
-
-      <DialogContent sx={{ pt: 3 }}>
-        {sourcePortfolio && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Copying from:
-            </Typography>
-            <Typography variant="h6" color="primary">
-              {sourcePortfolio.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Account: {sourcePortfolio.accountId}
-            </Typography>
-          </Box>
-        )}
-
-        <TextField
-          autoFocus
-          fullWidth
-          label="New Portfolio Name"
-          placeholder="Enter name for the copied portfolio"
-          value={newPortfolioName}
-          onChange={(e) => setNewPortfolioName(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={loading}
-          sx={{
-            '& .MuiOutlinedInput-root': {
+      fullWidth={true}
+      actions={
+        <>
+          <ResponsiveButton 
+            onClick={handleClose}
+            disabled={loading}
+            mobileText="Cancel"
+            desktopText="Cancel"
+            sx={{ mr: 1 }}
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
+            onClick={handleCopy}
+            variant="contained"
+            disabled={loading || !newPortfolioName.trim()}
+            icon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
+            mobileText={loading ? 'Copying...' : 'Copy'}
+            desktopText={loading ? 'Copying...' : 'Copy Portfolio'}
+            sx={{
               borderRadius: 1,
-            }
-          }}
-        />
-
-        {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+              px: 3,
+            }}
+          >
+            {loading ? 'Copying...' : 'Copy Portfolio'}
+          </ResponsiveButton>
+        </>
+      }
+    >
+      {sourcePortfolio && (
+        <Box sx={{ m: 2 }}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            <strong>What will be copied:</strong>
+            Copying from:
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • All trades and trade history
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • Cash flows and transactions
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • Deposits and interest settings
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • Portfolio settings and configuration
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
-            Note: The new portfolio will start with zero cash balance and current market values.
+          <Typography variant="h6" color="primary">
+            {sourcePortfolio.name}
           </Typography>
         </Box>
-      </DialogContent>
+      )}
 
-      <DialogActions sx={{ p: 3, pt: 1 }}>
-        <ResponsiveButton 
-          onClick={handleClose}
-          disabled={loading}
-          mobileText="Cancel"
-          desktopText="Cancel"
-          sx={{ mr: 1 }}
-        >
-          Cancel
-        </ResponsiveButton>
-        <ResponsiveButton
-          onClick={handleCopy}
-          variant="contained"
-          disabled={loading || !newPortfolioName.trim()}
-          icon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
-          mobileText={loading ? 'Copying...' : 'Copy'}
-          desktopText={loading ? 'Copying...' : 'Copy Portfolio'}
-          sx={{
+      <TextField
+        autoFocus
+        fullWidth
+        label="New Portfolio Name"
+        placeholder="Enter name for the copied portfolio"
+        value={newPortfolioName}
+        onChange={(e) => setNewPortfolioName(e.target.value)}
+        onKeyPress={handleKeyPress}
+        disabled={loading}
+        sx={{
+          '& .MuiOutlinedInput-root': {
             borderRadius: 1,
-            px: 3,
-          }}
-        >
-          {loading ? 'Copying...' : 'Copy Portfolio'}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+          }
+        }}
+      />
+
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          <strong>What will be copied:</strong>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • All trades and trade history
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Cash flows and transactions
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Deposits and interest settings
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Portfolio settings and configuration
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+          Note: The new portfolio will start with zero cash balance and current market values.
+        </Typography>
+      </Box>
+    </ModalWrapper>
   );
 };

@@ -89,4 +89,31 @@ export class CreatePortfolioDto {
   @Min(0)
   @Max(1000000000)
   cashBalance?: number;
+
+  /**
+   * Portfolio visibility setting (PRIVATE or PUBLIC).
+   */
+  @ApiProperty({
+    description: 'Portfolio visibility setting',
+    example: 'PRIVATE',
+    enum: ['PRIVATE', 'PUBLIC'],
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  visibility?: 'PRIVATE' | 'PUBLIC';
+
+  /**
+   * Template name for public portfolios.
+   */
+  @ApiProperty({
+    description: 'Template name for public portfolios',
+    example: 'Tech Growth Template',
+    required: false,
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  templateName?: string;
 }

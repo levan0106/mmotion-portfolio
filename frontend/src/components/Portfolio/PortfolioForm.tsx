@@ -2,12 +2,8 @@
  * Portfolio form component for creating and editing portfolios
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
@@ -15,18 +11,38 @@ import {
   MenuItem,
   Box,
   Alert,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  Chip,
+  Switch,
+  FormControlLabel,
+  Divider,
+  Tooltip,
 } from '@mui/material';
+import {
+  Add as AddIcon,
+  ContentCopy as CopyIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { CreatePortfolioDto, UpdatePortfolioDto } from '../../types';
+import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../../types';
 import { useAccount } from '../../contexts/AccountContext';
 import { ResponsiveButton } from '../Common';
+import { ModalWrapper } from '../Common/ModalWrapper';
+import { PublicPortfolioSelector } from './PublicPortfolioSelector';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface PortfolioFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreatePortfolioDto | UpdatePortfolioDto) => void;
+  onCopyFromPublic?: (sourcePortfolioId: string, name: string) => void;
   initialData?: Partial<CreatePortfolioDto>;
   isEditing?: boolean;
   isLoading?: boolean;
@@ -42,24 +58,29 @@ const schema = yup.object({
 
 const currencies = [
   { code: 'VND', name: 'Vietnamese Dong' },
-  { code: 'USD', name: 'US Dollar' },
-  { code: 'EUR', name: 'Euro' },
-  { code: 'GBP', name: 'British Pound' },
-  { code: 'JPY', name: 'Japanese Yen' },
+  { code: 'USD', name: 'US Dollar' }
 ];
-
-// Funding source is now a free text input, no predefined options
 
 const PortfolioForm: React.FC<PortfolioFormProps> = ({
   open,
   onClose,
   onSubmit,
+  onCopyFromPublic,
   initialData,
   isEditing = false,
   isLoading = false,
   error,
 }) => {
   const { accountId } = useAccount();
+  const { hasPermission } = usePermissions();
+  const [creationMode, setCreationMode] = useState<'create' | 'copy'>('create');
+  const [selectedPublicPortfolio, setSelectedPublicPortfolio] = useState<Portfolio | null>(null);
+  const [showPublicSelector, setShowPublicSelector] = useState(false);
+  const [visibility, setVisibility] = useState<'PRIVATE' | 'PUBLIC'>('PRIVATE');
+  const [description, setDescription] = useState('');
+  const [templateName, setTemplateName] = useState('');
+  
+  const canManageVisibility = hasPermission('portfolio.visibility.manage');
   const {
     control,
     handleSubmit,
@@ -83,41 +104,169 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
         fundingSource: initialData?.fundingSource || '',
         accountId: initialData?.accountId || accountId,
       });
+      
+      // Load visibility data when editing
+      if (isEditing && initialData) {
+        console.log('Loading visibility data:', {
+          visibility: initialData.visibility,
+          description: initialData.description,
+          templateName: initialData.templateName
+        });
+        setVisibility(initialData.visibility || 'PRIVATE');
+        setDescription(initialData.description || '');
+        setTemplateName(initialData.templateName || '');
+      }
     }
-  }, [open, initialData, reset, accountId]);
+  }, [open, initialData, reset, accountId, isEditing]);
 
-  // Additional effect to handle initialData changes when form is already open
-  React.useEffect(() => {
-    if (open && initialData) {
-      reset({
-        name: initialData.name || '',
-        baseCurrency: initialData.baseCurrency || 'VND',
-        fundingSource: initialData.fundingSource || '',
-        accountId: initialData.accountId || accountId,
-      });
-    }
-  }, [initialData, open, reset, accountId]);
-
-  const handleFormSubmit = (data: CreatePortfolioDto) => {
-    onSubmit(data);
-  };
 
   const handleClose = () => {
     reset();
+    setCreationMode('create');
+    setSelectedPublicPortfolio(null);
+    setShowPublicSelector(false);
+    setVisibility('PRIVATE');
+    setDescription('');
+    setTemplateName('');
     onClose();
   };
 
+  const handleModeChange = (mode: 'create' | 'copy') => {
+    setCreationMode(mode);
+    if (mode === 'create') {
+      setSelectedPublicPortfolio(null);
+      setShowPublicSelector(false);
+    }
+  };
+
+  const handlePublicPortfolioSelect = (portfolio: Portfolio) => {
+    setSelectedPublicPortfolio(portfolio);
+    setShowPublicSelector(false);
+    // Update form with portfolio name and copy baseCurrency and fundingSource from template
+    reset({
+      name: `${portfolio.templateName || portfolio.name} Copy`,
+      baseCurrency: portfolio.baseCurrency,
+      fundingSource: portfolio.fundingSource || '',
+      accountId: accountId || '',
+    });
+  };
+
+  const handleFormSubmit = (data: CreatePortfolioDto) => {
+    if (creationMode === 'copy' && selectedPublicPortfolio && onCopyFromPublic) {
+      onCopyFromPublic(selectedPublicPortfolio.portfolioId, data.name);
+    } else {
+      const submitData = { ...data };
+      
+      // Only include visibility data when editing
+      if (isEditing) {
+        submitData.visibility = visibility;
+        submitData.description = visibility === 'PUBLIC' ? description : undefined;
+        submitData.templateName = visibility === 'PUBLIC' ? templateName : undefined;
+      }
+      
+      onSubmit(submitData);
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {isEditing ? 'Edit Portfolio' : 'Create New Portfolio'}
-      </DialogTitle>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <DialogContent>
+    <>
+      <ModalWrapper
+      open={open}
+      onClose={handleClose}
+      title={isEditing ? 'Edit Portfolio' : 'Create New Portfolio'}
+      maxWidth="sm"
+      fullWidth
+      loading={isLoading}
+      actions={
+        <>
+          <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText="Cancel" desktopText="Cancel">
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton
+            onClick={handleSubmit(handleFormSubmit)}
+            variant="contained"
+            disabled={isLoading || (creationMode === 'copy' && !selectedPublicPortfolio)}
+            mobileText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            desktopText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+          >
+            {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+          </ResponsiveButton>
+        </>
+      }
+    >
+        <Box sx={{ pt: 2 }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
+          )}
+
+          {/* Creation Mode Toggle - Only for new portfolios */}
+          {!isEditing && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                How would you like to create this portfolio?
+              </Typography>
+              <ToggleButtonGroup
+                value={creationMode}
+                exclusive
+                onChange={(_, value) => value && handleModeChange(value)}
+                fullWidth
+              >
+                <ToggleButton value="create">
+                  <AddIcon sx={{ mr: 1 }} />
+                  Create New
+                </ToggleButton>
+                <ToggleButton value="copy">
+                  <CopyIcon sx={{ mr: 1 }} />
+                  Copy from Template
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          )}
+
+          {/* Public Portfolio Selection */}
+          {!isEditing && creationMode === 'copy' && (
+            <Box sx={{ mb: 3 }}>
+              {selectedPublicPortfolio ? (
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography variant="h6">{selectedPublicPortfolio.templateName || selectedPublicPortfolio.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedPublicPortfolio.description || 'No description available'}
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Chip label={selectedPublicPortfolio.baseCurrency} size="small" />
+                          <Chip 
+                            label={`${selectedPublicPortfolio.trades?.length || 0} trades`} 
+                            size="small" 
+                            sx={{ ml: 1 }} 
+                          />
+                        </Box>
+                      </Box>
+                      <IconButton onClick={() => setShowPublicSelector(true)}>
+                        <SearchIcon />
+                      </IconButton>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography variant="body1" gutterBottom>
+                    Select a public portfolio template to copy from
+                  </Typography>
+                  <ResponsiveButton
+                    onClick={() => setShowPublicSelector(true)}
+                    variant="outlined"
+                    startIcon={<SearchIcon />}
+                  >
+                    Browse Templates
+                  </ResponsiveButton>
+                </Box>
+              )}
+            </Box>
           )}
 
           <Box display="flex" flexDirection="column" gap={2}>
@@ -136,45 +285,51 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               )}
             />
 
-            <Controller
-              name="baseCurrency"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth error={!!errors.baseCurrency}>
-                  <InputLabel>Base Currency</InputLabel>
-                  <Select {...field} label="Base Currency">
-                    {currencies.map((currency) => (
-                      <MenuItem key={currency.code} value={currency.code}>
-                        {currency.code} - {currency.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.baseCurrency && (
-                    <Box component="span" sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5, ml: 1.75 }}>
-                      {errors.baseCurrency.message}
-                    </Box>
+            {/* Only show baseCurrency and fundingSource when not copying from template */}
+            {!(!isEditing && creationMode === 'copy') && (
+              <>
+                <Controller
+                  name="fundingSource"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Funding Source (Optional)"
+                      fullWidth
+                      error={!!errors.fundingSource}
+                      helperText={errors.fundingSource?.message}
+                      placeholder="VIETCOMBANK, TPBANK, etc."
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                    />
                   )}
-                </FormControl>
-              )}
-            />
-
-            <Controller
-              name="fundingSource"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Funding Source (Optional)"
-                  fullWidth
-                  error={!!errors.fundingSource}
-                  helperText={errors.fundingSource?.message || "Optional: Enter the source of funding for this portfolio (e.g., VIETCOMBANK, TPBANK, etc.)"}
-                  placeholder="VIETCOMBANK, TPBANK, etc."
-                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
-              )}
-            />
 
-            <Controller
+                <Controller
+                  name="baseCurrency"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl fullWidth error={!!errors.baseCurrency}>
+                      <InputLabel>Base Currency</InputLabel>
+                      <Select {...field} label="Base Currency" disabled={true}>
+                        {currencies.map((currency) => (
+                          <MenuItem key={currency.code} value={currency.code}>
+                            {currency.code} - {currency.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.baseCurrency && (
+                        <Box component="span" sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5, ml: 1.75 }}>
+                          {errors.baseCurrency.message}
+                        </Box>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </>
+            )}
+
+            {/* Account ID field hidden for simpler layout - value is set automatically */}
+            {/* <Controller
               name="accountId"
               control={control}
               render={({ field }) => (
@@ -185,28 +340,68 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                   error={!!errors.accountId}
                   helperText={errors.accountId?.message}
                   placeholder="Enter account ID"
-                  disabled={isEditing} // Don't allow changing account ID when editing
+                  disabled={true} // Always disabled - account ID is set automatically
                 />
               )}
-            />
+            /> */}
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText="Cancel" desktopText="Cancel">
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton
-            type="submit"
-            variant="contained"
-            disabled={isLoading}
-            mobileText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-            desktopText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-          >
-            {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-          </ResponsiveButton>
-        </DialogActions>
-      </form>
-    </Dialog>
+
+          {/* Portfolio Visibility Settings - Only for editing portfolios and users with permission */}
+          {isEditing && canManageVisibility && (
+            <Box sx={{ mt: 3 }}>
+              <Divider sx={{ mb: 2 }} />
+              
+              <Tooltip 
+                title="Control who can view and copy this portfolio. Public portfolios can be copied by other users."
+                placement="top"
+                arrow
+              >
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={visibility === 'PUBLIC'}
+                      onChange={(e) => setVisibility(e.target.checked ? 'PUBLIC' : 'PRIVATE')}
+                      color="primary"
+                    />
+                  }
+                  label={visibility === 'PUBLIC' ? 'Public Portfolio' : 'Private Portfolio'}
+                />
+              </Tooltip>
+              
+              {visibility === 'PUBLIC' && (
+                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    label="Template Name"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    fullWidth
+                    placeholder="Enter template name for public portfolio"
+                    helperText="This name will be shown to other users when browsing public portfolios"
+                  />
+                  <TextField
+                    label="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    placeholder="Describe this portfolio template..."
+                    helperText="Optional description for the public portfolio template"
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+      </ModalWrapper>
+
+      {/* Public Portfolio Selector Modal */}
+      <PublicPortfolioSelector
+        open={showPublicSelector}
+        onClose={() => setShowPublicSelector(false)}
+        onSelect={handlePublicPortfolioSelect}
+      />
+    </>
   );
 };
 

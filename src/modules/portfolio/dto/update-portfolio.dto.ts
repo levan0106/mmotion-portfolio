@@ -31,4 +31,19 @@ export class UpdatePortfolioDto extends PartialType(CreatePortfolioDto) {
   @IsString()
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
   fundingSource?: string;
+
+  /**
+   * Updated portfolio visibility setting.
+   */
+  @IsOptional()
+  @IsString()
+  visibility?: 'PRIVATE' | 'PUBLIC';
+
+  /**
+   * Updated template name for public portfolios.
+   */
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  templateName?: string;
 }

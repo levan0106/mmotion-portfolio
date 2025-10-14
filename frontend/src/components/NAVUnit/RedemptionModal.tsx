@@ -5,13 +5,12 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   Box,
   Grid,
   Alert,
   Card,
   CircularProgress,
-  TextField,
+  TextField
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -19,7 +18,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Remove as RemoveIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ResponsiveTypography } from '../Common';
 import { RedeemFromFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -197,25 +196,25 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       <Box sx={{ pt: 1 }}>
         {/* Fund Information */}
         <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <ResponsiveTypography variant="pageTitle" sx={{ color: 'text.secondary' }} gutterBottom>
             Fund Information
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Fund Name
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {portfolio.name}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
         </Card>
@@ -321,40 +320,40 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
 
         {/* Calculation Summary */}
         <Card variant="outlined" sx={{ mt: 3, p: 2, backgroundColor: 'warning.50', border: '1px solid', borderColor: 'warning.200' }}>
-          <Typography variant="subtitle2" color="warning.main" gutterBottom>
+          <ResponsiveTypography variant="pageTitle" sx={{ color: 'warning.main' }} gutterBottom>
             Redemption Summary
-          </Typography>
+          </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 NAV per Unit
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Units to Redeem
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatNumberWithSeparators(formData.units, 3)}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="body2" color="text.secondary">
+              <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
                 Calculated Amount
-              </Typography>
-              <Typography variant="h6" color="primary">
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(calculatedAmount, 'VND')}
-              </Typography>
+              </ResponsiveTypography>
             </Grid>
           </Grid>
           {calculatedAmount > 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              <Typography variant="body2">
+              <ResponsiveTypography variant="labelSmall">
                 Amount is automatically calculated based on the units you enter and current NAV per unit.
-              </Typography>
+              </ResponsiveTypography>
             </Alert>
           )}
         </Card>
@@ -368,26 +367,26 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
 
         {/* Date Awareness Notice */}
         <Alert severity="warning" sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 500 }}>
             ⚠️ Data Impact Notice
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
             Processing this redemption will automatically update:
-          </Typography>
+          </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <Typography component="li" variant="body2">
+            <ResponsiveTypography component="li" variant="labelSmall">
               Portfolio NAV per unit and total outstanding units
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               Investor holding metrics (units, investment, P&L)
-            </Typography>
-            <Typography component="li" variant="body2">
+            </ResponsiveTypography>
+            <ResponsiveTypography component="li" variant="labelSmall">
               Cash flow records and portfolio balance
-            </Typography>
+            </ResponsiveTypography>
           </Box>
-          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
             All calculations will be based on current date and current NAV per unit
-          </Typography>
+          </ResponsiveTypography>
         </Alert>
       </Box>
     </ModalWrapper>

@@ -165,6 +165,40 @@ export class Portfolio {
   @Column({ type: 'timestamp', nullable: true, name: 'last_nav_date' })
   lastNavDate: Date;
 
+  // ===== VISIBILITY FIELDS =====
+  
+  /**
+   * Portfolio visibility setting (PRIVATE or PUBLIC)
+   */
+  @Column({ 
+    type: 'enum', 
+    enum: ['PRIVATE', 'PUBLIC'], 
+    default: 'PRIVATE',
+    name: 'visibility' 
+  })
+  visibility: 'PRIVATE' | 'PUBLIC';
+
+  /**
+   * Template name for public portfolios
+   */
+  @Column({ 
+    type: 'varchar', 
+    length: 100, 
+    nullable: true,
+    name: 'template_name' 
+  })
+  templateName?: string;
+
+  /**
+   * Template description for public portfolios
+   */
+  @Column({ 
+    type: 'text', 
+    nullable: true,
+    name: 'description' 
+  })
+  description?: string;
+
   /**
    * Timestamp when the portfolio was created.
    */

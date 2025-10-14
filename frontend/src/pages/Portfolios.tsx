@@ -11,6 +11,7 @@ import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { apiService } from '../services/api';
 
 const Portfolios: React.FC = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Portfolios: React.FC = () => {
     createPortfolio,
     updatePortfolio,
     deletePortfolio,
+    refetch,
     isCreating,
     isUpdating,
     isDeleting,
@@ -89,6 +91,25 @@ const Portfolios: React.FC = () => {
     }
   };
 
+  const handleCopyFromPublic = async (sourcePortfolioId: string, name: string) => {
+    try {
+      setFormError('');
+      
+      await apiService.copyFromPublicPortfolio({
+        sourcePortfolioId,
+        targetAccountId: accountId!,
+        name
+      });
+      
+      // Refetch portfolios to show the new copied portfolio
+      await refetch();
+      
+      handleCloseForm();
+    } catch (error: any) {
+      setFormError(error.response?.data?.message || 'Failed to copy portfolio. Please try again.');
+    }
+  };
+
   // Get the portfolio data for editing
   const getEditingPortfolioData = (): Partial<CreatePortfolioDto> | undefined => {
     if (!editingPortfolio) return undefined;
@@ -101,6 +122,9 @@ const Portfolios: React.FC = () => {
       baseCurrency: portfolio.baseCurrency,
       fundingSource: portfolio.fundingSource || '',
       accountId: portfolio.accountId,
+      visibility: portfolio.visibility,
+      templateName: portfolio.templateName,
+      description: portfolio.description,
     };
   };
 
@@ -128,6 +152,7 @@ const Portfolios: React.FC = () => {
         open={isFormOpen}
         onClose={handleCloseForm}
         onSubmit={handleSubmitForm}
+        onCopyFromPublic={handleCopyFromPublic}
         initialData={getEditingPortfolioData()}
         isEditing={!!editingPortfolio}
         isLoading={isCreating || isUpdating}

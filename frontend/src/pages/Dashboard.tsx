@@ -194,7 +194,7 @@ const Dashboard: React.FC = () => {
               >
                 Financial Dashboard
               </ResponsiveTypography>
-              <ResponsiveTypography variant="pageSubtitle">
+              <ResponsiveTypography variant="pageSubtitle" ellipsis={false}>
                 Comprehensive portfolio management and investment analytics
               </ResponsiveTypography>
             </Box>

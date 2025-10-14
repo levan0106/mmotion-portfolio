@@ -92,6 +92,16 @@
   min-width: 0;
 }
 
+.portfolio-card__public-icon {
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.portfolio-card__public-icon:hover {
+  transform: scale(1.1);
+  color: #1565c0 !important;
+}
+
 .portfolio-card__type-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
@@ -275,6 +285,20 @@
   background: #f8fafc;
   border-top: 1px solid #f3f4f6;
   gap: 0.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.portfolio-card__actions .MuiIconButton-root {
+  position: relative;
+  z-index: 11;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.portfolio-card__actions .MuiIconButton-root:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
 }
 
 .portfolio-card__view-btn {

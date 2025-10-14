@@ -160,6 +160,22 @@ class ApiService {
     return response.data;
   }
 
+  // Public portfolio methods
+  async getPublicPortfolios(): Promise<Portfolio[]> {
+    const response = await this.api.get('/api/v1/portfolios/public-templates');
+    return response.data;
+  }
+
+  async copyFromPublicPortfolio(data: { sourcePortfolioId: string; targetAccountId: string; name: string }): Promise<Portfolio> {
+    const response = await this.api.post('/api/v1/portfolios/copy-from-public', data);
+    return response.data;
+  }
+
+  async updatePortfolioVisibility(portfolioId: string, accountId: string, data: { visibility: 'PRIVATE' | 'PUBLIC'; templateName?: string; description?: string }): Promise<Portfolio> {
+    const response = await this.api.put(`/api/v1/portfolios/${portfolioId}/visibility?accountId=${accountId}`, data);
+    return response.data;
+  }
+
   // Portfolio analytics endpoints
   // async getPortfolioNav(portfolioId: string): Promise<{ navValue: number; totalValue: number }> {
   //   const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav`);
