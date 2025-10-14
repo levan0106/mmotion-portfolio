@@ -137,24 +137,26 @@ export const AccountSwitcher: React.FC = () => {
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Tooltip title="Switch Account">
-          <ResponsiveButton
-            onClick={handleClick}
-            variant="outlined"
-            icon={<AccountIcon />}
-            mobileText="Account"
-            desktopText={loading ? 'Switching...' : (currentAccount?.name || 'Account')}
-            disabled={loading}
-            sx={{
-              height: 36,
-              justifyContent: 'space-between',
-              textTransform: 'none',
-              borderRadius: 1.5,
-              //px: 1.5,
-              //py: 0.5,
-            }}
-          >
-            {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
-          </ResponsiveButton>
+          <span>
+            <ResponsiveButton
+              onClick={handleClick}
+              variant="outlined"
+              icon={<AccountIcon />}
+              mobileText="Account"
+              desktopText={loading ? 'Switching...' : (currentAccount?.name || 'Account')}
+              disabled={loading}
+              sx={{
+                height: 36,
+                justifyContent: 'space-between',
+                textTransform: 'none',
+                borderRadius: 1.5,
+                //px: 1.5,
+                //py: 0.5,
+              }}
+            >
+              {loading ? 'Switching...' : (currentAccount?.name || 'Account')}
+            </ResponsiveButton>
+          </span>
         </Tooltip>
 
       </Box>

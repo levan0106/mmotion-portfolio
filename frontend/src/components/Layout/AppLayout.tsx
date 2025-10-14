@@ -210,7 +210,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isDrawerCollapsed = isMobile ? false : drawerCollapsed;
 
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Professional Header */}
       <Box
         sx={{
@@ -334,7 +334,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Professional Navigation */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', py: 0.25 }}>
+      <Box sx={{ flexGrow: 1, overflow: 'visible', py: 0.25 }}>
         <List sx={{ px: 0.25 }}>
           {menuItems
             .filter((item) => {
@@ -487,6 +487,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
         backdropFilter: 'blur(12px)',
         borderRadius: '12px 0 0 0',
+        overflow: 'hidden',
+        flexShrink: 0,
       }}>
         {/* User Profile Section */}
         <Tooltip 
@@ -513,8 +515,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               justifyContent: isDrawerCollapsed ? 'center' : 'flex-start',
               '&:hover': {
                 background: alpha(theme.palette.background.paper, 0.5),
-                transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
+                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.1)}`,
               }
             }}
           >

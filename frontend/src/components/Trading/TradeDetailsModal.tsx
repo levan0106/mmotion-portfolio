@@ -10,7 +10,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Close as CloseIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
 import TradeDetails from './TradeDetails';
 
@@ -106,7 +106,6 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
             <TradeDetails
               trade={trade}
               tradeDetails={tradeDetails}
-              onEdit={onEdit}
               isLoading={isLoading}
             />
           </Box>
@@ -118,11 +117,13 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
         borderTop: 1, 
         borderColor: 'divider',
         py: 1.5,
-        px: 2
+        px: 2,
+        justifyContent: 'flex-end',
+        gap: 1
       }}>
         <ResponsiveButton 
           onClick={onClose}
-          variant="contained"
+          variant="outlined"
           icon={<CloseIcon />}
           mobileText="Close"
           desktopText="Close"
@@ -130,6 +131,18 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
         >
           Close
         </ResponsiveButton>
+        {onEdit && (
+          <ResponsiveButton 
+            onClick={() => onEdit(trade)}
+            variant="contained"
+            icon={<EditIcon />}
+            mobileText="Edit"
+            desktopText="Edit Trade"
+            sx={{ textTransform: 'none', px: 3 }}
+          >
+            Edit Trade
+          </ResponsiveButton>
+        )}
       </DialogActions>
     </Dialog>
   );

@@ -345,7 +345,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
       <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
               {/* Basic Information Section */}
-              <Box mb={isModal ? 1 : 1.5}>
+              <Box mb={isModal ? 1 : 1.5} mt={isModal ? 1 : 1.5}>
                 <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
                   Basic Information
                 </Typography>

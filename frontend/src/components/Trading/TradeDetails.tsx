@@ -14,14 +14,12 @@ import {
   Alert,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types/trading';
 import { formatCurrency, formatNumber } from '../../utils/format';
-import { ResponsiveButton } from '../Common';
 
 export interface TradeDetail {
   detailId: string;
@@ -63,7 +61,6 @@ export interface Trade {
 export interface TradeDetailsProps {
   trade: Trade;
   tradeDetails?: TradeDetail[];
-  onEdit?: (trade: Trade) => void;
   isLoading?: boolean;
 }
 
@@ -74,7 +71,6 @@ export interface TradeDetailsProps {
 export const TradeDetails: React.FC<TradeDetailsProps> = ({
   trade,
   tradeDetails = [],
-  onEdit,
   isLoading = false,
 }) => {
   const getSideColor = (side: TradeSide) => {
@@ -160,26 +156,6 @@ export const TradeDetails: React.FC<TradeDetailsProps> = ({
                 sx={{ fontWeight: 600 }}
               />
             </Box>
-          </Box>
-          <Box display="flex" gap={1}>
-            {onEdit && (
-              <ResponsiveButton
-                variant="contained"
-                icon={<EditIcon />}
-                mobileText="Edit"
-                desktopText="Edit Trade"
-                onClick={() => onEdit(trade)}
-                size="small"
-                sx={{ 
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  px: 2,
-                  py: 0.5
-                }}
-              >
-                Edit Trade
-              </ResponsiveButton>
-            )}
           </Box>
         </Box>
         <Typography variant="body2" color="text.secondary">

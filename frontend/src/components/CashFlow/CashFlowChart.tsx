@@ -83,7 +83,7 @@ interface MonthlyData {
 
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   const { accountId } = useAccount();
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('line');
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('bar');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
   const [lineData, setLineData] = useState<CashFlowData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);

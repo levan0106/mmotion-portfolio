@@ -123,13 +123,12 @@ export const TradeList: React.FC<TradeListProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sideFilter, setSideFilter] = useState<TradeSide | 'ALL'>('ALL');
-  const [typeFilter, setTypeFilter] = useState<TradeType | 'ALL'>('ALL');
-  const [sourceFilter, setSourceFilter] = useState<TradeSource | 'ALL'>('ALL');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [exchangeViewMode, setExchangeViewMode] = useState<'grid' | 'list'>('list');
   const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const [groupByDate, setGroupByDate] = useState<boolean>(true);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   // Filter and search trades
   const filteredTrades = useMemo(() => {
@@ -140,12 +139,10 @@ export const TradeList: React.FC<TradeListProps> = ({
         trade.notes?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesSide = sideFilter === 'ALL' || trade.side === sideFilter;
-      const matchesType = typeFilter === 'ALL' || trade.tradeType === typeFilter;
-      const matchesSource = sourceFilter === 'ALL' || trade.source === sourceFilter;
 
-      return matchesSearch && matchesSide && matchesType && matchesSource;
+      return matchesSearch && matchesSide;
     });
-  }, [trades, searchTerm, sideFilter, typeFilter, sourceFilter]);
+  }, [trades, searchTerm, sideFilter]);
 
   // Group trades by date
   const groupedTrades = useMemo(() => {
@@ -738,147 +735,150 @@ export const TradeList: React.FC<TradeListProps> = ({
         })()}
       </Box>
 
-      {/* Search and Filters */}
-      <Box sx={{ mb: isCompactMode ? 2 : 3 }}>
-        {/* Title and Action Buttons */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 3}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <ResponsiveTypography variant={isCompactMode ? "cardTitle" : "pageTitle"} fontWeight="600" color="text.primary">
-              Trade List
+        
+        {/* Simplified Filter Section */}
+        <Box sx={{ mb: isCompactMode ? 1.5 : 3 }}>
+          {/* Header with Filter Toggle */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 0.5 : 2}>
+            <ResponsiveTypography variant="pageTitle" sx={{ fontSize: isCompactMode ? '0.9rem' : undefined }}>
+              Trade History
             </ResponsiveTypography>
-            {groupByDate && Object.keys(groupedTrades).length > 1 && (
+            <Box display="flex" gap={1} alignItems="center">
+              {/* <ResponsiveTypography variant="formHelper">
+                {filteredTrades.length} trades
+              </ResponsiveTypography> */}
               <ResponsiveButton
-                variant="outlined"
                 size="small"
-                icon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-                onClick={toggleAllDatesCollapse}
-                mobileText={collapsedDates.size === Object.keys(groupedTrades).length ? 'E' : 'C'}
-                desktopText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
+                variant="outlined"
+                icon={<FilterIcon />}
+                mobileText="Filter"
+                desktopText="Filter"
+                onClick={() => setShowFilters(!showFilters)}
+                color={showFilters ? 'primary' : 'inherit'}
+              >
+                Filter
+              </ResponsiveButton>
+            </Box>
+          </Box>
+
+          {/* Collapsible Filter Section */}
+          {showFilters && (
+            <Box sx={{ 
+              mb: 2, 
+              p: 2, 
+              border: '1px solid', 
+              borderColor: 'divider', 
+              borderRadius: 2,
+              backgroundColor: 'background.paper'
+            }}>
+              <Grid container spacing={2}>
+                {/* Search */}
+                <Grid item xs={12} md={6}>
+                  <Box>
+                    {/* <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
+                      Search
+                    </ResponsiveTypography> */}
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="Search trades by symbol, name, or notes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      InputProps={{
+                        startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                      }}
+                      sx={{
+                        minWidth: 400,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Filters */}
+                <Grid item xs={12} md={6}>
+                  <Box>
+                    {/* <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
+                      Filters
+                    </ResponsiveTypography> */}
+                    <FormControl size="small" sx={{ minWidth: 300 }}>
+                      <InputLabel>Side</InputLabel>
+                      <Select
+                        value={sideFilter}
+                        label="Side"
+                        onChange={(e) => setSideFilter(e.target.value as TradeSide | 'ALL')}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        <MenuItem value="ALL">All Sides</MenuItem>
+                        <MenuItem value={TradeSide.BUY}>Buy</MenuItem>
+                        <MenuItem value={TradeSide.SELL}>Sell</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+
+          {/* Table Controls */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap">
+            <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+              <ResponsiveButton
+                variant="text"
+                icon={<CalendarIcon />}
+                mobileText="Group"
+                desktopText="Group by Date"
+                onClick={() => setGroupByDate(!groupByDate)}
+                size="small"
                 sx={{ 
                   textTransform: 'none',
-                  minWidth: isCompactMode ? 60 : 80,
-                  px: isCompactMode ? 1 : 2
+                  fontSize: '0.75rem',
+                  minWidth: 'auto',
+                  px: 1,
+                  py: 0.5,
+                  color: groupByDate ? 'primary.main' : 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    color: groupByDate ? 'primary.dark' : 'text.primary'
+                  }
                 }}
               >
-                {isCompactMode ? (collapsedDates.size === Object.keys(groupedTrades).length ? 'E' : 'C') : (collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All')}
+                Group by Date
               </ResponsiveButton>
-            )}
-          </Box>
-          <Box display="flex" gap={2}>
-            <ResponsiveButton
-              variant={groupByDate ? 'contained' : 'outlined'}
-              icon={<CalendarIcon />}
-              startIcon={<CalendarIcon />}
-              onClick={() => setGroupByDate(!groupByDate)}
-              mobileText="Group"
-              desktopText="Group by Date"
-              sx={{ textTransform: 'none' }}
-            >
-              Group by Date
-            </ResponsiveButton>
-            <ResponsiveButton
-              variant="outlined"
-              icon={<FilterIcon />}
-              startIcon={<FilterIcon />}
-              onClick={() => {
-                // Toggle filter visibility
-              }}
-              mobileText="Filter"
-              desktopText="Filters"
-              sx={{ textTransform: 'none' }}
-            >
-              Filters
-            </ResponsiveButton>
-            <ResponsiveButton
-              variant="contained"
-              icon={<AddIcon />}
-              startIcon={<AddIcon />}
-              onClick={onCreate}
-              mobileText="New"
-              desktopText="New Trade"
-              sx={{ textTransform: 'none' }}
-            >
-              New Trade
-            </ResponsiveButton>
+              
+              {groupByDate && Object.keys(groupedTrades).length > 1 && (
+                <ResponsiveButton
+                  size="small"
+                  variant="text"
+                  icon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                  mobileText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand' : 'Collapse'}
+                  desktopText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
+                  onClick={toggleAllDatesCollapse}
+                  sx={{ 
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    minWidth: 'auto',
+                    px: 1,
+                    py: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                      color: 'text.primary'
+                    }
+                  }}
+                >
+                  {collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
+                </ResponsiveButton>
+              )}
+            </Box>
+            
+            <ResponsiveTypography variant="formHelper">
+              Total: <strong>{filteredTrades.length}</strong> trades
+            </ResponsiveTypography>
           </Box>
         </Box>
-        
-        <Grid container spacing={isCompactMode ? 1 : 2} mb={isCompactMode ? 2 : 3}>
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              placeholder="Search trades by symbol, name, or notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Side</InputLabel>
-              <Select
-                value={sideFilter}
-                label="Side"
-                onChange={(e) => setSideFilter(e.target.value as TradeSide | 'ALL')}
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="ALL">All Sides</MenuItem>
-                <MenuItem value={TradeSide.BUY}>Buy</MenuItem>
-                <MenuItem value={TradeSide.SELL}>Sell</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={typeFilter}
-                label="Type"
-                onChange={(e) => setTypeFilter(e.target.value as TradeType | 'ALL')}
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="ALL">All Types</MenuItem>
-                <MenuItem value={TradeType.MARKET}>Market</MenuItem>
-                <MenuItem value={TradeType.LIMIT}>Limit</MenuItem>
-                <MenuItem value={TradeType.STOP}>Stop</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Source</InputLabel>
-              <Select
-                value={sourceFilter}
-                label="Source"
-                onChange={(e) => setSourceFilter(e.target.value as TradeSource | 'ALL')}
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="ALL">All Sources</MenuItem>
-                <MenuItem value={TradeSource.MANUAL}>Manual</MenuItem>
-                <MenuItem value={TradeSource.API}>API</MenuItem>
-                <MenuItem value={TradeSource.IMPORT}>Import</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <Box display="flex" alignItems="center" height="100%">
-              <Chip
-                label={`${filteredTrades.length} trades`}
-                color="primary"
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
 
       {/* Trades Table */}
       <TableContainer 

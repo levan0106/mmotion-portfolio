@@ -14,6 +14,7 @@ import {
   CardContent,
   Tooltip,
   IconButton,
+  Fab,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -296,30 +297,6 @@ const PortfolioDetail: React.FC = () => {
                 </ResponsiveButton>
               </span>
             </Tooltip>
-            <ResponsiveButton
-              variant="contained"
-              icon={<AddIcon />}
-              startIcon={<AddIcon />}
-              onClick={() => setShowCreateForm(true)}
-              mobileText="New"
-              desktopText="New Trade"
-              sx={{ 
-                borderRadius: 2, 
-                px: { xs: 2, sm: 3 },
-                py: { xs: 0.75, sm: 1 },
-                width: { xs: '100%', sm: 'auto' },
-                minWidth: { xs: 'auto', sm: '120px' },
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                }
-              }}
-            >
-              <ResponsiveTypography variant="buttonText">
-                New Trade
-              </ResponsiveTypography>
-            </ResponsiveButton>
           </Box>
         </Box>
       </Box>
@@ -858,6 +835,29 @@ const PortfolioDetail: React.FC = () => {
           defaultPortfolioId={portfolioId!}
         />
       </ModalWrapper>
+
+      {/* Floating Action Button for Quick Create Trade */}
+      <Tooltip title="Create New Trade" placement="left" arrow>
+        <Fab
+          color="primary"
+          aria-label="add trade"
+          onClick={() => setShowCreateForm(true)}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            boxShadow: 3,
+            '&:hover': {
+              boxShadow: 6,
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease-in-out',
+            zIndex: 1000,
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
     </Box>
   );
 };

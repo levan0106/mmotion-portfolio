@@ -197,7 +197,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.1
+              opacity: 0.05
             }}>
               <AccountBalance sx={{ fontSize: 35, color: '#1976d2' }} />
             </Box>
@@ -226,7 +226,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
-            ...applyBorderHover((portfolio.unrealizedInvestPnL || 0) >= 0 ? 'card' : 'alert', {
+            ...applyBorderHover('card', {
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               '&:hover': {
                 transform: 'translateY(-3px)',
@@ -248,7 +248,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.1
+              opacity: 0.05
             }}>
               {(portfolio.unrealizedInvestPnL || 0) >= 0 ? 
                 <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} /> : 
@@ -301,7 +301,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.1
+              opacity: 0.05
             }}>
               <AccountBalance sx={{ fontSize: 35, color: '#9c27b0' }} />
             </Box>
@@ -349,7 +349,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.1
+              opacity: 0.05
             }}>
               <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} />
             </Box>

@@ -6,10 +6,6 @@ import {
   Box,
   Card,
   CardContent,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Table,
   TableBody,
@@ -38,6 +34,7 @@ import {
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import {
   AccountBalance as DepositIcon,
   AccountBalanceWallet as WithdrawIcon,
@@ -48,14 +45,13 @@ import {
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,
   Add as AddIcon,
-  Download as DownloadIcon,
   Timeline as TimelineIcon,
   TableChart as TableIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   SwapHoriz as TransferIcon,
-  DateRange as DateRangeIcon,
   FilterList as FilterIcon,
+  Search as SearchIcon,
   CalendarToday as CalendarIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
@@ -140,6 +136,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   });
   const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const [groupByDate, setGroupByDate] = useState<boolean>(true);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   // Handler để xóa item từ filter
   const handleRemoveFilterType = (valueToRemove: string) => {
@@ -244,7 +241,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         type: dialogType.toUpperCase(),
         description: formData.description,
         reference: formData.reference || undefined,
-        flowDate: formData.flowDate ? new Date(formData.flowDate).toISOString() : undefined,
+        flowDate: formData.flowDate ? new Date(formData.flowDate + 'T00:00:00').toISOString() : undefined,
         currency: formData.currency,
         status: formData.status,
         fundingSource: formData.fundingSource || undefined,
@@ -441,10 +438,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setTabValue(newValue);
   };
 
-  // Helper function to get current local datetime for form
-  const getCurrentLocalDateTime = () => {
+  // Helper function to get current local date for form
+  const getCurrentLocalDate = () => {
     const now = new Date();
-    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    return now.toISOString().slice(0, 10);
   };
 
   // Helper function to reset form with auto-filled flowDate and portfolio funding source
@@ -454,7 +451,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       description: '',
       reference: '',
       currency: 'VND',
-      flowDate: getCurrentLocalDateTime(),
+      flowDate: getCurrentLocalDate(),
       status: 'COMPLETED',
       fundingSource: portfolio?.fundingSource || '',
     });
@@ -491,7 +488,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         toSource: transferData.toSource,
         amount: transferData.amount,
         description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
-        transferDate: new Date(transferData.transferDate).toISOString(),
+        transferDate: new Date(transferData.transferDate + 'T00:00:00').toISOString(),
       };
 
       await apiService.transferCashFlow(portfolioId, accountId, payload);
@@ -502,7 +499,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         toSource: '',
         amount: 0,
         description: '',
-        transferDate: getCurrentLocalDateTime(),
+        transferDate: getCurrentLocalDate(),
       });
       setTransferDialogOpen(false);
       setError(null);
@@ -536,7 +533,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       description: cashFlow.description || '',
       reference: cashFlow.reference || '',
       currency: cashFlow.currency || 'VND',
-      flowDate: flowDate.toISOString().slice(0, 16),
+      flowDate: flowDate.toISOString().slice(0, 10),
       status: cashFlow.status || 'COMPLETED',
       fundingSource: cashFlow.fundingSource || '',
     });
@@ -574,39 +571,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
-  // CSV Export functions
-  const generateCSV = (data: CashFlow[]) => {
-    const headers = ['Date', 'Type', 'Amount', 'Currency', 'Description', 'Reference', 'Funding Source', 'Status'];
-    const csvRows = [headers.join(',')];
-    
-    data.forEach(cf => {
-      const row = [
-        formatDate(cf.flowDate),
-        formatTypeName(cf.type),
-        cf.amount,
-        'VND',
-        `"${cf.description.replace(/"/g, '""')}"`,
-        cf.reference || '',
-        cf.fundingSource || '',
-        cf.status
-      ];
-      csvRows.push(row.join(','));
-    });
-    
-    return csvRows.join('\n');
-  };
-
-  const downloadCSV = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -650,7 +614,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               onClick={() => handleCreateCashFlow('deposit')}
               size={compact ? "small" : "medium"}
               mobileText="Deposit"
-              desktopText="Create Deposit"
+              desktopText="Deposit"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -677,7 +641,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               onClick={() => handleCreateCashFlow('withdrawal')}
               size={compact ? "small" : "medium"}
               mobileText="Withdraw"
-              desktopText="Create Withdrawal"
+              desktopText="Withdrawal"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -704,7 +668,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               onClick={() => handleCreateCashFlow('dividend')}
               size={compact ? "small" : "medium"}
               mobileText="Dividend"
-              desktopText="Create Dividend"
+              desktopText="Dividend"
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -736,7 +700,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   toSource: '',
                   amount: 0,
                   description: '',
-                  transferDate: getCurrentLocalDateTime(),
+                  transferDate: getCurrentLocalDate(),
                 });
                 setTransferDialogOpen(true);
               }}
@@ -1061,7 +1025,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Total Transactions
+                    Transactions
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardValueLarge" sx={{ 
                     color: '#7c3aed',
@@ -1125,9 +1089,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           {/* Transaction History Tab */}
           {tabValue === 1 && (
             <Box>
-              {/* Simple Filters Section */}
+              {/* Simplified Filter Section */}
               <Box sx={{ mb: compact ? 1.5 : 3 }}>
-                {/* Header */}
+                {/* Header with Filter Toggle */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 0.5 : 2}>
                   <ResponsiveTypography variant="pageTitle" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
                     Cash Flow History
@@ -1136,6 +1100,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <ResponsiveTypography variant="formHelper">
                       {filteredCashFlows.length} transactions
                     </ResponsiveTypography>
+                    <ResponsiveButton
+                      size="small"
+                      variant="outlined"
+                      icon={<FilterIcon />}
+                      mobileText="Filter"
+                      desktopText="Filter"
+                      onClick={() => setShowFilters(!showFilters)}
+                      color={showFilters ? 'primary' : 'inherit'}
+                    >
+                      Filter
+                    </ResponsiveButton>
                     <ResponsiveButton
                       size="small"
                       variant="outlined"
@@ -1149,279 +1124,210 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     </ResponsiveButton>
                   </Box>
                 </Box>
-                
-                {/* Simple Filter Row */}
-                <Box display="flex" gap={2} alignItems="center" flexWrap="wrap" mb={2}>
-                  {/* Date Filters */}
-                  <Box display="flex" gap={1} alignItems="center">
-                    <DateRangeIcon color="action" />
-                    <DatePicker
-                      label="From"
-                      value={dateFilters.startDate}
-                      onChange={(date) => setDateFilters(prev => ({ ...prev, startDate: date }))}
-                      slotProps={{ 
-                        textField: { 
-                          size: 'small',
-                          sx: { minWidth: 140 },
-                          error: false,
-                          helperText: ''
-                        } 
-                      }}
-                      format="dd/MM/yyyy"
-                    />
-                    <DatePicker
-                      label="To"
-                      value={dateFilters.endDate}
-                      onChange={(date) => setDateFilters(prev => ({ ...prev, endDate: date }))}
-                      slotProps={{ 
-                        textField: { 
-                          size: 'small',
-                          sx: { minWidth: 140 },
-                          error: false,
-                          helperText: ''
-                        } 
-                      }}
-                      format="dd/MM/yyyy"
-                    />
-                    <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<ClearIcon />}
-                      mobileText="Clear"
-                      desktopText="Clear"
-                      onClick={() => setDateFilters({ startDate: null, endDate: null })}
-                      disabled={!dateFilters.startDate && !dateFilters.endDate}
-                    >
-                      Clear
-                    </ResponsiveButton>
-                  </Box>
-                  
-                  {/* Quick Date Buttons */}
-                  <Box display="flex" gap={1}>
-                    <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<CalendarIcon />}
-                      mobileText="7d"
-                      desktopText="7 days"
-                      onClick={() => {
-                        const today = new Date();
-                        const last7Days = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                        setDateFilters({ startDate: last7Days, endDate: today });
-                      }}
-                    >
-                      7 days
-                    </ResponsiveButton>
-                    <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<CalendarIcon />}
-                      mobileText="30d"
-                      desktopText="30 days"
-                      onClick={() => {
-                        const today = new Date();
-                        const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-                        setDateFilters({ startDate: last30Days, endDate: today });
-                      }}
-                    >
-                      30 days
-                    </ResponsiveButton>
-                    <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<CalendarIcon />}
-                      mobileText="90d"
-                      desktopText="90 days"
-                      onClick={() => {
-                        const today = new Date();
-                        const last90Days = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
-                        setDateFilters({ startDate: last90Days, endDate: today });
-                      }}
-                    >
-                      90 days
-                    </ResponsiveButton>
-                  </Box>
-                  
-                  {/* Type Filter */}
-                  <FormControl size="small" sx={{ minWidth: 200 }}>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                      multiple
-                      value={filterTypes}
-                      label="Type"
-                      onChange={(e) => {
-                        const value = e.target.value as string[];
-                        if (value.includes('ALL') && value.length === 1) {
-                          setFilterTypes(['ALL']);
-                        } else if (value.length === 0) {
-                          setFilterTypes(['ALL']);
-                        } else {
-                          setFilterTypes(value);
-                        }
-                      }}
-                      input={<OutlinedInput label="Type" />}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 60, overflow: 'auto' }}>
-                          {selected.map((value) => (
-                            <Chip 
-                              key={value} 
-                              label={value} 
-                              size="small"
-                              onDelete={value === 'ALL' ? undefined : () => handleRemoveFilterType(value)}
-                              onClick={(event) => {
-                                if (value !== 'ALL') {
-                                  event.stopPropagation();
+
+                {/* Collapsible Filter Section */}
+                {showFilters && (
+                  <Box sx={{ 
+                    mb: 2, 
+                    p: 2, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 2,
+                    backgroundColor: 'background.paper'
+                  }}>
+                    <Grid container spacing={2}>
+                      {/* Date Filters */}
+                      <Grid item xs={12} md={6}>
+                        <Box>
+                          <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
+                            Date Range
+                          </ResponsiveTypography>
+                          <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
+                            <DatePicker
+                              label="From"
+                              value={dateFilters.startDate}
+                              onChange={(date) => setDateFilters(prev => ({ ...prev, startDate: date }))}
+                              slotProps={{ 
+                                textField: { 
+                                  size: 'small',
+                                  sx: { minWidth: 160 },
+                                  error: false,
+                                  helperText: ''
+                                } 
+                              }}
+                              format="dd/MM/yyyy"
+                            />
+                            <DatePicker
+                              label="To"
+                              value={dateFilters.endDate}
+                              onChange={(date) => setDateFilters(prev => ({ ...prev, endDate: date }))}
+                              slotProps={{ 
+                                textField: { 
+                                  size: 'small',
+                                  sx: { minWidth: 160 },
+                                  error: false,
+                                  helperText: ''
+                                } 
+                              }}
+                              format="dd/MM/yyyy"
+                            />
+                          </Box>
+                        </Box>
+                      </Grid>
+
+                      {/* Type Filter */}
+                      <Grid item xs={12} md={6}>
+                        <Box>
+                          <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
+                            Transaction Types
+                          </ResponsiveTypography>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>Type</InputLabel>
+                            <Select
+                              multiple
+                              value={filterTypes}
+                              label="Type"
+                              onChange={(e) => {
+                                const value = e.target.value as string[];
+                                if (value.includes('ALL') && value.length === 1) {
+                                  setFilterTypes(['ALL']);
+                                } else if (value.length === 0) {
+                                  setFilterTypes(['ALL']);
+                                } else {
+                                  setFilterTypes(value);
                                 }
                               }}
-                            />
-                          ))}
+                              input={<OutlinedInput label="Type" />}
+                              renderValue={(selected) => (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 60, overflow: 'auto' }}>
+                                  {selected.map((value) => (
+                                    <Chip 
+                                      key={value} 
+                                      label={value} 
+                                      size="small"
+                                      onDelete={value === 'ALL' ? undefined : () => handleRemoveFilterType(value)}
+                                      onClick={(event) => {
+                                        if (value !== 'ALL') {
+                                          event.stopPropagation();
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
+                              MenuProps={{
+                                PaperProps: {
+                                  style: {
+                                    maxHeight: 300,
+                                    width: 250,
+                                  },
+                                },
+                              }}
+                            >
+                              <MenuItem value="ALL">
+                                <Checkbox checked={filterTypes.includes('ALL')} />
+                                <ListItemText primary="All Types" />
+                              </MenuItem>
+                              <MenuItem value="DEPOSIT">
+                                <Checkbox checked={filterTypes.includes('DEPOSIT')} />
+                                <ListItemText primary="Deposits" />
+                              </MenuItem>
+                              <MenuItem value="WITHDRAWAL">
+                                <Checkbox checked={filterTypes.includes('WITHDRAWAL')} />
+                                <ListItemText primary="Withdrawals" />
+                              </MenuItem>
+                              <MenuItem value="DIVIDEND">
+                                <Checkbox checked={filterTypes.includes('DIVIDEND')} />
+                                <ListItemText primary="Dividends" />
+                              </MenuItem>
+                              <MenuItem value="INTEREST">
+                                <Checkbox checked={filterTypes.includes('INTEREST')} />
+                                <ListItemText primary="Interest" />
+                              </MenuItem>
+                              <MenuItem value="FEE">
+                                <Checkbox checked={filterTypes.includes('FEE')} />
+                                <ListItemText primary="Fees" />
+                              </MenuItem>
+                              <MenuItem value="TAX">
+                                <Checkbox checked={filterTypes.includes('TAX')} />
+                                <ListItemText primary="Taxes" />
+                              </MenuItem>
+                              <MenuItem value="ADJUSTMENT">
+                                <Checkbox checked={filterTypes.includes('ADJUSTMENT')} />
+                                <ListItemText primary="Adjustments" />
+                              </MenuItem>
+                              <MenuItem value="BUY_TRADE">
+                                <Checkbox checked={filterTypes.includes('BUY_TRADE')} />
+                                <ListItemText primary="Buy Trades" />
+                              </MenuItem>
+                              <MenuItem value="SELL_TRADE">
+                                <Checkbox checked={filterTypes.includes('SELL_TRADE')} />
+                                <ListItemText primary="Sell Trades" />
+                              </MenuItem>
+                              <MenuItem value="DEPOSIT_SETTLEMENT">
+                                <Checkbox checked={filterTypes.includes('DEPOSIT_SETTLEMENT')} />
+                                <ListItemText primary="Deposit Settlements" />
+                              </MenuItem>
+                              <MenuItem value="DEPOSIT_CREATION">
+                                <Checkbox checked={filterTypes.includes('DEPOSIT_CREATION')} />
+                                <ListItemText primary="Deposit Creations" />
+                              </MenuItem>
+                            </Select>
+                          </FormControl>
                         </Box>
-                      )}
-                      MenuProps={{
-                        PaperProps: {
-                          style: {
-                            maxHeight: 300,
-                            width: 250,
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem value="ALL">
-                        <Checkbox checked={filterTypes.includes('ALL')} />
-                        <ListItemText primary="All Types" />
-                      </MenuItem>
-                      <MenuItem value="DEPOSIT">
-                        <Checkbox checked={filterTypes.includes('DEPOSIT')} />
-                        <ListItemText primary="Deposits" />
-                      </MenuItem>
-                      <MenuItem value="WITHDRAWAL">
-                        <Checkbox checked={filterTypes.includes('WITHDRAWAL')} />
-                        <ListItemText primary="Withdrawals" />
-                      </MenuItem>
-                      <MenuItem value="DIVIDEND">
-                        <Checkbox checked={filterTypes.includes('DIVIDEND')} />
-                        <ListItemText primary="Dividends" />
-                      </MenuItem>
-                      <MenuItem value="INTEREST">
-                        <Checkbox checked={filterTypes.includes('INTEREST')} />
-                        <ListItemText primary="Interest" />
-                      </MenuItem>
-                      <MenuItem value="FEE">
-                        <Checkbox checked={filterTypes.includes('FEE')} />
-                        <ListItemText primary="Fees" />
-                      </MenuItem>
-                      <MenuItem value="TAX">
-                        <Checkbox checked={filterTypes.includes('TAX')} />
-                        <ListItemText primary="Taxes" />
-                      </MenuItem>
-                      <MenuItem value="ADJUSTMENT">
-                        <Checkbox checked={filterTypes.includes('ADJUSTMENT')} />
-                        <ListItemText primary="Adjustments" />
-                      </MenuItem>
-                      <MenuItem value="BUY_TRADE">
-                        <Checkbox checked={filterTypes.includes('BUY_TRADE')} />
-                        <ListItemText primary="Buy Trades" />
-                      </MenuItem>
-                      <MenuItem value="SELL_TRADE">
-                        <Checkbox checked={filterTypes.includes('SELL_TRADE')} />
-                        <ListItemText primary="Sell Trades" />
-                      </MenuItem>
-                      <MenuItem value="DEPOSIT_SETTLEMENT">
-                        <Checkbox checked={filterTypes.includes('DEPOSIT_SETTLEMENT')} />
-                        <ListItemText primary="Deposit Settlements" />
-                      </MenuItem>
-                      <MenuItem value="DEPOSIT_CREATION">
-                        <Checkbox checked={filterTypes.includes('DEPOSIT_CREATION')} />
-                        <ListItemText primary="Deposit Creations" />
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                  <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<FilterIcon />}
-                      mobileText="All"
-                      desktopText="All Types"
-                      onClick={() => setFilterTypes(['ALL'])}
-                      disabled={filterTypes.includes('ALL')}
-                    >
-                      All Types
-                    </ResponsiveButton>
-                    <ResponsiveButton
-                      size="small"
-                      variant="outlined"
-                      icon={<ClearIcon />}
-                      mobileText="Reset"
-                      desktopText="Reset"
-                      onClick={() => setFilterTypes(['DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'INTEREST', 'FEE', 'TAX', 'ADJUSTMENT', 'BUY_TRADE', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT', 'DEPOSIT_CREATION'])}
-                      disabled={filterTypes.length === 11 && !filterTypes.includes('ALL')}
-                    >
-                      Reset
-                    </ResponsiveButton>
-                    
-                    <ResponsiveButton
-                      size="small"
-                      variant="contained"
-                      icon={<FilterIcon />}
-                      mobileText="Search"
-                      desktopText="Search"
-                      onClick={handleApplyFilters}
-                      disabled={loading}
-                    >
-                      Search
-                    </ResponsiveButton>
-                  
-                  {/* Actions */}
-                  <Box display="flex" gap={1}>
-                    
-                    <ResponsiveButton
-                      variant={groupByDate ? 'contained' : 'outlined'}
-                      icon={<CalendarIcon />}
-                      mobileText="Group"
-                      desktopText="Group by Date"
-                      onClick={() => setGroupByDate(!groupByDate)}
-                      size="small"
-                      sx={{ textTransform: 'none' }}
-                    >
-                      Group by Date
-                    </ResponsiveButton>
-                    
-                    {groupByDate && Object.keys(groupedCashFlows).length > 1 && (
+                      </Grid>
+                    </Grid>
+
+                    {/* Filter Actions */}
+                    <Box display="flex" gap={1} mt={2} justifyContent="flex-end" alignItems="center">
                       <ResponsiveButton
                         size="small"
-                        variant="outlined"
-                        icon={collapsedDates.size === Object.keys(groupedCashFlows).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-                        mobileText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand' : 'Collapse'}
-                        desktopText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
-                        onClick={toggleAllDatesCollapse}
-                        sx={{ textTransform: 'none' }}
+                        variant="contained"
+                        icon={<SearchIcon />}
+                        mobileText="Apply"
+                        desktopText="Apply Filters"
+                        onClick={handleApplyFilters}
+                        disabled={loading}
                       >
-                        {collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                        Apply Filters
                       </ResponsiveButton>
-                    )}
-                    
-                    <ResponsiveButton
-                      variant="outlined"
-                      icon={<DownloadIcon />}
-                      mobileText="Export"
-                      desktopText="Export"
-                      size="small"
-                      onClick={() => {
-                        const csvContent = generateCSV(filteredCashFlows);
-                        downloadCSV(csvContent, `cash-flow-${portfolioId}-${new Date().toISOString().split('T')[0]}.csv`);
-                      }}
-                    >
-                      Export
-                    </ResponsiveButton>
+                    </Box>
                   </Box>
-                </Box>
-                
-                {/* Active Filters */}
+                )}
+
+
+                {/* Active Filters Display */}
                 {((dateFilters.startDate && !isNaN(dateFilters.startDate.getTime())) || (dateFilters.endDate && !isNaN(dateFilters.endDate.getTime())) || (filterTypes.length > 0 && !filterTypes.includes('ALL'))) && (
                   <Box sx={{ mb: 2, p: 1, backgroundColor: 'grey.100', borderRadius: 1 }}>
-                    <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }}>
-                      Active filters:
-                    </ResponsiveTypography>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <ResponsiveTypography variant="formHelper">
+                        Active filters:
+                      </ResponsiveTypography>
+                      <ResponsiveButton
+                        size="small"
+                        variant="text"
+                        icon={<ClearIcon />}
+                        mobileText="Reset"
+                        desktopText="Reset All"
+                        onClick={() => {
+                          setFilterTypes(['ALL']);
+                          setDateFilters({ startDate: null, endDate: null });
+                        }}
+                        sx={{ 
+                          fontSize: '0.75rem',
+                          minWidth: 'auto',
+                          px: 1,
+                          py: 0.5,
+                          color: 'text.secondary',
+                          '&:hover': {
+                            backgroundColor: 'action.hover',
+                            color: 'text.primary'
+                          }
+                        }}
+                      >
+                        Reset All
+                      </ResponsiveButton>
+                    </Box>
                     <Box display="flex" gap={1} flexWrap="wrap">
                       {dateFilters.startDate && !isNaN(dateFilters.startDate.getTime()) && (
                         <Chip
@@ -1448,12 +1354,63 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   </Box>
                 )}
                 
-                {/* Summary */}
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <ResponsiveTypography variant="formHelper">
-                    Total: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({filteredCashFlows.length} items)
-                  </ResponsiveTypography>
+              </Box>
+
+              {/* Table Controls */}
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap">
+                <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+                  <ResponsiveButton
+                    variant="text"
+                    icon={<CalendarIcon />}
+                    mobileText="Group"
+                    desktopText="Group by Date"
+                    onClick={() => setGroupByDate(!groupByDate)}
+                    size="small"
+                    sx={{ 
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.5,
+                      color: groupByDate ? 'primary.main' : 'text.secondary',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                        color: groupByDate ? 'primary.dark' : 'text.primary'
+                      }
+                    }}
+                  >
+                    Group by Date
+                  </ResponsiveButton>
+                  
+                  {groupByDate && Object.keys(groupedCashFlows).length > 1 && (
+                    <ResponsiveButton
+                      size="small"
+                      variant="text"
+                      icon={collapsedDates.size === Object.keys(groupedCashFlows).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                      mobileText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand' : 'Collapse'}
+                      desktopText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                      onClick={toggleAllDatesCollapse}
+                      sx={{ 
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        minWidth: 'auto',
+                        px: 1,
+                        py: 0.5,
+                        color: 'text.secondary',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                          color: 'text.primary'
+                        }
+                      }}
+                    >
+                      {collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                    </ResponsiveButton>
+                  )}
                 </Box>
+                
+                <ResponsiveTypography variant="formHelper">
+                  Total: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({filteredCashFlows.length} items)
+                </ResponsiveTypography>
               </Box>
 
               {loading ? (
@@ -1731,40 +1688,87 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       </Box> */}
 
       {/* Cash Flow Dialog */}
-      <Dialog open={dialogOpen} onClose={() => {
-        resetFormWithAutoFlowDate();
-        setDialogOpen(false);
-        setError(null);
-      }} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {editingCashFlow ? (
-              <>
-                <EditIcon color="primary" />
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <ResponsiveTypography variant="pageTitle">Edit Cash Flow</ResponsiveTypography>
-                    <Chip
-                      icon={getCashFlowDirectionIcon(editingCashFlow.type)}
-                      label={`${formatTypeName(editingCashFlow.type)} - ${getCashFlowDirection(editingCashFlow.type)}`}
-                      color={getCashFlowDirectionColor(editingCashFlow.type) as any}
-                      size="small"
-                      variant="filled"
-                    />
-                  </Box>
-                  <ResponsiveTypography variant="formHelper">
-                    ID: {editingCashFlow.cashflowId?.slice(0, 8)}... | Type: {formatTypeName(editingCashFlow.type)}
-                  </ResponsiveTypography>
-                </Box>
-              </>
-            ) : (
-              <>
+      <ModalWrapper
+        open={dialogOpen}
+        onClose={() => {
+          resetFormWithAutoFlowDate();
+          setDialogOpen(false);
+          setError(null);
+        }}
+        title={editingCashFlow ? 'Edit Cash Flow' : `Create ${dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow`}
+        icon={editingCashFlow ? <EditIcon color="primary" /> : getTypeIcon(dialogType)}
+        maxWidth="md"
+        fullWidth
+        loading={loading}
+        titleColor={editingCashFlow ? 'primary' : getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
+        actions={
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ResponsiveButton 
+              onClick={() => {
+                resetFormWithAutoFlowDate();
+                setDialogOpen(false);
+                setError(null);
+              }}
+              mobileText="Cancel"
+              desktopText="Cancel"
+            >
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton
+              onClick={handleSubmit}
+              variant="contained"
+              icon={editingCashFlow ? <EditIcon /> : <AddIcon />}
+              mobileText={loading ? (editingCashFlow ? 'Updating...' : 'Creating...') : (editingCashFlow ? 'Update' : 'Create')}
+              desktopText={loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
+              disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
+            >
+              {loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
+            </ResponsiveButton>
+          </Box>
+        }
+      >
+        <Box sx={{ pt: 1 }}>
+          {editingCashFlow && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <ResponsiveTypography variant="tableCell">
+                <strong>Editing:</strong> {editingCashFlow.description}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper">
+                Original Amount: {formatCurrency(editingCashFlow.amount)} | 
+                Type: {editingCashFlow.type} | 
+                Status: {editingCashFlow.status}
+              </ResponsiveTypography>
+            </Alert>
+          )}
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              <ResponsiveTypography variant="tableCell">
+                <strong>Error:</strong> {error}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
+                Please check your input and try again.
+              </ResponsiveTypography>
+            </Alert>
+          )}
+          
+          {/* Cash Flow Type Indicator */}
+          {!editingCashFlow && (
+            <Alert 
+              severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
+              sx={{ 
+                mb: 2, 
+                borderLeft: `4px solid ${getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#4caf50' : '#f44336'}`,
+                backgroundColor: getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#e8f5e8' : '#ffebee'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {getTypeIcon(dialogType)}
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <ResponsiveTypography variant="pageTitle" sx={{ color: getTypeColor(dialogType) }}>
-                      Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow
-                    </ResponsiveTypography>
+                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
+                    {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
+                  </ResponsiveTypography>
                     <Chip
                       icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
                       label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
@@ -1777,453 +1781,363 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     {getTypeDescription(dialogType)}
                   </ResponsiveTypography>
                 </Box>
-              </>
-            )}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            {editingCashFlow && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                <ResponsiveTypography variant="tableCell">
-                  <strong>Editing:</strong> {editingCashFlow.description}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="formHelper">
-                  Original Amount: {formatCurrency(editingCashFlow.amount)} | 
-                  Type: {editingCashFlow.type} | 
-                  Status: {editingCashFlow.status}
-                </ResponsiveTypography>
-              </Alert>
-            )}
-            
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                <ResponsiveTypography variant="tableCell">
-                  <strong>Error:</strong> {error}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                  Please check your input and try again.
-                </ResponsiveTypography>
-              </Alert>
-            )}
-            
-            {/* Cash Flow Type Indicator */}
-            {!editingCashFlow && (
-              <Alert 
-                severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
-                sx={{ 
-                  mb: 2, 
-                  borderLeft: `4px solid ${getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#4caf50' : '#f44336'}`,
-                  backgroundColor: getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#e8f5e8' : '#ffebee'
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getTypeIcon(dialogType)}
-                  <Box sx={{ flex: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
-                      {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
-                    </ResponsiveTypography>
-                      <Chip
-                        icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
-                        label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
-                        color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
-                        size="small"
-                        variant="filled"
-                      />
-                    </Box>
-                    <ResponsiveTypography variant="formHelper">
-                      {getTypeDescription(dialogType)}
-                    </ResponsiveTypography>
-                  </Box>
-                </Box>
-              </Alert>
-            )}
-            
-            <Grid container spacing={3}>
-              {/* Left Column */}
-              <Grid item xs={12} md={6}>
-                <Box sx={{ pr: { md: 1.5 } }}>
-                  <MoneyInput
-                    value={parseFloat(formData.amount) || 0}
-                    onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
-                    label="Amount"
-                    placeholder="Enter amount (e.g., 1,000,000)"
-                    required
-                    currency={formData.currency}
-                    margin="normal"
-                    helperText={
-                      editingCashFlow 
-                        ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
-                        : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'
-                    }
-                    error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
-                  />
-                  
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Currency</InputLabel>
-                    <Select
-                      value={formData.currency}
-                      label="Currency"
-                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    >
-                      <MenuItem value="VND">VND</MenuItem>
-                      <MenuItem value="USD">USD</MenuItem>
-                      <MenuItem value="EUR">EUR</MenuItem>
-                      <MenuItem value="GBP">GBP</MenuItem>
-                      <MenuItem value="JPY">JPY</MenuItem>
-                    </Select>
+              </Box>
+            </Alert>
+          )}
+          
+          <Grid container spacing={3}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pr: { md: 1.5 } }}>
+                <MoneyInput
+                  value={parseFloat(formData.amount) || 0}
+                  onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
+                  label="Amount"
+                  placeholder="Enter amount (e.g., 1,000,000)"
+                  required
+                  currency={formData.currency}
+                  margin="normal"
+                  helperText={
+                    editingCashFlow 
+                      ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
+                      : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'
+                  }
+                  error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
+                />
+                
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Currency</InputLabel>
+                  <Select
+                    value={formData.currency}
+                    label="Currency"
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  >
+                    <MenuItem value="VND">VND</MenuItem>
+                    <MenuItem value="USD">USD</MenuItem>
+                    <MenuItem value="EUR">EUR</MenuItem>
+                    <MenuItem value="GBP">GBP</MenuItem>
+                    <MenuItem value="JPY">JPY</MenuItem>
+                  </Select>
+                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
+                    Select the currency for this transaction
+                  </ResponsiveTypography>
+                </FormControl>
+                
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={formData.status}
+                    label="Status"
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <MenuItem value="COMPLETED">Completed</MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                  </Select>
+                  {editingCashFlow && (
                     <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                      Select the currency for this transaction
+                      Original Status: {editingCashFlow.status}
                     </ResponsiveTypography>
-                  </FormControl>
-                  
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={formData.status}
-                      label="Status"
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    >
-                      <MenuItem value="COMPLETED">Completed</MenuItem>
-                      <MenuItem value="PENDING">Pending</MenuItem>
-                      <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                    </Select>
-                    {editingCashFlow && (
-                      <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                        Original Status: {editingCashFlow.status}
-                      </ResponsiveTypography>
-                    )}
-                  </FormControl>
-                  
-                  <TextField
-                    fullWidth
-                    label="Funding Source (Optional)"
-                    value={formData.fundingSource}
-                    onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
-                    margin="normal"
-                    placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
-                    helperText="Source of funding for this transaction (optional)"
-                    inputProps={{
-                      style: { textTransform: 'uppercase' }
-                    }}
-                  />
-                </Box>
-              </Grid>
-              
-              {/* Right Column */}
-              <Grid item xs={12} md={6}>
-                <Box sx={{ pl: { md: 1.5 } }}>
-                  <TextField
-                    fullWidth
-                    label="Flow Date"
-                    type="datetime-local"
-                    value={formData.flowDate}
-                    onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
-                    helperText="When this transaction occurred"
-                  />
-                  
-                  <TextField
-                    fullWidth
-                    label="Reference (Optional)"
-                    value={formData.reference}
-                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                    margin="normal"
-                    helperText="External reference number or ID (optional)"
-                  />
-                  
-                  <TextField
-                    fullWidth
-                    label="Description (Optional)"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    margin="normal"
-                    multiline
-                    rows={3}
-                    helperText={
-                      editingCashFlow 
-                        ? `Original: "${editingCashFlow.description}"`
-                        : 'Enter a description for this cash flow (optional)'
-                    }
-                  />
-                </Box>
-              </Grid>
-              
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <ResponsiveButton 
-            onClick={() => {
-              resetFormWithAutoFlowDate();
-              setDialogOpen(false);
-              setError(null);
-            }}
-            icon={<CancelIcon />}
-            mobileText="Cancel"
-            desktopText="Cancel"
-          >
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton
-            onClick={handleSubmit}
-            variant="contained"
-            icon={editingCashFlow ? <EditIcon /> : <AddIcon />}
-            mobileText={loading ? (editingCashFlow ? 'Updating...' : 'Creating...') : (editingCashFlow ? 'Update' : 'Create')}
-            desktopText={loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
-            disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
-          >
-            {loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
-          </ResponsiveButton>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => {
-        setDeleteDialogOpen(false);
-        setDeleteError(null);
-      }}>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <DeleteIcon color="error" />
-            <ResponsiveTypography variant="pageTitle">Delete Cash Flow</ResponsiveTypography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <ResponsiveTypography variant="tableCell">
-            Are you sure you want to delete this cash flow? This action cannot be undone.
-          </ResponsiveTypography>
-          
-          {cashFlowToDelete?.status === 'CANCELLED' && (
-            <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Warning:</strong> This cash flow is already cancelled and cannot be edited.
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                You can still delete it to remove it from the history.
-              </ResponsiveTypography>
-            </Alert>
-          )}
-          
-          {deleteError && (
-            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Error:</strong> {deleteError}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                Please try again or contact support if the problem persists.
-              </ResponsiveTypography>
-            </Alert>
-          )}
-          
-          {cashFlowToDelete && (
-            <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Type:</strong> {cashFlowToDelete.type}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Amount:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Description:</strong> {cashFlowToDelete.description}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Status:</strong> {cashFlowToDelete.status}
-              </ResponsiveTypography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <ResponsiveButton 
-            onClick={() => {
-              setDeleteDialogOpen(false);
-              setDeleteError(null);
-            }}
-            icon={<CancelIcon />}
-            mobileText="Cancel"
-            desktopText="Cancel"
-          >
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton 
-            onClick={confirmDelete} 
-            color="error" 
-            variant="contained"
-            icon={loading ? null : <DeleteIcon />}
-            mobileText={loading ? 'Deleting...' : 'Delete'}
-            desktopText={loading ? 'Deleting...' : 'Delete'}
-            disabled={loading}
-          >
-            {loading ? 'Deleting...' : 'Delete'}
-          </ResponsiveButton>
-        </DialogActions>
-      </Dialog>
-
-      {/* Transfer Cash Dialog */}
-      <Dialog open={transferDialogOpen} onClose={() => {
-        setTransferDialogOpen(false);
-        setError(null);
-      }} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TransferIcon color="secondary" />
-            <Box sx={{ flex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <ResponsiveTypography variant="pageTitle">Transfer Cash Between Sources</ResponsiveTypography>
-                <Chip
-                  icon={<TransferIcon />}
-                  label="Internal Transfer"
-                  color="secondary"
-                  size="small"
-                  variant="filled"
+                  )}
+                </FormControl>
+                
+                <TextField
+                  fullWidth
+                  label="Funding Source (Optional)"
+                  value={formData.fundingSource}
+                  onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
+                  margin="normal"
+                  placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+                  helperText="Source of funding for this transaction (optional)"
+                  inputProps={{
+                    style: { textTransform: 'uppercase' }
+                  }}
                 />
               </Box>
-              <ResponsiveTypography variant="formHelper">
-                Move cash from one funding source to another
-              </ResponsiveTypography>
-            </Box>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                <ResponsiveTypography variant="tableCell">
-                  <strong>Error:</strong> {error}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                  Please check your input and try again.
-                </ResponsiveTypography>
-              </Alert>
-            )}
-            
-            <Grid container spacing={3}>
-              {/* Left Column */}
-              <Grid item xs={12} md={6}>
-                <Box sx={{ pr: { md: 1.5 } }}>
-                  <FormControl fullWidth margin="normal" required>
-                    <InputLabel>From Source</InputLabel>
-                    <Select
-                      value={transferData.fromSource}
-                      label="From Source"
-                      onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
-                    >
-                      {getFundingSources().map((source) => (
-                        <MenuItem key={source} value={source}>
-                          {source}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                      Select the source to transfer from
-                    </ResponsiveTypography>
-                  </FormControl>
-                  
-                  <FundingSourceInput
-                    value={transferData.toSource}
-                    onChange={(toSource) => setTransferData({ ...transferData, toSource })}
-                    existingSources={getFundingSources()}
-                    label="To Source"
-                    placeholder="Type or select funding source..."
-                    required
-                    allowNew={true}
-                  />
-                  
-                  <MoneyInput
-                    value={transferData.amount}
-                    onChange={(amount) => setTransferData({ ...transferData, amount })}
-                    label="Transfer Amount"
-                    placeholder="Enter amount (e.g., 1,000,000)"
-                    required
-                    margin="normal"
-                    error={!!(transferData.amount && transferData.amount <= 0)}
-                    helperText={
-                      transferData.amount > 0 
-                        ? `Transferring ${formatCurrency(transferData.amount)}` 
-                        : 'Enter the amount to transfer'
-                    }
-                  />
-                </Box>
-              </Grid>
-              
-              {/* Right Column */}
-              <Grid item xs={12} md={6}>
-                <Box sx={{ pl: { md: 1.5 } }}>
-                  <TextField
-                    fullWidth
-                    label="Transfer Date"
-                    type="datetime-local"
-                    value={transferData.transferDate}
-                    onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
-                    helperText="When this transfer occurred"
-                  />
-                  
-                  <TextField
-                    fullWidth
-                    label="Description (Optional)"
-                    value={transferData.description}
-                    onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
-                    margin="normal"
-                    multiline
-                    rows={3}
-                    placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
-                    helperText="Enter a description for this transfer (optional)"
-                  />
-                </Box>
-              </Grid>
             </Grid>
+            
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pl: { md: 1.5 } }}>
+                <TextField
+                  fullWidth
+                  label="Flow Date"
+                  type="date"
+                  value={formData.flowDate}
+                  onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  helperText="When this transaction occurred"
+                />
+                
+                <TextField
+                  fullWidth
+                  label="Reference (Optional)"
+                  value={formData.reference}
+                  onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                  margin="normal"
+                  helperText="External reference number or ID (optional)"
+                />
+                
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  margin="normal"
+                  multiline
+                  rows={3}
+                  helperText={
+                    editingCashFlow 
+                      ? `Original: "${editingCashFlow.description}"`
+                      : 'Enter a description for this cash flow (optional)'
+                  }
+                />
+              </Box>
+            </Grid>
+            
+          </Grid>
+        </Box>
+      </ModalWrapper>
 
-            {/* Transfer Summary */}
-            {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
-                  Transfer Summary:
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="tableCell">
-                  Moving <strong>{formatCurrency(transferData.amount)}</strong> from <strong>{transferData.fromSource}</strong> to <strong>{transferData.toSource}</strong>
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                  This will create two cash flow records: one withdrawal from source and one deposit to destination.
-                </ResponsiveTypography>
-              </Alert>
-            )}
+      {/* Delete Confirmation Dialog */}
+      <ModalWrapper
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setDeleteError(null);
+        }}
+        title="Delete Cash Flow"
+        icon={<DeleteIcon color="error" />}
+        maxWidth="sm"
+        fullWidth
+        loading={loading}
+        titleColor="error"
+        actions={
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ResponsiveButton 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setDeleteError(null);
+              }}
+              mobileText="Cancel"
+              desktopText="Cancel"
+            >
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton 
+              onClick={confirmDelete} 
+              color="error" 
+              variant="contained"
+              icon={loading ? null : <DeleteIcon />}
+              mobileText={loading ? 'Deleting...' : 'Delete'}
+              desktopText={loading ? 'Deleting...' : 'Delete'}
+              disabled={loading}
+            >
+              {loading ? 'Deleting...' : 'Delete'}
+            </ResponsiveButton>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <ResponsiveButton 
-            onClick={() => {
-              setTransferDialogOpen(false);
-              setError(null);
-            }}
-            icon={<CancelIcon />}
-            mobileText="Cancel"
-            desktopText="Cancel"
-          >
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton
-            onClick={handleTransferCash}
-            variant="contained"
-            color="secondary"
-            icon={<TransferIcon />}
-            mobileText={loading ? 'Transferring...' : 'Transfer'}
-            desktopText={loading ? 'Transferring...' : 'Transfer Cash'}
-            disabled={
-              loading || 
-              !transferData.fromSource || 
-              !transferData.toSource ||
-              transferData.amount <= 0 || 
-              transferData.fromSource === transferData.toSource
-            }
-          >
-            {loading ? 'Transferring...' : 'Transfer Cash'}
-          </ResponsiveButton>
-        </DialogActions>
-      </Dialog>
+        }
+      >
+        <ResponsiveTypography variant="tableCell">
+          Are you sure you want to delete this cash flow? This action cannot be undone.
+        </ResponsiveTypography>
+        
+        {cashFlowToDelete?.status === 'CANCELLED' && (
+          <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Warning:</strong> This cash flow is already cancelled and cannot be edited.
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
+              You can still delete it to remove it from the history.
+            </ResponsiveTypography>
+          </Alert>
+        )}
+        
+        {deleteError && (
+          <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Error:</strong> {deleteError}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
+              Please try again or contact support if the problem persists.
+            </ResponsiveTypography>
+          </Alert>
+        )}
+        
+        {cashFlowToDelete && (
+          <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Type:</strong> {cashFlowToDelete.type}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Amount:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Description:</strong> {cashFlowToDelete.description}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="tableCell">
+              <strong>Status:</strong> {cashFlowToDelete.status}
+            </ResponsiveTypography>
+          </Box>
+        )}
+      </ModalWrapper>
+
+      {/* Transfer Cash Dialog */}
+      <ModalWrapper
+        open={transferDialogOpen}
+        onClose={() => {
+          setTransferDialogOpen(false);
+          setError(null);
+        }}
+        title="Transfer Cash Between Sources"
+        icon={<TransferIcon color="secondary" />}
+        maxWidth="md"
+        fullWidth
+        loading={loading}
+        titleColor="secondary"
+        actions={
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ResponsiveButton 
+              onClick={() => {
+                setTransferDialogOpen(false);
+                setError(null);
+              }}
+              mobileText="Cancel"
+              desktopText="Cancel"
+            >
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton
+              onClick={handleTransferCash}
+              variant="contained"
+              color="secondary"
+              icon={<TransferIcon />}
+              mobileText={loading ? 'Transferring...' : 'Transfer'}
+              desktopText={loading ? 'Transferring...' : 'Transfer Cash'}
+              disabled={
+                loading || 
+                !transferData.fromSource || 
+                !transferData.toSource ||
+                transferData.amount <= 0 || 
+                transferData.fromSource === transferData.toSource
+              }
+            >
+              {loading ? 'Transferring...' : 'Transfer Cash'}
+            </ResponsiveButton>
+          </Box>
+        }
+      >
+        <Box sx={{ pt: 1 }}>
+          <ResponsiveTypography variant="formHelper" sx={{ mb: 2, display: 'block' }}>
+            Move cash from one funding source to another
+          </ResponsiveTypography>
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              <ResponsiveTypography variant="tableCell">
+                <strong>Error:</strong> {error}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
+                Please check your input and try again.
+              </ResponsiveTypography>
+            </Alert>
+          )}
+          
+          <Grid container spacing={3}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pr: { md: 1.5 } }}>
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>From Source</InputLabel>
+                  <Select
+                    value={transferData.fromSource}
+                    label="From Source"
+                    onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
+                  >
+                    {getFundingSources().map((source) => (
+                      <MenuItem key={source} value={source}>
+                        {source}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
+                    Select the source to transfer from
+                  </ResponsiveTypography>
+                </FormControl>
+                
+                <FundingSourceInput
+                  value={transferData.toSource}
+                  onChange={(toSource) => setTransferData({ ...transferData, toSource })}
+                  existingSources={getFundingSources()}
+                  label="To Source"
+                  placeholder="Type or select funding source..."
+                  required
+                  allowNew={true}
+                />
+                
+                <MoneyInput
+                  value={transferData.amount}
+                  onChange={(amount) => setTransferData({ ...transferData, amount })}
+                  label="Transfer Amount"
+                  placeholder="Enter amount (e.g., 1,000,000)"
+                  required
+                  margin="normal"
+                  error={!!(transferData.amount && transferData.amount <= 0)}
+                  helperText={
+                    transferData.amount > 0 
+                      ? `Transferring ${formatCurrency(transferData.amount)}` 
+                      : 'Enter the amount to transfer'
+                  }
+                />
+              </Box>
+            </Grid>
+            
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pl: { md: 1.5 } }}>
+                <TextField
+                  fullWidth
+                  label="Transfer Date"
+                  type="date"
+                  value={transferData.transferDate}
+                  onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  helperText="When this transfer occurred"
+                />
+                
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={transferData.description}
+                  onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
+                  margin="normal"
+                  multiline
+                  rows={3}
+                  placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
+                  helperText="Enter a description for this transfer (optional)"
+                />
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* Transfer Summary */}
+          {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
+                Transfer Summary:
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="tableCell">
+                Moving <strong>{formatCurrency(transferData.amount)}</strong> from <strong>{transferData.fromSource}</strong> to <strong>{transferData.toSource}</strong>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
+                This will create two cash flow records: one withdrawal from source and one deposit to destination.
+              </ResponsiveTypography>
+            </Alert>
+          )}
+        </Box>
+      </ModalWrapper>
     </Box>
     </LocalizationProvider>
   );
