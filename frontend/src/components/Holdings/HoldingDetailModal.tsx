@@ -286,9 +286,9 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
                           <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.date')}</ResponsiveTypography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
+                        {/* <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
                           <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.description')}</ResponsiveTypography>
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -332,7 +332,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                           </TableCell>
                           <TableCell>
                             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                              {formatNumberWithSeparators(Number(item.transaction.units), 3)}
+                              {formatNumberWithSeparators(Number(item.transaction.units), 2)}
                             </ResponsiveTypography>
                           </TableCell>
                           <TableCell>
@@ -359,7 +359,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                               {format(parseISO(item.transaction.createdAt), 'HH:mm')}
                             </ResponsiveTypography>
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <ResponsiveTypography variant="tableCell" color="text.secondary">
                               {item.cashFlow?.description || t('common.noDescription')}
                             </ResponsiveTypography>
@@ -368,7 +368,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                                 {t('holdings.table.source')}: {item.cashFlow.fundingSource}
                               </ResponsiveTypography>
                             )}
-                          </TableCell>
+                          </TableCell> */}
                         </TableRow>
                       ))}
                     </TableBody>

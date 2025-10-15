@@ -388,6 +388,7 @@ export class SnapshotController {
 
   @Get('portfolios')
   @ApiOperation({ summary: 'Get portfolios that have snapshots' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Filter by account ID' })
   @ApiOkResponse({
     description: 'Portfolio snapshots retrieved successfully',
     schema: {
@@ -404,8 +405,8 @@ export class SnapshotController {
       },
     },
   })
-  async getPortfoliosWithSnapshots() {
-    return await this.portfolioSnapshotService.getPortfoliosWithSnapshots();
+  async getPortfoliosWithSnapshots(@Query('accountId') accountId: string) {
+    return await this.portfolioSnapshotService.getPortfoliosWithSnapshots(accountId);
   }
 
   @Get(':id')

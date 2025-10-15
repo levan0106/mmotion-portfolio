@@ -76,9 +76,12 @@
     "description": "Description",
     "baseCurrency": "Base Currency",
     "value": "Total Value",
+    "currentValue": "Current Value",
+    "quantity": "Quantity",
     "change": "Change",
     "changePercent": "Change %",
     "allocation": "Allocation",
+    "marketValue": "Market Value",
     "trading": "Trading Management",
     "deposits": "Deposit Management",
     "cashFlow": "Cash Flow",
@@ -142,7 +145,8 @@
     "assetClasses": "Asset Classes",
     "differentAssetTypes": "Different Asset Types",
     "assetTypeAllocation": "Asset Type Allocation",
-    "assetAllocationPie": "Asset Allocation (Pie Chart)",
+    "assetAllocation": "Asset Allocation",
+    "assetAllocationPie": "Asset Allocation",
     "failedToLoadAllocation": "Failed to load allocation data",
     "failedToLoadPL": "Failed to load P&L data",
     "allocationSummary": "Allocation Summary",
@@ -749,6 +753,7 @@
     "averageInterestRate": "Average Interest Rate",
     "settledInterest": "Settled Interest",
     "accruedInterest": "Accrued Interest",
+    "actualInterest": "Actual Interest",
     "average": "Average",
     "confirmDelete": "Confirm Delete Deposit",
     "cannotUndo": "This action cannot be undone",
@@ -809,6 +814,11 @@
     "details": {
       "title": "Deposit Details",
       "maturityProgress": "Maturity Progress",
+      "portfolioInfo": "Portfolio Information",
+      "portfolioName": "Portfolio Name",
+      "loadingPortfolio": "Loading portfolio...",
+      "portfolioLoadError": "Failed to load portfolio information",
+      "noPortfolioData": "No portfolio data available",
       "financialInfo": "Financial Information",
       "principal": "Principal Amount",
       "interestRate": "Interest Rate",
@@ -1137,6 +1147,10 @@
     "legend": {
       "navValue": "NAV Value",
       "portfolioPnL": "Portfolio P&L"
+    },
+    "tooltip": {
+      "navValue": "NAV Value",
+      "portfolioPnL": "Portfolio P&L"
     }
   },
   "benchmark": {
@@ -1235,7 +1249,16 @@
     "tooltipContent": {
       "currentNav": "Current Net Asset Value"
     },
-    "navPerUnit": "NAV/Unit"
+    "navPerUnit": "NAV/Unit",
+    "navTotal": "Total NAV",
+    "growth": "Growth",
+    "decline": "Decline",
+    "investorBenefit": "Investor Benefit",
+    "navPerUnitTooltip": "NAV/Unit = Total NAV ÷ Outstanding Units. Shows each investor's benefit.",
+    "navPerUnitGrowth": "NAV/Unit Growth",
+    "recent": "Recent",
+    "fromStart": "From Start",
+    "infoNote": "💡 Total NAV = Cash + Asset Value | NAV/Unit = Total NAV ÷ Outstanding Units"
   },
   "asset": {
     "modal": {
@@ -1617,6 +1640,44 @@
     "noPortfolios": "No public portfolios available",
     "error": {
       "loadFailed": "Failed to load public portfolios"
+    }
+  },
+  "bulkAssetSelector": {
+    "title": "Select Assets from Template List",
+    "help": {
+      "title": "💡 Usage Guide",
+      "description": "Select assets from the template list to quickly create them in your portfolio. The list only shows assets you don't already own. You can also search by name or symbol."
+    },
+    "search": {
+      "label": "Search assets",
+      "placeholder": "Enter name or symbol..."
+    },
+    "type": {
+      "label": "Asset Type",
+      "all": "All"
+    },
+    "select": {
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All"
+    },
+    "creating": "Creating...",
+    "createCount": "Create {{count}}",
+    "createAssets": "Create {{count}} Assets",
+    "results": {
+      "found": "Found {{count}} assets not in portfolio"
+    },
+    "noAssets": {
+      "allOwned": "You already own all available assets in the system",
+      "noSearchResults": "No assets found matching your search criteria"
+    },
+    "success": {
+      "allCreated": "✅ Successfully created {{count}} assets",
+      "partialCreated": "⚠️ Successfully created {{created}}/{{total}} assets. {{failed}} assets failed."
+    },
+    "error": {
+      "loadFailed": "Failed to load asset list",
+      "createFailed": "❌ Error creating assets",
+      "allFailed": "❌ Failed to create all {{count}} assets"
     }
   }
 }

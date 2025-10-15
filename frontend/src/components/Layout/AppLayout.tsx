@@ -50,7 +50,6 @@ import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
-import CurrencyToggle from '../Common/CurrencyToggle';
 import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 
@@ -771,18 +770,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             gap: { xs: 1, sm: 2 },
             flexWrap: 'nowrap'
           }}>
-            {/* Currency Format Toggle */}
-            <CurrencyToggle 
-              onToggle={(showFull) => {
-                // Force re-render of currency displays
-                window.dispatchEvent(new CustomEvent('currency-format-changed', { 
-                  detail: { showFull } 
-                }));
-              }}
-              size="small"
-              color="default"
-            />
-            
             {/* Current Account Info */}
             <Box sx={{ 
               display: 'flex',

@@ -65,6 +65,7 @@ export class DepositController {
     summary: 'Get all deposits',
     description: 'Get paginated list of deposits with optional filters'
   })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Filter by account ID' })
   @ApiQuery({ name: 'portfolioId', required: false, description: 'Filter by portfolio ID' })
   @ApiQuery({ name: 'status', required: false, enum: ['ACTIVE', 'SETTLED'], description: 'Filter by status' })
   @ApiQuery({ name: 'bankName', required: false, description: 'Filter by bank name (partial match)' })
@@ -79,11 +80,12 @@ export class DepositController {
   })
   async getDeposits(@Query() filters: DepositFiltersDto): Promise<PaginatedDepositResponseDto> {
     const depositFilters: DepositFilters = {
+      accountId: filters.accountId,
       portfolioId: filters.portfolioId,
       status: filters.status,
       bankName: filters.bankName,
       page: filters.page || 1,
-      limit: filters.limit || 10,
+      limit: filters.limit || 100,
       sortBy: filters.sortBy || 'createdAt',
       sortOrder: filters.sortOrder || 'DESC',
     };
@@ -94,19 +96,23 @@ export class DepositController {
   @Get('analytics')
   @ApiOperation({ 
     summary: 'Get deposit analytics',
-    description: 'Get comprehensive analytics and statistics for deposits (all or filtered by portfolio)'
+    description: 'Get comprehensive analytics and statistics for deposits filtered by account'
   })
-  @ApiQuery({ name: 'portfolioId', required: false, description: 'Filter by portfolio ID. If not provided, returns analytics for all deposits' })
+  @ApiQuery({ name: 'accountId', required: true, description: 'Filter by account ID' })
+  @ApiQuery({ name: 'portfolioId', required: false, description: 'Filter by portfolio ID. If not provided, returns analytics for all deposits in the account' })
   @ApiResponse({ 
     status: 200, 
     description: 'Deposit analytics retrieved successfully',
     type: DepositAnalyticsDto
   })
-  async getDepositAnalytics(@Query('portfolioId') portfolioId?: string): Promise<DepositAnalyticsDto> {
+  async getDepositAnalytics(
+    @Query('accountId') accountId: string,
+    @Query('portfolioId') portfolioId?: string
+  ): Promise<DepositAnalyticsDto> {
     if (portfolioId) {
-      return this.depositService.getDepositAnalytics(portfolioId);
+      return this.depositService.getDepositAnalytics(accountId, portfolioId);
     }
-    return this.depositService.getGlobalDepositAnalytics();
+    return this.depositService.getAccountDepositAnalytics(accountId);
   }
 
   @Get(':id')
@@ -261,8 +267,8 @@ export class DepositController {
     description: 'Deposit statistics retrieved successfully',
     type: DepositStatisticsDto
   })
-  async getDepositStatistics(@Param('portfolioId') portfolioId: string): Promise<DepositStatisticsDto> {
-    return this.depositService.getDepositStatistics(portfolioId);
+  async getDepositStatistics(@Param('portfolioId') portfolioId: string, @Query('accountId') accountId: string): Promise<DepositStatisticsDto> {
+    return this.depositService.getDepositStatistics(accountId, portfolioId);
   }
 
   @Get('portfolio/:portfolioId/analytics')
@@ -276,8 +282,8 @@ export class DepositController {
     description: 'Deposit analytics retrieved successfully',
     type: DepositAnalyticsDto
   })
-  async getDepositAnalyticsByPortfolio(@Param('portfolioId') portfolioId: string): Promise<DepositAnalyticsDto> {
-    return this.depositService.getDepositAnalytics(portfolioId);
+  async getDepositAnalyticsByPortfolio(@Param('portfolioId') portfolioId: string, @Query('accountId') accountId: string): Promise<DepositAnalyticsDto> {
+    return this.depositService.getDepositAnalytics(accountId, portfolioId);
   }
 
   @Get('matured')

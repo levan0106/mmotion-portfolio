@@ -182,28 +182,32 @@ export class PortfolioSnapshotRepository {
   }
 
   /**
-   * Find portfolios with snapshots
+   * Find portfolios with snapshots for a specific account
    */
-  async findPortfoliosWithSnapshots(): Promise<Array<{
+  async findPortfoliosWithSnapshots(accountId: string): Promise<Array<{
     portfolioId: string;
     portfolioName: string;
     snapshotCount: number;
     latestSnapshotDate: Date;
     oldestSnapshotDate: Date;
   }>> {
-    return await this.repository
-      .createQueryBuilder('snapshot')
-      .select([
-        'snapshot.portfolioId as "portfolioId"',
-        'snapshot.portfolioName as "portfolioName"',
-        'COUNT(snapshot.id) as "snapshotCount"',
-        'MAX(snapshot.snapshotDate) as "latestSnapshotDate"',
-        'MIN(snapshot.snapshotDate) as "oldestSnapshotDate"',
-      ])
-      .where('snapshot.isActive = :isActive', { isActive: true })
-      .groupBy('snapshot.portfolioId, snapshot.portfolioName')
-      .orderBy('"latestSnapshotDate"', 'DESC')
-      .getRawMany();
+    // Use raw SQL query to ensure proper filtering by accountId
+    const result = await this.repository.query(`
+      SELECT 
+        ps.portfolio_id as "portfolioId",
+        ps.portfolio_name as "portfolioName",
+        COUNT(ps.id) as "snapshotCount",
+        MAX(ps.snapshot_date) as "latestSnapshotDate",
+        MIN(ps.snapshot_date) as "oldestSnapshotDate"
+      FROM portfolio_snapshots ps
+      INNER JOIN portfolios p ON ps.portfolio_id = p.portfolio_id
+      WHERE ps.is_active = true 
+        AND p.account_id = $1
+      GROUP BY ps.portfolio_id, ps.portfolio_name
+      ORDER BY "latestSnapshotDate" DESC
+    `, [accountId]);
+
+    return result;
   }
 
   /**

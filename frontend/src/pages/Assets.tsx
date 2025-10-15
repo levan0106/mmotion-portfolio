@@ -343,41 +343,44 @@ const SummaryMetrics = memo(({
             }}
           >
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ 
                   p: 1.5, 
                   borderRadius: 2, 
                   backgroundColor: alpha(theme.palette[metric.color].main, 0.1),
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
                   {metric.icon}
                 </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <ResponsiveTypography 
+                    variant="cardValue" 
+                    sx={{ 
+                      color: `${metric.color}.main`,
+                      mb: 0.5
+                    }}
+                  >
+                    {metric.value}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography 
+                    variant="cardSubtitle" 
+                    sx={{ 
+                      color: 'text.primary',
+                      mb: 0.5
+                    }}
+                  >
+                    {metric.title}
+                  </ResponsiveTypography>
+                  {/* <ResponsiveTypography 
+                    variant="formHelper"
+                  >
+                    {metric.subtitle}
+                  </ResponsiveTypography> */}
+                </Box>
               </Box>
-              <ResponsiveTypography 
-                variant="cardValue" 
-                sx={{ 
-                  color: `${metric.color}.main`,
-                  mb: 0.5
-                }}
-              >
-                {metric.value}
-              </ResponsiveTypography>
-              <ResponsiveTypography 
-                variant="cardTitle" 
-                sx={{ 
-                  color: 'text.primary',
-                  mb: 0.5
-                }}
-              >
-                {metric.title}
-              </ResponsiveTypography>
-              <ResponsiveTypography 
-                variant="formHelper"
-              >
-                {metric.subtitle}
-              </ResponsiveTypography>
             </CardContent>
           </Card>
         </Grid>
@@ -715,27 +718,6 @@ const Assets: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <ResponsiveButton
-                variant={showFilters ? "contained" : "outlined"}
-                icon={<FilterList />}
-                onClick={() => handleFiltersToggle(!showFilters)}
-                sx={{ 
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                {t('assets.filters.title')} {showFilters && `(${t('assets.filters.active')})`}
-              </ResponsiveButton>
-              <ResponsiveButton
-                variant="outlined"
-                icon={<Refresh />}
-                onClick={handleRefresh}
-                mobileText={t('common.refresh')}
-                desktopText={t('assets.actions.refreshData')}
-              >
-                {t('assets.actions.refreshData')}
-              </ResponsiveButton>
               <Tooltip title={t('assets.actions.quickCreateTooltip')}>
                 <span>
                   <ResponsiveButton
@@ -766,12 +748,6 @@ const Assets: React.FC = () => {
                 </span>
               </Tooltip>
 
-              {/* User Guide Component */}
-              <UserGuide
-                guideKey="assets"
-                position="top-right"
-                size="large"
-              />
             </Box>
           </Box>
         </Box>
@@ -783,6 +759,46 @@ const Assets: React.FC = () => {
           theme={theme}
           t={t}
         />
+
+        {/* Filter Controls */}
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* User Guide Component - Left Side */}
+          <UserGuide
+            guideKey="assets"
+            position="top-left"
+            size="large"
+          />
+          
+          {/* Control Buttons - Right Side */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <ResponsiveButton
+              variant="outlined"
+              icon={<Refresh />}
+              onClick={handleRefresh}
+              mobileText={t('common.refresh')}
+              desktopText={t('assets.actions.refreshData')}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 500,
+              }}
+            >
+              {t('assets.actions.refreshData')}
+            </ResponsiveButton>
+            <ResponsiveButton
+              variant={showFilters ? "contained" : "outlined"}
+              icon={<FilterList />}
+              onClick={() => handleFiltersToggle(!showFilters)}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 500,
+              }}
+            >
+              {t('assets.filters.title')} {showFilters && `(${t('assets.filters.active')})`}
+            </ResponsiveButton>
+          </Box>
+        </Box>
 
         {/* Asset Filters */}
         {showFilters && (

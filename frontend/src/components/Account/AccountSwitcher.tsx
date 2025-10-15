@@ -15,6 +15,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { ResponsiveButton } from '../Common';
+import CurrencyToggle from '../Common/CurrencyToggle';
 import {
   AccountBalance as AccountIcon,
   Star as StarIcon,
@@ -164,21 +165,35 @@ export const AccountSwitcher: React.FC = () => {
           <Typography variant="subtitle2" color="text.secondary">
             {t('accountSwitcher.selectAccount')}
           </Typography>
-          <Tooltip title={t('accountSwitcher.manageAccounts')}>
-            <IconButton
-              size="small"
-              onClick={handleManageAccounts}
-              sx={{ 
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'primary.main',
-                  backgroundColor: 'primary.50',
-                }
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {/* Currency Format Toggle */}
+            <CurrencyToggle 
+              onToggle={(showFull: boolean) => {
+                // Force re-render of currency displays
+                window.dispatchEvent(new CustomEvent('currency-format-changed', { 
+                  detail: { showFull } 
+                }));
               }}
-            >
-              <SettingsIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+              size="small"
+              color="default"
+            />
+            {/* Manage Accounts */}
+            <Tooltip title={t('accountSwitcher.manageAccounts')}>
+              <IconButton
+                size="small"
+                onClick={handleManageAccounts}
+                sx={{ 
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'primary.main',
+                    backgroundColor: 'primary.50',
+                  }
+                }}
+              >
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Divider />
 
@@ -297,16 +312,6 @@ export const AccountSwitcher: React.FC = () => {
                     <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {account.baseCurrency} {getCurrencySymbol(account.baseCurrency)}
                     </Box>
-                    {account.isMainAccount && (
-                      <>
-                        <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                          •
-                        </Box>
-                        <Box component="span" sx={{ fontSize: '0.75rem', color: 'primary.main', fontWeight: 'bold' }}>
-                          {t('accountSwitcher.protectedAccount')}
-                        </Box>
-                      </>
-                    )}
                   </Box>
                 }
               />

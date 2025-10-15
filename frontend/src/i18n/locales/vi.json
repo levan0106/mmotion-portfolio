@@ -43,7 +43,7 @@
     "account": "Tài khoản",
     "new": "Mới",
     "noData": "Không có dữ liệu",
-    "actions": "Hành động",
+    "actions": "",
     "retry": "Thử lại",
     "na": "N/A",
     "year": "năm",
@@ -76,9 +76,12 @@
     "description": "Mô tả",
     "baseCurrency": "Tiền tệ cơ sở",
     "value": "Tổng giá trị",
+    "currentValue": "Giá trị hiện tại",
+    "quantity": "Số lượng",
     "change": "Thay đổi",
     "changePercent": "Thay đổi %",
     "allocation": "Phân bổ",
+    "marketValue": "Giá trị thị trường",
     "trading": "Quản lý Giao dịch",
     "deposits": "Quản lý Tiền gửi",
     "cashFlow": "Dòng tiền",
@@ -141,7 +144,8 @@
     "availableCash": "Tiền mặt khả dụng",
     "assetClasses": "Loại tài sản",
     "differentAssetTypes": "Số loại tài sản khác nhau",
-    "assetTypeAllocation": "Phân bổ loại tài sản",
+    "assetTypeAllocation": "Phân bổ theo loại tài sản",
+    "assetAllocation": "Phân bổ theo tài sản",
     "assetAllocationPie": "Phân bổ tài sản",
     "failedToLoadAllocation": "Không thể tải dữ liệu phân bổ",
     "failedToLoadPL": "Không thể tải dữ liệu P&L",
@@ -150,7 +154,7 @@
     "totalDepositsValue": "Tổng giá trị tiền gửi",
     "noAllocationData": "Không có dữ liệu phân bổ",
     "assetDetailSummary": "Chi tiết phân bổ tài sản",
-    "individualAssetHoldings": "Cổ phần tài sản cá nhân",
+    "individualAssetHoldings": "Chi tiết tài sản",
     "individualAssetHoldingsDescription": "Cổ phần tài sản cá nhân với giá trị và hiệu suất",
     "riskPerformanceAnalysis": "Phân tích rủi ro & Hiệu suất",
     "riskReturnAnalysis": "Phân tích rủi ro-lợi nhuận",
@@ -483,7 +487,7 @@
     "rowsPerPage": "Số dòng mỗi trang",
     "of": "của",
     "date": "Ngày",
-    "actions": "Hành động",
+    "actions": "",
     "view": "Xem",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",
@@ -567,7 +571,7 @@
       "title": "Danh mục đầu tư",
       "subtitle": "Xem chi tiết danh mục đầu tư của bạn trên tất cả các danh mục",
       "portfolio": "Tên danh mục",
-      "units": "Đơn vị",
+      "units": "Số lượng",
       "avgCostPerUnit": "Giá TB/Đơn vị",
       "totalInvestment": "Tổng đầu tư",
       "currentValue": "Giá trị hiện tại",
@@ -615,9 +619,9 @@
       "summary": "Tóm tắt",
       "totalTransactions": "Tổng giao dịch",
       "allTransactions": "Tất cả giao dịch",
-      "totalSubscriptions": "Tổng đăng ký",
+      "totalSubscriptions": "Tổng mua",
       "subscriptionCount": "Số lần đăng ký",
-      "totalRedemptions": "Tổng mua lại",
+      "totalRedemptions": "Tổng bán",
       "redemptionCount": "Số lần mua lại",
       "totalInvested": "Tổng đầu tư",
       "amountInvested": "Số tiền đầu tư",
@@ -723,12 +727,12 @@
     "noDeposits": "Chưa có tiền gửi nào. Hãy tạo tiền gửi đầu tiên!",
     "bank": "Ngân hàng",
     "accountNumber": "Số tài khoản",
-    "principal": "Số tiền gốc",
+    "principal": "Tiền gốc",
     "interestRate": "Lãi suất",
     "term": "Kỳ hạn",
     "totalValue": "Tổng giá trị",
     "viewDetails": "Xem chi tiết",
-    "actions": "Hành động",
+    "actions": "",
     "status": "Trạng thái",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",
@@ -749,6 +753,7 @@
     "averageInterestRate": "Lãi suất TB",
     "settledInterest": "Lãi đã tất toán",
     "accruedInterest": "Lãi chưa tất toán",
+    "actualInterest": "Lãi thực tế",
     "average": "Trung bình",
     "confirmDelete": "Xác nhận xóa tiền gửi",
     "cannotUndo": "Hành động này không thể hoàn tác",
@@ -809,6 +814,11 @@
     "details": {
       "title": "Chi tiết tiền gửi",
       "maturityProgress": "Tiến độ đến hạn",
+      "portfolioInfo": "Thông tin danh mục",
+      "portfolioName": "Tên danh mục",
+      "loadingPortfolio": "Đang tải danh mục...",
+      "portfolioLoadError": "Không thể tải thông tin danh mục",
+      "noPortfolioData": "Không có dữ liệu danh mục",
       "financialInfo": "Thông tin tài chính",
       "principal": "Số tiền gốc",
       "interestRate": "Lãi suất",
@@ -949,7 +959,7 @@
       "fundingSource": "Nguồn tiền",
       "date": "Ngày",
       "status": "Trạng thái",
-      "actions": "Hành động",
+      "actions": "",
       "transactionCount": "{{count}} giao dịch",
       "total": "Tổng",
       "items": "{{count}} mục",
@@ -1133,6 +1143,10 @@
     "legend": {
       "navValue": "Giá trị NAV",
       "portfolioPnL": "P&L danh mục"
+    },
+    "tooltip": {
+      "navValue": "Giá trị NAV",
+      "portfolioPnL": "P&L danh mục"
     }
   },
   "benchmark": {
@@ -1231,7 +1245,16 @@
     "tooltipContent": {
       "currentNav": "Giá trị tài sản ròng hiện tại"
     },
-    "navPerUnit": "NAV/Đơn vị"
+    "navPerUnit": "NAV/Đơn vị",
+    "navTotal": "NAV Tổng",
+    "growth": "Tăng trưởng",
+    "decline": "Suy giảm",
+    "investorBenefit": "Lợi ích mỗi NĐT",
+    "navPerUnitTooltip": "NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ đang lưu hành. Thể hiện lợi ích của mỗi nhà đầu tư.",
+    "navPerUnitGrowth": "Tăng trưởng NAV/Unit",
+    "recent": "Gần nhất",
+    "fromStart": "Từ đầu",
+    "infoNote": "💡 NAV Tổng = Tiền mặt + Giá trị tài sản | NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ"
   },
   "asset": {
     "modal": {
@@ -1613,6 +1636,44 @@
     "noPortfolios": "Không có danh mục công khai nào",
     "error": {
       "loadFailed": "Không thể tải danh mục công khai"
+    }
+  },
+  "bulkAssetSelector": {
+    "title": "Chọn Assets từ danh sách mẫu",
+    "help": {
+      "title": "💡 Hướng dẫn sử dụng",
+      "description": "Chọn các assets từ danh sách mẫu để tạo nhanh trong portfolio của bạn. Danh sách chỉ hiển thị các assets mà bạn chưa sở hữu. Bạn cũng có thể tìm kiếm theo tên hoặc symbol."
+    },
+    "search": {
+      "label": "Tìm kiếm assets",
+      "placeholder": "Nhập tên hoặc symbol..."
+    },
+    "type": {
+      "label": "Loại Asset",
+      "all": "Tất cả"
+    },
+    "select": {
+      "selectAll": "Chọn tất cả",
+      "deselectAll": "Bỏ chọn"
+    },
+    "creating": "Đang tạo...",
+    "createCount": "Tạo {{count}}",
+    "createAssets": "Tạo {{count}} Assets",
+    "results": {
+      "found": "Tìm thấy {{count}} assets chưa có trong portfolio"
+    },
+    "noAssets": {
+      "allOwned": "Bạn đã có tất cả assets có sẵn trong hệ thống",
+      "noSearchResults": "Không tìm thấy assets phù hợp với điều kiện tìm kiếm"
+    },
+    "success": {
+      "allCreated": "✅ Tạo thành công {{count}} assets",
+      "partialCreated": "⚠️ Tạo thành công {{created}}/{{total}} assets. {{failed}} assets thất bại."
+    },
+    "error": {
+      "loadFailed": "Lỗi khi tải danh sách assets",
+      "createFailed": "❌ Lỗi khi tạo assets",
+      "allFailed": "❌ Tạo thất bại tất cả {{count}} assets"
     }
   }
 }

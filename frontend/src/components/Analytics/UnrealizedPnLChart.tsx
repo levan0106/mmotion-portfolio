@@ -114,7 +114,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Unrealized P&L 
+              {t('portfolio.unrealizedPL')}
             </ResponsiveTypography>
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5, gap: 1 }}>
               {isProfit ? (
@@ -165,7 +165,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
-                Current Value
+                {t('portfolio.currentValue')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="tableCell" sx={{ 
                 mt: 0.5,
@@ -189,14 +189,14 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
                 color: '#00C49F',
                 fontWeight: 600
               }}>
-                ↗ PROFIT
+                ↗ {t('portfolio.profit')}
               </ResponsiveTypography>
             ) : (
               <ResponsiveTypography variant="chartTooltip" sx={{ 
                 color: '#FF8042',
                 fontWeight: 600
               }}>
-                ↘ LOSS
+                ↘ {t('portfolio.loss')}
               </ResponsiveTypography>
             )}
           </Box>
@@ -216,7 +216,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
         </ResponsiveTypography>
         <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
           <ResponsiveTypography variant="formHelper" color="text.secondary">
-            No data available
+            {t('common.noData')}
           </ResponsiveTypography>
         </Box>
       </Box>

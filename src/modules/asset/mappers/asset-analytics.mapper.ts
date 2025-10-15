@@ -23,8 +23,10 @@ export class AssetAnalyticsMapper {
       STOCK: allocation[AssetType.STOCK] || 0,
       BOND: allocation[AssetType.BOND] || 0,
       GOLD: allocation[AssetType.GOLD] || 0,
-      DEPOSIT: allocation[AssetType.DEPOSIT] || 0,
-      CASH: allocation[AssetType.CASH] || 0,
+      CRYPTO: allocation[AssetType.CRYPTO] || 0,
+      COMMODITY: allocation[AssetType.COMMODITY] || 0,
+      //DEPOSIT: allocation[AssetType.DEPOSIT] || 0,
+      //CASH: allocation[AssetType.CASH] || 0,
     };
   }
 

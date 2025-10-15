@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -8,6 +8,8 @@ import {
   CardContent,
   Stack,
   Divider,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { ResponsiveButton } from '../Common';
 import { ResponsiveTypography } from '../Common';
@@ -21,8 +23,11 @@ import {
   Notes as NotesIcon,
   Timer as TimerIcon,
   Edit as EditIcon,
+  AccountBalanceWallet as PortfolioIcon,
 } from '@mui/icons-material';
 import { formatCurrency, formatDate } from '../../utils/format';
+import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface Deposit {
   depositId: string;
@@ -49,6 +54,11 @@ interface Deposit {
   termMonths?: number;
 }
 
+interface Portfolio {
+  portfolioId: string;
+  name: string;
+}
+
 interface DepositDetailsModalProps {
   open: boolean;
   onClose: () => void;
@@ -65,6 +75,36 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
   onEdit,
 }) => {
   const { t } = useTranslation();
+  const { accountId } = useAccount();
+  
+  // Portfolio state
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [portfolioLoading, setPortfolioLoading] = useState(false);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
+  
+  // Fetch portfolio information
+  useEffect(() => {
+    const fetchPortfolio = async () => {
+      if (!deposit?.portfolioId || !accountId) return;
+      
+      setPortfolioLoading(true);
+      setPortfolioError(null);
+      
+      try {
+        const portfolioData = await apiService.getPortfolio(deposit.portfolioId, accountId);
+        setPortfolio(portfolioData);
+      } catch (error) {
+        console.error('Error fetching portfolio:', error);
+        setPortfolioError(t('deposit.details.portfolioLoadError'));
+      } finally {
+        setPortfolioLoading(false);
+      }
+    };
+    
+    if (open && deposit?.portfolioId) {
+      fetchPortfolio();
+    }
+  }, [open, deposit?.portfolioId, accountId, t]);
   
   if (!deposit) return null;
 
@@ -167,6 +207,42 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
           {deposit.termDescription || t('common.na')}
         </ResponsiveTypography>
       </Box>
+
+      {/* Portfolio Information */}
+      <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
+        <CardContent sx={{ p: 2 }}>
+          <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
+            {t('deposit.details.portfolioInfo')}
+          </ResponsiveTypography>
+          
+          {portfolioLoading ? (
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress size={16} />
+              <ResponsiveTypography variant="body2" color="text.secondary">
+                {t('deposit.details.loadingPortfolio')}
+              </ResponsiveTypography>
+            </Box>
+          ) : portfolioError ? (
+            <Alert severity="warning" sx={{ mb: 0 }}>
+              {portfolioError}
+            </Alert>
+          ) : portfolio ? (
+            <Box display="flex" alignItems="center" gap={1}>
+              <PortfolioIcon color="primary" sx={{ fontSize: 20 }} />
+              <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
+                {t('deposit.details.portfolioName')}:
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardSubtitle" fontWeight="medium">
+                {portfolio.name}
+              </ResponsiveTypography>
+            </Box>
+          ) : (
+            <ResponsiveTypography variant="body2" color="text.secondary">
+              {t('deposit.details.noPortfolioData')}
+            </ResponsiveTypography>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Financial Summary */}
       <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>

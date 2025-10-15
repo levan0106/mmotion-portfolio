@@ -103,10 +103,10 @@ const DepositManagement: React.FC = () => {
         params.append('portfolioId', selectedPortfolioId);
       }
       
-      return apiService.getDeposits({ portfolioId: selectedPortfolioId });
+      return apiService.getDeposits(accountId, { portfolioId: selectedPortfolioId });
     },
     {
-      enabled: true,
+      enabled: !!accountId,
     }
   );
 
@@ -126,10 +126,10 @@ const DepositManagement: React.FC = () => {
       if (selectedPortfolioId !== 'ALL') {
         params.append('portfolioId', selectedPortfolioId);
       }
-      return apiService.getDepositAnalytics({ portfolioId: selectedPortfolioId });
+      return apiService.getDepositAnalytics(accountId, { portfolioId: selectedPortfolioId });
     },
     {
-      enabled: true,
+      enabled: !!accountId,
     }
   );
 

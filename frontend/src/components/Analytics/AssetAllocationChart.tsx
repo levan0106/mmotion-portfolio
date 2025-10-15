@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Box } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
@@ -23,6 +24,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   baseCurrency,
   compact = false,
 }) => {
+  const { t } = useTranslation();
   // Transform data for the chart
   const chartData = Object.entries(data.allocation).map(([assetType, allocation]) => ({
     name: assetType.toUpperCase(),
@@ -40,16 +42,25 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
           backgroundColor: 'white', 
           borderRadius: 1, 
           boxShadow: 3,
-          border: '1px solid #e0e0e0'
+          border: '1px solid #e0e0e0',
+          minWidth: 200,
+          maxWidth: 300,
+          position: 'relative'
         }}>
-          <ResponsiveTypography variant="chartTooltip" sx={{ fontWeight: 600 }}>
+          <ResponsiveTypography variant="cardTitle" color="text.primary" sx={{ fontWeight: 600, mb: 1 }}>
             {data.name}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="cardValueMedium" color="text.secondary">
-            Allocation: {formatPercentage(data.value)}
+          <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 0.5 }}>
+            {t('portfolio.allocation')}:
           </ResponsiveTypography>
-          <ResponsiveTypography variant="cardValueMedium" color="text.secondary">
-            Market Value: {formatCurrency(data.marketValue, baseCurrency)}
+          <ResponsiveTypography variant="cardValueMedium" sx={{ fontWeight: 600, mb: 0.5 }}>
+          {formatPercentage(data.value)}
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 0.5 }}>
+            {t('portfolio.marketValue')}:
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="cardValueMedium" sx={{ fontWeight: 600, mb: 0.5 }}>
+            {formatCurrency(data.marketValue, baseCurrency)}
           </ResponsiveTypography>
         </Box>
       );
@@ -124,7 +135,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <ResponsiveTypography variant="formHelper" color="text.secondary">
-          No asset allocation data available
+          {t('portfolio.noAllocationData')}
         </ResponsiveTypography>
       </Box>
     );

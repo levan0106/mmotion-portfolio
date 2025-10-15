@@ -299,23 +299,23 @@ export class AssetValidationService {
         }
         break;
 
-      case AssetType.DEPOSIT:
-        // Deposits typically have high minimum values
+      case AssetType.CRYPTO:
+        // Crypto typically have high minimum values
         if (value < 1000000) {
-          throw new BadRequestException('Deposit value should be at least 1,000,000 VND');
+          throw new BadRequestException('Crypto value should be at least 1,000,000 VND');
         }
         if (quantity < 1) {
-          throw new BadRequestException('Deposit quantity should be at least 1');
+          throw new BadRequestException('Crypto quantity should be at least 1');
         }
         break;
 
-      case AssetType.CASH:
+      case AssetType.COMMODITY:
         // Cash can have any value and quantity
         if (value < 0) {
-          throw new BadRequestException('Cash value cannot be negative');
+          throw new BadRequestException('Commodity value cannot be negative');
         }
         if (quantity < 0) {
-          throw new BadRequestException('Cash quantity cannot be negative');
+          throw new BadRequestException('Commodity quantity cannot be negative');
         }
         break;
 

@@ -173,7 +173,12 @@ const DepositList: React.FC<DepositListProps> = ({
             <TableCell align="right">{t('deposit.interestRate')}</TableCell>
             <TableCell align="center">{t('deposit.term')}</TableCell>
             <TableCell align="center">{t('deposit.status')}</TableCell>
-            <TableCell align="right">{t('deposit.accruedInterest')}</TableCell>
+            <TableCell align="right">
+              {deposits.some(deposit => deposit.status === 'SETTLED') 
+                ? t('deposit.actualInterest') 
+                : t('deposit.accruedInterest')
+              }
+            </TableCell>
             <TableCell align="right">{t('deposit.totalValue')}</TableCell>
             <TableCell align="center">{t('deposit.actions')}</TableCell>
           </TableRow>
@@ -223,7 +228,7 @@ const DepositList: React.FC<DepositListProps> = ({
                       {deposit.termDescription || 'N/A'}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="caption" color="text.secondary">
-                      {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
+                      {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.status === 'SETTLED' ? deposit.settledAt : deposit.endDate, 'short')}
                     </ResponsiveTypography>
                   </Box>
                 </TableCell>
@@ -250,7 +255,11 @@ const DepositList: React.FC<DepositListProps> = ({
                 
                 <TableCell align="right">
                   <ResponsiveTypography variant="body2" color="primary" fontWeight="medium">
-                    {formatCurrency(deposit.accruedInterest || 0)}
+                    {formatCurrency(
+                      deposit.status === 'SETTLED' 
+                        ? (deposit.actualInterest || 0)
+                        : (deposit.accruedInterest || 0)
+                    )}
                   </ResponsiveTypography>
                 </TableCell>
                 
@@ -422,7 +431,10 @@ const DepositList: React.FC<DepositListProps> = ({
                       {t('deposit.termLabel')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="body2" fontWeight="bold">
-                      {depositToDelete.termDescription || 'N/A'}
+                      {depositToDelete.termDescription || 'N/A'} - {
+                      formatDate(depositToDelete.status === 'SETTLED' 
+                        ? depositToDelete.settledAt 
+                        : depositToDelete.endDate, 'short')}  
                     </ResponsiveTypography>
                   </Box>
                   

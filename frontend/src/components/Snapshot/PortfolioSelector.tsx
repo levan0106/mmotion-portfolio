@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import { snapshotService } from '../../services/snapshot.service';
 import { PortfolioWithSnapshots } from '../../types/snapshot.types';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface PortfolioSelectorProps {
   selectedPortfolioId?: string;
@@ -37,6 +38,7 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
   onPortfolioChange,
   disabled = false,
 }) => {
+  const { accountId } = useAccount();
   const theme = useTheme();
   const [portfolios, setPortfolios] = useState<PortfolioWithSnapshots[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,14 +46,16 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
 
   useEffect(() => {
     fetchPortfolios();
-  }, []);
+  }, [accountId]);
 
   const fetchPortfolios = async () => {
+    if (!accountId) return;
+    
     setLoading(true);
     setError(null);
     
     try {
-      const data = await snapshotService.getPortfoliosWithSnapshots();
+      const data = await snapshotService.getPortfoliosWithSnapshots(accountId);
       setPortfolios(data);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch portfolios');

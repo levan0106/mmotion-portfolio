@@ -55,8 +55,8 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0,
         [AssetType.CRYPTO]: 0,
         [AssetType.COMMODITY]: 0,
-        [AssetType.DEPOSIT]: 0,
-        [AssetType.CASH]: 0,
+        //[AssetType.DEPOSIT]: 0,
+        //[AssetType.CASH]: 0,
       };
     }
 
@@ -66,8 +66,8 @@ export class AssetAnalyticsService {
       [AssetType.GOLD]: 0,
       [AssetType.CRYPTO]: 0,
       [AssetType.COMMODITY]: 0,
-      [AssetType.DEPOSIT]: 0,
-      [AssetType.CASH]: 0,
+      //[AssetType.DEPOSIT]: 0,
+      //[AssetType.CASH]: 0,
     };
 
     assets.forEach(asset => {
@@ -318,8 +318,8 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0.1,
         [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.2,
-        [AssetType.DEPOSIT]: 0.0,
-        [AssetType.CASH]: 0.0,
+        //[AssetType.DEPOSIT]: 0.0,
+        //[AssetType.CASH]: 0.0,
       },
       [AssetType.BOND]: {
         [AssetType.STOCK]: -0.2,
@@ -327,8 +327,8 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0.3,
         [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.1,
-        [AssetType.DEPOSIT]: 0.4,
-        [AssetType.CASH]: 0.0,
+        //[AssetType.DEPOSIT]: 0.4,
+        //[AssetType.CASH]: 0.0,
       },
       [AssetType.GOLD]: {
         [AssetType.STOCK]: 0.1,
@@ -336,8 +336,8 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0.7,
         [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.4,
-        [AssetType.DEPOSIT]: 0.0,
-        [AssetType.CASH]: 0.0,
+        //[AssetType.DEPOSIT]: 0.0,
+        //[AssetType.CASH]: 0.0,
       },
       [AssetType.COMMODITY]: {
         [AssetType.STOCK]: 0.2,
@@ -345,35 +345,35 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0.4,
         [AssetType.CRYPTO]: 0.1,
         [AssetType.COMMODITY]: 0.6,
-        [AssetType.DEPOSIT]: 0.0,
-        [AssetType.CASH]: 0.0,
+        //[AssetType.DEPOSIT]: 0.0,
+        //[AssetType.CASH]: 0.0,
       },
-      [AssetType.DEPOSIT]: {
-        [AssetType.STOCK]: 0.0,
-        [AssetType.BOND]: 0.4,
-        [AssetType.GOLD]: 0.0,
-        [AssetType.CRYPTO]: 0.1,
-        [AssetType.COMMODITY]: 0.0,
-        [AssetType.DEPOSIT]: 0.9,
-        [AssetType.CASH]: 0.5,
-      },
-      [AssetType.CASH]: {
-        [AssetType.STOCK]: 0.0,
-        [AssetType.BOND]: 0.0,
-        [AssetType.GOLD]: 0.0,
-        [AssetType.CRYPTO]: 0.0,
-        [AssetType.COMMODITY]: 0.0,
-        [AssetType.DEPOSIT]: 0.5,
-        [AssetType.CASH]: 1.0,
-      },
+      // [AssetType.DEPOSIT]: {
+      //   [AssetType.STOCK]: 0.0,
+      //   [AssetType.BOND]: 0.4,
+      //   [AssetType.GOLD]: 0.0,
+      //   [AssetType.CRYPTO]: 0.1,
+      //   [AssetType.COMMODITY]: 0.0,
+      //   //[AssetType.DEPOSIT]: 0.9,
+      //   //[AssetType.CASH]: 0.5,
+      // },
+      // [AssetType.CASH]: {
+      //   [AssetType.STOCK]: 0.0,
+      //   [AssetType.BOND]: 0.0,
+      //   [AssetType.GOLD]: 0.0,
+      //   [AssetType.CRYPTO]: 0.0,
+      //   [AssetType.COMMODITY]: 0.0,
+      //   //[AssetType.DEPOSIT]: 0.5,
+      //   //[AssetType.CASH]: 1.0,
+      // },
       [AssetType.CRYPTO]: {
         [AssetType.STOCK]: 0.1,
         [AssetType.BOND]: 0.1,
         [AssetType.GOLD]: 0.1,
         [AssetType.CRYPTO]: 0.8,
         [AssetType.COMMODITY]: 0.1,
-        [AssetType.DEPOSIT]: 0.1,
-        [AssetType.CASH]: 0.0,
+        //[AssetType.DEPOSIT]: 0.1,
+        //[AssetType.CASH]: 0.0,
       },
     };
 

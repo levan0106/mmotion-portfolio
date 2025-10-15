@@ -372,7 +372,7 @@ const Holdings: React.FC = () => {
                               </TableCell>
                               <TableCell>
                                 <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                                  {formatNumberWithSeparators(Number(holding.totalUnits), 3)}
+                                  {formatNumberWithSeparators(Number(holding.totalUnits), 1)}
                                 </ResponsiveTypography>
                               </TableCell>
                               <TableCell>

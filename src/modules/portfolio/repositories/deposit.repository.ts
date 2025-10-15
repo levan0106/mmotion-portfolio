@@ -4,6 +4,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Deposit } from '../entities/deposit.entity';
 
 export interface DepositFilters {
+  accountId: string;
   portfolioId?: string;
   status?: 'ACTIVE' | 'SETTLED';
   bankName?: string;
@@ -179,9 +180,9 @@ export class DepositRepository {
   }
 
   /**
-   * Get deposit statistics for a portfolio
+   * Get deposit statistics for a portfolio within an account
    */
-  async getDepositStatistics(portfolioId: string): Promise<{
+  async getDepositStatistics(accountId: string, portfolioId: string): Promise<{
     totalDeposits: number;
     activeDeposits: number;
     settledDeposits: number;
@@ -281,7 +282,7 @@ export class DepositRepository {
   /**
    * Count deposits by criteria
    */
-  async count(filters: Partial<DepositFilters>): Promise<number> {
+  async count(filters: DepositFilters): Promise<number> {
     const queryBuilder = this.createQueryBuilderWithFilters(filters);
     return queryBuilder.getCount();
   }
@@ -305,7 +306,12 @@ export class DepositRepository {
    * Create query builder with filters applied
    */
   private createQueryBuilderWithFilters(filters: DepositFilters): SelectQueryBuilder<Deposit> {
-    const queryBuilder = this.repository.createQueryBuilder('deposit');
+    const queryBuilder = this.repository
+      .createQueryBuilder('deposit')
+      .leftJoin('deposit.portfolio', 'portfolio')
+      .where('portfolio.accountId = :accountId', { 
+        accountId: filters.accountId 
+      });
 
     if (filters.portfolioId) {
       queryBuilder.andWhere('deposit.portfolioId = :portfolioId', { 
@@ -326,5 +332,69 @@ export class DepositRepository {
     }
 
     return queryBuilder;
+  }
+
+  /**
+   * Find deposits by account ID
+   */
+  async findByAccountId(accountId: string): Promise<Deposit[]> {
+    return this.repository
+      .createQueryBuilder('deposit')
+      .leftJoinAndSelect('deposit.portfolio', 'portfolio')
+      .where('portfolio.accountId = :accountId', { accountId })
+      .orderBy('deposit.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Get deposit statistics for all deposits in an account
+   */
+  async getAccountDepositStatistics(accountId: string): Promise<{
+    totalDeposits: number;
+    activeDeposits: number;
+    settledDeposits: number;
+    totalPrincipal: number;
+    totalAccruedInterest: number;
+    totalSettledInterest: number;
+    totalInterest: number;
+    totalValue: number;
+    averageInterestRate: number;
+  }> {
+    const deposits = await this.findByAccountId(accountId);
+    
+    const activeDeposits = deposits.filter(d => d.status === 'ACTIVE');
+    const settledDeposits = deposits.filter(d => d.status === 'SETTLED');
+
+    // Only calculate totalPrincipal for active deposits (not settled)
+    const totalPrincipal = activeDeposits.reduce((sum, d) => {
+      const principal = typeof d.principal === 'string' ? parseFloat(d.principal) : (d.principal || 0);
+      return sum + principal;
+    }, 0);
+    const totalAccruedInterest = activeDeposits.reduce((sum, d) => sum + d.calculateAccruedInterest(), 0);
+    const totalSettledInterest = settledDeposits.reduce((sum, d) => {
+      const actualInterest = typeof d.actualInterest === 'string' ? parseFloat(d.actualInterest) : (d.actualInterest || 0);
+      return sum + actualInterest;
+    }, 0);
+    const totalInterest = totalAccruedInterest + totalSettledInterest;
+    // Only calculate totalValue for active deposits (not settled)
+    const totalValue = totalPrincipal + totalAccruedInterest;
+    const averageInterestRate = deposits.length > 0 
+      ? deposits.reduce((sum, d) => {
+          const interestRate = typeof d.interestRate === 'string' ? parseFloat(d.interestRate) : (d.interestRate || 0);
+          return sum + interestRate;
+        }, 0) / deposits.length 
+      : 0;
+
+    return {
+      totalDeposits: deposits.length,
+      activeDeposits: activeDeposits.length,
+      settledDeposits: settledDeposits.length,
+      totalPrincipal,
+      totalAccruedInterest,
+      totalSettledInterest,
+      totalInterest,
+      totalValue,
+      averageInterestRate: Math.round(averageInterestRate * 100) / 100,
+    };
   }
 }

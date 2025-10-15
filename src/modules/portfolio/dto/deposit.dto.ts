@@ -292,6 +292,13 @@ export class DepositAnalyticsDto {
 }
 
 export class DepositFiltersDto {
+  @IsUUID()
+  @ApiProperty({ 
+    description: 'Filter by account ID',
+    required: true
+  })
+  accountId: string;
+
   @IsOptional()
   @IsUUID()
   @ApiPropertyOptional({ 

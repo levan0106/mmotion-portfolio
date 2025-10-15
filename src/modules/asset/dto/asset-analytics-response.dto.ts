@@ -25,16 +25,16 @@ export class AssetAllocationResponseDto {
   GOLD: number;
 
   @ApiProperty({
-    description: 'Allocation percentage for deposits',
+    description: 'Allocation percentage for crypto',
     example: 12.5,
   })
-  DEPOSIT: number;
+  CRYPTO: number;
 
   @ApiProperty({
-    description: 'Allocation percentage for cash',
+    description: 'Allocation percentage for commodities',
     example: 7.0,
   })
-  CASH: number;
+  COMMODITY: number;
 }
 
 /**

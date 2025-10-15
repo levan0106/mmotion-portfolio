@@ -302,16 +302,16 @@ export class UnifiedSnapshotService {
   }
 
   /**
-   * Get portfolios that have snapshots
+   * Get portfolios that have snapshots for a specific account
    */
-  async getPortfoliosWithSnapshots(): Promise<{ 
+  async getPortfoliosWithSnapshots(accountId: string): Promise<{ 
     portfolioId: string; 
     portfolioName: string; 
     snapshotCount: number; 
     latestSnapshotDate: string; 
     oldestSnapshotDate: string; 
   }[]> {
-    return await apiService.getPortfoliosWithSnapshots();
+    return await apiService.getPortfoliosWithSnapshots(accountId);
   }
 
   // ============================================================================

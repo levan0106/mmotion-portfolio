@@ -643,8 +643,9 @@ class ApiService {
   }
 
   // Deposit Management endpoints
-  async getDeposits(params?: { portfolioId?: string }): Promise<any> {
+  async getDeposits(accountId: string, params?: { portfolioId?: string }): Promise<any> {
     const queryParams = new URLSearchParams();
+    queryParams.append('accountId', accountId);
     if (params?.portfolioId && params.portfolioId !== 'ALL') {
       queryParams.append('portfolioId', params.portfolioId);
     }
@@ -652,8 +653,9 @@ class ApiService {
     return response.data;
   }
 
-  async getDepositAnalytics(params?: { portfolioId?: string }): Promise<any> {
+  async getDepositAnalytics(accountId: string, params?: { portfolioId?: string }): Promise<any> {
     const queryParams = new URLSearchParams();
+    queryParams.append('accountId', accountId);
     if (params?.portfolioId && params.portfolioId !== 'ALL') {
       queryParams.append('portfolioId', params.portfolioId);
     }
@@ -874,8 +876,8 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfoliosWithSnapshots(): Promise<any> {
-    const response = await this.api.get('/api/v1/snapshots/portfolios');
+  async getPortfoliosWithSnapshots(accountId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/snapshots/portfolios?accountId=${accountId}`);
     return response.data;
   }
 

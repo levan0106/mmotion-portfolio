@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   FormControl,
@@ -52,6 +53,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
   existingAssets = [],
   onRefresh,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<AssetType | 'ALL'>('ALL');
@@ -109,7 +111,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       if (result.summary.failed === 0) {
         // All successful
         // Use toast service
-        toastService.show(`✅ Tạo thành công ${result.summary.created} assets`, 'success', 3000);
+        toastService.show(t('bulkAssetSelector.success.allCreated', { count: result.summary.created }), 'success', 3000);
         // Delay closing modal to show toast
         setTimeout(() => {
           onClose();
@@ -121,7 +123,11 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
         }, 1500);
       } else if (result.summary.created > 0) {
         // Partial success
-        toastService.show(`⚠️ Tạo thành công ${result.summary.created}/${result.summary.total} assets. ${result.summary.failed} assets thất bại.`, 'warning', 4000);
+        toastService.show(t('bulkAssetSelector.success.partialCreated', { 
+          created: result.summary.created, 
+          total: result.summary.total, 
+          failed: result.summary.failed 
+        }), 'warning', 4000);
         // Delay closing modal to show toast
         setTimeout(() => {
           onClose();
@@ -133,7 +139,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
         }, 1500);
       } else {
         // All failed
-        toastService.show(`❌ Tạo thất bại tất cả ${result.summary.total} assets`, 'error', 5000);
+        toastService.show(t('bulkAssetSelector.error.allFailed', { count: result.summary.total }), 'error', 5000);
         // Close modal after showing error
         setTimeout(() => {
           onClose();
@@ -143,7 +149,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       setSelectedAssets([]);
     } catch (error) {
       console.error('Bulk create failed:', error);
-      toastService.show('❌ Lỗi khi tạo assets', 'error', 3000);
+      toastService.show(t('bulkAssetSelector.error.createFailed'), 'error', 3000);
       // Delay closing modal to show toast
       setTimeout(() => {
         onClose();
@@ -190,18 +196,18 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
 
   const modalActions = (
     <Box sx={{ display: 'flex', gap: 1 }}>
-      <ResponsiveButton onClick={onClose} icon={<></>} mobileText="Hủy" desktopText="Hủy">
-        Hủy
+      <ResponsiveButton onClick={onClose} icon={<></>} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
+        {t('common.cancel')}
       </ResponsiveButton>
       <ResponsiveButton
         variant="contained"
         onClick={handleBulkCreate}
         disabled={selectedAssets.length === 0 || isCreating}
         icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
-        mobileText={isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length}`}
-        desktopText={isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length} Assets`}
+        mobileText={isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createCount', { count: selectedAssets.length })}
+        desktopText={isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createAssets', { count: selectedAssets.length })}
       >
-        {isCreating ? 'Đang tạo...' : `Tạo ${selectedAssets.length} Assets`}
+        {isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createAssets', { count: selectedAssets.length })}
       </ResponsiveButton>
     </Box>
   );
@@ -211,7 +217,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title="Chọn Assets từ danh sách mẫu"
+      title={t('bulkAssetSelector.title')}
       maxWidth="md"
       fullWidth
       loading={isCreating}
@@ -241,10 +247,10 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                   }
                 }}
                 icon={showHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                mobileText="💡 Hướng dẫn"
-                desktopText="💡 Hướng dẫn sử dụng"
+                mobileText={t('bulkAssetSelector.help.title')}
+                desktopText={t('bulkAssetSelector.help.title')}
               >
-                💡 Hướng dẫn sử dụng
+                {t('bulkAssetSelector.help.title')}
               </ResponsiveButton>
               
               {showHelp && (
@@ -254,8 +260,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                     fontWeight: 500,
                     lineHeight: 1.6
                   }}>
-                    Chọn các assets từ danh sách mẫu để tạo nhanh trong portfolio của bạn. 
-                    Danh sách chỉ hiển thị các assets mà bạn chưa sở hữu. Bạn cũng có thể tìm kiếm theo tên hoặc symbol.
+                    {t('bulkAssetSelector.help.description')}
                   </ResponsiveTypography>
                 </Box>
               )}
@@ -263,27 +268,27 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
             
             <Box mb={3} sx={{ pt: 3 }}>
               <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={5}>
                   <TextField
                     fullWidth
-                    label="Tìm kiếm assets"
+                    label={t('bulkAssetSelector.search.label')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     InputProps={{
                       startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                     }}
-                    placeholder="Nhập tên hoặc symbol..."
+                    placeholder={t('bulkAssetSelector.search.placeholder')}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
-                    <InputLabel>Loại Asset</InputLabel>
+                    <InputLabel>{t('bulkAssetSelector.type.label')}</InputLabel>
                     <Select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value as AssetType | 'ALL')}
-                      label="Loại Asset"
+                      label={t('bulkAssetSelector.type.label')}
                     >
-                      <MenuItem value="ALL">Tất cả</MenuItem>
+                      <MenuItem value="ALL">{t('bulkAssetSelector.type.all')}</MenuItem>
                       {availableTypes.map((type) => (
                         <MenuItem key={type} value={type}>
                           {AssetTypeLabels[type as keyof typeof AssetTypeLabels] || type}
@@ -292,17 +297,17 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={3}>
                   <ResponsiveButton
                     fullWidth
                     variant="outlined"
                     onClick={handleSelectAll}
                     disabled={loading || filteredAssets.length === 0}
                     icon={<></>}
-                    mobileText={selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-                    desktopText={selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
+                    mobileText={selectedAssets.length === filteredAssets.length ? t('bulkAssetSelector.select.deselectAll') : t('bulkAssetSelector.select.selectAll')}
+                    desktopText={selectedAssets.length === filteredAssets.length ? t('bulkAssetSelector.select.deselectAll') : t('bulkAssetSelector.select.selectAll')}
                   >
-                    {selectedAssets.length === filteredAssets.length ? 'Bỏ chọn' : 'Chọn tất cả'}
+                    {selectedAssets.length === filteredAssets.length ? t('bulkAssetSelector.select.deselectAll') : t('bulkAssetSelector.select.selectAll')}
                   </ResponsiveButton>
                 </Grid>
               </Grid>
@@ -314,19 +319,19 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               </Box>
             ) : error ? (
               <Alert severity="error">
-                Lỗi khi tải danh sách assets: {String(error)}
+                {t('bulkAssetSelector.error.loadFailed')}: {String(error)}
               </Alert>
             ) : filteredAssets.length === 0 ? (
               <Alert severity="info">
                 {availableAssets.length === 0 
-                  ? "Bạn đã có tất cả assets có sẵn trong hệ thống"
-                  : "Không tìm thấy assets phù hợp với điều kiện tìm kiếm"
+                  ? t('bulkAssetSelector.noAssets.allOwned')
+                  : t('bulkAssetSelector.noAssets.noSearchResults')
                 }
               </Alert>
             ) : (
               <Box>
                 <ResponsiveTypography variant="subtitle2" gutterBottom>
-                  Tìm thấy {filteredAssets.length} assets chưa có trong portfolio
+                  {t('bulkAssetSelector.results.found', { count: filteredAssets.length })}
                 </ResponsiveTypography>
                 <List sx={{ maxHeight: 400, overflow: 'auto' }}>
                   {filteredAssets.map((asset: any) => (

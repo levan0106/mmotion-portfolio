@@ -24,6 +24,21 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Multi-Language Implementation Pattern - **IMPLEMENTED** ✅
+- **Translation Key Structure**: Hierarchical key organization (component.section.key)
+- **Pluralization Support**: Proper handling of singular/plural forms with count interpolation
+- **Variable Interpolation**: Dynamic content with {{variable}} syntax
+- **Component Integration**: useTranslation hook with t() function for all text content
+- **Translation Files**: en.json and vi.json with complete key coverage
+- **Responsive Typography**: Translation-aware typography system
+
+### Component Enhancement Pattern - **IMPLEMENTED** ✅
+- **Conditional Rendering**: hideActions prop for different display modes
+- **Navigation Flow**: Centralized management vs modal-based editing
+- **Icon Consistency**: SettingsIcon for management, EditIcon for editing
+- **State Management**: Proper modal state and navigation state handling
+- **User Experience**: Clear distinction between dashboard and management views
+
 ### Mobile Layout Optimization Pattern - **IMPLEMENTED** ✅
 - **Responsive Tab Navigation**: Scrollable tabs with mobile-optimized sizing and touch-friendly interactions
 - **Compact Mode Toggle Alignment**: Fixed positioning to stay on same row as tabs across all screen sizes

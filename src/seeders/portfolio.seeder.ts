@@ -107,7 +107,7 @@ export class PortfolioSeeder {
         symbol: 'VND', 
         name: 'Vietnamese Dong', 
         code: 'VND',
-        type: AssetType.CASH, 
+        type: AssetType.COMMODITY, 
         description: 'Vietnamese currency',
         initialValue: 100000000,
         initialQuantity: 100000000,

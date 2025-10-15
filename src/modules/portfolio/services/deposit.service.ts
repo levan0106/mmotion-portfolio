@@ -159,10 +159,10 @@ export class DepositService {
   }
 
   /**
-   * Get deposit analytics for a portfolio
+   * Get deposit analytics for a portfolio within an account
    */
-  async getDepositAnalytics(portfolioId: string): Promise<DepositAnalyticsDto> {
-    const statistics = await this.depositRepository.getDepositStatistics(portfolioId);
+  async getDepositAnalytics(accountId: string, portfolioId: string): Promise<DepositAnalyticsDto> {
+    const statistics = await this.depositRepository.getDepositStatistics(accountId, portfolioId);
     const deposits = await this.depositRepository.findByPortfolioId(portfolioId);
 
     const depositAmounts = deposits.map(d => {
@@ -231,10 +231,10 @@ export class DepositService {
   }
 
   /**
-   * Get deposit statistics
+   * Get deposit statistics for a portfolio within an account
    */
-  async getDepositStatistics(portfolioId: string): Promise<DepositStatisticsDto> {
-    const statistics = await this.depositRepository.getDepositStatistics(portfolioId);
+  async getDepositStatistics(accountId: string, portfolioId: string): Promise<DepositStatisticsDto> {
+    const statistics = await this.depositRepository.getDepositStatistics(accountId, portfolioId);
     return {
       ...statistics,
     };
@@ -344,6 +344,38 @@ export class DepositService {
       totalValue,
       averageInterestRate,
       averageDepositAmount,
+      largestDepositAmount,
+      smallestDepositAmount,
+    };
+  }
+
+  /**
+   * Get deposit analytics for all deposits in an account
+   */
+  async getAccountDepositAnalytics(accountId: string): Promise<DepositAnalyticsDto> {
+    const statistics = await this.depositRepository.getAccountDepositStatistics(accountId);
+    const deposits = await this.depositRepository.findByAccountId(accountId);
+
+    const depositAmounts = deposits.map(d => {
+      const principal = typeof d.principal === 'string' ? parseFloat(d.principal) : (d.principal || 0);
+      return principal;
+    });
+    const averageDepositAmount = depositAmounts.length > 0 
+      ? depositAmounts.reduce((sum, amount) => sum + amount, 0) / depositAmounts.length 
+      : 0;
+    const largestDepositAmount = depositAmounts.length > 0 ? Math.max(...depositAmounts) : 0;
+    const smallestDepositAmount = depositAmounts.length > 0 ? Math.min(...depositAmounts) : 0;
+
+    return {
+      totalDeposits: statistics.totalDeposits,
+      totalPrincipal: statistics.totalPrincipal,
+      totalAccruedInterest: statistics.totalAccruedInterest,
+      totalValue: statistics.totalValue,
+      averageInterestRate: statistics.averageInterestRate,
+      activeDeposits: statistics.activeDeposits,
+      settledDeposits: statistics.settledDeposits,
+      totalSettledInterest: statistics.totalSettledInterest,
+      averageDepositAmount: Math.round(averageDepositAmount * 100) / 100,
       largestDepositAmount,
       smallestDepositAmount,
     };

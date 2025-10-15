@@ -65,7 +65,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   
   // Calculate growth/decline indicators
   const isGrowing = navValue > 0;
-  const growthIndicator = isGrowing ? 'Tăng trưởng' : 'Suy giảm';
+  const growthIndicator = isGrowing ? t('navSummary.growth') : t('navSummary.decline');
   const growthColor = isGrowing ? 'success' : 'error';
   // const GrowthIcon = isGrowing ? TrendingUp : TrendingDown;
 
@@ -210,7 +210,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 letterSpacing: isCompactMode ? 0.5 : 1,
                 color: '#6c757d'
               }}>
-                NAV Tổng
+                {t('navSummary.navTotal')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValueLarge" sx={{ 
                 fontWeight: 800,
@@ -280,12 +280,12 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 borderRadius: 1,
                 display: 'inline-block'
               }}>
-                Lợi ích mỗi NĐT
+                {t('navSummary.investorBenefit')}
               </ResponsiveTypography>
               
               {/* Info Tooltip for NAV/Unit */}
               <Tooltip 
-                title="NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ đang lưu hành. Thể hiện lợi ích của mỗi nhà đầu tư."
+                title={t('navSummary.navPerUnitTooltip')}
                 arrow
                 placement="top"
               >
@@ -338,7 +338,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                   mb: isCompactMode ? 0.75 : 1,
                   display: 'block'
                 }}>
-                  Tăng trưởng NAV/Unit
+                  {t('navSummary.navPerUnitGrowth')}
                 </ResponsiveTypography>
 
                 {/* Horizontal Layout for Growth Metrics */}
@@ -364,7 +364,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                       fontWeight: 500,
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
-                      Gần nhất
+                      {t('navSummary.recent')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardValue" sx={{ 
                       fontWeight: 700,
@@ -404,7 +404,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                       fontWeight: 500,
                       mb: isCompactMode ? 0.25 : 0.5
                     }}>
-                      Từ đầu
+                      {t('navSummary.fromStart')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardValue" sx={{ 
                       fontWeight: 700,
@@ -460,7 +460,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
             fontWeight: 500,
             lineHeight: isCompactMode ? 1.4 : 1.6
           }}>
-            💡 <strong>NAV Tổng</strong> = Tiền mặt + Giá trị tài sản | <strong>NAV/Unit</strong> = NAV Tổng ÷ Số đơn vị quỹ
+            {t('navSummary.infoNote')}
           </ResponsiveTypography>
         </Box>
       </CardContent>
