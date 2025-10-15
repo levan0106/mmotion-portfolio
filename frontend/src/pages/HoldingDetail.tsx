@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Container,
@@ -50,6 +51,7 @@ import {
 import EditHoldingTransactionModal from '../components/NAVUnit/EditHoldingTransactionModal';
 
 const HoldingDetail: React.FC = () => {
+  const { t } = useTranslation();
   const { holdingId } = useParams<{ holdingId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -78,7 +80,7 @@ const HoldingDetail: React.FC = () => {
       setHoldingDetail(data);
     } catch (err) {
       console.error('Error fetching holding detail:', err);
-      setError('Failed to load holding details');
+      setError(t('holdings.error.loadDetailsFailed'));
     } finally {
       setLoading(false);
     }
@@ -130,7 +132,7 @@ const HoldingDetail: React.FC = () => {
       // Show success message with recalculation info
     } catch (err) {
       console.error('Error deleting transaction:', err);
-      setError('Failed to delete transaction');
+      setError(t('holdings.error.deleteTransactionFailed'));
     } finally {
       setDeleteLoading(false);
     }
@@ -155,7 +157,7 @@ const HoldingDetail: React.FC = () => {
       await fetchHoldingDetail();
     } catch (err: any) {
       console.error('Error recalculating NAV:', err);
-      setError('Failed to recalculate NAV. Please try again.');
+      setError(t('holdings.error.recalculateNavFailed'));
     } finally {
       setRecalculateLoading(false);
     }
@@ -202,7 +204,7 @@ const HoldingDetail: React.FC = () => {
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="info">
           <ResponsiveTypography variant="tableCell">
-            No holding details found
+            {t('holdings.error.noDetailsFound')}
           </ResponsiveTypography>
         </Alert>
       </Container>
@@ -219,11 +221,11 @@ const HoldingDetail: React.FC = () => {
           variant="text"
           icon={<ArrowBack />}
           onClick={handleBackNavigation}
-          mobileText="Back"
-          desktopText="Back to Portfolio"
+          mobileText={t('common.back')}
+          desktopText={t('holdings.actions.backToPortfolio')}
           sx={{ mb: 1.5, textTransform: 'none' }}
         >
-          Back to Portfolio
+          {t('holdings.actions.backToPortfolio')}
         </ResponsiveButton>
         <Box sx={{ 
           display: 'flex', 
@@ -249,7 +251,7 @@ const HoldingDetail: React.FC = () => {
                 {holding.account?.name}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Investment in {holding.portfolio?.name}
+                {t('holdings.detail.investmentIn', { portfolioName: holding.portfolio?.name })}
               </ResponsiveTypography>
             </Box>
           </Box>
@@ -260,8 +262,8 @@ const HoldingDetail: React.FC = () => {
             icon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
             onClick={handleRecalculateNav}
             disabled={recalculateLoading}
-            mobileText={recalculateLoading ? 'Recalculating...' : 'Recalculate'}
-            desktopText={recalculateLoading ? 'Recalculating...' : 'Recalculate NAV'}
+            mobileText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculate')}
+            desktopText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
             sx={{
               minWidth: '160px',
               textTransform: 'none',
@@ -272,7 +274,7 @@ const HoldingDetail: React.FC = () => {
               }
             }}
           >
-            {recalculateLoading ? 'Recalculating...' : 'Recalculate NAV'}
+            {recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
           </ResponsiveButton>
         </Box>
       </Box>
@@ -290,7 +292,7 @@ const HoldingDetail: React.FC = () => {
             }}>
               <CardContent sx={{ p: 2 }}>
                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
-                  Portfolio Performance
+                  {t('holdings.detail.portfolioPerformance')}
                 </ResponsiveTypography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} md={3}>
@@ -303,7 +305,7 @@ const HoldingDetail: React.FC = () => {
                         {formatCurrency(holding.currentValue, 'VND')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Current Value
+                        {t('holdings.detail.currentValue')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -317,7 +319,7 @@ const HoldingDetail: React.FC = () => {
                         {formatCurrency(holding.totalInvestment, 'VND')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Total Investment
+                        {t('holdings.detail.totalInvestment')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -334,7 +336,7 @@ const HoldingDetail: React.FC = () => {
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Unrealized P&L
+                        {t('holdings.detail.unrealizedPnL')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -351,7 +353,7 @@ const HoldingDetail: React.FC = () => {
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Return %
+                        {t('holdings.detail.returnPercent')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -367,7 +369,7 @@ const HoldingDetail: React.FC = () => {
             }}>
               <CardContent sx={{ p: 2 }}>
                 <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
-                  Transaction Summary
+                  {t('holdings.detail.transactionSummary')}
                 </ResponsiveTypography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} md={3}>
@@ -380,7 +382,7 @@ const HoldingDetail: React.FC = () => {
                         {summary.totalTransactions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Total Transactions
+                        {t('holdings.detail.totalTransactions')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -394,7 +396,7 @@ const HoldingDetail: React.FC = () => {
                         {summary.totalSubscriptions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Subscriptions
+                        {t('holdings.detail.subscriptions')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -408,7 +410,7 @@ const HoldingDetail: React.FC = () => {
                         {summary.totalRedemptions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Redemptions
+                        {t('holdings.detail.redemptions')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -422,7 +424,7 @@ const HoldingDetail: React.FC = () => {
                         {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                        Units Subscribed
+                        {t('holdings.detail.unitsSubscribed')}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
@@ -442,7 +444,7 @@ const HoldingDetail: React.FC = () => {
           }}>
             <CardContent sx={{ p: 2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
-                Holding Details
+                {t('holdings.detail.holdingDetails')}
               </ResponsiveTypography>
               <List dense>
                 <ListItem sx={{ 
@@ -454,7 +456,7 @@ const HoldingDetail: React.FC = () => {
                     <ShowChart color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="Total Units"
+                    primary={t('holdings.detail.totalUnits')}
                     secondary={formatNumberWithSeparators(holding.totalUnits, 3)}
                     primaryTypographyProps={{ sx: { color: 'text.primary', fontWeight: 600 } }}
                     secondaryTypographyProps={{ sx: { color: 'text.secondary' } }}
@@ -469,7 +471,7 @@ const HoldingDetail: React.FC = () => {
                     <MonetizationOn color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="Avg Cost per Unit"
+                    primary={t('holdings.detail.avgCostPerUnit')}
                     secondary={formatCurrency(holding.avgCostPerUnit, 'VND')}
                     primaryTypographyProps={{ sx: { color: 'text.primary', fontWeight: 600 } }}
                     secondaryTypographyProps={{ sx: { color: 'text.secondary' } }}
@@ -487,7 +489,7 @@ const HoldingDetail: React.FC = () => {
                       <Assessment color="primary" />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Current NAV"
+                      primary={t('holdings.detail.currentNav')}
                       secondary={
                         holding.portfolio?.navPerUnit 
                           ? formatCurrency(holding.portfolio.navPerUnit, 'VND')
@@ -516,7 +518,7 @@ const HoldingDetail: React.FC = () => {
         <CardContent sx={{ p: 0 }}>
           <Box sx={{ p: 2, pb: 0 }}>
             <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Transaction History
+              {t('holdings.detail.transactionHistory')}
             </ResponsiveTypography>
           </Box>
           <TableContainer>
@@ -526,25 +528,25 @@ const HoldingDetail: React.FC = () => {
                   background: '#f8f9fa'
                 }}>
                   <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Date</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.date')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Type</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.type')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.units')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">NAV per Unit</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.navPerUnit')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Amount</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.amount')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Description</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.description')}</ResponsiveTypography>
                   </TableCell>
                   <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    <ResponsiveTypography variant="tableHeaderSmall">Actions</ResponsiveTypography>
+                    <ResponsiveTypography variant="tableHeaderSmall">{t('common.actions')}</ResponsiveTypography>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -599,8 +601,8 @@ const HoldingDetail: React.FC = () => {
                           size="small"
                           icon={<EditIcon />}
                           onClick={() => handleEditTransaction({ transaction, cashFlow })}
-                          mobileText="Edit"
-                          desktopText="Edit"
+                          mobileText={t('common.edit')}
+                          desktopText={t('common.edit')}
                           sx={{ 
                             minWidth: 'auto',
                             px: 1,
@@ -609,7 +611,7 @@ const HoldingDetail: React.FC = () => {
                             fontSize: '0.75rem!important'
                           }}
                         >
-                          Edit
+                          {t('common.edit')}
                         </ResponsiveButton>
                         <ResponsiveButton
                           variant="outlined"
@@ -617,8 +619,8 @@ const HoldingDetail: React.FC = () => {
                           size="small"
                           icon={<DeleteIcon />}
                           onClick={() => handleDeleteTransaction({ transaction, cashFlow })}
-                          mobileText="Delete"
-                          desktopText="Delete"
+                          mobileText={t('common.delete')}
+                          desktopText={t('common.delete')}
                           sx={{ 
                             minWidth: 'auto',
                             px: 1,
@@ -627,7 +629,7 @@ const HoldingDetail: React.FC = () => {
                             fontSize: '0.75rem!important'
                           }}
                         >
-                          Delete
+                          {t('common.delete')}
                         </ResponsiveButton>
                       </Stack>
                     </TableCell>
@@ -665,28 +667,28 @@ const HoldingDetail: React.FC = () => {
           fontWeight: 600
         }}>
           <DeleteIcon color="error" />
-          Confirm Delete Transaction
+          {t('holdings.delete.title')}
         </DialogTitle>
         <DialogContent>
           <ResponsiveTypography variant="tableCell" sx={{ mb: 2 }}>
-            Are you sure you want to delete this transaction? This action cannot be undone.
+            {t('holdings.delete.message')}
           </ResponsiveTypography>
           {transactionToDelete && (
             <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
               <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 600, mb: 1 }}>
-                Transaction Details:
+                {t('holdings.delete.transactionDetails')}:
               </ResponsiveTypography>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                <strong>Type:</strong> {transactionToDelete.transaction.holdingType}
+                <strong>{t('holdings.table.type')}:</strong> {transactionToDelete.transaction.holdingType}
               </ResponsiveTypography>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                <strong>Units:</strong> {formatNumberWithSeparators(transactionToDelete.transaction.units, 3)}
+                <strong>{t('holdings.table.units')}:</strong> {formatNumberWithSeparators(transactionToDelete.transaction.units, 3)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                <strong>Amount:</strong> {formatCurrency(transactionToDelete.transaction.amount, 'VND')}
+                <strong>{t('holdings.table.amount')}:</strong> {formatCurrency(transactionToDelete.transaction.amount, 'VND')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                <strong>Date:</strong> {format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy')}
+                <strong>{t('holdings.table.date')}:</strong> {format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy')}
               </ResponsiveTypography>
             </Card>
           )}
@@ -694,24 +696,24 @@ const HoldingDetail: React.FC = () => {
           {/* Date Awareness Notice */}
           <Alert severity="warning" sx={{ mt: 2 }}>
             <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 500 }}>
-              ⚠️ Data Recalculation Impact
+              {t('holdings.delete.recalculationImpact')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
-              Deleting this transaction will trigger automatic recalculation of:
+              {t('holdings.delete.recalculationMessage')}
             </ResponsiveTypography>
             <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
               <ResponsiveTypography component="li" variant="labelSmall">
-                Portfolio NAV per unit and total outstanding units
+                {t('holdings.delete.recalculationItem1')}
               </ResponsiveTypography>
               <ResponsiveTypography component="li" variant="labelSmall">
-                All holding metrics (units, investment, P&L) will be recalculated from remaining transactions
+                {t('holdings.delete.recalculationItem2')}
               </ResponsiveTypography>
               <ResponsiveTypography component="li" variant="labelSmall">
-                Associated cash flow records will be removed
+                {t('holdings.delete.recalculationItem3')}
               </ResponsiveTypography>
             </Box>
             <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
-              Recalculation will be based on the original transaction date: <strong>{transactionToDelete ? format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy') : 'N/A'}</strong>
+              {t('holdings.delete.recalculationDate', { date: transactionToDelete ? format(new Date(transactionToDelete.transaction.createdAt), 'dd/MM/yyyy') : 'N/A' })}
             </ResponsiveTypography>
           </Alert>
         </DialogContent>
@@ -720,10 +722,10 @@ const HoldingDetail: React.FC = () => {
             onClick={handleCancelDelete} 
             disabled={deleteLoading}
             size="large"
-            mobileText="Cancel"
-            desktopText="Cancel"
+            mobileText={t('common.cancel')}
+            desktopText={t('common.cancel')}
           >
-            Cancel
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleConfirmDelete}
@@ -732,10 +734,10 @@ const HoldingDetail: React.FC = () => {
             disabled={deleteLoading}
             size="large"
             icon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
-            mobileText={deleteLoading ? 'Deleting...' : 'Delete'}
-            desktopText={deleteLoading ? 'Deleting...' : 'Delete Transaction'}
+            mobileText={deleteLoading ? t('holdings.delete.deleting') : t('common.delete')}
+            desktopText={deleteLoading ? t('holdings.delete.deleting') : t('holdings.delete.deleteTransaction')}
           >
-            {deleteLoading ? 'Deleting...' : 'Delete Transaction'}
+            {deleteLoading ? t('holdings.delete.deleting') : t('holdings.delete.deleteTransaction')}
           </ResponsiveButton>
         </DialogActions>
       </Dialog>

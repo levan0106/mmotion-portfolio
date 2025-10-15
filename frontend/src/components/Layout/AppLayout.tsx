@@ -45,12 +45,14 @@ import {
   ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import CurrencyToggle from '../Common/CurrencyToggle';
 import { NotificationBell, NotificationManager } from '../Notification';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -77,91 +79,9 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const menuItems = [
-  { 
-    text: 'Dashboard', 
-    icon: <DashboardIcon />, 
-    path: '/', 
-    description: 'Overview and key metrics',
-    badge: null
-  },
-  { 
-    text: 'Portfolios', 
-    icon: <PortfolioIcon />, 
-    path: '/portfolios', 
-    description: 'Manage investment portfolios',
-    badge: null
-  },
-  {
-    text: 'Holdings',
-    icon: <HoldingsIcon />,
-    path: '/holdings',
-    description: 'Manage holdings',
-    badge: 'NEW'
-  },
-  { 
-    text: 'Assets', 
-    icon: <AssetIcon />, 
-    path: '/assets', 
-    description: 'Track individual assets',
-    badge: null
-  },
-  { 
-    text: 'Deposits', 
-    icon: <DepositIcon />, 
-    path: '/deposits', 
-    description: 'Manage deposits',
-    badge: null
-  },
-  { 
-    text: 'Reports', 
-    icon: <ReportsIcon />, 
-    path: '/reports', 
-    description: 'Generate reports',
-    badge: null
-  },
-  { 
-    text: 'Snapshots', 
-    icon: <SnapshotIcon />, 
-    path: '/snapshots', 
-    description: 'Portfolio snapshots & analysis',
-    badge: null,
-    permissions: ['financial.snapshots.manage']
-  },
-  { 
-    text: 'Global Assets', 
-    icon: <GlobalAssetIcon />, 
-    path: '/global-assets', 
-    description: 'Global market data',
-    badge: null,
-    roles: ['admin', 'super_admin']
-  },
-  {
-    text: 'Roles & Users',
-    icon: <SecurityIcon />,
-    path: '/role-management',
-    description: 'Manage roles and permissions',
-    badge: null,
-    roles: ['super_admin']
-  },
-  {
-    text: 'Transactions',
-    icon: <AssessmentIcon />,
-    path: '/transactions',
-    description: 'View transaction history',
-    badge: null,
-    permissions: ['transactions.read']
-  },
-  { 
-    text: 'Settings', 
-    icon: <SettingsIcon />, 
-    path: '/settings', 
-    description: 'System configuration',
-    badge: null
-  }
-];
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -171,6 +91,91 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [drawerCollapsed, setDrawerCollapsed] = useState(isTablet);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
   const { hasAnyPermission, hasAnyRole } = usePermissions();
+
+  // Create menu items with i18n
+  const menuItems = [
+    { 
+      text: t('navigation.dashboard'), 
+      icon: <DashboardIcon />, 
+      path: '/', 
+      description: t('navigation.dashboard'),
+      badge: null
+    },
+    { 
+      text: t('navigation.portfolios'), 
+      icon: <PortfolioIcon />, 
+      path: '/portfolios', 
+      description: t('navigation.portfolios'),
+      badge: null
+    },
+    {
+      text: t('navigation.holdings'),
+      icon: <HoldingsIcon />,
+      path: '/holdings',
+      description: t('navigation.holdings'),
+      badge: 'NEW'
+    },
+    { 
+      text: t('navigation.assets'), 
+      icon: <AssetIcon />, 
+      path: '/assets', 
+      description: t('navigation.assets'),
+      badge: null
+    },
+    { 
+      text: t('navigation.deposits'), 
+      icon: <DepositIcon />, 
+      path: '/deposits', 
+      description: t('navigation.deposits'),
+      badge: null
+    },
+    { 
+      text: t('navigation.reports'), 
+      icon: <ReportsIcon />, 
+      path: '/reports', 
+      description: t('navigation.reports'),
+      badge: null
+    },
+    { 
+      text: t('navigation.snapshots'), 
+      icon: <SnapshotIcon />, 
+      path: '/snapshots', 
+      description: t('navigation.snapshots'),
+      badge: null,
+      permissions: ['financial.snapshots.manage']
+    },
+    { 
+      text: t('navigation.globalAssets'), 
+      icon: <GlobalAssetIcon />, 
+      path: '/global-assets', 
+      description: t('navigation.globalAssets'),
+      badge: null,
+      roles: ['admin', 'super_admin']
+    },
+    {
+      text: t('navigation.roleManagement'),
+      icon: <SecurityIcon />,
+      path: '/role-management',
+      description: t('navigation.roleManagement'),
+      badge: null,
+      roles: ['super_admin']
+    },
+    {
+      text: t('navigation.transactions'),
+      icon: <AssessmentIcon />,
+      path: '/transactions',
+      description: t('navigation.transactions'),
+      badge: null,
+      permissions: ['transactions.read']
+    },
+    { 
+      text: t('navigation.settings'), 
+      icon: <SettingsIcon />, 
+      path: '/settings', 
+      description: t('navigation.settings'),
+      badge: null
+    }
+  ];
 
   // Auto-collapse on smaller screens
   React.useEffect(() => {
@@ -806,7 +811,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     }}
                     onClick={() => navigate('/')}
                   >
-                    {accountLoading ? '...' : (currentAccount?.name || 'User').split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)}
+                    {accountLoading ? '...' : (currentAccount?.name || t('common.user')).split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)}
                   </Avatar>
                 </Tooltip>
                 {currentAccount?.isMainAccount && (
@@ -837,7 +842,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                    {accountLoading ? 'Loading...' : (currentAccount?.name || 'User')}
+                    {accountLoading ? t('common.loading') : (currentAccount?.name || t('common.user'))}
                   </Typography>
                   {currentAccount?.isMainAccount && (
                     <Box
@@ -856,12 +861,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   )}
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                  {accountLoading ? '...' : `${currentAccount?.baseCurrency || 'VND'} Account`}
+                  {accountLoading ? '...' : `${t('common.account')}`}
                 </Typography>
               </Box>
             </Box>
 
             <NotificationBell />
+
+            <LanguageSwitcher variant="select" size="small" showLabel={false} />
 
             <AccountSwitcher />
           </Box>

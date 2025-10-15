@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Grid, CircularProgress, Card, CardContent } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
@@ -42,6 +43,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
   isCompactMode,
   getUltraSpacing
 }) => {
+  const { t } = useTranslation();
   // State for analytics data
   const [riskReturnData, setRiskReturnData] = useState<any>(null);
   const [isRiskReturnLoading, setIsRiskReturnLoading] = useState(false);
@@ -204,14 +206,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
-                  Total Investment
+                  {t('portfolio.totalInvestment')}
                 </ResponsiveTypography>
               </Box>
               <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardLabel">
-                Assets + Deposits Value
+                {t('portfolio.assetsDepositsValue')}
               </ResponsiveTypography>
             </CardContent>
           </Card>
@@ -258,7 +260,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
-                  Unrealized P&L
+                  {t('portfolio.unrealizedPL')}
                 </ResponsiveTypography>
               </Box>
               <ResponsiveTypography variant="cardValue" sx={{ 
@@ -268,7 +270,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardLabel">
-                Current Unrealized Profit/Loss
+                {t('portfolio.currentUnrealizedPL')}
               </ResponsiveTypography>
             </CardContent>
           </Card>
@@ -309,14 +311,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
                 
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
-                  Cash Balance
+                  {t('portfolio.cashBalance')}
                 </ResponsiveTypography>
               </Box>
               <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardLabel">
-                Available Cash
+                {t('portfolio.availableCash')}
               </ResponsiveTypography>
             </CardContent>
           </Card>
@@ -357,14 +359,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
                 
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
-                  Asset Classes
+                  {t('portfolio.assetClasses')}
                 </ResponsiveTypography>
               </Box>
               <ResponsiveTypography variant="cardValue" sx={{ mb: getUltraSpacing(1, 0.5) }}>
                 {formatNumberWithSeparators(Object.keys(allocationData?.allocation || {}).length, 0)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardLabel">
-                Different Asset Types
+                {t('portfolio.differentAssetTypes')}
               </ResponsiveTypography>
             </CardContent>
           </Card>
@@ -379,7 +381,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         gap: 1
       }}>
         <PieChartIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-        Asset Type Allocation
+        {t('portfolio.assetTypeAllocation')}
       </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ 
         mb: getUltraSpacing(4, 2),
@@ -404,14 +406,14 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               mb: getUltraSpacing(1, 0.5),
               textAlign: 'center'
             }}>
-              Asset Allocation (Pie Chart)
+              {t('portfolio.assetAllocationPie')}
             </ResponsiveTypography>
             {isAnalyticsLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
                 <CircularProgress size={20} />
               </Box>
             ) : analyticsError ? (
-              <ResponsiveTypography variant="errorText">Failed to load allocation data</ResponsiveTypography>
+              <ResponsiveTypography variant="errorText">{t('portfolio.failedToLoadAllocation')}</ResponsiveTypography>
             ) : (
               <AssetAllocationChart 
                 data={allocationData || { allocation: {}, totalValue: 0, totalAssetsValue: 0, totalDepositsValue: 0, assetCount: 0 }} 
@@ -438,7 +440,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                 <CircularProgress size={20} />
               </Box>
             ) : assetPerformanceError ? (
-              <ResponsiveTypography variant="errorText">Failed to load P&L data</ResponsiveTypography>
+              <ResponsiveTypography variant="errorText">{t('portfolio.failedToLoadPL')}</ResponsiveTypography>
             ) : (
               <UnrealizedPnLChart 
                 data={(assetPerformanceData || []).map((item: any) => ({
@@ -469,7 +471,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               mb: getUltraSpacing(1, 0.5),
               textAlign: 'center'
             }}>
-              Allocation Summary
+              {t('portfolio.allocationSummary')}
             </ResponsiveTypography>
             {allocationData && Object.keys(allocationData.allocation).length > 0 ? (
               <Box>
@@ -524,7 +526,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                         display: 'block',
                         mb: 0.5
                       }}>
-                        Total Assets Value
+                        {t('portfolio.totalAssetsValue')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardValue" sx={{ 
                         color: 'primary.main',
@@ -540,7 +542,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                         display: 'block',
                         mb: 0.5
                       }}>
-                        Total Deposits Value
+                        {t('portfolio.totalDepositsValue')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardValue" sx={{ 
                         color: 'primary.main',
@@ -554,7 +556,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               </Box>
             ) : (
               <ResponsiveTypography variant="formHelper" sx={{ textAlign: 'center', mt: 2 }}>
-                No allocation data available
+                {t('portfolio.noAllocationData')}
               </ResponsiveTypography>
             )}
           </Box>
@@ -569,7 +571,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         gap: 1
       }}>
         <AssignmentIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-        Asset Detail Summary
+        {t('portfolio.assetDetailSummary')}
       </ResponsiveTypography>
       <Box sx={{ 
         p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
@@ -588,7 +590,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
           <AssetDetailSummary 
             data={assetDetailData?.data || []} 
             baseCurrency={portfolio.baseCurrency}
-            title="Individual Asset Holdings"
+            title={t('portfolio.individualAssetHoldings')}
             compact={isCompactMode}
           />
         )}
@@ -602,7 +604,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         gap: 1
       }}>
         <AnalyticsIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-        Risk & Performance Analysis
+        {t('portfolio.riskPerformanceAnalysis')}
       </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
@@ -626,7 +628,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   color: getAssetTypeColor(item.assetType)
                 }))} 
                 baseCurrency={portfolio.baseCurrency}
-                title="Risk-Return Analysis"
+                title={t('portfolio.riskReturnAnalysis')}
                 compact={isCompactMode}
                 onPeriodChange={setRiskReturnPeriod}
                 selectedPeriod={riskReturnPeriod}
@@ -655,7 +657,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   color: getAssetTypeColor(item.assetType)
                 }))} 
                 baseCurrency={portfolio.baseCurrency}
-                title="Asset Performance Comparison"
+                title={t('portfolio.assetPerformanceComparison')}
                 compact={isCompactMode}
               />
             )}
@@ -671,7 +673,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
         gap: 1
       }}>
         <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-        Diversification & Timeline
+        {t('portfolio.diversificationTimeline')}
       </ResponsiveTypography>
       <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         <Grid item xs={12} md={6}>
@@ -692,7 +694,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             ) : (
               <DiversificationHeatmap 
                 data={diversificationData?.data || []} 
-                title="Diversification Heatmap"
+                title={t('portfolio.diversificationHeatmap')}
                 compact={isCompactMode}
               />
             )}
@@ -716,7 +718,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               <AssetAllocationTimeline 
                 data={allocationTimelineData || []} 
                 baseCurrency={portfolio.baseCurrency}
-                title="Allocation Timeline"
+                title={t('portfolio.allocationTimeline')}
                 compact={isCompactMode}
                 granularity={allocationTimelineGranularity}
                 onGranularityChange={setAllocationTimelineGranularity}

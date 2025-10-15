@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -28,6 +29,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
   title = 'Diversification Heatmap',
   compact = false,
 }) => {
+  const { t } = useTranslation();
   // Get unique asset types
   const assetTypes = Array.from(new Set(data.flatMap(d => [d.asset1, d.asset2])));
   
@@ -77,7 +79,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
     return (
       <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
         <ResponsiveTypography variant={compact ? "tableCell" : "cardTitle"} color="text.secondary">
-          No diversification data available
+          {t('portfolio.noDiversificationData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -91,7 +93,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
             {title}
           </ResponsiveTypography>
           <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
-            Correlation matrix showing diversification between asset types
+            {t('portfolio.correlationMatrix')}
           </ResponsiveTypography>
         </>
       )}
@@ -203,14 +205,14 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
       {!compact && (
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
           <ResponsiveTypography variant="chartLegend" color="text.secondary" sx={{ fontWeight: 600 }}>
-            Correlation Level:
+            {t('portfolio.correlationLevel')}:
           </ResponsiveTypography>
         {[
-          { label: 'High (≥0.8)', color: '#d32f2f' },
-          { label: 'Medium-High (0.6-0.8)', color: '#f57c00' },
-          { label: 'Medium (0.4-0.6)', color: '#fbc02d' },
-          { label: 'Low (0.2-0.4)', color: '#689f38' },
-          { label: 'Very Low (<0.2)', color: '#388e3c' },
+          { label: t('portfolio.correlationHigh'), color: '#d32f2f' },
+          { label: t('portfolio.correlationMediumHigh'), color: '#f57c00' },
+          { label: t('portfolio.correlationMedium'), color: '#fbc02d' },
+          { label: t('portfolio.correlationLow'), color: '#689f38' },
+          { label: t('portfolio.correlationVeryLow'), color: '#388e3c' },
         ].map((item, index) => (
           <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
             <Box 

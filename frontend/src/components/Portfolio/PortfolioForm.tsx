@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   FormControl,
@@ -71,6 +72,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
   isLoading = false,
   error,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const { hasPermission } = usePermissions();
   const [creationMode, setCreationMode] = useState<'create' | 'copy'>('create');
@@ -173,23 +175,23 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
       <ModalWrapper
       open={open}
       onClose={handleClose}
-      title={isEditing ? 'Edit Portfolio' : 'Create New Portfolio'}
+      title={isEditing ? t('portfolio.form.editTitle') : t('portfolio.form.createTitle')}
       maxWidth="sm"
       fullWidth
       loading={isLoading}
       actions={
         <>
-          <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText="Cancel" desktopText="Cancel">
-            Cancel
+          <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleSubmit(handleFormSubmit)}
             variant="contained"
             disabled={isLoading || (creationMode === 'copy' && !selectedPublicPortfolio)}
-            mobileText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-            desktopText={isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            mobileText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
+            desktopText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
           >
-            {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            {isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
           </ResponsiveButton>
         </>
       }
@@ -214,7 +216,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
           {!isEditing && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="h6" gutterBottom>
-                How would you like to create this portfolio?
+                {t('portfolio.form.creationMode.title')}
               </Typography>
               <ToggleButtonGroup
                 value={creationMode}
@@ -224,11 +226,11 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               >
                 <ToggleButton value="create">
                   <AddIcon sx={{ mr: 1 }} />
-                  Create New
+                  {t('portfolio.form.creationMode.createNew')}
                 </ToggleButton>
                 <ToggleButton value="copy">
                   <CopyIcon sx={{ mr: 1 }} />
-                  Copy from Template
+                  {t('portfolio.form.creationMode.copyFromTemplate')}
                 </ToggleButton>
               </ToggleButtonGroup>
             </Box>
@@ -264,14 +266,14 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               ) : (
                 <Box sx={{ textAlign: 'center', py: 3 }}>
                   <Typography variant="body1" gutterBottom>
-                    Select a public portfolio template to copy from
+                    {t('portfolio.form.templateSelector.selectTemplate')}
                   </Typography>
                   <ResponsiveButton
                     onClick={() => setShowPublicSelector(true)}
                     variant="outlined"
                     startIcon={<SearchIcon />}
                   >
-                    Browse Templates
+                    {t('portfolio.form.templateSelector.browseTemplates')}
                   </ResponsiveButton>
                 </Box>
               )}
@@ -285,11 +287,11 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Portfolio Name"
+                  label={t('portfolio.form.fields.name')}
                   fullWidth
                   error={!!errors.name}
                   helperText={errors.name?.message}
-                  placeholder="e.g., Growth Portfolio, Retirement Fund"
+                  placeholder={t('portfolio.form.fields.namePlaceholder')}
                 />
               )}
             />
@@ -303,11 +305,11 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Funding Source (Optional)"
+                      label={t('portfolio.form.fields.fundingSource')}
                       fullWidth
                       error={!!errors.fundingSource}
                       helperText={errors.fundingSource?.message}
-                      placeholder="VIETCOMBANK, TPBANK, etc."
+                      placeholder={t('portfolio.form.fields.fundingSourcePlaceholder')}
                       onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                   )}
@@ -318,8 +320,8 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                   control={control}
                   render={({ field }) => (
                     <FormControl fullWidth error={!!errors.baseCurrency}>
-                      <InputLabel>Base Currency</InputLabel>
-                      <Select {...field} label="Base Currency" disabled={true}>
+                      <InputLabel>{t('portfolio.form.fields.baseCurrency')}</InputLabel>
+                      <Select {...field} label={t('portfolio.form.fields.baseCurrency')} disabled={true}>
                         {currencies.map((currency) => (
                           <MenuItem key={currency.code} value={currency.code}>
                             {currency.code} - {currency.name}
@@ -373,29 +375,29 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                       color="primary"
                     />
                   }
-                  label={visibility === 'PUBLIC' ? 'Public Portfolio' : 'Private Portfolio'}
+                  label={visibility === 'PUBLIC' ? t('portfolio.form.visibility.public') : t('portfolio.form.visibility.private')}
                 />
               </Tooltip>
               
               {visibility === 'PUBLIC' && (
                 <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <TextField
-                    label="Template Name"
+                    label={t('portfolio.form.fields.templateName')}
                     value={templateName}
                     onChange={(e) => setTemplateName(e.target.value)}
                     fullWidth
-                    placeholder="Enter template name for public portfolio"
-                    helperText="This name will be shown to other users when browsing public portfolios"
+                    placeholder={t('portfolio.form.fields.templateNamePlaceholder')}
+                    helperText={t('portfolio.form.fields.templateNameHelper')}
                   />
                   <TextField
-                    label="Description"
+                    label={t('portfolio.form.fields.description')}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     fullWidth
                     multiline
                     rows={3}
-                    placeholder="Describe this portfolio template..."
-                    helperText="Optional description for the public portfolio template"
+                    placeholder={t('portfolio.form.fields.descriptionPlaceholder')}
+                    helperText={t('portfolio.form.fields.descriptionHelper')}
                   />
                 </Box>
               )}

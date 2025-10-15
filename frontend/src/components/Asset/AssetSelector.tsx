@@ -17,6 +17,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { ResponsiveButton } from '../Common';
 import { Asset, CreateAssetRequest } from '../../types/asset.types';
 import { useAssets } from '../../hooks/useAssets';
@@ -64,6 +65,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
   onCreate,
   userId,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const currentUserId = userId || accountId;
   
@@ -105,7 +107,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
       onCreate(assetData);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create asset');
+      setError(err instanceof Error ? err.message : t('asset.selector.error.createFailed'));
     }
   };
 
@@ -135,18 +137,18 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
     >
       <DialogTitle>
         <Typography variant="h6" component="div">
-          Add Asset to Portfolio
+          {t('asset.selector.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Choose an existing asset or create a new one
+          {t('asset.selector.subtitle')}
         </Typography>
       </DialogTitle>
 
       <DialogContent>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="Select Existing Asset" />
-            <Tab label="Create New Asset" />
+            <Tab label={t('asset.selector.tabs.selectExisting')} />
+            <Tab label={t('asset.selector.tabs.createNew')} />
           </Tabs>
         </Box>
 
@@ -160,10 +162,10 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
           <Box sx={{ mb: 2 }}>
             <TextField
               fullWidth
-              label="Search assets"
+              label={t('asset.selector.search.label')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name or code..."
+              placeholder={t('asset.selector.search.placeholder')}
               variant="outlined"
             />
           </Box>
@@ -179,7 +181,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
           ) : filteredAssets.length === 0 ? (
             <Box textAlign="center" p={3}>
               <Typography variant="body2" color="text.secondary">
-                No assets found. Try creating a new asset.
+                {t('asset.selector.noAssets.message')}
               </Typography>
             </Box>
           ) : (
@@ -223,7 +225,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
           <AssetForm
             onSubmit={handleCreateAsset}
             userId={currentUserId}
-            submitText="Create Asset"
+            submitText={t('asset.selector.createAsset')}
           />
         </TabPanel>
       </DialogContent>
@@ -232,10 +234,10 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
         <ResponsiveButton 
           onClick={handleClose}
           icon={<CircularProgress />}
-          mobileText="Cancel"
-          desktopText="Cancel"
+          mobileText={t('common.cancel')}
+          desktopText={t('common.cancel')}
         >
-          Cancel
+          {t('common.cancel')}
         </ResponsiveButton>
         {tabValue === 0 && (
           <ResponsiveButton
@@ -243,10 +245,10 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
             variant="contained"
             disabled={!selectedAsset}
             icon={<CircularProgress />}
-            mobileText="Add"
-            desktopText="Add Selected Asset"
+            mobileText={t('asset.selector.add')}
+            desktopText={t('asset.selector.addSelected')}
           >
-            Add Selected Asset
+            {t('asset.selector.addSelected')}
           </ResponsiveButton>
         )}
       </DialogActions>

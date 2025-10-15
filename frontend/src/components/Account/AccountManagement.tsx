@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -30,6 +31,7 @@ import CreateAccountModal from './CreateAccountModal';
 import EditAccountModal from './EditAccountModal';
 
 export const AccountManagement: React.FC = () => {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export const AccountManagement: React.FC = () => {
       setAccounts(sortedAccounts);
     } catch (err: any) {
       console.error('Error loading accounts:', err);
-      setError('Failed to load accounts');
+      setError(t('accountManagement.error.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -85,7 +87,7 @@ export const AccountManagement: React.FC = () => {
   };
 
   const handleDeleteAccount = async (accountId: string) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) {
+    if (!window.confirm(t('accountManagement.confirmDelete'))) {
       return;
     }
 
@@ -94,7 +96,7 @@ export const AccountManagement: React.FC = () => {
       setAccounts(prev => prev.filter(acc => acc.accountId !== accountId));
     } catch (err: any) {
       console.error('Error deleting account:', err);
-      setError('Failed to delete account');
+      setError(t('accountManagement.error.deleteFailed'));
     }
   };
 
@@ -159,10 +161,10 @@ export const AccountManagement: React.FC = () => {
               variant="contained"
               icon={<AddIcon />}
               onClick={() => setCreateModalOpen(true)}
-              mobileText="Create"
-              desktopText="Create Account"
+              mobileText={t('accountManagement.create')}
+              desktopText={t('accountManagement.createAccount')}
             >
-              Create Account
+              {t('accountManagement.createAccount')}
             </ResponsiveButton>
           </Box>
 
@@ -229,7 +231,7 @@ export const AccountManagement: React.FC = () => {
                           </ResponsiveTypography>
                           {account.isMainAccount && (
                             <Chip
-                              label="Main"
+                              label={t('accountManagement.main')}
                               size="small"
                               color="primary"
                               variant="filled"
@@ -247,7 +249,7 @@ export const AccountManagement: React.FC = () => {
                           )}
                           {account.isInvestor && (
                             <Chip
-                              label="Investor"
+                              label={t('accountManagement.investor')}
                               size="small"
                               color="secondary"
                               sx={{ height: 18, fontSize: '0.7rem' }}
@@ -285,7 +287,7 @@ export const AccountManagement: React.FC = () => {
                               }
                             }}
                             onClick={() => handleCopyId(account.accountId)}
-                            title="Click to copy Account ID"
+                            title={t('accountManagement.copyIdTooltip')}
                             >
                               <Box component="span">
                                 ID: {account.accountId}
@@ -312,9 +314,11 @@ export const AccountManagement: React.FC = () => {
                               py: 0.25,
                               borderRadius: 0.5,
                               border: '1px solid',
-                              borderColor: 'primary.200'
+                              borderColor: 'primary.200',
+                              width: '100%',
+                              maxWidth: '160px',
                             }}>
-                              🛡️ Protected Account
+                              🛡️ {t('accountManagement.protectedAccount')}
                             </Box>
                           )}
                         </Box>
@@ -348,7 +352,7 @@ export const AccountManagement: React.FC = () => {
           {accounts.length === 0 && !loading && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <ResponsiveTypography variant="body1" color="text.secondary">
-                No accounts found. Create your first account to get started.
+                {t('accountManagement.noAccounts')}
               </ResponsiveTypography>
             </Box>
           )}

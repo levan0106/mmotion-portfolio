@@ -8,6 +8,7 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { ResponsiveButton } from './ResponsiveButton';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Asset } from '../../types/asset.types';
@@ -39,13 +40,14 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   error = false,
   helperText,
   disabled = false,
-  placeholder = "Search assets...",
-  label = "Asset",
+  placeholder,
+  label,
   required = false,
   showCreateOption = true,
   onCreateAsset,
   currency = 'VND', // Default to VND if not provided
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -183,8 +185,8 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   const loadMoreOption = useMemo(() => ({
     id: '__load_more__',
     symbol: '',
-    name: 'Load more assets...',
-    label: 'Load more assets...',
+    name: t('asset.autocomplete.loadMore'),
+    label: t('asset.autocomplete.loadMore'),
     type: 'LOAD_MORE',
     currentPrice: 0,
     currentQuantity: 0,
@@ -194,7 +196,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     performance: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
-  } as any), []);
+  } as any), [t]);
 
   // Memoize options to prevent unnecessary re-renders
   const options = useMemo(() => {
@@ -235,8 +237,8 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label={required ? `${label} *` : label}
-            placeholder={placeholder}
+            label={required ? `${label || t('asset.autocomplete.label')} *` : (label || t('asset.autocomplete.label'))}
+            placeholder={placeholder || t('asset.autocomplete.placeholder')}
             error={error}
             helperText={helperText}
             InputProps={{
@@ -278,10 +280,10 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                     icon={<ExpandMoreIcon />}
                     onClick={() => handleOptionClick(option)}
                     disabled={isLoadingMore}
-                    mobileText="Load more..."
-                    desktopText="Load more assets..."
+                    mobileText={t('asset.autocomplete.loadMore')}
+                    desktopText={t('asset.autocomplete.loadMore')}
                   >
-                    Load more assets...
+                    {t('asset.autocomplete.loadMore')}
                   </ResponsiveButton>
                 )}
               </li>
@@ -328,13 +330,13 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
             <Box display="flex" alignItems="center" justifyContent="center" py={2}>
               <CircularProgress size={20} />
               <Typography variant="body2" sx={{ ml: 1 }}>
-                Loading assets...
+                {t('asset.autocomplete.loading')}
               </Typography>
             </Box>
           ) : searchTerm ? (
             <Box textAlign="center" py={2}>
               <Typography variant="body2" color="text.secondary">
-                No assets found for "{searchTerm}"
+                {t('asset.autocomplete.noResults', { searchTerm })}
               </Typography>
               {showCreateOption && onCreateAsset && (
                 <ResponsiveButton
@@ -342,18 +344,18 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                   size="small"
                   onClick={onCreateAsset}
                   icon={<ExpandMoreIcon />}
-                  mobileText="Create"
-                  desktopText="Create new asset"
+                  mobileText={t('asset.autocomplete.create')}
+                  desktopText={t('asset.autocomplete.createNew')}
                   sx={{ mt: 1 }}
                 >
-                  Create new asset
+                  {t('asset.autocomplete.createNew')}
                 </ResponsiveButton>
               )}
             </Box>
           ) : (
             <Box textAlign="center" py={2}>
               <Typography variant="body2" color="text.secondary">
-                No assets available
+                {t('asset.autocomplete.noAssets')}
               </Typography>
               {showCreateOption && onCreateAsset && (
                 <ResponsiveButton
@@ -361,11 +363,11 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                   size="small"
                   onClick={onCreateAsset}
                   icon={<ExpandMoreIcon />}
-                  mobileText="Create"
-                  desktopText="Create new asset"
+                  mobileText={t('asset.autocomplete.create')}
+                  desktopText={t('asset.autocomplete.createNew')}
                   sx={{ mt: 1 }}
                 >
-                  Create new asset
+                  {t('asset.autocomplete.createNew')}
                 </ResponsiveButton>
               )}
             </Box>
@@ -386,7 +388,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
       
       {selectedAsset && selectedAsset.currentPrice && selectedAsset.currentPrice > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          Current Price: {formatCurrency(selectedAsset.currentPrice, currency)}
+          {t('asset.autocomplete.currentPrice')}: {formatCurrency(selectedAsset.currentPrice, currency)}
         </Typography>
       )}
     </Box>

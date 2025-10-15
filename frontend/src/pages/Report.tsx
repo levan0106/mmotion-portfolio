@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -57,6 +58,7 @@ interface ReportData {
 }
 
 const Report: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { accountId, baseCurrency } = useAccount();
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -100,7 +102,7 @@ const Report: React.FC = () => {
 
         setReportData(data);
       } catch (err) {
-        setError('Failed to load report data');
+        setError(t('report.error.loadFailed'));
         console.error('Error fetching report data:', err);
       } finally {
         setLoading(false);
@@ -389,7 +391,7 @@ const Report: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
                   <ResponsiveTypography variant="formHelper">
-                    No data available
+                    {t('report.noData')}
                   </ResponsiveTypography>
                 </TableCell>
               </TableRow>
@@ -419,7 +421,7 @@ const Report: React.FC = () => {
   if (!reportData) {
     return (
       <Box>
-        <Alert severity="info">No report data available</Alert>
+        <Alert severity="info">{t('report.noReportData')}</Alert>
       </Box>
     );
   }
@@ -438,99 +440,100 @@ const Report: React.FC = () => {
               mb: 1,
               filter: 'none'
             }}>
-              Financial Report
+              {t('report.title')}
             </ResponsiveTypography>
           </Box>
           <Box sx={{ ml: 2 }}>
             <FormControl sx={{ minWidth: 200, '& .MuiOutlinedInput-root': { height: '40px' } }}>
-              <InputLabel sx={{ fontSize: '0.875rem' }}>Portfolio Filter</InputLabel>
-            <Select
-              multiple
-              value={selectedPortfolioIds}
-              size="small"
-              onChange={(event) => {
-                const value = event.target.value as string[];
+              <InputLabel sx={{ fontSize: '0.875rem!important' }}>{t('report.portfolioFilter')}</InputLabel>
+              <Select
+                multiple
+                value={selectedPortfolioIds}
+                size="small"
+                sx={{ fontSize: '0.875rem!important' }}
+                onChange={(event) => {
+                  const value = event.target.value as string[];
 
-                // Handle "All Portfolios" selection
-                if (value.includes('all')) {
-                  if (value.length === 1) {
-                    // Only "all" selected, keep it
-                    setSelectedPortfolioIds(['all']);
+                  // Handle "All Portfolios" selection
+                  if (value.includes('all')) {
+                    if (value.length === 1) {
+                      // Only "all" selected, keep it
+                      setSelectedPortfolioIds(['all']);
+                    } else {
+                      // "all" + others selected, remove "all"
+                      setSelectedPortfolioIds(value.filter(id => id !== 'all'));
+                    }
                   } else {
-                    // "all" + others selected, remove "all"
-                    setSelectedPortfolioIds(value.filter(id => id !== 'all'));
+                    // No "all" selected, use the selected portfolios
+                    setSelectedPortfolioIds(value.length > 0 ? value : ['all']);
                   }
-                } else {
-                  // No "all" selected, use the selected portfolios
-                  setSelectedPortfolioIds(value.length > 0 ? value : ['all']);
-                }
-              }}
-              label="Portfolio Filter"
-              renderValue={(selected) => {
-                if (selected.includes('all')) {
-                  return 'All Portfolios';
-                }
-                if (selected.length === 0) {
-                  return 'All Portfolios';
-                }
-                if (selected.length === 1) {
-                  const portfolio = portfolios.find(p => p.portfolioId === selected[0]);
-                  return portfolio ? portfolio.name : selected[0];
-                }
-                return `${selected.length} portfolios selected`;
-              }}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 250,
-                    width: 250,
+                }}
+                label={t('report.portfolioFilter')}
+                renderValue={(selected) => {
+                  if (selected.includes('all')) {
+                    return t('report.allPortfolios');
+                  }
+                  if (selected.length === 0) {
+                    return t('report.allPortfolios');
+                  }
+                  if (selected.length === 1) {
+                    const portfolio = portfolios.find(p => p.portfolioId === selected[0]);
+                    return portfolio ? portfolio.name : selected[0];
+                  }
+                  return t('report.portfoliosSelected', { count: selected.length });
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 250,
+                      width: 250,
+                    },
                   },
-                },
-              }}
-            >
-              <MenuItem key="all" value="all" sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}>
-                <Checkbox 
-                  checked={selectedPortfolioIds.includes('all')} 
-                  color="primary"
-                  size="small"
-                />
-                <ListItemText 
-                  primary="All Portfolios" 
-                  sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
-                />
-              </MenuItem>
-              {portfolios.map((portfolio, index) => {
+                }}
+              >
+                <MenuItem key="all" value="all" sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}>
+                  <Checkbox 
+                    checked={selectedPortfolioIds.includes('all')} 
+                    color="primary"
+                    size="small"
+                  />
+                  <ListItemText 
+                    primary={t('report.allPortfolios')} 
+                    sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
+                  />
+                </MenuItem>
+                {portfolios.map((portfolio, index) => {
 
-                // Only render if portfolio has valid portfolioId
-                if (portfolio.portfolioId) {
-                  return (
-                    <MenuItem 
-                      key={`portfolio-${index}-${portfolio.portfolioId}`} 
-                      value={portfolio.portfolioId}
-                      sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}
-                    >
-                      <Checkbox 
-                        checked={selectedPortfolioIds.includes(portfolio.portfolioId)} 
-                        color="primary"
-                        size="small"
-                      />
-                      <ListItemText 
-                        primary={portfolio.name} 
-                        sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
-                      />
-                    </MenuItem>
-                  );
-                } else {
-                  console.warn(`Portfolio ${index} has invalid portfolioId:`, portfolio);
-                  return null;
-                }
-              })}
-            </Select>
+                  // Only render if portfolio has valid portfolioId
+                  if (portfolio.portfolioId) {
+                    return (
+                      <MenuItem 
+                        key={`portfolio-${index}-${portfolio.portfolioId}`} 
+                        value={portfolio.portfolioId}
+                        sx={{ display: 'flex', alignItems: 'center', py: 0.5, minHeight: '32px' }}
+                      >
+                        <Checkbox 
+                          checked={selectedPortfolioIds.includes(portfolio.portfolioId)} 
+                          color="primary"
+                          size="small"
+                        />
+                        <ListItemText 
+                          primary={portfolio.name} 
+                          sx={{ ml: 1, '& .MuiListItemText-primary': { fontSize: '0.875rem' } }}
+                        />
+                      </MenuItem>
+                    );
+                  } else {
+                    console.warn(`Portfolio ${index} has invalid portfolioId:`, portfolio);
+                    return null;
+                  }
+                })}
+              </Select>
             </FormControl>
           </Box>
         </Box>
         <ResponsiveTypography variant="pageSubtitle">
-          Comprehensive overview of cash balance, deposits, and assets by category
+          {t('report.subtitle')}
         </ResponsiveTypography>
       </Box>
 
@@ -543,24 +546,24 @@ const Report: React.FC = () => {
             <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch' }}>
               <Box sx={{ width: '100%' }}>
                 <SummaryCard
-                  title="Total Cash Balance"
+                  title={t('report.cashBalance.title')}
                   value={formatCurrency(reportData.cashBalance.total, baseCurrency)}
-                  subtitle="Available liquidity"
+                  subtitle={t('report.cashBalance.subtitle')}
                   icon={<AccountBalance sx={{ fontSize: 24, color: 'white' }} />}
                   color="info"
-                  change="Liquid"
+                  change={t('report.cashBalance.change')}
                 />
               </Box>
             </Box>
 
             <Box sx={{ flex: 1 }}>
               <DataTable
-                title="By Funding Source"
+                title={t('report.cashBalance.byFundingSource')}
                 data={reportData.cashBalance.byFundingSource}
                 columns={[
-                  { key: 'source', label: 'Funding Source' },
-                  { key: 'total', label: 'Total Amount', align: 'right' },
-                  { key: 'percentage', label: 'Share', align: 'right' },
+                  { key: 'source', label: t('report.columns.fundingSource') },
+                  { key: 'total', label: t('report.columns.totalAmount'), align: 'right' },
+                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
                 ]}
               />
             </Box>
@@ -574,36 +577,36 @@ const Report: React.FC = () => {
             <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch' }}>
               <Box sx={{ width: '100%' }}>
                 <SummaryCard
-                  title="Total Deposits"
+                  title={t('report.deposits.title')}
                   value={formatCurrency(reportData.deposits.totalValue, baseCurrency)}
-                  subtitle={`${reportData.deposits.total} deposit${reportData.deposits.total !== 1 ? 's' : ''}`}
+                  subtitle={t('report.deposits.subtitle', { count: reportData.deposits.total })}
                   icon={<Savings sx={{ fontSize: 24, color: 'white' }} />}
                   color="success"
-                  change="Active"
+                  change={t('report.deposits.change')}
                 />
               </Box>
             </Box>
 
             <Box sx={{ flex: 1 }}>
               <DataTable
-                title="By Bank"
+                title={t('report.deposits.byBank')}
                 data={reportData.deposits.byExchange}
                 columns={[
-                  { key: 'exchange', label: 'Bank' },
-                  { key: 'count', label: 'Count', align: 'right' },
-                  { key: 'total', label: 'Value', align: 'right' },
-                  { key: 'percentage', label: 'Share', align: 'right' },
+                  { key: 'exchange', label: t('report.columns.bank') },
+                  { key: 'count', label: t('report.columns.count'), align: 'right' },
+                  { key: 'total', label: t('report.columns.value'), align: 'right' },
+                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
                 ]}
               />
               
               <DataTable
-                title="By Deposit Term"
+                title={t('report.deposits.byTerm')}
                 data={reportData.deposits.byFundingSource}
                 columns={[
-                  { key: 'source', label: 'Term' },
-                  { key: 'count', label: 'Count', align: 'right' },
-                  { key: 'total', label: 'Value', align: 'right' },
-                  { key: 'percentage', label: 'Share', align: 'right' },
+                  { key: 'source', label: t('report.columns.term') },
+                  { key: 'count', label: t('report.columns.count'), align: 'right' },
+                  { key: 'total', label: t('report.columns.value'), align: 'right' },
+                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
                 ]}
               />
             </Box>
@@ -617,25 +620,25 @@ const Report: React.FC = () => {
             <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch' }}>
               <Box sx={{ width: '100%' }}>
                 <SummaryCard
-                  title="Total Assets"
+                  title={t('report.assets.title')}
                   value={formatCurrency(reportData.assets.totalValue, baseCurrency)}
-                  subtitle={`${reportData.assets.total} asset${reportData.assets.total !== 1 ? 's' : ''}`}
+                  subtitle={t('report.assets.subtitle', { count: reportData.assets.total })}
                   icon={<AccountBalanceWallet sx={{ fontSize: 24, color: 'white' }} />}
                   color="primary"
-                  change="Diversified"
+                  change={t('report.assets.change')}
                 />
               </Box>
             </Box>
 
             <Box sx={{ flex: 1 }}>
               <DataTable
-                title="By Exchange/Platform"
+                title={t('report.assets.byExchange')}
                 data={reportData.assets.byExchange}
                 columns={[
-                  { key: 'exchange', label: 'Exchange' },
-                  { key: 'count', label: 'Capital Value', align: 'right' },
-                  { key: 'total', label: 'Current Value', align: 'right' },
-                  { key: 'percentage', label: 'Share', align: 'right' },
+                  { key: 'exchange', label: t('report.columns.exchange') },
+                  { key: 'count', label: t('report.columns.capitalValue'), align: 'right' },
+                  { key: 'total', label: t('report.columns.currentValue'), align: 'right' },
+                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
                 ]}
                 customRender={{
                   count: (value, row) => (
@@ -665,7 +668,7 @@ const Report: React.FC = () => {
                           }
                         }}
                       >
-                        Count: {formatNumber(value, 0)}
+                        {t('report.columns.count')}: {formatNumber(value, 0)}
                       </ResponsiveTypography>
                     </Box>
                   ),
@@ -696,7 +699,7 @@ const Report: React.FC = () => {
                           }
                         }}
                       >
-                        P&L: {formatCurrency(value - row.capitalValue, baseCurrency)}
+                        {t('report.columns.pnl')}: {formatCurrency(value - row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
                   )
@@ -704,13 +707,13 @@ const Report: React.FC = () => {
               />
               
               <DataTable
-                title="By Group"
+                title={t('report.assets.byGroup')}
                 data={reportData.assets.byAssetGroup}
                 columns={[
-                  { key: 'group', label: 'Asset Group' },
-                  { key: 'count', label: 'Capital Value', align: 'right' },
-                  { key: 'total', label: 'Current Value', align: 'right' },
-                  { key: 'percentage', label: 'Share', align: 'right' },
+                  { key: 'group', label: t('report.columns.assetGroup') },
+                  { key: 'count', label: t('report.columns.capitalValue'), align: 'right' },
+                  { key: 'total', label: t('report.columns.currentValue'), align: 'right' },
+                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
                 ]}
                 customRender={{
                   count: (value, row) => (
@@ -740,7 +743,7 @@ const Report: React.FC = () => {
                           }
                         }}
                       >
-                        Count: {formatNumber(value, 0)}
+                        {t('report.columns.count')}: {formatNumber(value, 0)}
                       </ResponsiveTypography>
                     </Box>
                   ),
@@ -771,7 +774,7 @@ const Report: React.FC = () => {
                           }
                         }}
                       >
-                        P&L: {formatCurrency(value - row.capitalValue, baseCurrency)}
+                        {t('report.columns.pnl')}: {formatCurrency(value - row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
                   )

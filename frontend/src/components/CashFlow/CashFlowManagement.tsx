@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import {
@@ -51,6 +52,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
   portfolioId,
   onCashFlowUpdate,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -104,7 +106,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       await loadCashFlows();
       onCashFlowUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create cash flow');
+      setError(err instanceof Error ? err.message : t('cashflow.error.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -112,7 +114,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
 
   // Handle cancel cash flow
   const handleCancelCashFlow = async (cashFlowId: string) => {
-    if (!window.confirm('Are you sure you want to cancel this cash flow?')) return;
+    if (!window.confirm(t('cashflow.delete.confirm'))) return;
 
     try {
       setLoading(true);
@@ -121,7 +123,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       await loadCashFlows();
       onCashFlowUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel cash flow');
+      setError(err instanceof Error ? err.message : t('cashflow.error.cancelFailed'));
     } finally {
       setLoading(false);
     }
@@ -156,7 +158,7 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       <Card>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h4" fontWeight="bold">Cash Flow Management</Typography>
+            <Typography variant="h4" fontWeight="bold">{t('cashflow.management.title')}</Typography>
             <Box>
               <ResponsiveButton
                 variant="contained"
@@ -166,11 +168,11 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
                   setDialogType('deposit');
                   setDialogOpen(true);
                 }}
-                mobileText="Deposit"
-                desktopText="Deposit"
+                mobileText={t('cashflow.deposit')}
+                desktopText={t('cashflow.deposit')}
                 sx={{ mr: 1 }}
               >
-                Deposit
+                {t('cashflow.deposit')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="contained"
@@ -180,11 +182,11 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
                   setDialogType('withdrawal');
                   setDialogOpen(true);
                 }}
-                mobileText="Withdraw"
-                desktopText="Withdraw"
+                mobileText={t('cashflow.withdraw')}
+                desktopText={t('cashflow.withdraw')}
                 sx={{ mr: 1 }}
               >
-                Withdraw
+                {t('cashflow.withdraw')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="contained"
@@ -194,10 +196,10 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
                   setDialogType('dividend');
                   setDialogOpen(true);
                 }}
-                mobileText="Dividend"
-                desktopText="Dividend"
+                mobileText={t('cashflow.dividend')}
+                desktopText={t('cashflow.dividend')}
               >
-                Dividend
+                {t('cashflow.dividend')}
               </ResponsiveButton>
             </Box>
           </Box>
@@ -212,14 +214,14 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Reference</TableCell>
-                  <TableCell>Funding Source</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell>{t('cashflow.table.type')}</TableCell>
+                  <TableCell>{t('cashflow.table.amount')}</TableCell>
+                  <TableCell>{t('cashflow.table.description')}</TableCell>
+                  <TableCell>{t('cashflow.table.reference')}</TableCell>
+                  <TableCell>{t('cashflow.table.fundingSource')}</TableCell>
+                  <TableCell>{t('cashflow.table.date')}</TableCell>
+                  <TableCell>{t('cashflow.table.status')}</TableCell>
+                  <TableCell>{t('cashflow.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -274,15 +276,15 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
       {/* Cash Flow Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {dialogType === 'deposit' && 'Create Deposit'}
-          {dialogType === 'withdrawal' && 'Create Withdrawal'}
-          {dialogType === 'dividend' && 'Create Dividend'}
+          {dialogType === 'deposit' && t('cashflow.modal.createDeposit')}
+          {dialogType === 'withdrawal' && t('cashflow.modal.createWithdrawal')}
+          {dialogType === 'dividend' && t('cashflow.modal.createDividend')}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Amount"
+              label={t('cashflow.form.amount')}
               type="number"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -291,25 +293,25 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
             />
             <TextField
               fullWidth
-              label="Description (Optional)"
+              label={t('cashflow.form.descriptionOptional')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               margin="normal"
             />
             <TextField
               fullWidth
-              label="Reference (Optional)"
+              label={t('cashflow.form.referenceOptional')}
               value={formData.reference}
               onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
               margin="normal"
             />
             <TextField
               fullWidth
-              label="Funding Source (Optional)"
+              label={t('cashflow.form.fundingSourceOptional')}
               value={formData.fundingSource}
               onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
               margin="normal"
-              placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+              placeholder={t('cashflow.form.fundingSourcePlaceholder')}
               inputProps={{
                 style: { textTransform: 'uppercase' }
               }}
@@ -317,17 +319,17 @@ const CashFlowManagement: React.FC<CashFlowManagementProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText="Cancel" desktopText="Cancel">
-            Cancel
+          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.amount || !formData.description}
-            mobileText={loading ? 'Creating...' : 'Create'}
-            desktopText={loading ? 'Creating...' : 'Create'}
+            mobileText={loading ? t('cashflow.modal.creating') : t('common.create')}
+            desktopText={loading ? t('cashflow.modal.creating') : t('common.create')}
           >
-            {loading ? 'Creating...' : 'Create'}
+            {loading ? t('cashflow.modal.creating') : t('common.create')}
           </ResponsiveButton>
         </DialogActions>
       </Dialog>

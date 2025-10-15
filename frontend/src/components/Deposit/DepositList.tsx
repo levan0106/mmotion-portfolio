@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -81,6 +82,7 @@ const DepositList: React.FC<DepositListProps> = ({
   onDelete,
   onViewDetails,
 }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -155,7 +157,7 @@ const DepositList: React.FC<DepositListProps> = ({
   if (deposits.length === 0) {
     return (
       <Alert severity="info" sx={{ mt: 2 }}>
-        Chưa có tiền gửi nào. Hãy tạo tiền gửi đầu tiên!
+        {t('deposit.noDeposits')}
       </Alert>
     );
   }
@@ -165,15 +167,15 @@ const DepositList: React.FC<DepositListProps> = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Ngân hàng</TableCell>
-            {/* <TableCell>Số tài khoản</TableCell> */}
-            <TableCell align="right">Số tiền gốc</TableCell>
-            <TableCell align="right">Lãi suất</TableCell>
-            <TableCell align="center">Kỳ hạn</TableCell>
-            <TableCell align="center">Trạng thái</TableCell>
-            <TableCell align="right">Lãi tích lũy</TableCell>
-            <TableCell align="right">Tổng giá trị</TableCell>
-            <TableCell align="center">Thao tác</TableCell>
+            <TableCell>{t('deposit.bank')}</TableCell>
+            {/* <TableCell>{t('deposit.accountNumber')}</TableCell> */}
+            <TableCell align="right">{t('deposit.principal')}</TableCell>
+            <TableCell align="right">{t('deposit.interestRate')}</TableCell>
+            <TableCell align="center">{t('deposit.term')}</TableCell>
+            <TableCell align="center">{t('deposit.status')}</TableCell>
+            <TableCell align="right">{t('deposit.accruedInterest')}</TableCell>
+            <TableCell align="right">{t('deposit.totalValue')}</TableCell>
+            <TableCell align="center">{t('deposit.actions')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -232,10 +234,10 @@ const DepositList: React.FC<DepositListProps> = ({
                       icon={getStatusIcon(deposit)}
                       label={
                         deposit.status === 'SETTLED' 
-                          ? 'Đã tất toán' 
+                          ? t('deposit.settled') 
                           : deposit.isMatured 
-                            ? 'Đã đến hạn' 
-                            : 'Đang hoạt động'
+                            ? t('deposit.matured') 
+                            : t('deposit.active')
                       }
                       color={getStatusColor(deposit)}
                       size="small"
@@ -267,15 +269,32 @@ const DepositList: React.FC<DepositListProps> = ({
                         variant="contained"
                         color="success"
                         icon={<MoneyIcon />}
-                        mobileText="Tất toán"
-                        desktopText="Tất toán"
+                        mobileText={t('deposit.settle')}
+                        desktopText={t('deposit.settle')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onSettle(deposit);
                         }}
-                        sx={{ minWidth: 'auto', px: 1, fontSize: '0.7rem!important' }}
+                        sx={{ 
+                          minWidth: 'auto', 
+                          px: 0.5, 
+                          '&.MuiButtonBase-root': {
+                            fontSize: {
+                              xs: '0.65rem !important',  // Mobile: nhỏ hơn
+                              sm: '0.7rem !important',   // Tablet: trung bình
+                              md: '0.75rem !important'   // Desktop: lớn hơn
+                            }
+                          },
+                          '&.MuiButton-root': {
+                            fontSize: {
+                              xs: '0.65rem !important',  // Mobile: nhỏ hơn
+                              sm: '0.7rem !important',   // Tablet: trung bình
+                              md: '0.75rem !important'   // Desktop: lớn hơn
+                            }
+                          }
+                        }}
                       >
-                        Tất toán
+                        {t('deposit.settle')}
                       </ResponsiveButton>
                     )}
                     
@@ -316,14 +335,14 @@ const DepositList: React.FC<DepositListProps> = ({
             {onViewDetails && (
               <MenuItem onClick={() => handleAction(() => onViewDetails(selectedDeposit))}>
                 <ViewIcon fontSize="small" sx={{ mr: 1 }} />
-                Xem chi tiết
+                {t('deposit.viewDetails')}
               </MenuItem>
             )}
             
             {selectedDeposit.canBeEdited && onEdit && (
               <MenuItem onClick={() => handleAction(() => onEdit(selectedDeposit))}>
                 <EditIcon fontSize="small" sx={{ mr: 1 }} />
-                Chỉnh sửa
+                {t('deposit.edit')}
               </MenuItem>
             )}
             
@@ -333,7 +352,7 @@ const DepositList: React.FC<DepositListProps> = ({
                 sx={{ color: 'error.main' }}
               >
                 <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-                Xóa
+                {t('deposit.delete')}
               </MenuItem>
             )}
           </>
@@ -354,10 +373,10 @@ const DepositList: React.FC<DepositListProps> = ({
             </Avatar>
             <Box>
               <ResponsiveTypography variant="h6" fontWeight="bold">
-                Xác nhận xóa tiền gửi
+                {t('deposit.confirmDelete')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="body2" color="text.secondary">
-                Hành động này không thể hoàn tác
+                {t('deposit.cannotUndo')}
               </ResponsiveTypography>
             </Box>
           </Box>
@@ -382,7 +401,7 @@ const DepositList: React.FC<DepositListProps> = ({
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="body2" color="text.secondary">
-                      Số tiền gốc:
+                      {t('deposit.principalAmount')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="body2" fontWeight="bold">
                       {formatCurrency(depositToDelete.principal || 0)}
@@ -391,7 +410,7 @@ const DepositList: React.FC<DepositListProps> = ({
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="body2" color="text.secondary">
-                      Lãi suất:
+                      {t('deposit.interestRateLabel')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="body2" fontWeight="bold">
                       {depositToDelete.interestRate ? `${depositToDelete.interestRate}%` : 'N/A'}
@@ -400,7 +419,7 @@ const DepositList: React.FC<DepositListProps> = ({
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="body2" color="text.secondary">
-                      Kỳ hạn:
+                      {t('deposit.termLabel')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="body2" fontWeight="bold">
                       {depositToDelete.termDescription || 'N/A'}
@@ -409,7 +428,7 @@ const DepositList: React.FC<DepositListProps> = ({
                   
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="body2" color="text.secondary">
-                      Tổng giá trị:
+                      {t('deposit.totalValueLabel')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                       {formatCurrency(depositToDelete.totalValue || 0)}
@@ -422,10 +441,10 @@ const DepositList: React.FC<DepositListProps> = ({
           
           <Alert severity="warning" sx={{ mt: 2 }}>
             <ResponsiveTypography variant="body2" fontWeight="bold">
-              Cảnh báo:
+              {t('deposit.deleteWarning')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="body2">
-              Bạn sắp xóa vĩnh viễn tiền gửi này. Tất cả dữ liệu liên quan sẽ bị mất và không thể khôi phục.
+              {t('deposit.deleteWarningText')}
             </ResponsiveTypography>
           </Alert>
         </DialogContent>
@@ -436,10 +455,10 @@ const DepositList: React.FC<DepositListProps> = ({
             variant="outlined"
             size="large"
             icon={<EditIcon />}
-            mobileText="Hủy bỏ"
-            desktopText="Hủy bỏ"
+            mobileText={t('deposit.cancel')}
+            desktopText={t('deposit.cancel')}
           >
-            Hủy bỏ
+            {t('deposit.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleDeleteConfirm}
@@ -447,10 +466,10 @@ const DepositList: React.FC<DepositListProps> = ({
             color="error"
             size="large"
             icon={<DeleteIcon />}
-            mobileText="Xóa vĩnh viễn"
-            desktopText="Xóa vĩnh viễn"
+            mobileText={t('deposit.deletePermanently')}
+            desktopText={t('deposit.deletePermanently')}
           >
-            Xóa vĩnh viễn
+            {t('deposit.deletePermanently')}
           </ResponsiveButton>
         </DialogActions>
       </Dialog>

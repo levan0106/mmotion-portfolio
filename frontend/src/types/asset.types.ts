@@ -12,11 +12,11 @@ export enum AssetType {
   BOND = 'BOND',
   CRYPTO = 'CRYPTO',
   COMMODITY = 'COMMODITY',
-  REIT = 'REIT',
+  //REIT = 'REIT',
   GOLD = 'GOLD',
-  DEPOSIT = 'DEPOSIT',
-  CASH = 'CASH',
-  OTHER = 'OTHER'
+  //DEPOSIT = 'DEPOSIT',
+  //CASH = 'CASH',
+  //OTHER = 'OTHER'
 }
 
 export interface Asset {
@@ -116,11 +116,11 @@ export interface AssetAllocation {
   [AssetType.BOND]: number;
   [AssetType.CRYPTO]: number;
   [AssetType.COMMODITY]: number;
-  [AssetType.REIT]: number;
+  //[AssetType.REIT]: number;
   [AssetType.GOLD]: number;
-  [AssetType.DEPOSIT]: number;
-  [AssetType.CASH]: number;
-  [AssetType.OTHER]: number;
+  //[AssetType.DEPOSIT]: number;
+  //[AssetType.CASH]: number;
+  //[AssetType.OTHER]: number;
 }
 
 export interface AssetAllocationItem {
@@ -255,11 +255,11 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.BOND]: 'Trái phiếu',
   [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa',
-  [AssetType.REIT]: 'Bất động sản',
+  //[AssetType.REIT]: 'Bất động sản',
   [AssetType.GOLD]: 'Vàng',
-  [AssetType.DEPOSIT]: 'Tiền gửi',
-  [AssetType.CASH]: 'Tiền mặt',
-  [AssetType.OTHER]: 'Khác',
+  //[AssetType.DEPOSIT]: 'Tiền gửi',
+  //[AssetType.CASH]: 'Tiền mặt',
+  //[AssetType.OTHER]: 'Khác',
 };
 
 // Asset Type Descriptions for UI
@@ -268,11 +268,11 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   [AssetType.BOND]: 'Trái phiếu chính phủ và doanh nghiệp',
   [AssetType.CRYPTO]: 'Tiền điện tử và tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
-  [AssetType.REIT]: 'Quỹ đầu tư bất động sản',
+  //[AssetType.REIT]: 'Quỹ đầu tư bất động sản',
   [AssetType.GOLD]: 'Vàng vật chất và vàng tài khoản',
-  [AssetType.DEPOSIT]: 'Tiền gửi ngân hàng có kỳ hạn',
-  [AssetType.CASH]: 'Tiền mặt và tiền gửi không kỳ hạn',
-  [AssetType.OTHER]: 'Các loại tài sản khác',
+  //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng có kỳ hạn',
+  //[AssetType.CASH]: 'Tiền mặt và tiền gửi không kỳ hạn',
+  //[AssetType.OTHER]: 'Các loại tài sản khác',
 };
 
 // Validation Rules

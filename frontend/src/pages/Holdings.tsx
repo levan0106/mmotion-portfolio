@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -44,6 +45,7 @@ import HoldingDetailModal from '../components/Holdings/HoldingDetailModal';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
 const Holdings: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const { accountId } = useAccount();
@@ -102,7 +104,7 @@ const Holdings: React.FC = () => {
       >
         <CircularProgress size={60} thickness={4} />
         <ResponsiveTypography variant="pageSubtitle" sx={{ mt: 2 }}>
-          Loading your investment holdings...
+          {t('holdings.loading')}
         </ResponsiveTypography>
       </Box>
     );
@@ -121,13 +123,13 @@ const Holdings: React.FC = () => {
         }}
       >
         <ResponsiveTypography variant="cardTitle" gutterBottom>
-          Failed to load holdings data
+          {t('holdings.error.loadFailed')}
         </ResponsiveTypography>
         <ResponsiveTypography variant="formHelper">
           {error}
         </ResponsiveTypography>
-        <ResponsiveButton onClick={handleRefresh} mobileText="Try Again" desktopText="Try Again" sx={{ mt: 1 }}>
-          Try Again
+        <ResponsiveButton onClick={handleRefresh} mobileText={t('common.tryAgain')} desktopText={t('common.tryAgain')} sx={{ mt: 1 }}>
+          {t('common.tryAgain')}
         </ResponsiveButton>
       </Alert>
     );
@@ -136,25 +138,25 @@ const Holdings: React.FC = () => {
   // Summary metrics cards
   const summaryMetrics = [
     {
-      title: 'Total Investment',
+      title: t('holdings.summary.totalInvestment'),
       value: formatCurrency(totalInvestment, displayCurrency),
-      subtitle: `${totalHoldings} Holding${totalHoldings !== 1 ? 's' : ''}`,
+      subtitle: t('holdings.summary.holdingsCount', { count: totalHoldings }),
       icon: <AccountBalanceWallet />,
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
     },
     {
-      title: 'Current Value',
+      title: t('holdings.summary.currentValue'),
       value: formatCurrency(totalCurrentValue, displayCurrency),
-      subtitle: 'Market value',
+      subtitle: t('holdings.summary.marketValue'),
       icon: <Assessment />,
       color: 'info' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
     },
     {
-      title: 'Total P&L',
+      title: t('holdings.summary.totalPnL'),
       value: formatCurrency(totalPnL, displayCurrency),
-      subtitle: totalPnL >= 0 ? 'Profitable' : 'Loss',
+      subtitle: totalPnL >= 0 ? t('holdings.summary.profitable') : t('holdings.summary.loss'),
       icon: totalPnL >= 0 ? <TrendingUp /> : <TrendingDown />,
       color: totalPnL >= 0 ? 'success' as const : 'error' as const,
       gradient: totalPnL >= 0 
@@ -162,9 +164,9 @@ const Holdings: React.FC = () => {
         : `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.06)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
     },
     {
-      title: 'Total Return',
+      title: t('holdings.summary.totalReturn'),
       value: formatPercentage(totalReturnPercentage),
-      subtitle: 'Performance',
+      subtitle: t('holdings.summary.performance'),
       icon: <MonetizationOn />,
       color: 'secondary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
@@ -188,10 +190,10 @@ const Holdings: React.FC = () => {
                   mb: 1
                 }}
               >
-                Investment Holdings
+                {t('holdings.title')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle">
-                Your investment portfolio holdings and performance
+                {t('holdings.subtitle')}
               </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -199,11 +201,11 @@ const Holdings: React.FC = () => {
                 variant="outlined"
                 icon={<Refresh />}
                 onClick={handleRefresh}
-                mobileText="Refresh"
-                desktopText="Refresh"
+                mobileText={t('common.refresh')}
+                desktopText={t('common.refresh')}
                 sx={{ borderRadius: 2 }}
               >
-                Refresh
+                {t('common.refresh')}
               </ResponsiveButton>
             </Box>
           </Box>
@@ -262,23 +264,19 @@ const Holdings: React.FC = () => {
                     </ResponsiveTypography>
                     
                     <ResponsiveTypography 
-                      variant="cardTitle" 
+                      variant="cardLabel" 
                       sx={{ 
                         mb: 0.5,
-                        color: 'text.secondary'
                       }}
                     >
                       {metric.title}
                     </ResponsiveTypography>
                     
-                    <ResponsiveTypography 
-                      variant="cardLabel" 
-                      sx={{ 
-                        opacity: 0.8
-                      }}
+                    {/* <ResponsiveTypography 
+                      variant="formHelper" 
                     >
                       {metric.subtitle}
-                    </ResponsiveTypography>
+                    </ResponsiveTypography> */}
                   </CardContent>
                 </Card>
             </Grid>
@@ -290,10 +288,10 @@ const Holdings: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <ResponsiveTypography variant="pageTitle" component="h2" sx={{ mb: 1 }}>
-                Investment Holdings
+                {t('holdings.table.title')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle">
-                Detailed view of your investment holdings across all portfolios
+                {t('holdings.table.subtitle')}
               </ResponsiveTypography>
             </Box>
           </Box>
@@ -316,10 +314,10 @@ const Holdings: React.FC = () => {
                 <AccountBalance sx={{ fontSize: 80, color: 'primary.main' }} />
               </Box>
               <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
-                No Holdings Found
+                {t('holdings.empty.title')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-                You don't have any investment holdings yet. Start investing by subscribing to available funds.
+                {t('holdings.empty.message')}
               </ResponsiveTypography>
             </Card>
           ) : (
@@ -334,15 +332,15 @@ const Holdings: React.FC = () => {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Portfolio</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Units</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Avg Cost/Unit</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Total Investment</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Current Value</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Unrealized P&L</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Realized P&L</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Return %</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.portfolio')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.units')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.avgCostPerUnit')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.totalInvestment')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.currentValue')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.unrealizedPnL')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.realizedPnL')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('holdings.table.returnPercent')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -423,7 +421,7 @@ const Holdings: React.FC = () => {
                                 />
                               </TableCell>
                               <TableCell>
-                                <Tooltip title="View Portfolio">
+                                <Tooltip title={t('holdings.actions.viewPortfolio')}>
                                   <IconButton
                                     onClick={() => handleViewPortfolio(holding.portfolioId)}
                                     size="small"

@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -61,6 +62,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   onTwrPeriodChange,
   currentTwrPeriod = 'YTD',
 }) => {
+  const { t } = useTranslation();
   const [timeframe, setTimeframe] = useState(currentTimeframe);
   const [twrPeriod, setTwrPeriod] = useState(currentTwrPeriod);
 
@@ -99,7 +101,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             </ResponsiveTypography>
           ))}
           <ResponsiveTypography variant="chartTooltip" color="text.secondary" sx={{ mt: 1 }}>
-            Difference: {formatPercentage(payload[0]?.payload?.difference || 0)}
+            {t('benchmark.tooltip.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
           </ResponsiveTypography>
         </Paper>
       );
@@ -124,7 +126,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-          No benchmark data available
+          {t('benchmark.noData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -149,16 +151,16 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               title={
                 <Box sx={{ p: 1 }}>
                   <ResponsiveTypography variant="chartTitle" sx={{ mb: 1 }} ellipsis={false}>
-                    Ghi chú cho nhà đầu tư:
+                    {t('benchmark.tooltip.title')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
-                    <strong>TWR</strong> phản ánh năng lực quản lý quỹ, đã loại bỏ ảnh hưởng của dòng tiền.
+                    <strong>{t('benchmark.tooltip.twr')}</strong> {t('benchmark.tooltip.twrDescription')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
-                    <strong>MWR</strong> phản ánh lợi nhuận thực tế của từng nhà đầu tư, có thể khác nhau tùy thời điểm nạp/rút vốn.
+                    <strong>{t('benchmark.tooltip.mwr')}</strong> {t('benchmark.tooltip.mwrDescription')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="formHelper" ellipsis={false}>
-                    NĐT nên so sánh MWR cá nhân với TWR quỹ để hiểu rõ sự khác biệt.
+                    {t('benchmark.tooltip.comparison')}
                   </ResponsiveTypography>
                 </Box>
               }
@@ -190,7 +192,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             </Tooltip>
           </Box>
           <ResponsiveTypography variant="formHelper" color="text.secondary">
-            Portfolio performance vs {benchmarkName}
+            {t('benchmark.subtitle', { benchmarkName })}
           </ResponsiveTypography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -237,7 +239,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingUp color="primary" sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    Portfolio 
+                    {t('benchmark.portfolio')}
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography 
@@ -275,7 +277,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    Excess
+                    {t('benchmark.excess')}
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography 
@@ -294,7 +296,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <TrendingDown color="warning" sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    Tracking Error
+                    {t('benchmark.trackingError')}
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="cardValue" color="warning.main" fontWeight="bold">
@@ -336,7 +338,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               dataKey="portfolio"
               stroke="#1976d2"
               strokeWidth={3}
-              name="Portfolio"
+              name={t('benchmark.portfolio')}
               dot={false}
               activeDot={{ r: 6 }}
             />

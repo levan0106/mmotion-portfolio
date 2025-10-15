@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
@@ -57,6 +58,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
   holdingId,
   holdingName = 'Holding Details'
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [holdingDetail, setHoldingDetail] = useState<HoldingDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +74,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       const detail = await apiService.getHoldingDetail(holdingId);
       setHoldingDetail(detail);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch holding details');
+      setError(err instanceof Error ? err.message : t('holdings.error.fetchDetailsFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -93,35 +95,35 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
   };
 
   const getTransactionLabel = (transaction: any) => {
-    return transaction.holdingType === 'SUBSCRIBE' ? 'Subscription' : 'Redemption';
+    return transaction.holdingType === 'SUBSCRIBE' ? t('holdings.transaction.subscription') : t('holdings.transaction.redemption');
   };
 
   const summaryMetrics = holdingDetail ? [
     {
-      title: 'Total Transactions',
+      title: t('holdings.modal.totalTransactions'),
       value: holdingDetail.summary.totalTransactions,
-      subtitle: 'All transactions',
+      subtitle: t('holdings.modal.allTransactions'),
       icon: <Assessment />,
       color: 'primary' as const,
     },
     {
-      title: 'Total Subscriptions',
+      title: t('holdings.modal.totalSubscriptions'),
       value: holdingDetail.summary.totalSubscriptions,
-      subtitle: 'Subscription count',
+      subtitle: t('holdings.modal.subscriptionCount'),
       icon: <TrendingUp />,
       color: 'success' as const,
     },
     {
-      title: 'Total Redemptions',
+      title: t('holdings.modal.totalRedemptions'),
       value: holdingDetail.summary.totalRedemptions,
-      subtitle: 'Redemption count',
+      subtitle: t('holdings.modal.redemptionCount'),
       icon: <TrendingDown />,
       color: 'error' as const,
     },
     {
-      title: 'Total Invested',
+      title: t('holdings.modal.totalInvested'),
       value: formatCurrency(holdingDetail.summary.totalAmountInvested, 'VND'),
-      subtitle: 'Amount invested',
+      subtitle: t('holdings.modal.amountInvested'),
       icon: <MonetizationOn />,
       color: 'info' as const,
     },
@@ -155,11 +157,11 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
               {holdingName}
             </ResponsiveTypography>
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-              Subscription & Redemption History
+              {t('holdings.modal.subtitle')}
             </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Refresh">
+            <Tooltip title={t('common.refresh')}>
               <IconButton onClick={fetchHoldingDetail} size="small" disabled={isLoading}>
                 <Refresh />
               </IconButton>
@@ -182,13 +184,13 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             sx={{ m: 3, borderRadius: 2 }}
           >
             <ResponsiveTypography variant="cardTitle" gutterBottom>
-              Failed to load holding details
+              {t('holdings.error.loadDetailsFailed')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell">
               {error}
             </ResponsiveTypography>
             <ResponsiveButton onClick={fetchHoldingDetail} sx={{ mt: 1 }}>
-              Try Again
+              {t('common.tryAgain')}
             </ResponsiveButton>
           </Alert>
         ) : holdingDetail ? (
@@ -196,7 +198,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             {/* Summary Metrics */}
             <Box sx={{ p: 3, pb: 2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
-                Summary
+                {t('holdings.modal.summary')}
               </ResponsiveTypography>
               <Grid container spacing={2}>
                 {summaryMetrics.map((metric, index) => (
@@ -245,7 +247,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             {/* Transaction History */}
             <Box sx={{ p: 3 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
-                Transaction History
+                {t('holdings.detail.transactionHistory')}
               </ResponsiveTypography>
               
               {holdingDetail.transactions.length === 0 ? (
@@ -258,10 +260,10 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                 }}>
                   <AccountBalanceWallet sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
                   <ResponsiveTypography variant="cardTitle" color="text.secondary">
-                    No transactions found
+                    {t('holdings.modal.noTransactions')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                    This holding doesn't have any subscription or redemption transactions yet.
+                    {t('holdings.modal.noTransactionsMessage')}
                   </ResponsiveTypography>
                 </Box>
               ) : (
@@ -270,22 +272,22 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                     <TableHead>
                       <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">Type</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.type')}</ResponsiveTypography>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.units')}</ResponsiveTypography>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">NAV per Unit</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.navPerUnit')}</ResponsiveTypography>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">Amount</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.amount')}</ResponsiveTypography>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">Date</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.date')}</ResponsiveTypography>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">Description</ResponsiveTypography>
+                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.description')}</ResponsiveTypography>
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -359,11 +361,11 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                           </TableCell>
                           <TableCell>
                             <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {item.cashFlow?.description || 'No description'}
+                              {item.cashFlow?.description || t('common.noDescription')}
                             </ResponsiveTypography>
                             {item.cashFlow?.fundingSource && (
                               <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                                Source: {item.cashFlow.fundingSource}
+                                {t('holdings.table.source')}: {item.cashFlow.fundingSource}
                               </ResponsiveTypography>
                             )}
                           </TableCell>
@@ -380,7 +382,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
 
       <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
         <ResponsiveButton onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
-          Close
+          {t('common.close')}
         </ResponsiveButton>
       </DialogActions>
     </Dialog>

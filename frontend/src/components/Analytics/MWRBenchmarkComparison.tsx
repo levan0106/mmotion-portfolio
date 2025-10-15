@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -56,6 +57,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
   onTimeframeChange,
   currentTimeframe = '1Y'
 }) => {
+  const { t } = useTranslation();
   const [selectedMwrPeriod, setSelectedMwrPeriod] = useState(currentMWRPeriod || 'YTD');
   const [timeframe, setTimeframe] = useState(currentTimeframe);
 
@@ -110,7 +112,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
             </ResponsiveTypography>
           ))}
           <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ mt: 1 }}>
-            Difference: {formatPercentage(payload[0]?.payload?.difference || 0)}
+            {t('mwrBenchmark.tooltip.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
           </ResponsiveTypography>
         </Paper>
       );
@@ -142,16 +144,16 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 title={
                   <Box sx={{ p: 1 }}>
                     <ResponsiveTypography variant="chartTitle" sx={{ mb: 1 }} ellipsis={false}>
-                      Ghi chú cho nhà đầu tư:
+                      {t('mwrBenchmark.tooltip.title')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
-                      <strong>MWR</strong> phản ánh lợi nhuận thực tế của từng nhà đầu tư, có thể khác nhau tùy thời điểm nạp/rút vốn.
+                      <strong>{t('mwrBenchmark.tooltip.mwr')}</strong> {t('mwrBenchmark.tooltip.mwrDescription')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="formHelper" sx={{ mb: 1 }} ellipsis={false}>
-                      <strong>TWR</strong> phản ánh năng lực quản lý quỹ, đã loại bỏ ảnh hưởng của dòng tiền.
+                      <strong>{t('mwrBenchmark.tooltip.twr')}</strong> {t('mwrBenchmark.tooltip.twrDescription')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="formHelper" ellipsis={false}>
-                      NĐT nên so sánh MWR cá nhân với TWR quỹ để hiểu rõ sự khác biệt.
+                      {t('mwrBenchmark.tooltip.comparison')}
                     </ResponsiveTypography>
                   </Box>
                 }
@@ -183,7 +185,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
               </Tooltip>
             </Box>
             <ResponsiveTypography variant="formHelper" color="text.secondary">
-              Portfolio performance vs {benchmarkName}
+              {t('mwrBenchmark.subtitle', { benchmarkName })}
             </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -231,7 +233,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                   {formatPercentage(portfolioReturn)}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="formHelper" color="text.secondary">
-                  Portfolio (MWR)
+                  {t('mwrBenchmark.portfolio')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -263,7 +265,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="formHelper" color="text.secondary">
-                  Difference
+                  {t('mwrBenchmark.difference')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -302,7 +304,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 dataKey="portfolio"
                 stroke="#1976d2"
                 strokeWidth={3}
-                name="Portfolio (MWR)"
+                name={t('mwrBenchmark.portfolio')}
                 dot={false}
                 activeDot={{ r: 6 }}
               />
@@ -322,7 +324,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
               <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-                No data available for MWR chart
+                {t('mwrBenchmark.noData')}
               </ResponsiveTypography>
             </Box>
           )}

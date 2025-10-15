@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   TextField,
@@ -49,6 +50,7 @@ interface MessageFormData {
 }
 
 export const AdminMessageSender: React.FC = () => {
+  const { t } = useTranslation();
   const { hasRole } = usePermissions();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,7 +93,7 @@ export const AdminMessageSender: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching users:', err);
-      setError('Failed to load users: ' + (err.message || 'Unknown error'));
+      setError(t('adminMessage.error.loadUsers') + ': ' + (err.message || t('common.unknownError')));
       setUsers([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -107,12 +109,12 @@ export const AdminMessageSender: React.FC = () => {
 
   const handleSendMessage = async () => {
     if (!formData.title.trim() || !formData.message.trim()) {
-      setError('Title and message are required');
+      setError(t('adminMessage.validation.titleAndMessageRequired'));
       return;
     }
 
     if (!formData.sendToAll && formData.targetUsers.length === 0 && !formData.targetRole) {
-      setError('Please select target users, role, or enable "Send to All"');
+      setError(t('adminMessage.validation.selectTarget'));
       return;
     }
 
@@ -134,7 +136,9 @@ export const AdminMessageSender: React.FC = () => {
 
       await apiService.broadcastNotification(messageData);
       
-      setSuccess(`Message sent successfully to ${formData.sendToAll ? 'all users' : `${formData.targetUsers.length} users`}`);
+      setSuccess(t('adminMessage.success.sent', { 
+        target: formData.sendToAll ? t('adminMessage.allUsers') : t('adminMessage.usersCount', { count: formData.targetUsers.length })
+      }));
       
       // Reset form
       setFormData({
@@ -147,7 +151,7 @@ export const AdminMessageSender: React.FC = () => {
         priority: 'normal',
       });
     } catch (err: any) {
-      setError('Failed to send message: ' + (err.message || 'Unknown error'));
+      setError(t('adminMessage.error.sendFailed') + ': ' + (err.message || t('common.unknownError')));
     } finally {
       setSending(false);
     }
@@ -169,7 +173,7 @@ export const AdminMessageSender: React.FC = () => {
   if (!isAdmin) {
     return (
       <Alert severity="error">
-        You don't have permission to access this feature. Admin role required.
+        {t('adminMessage.error.noPermission')}
       </Alert>
     );
   }
@@ -186,10 +190,10 @@ export const AdminMessageSender: React.FC = () => {
     <Box>
       <Box sx={{ mb: 3 }}>
         <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
-          Send Message to Users
+          {t('adminMessage.title')}
         </ResponsiveTypography>
         <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-          Send notifications to specific users, roles, or all users in the system.
+          {t('adminMessage.subtitle')}
         </ResponsiveTypography>
       </Box>
 
@@ -209,17 +213,17 @@ export const AdminMessageSender: React.FC = () => {
         <Grid item xs={12} md={8}>
           <Card>
             <CardHeader
-              title="Message Details"
+              title={t('adminMessage.messageDetails.title')}
               avatar={<MessageIcon />}
             />
             <CardContent>
               <Box sx={{ mb: 3 }}>
                 <TextField
                   fullWidth
-                  label="Message Title"
+                  label={t('adminMessage.messageDetails.titleLabel')}
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="Enter message title"
+                  placeholder={t('adminMessage.messageDetails.titlePlaceholder')}
                   required
                 />
               </Box>
@@ -229,10 +233,10 @@ export const AdminMessageSender: React.FC = () => {
                   fullWidth
                   multiline
                   rows={4}
-                  label="Message Content"
+                  label={t('adminMessage.messageDetails.contentLabel')}
                   value={formData.message}
                   onChange={(e) => handleInputChange('message', e.target.value)}
-                  placeholder="Enter your message content"
+                  placeholder={t('adminMessage.messageDetails.contentPlaceholder')}
                   required
                 />
               </Box>
@@ -240,25 +244,25 @@ export const AdminMessageSender: React.FC = () => {
               <Box sx={{ mb: 3 }}>
                 <TextField
                   fullWidth
-                  label="Action URL (Optional)"
+                  label={t('adminMessage.messageDetails.actionUrlLabel')}
                   value={formData.actionUrl}
                   onChange={(e) => handleInputChange('actionUrl', e.target.value)}
-                  placeholder="e.g., /portfolios, /settings"
-                  helperText="Users can click this link from the notification"
+                  placeholder={t('adminMessage.messageDetails.actionUrlPlaceholder')}
+                  helperText={t('adminMessage.messageDetails.actionUrlHelper')}
                 />
               </Box>
 
               <Box sx={{ mb: 3 }}>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel>Priority</InputLabel>
+                  <InputLabel>{t('adminMessage.messageDetails.priorityLabel')}</InputLabel>
                   <Select
                     value={formData.priority}
                     onChange={(e) => handleInputChange('priority', e.target.value)}
-                    label="Priority"
+                    label={t('adminMessage.messageDetails.priorityLabel')}
                   >
-                    <MenuItem value="low">Low</MenuItem>
-                    <MenuItem value="normal">Normal</MenuItem>
-                    <MenuItem value="high">High</MenuItem>
+                    <MenuItem value="low">{t('adminMessage.priority.low')}</MenuItem>
+                    <MenuItem value="normal">{t('adminMessage.priority.normal')}</MenuItem>
+                    <MenuItem value="high">{t('adminMessage.priority.high')}</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -269,7 +273,7 @@ export const AdminMessageSender: React.FC = () => {
         <Grid item xs={12} md={4}>
           <Card>
             <CardHeader
-              title="Target Users"
+              title={t('adminMessage.targetUsers.title')}
               avatar={<PeopleIcon />}
             />
             <CardContent>
@@ -281,7 +285,7 @@ export const AdminMessageSender: React.FC = () => {
                       onChange={(e) => handleInputChange('sendToAll', e.target.checked)}
                     />
                   }
-                  label="Send to All Users"
+                  label={t('adminMessage.targetUsers.sendToAll')}
                 />
               </Box>
 
@@ -313,8 +317,8 @@ export const AdminMessageSender: React.FC = () => {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="Select Users"
-                          placeholder="Search users..."
+                          label={t('adminMessage.targetUsers.selectUsers')}
+                          placeholder={t('adminMessage.targetUsers.searchUsers')}
                         />
                       )}
                     />
@@ -322,16 +326,16 @@ export const AdminMessageSender: React.FC = () => {
 
                   <Box sx={{ mb: 2 }}>
                     <FormControl fullWidth variant="outlined">
-                      <InputLabel>Or Select by Role</InputLabel>
+                      <InputLabel>{t('adminMessage.targetUsers.selectByRole')}</InputLabel>
                       <Select
                         value={formData.targetRole}
                         onChange={(e) => handleInputChange('targetRole', e.target.value)}
-                        label="Or Select by Role"
+                        label={t('adminMessage.targetUsers.selectByRole')}
                       >
-                        <MenuItem value="">Select Role</MenuItem>
-                        <MenuItem value="user">Users</MenuItem>
-                        <MenuItem value="admin">Admins</MenuItem>
-                        <MenuItem value="super_admin">Super Admins</MenuItem>
+                        <MenuItem value="">{t('adminMessage.targetUsers.selectRole')}</MenuItem>
+                        <MenuItem value="user">{t('adminMessage.roles.user')}</MenuItem>
+                        <MenuItem value="admin">{t('adminMessage.roles.admin')}</MenuItem>
+                        <MenuItem value="super_admin">{t('adminMessage.roles.superAdmin')}</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -347,10 +351,10 @@ export const AdminMessageSender: React.FC = () => {
                 onClick={handleSendMessage}
                 disabled={sending || !formData.title.trim() || !formData.message.trim()}
                 sx={{ mt: 2 }}
-                mobileText={sending ? 'Sending...' : 'Send'}
-                desktopText={sending ? 'Sending...' : 'Send Message'}
+                mobileText={sending ? t('adminMessage.sending') : t('adminMessage.send')}
+                desktopText={sending ? t('adminMessage.sending') : t('adminMessage.sendMessage')}
               >
-                {sending ? 'Sending...' : 'Send Message'}
+                {sending ? t('adminMessage.sending') : t('adminMessage.sendMessage')}
               </ResponsiveButton>
             </CardContent>
           </Card>

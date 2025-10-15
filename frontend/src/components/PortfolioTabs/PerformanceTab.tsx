@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Grid, CircularProgress } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { usePortfolioAnalytics } from '../../hooks/usePortfolios';
@@ -28,6 +29,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   isCompactMode,
   getUltraSpacing
 }) => {
+  const { t } = useTranslation();
   // State for benchmark data
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
@@ -80,7 +82,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         setBenchmarkData(response);
       } catch (error) {
         console.error('Error fetching benchmark data:', error);
-        setBenchmarkError('Failed to load benchmark data');
+        setBenchmarkError(t('portfolio.error.benchmarkLoadFailed'));
       } finally {
         setIsBenchmarkLoading(false);
       }
@@ -103,7 +105,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         setMwrBenchmarkData(response);
       } catch (error) {
         console.error('Error fetching MWR benchmark data:', error);
-        setMwrBenchmarkError('Failed to load MWR benchmark data');
+        setMwrBenchmarkError(t('portfolio.error.mwrBenchmarkLoadFailed'));
       } finally {
         setIsMwrBenchmarkLoading(false);
       }
@@ -124,7 +126,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         setRiskMetricsData(response);
       } catch (error) {
         console.error('Error fetching risk metrics data:', error);
-        setRiskMetricsError('Failed to load risk metrics data');
+        setRiskMetricsError(t('portfolio.error.riskMetricsLoadFailed'));
       } finally {
         setIsRiskMetricsLoading(false);
       }
@@ -213,7 +215,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     mb: 0.5
                   }}
                 >
-                  Fund Manager View
+                  {t('portfolio.fundManagerView')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="formHelper" 
@@ -222,7 +224,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     display: { xs: 'none', sm: 'block' }
                   }}
                 >
-                  TWR - Pure investment management performance
+                  {t('portfolio.twrDescription')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="formHelper" 
@@ -231,7 +233,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     display: { xs: 'block', sm: 'none' }
                   }}
                 >
-                  TWR Performance
+                  {t('portfolio.twrPerformance')}
                 </ResponsiveTypography>
               </Box>
             </Box>
@@ -247,7 +249,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               <BenchmarkComparison 
                 data={benchmarkData?.data || []} 
                 baseCurrency={portfolio.baseCurrency}
-                title="Portfolio Performance (TWR)"
+                title={t('portfolio.portfolioPerformanceTWR')}
                 benchmarkName={benchmarkData?.benchmarkName || 'VN Index'}
                 isCompactMode={isCompactMode}
                 getUltraSpacing={getUltraSpacing}
@@ -293,7 +295,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     mb: 0.5
                   }}
                 >
-                  Individual Investor View
+                  {t('portfolio.individualInvestorView')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="formHelper" 
@@ -302,7 +304,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     display: { xs: 'none', sm: 'block' }
                   }}
                 >
-                  MWR - Actual investor returns with cash flows
+                  {t('portfolio.mwrDescription')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="formHelper" 
@@ -311,7 +313,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     display: { xs: 'block', sm: 'none' }
                   }}
                 >
-                  MWR Performance
+                  {t('portfolio.mwrPerformance')}
                 </ResponsiveTypography>
               </Box>
             </Box>
@@ -326,7 +328,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
             ) : (
               <MWRBenchmarkComparison 
                 data={mwrBenchmarkData?.data || []} 
-                title="Portfolio Performance (MWR)"
+                title={t('portfolio.portfolioPerformanceMWR')}
                 benchmarkName={mwrBenchmarkData?.benchmarkName || 'VN Index'}
                 mwrPeriod={mwrBenchmarkData?.mwrPeriod}
                 onMWRPeriodChange={handleBenchmarkMwrPeriodChange}
@@ -359,7 +361,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           <RiskMetricsDashboard 
             data={riskMetricsData?.data || {}}
             baseCurrency={portfolio.baseCurrency}
-            title="Risk Metrics Dashboard"
+            title={t('portfolio.riskMetricsDashboard')}
             compact={isCompactMode}
           />
         )}

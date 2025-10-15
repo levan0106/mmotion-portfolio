@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
@@ -12,13 +9,12 @@ import {
   FormControlLabel,
   Switch,
   Box,
-  Typography,
   Alert,
   CircularProgress,
-  IconButton,
 } from '@mui/material';
 import { ResponsiveButton } from '../Common';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { ModalWrapper } from '../Common/ModalWrapper';
+import { AccountBalance as AccountIcon } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
 
@@ -50,6 +46,7 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
   account,
   onAccountUpdated,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<EditAccountFormData>({
     name: '',
     email: '',
@@ -110,7 +107,7 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
       console.error('Error updating account:', err);
       setError(
         err.response?.data?.message || 
-        'Failed to update account. Please try again.'
+        t('editAccountModal.error.updateFailed')
       );
     } finally {
       setLoading(false);
@@ -127,127 +124,104 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
   if (!account) return null;
 
   return (
-    <Dialog 
-      open={open} 
+    <ModalWrapper
+      open={open}
       onClose={handleClose}
+      title={t('editAccountModal.title')}
+      icon={<AccountIcon />}
+      loading={loading}
       maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        }
-      }}
-    >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        pb: 1
-      }}>
-        <Typography variant="h6" component="div">
-          Edit Account Information
-        </Typography>
-        <IconButton
-          onClick={handleClose}
-          disabled={loading}
-          sx={{ 
-            minWidth: 'auto', 
-            p: 1,
-            '&:hover': { backgroundColor: 'error.light', color: 'white' }
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent sx={{ pt: 2 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
-            fullWidth
-            label="Account Holder Name"
-            value={formData.name}
-            onChange={handleInputChange('name')}
-            margin="normal"
-            required
+      size="medium"
+      actions={
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', width: '100%' }}>
+          <ResponsiveButton 
+            onClick={handleClose} 
             disabled={loading}
-            helperText="Enter the full name of the account holder"
-          />
-
-          <TextField
-            fullWidth
-            label="Email Address"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange('email')}
-            margin="normal"
-            required
-            disabled={loading}
-            helperText="This will be used for account identification"
-          />
-
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel>Base Currency</InputLabel>
-            <Select
-              value={formData.baseCurrency}
-              onChange={handleInputChange('baseCurrency')}
-              label="Base Currency"
-              disabled={loading}
-            >
-              {CURRENCY_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isInvestor}
-                onChange={handleInputChange('isInvestor')}
-                disabled={loading}
-              />
-            }
-            label="Can invest in funds"
-            sx={{ mt: 2 }}
-          />
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-            Enable this if this account can invest in fund portfolios
-          </Typography>
+            color="inherit"
+            mobileText={t('common.cancel')}
+            desktopText={t('common.cancel')}
+            sx={{ width: 'auto' }}
+          >
+            {t('common.cancel')}
+          </ResponsiveButton>
+          <ResponsiveButton
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={loading || !formData.name || !formData.email}
+            icon={loading && <CircularProgress size={16} />}
+            mobileText={loading ? t('editAccountModal.updating') : t('editAccountModal.update')}
+            desktopText={loading ? t('editAccountModal.updating') : t('editAccountModal.updateAccount')}
+            sx={{ width: 'auto' }}
+          >
+            {loading ? t('editAccountModal.updating') : t('editAccountModal.updateAccount')}
+          </ResponsiveButton>
         </Box>
-      </DialogContent>
+      }
+    >
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-      <DialogActions sx={{ p: 2, pt: 1 }}>
-        <ResponsiveButton 
-          onClick={handleClose} 
+      <Box component="form" onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label={t('editAccountModal.fields.name')}
+          value={formData.name}
+          onChange={handleInputChange('name')}
+          margin="normal"
+          required
           disabled={loading}
-          color="inherit"
-          icon={<CircularProgress />}
-          mobileText="Cancel"
-          desktopText="Cancel"
-        >
-          Cancel
-        </ResponsiveButton>
-        <ResponsiveButton
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={loading || !formData.name || !formData.email}
-          icon={loading ? <CircularProgress size={16} /> : <CircularProgress />}
-          mobileText={loading ? 'Updating...' : 'Update'}
-          desktopText={loading ? 'Updating...' : 'Update Account'}
-        >
-          {loading ? 'Updating...' : 'Update Account'}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+          helperText={t('editAccountModal.fields.nameHelper')}
+        />
+
+        <TextField
+          fullWidth
+          label={t('editAccountModal.fields.email')}
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange('email')}
+          margin="normal"
+          required
+          disabled={loading}
+          helperText={t('editAccountModal.fields.emailHelper')}
+        />
+
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>{t('editAccountModal.fields.baseCurrency')}</InputLabel>
+          <Select
+            value={formData.baseCurrency}
+            onChange={handleInputChange('baseCurrency')}
+            label={t('editAccountModal.fields.baseCurrency')}
+            disabled={loading}
+          >
+            {CURRENCY_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formData.isInvestor}
+              onChange={handleInputChange('isInvestor')}
+              disabled={loading}
+            />
+          }
+          label={t('editAccountModal.fields.canInvest')}
+          sx={{ mt: 2 }}
+        />
+        <Box sx={{ mt: 0.5 }}>
+          <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            {t('editAccountModal.fields.canInvestHelper')}
+          </Box>
+        </Box>
+      </Box>
+    </ModalWrapper>
   );
 };
 

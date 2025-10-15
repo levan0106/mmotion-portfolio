@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -54,6 +55,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   getUltraSpacing = (normal) => normal,
   portfolioId
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   // State for NAV history data
   const [navHistoryData, setNavHistoryData] = useState<NAVHistoryData[]>([]);
@@ -168,11 +170,11 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 color: 'text.primary',
                 mb: isCompactMode ? 0.25 : 0.5
               }}>
-                NAV Summary
+                {t('navSummary.title')}
               </ResponsiveTypography>
               {!isCompactMode && (
                 <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-                  Net Asset Value Overview
+                  {t('navSummary.subtitle')}
                 </ResponsiveTypography>
               )}
             </Box>
@@ -259,7 +261,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 letterSpacing: isCompactMode ? 0.5 : 1,
                 color: '#6c757d'
               }}>
-                NAV/Unit
+                {t('navSummary.navPerUnit')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValueLarge" sx={{ 
                 fontWeight: 800,

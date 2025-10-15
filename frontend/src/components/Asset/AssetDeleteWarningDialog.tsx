@@ -4,12 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
   Box,
   Alert,
   CircularProgress,
@@ -20,7 +16,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ResponsiveTypography, ModalWrapper } from '../Common';
 import { 
   Warning as WarningIcon,
   AccountBalance as PortfolioIcon,
@@ -47,6 +43,7 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
   onCancel,
   isDeleting = false,
 }) => {
+  const { t } = useTranslation();
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   // Reset confirmation when dialog opens/closes
@@ -55,42 +52,61 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
       setIsConfirmed(false);
     }
   }, [open]);
+  const modalTitle = tradeCount > 0 ? t('asset.delete.titleWithTrades') : t('asset.delete.title');
+  const modalIcon = <WarningIcon color="warning" />;
+
+  const modalActions = (
+    <>
+      <ResponsiveButton
+        onClick={onCancel}
+        disabled={isDeleting}
+        variant="outlined"
+        size="medium"
+        mobileText={t('common.cancel')}
+        desktopText={t('common.cancel')}
+      >
+        {t('common.cancel')}
+      </ResponsiveButton>
+      <ResponsiveButton
+        onClick={onConfirm}
+        disabled={isDeleting || !isConfirmed}
+        variant="contained"
+        color="error"
+        size="medium"
+        startIcon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+        mobileText={isDeleting ? t('asset.delete.deleting') : t('asset.delete.delete')}
+        desktopText={isDeleting ? t('asset.delete.deleting') : (tradeCount > 0 || portfolios.length > 0 ? t('asset.delete.deleteWithImpact') : t('asset.delete.delete'))}
+      >
+        {isDeleting ? t('asset.delete.deleting') : (tradeCount > 0 || portfolios.length > 0 ? t('asset.delete.deleteWithImpact') : t('asset.delete.delete'))}
+      </ResponsiveButton>
+    </>
+  );
+
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={onCancel}
+      title={modalTitle}
+      icon={modalIcon}
+      actions={modalActions}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        },
-      }}
+      titleColor="warning"
+      size="medium"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <WarningIcon color="warning" />
-          <Typography variant="h6" component="div">
-            {tradeCount > 0 ? 'Delete Asset with Trades' : 'Delete Asset'}
-          </Typography>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent sx={{ pt: 1 }}>
         {/* <Alert severity="warning" sx={{ mb: 3 }}>
-          <Typography variant="body2" fontWeight="medium">
+          <ResponsiveTypography variant="cardLabel" fontWeight="medium">
             This action cannot be undone!
-          </Typography>
+          </ResponsiveTypography>
         </Alert> */}
 
         {/* Affected Portfolios */}
         {portfolios.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ mb: 3, mt: 2 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {/* <PortfolioIcon color="primary" /> */}
-              Affected Portfolios
-            </Typography>
+              {t('asset.delete.affectedPortfolios')}
+            </ResponsiveTypography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {portfolios.map((portfolio) => (
                 <Chip
@@ -111,74 +127,78 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
         {/* Impact Analysis */}
         {tradeCount > 0 || portfolios.length > 0 ? (
           <Box>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningIcon color="warning" />
-              Impact Analysis
-            </Typography>
+              {t('asset.delete.impactAnalysis')}
+            </ResponsiveTypography>
             
-            <Typography variant="body1" paragraph>
-              The asset <strong>"{assetName}"</strong> is actively used in your portfolio{portfolios.length > 1 ? 's' : ''} with <strong>{tradeCount}</strong> trading record{tradeCount !== 1 ? 's' : ''}.
-            </Typography>
+            <ResponsiveTypography variant="cardLabel" paragraph>
+              {t('asset.delete.impactDescription', { 
+                assetName, 
+                portfolioCount: portfolios.length,
+                tradeCount 
+              })}
+            </ResponsiveTypography>
 
             <Alert severity="warning" sx={{ mb: 2 }}>
-              <Typography variant="body2" fontWeight="medium">
-                Deleting this asset will affect portfolio calculations and historical data.
-              </Typography>
+              <ResponsiveTypography variant="cardLabel" fontWeight="medium">
+                {t('asset.delete.warningMessage')}
+              </ResponsiveTypography>
             </Alert>
 
             <Card sx={{ bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
               <CardContent>
-                <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <DeleteIcon color="error" />
-                  What will be deleted:
-                </Typography>
-                <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    The asset "{assetName}"
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    {tradeCount} trading record{tradeCount !== 1 ? 's' : ''}
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    All associated transaction history
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    Portfolio performance calculations will be affected
-                  </Typography>
+                  {t('asset.delete.whatWillBeDeleted')}:
+                </ResponsiveTypography>
+                <Box sx={{ mt: 1, pl: 2, mb: 1 }}>
+                  <ResponsiveTypography  variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.theAsset', { assetName })}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.tradingRecords', { count: tradeCount })}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.transactionHistory')}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.portfolioCalculations')}
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
           </Box>
         ) : (
           <Box>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SafeIcon color="success" />
-              Safe to Delete
-            </Typography>
+              {t('asset.delete.safeToDelete')}
+            </ResponsiveTypography>
             
-            <Typography variant="body1" paragraph>
-              The asset <strong>"{assetName}"</strong> has no associated trades or portfolio usage.
-            </Typography>
+            <ResponsiveTypography variant="cardLabel" paragraph>
+              {t('asset.delete.safeDescription', { assetName })}
+            </ResponsiveTypography>
 
             <Alert severity="success" sx={{ mb: 2 }}>
-              <Typography variant="body2" fontWeight="medium">
-                This asset can be safely deleted without affecting any portfolio data.
-              </Typography>
+              <ResponsiveTypography variant="cardLabel">
+                {t('asset.delete.safeMessage')}
+              </ResponsiveTypography>
             </Alert>
 
             <Card sx={{ bgcolor: 'green.50', border: '1px solid', borderColor: 'green.200' }}>
               <CardContent>
-                <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <SafeIcon color="success" />
-                  What will be deleted:
-                </Typography>
-                <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    The asset "{assetName}"
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    No trade records (safe to delete)
-                  </Typography>
+                  {t('asset.delete.whatWillBeDeleted')}:
+                </ResponsiveTypography>
+                <Box sx={{ mt: 1, pl: 2, mb: 1 }}>
+                  <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.theAsset', { assetName })}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                    {t('asset.delete.noTradeRecords')}
+                  </ResponsiveTypography>
                 </Box>
               </CardContent>
             </Card>
@@ -197,42 +217,17 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
               />
             }
             label={
-              <Typography variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>
-                I understand that this action cannot be undone and will permanently delete the asset "{assetName}" 
-                {tradeCount > 0 && ` along with ${tradeCount} trading record${tradeCount !== 1 ? 's' : ''}`}
-                {portfolios.length > 0 && ` from ${portfolios.length} portfolio${portfolios.length !== 1 ? 's' : ''}`}.
-              </Typography>
+              <ResponsiveTypography variant="labelSmall"  sx={{ fontWeight: 500, color:"error.main" }} ellipsis={false}>
+                {t('asset.delete.confirmationText', { 
+                  assetName, 
+                  tradeCount, 
+                  portfolioCount: portfolios.length 
+                })}
+              </ResponsiveTypography>
             }
             sx={{ alignItems: 'flex-start' }}
           />
         </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, pt: 1 }}>
-        <ResponsiveButton
-          onClick={onCancel}
-          disabled={isDeleting}
-          variant="outlined"
-          size="large"
-          icon={<CircularProgress />}
-          mobileText="Cancel"
-          desktopText="Cancel"
-        >
-          Cancel
-        </ResponsiveButton>
-        <ResponsiveButton
-          onClick={onConfirm}
-          disabled={isDeleting || !isConfirmed}
-          variant="contained"
-          color="error"
-          size="large"
-          icon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
-          mobileText={isDeleting ? 'Deleting...' : 'Delete'}
-          desktopText={isDeleting ? 'Deleting...' : (tradeCount > 0 || portfolios.length > 0 ? 'Delete Asset & Impacted Data' : 'Delete Asset')}
-        >
-          {isDeleting ? 'Deleting...' : (tradeCount > 0 || portfolios.length > 0 ? 'Delete Asset & Impacted Data' : 'Delete Asset')}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+    </ModalWrapper>
   );
 };

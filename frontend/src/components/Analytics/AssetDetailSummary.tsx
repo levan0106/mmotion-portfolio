@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -49,12 +50,13 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   title = 'Asset Detail Summary',
   compact = false,
 }) => {
+  const { t } = useTranslation();
   // Add null checks
   if (!data || data.length === 0) {
     return (
       <Box sx={{ p: compact ? 1 : 3, textAlign: 'center' }}>
         <ResponsiveTypography variant={compact ? "tableCell" : "cardTitle"} color="text.secondary">
-          No asset detail data available
+          {t('portfolio.noAllocationData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -91,7 +93,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           </ResponsiveTypography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <ResponsiveTypography variant="tableCell" color="text.secondary">
-              Allocation:
+              {t('portfolio.allocation')}:
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatPercentage(data.percentage || 0)}
@@ -99,7 +101,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <ResponsiveTypography variant="tableCell" color="text.secondary">
-              Current Value:
+              {t('common.value')}:
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatCurrency(data.totalValue, baseCurrency)}
@@ -107,7 +109,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <ResponsiveTypography variant="tableCell" color="text.secondary">
-              Quantity:
+              {t('common.quantity')}:
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {data.quantity?.toLocaleString() || '0'}
@@ -115,7 +117,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <ResponsiveTypography variant="tableCell" color="text.secondary">
-              Market Price:
+              {t('assets.currentPrice')}:
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
               {formatCurrency(data.currentPrice, baseCurrency)}
@@ -131,7 +133,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
             border: `1px solid ${(data.unrealizedPl || 0) >= 0 ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
           }}>
             <ResponsiveTypography variant="tableCell" color="text.secondary">
-              Unrealized P&L:
+              {t('portfolio.unrealizedPL')}:
             </ResponsiveTypography>
             <Box sx={{ textAlign: 'right' }}>
               <ResponsiveTypography 
@@ -163,7 +165,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <ResponsiveTypography variant="cardTitle" color="text.secondary">
-          No asset detail data available
+          {t('portfolio.noAllocationData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -177,7 +179,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
             {title}
           </ResponsiveTypography>
           <ResponsiveTypography variant="labelSmall" color="text.secondary" sx={{ mb: 3 }}>
-            Individual asset holdings with values and performance
+            {t('portfolio.individualAssetHoldingsDescription')}
           </ResponsiveTypography>
         </>
       )}
@@ -187,7 +189,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         {/* Allocation Chart */}
         <Grid item xs={12} md={6}>
           <ResponsiveTypography variant="chartTitle" >
-            Asset Allocation (%)
+            {t('portfolio.assetTypeAllocation')} (%)
           </ResponsiveTypography>
           <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -218,7 +220,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         {/* P&L Chart */}
         <Grid item xs={12} md={6}>
           <ResponsiveTypography variant="chartTitle" >
-            Unrealized P&L ({baseCurrency})
+            {t('portfolio.unrealizedPL')}
           </ResponsiveTypography>
           <Box sx={{ height: compact ? 200 : 300 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -339,13 +341,13 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           fontWeight: 600, 
           mb: compact ? 1 : 2
         }}>
-          Portfolio Performance Summary
+          {t('portfolio.portfolioPerformanceSummary')}
         </ResponsiveTypography>
         <Grid container spacing={compact ? 1 : 2}>
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Total Unrealized P&L
+                {t('portfolio.totalUnrealizedPL')}
               </ResponsiveTypography>
               <ResponsiveTypography 
                 variant="cardValue" 
@@ -365,7 +367,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Profitable Assets
+                {t('portfolio.profitableAssets')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="success.main" sx={{ 
                 fontWeight: 'bold', 
@@ -378,7 +380,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Best Performer
+                {t('portfolio.bestPerformer')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="tableCell" color="primary" sx={{ 
                 fontWeight: 'bold', 
@@ -387,7 +389,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                 {chartData.length > 0 ? 
                   chartData.reduce((best, asset) => 
                     asset.unrealizedPlPercentage > best.unrealizedPlPercentage ? asset : best
-                  ).symbol : 'N/A'
+                  ).symbol : t('common.noData')
                 }
               </ResponsiveTypography>
             </Box>
@@ -467,8 +469,8 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   border: '1px solid rgba(25, 118, 210, 0.12)'
                 }}>
                   <Box>
-                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                      Allocation
+                    <ResponsiveTypography variant="labelXSmall" sx={{color: "text.secondary" }}>
+                      {t('portfolio.allocation')}
                     </ResponsiveTypography>
                     <ResponsiveTypography 
                       variant="cardValueSmall" 
@@ -479,8 +481,8 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                     </ResponsiveTypography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                      Value
+                    <ResponsiveTypography variant="labelXSmall" sx={{color: "text.secondary" }}>
+                      {t('portfolio.value')}
                     </ResponsiveTypography>
                     <ResponsiveTypography 
                       variant="cardValueSmall" 
@@ -500,7 +502,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                 }}>
                   <Box>
                     <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                      Qty
+                      {t('portfolio.qty')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
                       {asset.quantity?.toLocaleString() || '0'}
@@ -509,7 +511,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   
                   <Box>
                     <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                      Market Price
+                      {t('portfolio.marketPrice')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 'bold', display: 'block' }}>
                       {formatCurrency(asset.currentPrice, baseCurrency)}
@@ -528,9 +530,19 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                   borderRadius: 1,
                   border: `1px solid ${getPnLColor(asset.unrealizedPl)}30`
                 }}>
-                  <Box>
-                    <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                      Unrealized P&L
+                  <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+                    <ResponsiveTypography 
+                      variant="labelXSmall" 
+                      sx={{ 
+                        color: "text.secondary",
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '100%'
+                      }}
+                    >
+                      {t('portfolio.unrealizedPL')}
                     </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValueSmall" 
@@ -556,9 +568,9 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                     </ResponsiveTypography>
                     <ResponsiveTypography 
                       variant="labelXSmall" 
-                      color={asset.unrealizedPl >= 0 ? "success.main" : "error.main"}
-                    >
-                      {asset.unrealizedPl >= 0 ? 'Profit' : 'Loss'}
+                      sx={{ color: "text.secondary" }}
+                    > 
+                      {asset.unrealizedPl >= 0 ? t('portfolio.profit') : t('portfolio.loss')}
                     </ResponsiveTypography>
                   </Box>
                 </Box>
@@ -579,7 +591,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
-                Total Assets
+                {t('portfolio.totalAssets')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {data.length}
@@ -589,7 +601,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
-                Total Asset Value
+                {t('portfolio.totalAssetValue')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {formatCurrency(data.reduce((sum, asset) => sum + asset.totalValue, 0), baseCurrency)}
@@ -599,7 +611,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
-                Total P&L
+                {t('portfolio.totalPL')}
               </ResponsiveTypography>
               <ResponsiveTypography 
                 variant="cardValue" 
@@ -615,7 +627,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
-                Asset Types
+                {t('portfolio.assetTypes')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary" sx={{ fontWeight: 'bold' }}>
                 {new Set(data.map(asset => asset.assetType)).size}

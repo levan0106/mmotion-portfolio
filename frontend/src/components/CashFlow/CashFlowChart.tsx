@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import {
@@ -82,6 +83,7 @@ interface MonthlyData {
 }
 
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('bar');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
@@ -211,10 +213,10 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
     }, { deposits: 0, withdrawals: 0, dividends: 0, interest: 0 });
 
     const result = [
-      { name: 'Deposits', value: totals.deposits, color: COLORS.deposits },
-      { name: 'Withdrawals', value: totals.withdrawals, color: COLORS.withdrawals },
-      { name: 'Dividends', value: totals.dividends, color: COLORS.dividends },
-      { name: 'Interest', value: totals.interest, color: COLORS.interest },
+      { name: t('cashflow.chart.deposits'), value: totals.deposits, color: COLORS.deposits },
+      { name: t('cashflow.chart.withdrawals'), value: totals.withdrawals, color: COLORS.withdrawals },
+      { name: t('cashflow.chart.dividends'), value: totals.dividends, color: COLORS.dividends },
+      { name: t('cashflow.chart.interest'), value: totals.interest, color: COLORS.interest },
     ].filter(item => item.value > 0);
 
     setPieData(result);
@@ -226,12 +228,12 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
         <Box sx={{ p: 3 }}>
           <Box display="flex" alignItems="center" mb={2}>
             <Refresh sx={{ mr: 1, animation: 'spin 1s linear infinite' }} />
-            <Typography variant="h6">Loading Chart Data</Typography>
+            <Typography variant="h6">{t('cashflow.chart.loading')}</Typography>
           </Box>
           <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
           <Box mt={2}>
             <Typography variant="body2" color="text.secondary">
-              Fetching cash flow data for portfolio {portfolioId}
+              {t('cashflow.chart.fetchingData', { portfolioId })}
             </Typography>
           </Box>
         </Box>
@@ -252,15 +254,19 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              No Cash Flow Data Available
+              {t('cashflow.chart.noData.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              No cash flow data found for the selected time range. Try selecting a longer time period.
+              {t('cashflow.chart.noData.message')}
             </Typography>
           </Alert>
           <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
             <Typography variant="caption" color="text.secondary">
-              Debug Info: Line data: {lineData.length}, Monthly data: {monthlyData.length}, Pie data: {pieData.length}
+              {t('cashflow.chart.debugInfo', { 
+                lineData: lineData.length, 
+                monthlyData: monthlyData.length, 
+                pieData: pieData.length 
+              })}
             </Typography>
           </Paper>
         </Box>
@@ -506,16 +512,16 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box>
             <Typography variant="h5" fontWeight="600" color="text.primary" gutterBottom>
-              Cash Flow Analytics
+              {t('cashflow.chart.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Track your portfolio's cash movements and trends
+              {t('cashflow.chart.subtitle')}
             </Typography>
           </Box>
           
           {/* Controls */}
           <Box display="flex" gap={2} alignItems="center">
-            <MuiTooltip title="Refresh Data">
+            <MuiTooltip title={t('cashflow.chart.refresh')}>
               <IconButton 
                 onClick={loadData} 
                 disabled={loading}
@@ -529,44 +535,44 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
             </MuiTooltip>
             
             <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Chart Type</InputLabel>
+              <InputLabel>{t('cashflow.chart.chartType')}</InputLabel>
               <Select
                 value={chartType}
-                label="Chart Type"
+                label={t('cashflow.chart.chartType')}
                 onChange={(e) => setChartType(e.target.value as any)}
               >
                 <MenuItem value="line">
                   <Box display="flex" alignItems="center">
                     <Timeline sx={{ mr: 1, fontSize: 20 }} />
-                    Line Chart
+                    {t('cashflow.chart.lineChart')}
                   </Box>
                 </MenuItem>
                 <MenuItem value="bar">
                   <Box display="flex" alignItems="center">
                     <BarChartIcon sx={{ mr: 1, fontSize: 20 }} />
-                    Bar Chart
+                    {t('cashflow.chart.barChart')}
                   </Box>
                 </MenuItem>
                 <MenuItem value="pie">
                   <Box display="flex" alignItems="center">
                     <PieChartIcon sx={{ mr: 1, fontSize: 20 }} />
-                    Pie Chart
+                    {t('cashflow.chart.pieChart')}
                   </Box>
                 </MenuItem>
               </Select>
             </FormControl>
             
             <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Time Range</InputLabel>
+              <InputLabel>{t('cashflow.chart.timeRange')}</InputLabel>
               <Select
                 value={timeRange}
-                label="Time Range"
+                label={t('cashflow.chart.timeRange')}
                 onChange={(e) => setTimeRange(e.target.value as any)}
               >
-                <MenuItem value="7d">Last 7 days</MenuItem>
-                <MenuItem value="30d">Last 30 days</MenuItem>
-                <MenuItem value="90d">Last 90 days</MenuItem>
-                <MenuItem value="1y">Last year</MenuItem>
+                <MenuItem value="7d">{t('cashflow.chart.last7Days')}</MenuItem>
+                <MenuItem value="30d">{t('cashflow.chart.last30Days')}</MenuItem>
+                <MenuItem value="90d">{t('cashflow.chart.last90Days')}</MenuItem>
+                <MenuItem value="1y">{t('cashflow.chart.lastYear')}</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -584,7 +590,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
               <Grid item xs={6} sm={3}>
                 <Chip 
                   icon={<TrendingUp />}
-                  label={`${lineData.length} data points`}
+                  label={t('cashflow.chart.dataPoints', { count: lineData.length })}
                   color="primary"
                   variant="outlined"
                   size="small"
@@ -593,7 +599,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
               <Grid item xs={6} sm={3}>
                 <Chip 
                   icon={<AccountBalance />}
-                  label={`${timeRange.toUpperCase()} view`}
+                  label={t('cashflow.chart.view', { range: timeRange.toUpperCase() })}
                   color="secondary"
                   variant="outlined"
                   size="small"

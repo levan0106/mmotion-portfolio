@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   Box,
@@ -26,6 +27,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
   onPortfolioCopied,
   onModalClose,
 }) => {
+  const { t } = useTranslation();
   const [newPortfolioName, setNewPortfolioName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
 
   const handleCopy = async () => {
     if (!sourcePortfolio || !newPortfolioName.trim()) {
-      setError('Please enter a portfolio name');
+      setError(t('portfolio.copy.validation.nameRequired'));
       return;
     }
 
@@ -65,7 +67,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
       setError(
         err.response?.data?.message || 
         err.message || 
-        'Failed to copy portfolio'
+        t('portfolio.copy.error.copyFailed')
       );
     } finally {
       setLoading(false);
@@ -83,7 +85,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title="Copy Portfolio"
+      title={t('portfolio.copy.title')}
       icon={<ContentCopy color="primary" />}
       loading={loading}
       maxWidth="sm"
@@ -93,25 +95,25 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
           <ResponsiveButton 
             onClick={handleClose}
             disabled={loading}
-            mobileText="Cancel"
-            desktopText="Cancel"
+            mobileText={t('common.cancel')}
+            desktopText={t('common.cancel')}
             sx={{ mr: 1 }}
           >
-            Cancel
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleCopy}
             variant="contained"
             disabled={loading || !newPortfolioName.trim()}
             icon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
-            mobileText={loading ? 'Copying...' : 'Copy'}
-            desktopText={loading ? 'Copying...' : 'Copy Portfolio'}
+            mobileText={loading ? t('portfolio.copy.copying') : t('portfolio.copy.copy')}
+            desktopText={loading ? t('portfolio.copy.copying') : t('portfolio.copy.copyPortfolio')}
             sx={{
               borderRadius: 1,
               px: 3,
             }}
           >
-            {loading ? 'Copying...' : 'Copy Portfolio'}
+            {loading ? t('portfolio.copy.copying') : t('portfolio.copy.copyPortfolio')}
           </ResponsiveButton>
         </>
       }
@@ -119,7 +121,7 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
       {sourcePortfolio && (
         <Box sx={{ m: 2 }}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Copying from:
+            {t('portfolio.copy.copyingFrom')}:
           </Typography>
           <Typography variant="h6" color="primary">
             {sourcePortfolio.name}
@@ -130,8 +132,8 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
       <TextField
         autoFocus
         fullWidth
-        label="New Portfolio Name"
-        placeholder="Enter name for the copied portfolio"
+        label={t('portfolio.copy.newPortfolioName')}
+        placeholder={t('portfolio.copy.newPortfolioNamePlaceholder')}
         value={newPortfolioName}
         onChange={(e) => setNewPortfolioName(e.target.value)}
         onKeyPress={handleKeyPress}
@@ -151,22 +153,22 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
 
       <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          <strong>What will be copied:</strong>
+          <strong>{t('portfolio.copy.whatWillBeCopied')}:</strong>
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • All trades and trade history
+          • {t('portfolio.copy.copyItems.trades')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Cash flows and transactions
+          • {t('portfolio.copy.copyItems.cashFlows')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Deposits and interest settings
+          • {t('portfolio.copy.copyItems.deposits')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Portfolio settings and configuration
+          • {t('portfolio.copy.copyItems.settings')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
-          Note: The new portfolio will start with zero cash balance and current market values.
+          {t('portfolio.copy.note')}
         </Typography>
       </Box>
     </ModalWrapper>

@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ScatterChart,
   Scatter,
@@ -43,6 +44,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
   onPeriodChange,
   selectedPeriod = '1Y',
 }) => {
+  const { t } = useTranslation();
   const [localPeriod, setLocalPeriod] = useState(selectedPeriod);
 
   const handlePeriodChange = (value: string | number) => {
@@ -107,7 +109,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Return (Bubble Size)
+              {t('portfolio.returnBubbleSize')}
             </ResponsiveTypography>
             <ResponsiveTypography 
               variant="cardValue" 
@@ -125,7 +127,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               mt: 0.5,
               display: 'block'
             }}>
-              Larger bubble = Higher return performance (better investment)
+              {t('portfolio.bubbleSizeDescription')}
             </ResponsiveTypography>
           </Box>
 
@@ -136,7 +138,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Risk (Volatility)
+              {t('portfolio.riskVolatility')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
@@ -154,7 +156,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Portfolio Value
+              {t('portfolio.portfolioValue')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
@@ -172,17 +174,17 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Performance Rating
+              {t('portfolio.performanceRating')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
               fontSize: '0.85rem',
               color: data.return > 0 ? 'success.main' : data.return < -5 ? 'error.main' : 'warning.main'
             }}>
-              {data.return > 10 ? 'Excellent' : 
-               data.return > 5 ? 'Good' : 
-               data.return > 0 ? 'Positive' : 
-               data.return > -5 ? 'Poor' : 'Very Poor'}
+              {data.return > 10 ? t('portfolio.excellent') : 
+               data.return > 5 ? t('portfolio.good') : 
+               data.return > 0 ? t('portfolio.positive') : 
+               data.return > -5 ? t('portfolio.poor') : t('portfolio.veryPoor')}
             </ResponsiveTypography>
           </Box>
 
@@ -201,7 +203,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
-                ↗ HIGH RETURN
+                ↗ {t('portfolio.highReturn')}
               </ResponsiveTypography>
             ) : (
               <ResponsiveTypography variant="statusText" sx={{ 
@@ -209,7 +211,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
-                ↘ LOW RETURN
+                ↘ {t('portfolio.lowReturn')}
               </ResponsiveTypography>
             )}
           </Box>
@@ -223,7 +225,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
-          No risk-return data available
+          {t('portfolio.noRiskReturnData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -279,7 +281,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
             {title}
           </ResponsiveTypography>
           <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
-            Risk vs Return analysis of portfolio assets
+            {t('portfolio.riskVsReturnAnalysis')}
           </ResponsiveTypography>
         </Box>
         
@@ -324,7 +326,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: compact ? 10 : 12 }}
               label={{ 
-                value: 'Risk (Volatility)', 
+                value: t('portfolio.riskVolatility'), 
                 position: 'insideBottom', 
                 offset: compact ? -5 : -10,
                 style: { fontSize: compact ? '0.7rem' : '0.8rem' }
@@ -337,7 +339,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: compact ? 10 : 12 }}
               label={{ 
-                value: 'Return', 
+                value: t('portfolio.return'), 
                 angle: -90, 
                 position: 'insideLeft',
                 style: { fontSize: compact ? '0.7rem' : '0.8rem' }

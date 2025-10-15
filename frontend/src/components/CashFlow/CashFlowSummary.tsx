@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import {
@@ -38,6 +39,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
   portfolioId,
   onRefresh,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [stats, setStats] = useState<CashFlowStats>({
     totalDeposits: 0,
@@ -101,9 +103,9 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" gutterBottom>
-            Cash Flow Summary
+            {t('cashflow.summary.title')}
           </Typography>
-          <Tooltip title="Refresh">
+          <Tooltip title={t('cashflow.refresh')}>
             <IconButton onClick={handleRefresh} disabled={loading} size="small">
               <RefreshIcon />
             </IconButton>
@@ -116,7 +118,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
               <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
                 <DepositIcon color="success" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="textSecondary">
-                  Deposits
+                  {t('cashflow.summary.deposits')}
                 </Typography>
               </Box>
               <Typography variant="h6" color="success.main" fontWeight="bold">
@@ -130,7 +132,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
               <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
                 <WithdrawIcon color="error" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="textSecondary">
-                  Withdrawals
+                  {t('cashflow.summary.withdrawals')}
                 </Typography>
               </Box>
               <Typography variant="h6" color="error.main" fontWeight="bold">
@@ -144,7 +146,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
               <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
                 <DividendIcon color="info" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="textSecondary">
-                  Dividends
+                  {t('cashflow.summary.dividends')}
                 </Typography>
               </Box>
               <Typography variant="h6" color="info.main" fontWeight="bold">
@@ -162,7 +164,7 @@ const CashFlowSummary: React.FC<CashFlowSummaryProps> = ({
                   <TrendingDownIcon color="error" sx={{ mr: 1 }} />
                 )}
                 <Typography variant="body2" color="textSecondary">
-                  Net Flow
+                  {t('cashflow.summary.netFlow')}
                 </Typography>
               </Box>
               <Typography 

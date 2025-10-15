@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TrendingUp,
   TrendingDown,
@@ -38,6 +39,7 @@ interface PortfolioCardProps {
   onEdit?: (portfolioId: string) => void;
   onDelete?: (portfolioId: string) => void;
   onPortfolioCopied?: (newPortfolio: Portfolio) => void;
+  hideActions?: boolean;
 }
 
 const PortfolioCard: React.FC<PortfolioCardProps> = ({
@@ -46,7 +48,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   onEdit,
   onDelete,
   onPortfolioCopied,
+  hideActions = false,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [copyModalOpen, setCopyModalOpen] = useState(false);
@@ -68,7 +72,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent card click
-    if (onEdit) {
+    if (onEdit && !hideActions) {
       onEdit(portfolio.portfolioId);
     }
   };
@@ -77,7 +81,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
     e.stopPropagation(); // Prevent event bubbling
-    setCopyModalOpen(true);
+    if (!hideActions) {
+      setCopyModalOpen(true);
+    }
   };
 
   const handleCopyModalClose = () => {
@@ -100,7 +106,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setDeleteModalOpen(true);
+    if (!hideActions) {
+      setDeleteModalOpen(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -153,7 +161,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 {portfolio.name}
               </ResponsiveTypography>
               {portfolio.visibility === 'PUBLIC' && (
-                <Tooltip title="Public Portfolio - Can be copied by other users">
+                <Tooltip title={t('portfolio.publicTooltip')}>
                   <Public 
                     className="portfolio-card__public-icon" 
                     style={{ 
@@ -166,7 +174,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               )}
             </div>
             <div className="portfolio-card__type-badge" style={{ display: isMobile ? 'none' : 'block' }}>
-              {isFund ? 'Fund' : 'Individual'}
+              {isFund ? t('portfolio.fund') : t('portfolio.individual')}
             </div>
           </div>
           <span className={`portfolio-card__currency ${portfolio.baseCurrency === 'USD' ? 'portfolio-card__currency--primary' : ''}`}>
@@ -182,7 +190,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 {formatCurrency(Number(portfolio.totalAllValue) || 0, portfolio.baseCurrency)}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
-                Investment Value
+                {t('portfolio.investmentValue')}
               </ResponsiveTypography>
             </div>
           </div>
@@ -204,7 +212,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 </ResponsiveTypography>
               </div>
               <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
-                Unrealized P&L
+                {t('portfolio.unrealizedPL')}
               </ResponsiveTypography>
             </div>
 
@@ -224,14 +232,14 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 </ResponsiveTypography>
               </div>
               <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
-                Realized P&L
+                {t('portfolio.realizedPL')}
               </ResponsiveTypography>
             </div>
           </div>
 
           <div className="portfolio-card__cash-balance">
             <ResponsiveTypography variant="cardLabel" className="portfolio-card__total-value-label">
-              Cash Balance
+              {t('portfolio.cashBalance')}
             </ResponsiveTypography>
             <ResponsiveTypography 
                   variant="cardValueMedium" 
@@ -242,57 +250,59 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         </div>
       </div>
 
-      <div className="portfolio-card__actions">
-        {onEdit && (
-          <Tooltip title="Edit Portfolio">
+      {!hideActions && (
+        <div className="portfolio-card__actions">
+          {onEdit && (
+            <Tooltip title={t('portfolio.edit')}>
+              <IconButton
+                onClick={handleEdit}
+                color="primary"
+                size="small"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.light',
+                    color: 'white',
+                  },
+                }}
+              >
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title={t('portfolio.copy')}>
             <IconButton
-              onClick={handleEdit}
-              color="primary"
+              onClick={handleCopy}
+              color="secondary"
               size="small"
               sx={{
                 '&:hover': {
-                  backgroundColor: 'primary.light',
+                  backgroundColor: 'secondary.light',
                   color: 'white',
                 },
               }}
             >
-              <Edit />
+              <ContentCopy />
             </IconButton>
           </Tooltip>
-        )}
-        <Tooltip title="Copy Portfolio">
-          <IconButton
-            onClick={handleCopy}
-            color="secondary"
-            size="small"
-            sx={{
-              '&:hover': {
-                backgroundColor: 'secondary.light',
-                color: 'white',
-              },
-            }}
-          >
-            <ContentCopy />
-          </IconButton>
-        </Tooltip>
-        {onDelete && (
-          <Tooltip title="Delete Portfolio">
-            <IconButton
-              onClick={handleDelete}
-              color="error"
-              size="small"
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'error.light',
-                  color: 'white',
-                },
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        )}
-      </div>
+          {onDelete && (
+            <Tooltip title={t('portfolio.delete')}>
+              <IconButton
+                onClick={handleDelete}
+                color="error"
+                size="small"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'error.light',
+                    color: 'white',
+                  },
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </div>
+      )}
 
       <CopyPortfolioModal
         open={copyModalOpen}
@@ -306,7 +316,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
       <ModalWrapper
         open={deleteModalOpen}
         onClose={handleDeleteCancel}
-        title="Delete Portfolio"
+        title={t('portfolio.delete')}
         icon={<DeleteIcon color="error" />}
         loading={isDeleting}
         maxWidth="sm"
@@ -319,7 +329,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               disabled={isDeleting}
               color="inherit"
             >
-              Cancel
+              {t('common.cancel')}
             </ResponsiveButton>
             <ResponsiveButton
               onClick={handleDeleteConfirm}
@@ -327,43 +337,43 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               color="error"
               variant="contained"
               icon={isDeleting ? <CircularProgress size={16} /> : <DeleteIcon />}
-              mobileText="Delete"
-              desktopText="Delete Portfolio"
+              mobileText={t('common.delete')}
+              desktopText={t('portfolio.delete')}
             >
-              {isDeleting ? 'Deleting...' : 'Delete Portfolio'}
+              {isDeleting ? t('portfolio.deleting') : t('portfolio.delete')}
             </ResponsiveButton>
           </>
         }
       >
         <Alert severity="warning" sx={{ mb: 2, mt: 2 }}>
           <ResponsiveTypography variant="body2" fontWeight="bold">
-            This action cannot be undone!
+            {t('portfolio.cannotUndo')}
           </ResponsiveTypography>
         </Alert>
         
         <ResponsiveTypography variant="body1" paragraph>
-          Are you sure you want to delete the portfolio <strong>"{portfolio.name}"</strong>?
+          {t('portfolio.confirmDelete', { name: portfolio.name })}
         </ResponsiveTypography>
         
         <ResponsiveTypography variant="body2" color="text.secondary" paragraph>
-          This will permanently delete:
+          {t('portfolio.willPermanentlyDelete')}:
         </ResponsiveTypography>
         
         <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
           <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-            All trades and trade details
+            {t('portfolio.deleteTrades')}
           </ResponsiveTypography>
           <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-            All cash flows and deposits
+            {t('portfolio.deleteCashFlows')}
           </ResponsiveTypography>
           <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-            All performance snapshots and analytics data
+            {t('portfolio.deleteSnapshots')}
           </ResponsiveTypography>
           <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-            All investor holdings (if this is a fund)
+            {t('portfolio.deleteHoldings')}
           </ResponsiveTypography>
           <ResponsiveTypography component="li" variant="body2" color="text.secondary">
-            All historical data and reports
+            {t('portfolio.deleteHistorical')}
           </ResponsiveTypography>
         </Box>
         

@@ -80,7 +80,7 @@ export const NotificationBell: React.FC = () => {
   } = useNotifications();
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [expandedNotifications, setExpandedNotifications] = useState<Set<number>>(new Set());
+  const [expandedNotification, setExpandedNotification] = useState<number | null>(null);
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -89,6 +89,7 @@ export const NotificationBell: React.FC = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setExpandedNotification(null);
   };
 
   const handleMarkAsRead = async (notification: Notification) => {
@@ -112,14 +113,19 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  const toggleExpanded = (notificationId: number) => {
-    const newExpanded = new Set(expandedNotifications);
-    if (newExpanded.has(notificationId)) {
-      newExpanded.delete(notificationId);
+  const toggleExpanded = async (notificationId: number) => {
+    if (expandedNotification === notificationId) {
+      // If clicking on the same notification, collapse it
+      setExpandedNotification(null);
     } else {
-      newExpanded.add(notificationId);
+      // Expand this notification and collapse others
+      setExpandedNotification(notificationId);
+      // Mark as read when expanding
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification && !notification.isRead) {
+        await markAsRead(notificationId);
+      }
     }
-    setExpandedNotifications(newExpanded);
   };
 
   const recentNotifications = notifications.slice(0, 10);
@@ -242,7 +248,7 @@ export const NotificationBell: React.FC = () => {
                           />
                         </Box>
                         <Box>
-                          {expandedNotifications.has(notification.id) ? (
+                          {expandedNotification === notification.id ? (
                             <Box>
                               <Typography 
                                 variant="body2" 
@@ -309,20 +315,20 @@ export const NotificationBell: React.FC = () => {
                                   color: 'text.primary',
                                 },
                               }}
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                toggleExpanded(notification.id);
+                                await toggleExpanded(notification.id);
                               }}
                             >
                               {notification.message}
                             </Typography>
                           )}
-                          {!expandedNotifications.has(notification.id) && notification.message.length > 80 && (
+                          {expandedNotification !== notification.id && notification.message.length > 80 && (
                             <Button
                               size="small"
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                toggleExpanded(notification.id);
+                                await toggleExpanded(notification.id);
                               }}
                               startIcon={<ExpandMoreIcon sx={{ fontSize: '0.75rem' }} />}
                               sx={{
@@ -338,39 +344,13 @@ export const NotificationBell: React.FC = () => {
                               More
                             </Button>
                           )}
-                            {/* {!expandedNotifications.has(notification.id) && notification.actionUrl && (
-                              <Box sx={{ mt: 0.5 }}>
-                                <Link
-                                  href={notification.actionUrl}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNotificationClick(notification);
-                                  }}
-                                  sx={{
-                                    fontSize: '0.75rem',
-                                    fontWeight: 500,
-                                    textDecoration: 'none',
-                                    color: 'primary.main',
-                                    '&:hover': {
-                                      textDecoration: 'underline',
-                                      color: 'primary.dark',
-                                    },
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 0.25,
-                                  }}
-                                >
-                                  🔗 View
-                                </Link>
-                              </Box>
-                            )} */}
-                          {expandedNotifications.has(notification.id) && (
+                          {expandedNotification === notification.id && (
                             <Box sx={{ display: 'flex', gap: 0.25, mt: 0.5 }}>
                               <Button
                                 size="small"
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.stopPropagation();
-                                  toggleExpanded(notification.id);
+                                  await toggleExpanded(notification.id);
                                 }}
                                 startIcon={<ExpandLessIcon sx={{ fontSize: '0.75rem' }} />}
                                 sx={{

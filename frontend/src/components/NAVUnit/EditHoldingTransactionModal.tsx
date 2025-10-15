@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -44,6 +45,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
   transaction,
   onTransactionUpdated,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<EditFormData>({
     units: 0,
     amount: 0,
@@ -79,15 +81,15 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
     const newErrors: typeof errors = {};
 
     if (!formData.units || formData.units <= 0) {
-      newErrors.units = 'Units must be greater than 0';
+      newErrors.units = t('holdings.edit.validation.unitsRequired');
     }
 
     if (!formData.amount || formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = t('holdings.edit.validation.amountRequired');
     }
 
     if (!formData.transactionDate) {
-      newErrors.transactionDate = 'Transaction date is required';
+      newErrors.transactionDate = t('holdings.edit.validation.dateRequired');
     }
 
     setErrors(newErrors);
@@ -116,7 +118,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
       console.error('Error updating transaction:', err);
       setError(
         err.response?.data?.message || 
-        'Failed to update transaction. Please try again.'
+        t('holdings.edit.error.updateFailed')
       );
     } finally {
       setLoading(false);
@@ -143,7 +145,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         disabled={loading}
         size="large"
       >
-        Cancel
+        {t('common.cancel')}
       </ResponsiveButton>
       <ResponsiveButton 
         onClick={handleSubmit} 
@@ -151,10 +153,10 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         disabled={loading}
         size="large"
         icon={loading ? <CircularProgress size={20} /> : <EditIcon />}
-        mobileText="Update"
-        desktopText="Update Transaction"
+        mobileText={t('common.update')}
+        desktopText={t('holdings.edit.updateTransaction')}
       >
-        {loading ? 'Updating...' : 'Update Transaction'}
+        {loading ? t('holdings.edit.updating') : t('holdings.edit.updateTransaction')}
       </ResponsiveButton>
     </>
   );
@@ -163,7 +165,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title={`Edit ${isSubscription ? 'Subscription' : 'Redemption'} Transaction`}
+      title={t('holdings.edit.title', { type: isSubscription ? t('holdings.transaction.subscription') : t('holdings.transaction.redemption') })}
       icon={<EditIcon color="primary" />}
       actions={modalActions}
       loading={loading}
@@ -176,12 +178,12 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         {/* Transaction Info */}
         <Box sx={{ mb: 3, backgroundColor: 'grey.50', borderRadius: 2 }}>
           <ResponsiveTypography variant="pageTitle" color="text.secondary" gutterBottom>
-            Transaction Information
+            {t('holdings.edit.transactionInfo')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Transaction Type
+                {t('holdings.edit.transactionType')}
               </ResponsiveTypography>
               <Chip
                 label={transaction.transaction.holdingType}
@@ -192,7 +194,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
             </Grid>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                NAV per Unit
+                {t('holdings.edit.navPerUnit')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency(navPerUnit, 'VND')}
@@ -212,8 +214,8 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
                   setErrors(prev => ({ ...prev, units: undefined }));
                 }
               }}
-              label="Units"
-              placeholder="Enter number of units"
+              label={t('holdings.edit.units')}
+              placeholder={t('holdings.edit.unitsPlaceholder')}
               helperText={errors.units}
               error={!!errors.units}
               disabled={loading}
@@ -235,8 +237,8 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
                   setErrors(prev => ({ ...prev, amount: undefined }));
                 }
               }}
-              label="Amount"
-              placeholder="Enter amount (e.g., 1,000,000)"
+              label={t('holdings.edit.amount')}
+              placeholder={t('holdings.edit.amountPlaceholder')}
               helperText={errors.amount}
               error={!!errors.amount}
               disabled={loading}
@@ -250,7 +252,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Transaction Date"
+              label={t('holdings.edit.transactionDate')}
               type="date"
               value={formData.transactionDate}
               onChange={(e) => {
@@ -274,7 +276,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Description"
+              label={t('holdings.edit.description')}
               value={formData.description}
               onChange={(e) => {
                 setFormData(prev => ({ ...prev, description: e.target.value }));
@@ -283,7 +285,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
                 }
               }}
               disabled={loading}
-              placeholder="Optional description for this transaction"
+              placeholder={t('holdings.edit.descriptionPlaceholder')}
               helperText={errors.description}
               error={!!errors.description}
             />
@@ -293,12 +295,12 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         {/* Calculation Summary */}
         <Box sx={{ mt: 3, p: 2, backgroundColor: 'info.50', borderRadius: 2, border: '1px solid', borderColor: 'info.200' }}>
           <ResponsiveTypography variant="pageSubtitle" color="info.main" gutterBottom>
-            Calculation Summary
+            {t('holdings.edit.calculationSummary')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={4}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Units
+                {t('holdings.edit.units')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary">
                 {formatNumberWithSeparators(formData.units, 3)}
@@ -306,7 +308,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
             </Grid>
             <Grid item xs={4}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                NAV per Unit
+                {t('holdings.edit.navPerUnit')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency(navPerUnit, 'VND')}
@@ -314,7 +316,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
             </Grid>
             <Grid item xs={4}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                Calculated Amount
+                {t('holdings.edit.calculatedAmount')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" color="primary">
                 {formatCurrency((formData.units || 0) * navPerUnit, 'VND')}
@@ -324,9 +326,10 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
           {Math.abs((formData.units || 0) * navPerUnit - (formData.amount || 0)) > 0.01 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
               <ResponsiveTypography variant="labelSmall">
-                Note: The calculated amount ({formatCurrency((formData.units || 0) * navPerUnit, 'VND')}) 
-                differs from the entered amount ({formatCurrency(formData.amount || 0, 'VND')}). 
-                This may be due to fees or rounding differences.
+                {t('holdings.edit.amountDifferenceNote', { 
+                  calculated: formatCurrency((formData.units || 0) * navPerUnit, 'VND'),
+                  entered: formatCurrency(formData.amount || 0, 'VND')
+                })}
               </ResponsiveTypography>
             </Alert>
           )}
@@ -344,24 +347,24 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         {/* Date Awareness Notice */}
         <Alert severity="info" sx={{ mt: 2 }}>
           <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 400 }}>
-            📅 Data Recalculation Notice
+            {t('holdings.edit.recalculationNotice')}
           </ResponsiveTypography>
           <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
-            When you update this transaction, the system will automatically recalculate:
+            {t('holdings.edit.recalculationMessage')}
           </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
             <ResponsiveTypography component="li" variant="labelSmall">
-              Portfolio NAV per unit and total outstanding units
+              {t('holdings.edit.recalculationItem1')}
             </ResponsiveTypography>
             <ResponsiveTypography component="li" variant="labelSmall">
-              Holding metrics (units, investment, P&L) as of the transaction date
+              {t('holdings.edit.recalculationItem2')}
             </ResponsiveTypography>
             <ResponsiveTypography component="li" variant="labelSmall">
-              All related cash flow records
+              {t('holdings.edit.recalculationItem3')}
             </ResponsiveTypography>
           </Box>
           <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
-            Recalculation will be based on the transaction date: <strong>{formData.transactionDate || 'Current date'}</strong>
+            {t('holdings.edit.recalculationDate', { date: formData.transactionDate || t('common.currentDate') })}
           </ResponsiveTypography>
         </Alert>
       </Box>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Table,
@@ -121,6 +122,7 @@ export const TradeList: React.FC<TradeListProps> = ({
   totalPages = 1,
   isCompactMode = false,
 }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [sideFilter, setSideFilter] = useState<TradeSide | 'ALL'>('ALL');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -237,7 +239,7 @@ export const TradeList: React.FC<TradeListProps> = ({
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0 }}>
             <ResponsiveTypography variant={isCompactMode ? "cardTitle" : "pageTitle"} fontWeight="bold" component="h2">
-              Trade Summary
+              {t('trading.tradeSummary')}
             </ResponsiveTypography>
             <FIFOTooltip 
               placement="top" 
@@ -247,7 +249,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           </Box>
           {!isCompactMode && (
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-              Manage and track all your trading activities
+              {t('trading.manageAndTrack')}
             </ResponsiveTypography>
           )}
         </Box>
@@ -258,14 +260,14 @@ export const TradeList: React.FC<TradeListProps> = ({
             icon={<GridViewIcon />}
             onClick={() => setExchangeViewMode('grid')}
             mobileText="G"
-            desktopText="Grid"
+            desktopText={t('common.grid')}
             sx={{ 
               textTransform: 'none',
               minWidth: isCompactMode ? 60 : 80,
               px: isCompactMode ? 1 : 2
             }}
           >
-            {isCompactMode ? 'G' : 'Grid'}
+            {isCompactMode ? 'G' : t('common.grid')}
           </ResponsiveButton>
           <ResponsiveButton
             variant={exchangeViewMode === 'list' ? 'contained' : 'outlined'}
@@ -273,14 +275,14 @@ export const TradeList: React.FC<TradeListProps> = ({
             icon={<ListViewIcon />}
             onClick={() => setExchangeViewMode('list')}
             mobileText="L"
-            desktopText="List"
+            desktopText={t('common.list')}
             sx={{ 
               textTransform: 'none',
               minWidth: isCompactMode ? 60 : 80,
               px: isCompactMode ? 1 : 2
             }}
           >
-            {isCompactMode ? 'L' : 'List'}
+            {isCompactMode ? 'L' : t('common.list')}
           </ResponsiveButton>
         </Box>
       </Box>
@@ -387,7 +389,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em'
                         }}>
-                          Total Volume
+                          {t('trading.totalVolume')}
                         </ResponsiveTypography>
                       </Box>
                       
@@ -416,7 +418,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                                 letterSpacing: '0.05em',
                                 lineHeight: 1.2
                               }}>
-                                Trades
+                                {t('trading.trades')}
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
@@ -450,7 +452,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                                 letterSpacing: '0.05em',
                                 lineHeight: 1.2
                               }}>
-                                Fees
+                                {t('trading.fees')}
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
@@ -491,7 +493,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                                 letterSpacing: '0.05em',
                                 lineHeight: 1.2
                               }}>
-                                P&L
+                                {t('trading.pl')}
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: exchange.totalRealizedPL >= 0 ? '#16a34a' : '#dc2626',
@@ -525,7 +527,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                                 letterSpacing: '0.05em',
                                 lineHeight: 1.2
                               }}>
-                                Return
+                                {t('trading.return')}
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall" sx={{ 
                                 color: '#1e293b',
@@ -563,7 +565,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                               lineHeight: 1.2,
                               textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                             }}>
-                              {exchange.buyTrades} Buy
+                              {exchange.buyTrades} {t('trading.buy')}
                             </ResponsiveTypography>
                             <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#64748b',
@@ -597,7 +599,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                               lineHeight: 1.2,
                               textShadow: '0 1px 1px rgba(0, 0, 0, 0.1)'
                             }}>
-                              {exchange.sellTrades} Sell
+                              {exchange.sellTrades} {t('trading.sell')}
                             </ResponsiveTypography>
                             <ResponsiveTypography variant="labelXSmall" sx={{ 
                               color: '#64748b',
@@ -620,10 +622,10 @@ export const TradeList: React.FC<TradeListProps> = ({
                 <Grid item xs={12}>
                   <Card variant="outlined" sx={{ textAlign: 'center', py: 4 }}>
                     <ResponsiveTypography variant="cardTitle" color="text.secondary">
-                      No exchange data available
+                      {t('trading.noExchangeData')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                      Exchange information will appear here when trades are recorded
+                      {t('trading.exchangeInfoDescription')}
                     </ResponsiveTypography>
                   </Card>
                 </Grid>
@@ -635,10 +637,10 @@ export const TradeList: React.FC<TradeListProps> = ({
               {exchangeList.length === 0 ? (
                 <Card variant="outlined" sx={{ textAlign: 'center', py: isCompactMode ? 2 : 4 }}>
                   <ResponsiveTypography variant={isCompactMode ? "cardLabel" : "cardTitle"} color="text.secondary">
-                    No exchange data available
+                    {t('trading.noExchangeData')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant={isCompactMode ? "labelSmall" : "cardLabel"} color="text.secondary">
-                    Exchange information will appear here when trades are recorded
+                    {t('trading.exchangeInfoDescription')}
                   </ResponsiveTypography>
                 </Card>
               ) : (
@@ -646,14 +648,14 @@ export const TradeList: React.FC<TradeListProps> = ({
                   <Table size={isCompactMode ? "small" : "medium"}>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Exchange</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Total Volume</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Trades</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Fees</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>P&L</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Return %</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Buy</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>Sell</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.exchange')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.totalVolume')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.trades')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.fees')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.pl')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.returnPercent')}</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.buy')}</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.sell')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -741,7 +743,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           {/* Header with Filter Toggle */}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 0.5 : 2}>
             <ResponsiveTypography variant="pageTitle" sx={{ fontSize: isCompactMode ? '0.9rem' : undefined }}>
-              Trade History
+              {t('trading.tradeHistory')}
             </ResponsiveTypography>
             <Box display="flex" gap={1} alignItems="center">
               {/* <ResponsiveTypography variant="formHelper">
@@ -751,12 +753,12 @@ export const TradeList: React.FC<TradeListProps> = ({
                 size="small"
                 variant="outlined"
                 icon={<FilterIcon />}
-                mobileText="Filter"
-                desktopText="Filter"
+                mobileText={t('common.filter')}
+                desktopText={t('common.filter')}
                 onClick={() => setShowFilters(!showFilters)}
                 color={showFilters ? 'primary' : 'inherit'}
               >
-                Filter
+                {t('common.filter')}
               </ResponsiveButton>
             </Box>
           </Box>
@@ -781,7 +783,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="Search trades by symbol, name, or notes..."
+                      placeholder={t('trading.searchPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       InputProps={{
@@ -804,16 +806,16 @@ export const TradeList: React.FC<TradeListProps> = ({
                       Filters
                     </ResponsiveTypography> */}
                     <FormControl size="small" sx={{ minWidth: 300 }}>
-                      <InputLabel>Side</InputLabel>
+                      <InputLabel>{t('trading.side')}</InputLabel>
                       <Select
                         value={sideFilter}
-                        label="Side"
+                        label={t('trading.side')}
                         onChange={(e) => setSideFilter(e.target.value as TradeSide | 'ALL')}
                         sx={{ borderRadius: 2 }}
                       >
-                        <MenuItem value="ALL">All Sides</MenuItem>
-                        <MenuItem value={TradeSide.BUY}>Buy</MenuItem>
-                        <MenuItem value={TradeSide.SELL}>Sell</MenuItem>
+                        <MenuItem value="ALL">{t('trading.allSides')}</MenuItem>
+                        <MenuItem value={TradeSide.BUY}>{t('trading.buy')}</MenuItem>
+                        <MenuItem value={TradeSide.SELL}>{t('trading.sell')}</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -828,8 +830,8 @@ export const TradeList: React.FC<TradeListProps> = ({
               <ResponsiveButton
                 variant="text"
                 icon={<CalendarIcon />}
-                mobileText="Group"
-                desktopText="Group by Date"
+                mobileText={t('common.group')}
+                desktopText={t('common.groupByDate')}
                 onClick={() => setGroupByDate(!groupByDate)}
                 size="small"
                 sx={{ 
@@ -845,7 +847,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                   }
                 }}
               >
-                Group by Date
+                {t('trading.groupByDate')}
               </ResponsiveButton>
               
               {groupByDate && Object.keys(groupedTrades).length > 1 && (
@@ -853,8 +855,8 @@ export const TradeList: React.FC<TradeListProps> = ({
                   size="small"
                   variant="text"
                   icon={collapsedDates.size === Object.keys(groupedTrades).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-                  mobileText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand' : 'Collapse'}
-                  desktopText={collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
+                  mobileText={collapsedDates.size === Object.keys(groupedTrades).length ? t('trading.expand') : t('trading.collapse')}
+                  desktopText={collapsedDates.size === Object.keys(groupedTrades).length ? t('trading.expandAll') : t('trading.collapseAll')}
                   onClick={toggleAllDatesCollapse}
                   sx={{ 
                     textTransform: 'none',
@@ -869,13 +871,13 @@ export const TradeList: React.FC<TradeListProps> = ({
                     }
                   }}
                 >
-                  {collapsedDates.size === Object.keys(groupedTrades).length ? 'Expand All' : 'Collapse All'}
+                  {collapsedDates.size === Object.keys(groupedTrades).length ? t('trading.expandAll') : t('trading.collapseAll')}
                 </ResponsiveButton>
               )}
             </Box>
             
             <ResponsiveTypography variant="formHelper">
-              Total: <strong>{filteredTrades.length}</strong> trades
+              {t('trading.total')}: <strong>{filteredTrades.length}</strong> {t('trading.trades')}
             </ResponsiveTypography>
           </Box>
         </Box>
@@ -893,18 +895,18 @@ export const TradeList: React.FC<TradeListProps> = ({
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Asset</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Side</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Exchange</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Funding Source</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Quantity</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Price</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Total Value</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Fees</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Total Cost</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>P&L</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('tables.date')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.asset')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.side')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.exchange')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.fundingSource')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('common.quantity')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('common.price')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.totalValue')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.fees')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.totalCost')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('trading.pl')}</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2 }}>{t('tables.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -913,7 +915,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                 <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
                     <CircularProgress size={40} />
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">Loading trades...</ResponsiveTypography>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('trading.loadingTrades')}</ResponsiveTypography>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -922,20 +924,20 @@ export const TradeList: React.FC<TradeListProps> = ({
                 <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
                     <ResponsiveTypography variant="cardTitle" color="text.secondary">
-                      No trades found
+                      {t('trading.noTradesFound')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                      No trades match your current filter criteria.
+                      {t('trading.noTradesMatchFilter')}
                     </ResponsiveTypography>
                     <ResponsiveButton
                       variant="outlined"
                       icon={<AddIcon />}
                       onClick={onCreate}
-                      mobileText="Add"
-                      desktopText="Create First Trade"
+                      mobileText={t('common.add')}
+                      desktopText={t('common.createFirstTrade')}
                       sx={{ mt: 1 }}
                     >
-                      Create First Trade
+                      {t('trading.createFirstTrade')}
                     </ResponsiveButton>
                   </Box>
                 </TableCell>
@@ -968,7 +970,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                               {dateKey}
                             </ResponsiveTypography>
                             <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                              ({trades.length} {trades.length === 1 ? 'trade' : 'trades'})
+                              ({trades.length} {trades.length === 1 ? t('trading.trade') : t('trading.trades')})
                             </ResponsiveTypography>
                           </Box>
                           <Box display="flex" alignItems="center" gap={1}>
@@ -1076,7 +1078,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                       )}
                     </TableCell>
                     <TableCell align="center" sx={{ py: isCompactMode ? 1 : 2 }}>
-                      <Tooltip title="Actions">
+                      <Tooltip title={t('tables.actions')}>
                         <IconButton
                           size={isCompactMode ? "small" : "medium"}
                           onClick={(e) => handleMenuOpen(e, trade)}
@@ -1136,7 +1138,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           <ListItemIcon>
             <ViewIcon fontSize="small" color="primary" />
           </ListItemIcon>
-          <ListItemText>View Details</ListItemText>
+          <ListItemText>{t('trading.viewDetails')}</ListItemText>
         </MenuItem>
         <MenuItem 
           onClick={() => handleAction('edit')}
@@ -1145,7 +1147,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           <ListItemIcon>
             <EditIcon fontSize="small" color="primary" />
           </ListItemIcon>
-          <ListItemText>Edit Trade</ListItemText>
+          <ListItemText>{t('trading.editTrade')}</ListItemText>
         </MenuItem>
         <MenuItem 
           onClick={() => handleAction('delete')}
@@ -1154,7 +1156,7 @@ export const TradeList: React.FC<TradeListProps> = ({
           <ListItemIcon>
             <DeleteIcon fontSize="small" color="error" />
           </ListItemIcon>
-          <ListItemText>Delete Trade</ListItemText>
+          <ListItemText>{t('trading.deleteTrade')}</ListItemText>
         </MenuItem>
       </Menu>
     </Box>
@@ -1163,6 +1165,7 @@ export const TradeList: React.FC<TradeListProps> = ({
 
 // Wrapper component that uses the hook
 export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () => void; isCompactMode?: boolean }> = ({ portfolioId, onCreate, isCompactMode = false }) => {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
     assetId: '',
     side: '',
@@ -1229,7 +1232,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <ResponsiveTypography variant="cardLabel" sx={{ ml: 2 }}>Loading trades...</ResponsiveTypography>
+        <ResponsiveTypography variant="cardLabel" sx={{ ml: 2 }}>{t('trading.loadingTrades')}</ResponsiveTypography>
       </Box>
     );
   }
@@ -1237,7 +1240,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
   if (error) {
     return (
       <Alert severity="error">
-        {(error as any)?.message || 'Failed to load trades'}
+        {(error as any)?.message || t('trading.failedToLoadTrades')}
       </Alert>
     );
   }
@@ -1301,10 +1304,10 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
         open={confirmModalOpen}
         onClose={handleCloseModals}
         onConfirm={handleConfirmDelete}
-        title="Delete Trade"
-        message={`Are you sure you want to delete this trade for ${selectedTrade?.assetSymbol || selectedTrade?.asset?.symbol || 'this asset'}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('trading.deleteTrade')}
+        message={t('trading.deleteTradeConfirm', { asset: selectedTrade?.assetSymbol || selectedTrade?.asset?.symbol || t('common.thisAsset') })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         type="delete"
         isLoading={deleteTradeMutation.isLoading}
         confirmColor="error"

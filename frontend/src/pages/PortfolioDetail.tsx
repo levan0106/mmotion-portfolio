@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   CircularProgress,
   Box,
@@ -82,6 +83,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const PortfolioDetail: React.FC = () => {
+  const { t } = useTranslation();
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -181,7 +183,7 @@ const PortfolioDetail: React.FC = () => {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <ResponsiveTypography variant="errorText">
-          Failed to load portfolio. Please try again.
+          {t('portfolio.failedToLoad')}
         </ResponsiveTypography>
       </Box>
     );
@@ -234,7 +236,7 @@ const PortfolioDetail: React.FC = () => {
               {portfolio.name}
             </ResponsiveTypography>
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Portfolio Management & Trading
+              {t('portfolio.managementTrading')}
             </ResponsiveTypography>
           </Box>
           <Box 
@@ -251,8 +253,8 @@ const PortfolioDetail: React.FC = () => {
               icon={<ArrowBackIcon />}
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
-              mobileText="Back"
-              desktopText="Back to Portfolios"
+              mobileText={t('common.back')}
+              desktopText={t('portfolio.backToPortfolios')}
               sx={{ 
                 display: { xs: 'none', sm: 'flex' },
                 borderRadius: 2, 
@@ -268,10 +270,10 @@ const PortfolioDetail: React.FC = () => {
               }}
             >
               <ResponsiveTypography variant="buttonText">
-                Back to Portfolios
+                {t('portfolio.backToPortfolios')}
               </ResponsiveTypography>
             </ResponsiveButton>
-            <Tooltip title="Refresh all portfolio data">
+            <Tooltip title={t('portfolio.refreshAllData')}>
               <span>
                 <ResponsiveButton
                   variant="outlined"
@@ -279,8 +281,8 @@ const PortfolioDetail: React.FC = () => {
                   startIcon={<RefreshIcon />}
                   onClick={handleRefreshAll}
                   disabled={isRefreshingAll}
-                  mobileText="Refresh"
-                  desktopText="Refresh All"
+                  mobileText={t('common.refresh')}
+                  desktopText={t('portfolio.refreshAll')}
                   sx={{ 
                     display: { xs: 'none', sm: 'flex' },
                     borderRadius: 2, 
@@ -296,7 +298,7 @@ const PortfolioDetail: React.FC = () => {
                   }}
                 >
                   <ResponsiveTypography variant="buttonText">
-                    {isRefreshingAll ? 'Refreshing...' : 'Refresh All'}
+                    {isRefreshingAll ? t('portfolio.refreshing') : t('portfolio.refreshAll')}
                   </ResponsiveTypography>
                 </ResponsiveButton>
               </span>
@@ -352,10 +354,10 @@ const PortfolioDetail: React.FC = () => {
              }}>
                <Box>
                  <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
-                   Portfolio Value
+                   {t('portfolio.portfolioValue')}
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
-                   Giá trị tài sản & NAV
+                   {t('portfolio.assetValueNav')}
                  </ResponsiveTypography>
                </Box>
                <Box sx={{ 
@@ -366,7 +368,7 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }} ellipsis>
-                     Investment Value
+                     {t('portfolio.investmentValue')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue" ellipsis>
                      {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
@@ -374,7 +376,7 @@ const PortfolioDetail: React.FC = () => {
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }} ellipsis>
-                     Current NAV (+cash)
+                     {t('portfolio.currentNav')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue" ellipsis>
                      {formatCurrency(portfolio.totalAllValue, portfolio.baseCurrency)}
@@ -433,10 +435,10 @@ const PortfolioDetail: React.FC = () => {
              }}>
                <Box>
                  <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
-                   Performance
+                   {t('portfolio.performance')}
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
-                   Tổng & Lợi nhuận hàng năm
+                   {t('portfolio.totalAnnualReturns')}
                  </ResponsiveTypography>
                </Box>
                <Box sx={{ 
@@ -447,7 +449,7 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Total Return
+                     {t('portfolio.totalReturn')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
                      variant="cardValue"
@@ -455,12 +457,12 @@ const PortfolioDetail: React.FC = () => {
                        color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
-                     {performanceData ? formatPercentage(performanceData.totalReturn) : 'N/A'}
+                     {performanceData ? formatPercentage(performanceData.totalReturn) : t('common.noData')}
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Annualized
+                     {t('portfolio.annualized')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
                      variant="cardValue"
@@ -468,7 +470,7 @@ const PortfolioDetail: React.FC = () => {
                        color: (performanceData?.annualizedReturn || 0) >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
-                     {performanceData ? formatPercentage(performanceData.annualizedReturn) : 'N/A'}
+                     {performanceData ? formatPercentage(performanceData.annualizedReturn) : t('common.noData')}
                    </ResponsiveTypography>
                  </Box>
                </Box>
@@ -513,10 +515,10 @@ const PortfolioDetail: React.FC = () => {
              }}>
                <Box>
                  <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
-                   Trading Activity
+                   {t('portfolio.tradingActivity')}
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
-                   Giao dịch & Khối lượng
+                   {t('portfolio.tradingVolume')}
                  </ResponsiveTypography>
                </Box>
                <Box sx={{ 
@@ -527,7 +529,7 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Total Trades
+                     {t('portfolio.totalTrades')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue">
                      {formatNumberWithSeparators(totalTrades, 0)}
@@ -535,7 +537,7 @@ const PortfolioDetail: React.FC = () => {
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Total Volume
+                     {t('portfolio.totalVolume')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue">
                      {formatCurrency(totalTradeVolume, portfolio?.baseCurrency || 'VND')}
@@ -594,10 +596,10 @@ const PortfolioDetail: React.FC = () => {
              }}>
                <Box>
                  <ResponsiveTypography variant="cardTitle" sx={{ mb: { xs: 0.3, sm: 0.5 } }}>
-                   P&L & Costs
+                   {t('portfolio.plCosts')}
                  </ResponsiveTypography>
                  <ResponsiveTypography variant="cardSubtitle">
-                   Lợi nhuận & Chi phí
+                   {t('portfolio.profitCosts')}
                  </ResponsiveTypography>
                </Box>
                <Box sx={{ 
@@ -608,7 +610,7 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Realized P&L
+                     {t('portfolio.realizedPL')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
                      variant="cardValue"
@@ -621,7 +623,7 @@ const PortfolioDetail: React.FC = () => {
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     Fees & Taxes
+                     {t('portfolio.feesTaxes')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
                      variant="cardValue"
@@ -707,38 +709,38 @@ const PortfolioDetail: React.FC = () => {
             <Tab 
               icon={<TrendingUpIcon />} 
               iconPosition="start" 
-              label="Performance" 
+              label={t('portfolio.performance')} 
               defaultChecked 
             />
             <Tab 
               icon={<AllocationIcon />} 
               iconPosition="start" 
-              label="Allocation" 
+              label={t('portfolio.allocation')} 
             />
             <Tab 
               icon={<TradingIcon />} 
               iconPosition="start" 
-              label="Trading" 
+              label={t('portfolio.trading')} 
             />
             <Tab 
               icon={<DepositIcon />} 
               iconPosition="start" 
-              label="Deposit" 
+              label={t('portfolio.deposit')} 
             />
             <Tab 
               icon={<CashFlowIcon />} 
               iconPosition="start" 
-              label="Cash Flow" 
+              label={t('portfolio.cashFlow')} 
             />
             <Tab 
               icon={<HoldingsIcon />} 
               iconPosition="start" 
-              label="Holdings" 
+              label={t('navigation.holdings')} 
             />
           </Tabs>
           
           {/* Compact Mode Toggle */}
-          <Tooltip title={isCompactMode ? "Switch to Normal View" : "Switch to Compact View"}>
+          <Tooltip title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}>
             <IconButton
               onClick={() => setIsCompactMode(!isCompactMode)}
               color="primary"
@@ -829,7 +831,7 @@ const PortfolioDetail: React.FC = () => {
       <ModalWrapper
         open={showCreateForm}
         onClose={() => setShowCreateForm(false)}
-        title="Create New Trade"
+        title={t('portfolio.createNewTrade')}
         icon={<TrendingUpIcon />}
         maxWidth="lg"
         loading={createTradeMutation.isLoading}
@@ -842,7 +844,7 @@ const PortfolioDetail: React.FC = () => {
 
       {/* Floating Action Button for Quick Create Trade */}
       <Tooltip 
-        title="Create New Trade" 
+        title={t('portfolio.createNewTrade')} 
         placement="left" 
         arrow
         sx={{ zIndex: 1301 }}

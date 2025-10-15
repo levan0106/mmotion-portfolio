@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -37,6 +38,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
   title = 'Asset Performance Comparison',
   compact = false,
 }) => {
+  const { t } = useTranslation();
   // Ensure data is an array
   const safeData = Array.isArray(data) ? data : [];
   
@@ -95,7 +97,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Performance (Unrealized P&L)
+              {t('portfolio.performanceUnrealizedPL')}
             </ResponsiveTypography>
             <ResponsiveTypography 
               variant="cardValue" 
@@ -117,7 +119,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
               letterSpacing: '0.5px',
               fontWeight: 500
             }}>
-              Total Value
+              {t('portfolio.totalValue')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell" sx={{ 
               mt: 0.5,
@@ -136,7 +138,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
-                Unrealized P&L
+                {t('portfolio.unrealizedPL')}
               </ResponsiveTypography>
               <ResponsiveTypography 
                 variant="tableCell" 
@@ -159,14 +161,14 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 letterSpacing: '0.5px',
                 fontWeight: 500
               }}>
-                Positions
+                {t('portfolio.positions')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="tableCell" sx={{ 
                 mt: 0.5,
                 fontSize: '0.85rem',
                 color: 'text.primary'
               }}>
-                {data.positionCount} {data.positionCount === 1 ? 'position' : 'positions'}
+                {data.positionCount} {data.positionCount === 1 ? t('portfolio.position') : t('portfolio.positions')}
               </ResponsiveTypography>
             </Box>
           )}
@@ -186,7 +188,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
-                ↗ PROFIT
+                ↗ {t('portfolio.profit')}
               </ResponsiveTypography>
             ) : (
               <ResponsiveTypography variant="statusText" sx={{ 
@@ -194,7 +196,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
                 fontSize: '0.7rem',
                 fontWeight: 600
               }}>
-                ↘ LOSS
+                ↘ {t('portfolio.loss')}
               </ResponsiveTypography>
             )}
           </Box>
@@ -208,7 +210,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <ResponsiveTypography variant={compact ? "formHelper" : "cardTitle"} color="text.secondary">
-          No performance data available
+          {t('portfolio.noPerformanceData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -220,7 +222,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
         {title}
       </ResponsiveTypography>
       <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
-        Performance comparison across asset types
+        {t('portfolio.performanceComparison')}
       </ResponsiveTypography>
       <Box sx={{ 
         height: compact ? 167 : 267,

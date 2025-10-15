@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useCallback, useMemo, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -58,7 +59,8 @@ const AssetTableRow = memo(({
   onViewDetail, 
   onEdit, 
   onDelete, 
-  isLoadingDeleteInfo 
+  isLoadingDeleteInfo,
+  t
 }: {
   asset: Asset;
   baseCurrency: string;
@@ -67,6 +69,7 @@ const AssetTableRow = memo(({
   onEdit: (asset: Asset) => void;
   onDelete: (asset: Asset) => void;
   isLoadingDeleteInfo: boolean;
+  t: (key: string) => string;
 }) => {
   const getAssetTypeChipColor = (type: string) => {
     const color = getAssetTypeColor(type);
@@ -97,81 +100,107 @@ const AssetTableRow = memo(({
       }}
       onClick={() => onViewDetail(asset)}
     >
-      <TableCell>
+      <TableCell sx={{ maxWidth: { xs: '200px', sm: '250px', md: '300px' }, minWidth: '150px' }}>
         <Box>
-          <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            {asset.name}
-          </ResponsiveTypography>
-          <ResponsiveTypography variant="formHelper">
-            {asset.description || 'No description'}
-          </ResponsiveTypography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+            {asset.symbol && (
+              <ResponsiveTypography variant="formHelper" sx={{ 
+                fontFamily: 'monospace',
+                backgroundColor: 'grey.100',
+                px: 1,
+                py: 0.25,
+                borderRadius: 0.5,
+                fontSize: '0.7rem',
+                flexShrink: 0
+              }}>
+                {asset.symbol}
+              </ResponsiveTypography>
+            )}
+            <ResponsiveTypography 
+              variant="tableCellSmall" 
+              sx={{ 
+                fontWeight: 600, 
+                color: 'text.primary',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0,
+                flex: 1
+              }}
+            >
+              {asset.name}
+            </ResponsiveTypography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Chip
+              label={asset.type}
+              color={getAssetTypeChipColor(asset.type) as any}
+              size="small"
+              sx={{ 
+                fontWeight: 500,
+                backgroundColor: getAssetTypeColor(asset.type),
+                color: 'white',
+                fontSize: '0.7rem',
+                height: 20,
+                flexShrink: 0,
+                '& .MuiChip-label': {
+                  color: 'white',
+                  fontWeight: 600
+                }
+              }}
+            />
+          </Box>
         </Box>
       </TableCell>
-      <TableCell>
-        <Chip
-          label={asset.type}
-          color={getAssetTypeChipColor(asset.type) as any}
-          size="small"
-          sx={{ 
-            fontWeight: 500,
-            backgroundColor: getAssetTypeColor(asset.type),
-            color: 'white',
-            '& .MuiChip-label': {
-              color: 'white',
-              fontWeight: 600
-            }
-          }}
-        />
-      </TableCell>
-      <TableCell>
-        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
-          {asset.symbol}
-        </ResponsiveTypography>
-      </TableCell>
-      <TableCell sx={{ textAlign: 'right' }}>
+      <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '80px', sm: '100px' }, minWidth: '60px' }}>
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
           {Number(asset.totalQuantity) || 0}
         </ResponsiveTypography>
       </TableCell>
-      <TableCell sx={{ textAlign: 'right' }}>
+      <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '120px', sm: '150px' }, minWidth: '100px' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
           <ResponsiveTypography 
             variant="tableCellSmall" 
             sx={{ 
               fontWeight: 600, 
-              color: priceComparison >= 0 ? 'success.main' : 'error.main'
+              color: priceComparison >= 0 ? 'success.main' : 'error.main',
+              fontSize: { xs: '0.7rem', sm: '0.9rem' }
             }}
           >
-            Current: {formatCurrency(currentPrice, baseCurrency)}
+            {formatCurrency(currentPrice, baseCurrency)}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="formHelper">
-            Avg Cost: {formatCurrency(avgCost, baseCurrency)}
-          </ResponsiveTypography>
-          {priceComparisonPercent !== 0 && (
-            <ResponsiveTypography 
-              variant="formHelper" 
-              sx={{ 
-                color: priceComparison >= 0 ? 'success.main' : 'error.main'
-              }}
-            >
-              {priceComparison >= 0 ? '+' : ''}{priceComparisonPercent.toFixed(1)}%
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <ResponsiveTypography variant="formHelper" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+              {formatCurrency(avgCost, baseCurrency)}
             </ResponsiveTypography>
-          )}
+            {priceComparisonPercent !== 0 && (
+              <ResponsiveTypography 
+                variant="formHelper" 
+                sx={{ 
+                  color: priceComparison >= 0 ? 'success.main' : 'error.main',
+                  fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                  fontWeight: 600
+                }}
+              >
+                {priceComparison >= 0 ? '+' : ''}{priceComparisonPercent.toFixed(1)}%
+              </ResponsiveTypography>
+            )}
+          </Box>
         </Box>
       </TableCell>
-      <TableCell sx={{ textAlign: 'right' }}>
-        <ResponsiveTypography variant="tableCellSmall" sx={{ color: 'success.main' }}>
+      <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
+        <ResponsiveTypography variant="tableCell" sx={{ color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
         </ResponsiveTypography>
       </TableCell>
-      <TableCell>
-        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary' }}>
+      <TableCell sx={{ maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
           {formatDateTime(asset.updatedAt)}
         </ResponsiveTypography>
       </TableCell>
-      <TableCell sx={{ textAlign: 'center' }}>
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-          <Tooltip title="View Details">
+      <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Tooltip title={t('assets.actions.viewDetails')}>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -188,7 +217,7 @@ const AssetTableRow = memo(({
               <Visibility />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Edit Asset">
+          <Tooltip title={t('assets.actions.editAsset')}>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -205,7 +234,7 @@ const AssetTableRow = memo(({
               <Edit />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Delete Asset">
+          <Tooltip title={t('assets.actions.deleteAsset')}>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -235,11 +264,13 @@ AssetTableRow.displayName = 'AssetTableRow';
 const SummaryMetrics = memo(({ 
   assets, 
   baseCurrency, 
-  theme 
+  theme,
+  t
 }: { 
   assets: Asset[]; 
   baseCurrency: string; 
-  theme: any; 
+  theme: any;
+  t: (key: string) => string;
 }) => {
   const summaryMetrics = useMemo(() => {
     const totalAssets = assets.length;
@@ -260,38 +291,38 @@ const SummaryMetrics = memo(({
 
   const summaryMetricsCards = useMemo(() => [
     {
-      title: 'Total Assets',
+      title: t('assets.metrics.totalAssets'),
       value: summaryMetrics.totalAssets.toString(),
-      subtitle: 'Assets in portfolio',
+      subtitle: t('assets.metrics.assetsInPortfolio'),
       icon: <AccountBalanceWallet sx={{ fontSize: 24, color: 'primary.main' }} />,
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
     },
     {
-      title: 'Total Value',
+      title: t('assets.metrics.totalValue'),
       value: formatCurrency(summaryMetrics.totalValue, baseCurrency),
-      subtitle: 'Combined asset value',
+      subtitle: t('assets.metrics.combinedAssetValue'),
       icon: <MonetizationOn sx={{ fontSize: 24, color: 'success.main' }} />,
       color: 'success' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.06)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
     },
     {
-      title: 'Average Value',
+      title: t('assets.metrics.averageValue'),
       value: formatCurrency(summaryMetrics.averageValue, baseCurrency),
-      subtitle: 'Per asset average',
+      subtitle: t('assets.metrics.perAssetAverage'),
       icon: <AccountBalance sx={{ fontSize: 24, color: 'info.main' }} />,
       color: 'info' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
     },
     {
-      title: 'Asset Types',
+      title: t('assets.metrics.assetTypes'),
       value: Object.keys(summaryMetrics.assetsByType).length.toString(),
-      subtitle: 'Different categories',
+      subtitle: t('assets.metrics.differentCategories'),
       icon: <TrendingUp sx={{ fontSize: 24, color: 'secondary.main' }} />,
       color: 'secondary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
     },
-  ], [summaryMetrics, baseCurrency, theme.palette]);
+  ], [summaryMetrics, baseCurrency, theme.palette, t]);
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -343,10 +374,7 @@ const SummaryMetrics = memo(({
                 {metric.title}
               </ResponsiveTypography>
               <ResponsiveTypography 
-                variant="cardLabel" 
-                sx={{ 
-                  fontSize: '0.875rem'
-                }}
+                variant="formHelper"
               >
                 {metric.subtitle}
               </ResponsiveTypography>
@@ -368,7 +396,8 @@ const AssetsList = memo(({
   onViewDetail, 
   onEdit, 
   onDelete, 
-  isLoadingDeleteInfo 
+  isLoadingDeleteInfo,
+  t
 }: { 
   assets: Asset[]; 
   baseCurrency: string; 
@@ -376,7 +405,8 @@ const AssetsList = memo(({
   onViewDetail: (asset: Asset) => void; 
   onEdit: (asset: Asset) => void; 
   onDelete: (asset: Asset) => void; 
-  isLoadingDeleteInfo: boolean; 
+  isLoadingDeleteInfo: boolean;
+  t: (key: string) => string;
 }) => {
   // Removed unused summaryMetrics
 
@@ -385,10 +415,10 @@ const AssetsList = memo(({
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <ResponsiveTypography variant="pageTitle" sx={{ mb: 1 }}>
-            Asset Portfolio
+            {t('assets.title')}
           </ResponsiveTypography>
           <ResponsiveTypography variant="pageSubtitle">
-            Detailed view of your assets across all portfolios
+            {t('assets.subtitle')}
           </ResponsiveTypography>
         </Box>
       </Box>
@@ -411,10 +441,10 @@ const AssetsList = memo(({
             <AccountBalanceWallet sx={{ fontSize: 80, color: 'primary.main' }} />
           </Box>
           <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
-            No Assets Found
+            {t('assets.noAssets.title')}
           </ResponsiveTypography>
           <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-            You don't have any assets in your portfolio yet. Start by adding assets to track your investments.
+            {t('assets.noAssets.description')}
           </ResponsiveTypography>
         </Card>
       ) : (
@@ -429,14 +459,12 @@ const AssetsList = memo(({
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Asset</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Type</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Symbol</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Quantity</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Price Comparison</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Total Value</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Last Updated</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>Actions</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.asset')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -450,6 +478,7 @@ const AssetsList = memo(({
                       onEdit={onEdit}
                       onDelete={onDelete}
                       isLoadingDeleteInfo={isLoadingDeleteInfo}
+                      t={t}
                     />
                   ))}
                 </TableBody>
@@ -465,6 +494,7 @@ const AssetsList = memo(({
 AssetsList.displayName = 'AssetsList';
 
 const Assets: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { accountId, baseCurrency } = useAccount();
   const { assets, loading, error, filters, refresh, updateAsset, createAsset, deleteAsset, setFilters: setApiFilters } = useAssets({ 
@@ -505,10 +535,12 @@ const Assets: React.FC = () => {
   }, []);
 
   const handleEditAsset = useCallback((asset: Asset) => {
+    setSelectedAsset(null); // Close details modal first
     setEditingAsset(asset);
   }, []);
 
   const handleDeleteAsset = useCallback(async (asset: Asset) => {
+    setSelectedAsset(null); // Close details modal first
     setAssetToDelete(asset);
     setIsLoadingDeleteInfo(true);
     
@@ -642,13 +674,16 @@ const Assets: React.FC = () => {
     return (
       <Box>
         <Alert severity="error" sx={{ mb: 2 }}>
-          Error loading assets: {error}
+          {t('assets.errors.loadingError')}: {error}
         </Alert>
-        <ResponsiveButton onClick={handleRefresh} variant="contained">
+        <ResponsiveButton 
+          onClick={handleRefresh} 
+          variant="contained"
           icon={<Refresh />}
-          mobileText="Retry"
-          desktopText="Retry"
-          Retry
+          mobileText={t('common.retry')}
+          desktopText={t('common.retry')}
+        >
+          {t('common.retry')}
         </ResponsiveButton>
       </Box>
     );
@@ -670,12 +705,12 @@ const Assets: React.FC = () => {
                   mb: 1
                 }}
               >
-                Assets
+                {t('assets.pageTitle')}
               </ResponsiveTypography>
               <ResponsiveTypography 
                 variant="pageSubtitle"
               >
-                Manage your portfolio assets
+                {t('assets.pageSubtitle')}
               </ResponsiveTypography>
             </Box>
 
@@ -690,18 +725,18 @@ const Assets: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                Filters {showFilters && '(Active)'}
+                {t('assets.filters.title')} {showFilters && `(${t('assets.filters.active')})`}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="outlined"
                 icon={<Refresh />}
                 onClick={handleRefresh}
-                mobileText="Refresh"
-                desktopText="Refresh Data"
+                mobileText={t('common.refresh')}
+                desktopText={t('assets.actions.refreshData')}
               >
-                Refresh Data
+                {t('assets.actions.refreshData')}
               </ResponsiveButton>
-              <Tooltip title="Chọn nhiều assets từ danh sách mẫu - Nhanh và dễ dàng">
+              <Tooltip title={t('assets.actions.quickCreateTooltip')}>
                 <span>
                   <ResponsiveButton
                     variant="outlined"
@@ -713,20 +748,20 @@ const Assets: React.FC = () => {
                       fontWeight: 500
                     }}
                   >
-                    Quick Create
+                    {t('assets.actions.quickCreate')}
                   </ResponsiveButton>
                 </span>
               </Tooltip>
-              <Tooltip title="Tạo asset mới với thông tin chi tiết">
+              <Tooltip title={t('assets.actions.addAssetTooltip')}>
                 <span>
                   <ResponsiveButton
                     variant="contained"
                     icon={<Add />}
                     onClick={handleCreateAsset}
-                    mobileText="Add"
-                    desktopText="Add Asset"
+                    mobileText={t('assets.actions.add')}
+                    desktopText={t('assets.actions.addAsset')}
                   >
-                    Add Asset
+                    {t('assets.actions.addAsset')}
                   </ResponsiveButton>
                 </span>
               </Tooltip>
@@ -745,7 +780,8 @@ const Assets: React.FC = () => {
         <SummaryMetrics 
           assets={assets} 
           baseCurrency={baseCurrency} 
-          theme={theme} 
+          theme={theme}
+          t={t}
         />
 
         {/* Asset Filters */}
@@ -773,6 +809,7 @@ const Assets: React.FC = () => {
           onEdit={handleEditAsset}
           onDelete={handleDeleteAsset}
           isLoadingDeleteInfo={isLoadingDeleteInfo}
+          t={t}
         />
 
         {/* Asset Details Modal */}

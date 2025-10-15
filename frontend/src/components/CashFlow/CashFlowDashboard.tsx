@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import {
@@ -67,6 +68,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
   portfolioId,
   onCashFlowUpdate,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -244,7 +246,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
   const speedDialActions = [
     {
       icon: <DepositIcon />,
-      name: 'Deposit',
+      name: t('cashflow.deposit'),
       onClick: () => {
         setDialogType('deposit');
         setDialogOpen(true);
@@ -252,7 +254,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
     },
     {
       icon: <WithdrawIcon />,
-      name: 'Withdraw',
+      name: t('cashflow.withdraw'),
       onClick: () => {
         setDialogType('withdrawal');
         setDialogOpen(true);
@@ -260,7 +262,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
     },
     {
       icon: <DividendIcon />,
-      name: 'Dividend',
+      name: t('cashflow.dividend'),
       onClick: () => {
         setDialogType('dividend');
         setDialogOpen(true);
@@ -279,7 +281,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                 <TrendingUpIcon color="success" sx={{ mr: 1 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="body2">
-                    Total Deposits
+                    {t('cashflow.summary.totalDeposits')}
                   </Typography>
                   <Typography variant="h6" color="success.main">
                     {formatCurrency(totalDeposits)}
@@ -297,7 +299,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                 <TrendingDownIcon color="error" sx={{ mr: 1 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="body2">
-                    Total Withdrawals
+                    {t('cashflow.summary.totalWithdrawals')}
                   </Typography>
                   <Typography variant="h6" color="error.main">
                     {formatCurrency(totalWithdrawals)}
@@ -315,7 +317,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                 <DividendIcon color="info" sx={{ mr: 1 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="body2">
-                    Total Dividends
+                    {t('cashflow.summary.totalDividends')}
                   </Typography>
                   <Typography variant="h6" color="info.main">
                     {formatCurrency(totalDividends)}
@@ -333,7 +335,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                 <BalanceIcon color="primary" sx={{ mr: 1 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="body2">
-                    Net Cash Flow
+                    {t('cashflow.summary.netCashFlow')}
                   </Typography>
                   <Typography 
                     variant="h6" 
@@ -355,25 +357,25 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
       <Card sx={{ mt: 3 }}>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">Cash Flow Management</Typography>
+            <Typography variant="h6">{t('cashflow.management.title')}</Typography>
             <Box display="flex" gap={1}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Filter</InputLabel>
+                <InputLabel>{t('cashflow.filters.filter')}</InputLabel>
                 <Select
                   value={filterType}
-                  label="Filter"
+                  label={t('cashflow.filters.filter')}
                   onChange={(e) => setFilterType(e.target.value)}
                 >
-                  <MenuItem value="ALL">All Types</MenuItem>
-                  <MenuItem value="DEPOSIT">Deposits</MenuItem>
-                  <MenuItem value="WITHDRAWAL">Withdrawals</MenuItem>
-                  <MenuItem value="DIVIDEND">Dividends</MenuItem>
-                  <MenuItem value="INTEREST">Interest</MenuItem>
-                  <MenuItem value="FEE">Fees</MenuItem>
-                  <MenuItem value="TAX">Taxes</MenuItem>
-                  <MenuItem value="BUY_TRADE">Buy Trades</MenuItem>
-                  <MenuItem value="SELL_TRADE">Sell Trades</MenuItem>
-                  <MenuItem value="TRADE_SETTLEMENT">Trade Settlements</MenuItem>
+                  <MenuItem value="ALL">{t('cashflow.filters.allTypes')}</MenuItem>
+                  <MenuItem value="DEPOSIT">{t('cashflow.filters.deposits')}</MenuItem>
+                  <MenuItem value="WITHDRAWAL">{t('cashflow.filters.withdrawals')}</MenuItem>
+                  <MenuItem value="DIVIDEND">{t('cashflow.filters.dividends')}</MenuItem>
+                  <MenuItem value="INTEREST">{t('cashflow.filters.interest')}</MenuItem>
+                  <MenuItem value="FEE">{t('cashflow.filters.fees')}</MenuItem>
+                  <MenuItem value="TAX">{t('cashflow.filters.taxes')}</MenuItem>
+                  <MenuItem value="BUY_TRADE">{t('cashflow.filters.buyTrades')}</MenuItem>
+                  <MenuItem value="SELL_TRADE">{t('cashflow.filters.sellTrades')}</MenuItem>
+                  <MenuItem value="TRADE_SETTLEMENT">{t('cashflow.filters.tradeSettlements')}</MenuItem>
                 </Select>
               </FormControl>
               <IconButton onClick={loadCashFlows} disabled={loading}>
@@ -392,14 +394,14 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Reference</TableCell>
-                  <TableCell>Funding Source</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell>{t('cashflow.table.type')}</TableCell>
+                  <TableCell>{t('cashflow.table.amount')}</TableCell>
+                  <TableCell>{t('cashflow.table.description')}</TableCell>
+                  <TableCell>{t('cashflow.table.reference')}</TableCell>
+                  <TableCell>{t('cashflow.table.fundingSource')}</TableCell>
+                  <TableCell>{t('cashflow.table.date')}</TableCell>
+                  <TableCell>{t('cashflow.table.status')}</TableCell>
+                  <TableCell>{t('cashflow.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -479,7 +481,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                 <Typography variant="h6" color={getTypeColor(dialogType.toUpperCase())}>
-                  Create {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)}
+                  {t('cashflow.modal.createTitle', { type: dialogType.charAt(0).toUpperCase() + dialogType.slice(1) })}
                 </Typography>
                 <Chip
                   icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
@@ -511,7 +513,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <Typography variant="body2" fontWeight="bold">
-                      {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
+                      {t('cashflow.modal.transaction', { type: dialogType.charAt(0).toUpperCase() + dialogType.slice(1) })}
                     </Typography>
                     <Chip
                       icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
@@ -530,7 +532,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
             
             <TextField
               fullWidth
-              label="Amount"
+              label={t('cashflow.form.amount')}
               type="number"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -542,18 +544,18 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
             />
             <TextField
               fullWidth
-              label="Funding Source (Optional)"
+              label={t('cashflow.form.fundingSourceOptional')}
               value={formData.fundingSource}
               onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
               margin="normal"
-              placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
+              placeholder={t('cashflow.form.fundingSourcePlaceholder')}
               inputProps={{
                 style: { textTransform: 'uppercase' }
               }}
             />
             <TextField
               fullWidth
-              label="Description"
+              label={t('cashflow.form.description')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               margin="normal"
@@ -561,7 +563,7 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
             />
             <TextField
               fullWidth
-              label="Reference (Optional)"
+              label={t('cashflow.form.referenceOptional')}
               value={formData.reference}
               onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
               margin="normal"
@@ -569,17 +571,17 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText="Cancel" desktopText="Cancel">
-            Cancel
+          <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.amount || !formData.description}
-            mobileText={loading ? 'Creating...' : 'Create'}
-            desktopText={loading ? 'Creating...' : 'Create'}
+            mobileText={loading ? t('cashflow.modal.creating') : t('common.create')}
+            desktopText={loading ? t('cashflow.modal.creating') : t('common.create')}
           >
-            {loading ? 'Creating...' : 'Create'}
+            {loading ? t('cashflow.modal.creating') : t('common.create')}
           </ResponsiveButton>
         </DialogActions>
       </Dialog>

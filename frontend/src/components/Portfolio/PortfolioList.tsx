@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CircularProgress,
   Fab,
@@ -35,6 +36,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
   onDeletePortfolio,
   onCreatePortfolio,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
@@ -65,7 +67,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
     return (
       <div className="portfolio-list">
         <div className="portfolio-list__error">
-          Failed to load portfolios. Please try again.
+          {t('portfolio.failedToLoad')}
         </div>
       </div>
     );
@@ -82,16 +84,16 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           mb: 1
-        }}>Portfolios</ResponsiveTypography>
+        }}>{t('portfolio.title')}</ResponsiveTypography>
         {onCreatePortfolio && (
           <ResponsiveButton
             className="portfolio-list__create-btn"
             onClick={onCreatePortfolio}
             icon={<AddIcon />}
-            mobileText="Create"
-            desktopText="Create Portfolio"
+            mobileText={t('common.create')}
+            desktopText={t('portfolio.create')}
           >
-            Create Portfolio
+            {t('portfolio.create')}
           </ResponsiveButton>
         )}
       </div>
@@ -138,15 +140,14 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           <div className="portfolio-list__empty-content">
             <h3 className="portfolio-list__empty-title">
               {portfolios.length === 0
-                ? 'Start Your Investment Journey'
-                : 'No portfolios match your search criteria.'}
+                ? t('portfolio.startJourney')
+                : t('portfolio.noMatch')}
             </h3>
             
             {portfolios.length === 0 ? (
               <>
                 <p className="portfolio-list__empty-description">
-                  Create your first portfolio to begin tracking your investments, 
-                  monitor performance, and make informed financial decisions.
+                  {t('portfolio.createFirstDescription')}
                 </p>
                 
                 <div className="portfolio-list__empty-features">
@@ -154,25 +155,25 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
                     <div className="portfolio-list__empty-feature-icon">
                       <TrendingUpIcon sx={{ fontSize: 24, color: '#10b981' }} />
                     </div>
-                    <span>Track Performance</span>
+                    <span>{t('portfolio.trackPerformance')}</span>
                   </div>
                   <div className="portfolio-list__empty-feature">
                     <div className="portfolio-list__empty-feature-icon">
                       <MonetizationOnIcon sx={{ fontSize: 24, color: '#f59e0b' }} />
                     </div>
-                    <span>Monitor Returns</span>
+                    <span>{t('portfolio.monitorReturns')}</span>
                   </div>
                   <div className="portfolio-list__empty-feature">
                     <div className="portfolio-list__empty-feature-icon">
                       <AssessmentIcon sx={{ fontSize: 24, color: '#8b5cf6' }} />
                     </div>
-                    <span>Analyze Trends</span>
+                    <span>{t('portfolio.analyzeTrends')}</span>
                   </div>
                 </div>
               </>
             ) : (
               <p className="portfolio-list__empty-description">
-                Try adjusting your search criteria or filters to find the portfolio you're looking for.
+                {t('portfolio.adjustSearch')}
               </p>
             )}
           </div>
@@ -183,16 +184,16 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--primary"
                 onClick={onCreatePortfolio}
                 icon={<AddIcon />}
-                mobileText="Create"
-                desktopText="Create Your First Portfolio"
+                mobileText={t('common.create')}
+                desktopText={t('portfolio.createFirst')}
               >
-                Create Your First Portfolio
+                {t('portfolio.createFirst')}
               </ResponsiveButton>
               <ResponsiveButton
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--secondary"
                 onClick={() => {/* Add help/tutorial action */}}
               >
-                Learn More
+                {t('portfolio.learnMore')}
               </ResponsiveButton>
             </div>
           )}

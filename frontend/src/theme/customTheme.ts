@@ -139,8 +139,8 @@ const customTypography = {
     xs: '0.625rem',  // 10px (mobile readable minimum)
     sm: '0.65rem',    // 10.4px
     md: '0.7rem',    // 11.2px
-    lg: '0.75rem',     // 12px
-    xl: '0.8rem',   // 12.8px
+    lg: '0.7rem',     // 12px
+    xl: '0.75rem',   // 12.8px
   },
   
   // Caption variants

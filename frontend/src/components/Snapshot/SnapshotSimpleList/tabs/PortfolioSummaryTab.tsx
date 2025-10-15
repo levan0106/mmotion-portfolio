@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Paper,
@@ -40,19 +41,20 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
   onPageChange,
   onLimitChange,
 }) => {
+  const { t } = useTranslation();
   return (
     <Box>
       <ResponsiveTypography 
         variant="pageTitle" 
         sx={{ mb: 2, color: 'primary.main' }}
       >
-        Portfolio Summary Snapshots
+        {t('portfolio.summarySnapshots')}
       </ResponsiveTypography>
       <ResponsiveTypography 
         variant="pageSubtitle" 
         sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.6 }}
       >
-        Cash balance được lấy từ bảng portfolio_snapshots.cash_balance có thể khác với cách tính trong tab Portfolio Performance.
+        {t('portfolio.cashBalanceNote')}
       </ResponsiveTypography>
 
       {portfolioSnapshotsLoading && (

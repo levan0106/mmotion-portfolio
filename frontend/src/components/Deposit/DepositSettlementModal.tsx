@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Grid,
   Box,
   Alert,
   Card,
   CardContent,
-  Avatar,
-  Paper,
 } from '@mui/material';
-import { ResponsiveTypography, ResponsiveButton } from '../Common';
+import { ResponsiveTypography, ResponsiveButton, ModalWrapper } from '../Common';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -22,7 +17,6 @@ import {
   TrendingUp as InterestIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -68,24 +62,26 @@ interface SettleDepositDto {
   notes?: string;
 }
 
-const validationSchema = yup.object({
-  actualInterest: yup
-    .number()
-    .required('Số tiền lãi thực tế là bắt buộc')
-    .min(0, 'Số tiền lãi phải lớn hơn hoặc bằng 0'),
-  settlementDate: yup
-    .string()
-    .required('Ngày tất toán là bắt buộc'),
-  notes: yup.string().max(500, 'Ghi chú không được quá 500 ký tự'),
-});
-
 const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
   open,
   onClose,
   onSubmit,
   deposit,
 }) => {
+  const { t } = useTranslation();
   const [error, setError] = useState<string>('');
+
+  // Create validation schema with translations
+  const validationSchema = yup.object({
+    actualInterest: yup
+      .number()
+      .required(t('deposit.settlement.validation.actualInterestRequired'))
+      .min(0, t('deposit.settlement.validation.actualInterestMin')),
+    settlementDate: yup
+      .string()
+      .required(t('deposit.settlement.validation.settlementDateRequired')),
+    notes: yup.string().max(500, t('deposit.settlement.validation.notesMaxLength')),
+  });
 
   const {
     control,
@@ -122,7 +118,7 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
       await onSubmit(data);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+      setError(err instanceof Error ? err.message : t('common.errorOccurred'));
     }
   };
 
@@ -134,314 +130,298 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
     return null;
   }
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <DialogTitle sx={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          p: 2,
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 36, height: 36 }}>
-              <InterestIcon sx={{ color: 'white', fontSize: 20 }} />
-            </Avatar>
-            <Box>
-              <ResponsiveTypography variant="h6" fontWeight="bold">
-                Tất toán tiền gửi
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
-                Xác nhận và hoàn tất việc tất toán
-              </ResponsiveTypography>
-            </Box>
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent sx={{ p: 0 }}>
-          <Box sx={{ p: 2 }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2, borderRadius: 1 }}>
-                {error}
-              </Alert>
-            )}
+  const modalTitle = `${t('deposit.settlement.title')} - ${deposit?.bankName || t('common.na')}`;
+  
+  const modalActions = (
+    <>
+      <ResponsiveButton 
+        onClick={onClose} 
+        disabled={isSubmitting}
+        variant="outlined"
+        size="medium"
+      >
+        {t('common.cancel')}
+      </ResponsiveButton>
+      <ResponsiveButton 
+        type="submit" 
+        variant="contained" 
+        color="success"
+        disabled={isSubmitting || (actualInterest || 0) < 0}
+        size="medium"
+        startIcon={isSubmitting ? undefined : <CheckIcon />}
+      >
+        {isSubmitting ? t('deposit.settlement.processing') : t('deposit.settlement.confirmSettlement')}
+      </ResponsiveButton>
+    </>
+  );
 
-            {/* Combined Information and Form Card */}
-            <Card sx={{ 
-              mb: 2, 
-              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-              borderRadius: 2,
-              overflow: 'hidden'
-            }}>
-              <CardContent sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
-                    <BankIcon sx={{ fontSize: 18 }} />
-                  </Avatar>
-                  <Box>
-                    <ResponsiveTypography variant="h6" fontWeight="bold" sx={{ fontSize: '1rem' }}>
-                      Thông tin tất toán
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                      Chi tiết tiền gửi và thông tin tất toán
-                    </ResponsiveTypography>
-                  </Box>
+  return (
+    <ModalWrapper
+      open={open}
+      onClose={onClose}
+      title={modalTitle}
+      icon={<InterestIcon sx={{ fontSize: 20 }} />}
+      actions={modalActions}
+      maxWidth="md"
+      fullWidth
+      titleColor="success"
+      size="medium"
+    >
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 1 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Deposit Information & Financial Summary - Compact */}
+        <Card sx={{ mb: 2, mt: 2, border: '1px solid', borderColor: 'divider' }}>
+          <CardContent sx={{ p: 1.5 }}>
+            <Grid container spacing={2}>
+              {/* Deposit Info - Compact */}
+              <Grid item xs={12} md={6}>
+                <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
+                  {t('deposit.settlement.depositInfo')}
+                </ResponsiveTypography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <BankIcon fontSize="small" color="primary" />
+                  <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                    {t('deposit.settlement.bankName')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValue" color="text.primary" sx={{ ml: 3, mb: 1, color: 'text.primary' }}>
+                  {deposit.bankName || t('common.na')}
+                </ResponsiveTypography>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <ScheduleIcon fontSize="small" color="primary" />
+                  <ResponsiveTypography variant="cardSubtitle" color="text.primary" sx={{ color: 'text.primary' }}>
+                    {deposit.termDescription || t('common.na')}
+                  </ResponsiveTypography>
                 </Box>
                 
-                <Grid container spacing={2}>
-                  {/* Deposit Info - Compact */}
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <ResponsiveTypography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
-                        Thông tin tiền gửi
+                <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{ ml: 3,  color: 'text.secondary' }}>
+                  {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
+                </ResponsiveTypography>
+              </Grid>
+              
+              {/* Financial Summary - Compact */}
+              <Grid item xs={12} md={6}>
+                <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
+                  {t('deposit.settlement.financialSummary')}
+                </ResponsiveTypography>
+                <Grid container spacing={1}>
+                  <Grid item xs={6}>
+                    <Box textAlign="center" sx={{ p: 0.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{mb: 0.5, color: 'text.secondary' }}>
+                        {t('deposit.settlement.principal')}
                       </ResponsiveTypography>
-                      
-                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
-                        {/* Bank & Term Information */}
-                        <Box sx={{ mb: 2 }}>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                <BankIcon fontSize="small" color="primary" />
-                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                                  {deposit.bankName || 'N/A'}
-                                </ResponsiveTypography>
-                              </Box>
-                              <ResponsiveTypography variant="body2" color="text.secondary" fontFamily="monospace" sx={{ fontSize: '0.75rem', ml: 3, mb: 1 }}>
-                                {deposit.accountNumber || 'N/A'}
-                              </ResponsiveTypography>
-                            </Grid>
-                            
-                            <Grid item xs={12}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                <ScheduleIcon fontSize="small" color="primary" />
-                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                                  {deposit.termDescription || 'N/A'}
-                                </ResponsiveTypography>
-                              </Box>
-                              <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', ml: 3 }}>
-                                {formatDate(deposit.startDate, 'short')} - {formatDate(deposit.endDate, 'short')}
-                              </ResponsiveTypography>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                        
-                        {/* Financial Information */}
-                        <Box>
-                          <Grid container spacing={1.5}>
-                            <Grid item xs={6}>
-                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
-                                  Gốc
-                                </ResponsiveTypography>
-                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                                  {formatCurrency(Number(deposit.principal) || 0)}
-                                </ResponsiveTypography>
-                              </Box>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
-                                  Lãi suất
-                                </ResponsiveTypography>
-                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                                  {deposit.interestRate ? `${deposit.interestRate}%/năm` : 'N/A'}
-                                </ResponsiveTypography>
-                              </Box>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
-                                  Lãi tích lũy
-                                </ResponsiveTypography>
-                                <ResponsiveTypography variant="body2" color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                                  {formatCurrency(Number(deposit.accruedInterest) || 0)}
-                                </ResponsiveTypography>
-                              </Box>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <Box sx={{ p: 1, bgcolor: 'success.light', borderRadius: 1, textAlign: 'center' }}>
-                                <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem', mb: 0.5 }}>
-                                  Tổng
-                                </ResponsiveTypography>
-                                <ResponsiveTypography variant="body2" color="success.dark" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                                  {formatCurrency(Number(deposit.totalValue) || 0)}
-                                </ResponsiveTypography>
-                              </Box>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </Box>
-                    </Paper>
+                      <ResponsiveTypography variant="cardValue" color="primary" fontWeight="bold" sx={{ color: 'primary.main' }}>
+                        {formatCurrency(Number(deposit.principal) || 0)}
+                      </ResponsiveTypography>
+                    </Box>
                   </Grid>
                   
-                  {/* Settlement Form - Compact */}
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1, mb: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <ResponsiveTypography variant="body2" fontWeight="bold" mb={1} color="text.primary" sx={{ fontSize: '0.85rem' }}>
-                        Thông tin tất toán
+                  <Grid item xs={6}>
+                    <Box textAlign="center" sx={{ p: 0.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{ mb: 0.5, color: 'text.secondary' }}>
+                        {t('deposit.settlement.interestRate')}
                       </ResponsiveTypography>
-                      
-                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', py: 1 }}>
-                        <Grid container spacing={2}>
-                          <Grid item xs={12}>
-                            <Controller
-                              name="actualInterest"
-                              control={control}
-                              render={({ field }) => (
-                                <MoneyInput
-                                  value={field.value || 0}
-                                  onChange={(value) => field.onChange(value)}
-                                  label="Lãi thực tế"
-                                  placeholder="Nhập số tiền lãi thực tế"
-                                  helperText={errors.actualInterest?.message}
-                                  error={!!errors.actualInterest}
-                                  currency="VND"
-                                  showCurrency={true}
-                                  align="right"
-                                  required
-                                  disabled={isSubmitting}
-                                />
-                              )}
-                            />
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            <Controller
-                              name="settlementDate"
-                              control={control}
-                              render={({ field }) => (
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                  <DatePicker
-                                    label="Ngày tất toán"
-                                    value={field.value ? new Date(field.value) : null}
-                                    onChange={(date) => {
-                                      const dateString = date ? date.toISOString().split('T')[0] : '';
-                                      field.onChange(dateString);
-                                    }}
-                                    slotProps={{
-                                      textField: {
-                                        fullWidth: true,
-                                        size: 'small',
-                                        error: !!errors.settlementDate,
-                                        helperText: errors.settlementDate?.message || 'Chọn ngày tất toán',
-                                        required: true,
-                                        sx: {
-                                          '& .MuiOutlinedInput-root': {
-                                            borderRadius: 1,
-                                            bgcolor: 'white'
-                                          }
-                                        }
-                                      },
-                                    }}
-                                  />
-                                </LocalizationProvider>
-                              )}
-                            />
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            <Controller
-                              name="notes"
-                              control={control}
-                              render={({ field }) => (
-                                <TextField
-                                  {...field}
-                                  fullWidth
-                                  label="Ghi chú"
-                                  multiline
-                                  rows={2}
-                                  error={!!errors.notes}
-                                  helperText={errors.notes?.message}
-                                  size="small"
-                                  sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                      borderRadius: 1,
-                                      bgcolor: 'white'
-                                    }
-                                  }}
-                                />
-                              )}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Box>
-                    </Paper>
+                      <ResponsiveTypography variant="cardValue" color="success.main" fontWeight="bold" sx={{color: 'success.main' }}>
+                        {deposit.interestRate ? `${deposit.interestRate}%` : t('common.na')}
+                      </ResponsiveTypography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={6}>
+                    <Box textAlign="center" sx={{ p: 0.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{  mb: 0.5, color: 'text.secondary' }}>
+                        {t('deposit.settlement.accruedInterest')}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValue" color="info.main" fontWeight="bold" sx={{ color: 'info.main' }}>
+                        {formatCurrency(Number(deposit.accruedInterest) || 0)}
+                      </ResponsiveTypography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={6}>
+                    <Box textAlign="center" sx={{ p: 0.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <ResponsiveTypography variant="cardSubtitle" color="text.secondary" sx={{ mb: 0.5, color: 'text.secondary' }}>
+                        {t('deposit.settlement.total')}
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="cardValue" color="text.primary" fontWeight="bold" sx={{ color: 'text.primary' }}>
+                        {formatCurrency(Number(deposit.totalValue) || 0)}
+                      </ResponsiveTypography>
+                    </Box>
                   </Grid>
                 </Grid>
-              </CardContent>
-            </Card>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
 
-            {/* Settlement Summary - Compact */}
-            <Paper sx={{ 
-              p: 2, 
-              bgcolor: 'success.main', 
-              borderRadius: 1, 
-              boxShadow: 2,
-              textAlign: 'center',
-              mb: 2
-            }}>
-              <Box display="flex" alignItems="center" justifyContent="center" gap={1.5}>
-                <Box>
-                    <ResponsiveTypography variant="h4" sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.5rem', mb: 0.5 }}>
-                      Tổng nhận được
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="h3" sx={{ color: 'white', fontWeight: 'bold', fontSize: '2rem', mb: 1 }}>
-                      {formatCurrency(calculateTotalSettlement(Number(deposit.principal) || 0, Number(actualInterest) || 0))}
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="body2" sx={{ color: 'white', opacity: 0.8, fontSize: '0.7rem' }}>
-                      (Gốc: {formatCurrency(Number(deposit.principal) || 0)} + Lãi: {formatCurrency(Number(actualInterest) || 0)})
-                    </ResponsiveTypography>
-                </Box>
+        {/* Settlement Form - Compact */}
+        <Card sx={{ mb: 2, border: '1px solid', borderColor: 'divider' }}>
+          <CardContent sx={{ p: 2 }}>
+            <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2, fontSize: '1rem' }}>
+              {t('deposit.settlement.settlementDetails')}
+            </ResponsiveTypography>
+            
+            <Grid container spacing={1.5}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="settlementDate"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label={t('deposit.settlement.settlementDate')}
+                        value={field.value ? new Date(field.value) : null}
+                        onChange={(date) => {
+                          const dateString = date ? date.toISOString().split('T')[0] : '';
+                          field.onChange(dateString);
+                        }}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            size: 'medium',
+                            error: !!errors.settlementDate,
+                            required: true,
+                            sx: {
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                              }
+                            }
+                          },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="actualInterest"
+                  control={control}
+                  render={({ field }) => (
+                    <MoneyInput
+                      value={field.value || 0}
+                      onChange={(value) => field.onChange(value)}
+                      label={t('deposit.settlement.actualInterest')}
+                      placeholder={t('deposit.settlement.actualInterestPlaceholder')}
+                      helperText={errors.actualInterest?.message}
+                      error={!!errors.actualInterest}
+                      currency="VND"
+                      showCurrency={true}
+                      align="right"
+                      required
+                      disabled={isSubmitting}
+                      size="medium"
+                    />
+                  )}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Controller
+                  name="notes"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label={t('deposit.settlement.notes')}
+                      multiline
+                      rows={2}
+                      error={!!errors.notes}
+                      helperText={errors.notes?.message}
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                          minHeight: '54px',
+                        }
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Settlement Summary - Compact */}
+        <Card sx={{ 
+          border: '1px solid', 
+          borderColor: 'divider',
+          bgcolor: 'background.paper'
+        }}>
+          <CardContent sx={{ p: 2, textAlign: 'center' }}>
+            {/* Main Total - Compact */}
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
+                <CheckIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                <ResponsiveTypography variant="cardTitle">
+                  {t('deposit.settlement.totalReceived')}
+                </ResponsiveTypography>
               </Box>
-            </Paper>
-          </Box>
-        </DialogContent>
-        
-        <DialogActions sx={{ p: 2, bgcolor: 'grey.50', gap: 1.5 }}>
-          <ResponsiveButton 
-            onClick={onClose} 
-            disabled={isSubmitting}
-            variant="outlined"
-            size="medium"
-            icon={<EditIcon />}
-            mobileText="Hủy"
-            desktopText="Hủy"
-            sx={{ 
-              minWidth: 100, 
-              borderRadius: 1, 
-              textTransform: 'none', 
-              fontWeight: 'bold' 
-            }}
-          >
-            Hủy
-          </ResponsiveButton>
-          <ResponsiveButton 
-            type="submit" 
-            variant="contained" 
-            color="success"
-            disabled={isSubmitting || (actualInterest || 0) < 0}
-            size="medium"
-            icon={isSubmitting ? undefined : <CheckIcon />}
-            mobileText="Xác nhận tất toán"
-            desktopText="Xác nhận tất toán"
-            sx={{ 
-              minWidth: 160, 
-              borderRadius: 1, 
-              textTransform: 'none', 
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #388e3c 0%, #1b5e20 100%)',
-              }
-            }}
-          >
-            {isSubmitting ? 'Đang tất toán...' : 'Xác nhận tất toán'}
-          </ResponsiveButton>
-        </DialogActions>
+              <ResponsiveTypography variant="cardValueLarge" color="success.main" sx={{ 
+                letterSpacing: '-0.02em'
+              }}>
+                {formatCurrency(calculateTotalSettlement(Number(deposit.principal) || 0, Number(actualInterest) || 0))}
+              </ResponsiveTypography>
+            </Box>
+            
+            {/* Breakdown - Compact */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              gap: 4,
+              flexWrap: 'wrap'
+            }}>
+              <Box sx={{ 
+                textAlign: 'center',
+                p: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                minWidth: 100
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+                  <BankIcon sx={{ color: 'primary.main', fontSize: 16 }} />
+                  <ResponsiveTypography variant="cardSubtitle" sx={{ color: 'text.secondary' }}>
+                    {t('deposit.settlement.principal')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValueSmall" sx={{ color: 'text.primary' }}>
+                  {formatCurrency(Number(deposit.principal) || 0)}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Box sx={{ 
+                textAlign: 'center',
+                p: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                minWidth: 100
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+                  <InterestIcon sx={{ color: 'primary.main', fontSize: 16 }} />
+                  <ResponsiveTypography variant="cardSubtitle" sx={{ color: 'text.secondary' }}>
+                    {t('deposit.settlement.interest')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValueSmall" sx={{ color: 'text.primary' }}>
+                  {formatCurrency(Number(actualInterest) || 0)}
+                </ResponsiveTypography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </form>
-    </Dialog>
+    </ModalWrapper>
   );
 };
 

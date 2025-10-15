@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -69,6 +70,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
   isCompactMode = false,
   getUltraSpacing = (normal) => normal,
 }) => {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('list');
   // Calculate funding source summary data
   const calculateFundingSourceData = (): FundingSourceData[] => {
@@ -163,7 +165,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
             fontSize: isCompactMode ? '0.9rem' : undefined,
           }}
         >
-          Funding Source Summary
+          {t('cashflow.fundingSource.title')}
         </ResponsiveTypography>
         <Grid container spacing={getUltraSpacing(2, 1)}>
           {[1, 2, 3].map((i) => (
@@ -195,7 +197,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
             fontSize: isCompactMode ? '0.9rem' : undefined,
           }}
         >
-          Funding Source Summary
+          {t('cashflow.fundingSource.title')}
         </ResponsiveTypography>
         <Alert severity="info" sx={{ borderRadius: 2 }}>
           <ResponsiveTypography variant="body2">
@@ -251,14 +253,14 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                     letterSpacing: '-0.01em'
                   }}
                 >
-                  Funding Source Summary
+                  {t('cashflow.fundingSource.title')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="body2" 
                   color="text.secondary"
                   sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                 >
-                  Track cash flows by funding source
+                  {t('cashflow.fundingSource.subtitle')}
                 </ResponsiveTypography>
               </Box>
             </Box>
@@ -286,8 +288,8 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                 icon={<GridViewIcon />}
                 onClick={() => setViewMode('grid')}
                 variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-                mobileText="Grid"
-                desktopText="Grid"
+                mobileText={t('cashflow.fundingSource.grid')}
+                desktopText={t('cashflow.fundingSource.grid')}
                 sx={{
                   backgroundColor: viewMode === 'grid' ? '#4a5568' : 'transparent',
                   color: viewMode === 'grid' ? 'white' : '#718096',
@@ -299,14 +301,14 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   }
                 }}
               >
-                {isCompactMode ? "Grid" : "Grid View"}
+                {isCompactMode ? t('cashflow.fundingSource.grid') : t('cashflow.fundingSource.gridView')}
               </ResponsiveButton>
               <ResponsiveButton
                 icon={<ListViewIcon />}
                 onClick={() => setViewMode('list')}
                 variant={viewMode === 'list' ? 'contained' : 'outlined'}
-                mobileText="List"
-                desktopText="List"
+                mobileText={t('cashflow.fundingSource.list')}
+                desktopText={t('cashflow.fundingSource.list')}
                 sx={{
                   backgroundColor: viewMode === 'list' ? '#4a5568' : 'transparent',
                   color: viewMode === 'list' ? 'white' : '#718096',
@@ -318,7 +320,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                   }
                 }}
               >
-                {isCompactMode ? "List" : "List View"}
+                {isCompactMode ? t('cashflow.fundingSource.list') : t('cashflow.fundingSource.listView')}
               </ResponsiveButton>
             </ButtonGroup>
           </Box>
@@ -454,7 +456,7 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
                       color="text.secondary"
                       sx={{ fontSize: isCompactMode ? '0.7rem' : undefined }}
                     >
-                      Last Transaction: {formatDate(sourceData.lastTransactionDate)}
+                      {t('cashflow.fundingSource.lastTransaction')}: {formatDate(sourceData.lastTransactionDate)}
                     </ResponsiveTypography>
                   </Box>
                 </CardContent>
@@ -467,12 +469,12 @@ const FundingSourceSummary: React.FC<FundingSourceSummaryProps> = ({
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                <TableCell><strong>Funding Source</strong></TableCell>
-                <TableCell align="right"><strong>Net Amount</strong></TableCell>
-                <TableCell align="right"><strong>Inflow</strong></TableCell>
-                <TableCell align="right"><strong>Outflow</strong></TableCell>
-                <TableCell align="center"><strong>Transactions</strong></TableCell>
-                <TableCell><strong>Last Transaction</strong></TableCell>
+                <TableCell><strong>{t('cashflow.fundingSource.fundingSource')}</strong></TableCell>
+                <TableCell align="right"><strong>{t('cashflow.fundingSource.netAmount')}</strong></TableCell>
+                <TableCell align="right"><strong>{t('cashflow.fundingSource.inflow')}</strong></TableCell>
+                <TableCell align="right"><strong>{t('cashflow.fundingSource.outflow')}</strong></TableCell>
+                <TableCell align="center"><strong>{t('cashflow.fundingSource.transactions')}</strong></TableCell>
+                <TableCell><strong>{t('cashflow.fundingSource.lastTransaction')}</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

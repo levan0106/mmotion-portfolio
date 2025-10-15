@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -58,6 +59,7 @@ interface DepositManagementTabProps {
 }
 
 const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId, compact = false }) => {
+  const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [depositFormOpen, setDepositFormOpen] = useState(false);
   const [settlementModalOpen, setSettlementModalOpen] = useState(false);
@@ -95,11 +97,11 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
         queryClient.invalidateQueries(['deposit-analytics', portfolioId]);
-        toast.success('Tạo tiền gửi thành công!');
+        toast.success(t('deposit.createSuccess'));
         setDepositFormOpen(false);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tạo tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.createError'));
       },
     }
   );
@@ -111,12 +113,12 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
         queryClient.invalidateQueries(['deposit-analytics', portfolioId]);
-        toast.success('Cập nhật tiền gửi thành công!');
+        toast.success(t('deposit.updateSuccess'));
         setDepositFormOpen(false);
         setEditingDeposit(null);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.updateError'));
       },
     }
   );
@@ -128,12 +130,12 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
         queryClient.invalidateQueries(['deposit-analytics', portfolioId]);
-        toast.success('Tất toán tiền gửi thành công!');
+        toast.success(t('deposit.settleSuccess'));
         setSettlementModalOpen(false);
         setSelectedDeposit(null);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tất toán tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.settleError'));
       },
     }
   );
@@ -145,10 +147,10 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits', portfolioId]);
         queryClient.invalidateQueries(['deposit-analytics', portfolioId]);
-        toast.success('Xóa tiền gửi thành công!');
+        toast.success(t('deposit.deleteSuccess'));
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.deleteError'));
       },
     }
   );
@@ -195,7 +197,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
   if (depositsError) {
     return (
       <Alert severity="error" sx={{ mt: 2 }}>
-        Có lỗi xảy ra khi tải dữ liệu tiền gửi
+        {t('deposit.loadError')}
       </Alert>
     );
   }
@@ -205,13 +207,13 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 2 : 3}>
         <ResponsiveTypography variant={compact ? "h5" : "h4"} fontWeight="bold" sx={{ fontSize: compact ? '1.1rem' : undefined }}>
-          Quản Lý Tiền Gửi
+          {t('deposit.management')}
         </ResponsiveTypography>
         <ResponsiveButton
           variant="contained"
           icon={<AddIcon />}
-          mobileText="Tạo mới"
-          desktopText="Tạo tiền gửi mới"
+          mobileText={t('deposit.createNew')}
+          desktopText={t('deposit.createNewDeposit')}
           onClick={() => setDepositFormOpen(true)}
           disabled={createDepositMutation.isLoading}
           size={compact ? "small" : "medium"}
@@ -221,7 +223,7 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
             fontSize: compact ? '0.8rem' : undefined
           }}
         >
-          {compact ? "Tạo mới" : "Tạo tiền gửi mới"}
+          {compact ? t('deposit.createNew') : t('deposit.createNewDeposit')}
         </ResponsiveButton>
       </Box>
 
@@ -238,19 +240,19 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <BankIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
                   <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
-                    Tổng quan
+                    {t('deposit.overview')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng số tiền gửi:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.totalDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium">{analytics?.totalDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Đang hoạt động:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.activeDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium" color="info.main">{analytics?.activeDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="body2" color="text.secondary">Đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.settledDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium" color="warning.main">{analytics?.settledDeposits || 0}</ResponsiveTypography>
                 </Box>
               </CardContent>
@@ -267,23 +269,23 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <InterestIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
                   <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
-                    Tổng giá trị
+                    {t('deposit.totalValue')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng giá trị:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.totalValue')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                     {formatCurrency(analytics?.totalValue)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Tổng gốc:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.totalPrincipal')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium">
                     {formatCurrency(analytics?.totalPrincipal || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi suất TB:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.averageInterestRate')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium" color="secondary.main">
                     {analytics?.averageInterestRate ? `${formatPercentage(analytics.averageInterestRate)}` : 'N/A'}
                   </ResponsiveTypography>
@@ -302,23 +304,23 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <SettledIcon color="success" sx={{ fontSize: compact ? 18 : 24 }} />
                   <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
-                    Lãi đã tất toán
+                    {t('deposit.settledInterest')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.settledInterest')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="bold" color="success.main">
                     {formatCurrency(analytics?.totalSettledInterest || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('common.quantity')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium" color="warning.main">
                     {analytics?.settledDeposits || 0} deposits
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="body2" color="text.secondary">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.average')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium">
                     {analytics?.settledDeposits ? formatCurrency((analytics?.totalSettledInterest || 0) / analytics.settledDeposits) : 'N/A'}
                   </ResponsiveTypography>
@@ -337,23 +339,23 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
                 <Box display="flex" alignItems="center" gap={compact ? 0.5 : 1} mb={compact ? 1 : 2}>
                   <TrendingUpIcon color="primary" sx={{ fontSize: compact ? 18 : 24 }} />
                   <ResponsiveTypography variant={compact ? "subtitle1" : "h6"} fontWeight="bold" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
-                    Lãi chưa tất toán
+                    {t('deposit.accruedInterest')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Lãi chưa tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.accruedInterest')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="bold" color="primary.main">
                     {formatCurrency(analytics?.totalAccruedInterest || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="body2" color="text.secondary">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('common.quantity')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium" color="info.main">
                     {analytics?.activeDeposits || 0} deposits
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="body2" color="text.secondary">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" color="text.secondary">{t('deposit.average')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="body2" fontWeight="medium">
                     {analytics?.activeDeposits ? formatCurrency((analytics?.totalAccruedInterest || 0) / analytics.activeDeposits) : 'N/A'}
                   </ResponsiveTypography>
@@ -378,10 +380,10 @@ const DepositManagementTab: React.FC<DepositManagementTabProps> = ({ portfolioId
             }
           }}
         >
-          <Tab label={`Tất cả (${deposits.length})`} />
-          <Tab label={`Đang hoạt động (${activeDeposits.length})`} />
-          <Tab label={`Đã tất toán (${settledDeposits.length})`} />
-          <Tab label={`Đã đến hạn (${maturedDeposits.length})`} />
+          <Tab label={`${t('deposit.all')} (${deposits.length})`} />
+          <Tab label={`${t('deposit.active')} (${activeDeposits.length})`} />
+          <Tab label={`${t('deposit.settled')} (${settledDeposits.length})`} />
+          <Tab label={`${t('deposit.matured')} (${maturedDeposits.length})`} />
         </Tabs>
       </Paper>
 

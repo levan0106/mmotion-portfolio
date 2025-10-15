@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -67,6 +68,7 @@ interface Portfolio {
 }
 
 const DepositManagement: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [depositFormOpen, setDepositFormOpen] = useState(false);
@@ -138,11 +140,11 @@ const DepositManagement: React.FC = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
         queryClient.invalidateQueries(['deposit-analytics-global']);
-        toast.success('Tạo tiền gửi thành công!');
+        toast.success(t('deposit.createSuccess'));
         setDepositFormOpen(false);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tạo tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.createError'));
       },
     }
   );
@@ -154,12 +156,12 @@ const DepositManagement: React.FC = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
         queryClient.invalidateQueries(['deposit-analytics-global']);
-        toast.success('Cập nhật tiền gửi thành công!');
+        toast.success(t('deposit.updateSuccess'));
         setDepositFormOpen(false);
         setEditingDeposit(null);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.updateError'));
       },
     }
   );
@@ -171,12 +173,12 @@ const DepositManagement: React.FC = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
         queryClient.invalidateQueries(['deposit-analytics-global']);
-        toast.success('Tất toán tiền gửi thành công!');
+        toast.success(t('deposit.settleSuccess'));
         setSettlementModalOpen(false);
         setSelectedDeposit(null);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tất toán tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.settleError'));
       },
     }
   );
@@ -188,10 +190,10 @@ const DepositManagement: React.FC = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['deposits']);
         queryClient.invalidateQueries(['deposit-analytics-global']);
-        toast.success('Xóa tiền gửi thành công!');
+        toast.success(t('deposit.deleteSuccess'));
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa tiền gửi');
+        toast.error(error.response?.data?.message || t('deposit.deleteError'));
       },
     }
   );
@@ -239,7 +241,7 @@ const DepositManagement: React.FC = () => {
     return (
       <Box sx={{ mt: 2 }}>
         <Alert severity="error">
-          Có lỗi xảy ra khi tải dữ liệu tiền gửi
+          {t('deposit.loadError')}
         </Alert>
       </Box>
     );
@@ -259,7 +261,7 @@ const DepositManagement: React.FC = () => {
                     mb: 1,
                     filter: 'none'
           }}>
-            Quản lý tiền gửi
+            {t('deposit.management')}
           </ResponsiveTypography>
         </Box>
         <Box display="flex" gap={2} sx={{ ml: 2 }}>
@@ -270,20 +272,20 @@ const DepositManagement: React.FC = () => {
               queryClient.invalidateQueries(['deposits']);
               queryClient.invalidateQueries(['deposit-analytics']);
             }}
-            mobileText="Refresh"
-            desktopText="Làm mới"
+            mobileText={t('deposit.refresh')}
+            desktopText={t('deposit.refresh')}
           >
-            Làm mới
+            {t('deposit.refresh')}
           </ResponsiveButton>
           <ResponsiveButton
             variant="contained"
             icon={<AddIcon />}
             onClick={() => setDepositFormOpen(true)}
             disabled={createDepositMutation.isLoading || selectedPortfolioId === 'ALL'}
-            mobileText="Tạo"
-            desktopText="Tạo tiền gửi mới"
+            mobileText={t('deposit.createNew')}
+            desktopText={t('deposit.createNewDeposit')}
           >
-            Tạo tiền gửi mới
+            {t('deposit.createNewDeposit')}
           </ResponsiveButton>
         </Box>
       </Box>
@@ -294,7 +296,7 @@ const DepositManagement: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
-              label="Tìm kiếm theo ngân hàng"
+              label={t('deposit.searchByBank')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
@@ -311,13 +313,13 @@ const DepositManagement: React.FC = () => {
             <TextField
               fullWidth
               select
-              label="Trạng thái"
+              label={t('deposit.status')}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <MenuItem value="ALL">Tất cả</MenuItem>
-              <MenuItem value="ACTIVE">Đang hoạt động</MenuItem>
-              <MenuItem value="SETTLED">Đã tất toán</MenuItem>
+              <MenuItem value="ALL">{t('deposit.all')}</MenuItem>
+              <MenuItem value="ACTIVE">{t('deposit.active')}</MenuItem>
+              <MenuItem value="SETTLED">{t('deposit.settled')}</MenuItem>
             </TextField>
           </Grid>
           
@@ -329,7 +331,7 @@ const DepositManagement: React.FC = () => {
               value={selectedPortfolioId}
               onChange={(e) => setSelectedPortfolioId(e.target.value)}
             >
-              <MenuItem value="ALL">Tất cả portfolios</MenuItem>
+              <MenuItem value="ALL">{t('deposit.allPortfolios')}</MenuItem>
               {portfolios.map((portfolio: Portfolio) => (
                 <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
                   {portfolio.name}
@@ -347,10 +349,10 @@ const DepositManagement: React.FC = () => {
                 setSearchTerm('');
                 setStatusFilter('ALL');
               }}
-              mobileText="Clear"
-              desktopText="Xóa bộ lọc"
+              mobileText={t('deposit.clearFilters')}
+              desktopText={t('deposit.clearFilters')}
             >
-              Xóa bộ lọc
+              {t('deposit.clearFilters')}
             </ResponsiveButton>
           </Grid>
         </Grid>
@@ -366,19 +368,19 @@ const DepositManagement: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <BankIcon color="primary" />
                   <ResponsiveTypography variant="cardTitle">
-                    Tổng quan
+                    {t('deposit.overview')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Tổng số tiền gửi:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.totalDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell">{analytics?.totalDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Đang hoạt động:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.activeDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell" sx={{ color: 'info.main' }}>{analytics?.activeDeposits || 0}</ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="formHelper">Đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.settledDeposits')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell" sx={{ color: 'warning.main' }}>{analytics?.settledDeposits || 0}</ResponsiveTypography>
                 </Box>
               </CardContent>
@@ -392,23 +394,23 @@ const DepositManagement: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <InterestIcon color="success" />
                   <ResponsiveTypography variant="cardTitle">
-                    Tổng giá trị
+                    {t('deposit.totalValue')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Tổng giá trị:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.totalValue')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="cardValue" sx={{ color: 'success.main' }}>
                     {formatCurrency(analytics?.totalValue)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Tổng gốc:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.totalPrincipal')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell">
                     {formatCurrency(analytics?.totalPrincipal || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="formHelper">Lãi suất TB:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.averageInterestRate')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell" sx={{ color: 'secondary.main' }}>
                     {analytics?.averageInterestRate ? `${formatPercentage(analytics.averageInterestRate)}` : 'N/A'}
                   </ResponsiveTypography>
@@ -424,23 +426,23 @@ const DepositManagement: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <SettledIcon color="success" />
                   <ResponsiveTypography variant="cardTitle">
-                    Lãi đã tất toán
+                    {t('deposit.settledInterest')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Lãi đã tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.settledInterest')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="cardValue" sx={{ color: 'success.main' }}>
                     {formatCurrency(analytics?.totalSettledInterest || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('common.quantity')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell" sx={{ color: 'warning.main' }}>
                     {analytics?.settledDeposits || 0} deposits
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="formHelper">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.average')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell">
                     {analytics?.settledDeposits ? formatCurrency((analytics?.totalSettledInterest || 0) / analytics.settledDeposits) : 'N/A'}
                   </ResponsiveTypography>
@@ -456,23 +458,23 @@ const DepositManagement: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <TrendingUpIcon color="primary" />
                   <ResponsiveTypography variant="cardTitle">
-                    Lãi chưa tất toán
+                    {t('deposit.accruedInterest')}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Lãi chưa tất toán:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.accruedInterest')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main' }}>
                     {formatCurrency(analytics?.totalAccruedInterest || 0)}
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <ResponsiveTypography variant="formHelper">Số lượng:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('common.quantity')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell" sx={{ color: 'info.main' }}>
                     {analytics?.activeDeposits || 0} deposits
                   </ResponsiveTypography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <ResponsiveTypography variant="formHelper">Trung bình:</ResponsiveTypography>
+                  <ResponsiveTypography variant="formHelper">{t('deposit.average')}:</ResponsiveTypography>
                   <ResponsiveTypography variant="tableCell">
                     {analytics?.activeDeposits ? formatCurrency((analytics?.totalAccruedInterest || 0) / analytics.activeDeposits) : 'N/A'}
                   </ResponsiveTypography>
@@ -490,10 +492,10 @@ const DepositManagement: React.FC = () => {
           onChange={(_, newValue) => setTabValue(newValue)}
           sx={{ px: 2 }}
         >
-          <Tab label={`Tất cả (${deposits.length})`} />
-          <Tab label={`Đang hoạt động (${activeDeposits.length})`} />
-          <Tab label={`Đã tất toán (${settledDeposits.length})`} />
-          <Tab label={`Đã đến hạn (${maturedDeposits.length})`} />
+          <Tab label={`${t('deposit.all')} (${deposits.length})`} />
+          <Tab label={`${t('deposit.active')} (${activeDeposits.length})`} />
+          <Tab label={`${t('deposit.settled')} (${settledDeposits.length})`} />
+          <Tab label={`${t('deposit.matured')} (${maturedDeposits.length})`} />
         </Tabs>
       </Paper>
 

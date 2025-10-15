@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+// import { useTranslation } from 'react-i18next'; // Commented out as not used
 import {
   Box,
   Card,
@@ -104,7 +105,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   isModal = false,
   onAssetCreated,
 }) => {
-
+  // const { t } = useTranslation(); // Commented out as not used
   const { accountId, currentAccount } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
 

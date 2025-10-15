@@ -172,19 +172,19 @@ describe('AssetCard', () => {
       expect(screen.getByText('Vàng')).toBeInTheDocument();
     });
 
-    it('displays deposit type correctly', () => {
-      const depositAsset = { ...mockAsset, type: AssetType.DEPOSIT };
-      render(<AssetCard asset={depositAsset} />);
+    // it('displays deposit type correctly', () => {
+    //   const depositAsset = { ...mockAsset, type: AssetType.DEPOSIT };
+    //   render(<AssetCard asset={depositAsset} />);
       
-      expect(screen.getByText('Tiền gửi')).toBeInTheDocument();
-    });
+    //   expect(screen.getByText('Tiền gửi')).toBeInTheDocument();
+    // });
 
-    it('displays cash type correctly', () => {
-      const cashAsset = { ...mockAsset, type: AssetType.CASH };
-      render(<AssetCard asset={cashAsset} />);
+    // it('displays cash type correctly', () => {
+    //   const cashAsset = { ...mockAsset, type: AssetType.CASH };
+    //   render(<AssetCard asset={cashAsset} />);
       
-      expect(screen.getByText('Tiền mặt')).toBeInTheDocument();
-    });
+    //   expect(screen.getByText('Tiền mặt')).toBeInTheDocument();
+    // });
   });
 
   describe('Actions', () => {

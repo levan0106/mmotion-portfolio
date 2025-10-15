@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -72,6 +73,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   compact = false,
   getUltraSpacing = (normal) => normal
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [data, setData] = useState<NAVHistoryData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,7 +107,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
       setData(result.data || []);
     } catch (err) {
       console.error('Error fetching NAV history:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load NAV history');
+      setError(err instanceof Error ? err.message : t('navHistory.error.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -222,15 +224,15 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             </Box>
             <Box>
               <ResponsiveTypography variant="pageTitle" >
-                NAV Performance History
+                {t('navHistory.title')}
               </ResponsiveTypography>
               {!compact && (
                 <ResponsiveTypography variant="pageSubtitle" >
-                  Net Asset Value evolution over time
+                  {t('navHistory.subtitle')}
                 </ResponsiveTypography>
               )}
             </Box>
-            <Tooltip title="Track portfolio value changes and performance metrics">
+            <Tooltip title={t('navHistory.tooltip')}>
               <IconButton size="small" sx={{ ml: 1 }}>
                 <InfoOutlined fontSize="small" sx={{ color: '#666' }} />
               </IconButton>
@@ -240,7 +242,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           {/* Professional Controls */}
           <Box sx={{ display: 'flex', gap: compact ? 1 : 1.5, alignItems: 'center' }}>
             <Chip
-              label={showReturn ? "Return %" : "NAV Value"}
+              label={showReturn ? t('navHistory.returnPercent') : t('navHistory.navValue')}
               onClick={() => setShowReturn(!showReturn)}
               color={showReturn ? "primary" : "default"}
               variant={showReturn ? "filled" : "outlined"}
@@ -313,7 +315,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   {formatCurrency(currentNAV, baseCurrency)}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
-                  Current NAV
+                  {t('navHistory.currentNav')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -350,7 +352,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
-                  Total Return
+                  {t('navHistory.totalReturn')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -375,7 +377,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   {formatPercentage(maxDrawdown)}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
-                  Max Drawdown
+                  {t('navHistory.maxDrawdown')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -400,7 +402,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   {data.length}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
-                  Data Points
+                  {t('navHistory.dataPoints')}
                 </ResponsiveTypography>
               </CardContent>
             </Card>
@@ -413,7 +415,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             <Box sx={{ textAlign: 'center' }}>
               <CircularProgress size={compact ? 24 : 32} sx={{ color: '#1976d2', mb: getUltraSpacing(2, 1) }} />
               <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                Loading NAV history data...
+                {t('navHistory.loading')}
               </ResponsiveTypography>
             </Box>
           </Box>
@@ -429,7 +431,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               {error}
             </ResponsiveTypography>
             <ResponsiveTypography color="error" variant="cardLabel" sx={{ mt: 1 }}>
-              Unable to load NAV history data
+              {t('navHistory.error.unableToLoad')}
             </ResponsiveTypography>
           </Box>
         ) : data.length === 0 ? (
@@ -441,10 +443,10 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             border: '1px solid #e0e0e0'
           }}>
             <ResponsiveTypography color="text.secondary" variant="cardTitle" fontWeight={500}>
-              No NAV history data available
+              {t('navHistory.noData.title')}
             </ResponsiveTypography>
             <ResponsiveTypography color="text.secondary" variant="cardLabel" sx={{ mt: 1 }}>
-              Historical data will appear here once available
+              {t('navHistory.noData.message')}
             </ResponsiveTypography>
           </Box>
         ) : (
@@ -498,8 +500,8 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   verticalAlign="top" 
                   height={compact ? 30 : 40}
                   formatter={(value) => {
-                    if (value === 'navValue') return 'NAV Value';
-                    if (value === 'portfolioPnL') return 'Portfolio P&L';
+                    if (value === 'navValue') return t('navHistory.legend.navValue');
+                    if (value === 'portfolioPnL') return t('navHistory.legend.portfolioPnL');
                     return value;
                   }}
                   wrapperStyle={{ fontSize: compact ? '10px' : '12px', fontWeight: 500 }}
@@ -507,11 +509,11 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 <RechartsTooltip
                   formatter={(value, name) => {
                     if (name === 'navValue') {
-                      return [formatCurrency(value as number, baseCurrency), 'NAV Value'];
+                      return [formatCurrency(value as number, baseCurrency), t('navHistory.tooltip.navValue')];
                     } else if (name === 'portfolioPnL') {
-                      return [formatCurrency(value as number, baseCurrency), 'Portfolio P&L'];
+                      return [formatCurrency(value as number, baseCurrency), t('navHistory.tooltip.portfolioPnL')];
                     } else if (name === 'cumulativeReturn') {
-                      return [formatPercentage(value as number), 'Cumulative Return'];
+                      return [formatPercentage(value as number), t('navHistory.tooltip.cumulativeReturn')];
                     }
                     return [value, name];
                   }}

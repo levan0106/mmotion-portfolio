@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -64,6 +65,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
   getUltraSpacing = (normal) => normal,
   onPortfolioUpdate
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { accountId } = useAccount();
   const { holdings, loading, error, refetch, convertToFund } = useNAVHoldings(
@@ -139,20 +141,20 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           <CardContent sx={{ p: getUltraSpacing(2, 1.5), textAlign: 'center' }}>
             <AccountBalanceIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <ResponsiveTypography variant="cardTitle" gutterBottom>
-              Portfolio is not a Fund
+              {t('nav.holdings.notFund')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
-              This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.
+              {t('nav.holdings.notFundMessage')}
             </ResponsiveTypography>
             <ResponsiveButton 
               variant="contained" 
               icon={<AccountBalanceIcon />}
-              mobileText="Convert"
-              desktopText="Convert to Fund"
+              mobileText={t('nav.holdings.convert')}
+              desktopText={t('nav.holdings.convertToFund')}
               onClick={() => setConvertModalOpen(true)}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={20} /> : 'Convert to Fund'}
+              {loading ? <CircularProgress size={20} /> : t('nav.holdings.convertToFund')}
             </ResponsiveButton>
           </CardContent>
         </Card>
@@ -176,10 +178,10 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 600 }}>
-              Fund Summary
+              {t('nav.holdings.fundSummary')}
             </ResponsiveTypography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title="Recalculate NAV per Unit">
+              <Tooltip title={t('nav.holdings.recalculateNav')}>
                 <IconButton 
                   onClick={handleRecalculateNav} 
                   disabled={recalculateLoading || loading}
@@ -194,7 +196,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                   {recalculateLoading ? <CircularProgress size={20} /> : <CalculateIcon />}
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Refresh Holdings & Fund Summary">
+              <Tooltip title={t('nav.holdings.refreshHoldings')}>
                 <IconButton onClick={async () => {
                   await refetch();
                   // Also refresh portfolio data (Fund Summary)
@@ -212,7 +214,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                  NAV per Unit
+                  {t('nav.holdings.navPerUnit')}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'primary.main' }}>
                   {formatCurrency(portfolio.navPerUnit || 0, portfolio.baseCurrency)}
@@ -222,7 +224,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                  Total Outstanding Units
+                  {t('nav.holdings.totalOutstandingUnits')}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                   {formatNumberWithSeparators(portfolio.totalOutstandingUnits || 0, 3)}
@@ -232,7 +234,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                  Number of Investors
+                  {t('nav.holdings.numberOfInvestors')}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                   {formatNumberWithSeparators(holdings.length, 0)}
@@ -242,7 +244,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                  Total P&L (current value - capital)
+                  {t('nav.holdings.totalPnL')}
                 </ResponsiveTypography>
                 <ResponsiveTypography 
                   variant="cardValue" 
@@ -258,7 +260,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <Grid item xs={12} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                  Last NAV Update
+                  {t('nav.holdings.lastNavUpdate')}
                 </ResponsiveTypography>
                 <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
                   {portfolio.lastNavDate 
@@ -286,34 +288,34 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
               <ResponsiveButton
                 variant="contained"
                 icon={<AddIcon />}
-                mobileText="New"
-                desktopText="New Subscription"
+                mobileText={t('nav.holdings.new')}
+                desktopText={t('nav.holdings.newSubscription')}
                 onClick={() => setSubscriptionModalOpen(true)}
                 sx={{ minWidth: 150 }}
               >
-                New Subscription
+                {t('nav.holdings.newSubscription')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="outlined"
                 icon={<RemoveIcon />}
-                mobileText="Process"
-                desktopText="Process Redemption"
+                mobileText={t('nav.holdings.process')}
+                desktopText={t('nav.holdings.processRedemption')}
                 onClick={() => setRedemptionModalOpen(true)}
                 sx={{ minWidth: 150 }}
               >
-                Process Redemption
+                {t('nav.holdings.processRedemption')}
               </ResponsiveButton>
             </Box>
             <ResponsiveButton
               variant="outlined"
               color="warning"
               icon={<ConvertIcon />}
-              mobileText="Convert"
-              desktopText="Convert to Portfolio"
+              mobileText={t('nav.holdings.convert')}
+              desktopText={t('nav.holdings.convertToPortfolio')}
               onClick={() => setConvertToPortfolioModalOpen(true)}
               sx={{ minWidth: 150 }}
             >
-              Convert to Portfolio
+              {t('nav.holdings.convertToPortfolio')}
             </ResponsiveButton>
           </Box>
         </CardContent>
@@ -332,7 +334,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
       <Card>
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
           <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, mb: 2 }}>
-            Investor Holdings
+            {t('nav.holdings.investorHoldings')}
           </ResponsiveTypography>
           
           {loading ? (
@@ -342,10 +344,10 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           ) : holdings.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <ResponsiveTypography variant="tableCell" color="text.secondary">
-                No investor holdings found
+                {t('nav.holdings.noHoldings')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" sx={{ mt: 1 }}>
-                Create the first subscription to start tracking investor holdings
+                {t('nav.holdings.noHoldingsMessage')}
               </ResponsiveTypography>
             </Box>
           ) : (
@@ -354,28 +356,28 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <ResponsiveTypography variant="tableHeaderSmall">Investor</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.investor')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Units</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.units')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Avg Cost</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.avgCost')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Total Investment</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.totalInvestment')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Current Value</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.currentValue')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Unrealized P&L</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.unrealizedPnL')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <ResponsiveTypography variant="tableHeaderSmall">Return %</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('nav.holdings.returnPercent')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell align="center">
-                      <ResponsiveTypography variant="tableHeaderSmall">Actions</ResponsiveTypography>
+                      <ResponsiveTypography variant="tableHeaderSmall">{t('common.actions')}</ResponsiveTypography>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -443,7 +445,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                           />
                         </TableCell>
                         <TableCell align="center">
-                          <Tooltip title="View Details">
+                          <Tooltip title={t('nav.holdings.viewDetails')}>
                             <IconButton 
                               size="small"
                               onClick={() => navigate(`/holdings/${holding.holdingId}?from=nav`)}

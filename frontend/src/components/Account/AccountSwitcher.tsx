@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Menu,
@@ -16,20 +18,19 @@ import { ResponsiveButton } from '../Common';
 import {
   AccountBalance as AccountIcon,
   Star as StarIcon,
-  Edit as EditIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
-import EditAccountModal from './EditAccountModal';
 
 export const AccountSwitcher: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { currentAccount, switchAccount } = useAccount();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
   const open = Boolean(anchorEl);
 
@@ -88,29 +89,9 @@ export const AccountSwitcher: React.FC = () => {
     }
   };
 
-  const handleEditAccount = (account: Account) => {
-    setSelectedAccount(account);
-    setEditModalOpen(true);
+  const handleManageAccounts = () => {
+    navigate('/settings?tab=accountManagement');
     handleClose();
-  };
-
-  const handleAccountUpdated = (updatedAccount: Account) => {
-    setAccounts(prev => {
-      const updatedAccounts = prev.map(acc => 
-        acc.accountId === updatedAccount.accountId ? updatedAccount : acc
-      );
-      // Re-sort to ensure main account stays on top
-      return updatedAccounts.sort((a: Account, b: Account) => {
-        if (a.isMainAccount && !b.isMainAccount) return -1;
-        if (!a.isMainAccount && b.isMainAccount) return 1;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-    });
-    
-    // If the updated account is the current account, update the current account
-    if (currentAccount?.accountId === updatedAccount.accountId) {
-      switchAccount(updatedAccount.accountId);
-    }
   };
 
   const getCurrencySymbol = (currency: string) => {
@@ -133,7 +114,7 @@ export const AccountSwitcher: React.FC = () => {
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip title={loading ? 'Switching...' : (currentAccount?.name || 'Switch Account')}>
+        <Tooltip title={loading ? t('accountSwitcher.switching') : (currentAccount?.name || t('accountSwitcher.switchAccount'))}>
           <span>
             <ResponsiveButton
               onClick={handleClick}
@@ -157,7 +138,7 @@ export const AccountSwitcher: React.FC = () => {
                 ml: { xs: 0.5, sm: 0 }
               }}
             >
-              {loading ? 'Switching...' : ''}
+              {loading ? t('accountSwitcher.switching') : ''}
             </ResponsiveButton>
           </span>
         </Tooltip>
@@ -181,16 +162,12 @@ export const AccountSwitcher: React.FC = () => {
       >
         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="subtitle2" color="text.secondary">
-            Select Account
+            {t('accountSwitcher.selectAccount')}
           </Typography>
-          <Tooltip title="Edit Current Account">
+          <Tooltip title={t('accountSwitcher.manageAccounts')}>
             <IconButton
               size="small"
-              onClick={() => {
-                if (currentAccount) {
-                  handleEditAccount(currentAccount);
-                }
-              }}
+              onClick={handleManageAccounts}
               sx={{ 
                 color: 'text.secondary',
                 '&:hover': {
@@ -199,7 +176,7 @@ export const AccountSwitcher: React.FC = () => {
                 }
               }}
             >
-              <EditIcon fontSize="small" />
+              <SettingsIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
@@ -208,13 +185,13 @@ export const AccountSwitcher: React.FC = () => {
         {loading ? (
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              Loading accounts...
+              {t('accountSwitcher.loadingAccounts')}
             </Typography>
           </Box>
         ) : accounts.length === 0 ? (
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              No accounts available
+              {t('accountSwitcher.noAccounts')}
             </Typography>
           </Box>
         ) : (
@@ -283,7 +260,7 @@ export const AccountSwitcher: React.FC = () => {
                     </Typography>
                     {account.isMainAccount && (
                       <Chip
-                        label="Main Account"
+                        label={t('accountSwitcher.mainAccount')}
                         size="small"
                         color="primary"
                         variant="filled"
@@ -301,7 +278,7 @@ export const AccountSwitcher: React.FC = () => {
                     )}
                     {account.isInvestor && (
                       <Chip
-                        label="Investor"
+                        label={t('accountSwitcher.investor')}
                         size="small"
                         color="secondary"
                         sx={{ height: 20, fontSize: '0.75rem' }}
@@ -326,7 +303,7 @@ export const AccountSwitcher: React.FC = () => {
                           •
                         </Box>
                         <Box component="span" sx={{ fontSize: '0.75rem', color: 'primary.main', fontWeight: 'bold' }}>
-                          Protected Account
+                          {t('accountSwitcher.protectedAccount')}
                         </Box>
                       </>
                     )}
@@ -339,34 +316,21 @@ export const AccountSwitcher: React.FC = () => {
 
         <Divider />
         <MenuItem
-          onClick={() => {
-            if (currentAccount) {
-              handleEditAccount(currentAccount);
-            }
-          }}
+          onClick={handleManageAccounts}
           sx={{ py: 1.5, px: 2 }}
         >
           <ListItemIcon sx={{ minWidth: 40 }}>
             <Avatar sx={{ width: 32, height: 32, backgroundColor: 'secondary.light' }}>
-              <EditIcon sx={{ fontSize: '1rem' }} />
+              <SettingsIcon sx={{ fontSize: '1rem' }} />
             </Avatar>
           </ListItemIcon>
           <ListItemText
-            primary="Edit Current Account"
-            secondary="Update account information"
+            primary={t('accountSwitcher.manageAccounts')}
+            secondary={t('accountSwitcher.manageAccountsDescription')}
           />
         </MenuItem>
       </Menu>
 
-      <EditAccountModal
-        open={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setSelectedAccount(null);
-        }}
-        account={selectedAccount}
-        onAccountUpdated={handleAccountUpdated}
-      />
     </>
   );
 };

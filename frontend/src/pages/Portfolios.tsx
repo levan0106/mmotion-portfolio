@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Box, Alert } from '@mui/material';
 import PortfolioList from '../components/Portfolio/PortfolioList';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
@@ -15,6 +16,7 @@ import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { apiService } from '../services/api';
 
 const Portfolios: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -85,7 +87,7 @@ const Portfolios: React.FC = () => {
       setFormError('');
     } catch (error: any) {
       console.error('Failed to delete portfolio:', error);
-      setFormError(error.response?.data?.message || 'Failed to delete portfolio. Please try again.');
+      setFormError(error.response?.data?.message || t('portfolio.error.deleteFailed'));
     }
   };
 
@@ -109,12 +111,12 @@ const Portfolios: React.FC = () => {
         
         // Format duplicate name error for better UX
         if (errorMessage.includes('already exists for this account')) {
-          setFormError(`Portfolio name "${data.name}" is already taken. Please choose a different name.`);
+          setFormError(t('portfolio.error.nameAlreadyExists', { name: data.name }));
         } else {
           setFormError(errorMessage);
         }
       } else {
-        setFormError('An error occurred while saving the portfolio. Please try again.');
+        setFormError(t('portfolio.error.saveFailed'));
       }
     }
   };
@@ -142,12 +144,12 @@ const Portfolios: React.FC = () => {
         
         // Format duplicate name error for better UX
         if (errorMessage.includes('already exists for this account')) {
-          setFormError(`Portfolio name "${name}" is already taken. Please choose a different name.`);
+          setFormError(t('portfolio.error.nameAlreadyExists', { name }));
         } else {
           setFormError(errorMessage);
         }
       } else {
-        setFormError('Failed to copy portfolio template. Please try again.');
+        setFormError(t('portfolio.error.copyTemplateFailed'));
       }
     }
   };
@@ -177,12 +179,12 @@ const Portfolios: React.FC = () => {
         
         // Format duplicate name error for better UX
         if (errorMessage.includes('already exists for this account')) {
-          setFormError(`Portfolio name "${portfolio.templateName || portfolio.name} (Copy)" is already taken. Please try a different template.`);
+          setFormError(t('portfolio.error.templateNameAlreadyExists', { name: `${portfolio.templateName || portfolio.name} (Copy)` }));
         } else {
           setFormError(errorMessage);
         }
       } else {
-        setFormError('Failed to copy portfolio template. Please try again.');
+        setFormError(t('portfolio.error.copyTemplateFailed'));
       }
     }
   };
@@ -249,9 +251,9 @@ const Portfolios: React.FC = () => {
       {(isCreating || isUpdating || isDeleting) && (
         <Alert severity="info" sx={{ mt: 2 }}>
           <ResponsiveTypography variant="formHelper">
-            {isCreating && 'Creating portfolio...'}
-            {isUpdating && 'Updating portfolio...'}
-            {isDeleting && 'Deleting portfolio...'}
+            {isCreating && t('portfolio.creating')}
+            {isUpdating && t('portfolio.updating')}
+            {isDeleting && t('portfolio.deleting')}
           </ResponsiveTypography>
         </Alert>
       )}

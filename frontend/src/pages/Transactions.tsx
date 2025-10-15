@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -50,6 +51,7 @@ import { formatCurrency, formatNumberWithSeparators } from '../utils/format';
 import { format, parseISO } from 'date-fns';
 
 const Transactions: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const { transactions, isLoading, error, refetch } = useTransactions();
@@ -508,7 +510,7 @@ const Transactions: React.FC = () => {
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Description</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Amount</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Actions</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>{t('tables.actions')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

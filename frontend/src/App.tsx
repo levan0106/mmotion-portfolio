@@ -26,6 +26,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { RoleManagement } from './pages/RoleManagement';
+// import { I18nTest } from './pages/I18nTest'; // Commented out as not used
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
 import { ToastProvider } from './components/Common/ToastProvider';
@@ -87,6 +88,7 @@ const AppContent: React.FC = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/role-management" element={<RoleManagement />} />
+          {/* <Route path="/i18n-test" element={<I18nTest />} /> */} {/* Commented out as I18nTest is not used */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>

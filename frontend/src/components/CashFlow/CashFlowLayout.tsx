@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePortfolio } from '../../hooks/usePortfolios';
@@ -99,6 +100,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   onCashFlowUpdate,
   compact = false,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const { portfolio } = usePortfolio(portfolioId);
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
@@ -156,7 +158,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     
     // If user has entered dates but they're invalid, show error
     if ((dateFilters.startDate && !hasValidStartDate) || (dateFilters.endDate && !hasValidEndDate)) {
-      setError('Please enter valid dates');
+      setError(t('cashflow.validation.invalidDates'));
       return;
     }
     
@@ -208,7 +210,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       setCashFlows(response.data);
       setPagination(response.pagination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load cash flows');
+      setError(err instanceof Error ? err.message : t('cashflow.error.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -265,7 +267,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       await loadAllCashFlows(); // Reload all cash flows for summary
       onCashFlowUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to ${editingCashFlow ? 'update' : 'create'} cash flow`);
+      setError(err instanceof Error ? err.message : t('cashflow.error.createFailed', { action: editingCashFlow ? 'update' : 'create' }));
     } finally {
       setLoading(false);
     }
@@ -309,18 +311,18 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   const getTypeDescription = (type: string) => {
     switch (type) {
-      case 'deposit': return 'Add money to your portfolio';
-      case 'withdrawal': return 'Remove money from your portfolio';
-      case 'dividend': return 'Record dividend income received';
-      case 'interest': return 'Record interest income earned';
-      case 'fee': return 'Record fees or charges';
-      case 'tax': return 'Record tax payments';
-      case 'adjustment': return 'Record balance adjustments';
-      case 'buy_trade': return 'Record money spent on buying assets';
-      case 'sell_trade': return 'Record money received from selling assets';
-      case 'deposit_settlement': return 'Record money received from deposit settlement';
-      case 'deposit_creation': return 'Record money spent on deposit creation';
-      default: return 'Add a new cash flow transaction';
+      case 'deposit': return t('cashflow.typeDescription.deposit');
+      case 'withdrawal': return t('cashflow.typeDescription.withdrawal');
+      case 'dividend': return t('cashflow.typeDescription.dividend');
+      case 'interest': return t('cashflow.typeDescription.interest');
+      case 'fee': return t('cashflow.typeDescription.fee');
+      case 'tax': return t('cashflow.typeDescription.tax');
+      case 'adjustment': return t('cashflow.typeDescription.adjustment');
+      case 'buy_trade': return t('cashflow.typeDescription.buyTrade');
+      case 'sell_trade': return t('cashflow.typeDescription.sellTrade');
+      case 'deposit_settlement': return t('cashflow.typeDescription.depositSettlement');
+      case 'deposit_creation': return t('cashflow.typeDescription.depositCreation');
+      default: return t('cashflow.typeDescription.default');
     }
   };
 
@@ -598,10 +600,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           <ResponsiveTypography 
             variant="pageTitle" 
           >
-            Cash Flow Management
+            {t('cashflow.title')}
           </ResponsiveTypography>
           <Box display="flex" gap={1}>
-            <Tooltip title="Refresh Data">
+            <Tooltip title={t('cashflow.refresh')}>
               <IconButton onClick={() => { loadCashFlows(); loadAllCashFlows(); }} disabled={loading} color="primary">
                 <RefreshIcon />
               </IconButton>
@@ -613,8 +615,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               startIcon={<DepositIcon />}
               onClick={() => handleCreateCashFlow('deposit')}
               size={compact ? "small" : "medium"}
-              mobileText="Deposit"
-              desktopText="Deposit"
+              mobileText={t('cashflow.deposit')}
+              desktopText={t('cashflow.deposit')}
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -631,7 +633,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? "Deposit" : "Create Deposit"}
+              {compact ? t('cashflow.deposit') : t('cashflow.createDeposit')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
@@ -640,8 +642,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               startIcon={<WithdrawIcon />}
               onClick={() => handleCreateCashFlow('withdrawal')}
               size={compact ? "small" : "medium"}
-              mobileText="Withdraw"
-              desktopText="Withdrawal"
+              mobileText={t('cashflow.withdraw')}
+              desktopText={t('cashflow.withdrawal')}
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -658,7 +660,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? "Withdraw" : "Create Withdrawal"}
+              {compact ? t('cashflow.withdraw') : t('cashflow.createWithdrawal')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
@@ -667,8 +669,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               startIcon={<DividendIcon />}
               onClick={() => handleCreateCashFlow('dividend')}
               size={compact ? "small" : "medium"}
-              mobileText="Dividend"
-              desktopText="Dividend"
+              mobileText={t('cashflow.dividend')}
+              desktopText={t('cashflow.dividend')}
               sx={{ 
                 borderRadius: 2, 
                 mr: compact ? 0.5 : 1,
@@ -686,14 +688,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 }}
               
             >
-              {compact ? "Dividend" : "Create Dividend"}
+              {compact ? t('cashflow.dividend') : t('cashflow.createDividend')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
               color="secondary"
               icon={<TransferIcon />}
-              mobileText="Transfer"
-              desktopText="Transfer Cash"
+              mobileText={t('cashflow.transfer')}
+              desktopText={t('cashflow.transferCash')}
               onClick={() => {
                 setTransferData({
                   fromSource: '',
@@ -720,7 +722,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? "Transfer" : "Transfer Cash"}
+              {compact ? t('cashflow.transfer') : t('cashflow.transferCash')}
             </ResponsiveButton>
           </Box>
         </Box>
@@ -794,7 +796,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Total Inflows
+                    {t('cashflow.summary.totalInflows')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardValueLarge" sx={{ 
                     color: '#1e40af',
@@ -867,7 +869,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Total Outflows
+                    {t('cashflow.summary.totalOutflows')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardValueLarge" sx={{ 
                     color: '#dc2626',
@@ -952,7 +954,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Net Cash Flow
+                    {t('cashflow.summary.netCashFlow')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardValueLarge" sx={{ 
                     color: netCashFlow >= 0 ? "#15803d" : "#dc2626",
@@ -1025,7 +1027,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Transactions
+                    {t('cashflow.summary.transactions')}
                   </ResponsiveTypography>
                   <ResponsiveTypography variant="cardValueLarge" sx={{ 
                     color: '#7c3aed',
@@ -1053,7 +1055,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="cash flow tabs">
             <Tab 
               icon={<TimelineIcon />} 
-              label="Analytics" 
+              label={t('cashflow.tabs.analytics')} 
               iconPosition="start"
               sx={{ 
                 textTransform: 'none', 
@@ -1065,7 +1067,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             />
             <Tab 
               icon={<TableIcon />} 
-              label="Cash Flow History" 
+              label={t('cashflow.tabs.history')} 
               iconPosition="start"
               sx={{ 
                 textTransform: 'none', 
@@ -1094,33 +1096,33 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 {/* Header with Filter Toggle */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 0.5 : 2}>
                   <ResponsiveTypography variant="pageTitle" sx={{ fontSize: compact ? '0.9rem' : undefined }}>
-                    Cash Flow History
+                    {t('cashflow.history.title')}
                   </ResponsiveTypography>
                   <Box display="flex" gap={1} alignItems="center">
                     <ResponsiveTypography variant="formHelper">
-                      {filteredCashFlows.length} transactions
+                      {t('cashflow.history.transactionCount', { count: filteredCashFlows.length })}
                     </ResponsiveTypography>
                     <ResponsiveButton
                       size="small"
                       variant="outlined"
                       icon={<FilterIcon />}
-                      mobileText="Filter"
-                      desktopText="Filter"
+                      mobileText={t('cashflow.filter')}
+                      desktopText={t('cashflow.filter')}
                       onClick={() => setShowFilters(!showFilters)}
                       color={showFilters ? 'primary' : 'inherit'}
                     >
-                      Filter
+                      {t('cashflow.filter')}
                     </ResponsiveButton>
                     <ResponsiveButton
                       size="small"
                       variant="outlined"
                       icon={<RefreshIcon />}
-                      mobileText="Refresh"
-                      desktopText="Refresh"
+                      mobileText={t('cashflow.refresh')}
+                      desktopText={t('cashflow.refresh')}
                       onClick={() => { loadCashFlows(); loadAllCashFlows(); }}
                       disabled={loading}
                     >
-                      Refresh
+                      {t('cashflow.refresh')}
                     </ResponsiveButton>
                   </Box>
                 </Box>
@@ -1140,11 +1142,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       <Grid item xs={12} md={6}>
                         <Box>
                           <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
-                            Date Range
+                            {t('cashflow.filters.dateRange')}
                           </ResponsiveTypography>
                           <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
                             <DatePicker
-                              label="From"
+                              label={t('cashflow.filters.from')}
                               value={dateFilters.startDate}
                               onChange={(date) => setDateFilters(prev => ({ ...prev, startDate: date }))}
                               slotProps={{ 
@@ -1158,7 +1160,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                               format="dd/MM/yyyy"
                             />
                             <DatePicker
-                              label="To"
+                              label={t('cashflow.filters.to')}
                               value={dateFilters.endDate}
                               onChange={(date) => setDateFilters(prev => ({ ...prev, endDate: date }))}
                               slotProps={{ 
@@ -1179,14 +1181,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       <Grid item xs={12} md={6}>
                         <Box>
                           <ResponsiveTypography variant="formLabel" sx={{ mb: 1, display: 'block' }}>
-                            Transaction Types
+                            {t('cashflow.filters.transactionTypes')}
                           </ResponsiveTypography>
                           <FormControl fullWidth size="small">
-                            <InputLabel>Type</InputLabel>
+                            <InputLabel>{t('cashflow.filters.type')}</InputLabel>
                             <Select
                               multiple
                               value={filterTypes}
-                              label="Type"
+                              label={t('cashflow.filters.type')}
                               onChange={(e) => {
                                 const value = e.target.value as string[];
                                 if (value.includes('ALL') && value.length === 1) {
@@ -1197,7 +1199,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                                   setFilterTypes(value);
                                 }
                               }}
-                              input={<OutlinedInput label="Type" />}
+                              input={<OutlinedInput label={t('cashflow.filters.type')} />}
                               renderValue={(selected) => (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 60, overflow: 'auto' }}>
                                   {selected.map((value) => (
@@ -1226,51 +1228,51 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                             >
                               <MenuItem value="ALL">
                                 <Checkbox checked={filterTypes.includes('ALL')} />
-                                <ListItemText primary="All Types" />
+                                <ListItemText primary={t('cashflow.filters.allTypes')} />
                               </MenuItem>
                               <MenuItem value="DEPOSIT">
                                 <Checkbox checked={filterTypes.includes('DEPOSIT')} />
-                                <ListItemText primary="Deposits" />
+                                <ListItemText primary={t('cashflow.filters.deposits')} />
                               </MenuItem>
                               <MenuItem value="WITHDRAWAL">
                                 <Checkbox checked={filterTypes.includes('WITHDRAWAL')} />
-                                <ListItemText primary="Withdrawals" />
+                                <ListItemText primary={t('cashflow.filters.withdrawals')} />
                               </MenuItem>
                               <MenuItem value="DIVIDEND">
                                 <Checkbox checked={filterTypes.includes('DIVIDEND')} />
-                                <ListItemText primary="Dividends" />
+                                <ListItemText primary={t('cashflow.filters.dividends')} />
                               </MenuItem>
                               <MenuItem value="INTEREST">
                                 <Checkbox checked={filterTypes.includes('INTEREST')} />
-                                <ListItemText primary="Interest" />
+                                <ListItemText primary={t('cashflow.filters.interest')} />
                               </MenuItem>
                               <MenuItem value="FEE">
                                 <Checkbox checked={filterTypes.includes('FEE')} />
-                                <ListItemText primary="Fees" />
+                                <ListItemText primary={t('cashflow.filters.fees')} />
                               </MenuItem>
                               <MenuItem value="TAX">
                                 <Checkbox checked={filterTypes.includes('TAX')} />
-                                <ListItemText primary="Taxes" />
+                                <ListItemText primary={t('cashflow.filters.taxes')} />
                               </MenuItem>
                               <MenuItem value="ADJUSTMENT">
                                 <Checkbox checked={filterTypes.includes('ADJUSTMENT')} />
-                                <ListItemText primary="Adjustments" />
+                                <ListItemText primary={t('cashflow.filters.adjustments')} />
                               </MenuItem>
                               <MenuItem value="BUY_TRADE">
                                 <Checkbox checked={filterTypes.includes('BUY_TRADE')} />
-                                <ListItemText primary="Buy Trades" />
+                                <ListItemText primary={t('cashflow.filters.buyTrades')} />
                               </MenuItem>
                               <MenuItem value="SELL_TRADE">
                                 <Checkbox checked={filterTypes.includes('SELL_TRADE')} />
-                                <ListItemText primary="Sell Trades" />
+                                <ListItemText primary={t('cashflow.filters.sellTrades')} />
                               </MenuItem>
                               <MenuItem value="DEPOSIT_SETTLEMENT">
                                 <Checkbox checked={filterTypes.includes('DEPOSIT_SETTLEMENT')} />
-                                <ListItemText primary="Deposit Settlements" />
+                                <ListItemText primary={t('cashflow.filters.depositSettlements')} />
                               </MenuItem>
                               <MenuItem value="DEPOSIT_CREATION">
                                 <Checkbox checked={filterTypes.includes('DEPOSIT_CREATION')} />
-                                <ListItemText primary="Deposit Creations" />
+                                <ListItemText primary={t('cashflow.filters.depositCreations')} />
                               </MenuItem>
                             </Select>
                           </FormControl>
@@ -1284,12 +1286,12 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                         size="small"
                         variant="contained"
                         icon={<SearchIcon />}
-                        mobileText="Apply"
-                        desktopText="Apply Filters"
+                        mobileText={t('cashflow.filters.apply')}
+                        desktopText={t('cashflow.filters.applyFilters')}
                         onClick={handleApplyFilters}
                         disabled={loading}
                       >
-                        Apply Filters
+                        {t('cashflow.filters.applyFilters')}
                       </ResponsiveButton>
                     </Box>
                   </Box>
@@ -1301,14 +1303,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   <Box sx={{ mb: 2, p: 1, backgroundColor: 'grey.100', borderRadius: 1 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                       <ResponsiveTypography variant="formHelper">
-                        Active filters:
+                        {t('cashflow.filters.activeFilters')}:
                       </ResponsiveTypography>
                       <ResponsiveButton
                         size="small"
                         variant="text"
                         icon={<ClearIcon />}
-                        mobileText="Reset"
-                        desktopText="Reset All"
+                        mobileText={t('cashflow.filters.reset')}
+                        desktopText={t('cashflow.filters.resetAll')}
                         onClick={() => {
                           setFilterTypes(['ALL']);
                           setDateFilters({ startDate: null, endDate: null });
@@ -1325,27 +1327,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           }
                         }}
                       >
-                        Reset All
+                        {t('cashflow.filters.resetAll')}
                       </ResponsiveButton>
                     </Box>
                     <Box display="flex" gap={1} flexWrap="wrap">
                       {dateFilters.startDate && !isNaN(dateFilters.startDate.getTime()) && (
                         <Chip
-                          label={`From: ${formatDate(dateFilters.startDate.toISOString())}`}
+                          label={`${t('cashflow.filters.from')}: ${formatDate(dateFilters.startDate.toISOString())}`}
                           size="small"
                           onDelete={() => setDateFilters(prev => ({ ...prev, startDate: null }))}
                         />
                       )}
                       {dateFilters.endDate && !isNaN(dateFilters.endDate.getTime()) && (
                         <Chip
-                          label={`To: ${formatDate(dateFilters.endDate.toISOString())}`}
+                          label={`${t('cashflow.filters.to')}: ${formatDate(dateFilters.endDate.toISOString())}`}
                           size="small"
                           onDelete={() => setDateFilters(prev => ({ ...prev, endDate: null }))}
                         />
                       )}
                       {filterTypes.length > 0 && !filterTypes.includes('ALL') && (
                         <Chip
-                          label={`Types: ${filterTypes.join(', ')}`}
+                          label={`${t('cashflow.filters.types')}: ${filterTypes.join(', ')}`}
                           size="small"
                           onDelete={() => setFilterTypes(['ALL'])}
                         />
@@ -1362,8 +1364,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   <ResponsiveButton
                     variant="text"
                     icon={<CalendarIcon />}
-                    mobileText="Group"
-                    desktopText="Group by Date"
+                    mobileText={t('cashflow.table.group')}
+                    desktopText={t('cashflow.table.groupByDate')}
                     onClick={() => setGroupByDate(!groupByDate)}
                     size="small"
                     sx={{ 
@@ -1379,7 +1381,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       }
                     }}
                   >
-                    Group by Date
+                    {t('cashflow.table.groupByDate')}
                   </ResponsiveButton>
                   
                   {groupByDate && Object.keys(groupedCashFlows).length > 1 && (
@@ -1387,8 +1389,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       size="small"
                       variant="text"
                       icon={collapsedDates.size === Object.keys(groupedCashFlows).length ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-                      mobileText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand' : 'Collapse'}
-                      desktopText={collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                      mobileText={collapsedDates.size === Object.keys(groupedCashFlows).length ? t('cashflow.table.expand') : t('cashflow.table.collapse')}
+                      desktopText={collapsedDates.size === Object.keys(groupedCashFlows).length ? t('cashflow.table.expandAll') : t('cashflow.table.collapseAll')}
                       onClick={toggleAllDatesCollapse}
                       sx={{ 
                         textTransform: 'none',
@@ -1403,13 +1405,13 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                         }
                       }}
                     >
-                      {collapsedDates.size === Object.keys(groupedCashFlows).length ? 'Expand All' : 'Collapse All'}
+                      {collapsedDates.size === Object.keys(groupedCashFlows).length ? t('cashflow.table.expandAll') : t('cashflow.table.collapseAll')}
                     </ResponsiveButton>
                   )}
                 </Box>
                 
                 <ResponsiveTypography variant="formHelper">
-                  Total: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({filteredCashFlows.length} items)
+                  {t('cashflow.table.total')}: <strong>{formatCurrency(filteredTotal, 'VND')}</strong> ({t('cashflow.table.items', { count: filteredCashFlows.length })})
                 </ResponsiveTypography>
               </Box>
 
@@ -1425,42 +1427,42 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       <TableRow sx={{ backgroundColor: 'grey.50' }}>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Type
+                            {t('cashflow.table.type')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Amount
+                            {t('cashflow.table.amount')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Description
+                            {t('cashflow.table.description')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Reference
+                            {t('cashflow.table.reference')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Funding Source
+                            {t('cashflow.table.fundingSource')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Date
+                            {t('cashflow.table.date')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Status
+                            {t('cashflow.table.status')}
                           </ResponsiveTypography>
                         </TableCell>
                         <TableCell>
                           <ResponsiveTypography variant="tableHeaderSmall" sx={{ fontWeight: 600 }}>
-                            Actions
+                            {t('cashflow.table.actions')}
                           </ResponsiveTypography>
                         </TableCell>
                       </TableRow>
@@ -1493,7 +1495,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                                       {dateKey}
                                     </ResponsiveTypography>
                                     <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                                      ({cashFlows.length} {cashFlows.length === 1 ? 'transaction' : 'transactions'})
+                                      ({t('cashflow.table.transactionCount', { count: cashFlows.length })})
                                     </ResponsiveTypography>
                                   </Box>
                                   <Box display="flex" alignItems="center" gap={1}>
@@ -1564,7 +1566,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                               </TableCell>
                               <TableCell>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                  <Tooltip title={cashFlow.status === 'CANCELLED' ? 'Cannot edit cancelled cash flow' : 'Edit'}>
+                                  <Tooltip title={cashFlow.status === 'CANCELLED' ? t('cashflow.tooltips.cannotEditCancelled') : t('cashflow.tooltips.edit')}>
                                     <span>
                                       <IconButton
                                         size="small"
@@ -1576,7 +1578,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                                       </IconButton>
                                     </span>
                                   </Tooltip>
-                                  <Tooltip title="Delete">
+                                  <Tooltip title={t('cashflow.tooltips.delete')}>
                                     <IconButton
                                       size="small"
                                       onClick={() => handleDeleteCashFlow(cashFlow)}
@@ -1600,14 +1602,18 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, px: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <ResponsiveTypography variant="formHelper">
-                        Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} entries
+                        {t('cashflow.pagination.showing', { 
+                          start: ((pagination.page - 1) * pagination.limit) + 1, 
+                          end: Math.min(pagination.page * pagination.limit, pagination.total), 
+                          total: pagination.total 
+                        })}
                       </ResponsiveTypography>
                       <FormControl size="small" sx={{ minWidth: 80 }}>
-                        <InputLabel>Per page</InputLabel>
+                        <InputLabel>{t('cashflow.pagination.perPage')}</InputLabel>
                         <Select
                           value={pagination.limit}
                           onChange={handlePageSizeChange}
-                          label="Per page"
+                          label={t('cashflow.pagination.perPage')}
                         >
                           <MenuItem value={5}>5</MenuItem>
                           <MenuItem value={10}>10</MenuItem>
@@ -1695,7 +1701,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           setDialogOpen(false);
           setError(null);
         }}
-        title={editingCashFlow ? 'Edit Cash Flow' : `Create ${dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Cash Flow`}
+        title={editingCashFlow ? t('cashflow.modal.editTitle') : t('cashflow.modal.createTitle', { type: dialogType.charAt(0).toUpperCase() + dialogType.slice(1) })}
         icon={editingCashFlow ? <EditIcon color="primary" /> : getTypeIcon(dialogType)}
         maxWidth="md"
         fullWidth
@@ -1709,20 +1715,20 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 setDialogOpen(false);
                 setError(null);
               }}
-              mobileText="Cancel"
-              desktopText="Cancel"
+              mobileText={t('common.cancel')}
+              desktopText={t('common.cancel')}
             >
-              Cancel
+              {t('common.cancel')}
             </ResponsiveButton>
             <ResponsiveButton
               onClick={handleSubmit}
               variant="contained"
               icon={editingCashFlow ? <EditIcon /> : <AddIcon />}
-              mobileText={loading ? (editingCashFlow ? 'Updating...' : 'Creating...') : (editingCashFlow ? 'Update' : 'Create')}
-              desktopText={loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
+              mobileText={loading ? (editingCashFlow ? t('cashflow.modal.updating') : t('cashflow.modal.creating')) : (editingCashFlow ? t('common.update') : t('common.create'))}
+              desktopText={loading ? (editingCashFlow ? t('cashflow.modal.updatingCashFlow') : t('cashflow.modal.creatingCashFlow')) : (editingCashFlow ? t('cashflow.modal.updateCashFlow') : t('cashflow.modal.createCashFlow'))}
               disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
             >
-              {loading ? (editingCashFlow ? 'Updating Cash Flow...' : 'Creating Cash Flow...') : (editingCashFlow ? 'Update Cash Flow' : 'Create Cash Flow')}
+              {loading ? (editingCashFlow ? t('cashflow.modal.updatingCashFlow') : t('cashflow.modal.creatingCashFlow')) : (editingCashFlow ? t('cashflow.modal.updateCashFlow') : t('cashflow.modal.createCashFlow'))}
             </ResponsiveButton>
           </Box>
         }
@@ -1792,24 +1798,24 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 <MoneyInput
                   value={parseFloat(formData.amount) || 0}
                   onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
-                  label="Amount"
-                  placeholder="Enter amount (e.g., 1,000,000)"
+                  label={t('cashflow.form.amount')}
+                  placeholder={t('cashflow.form.amountPlaceholder')}
                   required
                   currency={formData.currency}
                   margin="normal"
                   helperText={
                     editingCashFlow 
-                      ? `Original: ${formatCurrency(editingCashFlow.amount)} | New: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'}`
-                      : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : 'Enter amount'
+                      ? `${t('cashflow.form.original')}: ${formatCurrency(editingCashFlow.amount)} | ${t('cashflow.form.new')}: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')}`
+                      : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')
                   }
                   error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
                 />
                 
                 <FormControl fullWidth margin="normal">
-                  <InputLabel>Currency</InputLabel>
+                  <InputLabel>{t('cashflow.form.currency')}</InputLabel>
                   <Select
                     value={formData.currency}
-                    label="Currency"
+                    label={t('cashflow.form.currency')}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                   >
                     <MenuItem value="VND">VND</MenuItem>
@@ -1818,37 +1824,37 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <MenuItem value="GBP">GBP</MenuItem>
                     <MenuItem value="JPY">JPY</MenuItem>
                   </Select>
-                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    Select the currency for this transaction
-                  </ResponsiveTypography>
+                  {/* <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
+                    {t('cashflow.form.currencyHelper')}
+                  </ResponsiveTypography> */}
                 </FormControl>
                 
                 <FormControl fullWidth margin="normal">
-                  <InputLabel>Status</InputLabel>
+                  <InputLabel>{t('cashflow.form.status')}</InputLabel>
                   <Select
                     value={formData.status}
-                    label="Status"
+                    label={t('cashflow.form.status')}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   >
-                    <MenuItem value="COMPLETED">Completed</MenuItem>
-                    <MenuItem value="PENDING">Pending</MenuItem>
-                    <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                    <MenuItem value="COMPLETED">{t('cashflow.status.completed')}</MenuItem>
+                    <MenuItem value="PENDING">{t('cashflow.status.pending')}</MenuItem>
+                    <MenuItem value="CANCELLED">{t('cashflow.status.cancelled')}</MenuItem>
                   </Select>
-                  {editingCashFlow && (
+                  {/* {editingCashFlow && (
                     <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                      Original Status: {editingCashFlow.status}
+                      {t('cashflow.form.originalStatus')}: {editingCashFlow.status}
                     </ResponsiveTypography>
-                  )}
+                  )} */}
                 </FormControl>
                 
                 <TextField
                   fullWidth
-                  label="Funding Source (Optional)"
+                  label={t('cashflow.form.fundingSource')}
                   value={formData.fundingSource}
                   onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
                   margin="normal"
-                  placeholder="e.g., VIETCOMBANK, BANK_ACCOUNT_001"
-                  helperText="Source of funding for this transaction (optional)"
+                  placeholder={t('cashflow.form.fundingSourcePlaceholder')}
+                  //helperText={t('cashflow.form.fundingSourceHelper')}
                   inputProps={{
                     style: { textTransform: 'uppercase' }
                   }}
@@ -1861,27 +1867,27 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               <Box sx={{ pl: { md: 1.5 } }}>
                 <TextField
                   fullWidth
-                  label="Flow Date"
+                  label={t('cashflow.form.flowDate')}
                   type="date"
                   value={formData.flowDate}
                   onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
-                  helperText="When this transaction occurred"
+                  helperText={t('cashflow.form.flowDateHelper')}
                 />
                 
                 <TextField
                   fullWidth
-                  label="Reference (Optional)"
+                  label={t('cashflow.form.reference')}
                   value={formData.reference}
                   onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                   margin="normal"
-                  helperText="External reference number or ID (optional)"
+                  //helperText={t('cashflow.form.referenceHelper')}
                 />
                 
                 <TextField
                   fullWidth
-                  label="Description (Optional)"
+                  label={t('cashflow.form.description')}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   margin="normal"
@@ -1889,8 +1895,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   rows={3}
                   helperText={
                     editingCashFlow 
-                      ? `Original: "${editingCashFlow.description}"`
-                      : 'Enter a description for this cash flow (optional)'
+                      ? `${t('cashflow.form.original')}: "${editingCashFlow.description}"`
+                      : t('cashflow.form.descriptionHelper')
                   }
                 />
               </Box>
@@ -1907,7 +1913,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           setDeleteDialogOpen(false);
           setDeleteError(null);
         }}
-        title="Delete Cash Flow"
+        title={t('cashflow.delete.title')}
         icon={<DeleteIcon color="error" />}
         maxWidth="sm"
         fullWidth
@@ -1920,36 +1926,37 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 setDeleteDialogOpen(false);
                 setDeleteError(null);
               }}
-              mobileText="Cancel"
-              desktopText="Cancel"
+              mobileText={t('common.cancel')}
+              desktopText={t('common.cancel')}
             >
-              Cancel
+              {t('common.cancel')}
             </ResponsiveButton>
             <ResponsiveButton 
               onClick={confirmDelete} 
               color="error" 
               variant="contained"
               icon={loading ? null : <DeleteIcon />}
-              mobileText={loading ? 'Deleting...' : 'Delete'}
-              desktopText={loading ? 'Deleting...' : 'Delete'}
+              mobileText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
+              desktopText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
               disabled={loading}
             >
-              {loading ? 'Deleting...' : 'Delete'}
+              {loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
             </ResponsiveButton>
           </Box>
         }
       >
+        <Box sx={{ pt: 1 }}>
         <ResponsiveTypography variant="tableCell">
-          Are you sure you want to delete this cash flow? This action cannot be undone.
+          {t('cashflow.delete.message')}
         </ResponsiveTypography>
-        
+        </Box>
         {cashFlowToDelete?.status === 'CANCELLED' && (
           <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
             <ResponsiveTypography variant="tableCell">
-              <strong>Warning:</strong> This cash flow is already cancelled and cannot be edited.
+              <strong>{t('cashflow.delete.warning')}:</strong> {t('cashflow.delete.cancelledWarning')}
             </ResponsiveTypography>
             <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-              You can still delete it to remove it from the history.
+              {t('cashflow.delete.cancelledHelper')}
             </ResponsiveTypography>
           </Alert>
         )}
@@ -1957,10 +1964,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         {deleteError && (
           <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
             <ResponsiveTypography variant="tableCell">
-              <strong>Error:</strong> {deleteError}
+              <strong>{t('cashflow.delete.error')}:</strong> {deleteError}
             </ResponsiveTypography>
             <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-              Please try again or contact support if the problem persists.
+              {t('cashflow.delete.errorHelper')}
             </ResponsiveTypography>
           </Alert>
         )}
@@ -1968,16 +1975,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         {cashFlowToDelete && (
           <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
             <ResponsiveTypography variant="tableCell">
-              <strong>Type:</strong> {cashFlowToDelete.type}
+              <strong>{t('cashflow.delete.type')}:</strong> {cashFlowToDelete.type}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell">
-              <strong>Amount:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
+              <strong>{t('cashflow.delete.amount')}:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell">
-              <strong>Description:</strong> {cashFlowToDelete.description}
+              <strong>{t('cashflow.delete.description')}:</strong> {cashFlowToDelete.description}
             </ResponsiveTypography>
             <ResponsiveTypography variant="tableCell">
-              <strong>Status:</strong> {cashFlowToDelete.status}
+              <strong>{t('cashflow.delete.status')}:</strong> {cashFlowToDelete.status}
             </ResponsiveTypography>
           </Box>
         )}
@@ -1990,7 +1997,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           setTransferDialogOpen(false);
           setError(null);
         }}
-        title="Transfer Cash Between Sources"
+        title={t('cashflow.transfer.title')}
         icon={<TransferIcon color="secondary" />}
         maxWidth="md"
         fullWidth
@@ -2003,18 +2010,18 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 setTransferDialogOpen(false);
                 setError(null);
               }}
-              mobileText="Cancel"
-              desktopText="Cancel"
+              mobileText={t('common.cancel')}
+              desktopText={t('common.cancel')}
             >
-              Cancel
+              {t('common.cancel')}
             </ResponsiveButton>
             <ResponsiveButton
               onClick={handleTransferCash}
               variant="contained"
               color="secondary"
               icon={<TransferIcon />}
-              mobileText={loading ? 'Transferring...' : 'Transfer'}
-              desktopText={loading ? 'Transferring...' : 'Transfer Cash'}
+              mobileText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transfer')}
+              desktopText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
               disabled={
                 loading || 
                 !transferData.fromSource || 
@@ -2023,14 +2030,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 transferData.fromSource === transferData.toSource
               }
             >
-              {loading ? 'Transferring...' : 'Transfer Cash'}
+              {loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
             </ResponsiveButton>
           </Box>
         }
       >
         <Box sx={{ pt: 1 }}>
           <ResponsiveTypography variant="formHelper" sx={{ mb: 2, display: 'block' }}>
-            Move cash from one funding source to another
+            {t('cashflow.transfer.description')}
           </ResponsiveTypography>
           
           {error && (
@@ -2049,10 +2056,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <Grid item xs={12} md={6}>
               <Box sx={{ pr: { md: 1.5 } }}>
                 <FormControl fullWidth margin="normal" required>
-                  <InputLabel>From Source</InputLabel>
+                  <InputLabel>{t('cashflow.transfer.fromSource')}</InputLabel>
                   <Select
                     value={transferData.fromSource}
-                    label="From Source"
+                    label={t('cashflow.transfer.fromSource')}
                     onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
                   >
                     {getFundingSources().map((source) => (
@@ -2062,7 +2069,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     ))}
                   </Select>
                   <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    Select the source to transfer from
+                    {t('cashflow.transfer.fromSourceHelper')}
                   </ResponsiveTypography>
                 </FormControl>
                 
@@ -2070,8 +2077,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   value={transferData.toSource}
                   onChange={(toSource) => setTransferData({ ...transferData, toSource })}
                   existingSources={getFundingSources()}
-                  label="To Source"
-                  placeholder="Type or select funding source..."
+                  label={t('cashflow.transfer.toSource')}
+                  placeholder={t('cashflow.transfer.toSourcePlaceholder')}
                   required
                   allowNew={true}
                 />
@@ -2079,16 +2086,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 <MoneyInput
                   value={transferData.amount}
                   onChange={(amount) => setTransferData({ ...transferData, amount })}
-                  label="Transfer Amount"
-                  placeholder="Enter amount (e.g., 1,000,000)"
+                  label={t('cashflow.transfer.amount')}
+                  placeholder={t('cashflow.transfer.amountPlaceholder')}
                   required
                   margin="normal"
                   error={!!(transferData.amount && transferData.amount <= 0)}
-                  helperText={
-                    transferData.amount > 0 
-                      ? `Transferring ${formatCurrency(transferData.amount)}` 
-                      : 'Enter the amount to transfer'
-                  }
+                  // helperText={
+                  //   transferData.amount > 0 
+                  //     ? t('cashflow.transfer.amountHelper', { amount: formatCurrency(transferData.amount) })
+                  //     : t('cashflow.transfer.amountHelperEmpty')
+                  // }
                 />
               </Box>
             </Grid>
@@ -2098,25 +2105,28 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               <Box sx={{ pl: { md: 1.5 } }}>
                 <TextField
                   fullWidth
-                  label="Transfer Date"
+                  label={t('cashflow.transfer.date')}
                   type="date"
                   value={transferData.transferDate}
                   onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
-                  helperText="When this transfer occurred"
+                  helperText={t('cashflow.transfer.dateHelper')}
                 />
                 
                 <TextField
                   fullWidth
-                  label="Description (Optional)"
+                  label={t('cashflow.transfer.description')}
                   value={transferData.description}
                   onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
                   margin="normal"
                   multiline
                   rows={3}
-                  placeholder={`Transfer from ${transferData.fromSource || 'Source'} to ${transferData.toSource || 'Destination'}`}
-                  helperText="Enter a description for this transfer (optional)"
+                  placeholder={t('cashflow.transfer.descriptionPlaceholder', { 
+                    from: transferData.fromSource || t('cashflow.transfer.source'), 
+                    to: transferData.toSource || t('cashflow.transfer.destination') 
+                  })}
+                  helperText={t('cashflow.transfer.descriptionHelper')}
                 />
               </Box>
             </Grid>
@@ -2126,13 +2136,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
               <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
-                Transfer Summary:
+                {t('cashflow.transfer.summary')}:
               </ResponsiveTypography>
               <ResponsiveTypography variant="tableCell">
-                Moving <strong>{formatCurrency(transferData.amount)}</strong> from <strong>{transferData.fromSource}</strong> to <strong>{transferData.toSource}</strong>
+                {t('cashflow.transfer.summaryText', { 
+                  amount: formatCurrency(transferData.amount), 
+                  from: transferData.fromSource, 
+                  to: transferData.toSource 
+                })}
               </ResponsiveTypography>
               <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                This will create two cash flow records: one withdrawal from source and one deposit to destination.
+                {t('cashflow.transfer.summaryHelper')}
               </ResponsiveTypography>
             </Alert>
           )}

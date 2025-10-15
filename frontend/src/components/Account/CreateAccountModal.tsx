@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   FormControl,
@@ -44,6 +45,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   onClose,
   onAccountCreated,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateAccountFormData>({
     name: '',
     email: '',
@@ -104,7 +106,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       console.error('Error creating account:', err);
       setError(
         err.response?.data?.message || 
-        'Failed to create account. Please try again.'
+        t('createAccountModal.error.createFailed')
       );
     } finally {
       setLoading(false);
@@ -128,33 +130,33 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title="Create New Account"
+      title={t('createAccountModal.title')}
       icon={<AccountIcon />}
       loading={loading}
       maxWidth="sm"
       size="medium"
       actions={
-        <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
           <ResponsiveButton 
             onClick={handleClose} 
             disabled={loading}
             color="inherit"
             mobileText="Cancel"
             desktopText="Cancel"
-            sx={{ flex: 1 }}
+            sx={{ width: 'auto' }}
           >
-            Cancel
+            {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.name}
             icon={loading && <CircularProgress size={16} />}
-            mobileText={loading ? 'Creating...' : 'Create'}
-            desktopText={loading ? 'Creating...' : 'Create Account'}
-            sx={{ flex: 1 }}
+            mobileText={loading ? t('createAccountModal.creating') : t('createAccountModal.create')}
+            desktopText={loading ? t('createAccountModal.creating') : t('createAccountModal.createAccount')}
+            sx={{ width: 'auto' }}
           >
-            {loading ? 'Creating...' : 'Create Account'}
+            {loading ? t('createAccountModal.creating') : t('createAccountModal.createAccount')}
           </ResponsiveButton>
         </Box>
       }
@@ -167,37 +169,37 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
 
       <Box component="form" onSubmit={handleSubmit}>
         <ResponsiveTypography variant="pageTitle" sx={{ mt: 2 }}>
-          Account Information
+          {t('createAccountModal.accountInfoTitle')}
         </ResponsiveTypography>
         
         <TextField
           fullWidth
-          label="Account Holder Name"
+          label={t('createAccountModal.fields.name')}
           value={formData.name}
           onChange={handleInputChange('name')}
           margin="normal"
           required
           disabled={loading}
-          helperText="Enter the full name of the account holder"
+          helperText={t('createAccountModal.fields.nameHelper')}
         />
 
         <TextField
           fullWidth
-          label="Email Address (Optional)"
+          label={t('createAccountModal.fields.email')}
           type="email"
           value={formData.email}
           onChange={handleInputChange('email')}
           margin="normal"
           disabled={loading}
-          helperText="Optional: Enter email address for account identification"
+          helperText={t('createAccountModal.fields.emailHelper')}
         />
 
         <FormControl fullWidth margin="normal" required>
-          <InputLabel>Base Currency</InputLabel>
+          <InputLabel>{t('createAccountModal.fields.baseCurrency')}</InputLabel>
           <Select
             value={formData.baseCurrency}
             onChange={handleInputChange('baseCurrency')}
-            label="Base Currency"
+            label={t('createAccountModal.fields.baseCurrency')}
             disabled={loading}
           >
             {CURRENCY_OPTIONS.map((option) => (
@@ -219,12 +221,12 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             }
             label={
               <ResponsiveTypography variant="body2">
-                Can invest in funds
+                {t('createAccountModal.fields.canInvest')}
               </ResponsiveTypography>
             }
           />
           <ResponsiveTypography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-            Enable this if this account can invest in fund portfolios
+            {t('createAccountModal.fields.canInvestHelper')}
           </ResponsiveTypography>
         </Box>
       </Box>

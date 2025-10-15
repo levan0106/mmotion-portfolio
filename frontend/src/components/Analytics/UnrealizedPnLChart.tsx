@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Box } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
@@ -32,6 +33,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   compact = false,
   colorScheme = 'default',
 }) => {
+  const { t } = useTranslation();
   // Ensure data is an array
   const safeData = Array.isArray(data) ? data : [];
   
@@ -210,7 +212,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
         <ResponsiveTypography variant="chartTitle" sx={{ 
           textAlign: 'center'
         }}>
-          Unrealized P&L by Asset Type
+          {t('portfolio.unrealizedPLByAssetType')}
         </ResponsiveTypography>
         <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
           <ResponsiveTypography variant="formHelper" color="text.secondary">
@@ -232,7 +234,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
       <ResponsiveTypography variant="chartTitle" sx={{ 
         textAlign: 'center'
       }}>
-        Unrealized P&L by Asset Type
+        {t('portfolio.unrealizedPLByAssetType')}
       </ResponsiveTypography>
       <Box sx={{ 
         flex: 1, 

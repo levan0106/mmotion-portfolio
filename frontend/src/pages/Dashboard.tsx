@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -43,6 +44,7 @@ import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const { accountId } = useAccount();
@@ -66,7 +68,7 @@ const Dashboard: React.FC = () => {
       >
         <CircularProgress size={60} thickness={4} />
         <ResponsiveTypography variant="pageSubtitle" sx={{ mt: 2 }}>
-          Loading Financial Dashboard...
+          {t('dashboard.loading')}
         </ResponsiveTypography>
         <LinearProgress sx={{ width: '200px', mt: 2, borderRadius: 1 }} />
       </Box>
@@ -86,10 +88,10 @@ const Dashboard: React.FC = () => {
         }}
       >
         <ResponsiveTypography variant="cardTitle" gutterBottom>
-          Failed to load dashboard data
+          {t('dashboard.failedToLoad')}
         </ResponsiveTypography>
         <ResponsiveTypography variant="formHelper">
-          Please check your connection and try again.
+          {t('dashboard.checkConnection')}
         </ResponsiveTypography>
       </Alert>
     );
@@ -132,9 +134,9 @@ const Dashboard: React.FC = () => {
   // Professional financial metrics cards
   const financialMetrics = [
     {
-      title: 'Total Assets Under Management',
+      title: t('dashboard.totalAssets'),
       value: formatCurrency(totalValue, displayCurrency),
-      subtitle: `${totalPortfolios} Portfolio${totalPortfolios !== 1 ? 's' : ''}`,
+      subtitle: `${totalPortfolios} ${t('dashboard.portfolio', { count: totalPortfolios })}`,
       icon: <AccountBalanceWallet />,
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
@@ -142,9 +144,9 @@ const Dashboard: React.FC = () => {
       change: isChangeLoading ? '...' : (totalChange || '+0.0%'),
     },
     {
-      title: 'Total P&L',
+      title: t('dashboard.totalPL'),
       value: formatCurrency(totalPL, displayCurrency),
-      subtitle: totalPL >= 0 ? 'Profitable' : 'Loss',
+      subtitle: totalPL >= 0 ? t('dashboard.profitable') : t('dashboard.loss'),
       icon: totalPL >= 0 ? <TrendingUp /> : <TrendingDown />,
       color: totalPL >= 0 ? 'success' as const : 'error' as const,
       gradient: totalPL >= 0 
@@ -154,24 +156,24 @@ const Dashboard: React.FC = () => {
       change: formatPercentage(totalReturnPercentage),
     },
     {
-      title: 'Cash Position',
+      title: t('dashboard.cashPosition'),
       value: formatCurrency(totalCashBalance, displayCurrency),
-      subtitle: `${formatPercentage(cashAllocationPercentage)} of total`,
+      subtitle: `${formatPercentage(cashAllocationPercentage)} ${t('dashboard.ofTotal')}`,
       icon: <MonetizationOn />,
       color: 'info' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
       trend: 'neutral',
-      change: 'Liquid',
+      change: t('dashboard.liquid'),
     },
     {
-      title: 'Average Portfolio Value',
+      title: t('dashboard.averagePortfolioValue'),
       value: formatCurrency(averagePortfolioValue, displayCurrency),
-      subtitle: 'Per portfolio',
+      subtitle: t('dashboard.perPortfolio'),
       icon: <Assessment />,
       color: 'secondary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
       trend: 'neutral',
-      change: 'Balanced',
+      change: t('dashboard.balanced'),
     },
   ];
 
@@ -192,10 +194,10 @@ const Dashboard: React.FC = () => {
                   mb: 1
                 }}
               >
-                Financial Dashboard
+                {t('dashboard.title')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle" ellipsis={false}>
-                Comprehensive portfolio management and investment analytics
+                {t('dashboard.subtitle')}
               </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -203,19 +205,19 @@ const Dashboard: React.FC = () => {
                 variant="outlined"
                 icon={<Refresh />}
                 startIcon={<Refresh />}
-                mobileText="Refresh"
-                desktopText="Refresh Data"
+                mobileText={t('common.refresh')}
+                desktopText={t('dashboard.refreshData')}
                 sx={{ borderRadius: 2 }}
               >
-                Refresh Data
+                {t('dashboard.refreshData')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="contained"
                 icon={<AddIcon />}
                 startIcon={<AddIcon />}
                 onClick={handleCreatePortfolio}
-                mobileText="New"
-                desktopText="New Portfolio"
+                mobileText={t('common.new')}
+                desktopText={t('portfolio.create')}
                 sx={{ 
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -224,7 +226,7 @@ const Dashboard: React.FC = () => {
                   }
                 }}
               >
-                New Portfolio
+                {t('portfolio.create')}
               </ResponsiveButton>
             </Box>
           </Box>
@@ -233,21 +235,21 @@ const Dashboard: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Chip
               icon={<Security />}
-              label="System Status: Active"
+              label={t('dashboard.systemStatus')}
               color="success"
               variant="outlined"
               sx={{ borderRadius: 2 }}
             />
             <Chip
               icon={<Timeline />}
-              label={`Last Updated: ${new Date().toLocaleTimeString()}`}
+              label={`${t('dashboard.lastUpdated')}: ${new Date().toLocaleTimeString()}`}
               color="info"
               variant="outlined"
               sx={{ borderRadius: 2 }}
             />
             <Chip
               icon={<Assessment />}
-              label={`${totalPortfolios} Portfolio${totalPortfolios !== 1 ? 's' : ''} Active`}
+              label={`${totalPortfolios} ${t('dashboard.portfolio', { count: totalPortfolios })} ${t('dashboard.active')}`}
               color="primary"
               variant="outlined"
               sx={{ borderRadius: 2 }}
@@ -358,7 +360,7 @@ const Dashboard: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <ShowChart sx={{ mr: 2, color: 'primary.main' }} />
                     <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
-                      Portfolio Performance Analytics
+                      {t('dashboard.portfolioPerformance')}
                     </ResponsiveTypography>
                   </Box>
                   
@@ -366,7 +368,7 @@ const Dashboard: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 1.5, borderRadius: 2, background: alpha(theme.palette.success.main, 0.03) }}>
                         <ResponsiveTypography variant="formHelper" gutterBottom>
-                          Best Performing Portfolio
+                          {t('dashboard.bestPerforming')}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardTitle" sx={{ color: 'success.main' }}>
                           {portfolios.length > 0 ? portfolios.reduce((best, current) => 
@@ -385,7 +387,7 @@ const Dashboard: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 1.5, borderRadius: 2, background: alpha(theme.palette.info.main, 0.03) }}>
                         <ResponsiveTypography variant="formHelper" gutterBottom>
-                          Best Portfolio Cash
+                          {t('dashboard.bestPortfolioCash')}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardTitle" sx={{ color: 'info.main' }}>
                           {portfolios.length > 0 ? (() => {
@@ -424,14 +426,14 @@ const Dashboard: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <PieChart sx={{ mr: 2, color: 'secondary.main' }} />
                     <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
-                      Quick Insights
+                      {t('dashboard.quickInsights')}
                     </ResponsiveTypography>
                   </Box>
                   
                   <Box sx={{ space: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                       <ResponsiveTypography variant="tableCell">
-                        Average Portfolio Value:
+                        {t('dashboard.averagePortfolioValueLabel')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardValueMedium">
                         {formatCurrency(averagePortfolioValue, displayCurrency)}
@@ -439,7 +441,7 @@ const Dashboard: React.FC = () => {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                       <ResponsiveTypography variant="tableCell">
-                        Total Return:
+                        {t('dashboard.totalReturn')}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValueMedium" 
@@ -452,7 +454,7 @@ const Dashboard: React.FC = () => {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                       <ResponsiveTypography variant="tableCell">
-                        Active Portfolios:
+                        {t('dashboard.activePortfolios')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardValueMedium">
                         {totalPortfolios}
@@ -460,9 +462,9 @@ const Dashboard: React.FC = () => {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5 }}>
                       <ResponsiveTypography variant="tableCell">
-                        System Health:
+                        {t('dashboard.systemHealth')}
                       </ResponsiveTypography>
-                      <Chip label="Excellent" color="success" size="small" />
+                      <Chip label={t('dashboard.excellent')} color="success" size="small" />
                     </Box>
                   </Box>
                 </CardContent>
@@ -476,10 +478,10 @@ const Dashboard: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <ResponsiveTypography variant="pageTitle" component="h2" sx={{ mb: 1 }}>
-                Investment Portfolios
+                {t('dashboard.investmentPortfolios')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle">
-                Manage and monitor your investment portfolios
+                {t('dashboard.managePortfolios')}
               </ResponsiveTypography>
             </Box>
             <ResponsiveButton
@@ -488,8 +490,8 @@ const Dashboard: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={handleCreatePortfolio}
               size="large"
-              mobileText="Create"
-              desktopText="Create New Portfolio"
+              mobileText={t('common.create')}
+              desktopText={t('dashboard.createNewPortfolio')}
               sx={{ 
                 borderRadius: 2,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -498,7 +500,7 @@ const Dashboard: React.FC = () => {
                 }
               }}
             >
-              Create New Portfolio
+              {t('dashboard.createNewPortfolio')}
             </ResponsiveButton>
           </Box>
           
@@ -520,10 +522,10 @@ const Dashboard: React.FC = () => {
                 <AccountBalance sx={{ fontSize: 80, color: 'primary.main' }} />
               </Box>
               <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
-                No Portfolios Found
+                {t('dashboard.noPortfoliosFound')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-                Start your investment journey by creating your first portfolio to track and manage your assets
+                {t('dashboard.startInvestment')}
               </ResponsiveTypography>
               <ResponsiveButton
                 variant="contained"
@@ -531,8 +533,8 @@ const Dashboard: React.FC = () => {
                 startIcon={<AddIcon />}
                 onClick={handleCreatePortfolio}
                 size="large"
-                mobileText="Create"
-                desktopText="Create Your First Portfolio"
+                mobileText={t('common.create')}
+                desktopText={t('dashboard.createFirstPortfolio')}
                 sx={{ 
                   borderRadius: 2,
                   px: 4,
@@ -543,7 +545,7 @@ const Dashboard: React.FC = () => {
                   }
                 }}
               >
-                Create Your First Portfolio
+                {t('dashboard.createFirstPortfolio')}
               </ResponsiveButton>
             </Card>
           ) : (
@@ -557,6 +559,7 @@ const Dashboard: React.FC = () => {
                         onView={handlePortfolioView}
                         onEdit={handlePortfolioEdit}
                         onPortfolioCopied={handlePortfolioCopied}
+                        hideActions={true}
                       />
                     </Box>
                   </Slide>

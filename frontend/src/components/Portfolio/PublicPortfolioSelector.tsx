@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   List,
@@ -33,6 +34,7 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
   onClose,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
       const publicPortfolios = await apiService.getPublicPortfolios();
       setPortfolios(publicPortfolios);
     } catch (err: any) {
-      setError(err.message || 'Failed to load public portfolios');
+      setError(err.message || t('publicPortfolioSelector.error.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -73,20 +75,20 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title="Select Portfolio Template"
+      title={t('publicPortfolioSelector.title')}
       icon={<CopyIcon />}
       maxWidth="md"
       fullWidth
       actions={
         <ResponsiveButton onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </ResponsiveButton>
       }
       loading={loading}
     >
       <TextField
         fullWidth
-        placeholder="Search portfolio templates..."
+        placeholder={t('publicPortfolioSelector.searchPlaceholder')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         InputProps={{
@@ -134,25 +136,25 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
                 secondary={
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      {portfolio.description || 'No description available'}
+                      {portfolio.description || t('publicPortfolioSelector.noDescription')}
                     </Typography>
                     {portfolio.creatorName && (
                       <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 0.5, fontWeight: 500 }}>
-                        Created by: {portfolio.creatorName}
+                        {t('publicPortfolioSelector.createdBy', { name: portfolio.creatorName })}
                       </Typography>
                     )}
                     <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip label={portfolio.baseCurrency} size="small" />
                       <Chip 
-                        label={`${portfolio.trades?.length || 0} trades`} 
+                        label={t('publicPortfolioSelector.tradesCount', { count: portfolio.trades?.length || 0 })} 
                         size="small" 
                       />
                       <Chip 
-                        label={`${portfolio.cashFlows?.length || 0} cash flows`} 
+                        label={t('publicPortfolioSelector.cashFlowsCount', { count: portfolio.cashFlows?.length || 0 })} 
                         size="small" 
                       />
                       <Chip 
-                        label={`${portfolio.deposits?.length || 0} deposits`} 
+                        label={t('publicPortfolioSelector.depositsCount', { count: portfolio.deposits?.length || 0 })} 
                         size="small" 
                       />
                     </Box>
@@ -172,7 +174,7 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
       {!loading && !error && filteredPortfolios.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 3 }}>
           <Typography variant="body1" color="text.secondary">
-            {searchTerm ? 'No portfolios match your search' : 'No public portfolios available'}
+            {searchTerm ? t('publicPortfolioSelector.noSearchResults') : t('publicPortfolioSelector.noPortfolios')}
           </Typography>
         </Box>
       )}

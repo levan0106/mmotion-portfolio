@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -42,6 +43,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
   title = 'Risk Metrics Dashboard',
   compact = false,
 }) => {
+  const { t } = useTranslation();
   // Add null checks and default values
   if (!data) {
     return (
@@ -50,7 +52,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           variant="pageSubtitle" 
           color="text.secondary"
         >
-          No risk metrics data available
+          {t('riskMetrics.noData')}
         </ResponsiveTypography>
       </Box>
     );
@@ -125,7 +127,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
           color="text.secondary" 
           sx={{ mb: 3 }}
         >
-          Comprehensive risk analysis and portfolio health metrics
+          {t('riskMetrics.subtitle')}
         </ResponsiveTypography>
       )}
       
@@ -149,7 +151,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   variant="formHelper" 
                   color="text.secondary"
                 >
-                  Value at Risk (95%)
+                  {t('riskMetrics.var95')}
                 </ResponsiveTypography>
                 {getRiskIcon(varLevel)}
               </Box>
@@ -192,7 +194,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   variant="formHelper" 
                   color="text.secondary"
                 >
-                  Sharpe Ratio
+                  {t('riskMetrics.sharpeRatio')}
                 </ResponsiveTypography>
                 {getRiskIcon(sharpeLevel)}
               </Box>
@@ -235,7 +237,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   variant="formHelper" 
                   color="text.secondary"
                 >
-                  Volatility
+                  {t('riskMetrics.volatility')}
                 </ResponsiveTypography>
                 {getRiskIcon(volatilityLevel)}
               </Box>
@@ -278,7 +280,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   variant="formHelper" 
                   color="text.secondary"
                 >
-                  Max Drawdown
+                  {t('riskMetrics.maxDrawdown')}
                 </ResponsiveTypography>
                 {getRiskIcon(drawdownLevel)}
               </Box>
@@ -320,7 +322,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   variant="cardTitle" 
                   gutterBottom
                 >
-                  Additional Risk Metrics
+                  {t('riskMetrics.additionalMetrics')}
                 </ResponsiveTypography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6} md={3}>
@@ -330,7 +332,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                         color="text.secondary" 
                         gutterBottom
                       >
-                        VaR (99%)
+                        {t('riskMetrics.var99')}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValue"
@@ -346,7 +348,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                         color="text.secondary" 
                         gutterBottom
                       >
-                        Beta
+                        {t('riskMetrics.beta')}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValue"
@@ -362,7 +364,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                         color="text.secondary" 
                         gutterBottom
                       >
-                        Calmar Ratio
+                        {t('riskMetrics.calmarRatio')}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValue"
@@ -378,7 +380,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                         color="text.secondary" 
                         gutterBottom
                       >
-                        Sortino Ratio
+                        {t('riskMetrics.sortinoRatio')}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="cardValue"

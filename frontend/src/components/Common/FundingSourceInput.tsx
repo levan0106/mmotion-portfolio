@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   TextField,
   InputAdornment,
@@ -36,8 +37,8 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
   value,
   onChange,
   existingSources = [],
-  label = 'Funding Source',
-  placeholder = 'Type or select funding source...',
+  label,
+  placeholder,
   helperText,
   error = false,
   required = false,
@@ -51,6 +52,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
   onFocus,
   onCreateNew: _onCreateNew,
 }) => {
+  const { t } = useTranslation();
   const [isNewSource, setIsNewSource] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredSources, setFilteredSources] = useState<string[]>([]);
@@ -119,15 +121,15 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
 
   const getHelperText = () => {
     if (helperText) return helperText;
-    if (isNewSource) return 'Enter a new funding source name';
-    return 'Type to search or select from existing sources';
+    if (isNewSource) return t('fundingSource.enterNew');
+    return t('fundingSource.typeToSearch');
   };
 
   return (
     <Box sx={{ position: 'relative' }}>
       <TextField
         fullWidth={fullWidth}
-        label={label}
+        label={label || t('fundingSource.label')}
         value={value}
         onChange={handleChange}
         onFocus={handleFocus}
@@ -138,7 +140,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
         error={error}
         variant={variant}
         size={size}
-        placeholder={placeholder}
+        placeholder={placeholder || t('fundingSource.placeholder')}
         inputProps={{
           style: { textTransform: 'uppercase' }
         }}
@@ -210,7 +212,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AddIcon fontSize="small" />
                 <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                  Enter new funding source...
+                  {t('fundingSource.enterNewSource')}
                 </Typography>
               </Box>
             </Box>

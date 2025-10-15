@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -67,6 +68,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   onMetricChange,
   isCompactMode = false,
 }) => {
+  const { t } = useTranslation();
   const [chartView, setChartView] = useState<'pie' | 'compact'>('pie');
   const [pnlLines, setPnlLines] = useState({
     total: true,
@@ -382,7 +384,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>Loading analysis...</ResponsiveTypography>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>{t('tradeAnalysis.loading')}</ResponsiveTypography>
       </Box>
     );
   }
@@ -390,7 +392,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   if (error) {
     return (
       <Alert severity="error">
-        {(error as any)?.message || 'Failed to load trade analysis'}
+        {(error as any)?.message || t('tradeAnalysis.error.loadFailed')}
       </Alert>
     );
   }
@@ -398,7 +400,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   if (!analysis) {
     return (
       <Alert severity="info">
-        No trade data available for analysis
+        {t('tradeAnalysis.noData')}
       </Alert>
     );
   }
@@ -407,7 +409,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   if (!isValidAnalysis) {
     return (
       <Alert severity="error">
-        Invalid analysis data format
+        {t('tradeAnalysis.error.invalidData')}
       </Alert>
     );
   }
@@ -418,10 +420,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 4}>
         <Box>
           <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
-            Trading Analysis
+            {t('tradeAnalysis.title')}
           </ResponsiveTypography>
           <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-            Comprehensive performance insights and analytics
+            {t('tradeAnalysis.subtitle')}
           </ResponsiveTypography>
         </Box>
         <Box display="flex" gap={2}>
@@ -481,7 +483,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     color="text.secondary" 
                     gutterBottom
                   >
-                    Total P&L
+                    {t('tradeAnalysis.totalPnL')}
                   </ResponsiveTypography>
                   <ResponsiveTypography 
                     variant="cardValue" 
@@ -507,7 +509,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 <Box sx={{ mb: 2 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Realized P&L:
+                      {t('tradeAnalysis.realizedPnL')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography 
                       variant="tableCell" 
@@ -519,7 +521,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Unrealized P&L:
+                      {t('tradeAnalysis.unrealizedPnL')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography 
                       variant="tableCell" 
@@ -535,7 +537,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Win Rate */}
               <Box display="flex" alignItems="center" gap={1}>
                 <Chip
-                  label={`${formatPercentage(analysis.pnlSummary.winRate, 1, locale)} Win Rate`}
+                  label={`${formatPercentage(analysis.pnlSummary.winRate, 1, locale)} ${t('tradeAnalysis.winRate')}`}
                   color={analysis.pnlSummary.winRate >= 50 ? 'success' : 'warning'}
                   size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
@@ -569,19 +571,19 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     color="text.secondary" 
                     gutterBottom
                   >
-                    Trading Statistics
+                    {t('tradeAnalysis.tradingStatistics')}
                   </ResponsiveTypography>
                   <ResponsiveTypography 
                     variant="cardValue" 
                     color="primary" 
                     fontWeight="bold"
                   >
-                    {formatNumber(analysis.statistics.totalTrades, 0, locale)} Trades
+                    {formatNumber(analysis.statistics.totalTrades, 0, locale)} {t('tradeAnalysis.trades')}
                   </ResponsiveTypography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={`Avg: ${formatCurrency(analysis.statistics.averagePrice, currency, {}, locale)}`}
+                    label={`${t('tradeAnalysis.average')}: ${formatCurrency(analysis.statistics.averagePrice, currency, {}, locale)}`}
                     color="info"
                     size={isCompactMode ? "small" : "medium"}
                     variant="outlined"
@@ -596,7 +598,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 <Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Buy Trades:
+                      {t('tradeAnalysis.buyTrades')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="success.main" fontWeight="medium">
                       {analysis.statistics.buyTrades}
@@ -604,7 +606,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Sell Trades:
+                      {t('tradeAnalysis.sellTrades')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="error.main" fontWeight="medium">
                       {analysis.statistics.sellTrades}
@@ -612,7 +614,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Total Volume:
+                      {t('tradeAnalysis.totalVolume')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="info.main" fontWeight="medium">
                       {formatCurrency(analysis.statistics.totalVolume, currency, {}, locale)}
@@ -647,7 +649,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     color="text.secondary" 
                     gutterBottom
                   >
-                    Risk Metrics
+                    {t('tradeAnalysis.riskMetrics')}
                   </ResponsiveTypography>
                   <ResponsiveTypography 
                     variant="cardValue" 
@@ -659,7 +661,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={`Risk Level: ${analysis.riskMetrics.volatility > 20 ? 'High' : analysis.riskMetrics.volatility > 10 ? 'Medium' : 'Low'}`}
+                    label={`${t('tradeAnalysis.riskLevel')}: ${analysis.riskMetrics.volatility > 20 ? t('tradeAnalysis.riskLevels.high') : analysis.riskMetrics.volatility > 10 ? t('tradeAnalysis.riskLevels.medium') : t('tradeAnalysis.riskLevels.low')}`}
                     color={analysis.riskMetrics.volatility > 20 ? 'error' : analysis.riskMetrics.volatility > 10 ? 'warning' : 'success'}
                     size={isCompactMode ? "small" : "medium"}
                     variant="outlined"
@@ -674,7 +676,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 <Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Max Drawdown:
+                      {t('tradeAnalysis.maxDrawdown')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="error.main" fontWeight="medium">
                       {formatCurrency(analysis.riskMetrics.maxDrawdown || 0, currency, {}, locale)}
@@ -682,7 +684,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      VaR 95%:
+                      {t('tradeAnalysis.var95')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="warning.main" fontWeight="medium">
                       {formatCurrency(analysis.riskMetrics.var95 || 0, currency, {}, locale)}
@@ -690,7 +692,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Sharpe Ratio:
+                      {t('tradeAnalysis.sharpeRatio')}:
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="tableCell" color="primary.main" fontWeight="medium">
                       {analysis.riskMetrics.sharpeRatio?.toFixed(2) || 'N/A'}
@@ -722,11 +724,11 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
                 <ResponsiveTypography variant="chartTitle">
-                  Monthly Performance
+                  {t('tradeAnalysis.monthlyPerformance')}
                 </ResponsiveTypography>
                 <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
-                    label="Total P&L"
+                    label={t('tradeAnalysis.totalPnL')}
                     size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.total ? 'primary' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, total: !prev.total }))}
@@ -736,7 +738,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     }}
                   />
                   <Chip
-                    label="Realized P&L"
+                    label={t('tradeAnalysis.realizedPnL')}
                     size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.realized ? 'success' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, realized: !prev.realized }))}
@@ -746,7 +748,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     }}
                   />
                   <Chip
-                    label="Unrealized P&L"
+                    label={t('tradeAnalysis.unrealizedPnL')}
                     size={isCompactMode ? "small" : "medium"}
                     color={pnlLines.unrealized ? 'warning' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, unrealized: !prev.unrealized }))}
@@ -791,7 +793,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       strokeWidth={isCompactMode ? 2 : 3}
                       dot={{ r: isCompactMode ? 3 : 4, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
                       activeDot={{ r: isCompactMode ? 4 : 6, stroke: '#1976d2', strokeWidth: 2 }}
-                      name="Total P&L"
+                      name={t('tradeAnalysis.totalPnL')}
                     />
                   )}
                   
@@ -804,7 +806,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       strokeWidth={isCompactMode ? 1.5 : 2}
                       dot={{ r: isCompactMode ? 2 : 3, fill: '#00C49F', stroke: '#fff', strokeWidth: 2 }}
                       activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#00C49F', strokeWidth: 2 }}
-                      name="Realized P&L"
+                      name={t('tradeAnalysis.realizedPnL')}
                     />
                   )}
                   
@@ -817,7 +819,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       strokeWidth={isCompactMode ? 1.5 : 2}
                       dot={{ r: isCompactMode ? 2 : 3, fill: '#FF8042', stroke: '#fff', strokeWidth: 2 }}
                       activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#FF8042', strokeWidth: 2 }}
-                      name="Unrealized P&L"
+                      name={t('tradeAnalysis.unrealizedPnL')}
                     />
                   )}
                 </LineChart>
@@ -845,11 +847,11 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               {/* Header with Toggle Controls */}
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 1.5 : 3}>
                 <ResponsiveTypography variant="chartTitle">
-                  Asset Performance
+                  {t('tradeAnalysis.assetPerformance')}
                 </ResponsiveTypography>
                 <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
-                    label="Pie Chart"
+                    label={t('tradeAnalysis.pieChart')}
                     size={isCompactMode ? "small" : "medium"}
                     color={chartView === 'pie' ? 'primary' : 'default'}
                     onClick={() => setChartView('pie')}
@@ -859,7 +861,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     }}
                   />
                   <Chip
-                    label="Compact List"
+                    label={t('tradeAnalysis.compactList')}
                     size={isCompactMode ? "small" : "medium"}
                     color={chartView === 'compact' ? 'primary' : 'default'}
                     onClick={() => setChartView('compact')}
@@ -1000,7 +1002,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     color="text.secondary" 
                     gutterBottom
                   >
-                    No asset performance data available
+                    {t('tradeAnalysis.noAssetData')}
                   </ResponsiveTypography>
                   <ResponsiveTypography 
                     variant="formHelper" 
@@ -1053,10 +1055,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
                 <ResponsiveTypography variant="chartTitle">
-                  Top Performing Trades
+                  {t('tradeAnalysis.topTrades')}
                 </ResponsiveTypography>
                 <Chip
-                  label="Best"
+                  label={t('tradeAnalysis.best')}
                   color="success"
                   size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
@@ -1185,10 +1187,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: isCompactMode ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1.5 : 3}>
                 <ResponsiveTypography variant="chartTitle">
-                  Worst Performing Trades
+                  {t('tradeAnalysis.worstTrades')}
                 </ResponsiveTypography>
                 <Chip
-                  label="Worst"
+                  label={t('tradeAnalysis.worst')}
                   color="error"
                   size={isCompactMode ? "small" : "medium"}
                   variant="outlined"
@@ -1322,7 +1324,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   mb: isCompactMode ? 1.5 : 2
                 }}
               >
-                Asset Performance Details
+                {t('tradeAnalysis.assetPerformanceDetails')}
               </ResponsiveTypography>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table size={isCompactMode ? "small" : "medium"} stickyHeader>
@@ -1469,7 +1471,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             variant="pageSubtitle" 
                             color="text.secondary"
                           >
-                            No asset performance data available
+                            {t('tradeAnalysis.noAssetData')}
                           </ResponsiveTypography>
                         </TableCell>
                       </TableRow>
@@ -1487,6 +1489,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 
 // Wrapper component that uses the hook
 export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMode?: boolean }> = ({ portfolioId, isCompactMode = false }) => {
+  const { t } = useTranslation();
   const [selectedTimeframe, setSelectedTimeframe] = useState('ALL');
   const [selectedMetric, setSelectedMetric] = useState('pnl');
 
@@ -1515,7 +1518,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
         <CircularProgress />
-        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>Loading analysis...</ResponsiveTypography>
+        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>{t('tradeAnalysis.loading')}</ResponsiveTypography>
       </Box>
     );
   }
@@ -1523,7 +1526,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   if (portfolioError) {
     return (
       <Alert severity="error">
-        {(portfolioError as any)?.message || 'Failed to load portfolio information'}
+        {(portfolioError as any)?.message || t('tradeAnalysis.error.portfolioLoadFailed')}
       </Alert>
     );
   }
@@ -1531,7 +1534,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   if (error) {
     return (
       <Alert severity="error">
-        {(error as any)?.message || 'Failed to load trade analysis'}
+        {(error as any)?.message || t('tradeAnalysis.error.loadFailed')}
       </Alert>
     );
   }
@@ -1539,7 +1542,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   if (!portfolio) {
     return (
       <Alert severity="error">
-        Portfolio not found
+        {t('tradeAnalysis.error.portfolioNotFound')}
       </Alert>
     );
   }
@@ -1547,7 +1550,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   if (!analysis) {
     return (
       <Alert severity="info">
-        No trade data available for analysis
+        {t('tradeAnalysis.noData')}
       </Alert>
     );
   }
