@@ -86,42 +86,6 @@ export class SnapshotService {
     private readonly priceHistoryService: PriceHistoryService,
   ) {}
 
-  /**
-   * Create a new snapshot
-   */
-  // async createSnapshot(createDto: CreateSnapshotDto): Promise<AssetAllocationSnapshot> {
-
-  //   // Validate asset exists
-  //   const asset = await this.assetService.findById(createDto.assetId);
-  //   if (!asset) {
-  //     throw new NotFoundException(`Asset with ID ${createDto.assetId} not found`);
-  //   }
-
-  //   // Check if snapshot already exists and delete it to avoid duplicates
-  //   const existingSnapshot = await this.snapshotRepo.findByUniqueKey(
-  //     createDto.portfolioId,
-  //     createDto.assetId,
-  //     new Date(createDto.snapshotDate),
-  //     createDto.granularity
-  //   );
-
-  //   if (existingSnapshot) {
-  //     this.logger.warn(`Snapshot already exists for portfolio ${createDto.portfolioId}, asset ${createDto.assetSymbol} on ${createDto.snapshotDate}. Deleting old snapshot and creating new one.`);
-  //     await this.snapshotRepo.delete(existingSnapshot.id);
-  //   }
-
-  //   // Create snapshot
-  //   const snapshot = await this.snapshotRepo.create({
-  //     ...createDto,
-  //     snapshotDate: new Date(createDto.snapshotDate),
-  //     isActive: createDto.isActive ?? true,
-  //   });
-
-  //   // Portfolio snapshots are now only created from bulk operations (createPortfolioSnapshot)
-  //   // to avoid duplicate calls and ensure consistency
-
-  //   return snapshot;
-  // }
 
   async prepareAssetSnapshots(portfolioId: string, snapshotDate: Date, 
     granularity: SnapshotGranularity, createdBy?: string): Promise<AssetAllocationSnapshot[]> {
@@ -209,7 +173,7 @@ export class SnapshotService {
       const { asset, currentValue, positionData, currentPrice } = data;
       const { quantity, avgCost, unrealizedPl, realizedPl, totalPnl } = positionData;
       const costBasis = quantity * avgCost;
-      const returnPercentage = this.assetValueCalculator.calculateReturnPercentageLater(quantity, currentPrice, avgCost);
+      const returnPercentage = this.assetValueCalculator.calculateReturnPercentageFinal(quantity, currentPrice, avgCost);
       
       this.logger.log(`Creating snapshot for ${asset.symbol}: quantity=${quantity}, currentValue=${currentValue}, costBasis=${costBasis}`);
       
@@ -298,7 +262,7 @@ export class SnapshotService {
       // Add a small delay to ensure asset snapshots are committed to database
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      const portfolioSnapshot = await this.portfolioSnapshotService.createPortfolioSnapshot(
+      const portfolioSnapshot = await this.portfolioSnapshotService.createPortfolioSnapshotWithoutMetrics(
         portfolioId,
         snapshotDate,
         granularity,
@@ -318,6 +282,7 @@ export class SnapshotService {
 
   /**
    * Calculate daily return and cumulative return for a specific asset
+   * Cách tính này có nhiều logic chưa chính xác đối với cumulativeReturn. Cần cải thiện và không nên sử dụng lúc này.
    */
   private async calculateReturnsForAssetLater(
     assetId: string,

@@ -82,7 +82,8 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                   zIndex: 1,
                   borderRight: '1px solid',
                   borderColor: 'divider',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
+                  backgroundColor: 'background.paper'
                 }}><ResponsiveTypography variant="tableHeaderSmall" >Date</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 120, letterSpacing: '0.3px' }}><ResponsiveTypography variant="tableHeaderSmall" >Portfolio</ResponsiveTypography></TableCell>
                 {/* Portfolio Level (Assets + Deposits) */}
@@ -111,20 +112,14 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                 <TableCell sx={{  py: 1, minWidth: 100, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >NAV per Unit</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 100, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Investors</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="center"><ResponsiveTypography variant="tableHeaderSmall" >Is Fund</ResponsiveTypography></TableCell>
-                {/* Portfolio Performance Metrics (Assets + Deposits) */}
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Daily %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Weekly %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Monthly %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio YTD %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Vol %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Portfolio Max DD</ResponsiveTypography></TableCell>
-                {/* Asset Performance Metrics (Assets Only) */}
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Daily %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Weekly %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Monthly %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset YTD %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Vol %</ResponsiveTypography></TableCell>
-                <TableCell sx={{  py: 1, minWidth: 70, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Asset Max DD</ResponsiveTypography></TableCell>
+                {/* Portfolio Performance Metrics (Assets + Deposits) - HIDDEN */}
+                {/* Asset Performance Metrics (Assets Only) - HIDDEN */}
+                {/* Return Metrics */}
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Daily Return %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Weekly Return %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Monthly Return %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >YTD Return %</ResponsiveTypography></TableCell>
+                <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Total Return %</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 60, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Assets</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 60, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Active</ResponsiveTypography></TableCell>
                 <TableCell sx={{  py: 1, minWidth: 80, letterSpacing: '0.3px' }} align="right"><ResponsiveTypography variant="tableHeaderSmall" >Type</ResponsiveTypography></TableCell>
@@ -142,7 +137,8 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                     left: 0,
                     zIndex: 1,
                     borderRight: '1px solid',
-                    borderColor: 'divider'
+                    borderColor: 'divider',
+                    backgroundColor: 'background.paper'
                   }}>
                      <ResponsiveTypography variant="tableCellSmall" sx={{ letterSpacing: '0.2px' }}>
                        {formatDate(snapshot.snapshotDate)}
@@ -336,125 +332,61 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                     />
                   </TableCell>
                   
-                  {/* Portfolio Daily Return % */}
+                  {/* Portfolio Performance Metrics - HIDDEN */}
+                  {/* Asset Performance Metrics - HIDDEN */}
+                  
+                  {/* Daily Return % */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography 
                       variant="tableCellSmall" 
-                      sx={{ color: snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? 'success.main' : 'error.main' }}
+                      sx={{ color: snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
-                      {snapshot.portfolioDailyReturn && Number(snapshot.portfolioDailyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.portfolioDailyReturn || 0))}
+                      {snapshot.dailyReturn && Number(snapshot.dailyReturn) >= 0 ? '+' : ''}
+                      {formatPercentage(Number(snapshot.dailyReturn || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   
-                  {/* Portfolio Weekly Return % */}
+                  {/* Weekly Return % */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography 
                       variant="tableCellSmall" 
-                      sx={{ color: snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? 'success.main' : 'error.main' }}
+                      sx={{ color: snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
-                      {snapshot.portfolioWeeklyReturn && Number(snapshot.portfolioWeeklyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.portfolioWeeklyReturn || 0))}
+                      {snapshot.weeklyReturn && Number(snapshot.weeklyReturn) >= 0 ? '+' : ''}
+                      {formatPercentage(Number(snapshot.weeklyReturn || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   
-                  {/* Portfolio Monthly Return % */}
+                  {/* Monthly Return % */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography 
                       variant="tableCellSmall" 
-                      sx={{ color: snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? 'success.main' : 'error.main' }}
+                      sx={{ color: snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
-                      {snapshot.portfolioMonthlyReturn && Number(snapshot.portfolioMonthlyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.portfolioMonthlyReturn || 0))}
+                      {snapshot.monthlyReturn && Number(snapshot.monthlyReturn) >= 0 ? '+' : ''}
+                      {formatPercentage(Number(snapshot.monthlyReturn || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   
-                  {/* Portfolio YTD Return % */}
+                  {/* YTD Return % */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography 
                       variant="tableCellSmall" 
-                      sx={{ color: snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? 'success.main' : 'error.main' }}
+                      sx={{ color: snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
-                      {snapshot.portfolioYtdReturn && Number(snapshot.portfolioYtdReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.portfolioYtdReturn || 0))}
+                      {snapshot.ytdReturn && Number(snapshot.ytdReturn) >= 0 ? '+' : ''}
+                      {formatPercentage(Number(snapshot.ytdReturn || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   
-                  {/* Portfolio Volatility % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography variant="tableCellSmall" >
-                      {formatPercentage(Number(snapshot.portfolioVolatility || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Portfolio Max Drawdown % */}
+                  {/* Total Return % */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography 
                       variant="tableCellSmall" 
-                      sx={{ color: 'error.main' }}
+                      sx={{ color: snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? 'success.main' : 'error.main' }}
                     >
-                      -{formatPercentage(Number(snapshot.portfolioMaxDrawdown || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-
-                  {/* Asset Daily Return % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography 
-                      variant="tableCellSmall" 
-                      sx={{ color: snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? 'success.main' : 'error.main' }}
-                    >
-                      {snapshot.assetDailyReturn && Number(snapshot.assetDailyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.assetDailyReturn || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Asset Weekly Return % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography 
-                      variant="tableCellSmall" 
-                      sx={{ color: snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? 'success.main' : 'error.main' }}
-                    >
-                      {snapshot.assetWeeklyReturn && Number(snapshot.assetWeeklyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.assetWeeklyReturn || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Asset Monthly Return % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography 
-                      variant="tableCellSmall" 
-                      sx={{ color: snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? 'success.main' : 'error.main' }}
-                    >
-                      {snapshot.assetMonthlyReturn && Number(snapshot.assetMonthlyReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.assetMonthlyReturn || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Asset YTD Return % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography 
-                      variant="tableCellSmall" 
-                      sx={{ color: snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? 'success.main' : 'error.main' }}
-                    >
-                      {snapshot.assetYtdReturn && Number(snapshot.assetYtdReturn) >= 0 ? '+' : ''}
-                      {formatPercentage(Number(snapshot.assetYtdReturn || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Asset Volatility % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography variant="tableCellSmall" >
-                      {formatPercentage(Number(snapshot.assetVolatility || 0))}
-                    </ResponsiveTypography>
-                  </TableCell>
-                  
-                  {/* Asset Max Drawdown % */}
-                  <TableCell align="right" sx={{ py: 1 }}>
-                    <ResponsiveTypography 
-                      variant="tableCellSmall" 
-                      sx={{ color: 'error.main' }}
-                    >
-                      -{formatPercentage(Number(snapshot.assetMaxDrawdown || 0))}
+                      {snapshot.totalReturn && Number(snapshot.totalReturn) >= 0 ? '+' : ''}
+                      {formatPercentage(Number(snapshot.totalReturn || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   

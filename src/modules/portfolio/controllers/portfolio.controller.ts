@@ -19,6 +19,7 @@ import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { PositionManagerService } from '../services/position-manager.service';
 import { InvestorHoldingService } from '../services/investor-holding.service';
+import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
@@ -39,6 +40,7 @@ export class PortfolioController {
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly positionManagerService: PositionManagerService,
     private readonly investorHoldingService: InvestorHoldingService,
+    private readonly portfolioSnapshotService: PortfolioSnapshotService,
     private readonly accountValidationService: AccountValidationService,
   ) {}
 
@@ -582,29 +584,44 @@ export class PortfolioController {
   async getPerformanceMetrics(@Param('id', ParseUUIDPipe) id: string): Promise<{
     totalReturn: number;
     annualizedReturn: number;
+    ytdReturn: number;
   }> {
-    // const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
-     const portfolio = await this.portfolioService.getPortfolioDetails(id);
-    
-    // // If we have historical data, use it
-    // if (performanceSummary.twr1Year !== 0) {
-    //   return {
-    //     totalReturn: performanceSummary.twr1Year,
-    //     annualizedReturn: performanceSummary.twr1Year,
-    //   };
-    // }
-    
-    // Fallback: Calculate basic return based on unrealized P&L
-    const totalValue = parseFloat(portfolio.totalValue.toString());
-    const unrealizedPL = parseFloat(portfolio.unrealizedPl.toString());
-    
-    // Calculate return as percentage of unrealized P&L vs total value
-    const totalReturn = totalValue > 0 ? (unrealizedPL / totalValue) * 100 : 0;
-    
-    return {
-      totalReturn: totalReturn,
-      annualizedReturn: totalReturn, // For now, use same value as total return
-    };
+    try {
+      // Try to get performance data from latest portfolio snapshot
+      const latestSnapshot = await this.portfolioSnapshotService.getLatestPortfolioSnapshot(id);
+      
+      if (latestSnapshot) {
+        // Use data from portfolio snapshot
+        return {
+          totalReturn: latestSnapshot.totalReturn || 0,
+          annualizedReturn: latestSnapshot.monthlyReturn || 0, // Use monthly return as annualized
+          ytdReturn: latestSnapshot.ytdReturn || 0,
+        };
+      }
+      
+      // Fallback: Calculate basic return based on portfolio data
+      const portfolio = await this.portfolioService.getPortfolioDetails(id);
+      const totalValue = parseFloat(portfolio.totalValue.toString());
+      const unrealizedPL = parseFloat(portfolio.unrealizedPl.toString());
+      
+      // Calculate return as percentage of unrealized P&L vs total value
+      const totalReturn = totalValue > 0 ? (unrealizedPL / totalValue) * 100 : 0;
+      
+      return {
+        totalReturn: totalReturn,
+        annualizedReturn: totalReturn,
+        ytdReturn: totalReturn, // For fallback, use same as total return
+      };
+    } catch (error) {
+      console.error(`Error getting performance metrics for portfolio ${id}:`, error);
+      
+      // Final fallback: return zeros
+      return {
+        totalReturn: 0,
+        annualizedReturn: 0,
+        ytdReturn: 0,
+      };
+    }
   }
 
   /**

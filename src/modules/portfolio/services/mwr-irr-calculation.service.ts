@@ -227,13 +227,17 @@ export class MWRIRRCalculationService {
       );
 
       // Convert to our CashFlow interface format
-      const cashFlows: CashFlow[] = result.data.map(cf => ({
-        date: cf.flowDate instanceof Date ? cf.flowDate : new Date(cf.flowDate),
-        amount: cf.netAmount, // netAmount already has correct sign based on type
-        type: cf.netAmount >= 0 ? 'INFLOW' : 'OUTFLOW'
-      }));
-
-      this.logger.log(`Retrieved ${cashFlows.length} cash flows for portfolio ${portfolioId} from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+      const cashFlows: CashFlow[] = result.data.map(cf => {
+        const date = cf.flowDate instanceof Date ? cf.flowDate : new Date(cf.flowDate);
+        const amount = cf.netAmount; // netAmount already has correct sign based on type
+        const type = cf.netAmount >= 0 ? 'INFLOW' : 'OUTFLOW';
+        
+        return {
+          date,
+          amount,
+          type
+        };
+      });
       
       return cashFlows;
     } catch (error) {
@@ -251,24 +255,32 @@ export class MWRIRRCalculationService {
     endDate: Date,
     granularity: SnapshotGranularity
   ): Promise<Array<{ date: Date; value: number }>> {
+    const startOfDate = new Date(startDate);
+    startOfDate.setHours(0, 0, 0, 0);
+    const endOfDate = new Date(endDate);
+    endOfDate.setHours(23, 59, 59, 999);
+    
     const snapshots = await this.portfolioSnapshotRepo
       .createQueryBuilder('snapshot')
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
+      .andWhere('snapshot.snapshotDate >= :startDate', { startDate: startOfDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: endOfDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')
       .getMany();
-
-    return snapshots.map(snapshot => {
+    
+    const result = snapshots.map(snapshot => {
       const date = snapshot.snapshotDate instanceof Date ? snapshot.snapshotDate : new Date(snapshot.snapshotDate);
-      this.logger.log(`Portfolio snapshot date: ${snapshot.snapshotDate} (type: ${typeof snapshot.snapshotDate}) -> ${date} (type: ${typeof date})`);
+      const value = Number(snapshot.totalPortfolioValue || 0);
+      
       return {
         date,
-        value: Number(snapshot.totalPortfolioValue || 0)
+        value
       };
     });
+    
+    return result;
   }
 
   /**
@@ -319,20 +331,31 @@ export class MWRIRRCalculationService {
       const currValue = portfolioValues[i].value;
       const prevDate = portfolioValues[i - 1].date;
       const currDate = portfolioValues[i].date;
+      const endofPrevDate = new Date(prevDate.getTime() + 24 * 60 * 60 * 1000);
+      const endofCurrDate = new Date(currDate.getTime() + 24 * 60 * 60 * 1000);
       
-      this.logger.log(`Processing portfolio values: prevDate=${prevDate} (type: ${typeof prevDate}), currDate=${currDate} (type: ${typeof currDate})`);
-
-      // Calculate cash flows in this period
+      // Calculate net cash flow for this specific period only
       const periodCashFlows = cashFlows.filter(cf => 
-        cf.date >= prevDate && cf.date < currDate
+        cf.date > endofPrevDate && cf.date <= endofCurrDate
       );
 
       const netCashFlow = periodCashFlows.reduce((sum, cf) => {
-        return sum + (cf.type === 'INFLOW' ? cf.amount : -cf.amount);
+        const amount = cf.type === 'INFLOW' ? cf.amount : -cf.amount;
+        return sum + amount;
       }, 0);
 
-      // Calculate period return
-      const periodReturn = (currValue - prevValue - netCashFlow) / prevValue;
+      this.logger.log(`🔍 MWR DEBUG: Net cash flow for period: ${netCashFlow} from ${prevDate.toISOString()} to ${currDate.toISOString()}`);
+
+      // Calculate period return with proper logic
+      let periodReturn = 0;
+      if (prevValue === currValue && netCashFlow !== 0) {
+        // Portfolio value unchanged but cash flows occurred - this means 
+        // the cash flows were offset by market movements, so return is 0
+        periodReturn = 0;
+      } else {
+        // Normal calculation: (End Value - Start Value - Net Cash Flow) / Start Value
+        periodReturn = (currValue - prevValue - netCashFlow) / prevValue;
+      }
       
       // Weight by time period
       const timeWeight = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -341,7 +364,9 @@ export class MWRIRRCalculationService {
       totalWeight += timeWeight;
     }
 
-    return totalWeight > 0 ? (totalWeightedReturn / totalWeight) * 100 : 0;
+    const finalMWR = totalWeight > 0 ? (totalWeightedReturn / totalWeight) * 100 : 0;
+
+    return finalMWR;
   }
 
   /**

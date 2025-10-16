@@ -82,6 +82,10 @@ export class PerformanceSnapshotService {
   ): Promise<PerformanceSnapshotResult> {
     const date = typeof snapshotDate === 'string' ? new Date(snapshotDate) : snapshotDate;
     
+    if (!date || isNaN(date.getTime())) {
+      throw new Error(`Invalid snapshot date: ${snapshotDate}`);
+    }
+    
     this.logger.log(`Creating performance snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}`);
 
     return await this.dataSource.transaction(async manager => {
@@ -612,6 +616,27 @@ export class PerformanceSnapshotService {
         error: error.message
       };
     }
+  }
+
+  /**
+   * Get latest portfolio performance snapshot
+   */
+  async getLatestPortfolioPerformanceSnapshot(
+    portfolioId: string,
+    granularity?: SnapshotGranularity
+  ): Promise<PortfolioPerformanceSnapshot | null> {
+    const query = this.portfolioPerformanceRepo
+      .createQueryBuilder('snapshot')
+      .where('snapshot.portfolioId = :portfolioId', { portfolioId })
+      .andWhere('snapshot.isActive = :isActive', { isActive: true })
+      .orderBy('snapshot.snapshotDate', 'DESC')
+      .limit(1);
+
+    if (granularity) {
+      query.andWhere('snapshot.granularity = :granularity', { granularity });
+    }
+
+    return await query.getOne();
   }
 
   /**

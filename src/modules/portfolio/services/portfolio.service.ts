@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Portfolio } from '../entities/portfolio.entity';
@@ -211,6 +211,9 @@ export class PortfolioService {
       portfolio.unrealizedAssetPnL = newFields.unrealizedAssetPnL;
       portfolio.unrealizedInvestPnL = newFields.unrealizedInvestPnL;
       portfolio.unrealizedAllPnL = newFields.unrealizedAllPnL;
+      
+      // Add calculated totalCapitalValue as a computed property
+      (portfolio as any).totalCapitalValue = newFields.totalCapitalValue;
     } catch (error) {
       console.error(`Error calculating real-time values for portfolio ${portfolioId}:`, error);
       // Fallback to old calculation method
@@ -547,6 +550,7 @@ export class PortfolioService {
             totalAssetValue: newFields.totalAssetValue,
             totalInvestValue: newFields.totalInvestValue,
             totalAllValue: newFields.totalAllValue,
+            totalCapitalValue: newFields.totalCapitalValue,
             realizedAssetPnL: newFields.realizedAssetPnL,
             realizedInvestPnL: newFields.realizedInvestPnL,
             realizedAllPnL: newFields.realizedAllPnL,
@@ -631,6 +635,9 @@ export class PortfolioService {
       portfolio.unrealizedAssetPnL = newFields.unrealizedAssetPnL;
       portfolio.unrealizedInvestPnL = newFields.unrealizedInvestPnL;
       portfolio.unrealizedAllPnL = newFields.unrealizedAllPnL;
+      
+      // Add calculated totalCapitalValue as a computed property
+      (portfolio as any).totalCapitalValue = newFields.totalCapitalValue;
 
       // Save updated values to database
       await this.portfolioEntityRepository.save(portfolio);
@@ -947,6 +954,7 @@ export class PortfolioService {
     totalAssetValue: number;
     totalInvestValue: number;
     totalAllValue: number;
+    totalCapitalValue: number;
     realizedAssetPnL: number;
     realizedInvestPnL: number;
     realizedAllPnL: number;
@@ -1007,10 +1015,14 @@ export class PortfolioService {
       }
     }
 
+    // Calculate total capital value from cash flows (total invested amount)
+    const totalCapitalValue = await this.calculateTotalCapitalValueFromCashFlows(portfolioId);
+
     return {
       totalAssetValue: assetValue,
       totalInvestValue: assetValue + totalDepositValue,
       totalAllValue: assetValue + totalDepositValue + cashBalance,
+      totalCapitalValue: totalCapitalValue,
       realizedAssetPnL: realizedAssetPnL,
       realizedInvestPnL: realizedAssetPnL + totalDepositRealizedPnL,
       realizedAllPnL: realizedAssetPnL + totalDepositRealizedPnL,
@@ -1018,6 +1030,35 @@ export class PortfolioService {
       unrealizedInvestPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
       unrealizedAllPnL: calculatedValues.unrealizedPl + totalDepositUnrealizedPnL,
     };
+  }
+
+  /**
+   * Calculate total capital value from cash flows
+   * @param portfolioId - Portfolio ID
+   * @returns Promise<number> Total capital value
+   */
+  private async calculateTotalCapitalValueFromCashFlows(portfolioId: string): Promise<number> {
+    try {
+      // Get cash flows for this portfolio, filter by DEPOSIT and WITHDRAWAL types
+      const cashFlows = await this.cashFlowRepository.find({
+        where: { 
+          portfolioId,
+          type: In(['DEPOSIT', 'WITHDRAWAL'])
+        },
+        order: { flowDate: 'ASC' }
+      });
+
+      // Calculate total capital value using NetAmount
+      // NetAmount is positive for DEPOSIT (inflow) and negative for WITHDRAWAL (outflow)
+      const totalCapitalValue = cashFlows.reduce((sum, cashFlow) => {
+        return sum + cashFlow.netAmount;
+      }, 0);
+
+      return Number(totalCapitalValue.toFixed(2));
+    } catch (error) {
+      console.error(`Error calculating total capital value for portfolio ${portfolioId}:`, error);
+      return 0;
+    }
   }
 
   /**

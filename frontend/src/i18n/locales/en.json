@@ -103,6 +103,7 @@
     "publicTooltip": "Public Portfolio - Can be copied by other users",
     "fund": "Fund",
     "individual": "Individual",
+    "capitalValue": "Capital Value",
     "investmentValue": "Investment Value",
     "unrealizedPL": "Unrealized P&L",
     "realizedPL": "Realized P&L",
@@ -129,7 +130,7 @@
     "tradingActivity": "Trading Activity",
     "tradingVolume": "Trading & Volume",
     "totalTrades": "Total Trades",
-    "totalVolume": "Total Volume",
+    "totalTradedValue": "Total Value Traded",
     "plCosts": "P&L & Costs",
     "profitCosts": "Profit & Costs",
     "feesTaxes": "Fees & Taxes",
@@ -1157,9 +1158,9 @@
     "noData": "No benchmark data available",
     "subtitle": "Portfolio performance vs {{benchmarkName}}",
     "portfolio": "Portfolio",
-    "excess": "Excess",
+    "Difference": "Difference",
     "trackingError": "Tracking Error",
-    "tooltipContent": {
+    "tooltip": {
       "title": "Investor Notes:",
       "twr": "TWR",
       "twrDescription": "reflects fund management capability, removing cash flow impact.",
@@ -1174,7 +1175,7 @@
     "portfolio": "Portfolio (MWR)",
     "difference": "Difference",
     "noData": "No data available for MWR chart",
-    "tooltipContent": {
+    "tooltip": {
       "title": "Investor Notes:",
       "mwr": "MWR",
       "mwrDescription": "reflects actual investor returns, may vary based on timing of capital contributions/withdrawals.",

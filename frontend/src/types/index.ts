@@ -60,6 +60,7 @@ export interface Portfolio extends BaseEntity {
   totalAssetValue: number;
   totalInvestValue: number;
   totalAllValue: number;
+  totalCapitalValue: number;
   realizedAssetPnL: number;
   realizedInvestPnL: number;
   realizedAllPnL: number;
@@ -157,6 +158,7 @@ export interface PaginatedResponse<T> {
 export interface PerformanceMetrics {
   totalReturn: number;
   annualizedReturn: number;
+  ytdReturn: number;
   volatility: number;
   sharpeRatio: number;
   maxDrawdown: number;

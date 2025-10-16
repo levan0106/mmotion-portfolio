@@ -1,5 +1,64 @@
 # Portfolio Management System - Version History
 
+## Version 1.3.3 - Snapshot UI Field Optimization & Return Metrics Enhancement
+**Release Date: January 15, 2025**
+
+### 🎯 Snapshot UI Field Optimization
+- **Hidden Unnecessary Fields**
+  - Removed Portfolio Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD fields
+  - Removed Asset Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD fields
+  - Cleaned up cluttered snapshot table display
+  - Improved focus on essential data
+
+- **Added Essential Return Fields**
+  - Daily Return % - Daily performance percentage
+  - Weekly Return % - Weekly performance percentage  
+  - Monthly Return % - Monthly performance percentage
+  - YTD Return % - Year-to-date performance percentage
+  - Total Return % - Total performance percentage
+
+### 🎨 Visual Enhancements
+- **Color-Coded Returns**
+  - Green display for positive returns
+  - Red display for negative returns
+  - Plus sign (+) for positive values
+  - Professional percentage formatting
+
+- **Responsive Design**
+  - Optimized for all screen sizes
+  - Mobile-friendly table layout
+  - Consistent typography application
+
+### 🔧 Technical Improvements
+- **Code Optimization**
+  - Removed unused imports
+  - Cleaned up code structure
+  - Improved maintainability
+  - Consistent patterns across components
+
+- **Data Integration**
+  - Connected to backend dailyReturn, weeklyReturn, monthlyReturn, ytdReturn, totalReturn
+  - Proper data flow from API to UI
+  - Error handling for missing data
+
+### 📱 Components Updated
+- **PortfolioSummaryTab.tsx**
+  - Hidden 12 unnecessary performance fields
+  - Added 5 new return fields
+  - Updated imports and formatting
+
+- **SnapshotDashboard.tsx**
+  - Hidden 12 unnecessary performance fields
+  - Added 5 new return fields
+  - Updated imports and formatting
+
+### ✅ Quality Assurance
+- No linting errors
+- All imports properly managed
+- Responsive design verified
+- Color coding functional
+- Data integration confirmed
+
 ## Version 1.3.2 - ResponsiveTypography System Implementation & Modal Enhancement
 **Release Date: January 10, 2025**
 

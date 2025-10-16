@@ -1,8 +1,8 @@
 # Portfolio Management System - Active Context
 
 ## Current Work Focus
-**Phase: Multi-Language Implementation and Component Enhancement - COMPLETED**
-**Latest Update: Multi-Language Support Implementation and Portfolio Card Enhancement (Current Session)**
+**Phase: UI Field Optimization and Return Metrics Enhancement - COMPLETED**
+**Latest Update: Snapshot UI Field Management and Return Metrics Implementation (Current Session)**
 **Code Version: Backend v1.3.2, Frontend v1.3.1 - Production Ready with Enhanced Trading UI**
 **AWS Deployment: Project deployed on AWS with frontend on CloudFront and backend on EC2**
 **Git Status: Clean - All changes committed and pushed to master**
@@ -48,6 +48,16 @@
 - ✅ **Production Readiness** (Refactored system ready for production deployment)
 - ✅ **Portfolio Detail Mobile Layout Optimization** (Complete mobile layout improvements for portfolio detail tabs)
 - ✅ **Tab Navigation Enhancement** (Scrollable tabs with mobile-optimized sizing and touch-friendly interactions)
+- ✅ **Snapshot UI Field Optimization** (Hidden unnecessary performance fields from snapshot tables)
+  - **Hidden Fields**: Portfolio Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD
+  - **Hidden Asset Fields**: Asset Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD
+  - **Components Updated**: PortfolioSummaryTab.tsx and SnapshotDashboard.tsx
+  - **Code Cleanup**: Removed unused formatPercentage imports and optimized imports
+- ✅ **Return Metrics Enhancement** (Added essential return fields to snapshot UI)
+  - **New Fields**: Daily Return %, Weekly Return %, Monthly Return %, YTD Return %, Total Return %
+  - **Color Coding**: Green for positive returns, red for negative returns
+  - **Data Integration**: Connected to backend dailyReturn, weeklyReturn, monthlyReturn, ytdReturn, totalReturn
+  - **Responsive Design**: Optimized for all screen sizes with proper formatting
 - ✅ **Multi-Language Support Implementation** (Comprehensive i18n implementation across all components)
 - ✅ **PublicPortfolioSelector Translation** (Added complete translation support for portfolio template selection)
 - ✅ **Portfolio Card Enhancement** (Added hideActions prop for dashboard mode display)

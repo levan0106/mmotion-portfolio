@@ -163,7 +163,7 @@ const PortfolioDetail: React.FC = () => {
 
   // Calculate trading summary
   const totalTrades = trades.length;
-  const totalTradeVolume = trades.reduce((sum, trade) => sum + (Number(trade.quantity) * Number(trade.price) || 0), 0);
+  const totalTradeValue = trades.reduce((sum, trade) => sum + (Number(trade.quantity) * Number(trade.price) || 0), 0);
   const totalTradeFeesAndTaxes = trades.reduce((sum, trade) => sum + (Number(trade.fee) || 0) + (Number(trade.tax) || 0), 0);
   const totalTradeRealizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
@@ -368,10 +368,10 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }} ellipsis>
-                     {t('portfolio.investmentValue')}
+                     {t('portfolio.capitalValue')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue" ellipsis>
-                     {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
+                     {formatCurrency(portfolio.totalCapitalValue || 0, portfolio.baseCurrency)}
                    </ResponsiveTypography>
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -462,15 +462,15 @@ const PortfolioDetail: React.FC = () => {
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     {t('portfolio.annualized')}
+                     {t('portfolio.ytdReturn')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
                      variant="cardValue"
                      sx={{ 
-                       color: (performanceData?.annualizedReturn || 0) >= 0 ? '#059669' : '#dc2626'
+                       color: (performanceData?.ytdReturn || 0) >= 0 ? '#059669' : '#dc2626'
                      }}
                    >
-                     {performanceData ? formatPercentage(performanceData.annualizedReturn) : t('common.noData')}
+                     {performanceData ? formatPercentage(performanceData.ytdReturn) : t('common.noData')}
                    </ResponsiveTypography>
                  </Box>
                </Box>
@@ -537,10 +537,10 @@ const PortfolioDetail: React.FC = () => {
                  </Box>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     {t('portfolio.totalVolume')}
+                     {t('portfolio.totalTradedValue')}
                    </ResponsiveTypography>
                    <ResponsiveTypography variant="cardValue">
-                     {formatCurrency(totalTradeVolume, portfolio?.baseCurrency || 'VND')}
+                     {formatCurrency(totalTradeValue, portfolio?.baseCurrency || 'VND')}
                    </ResponsiveTypography>
                  </Box>
                </Box>

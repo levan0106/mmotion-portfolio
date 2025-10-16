@@ -101,7 +101,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             </ResponsiveTypography>
           ))}
           <ResponsiveTypography variant="chartTooltip" color="text.secondary" sx={{ mt: 1 }}>
-            {t('benchmark.tooltip.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
+            {t('benchmark.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
           </ResponsiveTypography>
         </Paper>
       );
@@ -277,7 +277,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
                 <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                   <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
                   <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    {t('benchmark.excess')}
+                    {t('benchmark.difference')}
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography 

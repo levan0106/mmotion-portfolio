@@ -185,6 +185,9 @@ export class TWRCalculationService {
   ): Promise<number> {
     const startDate = new Date(snapshotDate);
     startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
 
     // Get asset snapshots for the period
     const snapshots = await this.assetSnapshotRepo
@@ -192,7 +195,7 @@ export class TWRCalculationService {
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('snapshot.assetId = :assetId', { assetId })
       .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: snapshotDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')
@@ -218,6 +221,9 @@ export class TWRCalculationService {
   ): Promise<number> {
     const startDate = new Date(snapshotDate);
     startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
 
     // Get asset snapshots for the asset type
     const snapshots = await this.assetSnapshotRepo
@@ -226,7 +232,7 @@ export class TWRCalculationService {
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('asset.type = :assetType', { assetType })
       .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: snapshotDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')
@@ -248,13 +254,16 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
 
     const snapshots = await this.portfolioSnapshotRepo
       .createQueryBuilder('snapshot')
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
-      .andWhere('snapshot.snapshotDate >= :startDate', { startDate: yearStart })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: snapshotDate })
+      .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')
@@ -276,14 +285,17 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
 
     const snapshots = await this.assetSnapshotRepo
       .createQueryBuilder('snapshot')
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('snapshot.assetId = :assetId', { assetId })
-      .andWhere('snapshot.snapshotDate >= :startDate', { startDate: yearStart })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: snapshotDate })
+      .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')
@@ -305,15 +317,18 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(snapshotDate);
+    endDate.setHours(23, 59, 59, 999);
 
     const snapshots = await this.assetSnapshotRepo
       .createQueryBuilder('snapshot')
       .leftJoin('snapshot.asset', 'asset')
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('asset.type = :assetType', { assetType })
-      .andWhere('snapshot.snapshotDate >= :startDate', { startDate: yearStart })
-      .andWhere('snapshot.snapshotDate <= :endDate', { endDate: snapshotDate })
+      .andWhere('snapshot.snapshotDate >= :startDate', { startDate })
+      .andWhere('snapshot.snapshotDate <= :endDate', { endDate })
       .andWhere('snapshot.granularity = :granularity', { granularity })
       .andWhere('snapshot.isActive = :isActive', { isActive: true })
       .orderBy('snapshot.snapshotDate', 'ASC')

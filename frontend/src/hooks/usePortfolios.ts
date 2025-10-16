@@ -149,21 +149,6 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
     }
   }, [accountId, queryClient, portfolioId]);
   
-  // Fetch portfolio NAV
-  // const {
-  //   data: navData,
-  //   isLoading: isNavLoading,
-  //   error: navError,
-  // } = useQuery(
-  //   ['portfolio-nav', portfolioId, accountId],
-  //   () => apiService.getPortfolioNav(portfolioId),
-  //   {
-  //     enabled: !!portfolioId && !!accountId && !accountLoading,
-  //     staleTime: 1 * 60 * 1000, // 1 minute
-  //     refetchInterval: false, // Disabled auto refresh
-  //   }
-  // );
-
   // Fetch portfolio performance
   const {
     data: performanceData,

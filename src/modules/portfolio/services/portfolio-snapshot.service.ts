@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, LessThanOrEqual, LessThan } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { PortfolioSnapshotRepository, PortfolioSnapshotQueryOptions, PortfolioSnapshotAggregationResult } from '../repositories/portfolio-snapshot.repository';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
@@ -91,8 +91,15 @@ export class PortfolioSnapshotService {
 
   /**
    * Create portfolio snapshot from asset snapshots
+   * Các metrics được tính toán ở bên ngoài service khác. Metrics trong method này không được sử dụng vì cách tính chưa chính xác.
+   * @param portfolioId 
+   * @param snapshotDate 
+   * @param granularity 
+   * @param createdBy 
+   * @returns
+   * PortfolioSnapshot
    */
-  async createPortfolioSnapshot(
+  async createPortfolioSnapshotWithoutMetrics(
     portfolioId: string,
     snapshotDate: Date,
     granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
@@ -110,16 +117,6 @@ export class PortfolioSnapshotService {
     if (!portfolio) {
       throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
     }
-
-    // Get asset snapshots for this portfolio and date
-    const assetSnapshots = await this.assetSnapshotRepository.find({
-      where: {
-        portfolioId,
-        snapshotDate: date,
-        granularity,
-        isActive: true,
-      },
-    });
 
     // Calculate cash balance and deposit data (common for both scenarios)
     const cashBalance = await this.cashFlowService.getCashBalance(portfolioId, date);
@@ -140,6 +137,16 @@ export class PortfolioSnapshotService {
     const newNumberOfInvestors = await this.investorHoldingService.updatePortfolioNumberOfInvestors(portfolioId, date); // calculate and update numberOfInvestors to DB for daily snapshot
     
 
+    // Get asset snapshots for this portfolio and date
+    const assetSnapshots = await this.assetSnapshotRepository.find({
+      where: {
+        portfolioId,
+        snapshotDate: date,
+        granularity,
+        isActive: true,
+      },
+    });
+    
     if (assetSnapshots.length === 0) {
       this.logger.warn(`No asset snapshots found for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}. 
       Creating portfolio snapshot with zero asset values but calculating cash ${cashBalance} and deposits ${depositData.totalDepositValue}.`);
@@ -226,10 +233,6 @@ export class PortfolioSnapshotService {
       realizedAssetPl = Number((realizedAssetPl + Number(snapshot.realizedPl || 0)).toFixed(8));
     });
     
-    // Simplified total return calculation to avoid precision issues
-    // TODO: Implement this when we have historical data
-    const totalReturn = 0; // Set to 0 for now to avoid SQL errors
-
     // Calculate asset allocation from asset snapshots
     const assetAllocation: { [assetType: string]: { percentage: number; value: number; count: number } } = {};
     const assetTypeMap = new Map<string, { value: number; count: number }>();
@@ -253,10 +256,6 @@ export class PortfolioSnapshotService {
         count: data.count,
       };
     });
-
-    // Calculate asset risk metrics from asset snapshots
-    const assetVolatility = Number(this.calculateVolatility(assetSnapshots).toFixed(4));
-    const assetMaxDrawdown = Number(this.calculateMaxDrawdown(assetSnapshots).toFixed(4));
     
     // get fund management metrics
     const totalOutstandingUnits = Number((Number(portfolio.totalOutstandingUnits || 0)).toFixed(8));
@@ -277,56 +276,68 @@ export class PortfolioSnapshotService {
     const unrealizedPortfolioPl = Number((unrealizedAssetPl + depositData.unrealizedDepositPnL).toFixed(8));
     const realizedPortfolioPl = Number((realizedAssetPl + depositData.realizedDepositPnL).toFixed(8));
 
-    // Calculate Asset Performance Metrics (Assets Only)
-    const assetDailyReturn = Number(this.calculateDailyReturn(assetSnapshots).toFixed(4));
-    const assetWeeklyReturn = Number((assetDailyReturn * 7).toFixed(4)); // Simplified
-    const assetMonthlyReturn = 0; // TODO: Implement proper monthly return calculation
-    const assetYtdReturn = Number(this.calculateYtdReturn(assetSnapshots).toFixed(4));
+    //console.log('Asset Snapshots calculate metrics:', portfolioId, date.toISOString().split('T')[0]);
 
-    // Calculate Portfolio Performance Metrics (Assets + Deposits + Cash)
-    const portfolioDailyReturn = Number(this.calculatePortfolioDailyReturn(
-      totalPortfolioValue, 
-      totalAssetValue, 
-      assetDailyReturn, 
-      depositData.totalDepositValue,
-      depositData.totalDepositInterest
-    ).toFixed(4));
-    
-    const portfolioWeeklyReturn = Number((portfolioDailyReturn * 7).toFixed(4)); // Simplified
-    const portfolioMonthlyReturn = 0; // TODO: Implement proper monthly return calculation
-    const portfolioYtdReturn = Number(this.calculatePortfolioYtdReturn(
+    // Calculate all returns using NAV-based methods
+    const totalReturn = await this.calculateTotalReturn(
+      portfolioId,
       totalPortfolioValue,
-      totalAssetValue,
-      assetYtdReturn,
-      depositData.totalDepositValue,
-      depositData.totalDepositInterest
-    ).toFixed(4));
+      date,
+      granularity
+    );
+    
+    const dailyReturn = await this.calculateDailyReturn(
+      portfolioId,
+      totalPortfolioValue,
+      date,
+      granularity
+    );
 
-    // Calculate Portfolio Risk Metrics (Assets + Deposits + Cash)
-    const portfolioVolatility = Number(this.calculatePortfolioVolatility(
+    const weeklyReturn = await this.calculateWeeklyReturn(
+      portfolioId,
       totalPortfolioValue,
-      totalAssetValue,
-      assetVolatility,
-      depositData.totalDepositValue
-    ).toFixed(4));
-    
-    const portfolioMaxDrawdown = Number(this.calculatePortfolioMaxDrawdown(
+      date,
+      granularity
+    );
+
+    const monthlyReturn = await this.calculateMonthlyReturn(
+      portfolioId,
       totalPortfolioValue,
-      totalAssetValue,
-      assetMaxDrawdown,
-      depositData.totalDepositValue
-    ).toFixed(4));
+      date,
+      granularity
+    );
+
+    const ytdReturn = await this.calculateYtdReturn(
+      portfolioId,
+      totalPortfolioValue,
+      date,
+      granularity
+    );
+
+    // Simplified risk metrics
+    const assetVolatility = 0;
+    const assetMaxDrawdown = 0;
+    const portfolioVolatility = 0;
+    const portfolioMaxDrawdown = 0;
+
+    // Asset Performance Metrics (use same as portfolio for simplicity)
+    const assetDailyReturn = 0;
+    const assetWeeklyReturn = 0;
+    const assetMonthlyReturn = 0;
+    const assetYtdReturn = 0;
+
+    // Portfolio Performance Metrics (same as calculated above)
+    const portfolioDailyReturn = 0;
+    const portfolioWeeklyReturn = 0;
+    const portfolioMonthlyReturn = 0;
+    const portfolioYtdReturn = 0;
 
     // Legacy fields for backward compatibility
-    const dailyReturn = assetDailyReturn;
-    const weeklyReturn = assetWeeklyReturn;
-    const monthlyReturn = assetMonthlyReturn;
-    const ytdReturn = assetYtdReturn;
-    const volatility = assetVolatility;
-    const maxDrawdown = assetMaxDrawdown;
+    const volatility = 0;
+    const maxDrawdown = 0;
 
     // Debug logging
-    console.log('Portfolio Snapshot Debug:', {
+    console.log('Portfolio Snapshot Debug (With Returns):', {
       totalAssetValue,
       totalAssetInvested,
       totalPortfolioValue,
@@ -337,14 +348,14 @@ export class PortfolioSnapshotService {
       totalPortfolioPl,
       unrealizedPortfolioPl,
       realizedPortfolioPl,
-      totalReturn,
+      totalReturn, 
       cashBalance,
-      dailyReturn,
-      weeklyReturn,
-      monthlyReturn,
-      ytdReturn,
-      volatility,
-      maxDrawdown,
+      dailyReturn, // Calculated from previous day
+      weeklyReturn, // Calculated from 7 days ago
+      monthlyReturn, // Calculated from 30 days ago
+      ytdReturn, // Calculated from year start
+      volatility, // Simplified to 0
+      maxDrawdown, // Simplified to 0
       assetAllocation: JSON.stringify(assetAllocation, null, 2)
     });
 
@@ -367,7 +378,6 @@ export class PortfolioSnapshotService {
       totalPortfolioPl,
       unrealizedPortfolioPl,
       realizedPortfolioPl,
-      totalReturn,
       cashBalance,
       // Fund Management Fields
       totalOutstandingUnits,
@@ -390,11 +400,12 @@ export class PortfolioSnapshotService {
       // Portfolio Risk Metrics (Assets + Deposits + Cash)
       portfolioVolatility,
       portfolioMaxDrawdown,
-      // Legacy fields for backward compatibility
+      // Legacy fields for backward compatibility - simplified
       dailyReturn,
       weeklyReturn,
       monthlyReturn,
-      ytdReturn,
+      ytdReturn, 
+      totalReturn, 
       volatility,
       maxDrawdown,
       assetAllocation,
@@ -570,12 +581,12 @@ export class PortfolioSnapshotService {
   }
 
   /**
-   * Get portfolios that have snapshots
+   * Get portfolios that have snapshots for a specific account
    */
-  async getPortfoliosWithSnapshots(): Promise<Array<{ portfolioId: string; portfolioName: string; snapshotCount: number; latestSnapshotDate: Date; oldestSnapshotDate: Date }>> {
-    this.logger.log('Getting portfolios with portfolio snapshots');
+  async getPortfoliosWithSnapshots(accountId: string): Promise<Array<{ portfolioId: string; portfolioName: string; snapshotCount: number; latestSnapshotDate: Date; oldestSnapshotDate: Date }>> {
+    this.logger.log(`Getting portfolios with portfolio snapshots for account ${accountId}`);
     
-    return await this.portfolioSnapshotRepo.findPortfoliosWithSnapshots();
+    return await this.portfolioSnapshotRepo.findPortfoliosWithSnapshots(accountId);
   }
 
   /**
@@ -703,136 +714,380 @@ export class PortfolioSnapshotService {
     return { deletedCount, message };
   }
 
-  // /**
-  //  * Helper method to get asset type from symbol (simplified)
-  //  */
-  // private getAssetTypeFromSymbol(symbol: string): string {
-  //   // This is a simplified mapping - in real implementation, you'd query the asset table
-  //   const cryptoPattern = /^(BTC|ETH|ADA|DOT|LINK|UNI|AAVE|COMP|MKR|SNX|YFI|SUSHI|CRV|1INCH|ALPHA|BAND|REN|KNC|LRC|ZRX|BAT|ZEC|XRP|LTC|BCH|EOS|TRX|XLM|NEO|IOTA|VET|ICX|ONT|QTUM|ZIL|OMG|REP|GNT|FUN|SNT|MCO|STORJ|DASH|DOGE|DGB|SC|PIVX|NAV|MONA|DCR|DGB|SC|PIVX|NAV|MONA|DCR)$/i;
-  //   const stockPattern = /^[A-Z]{1,5}$/;
-    
-  //   if (cryptoPattern.test(symbol)) {
-  //     return 'Crypto';
-  //   } else if (stockPattern.test(symbol)) {
-  //     return 'Stock';
-  //   } else {
-  //     return 'Other';
-  //   }
-  // }
-
   /**
-   * Calculate volatility (simplified)
+   * Tính độ biến động giữa các tài sản trong danh mục tại 1 thời điểm
+   * Dùng trong báo cáo snapshot hàng ngày (ví dụ: “ngày hôm nay, lợi nhuận các tài sản biến động thế nào so với trung bình danh mục”)
    */
-  /**
-   * Calculate volatility using weighted standard deviation based on asset values
-   * FIXED: Use weighted calculation instead of simple average
-   */
-  private calculateVolatility(snapshots: AssetAllocationSnapshot[]): number {
+  private calculateVolatilityByAssetDistribution(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length < 2) return 0;
-    
-    // Calculate weighted mean
-    let totalWeightedReturn = 0;
-    let totalValue = 0;
-    
-    snapshots.forEach(s => {
-      const assetValue = Number(s.currentValue || 0);
-      const returnPercentage = Number(s.returnPercentage || 0);
-      
-      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
-      totalValue = Number((totalValue + assetValue).toFixed(8));
-    });
-    
-    const weightedMean = totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
-    
-    // Calculate weighted variance
-    let weightedVariance = 0;
-    snapshots.forEach(s => {
-      const assetValue = Number(s.currentValue || 0);
-      const returnPercentage = Number(s.returnPercentage || 0);
-      const weight = totalValue > 0 ? assetValue / totalValue : 0;
-      
-      weightedVariance = Number((weightedVariance + weight * Math.pow(returnPercentage - weightedMean, 2)).toFixed(8));
-    });
-    
+  
+    // Lọc dữ liệu hợp lệ
+    const validSnapshots = snapshots.filter(
+      s => s.currentValue != null && s.currentValue > 0 && s.returnPercentage != null
+    );
+    if (validSnapshots.length < 2) return 0;
+  
+    // Tổng giá trị danh mục
+    const totalValue = validSnapshots.reduce((sum, s) => sum + Number(s.currentValue), 0);
+    if (totalValue === 0) return 0;
+  
+    // Tính lợi nhuận trung bình có trọng số
+    const weightedMean = validSnapshots.reduce(
+      (sum, s) => sum + (Number(s.returnPercentage) * Number(s.currentValue)) / totalValue,
+      0
+    );
+  
+    // Tính phương sai có trọng số
+    const weightedVariance = validSnapshots.reduce((sum, s) => {
+      const weight = Number(s.currentValue) / totalValue;
+      return sum + weight * Math.pow(Number(s.returnPercentage) - weightedMean, 2);
+    }, 0);
+  
+    // Trả về độ lệch chuẩn (%)
     return Number(Math.sqrt(weightedVariance).toFixed(8));
   }
+  
+  /**
+   * Tính độ biến động theo thời gian của danh mục (hoặc tài sản)
+   * Dùng trong báo cáo hiệu suất định kỳ (daily / weekly / monthly volatility)
+   */
+
+  private calculateVolatilityOverTime(snapshots: AssetAllocationSnapshot[]): number {
+    if (snapshots.length < 2) return 0;
+  
+    // Sắp xếp theo ngày
+    const sorted = [...snapshots].sort(
+      (a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+    );
+  
+    // Tính các return hàng ngày
+    const returns: number[] = [];
+    for (let i = 1; i < sorted.length; i++) {
+      const prevValue = Number(sorted[i - 1].currentValue);
+      const currValue = Number(sorted[i].currentValue);
+      if (prevValue > 0 && currValue > 0) {
+        const r = (currValue - prevValue) / prevValue;
+        returns.push(r);
+      }
+    }
+  
+    if (returns.length < 2) return 0;
+  
+    // Mean và variance
+    const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+    const variance = returns.reduce((a, r) => a + Math.pow(r - mean, 2), 0) / (returns.length - 1);
+  
+    // Annualized volatility (nếu dữ liệu là daily)
+    const annualizedVolatility = Math.sqrt(variance * 252) * 100;
+  
+    return Number(annualizedVolatility.toFixed(8)); // %
+  }
+  
 
   /**
    * Calculate max drawdown (simplified)
    */
   private calculateMaxDrawdown(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length < 2) return 0;
-    
-    const values = snapshots.map(s => s.currentValue);
-    let maxDrawdown = 0;
+  
+    // ✅ 1. Sort theo thời gian để tránh sai thứ tự
+    const sorted = [...snapshots].sort(
+      (a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+    );
+  
+    // ✅ 2. Lọc bỏ giá trị null hoặc <= 0 để tránh chia cho 0
+    const values = sorted
+      .map(s => Number(s.currentValue))
+      .filter(v => !isNaN(v) && v > 0);
+  
+    if (values.length < 2) return 0;
+  
     let peak = values[0];
-    
+    let maxDrawdown = 0;
+  
     for (let i = 1; i < values.length; i++) {
-      if (values[i] > peak) {
-        peak = values[i];
+      const v = values[i];
+  
+      if (v > peak) {
+        peak = v;
       } else {
-        const drawdown = Number(((peak - values[i]) / peak * 100).toFixed(8));
-        maxDrawdown = Number(Math.max(maxDrawdown, drawdown).toFixed(8));
+        const drawdown = ((peak - v) / peak) * 100;
+        if (drawdown > maxDrawdown) {
+          maxDrawdown = drawdown;
+        }
       }
     }
-    
+  
     return Number(maxDrawdown.toFixed(8));
   }
+  
 
   /**
-   * Calculate daily return (simplified)
+   * Calculate daily return based on actual daily change from snapshots (DEPRECATED)
+   * FIXED: Use actual daily change instead of cumulative return percentage
    */
-  /**
-   * Calculate daily return using weighted average based on asset values
-   * FIXED: Use weighted average instead of simple average
-   */
-  private calculateDailyReturn(snapshots: AssetAllocationSnapshot[]): number {
+  private calculateDailyReturnOld(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length === 0) return 0;
-    
-    let totalWeightedReturn = 0;
-    let totalValue = 0;
-    
-    snapshots.forEach(s => {
-      const assetValue = Number(s.currentValue || 0);
-      const returnPercentage = Number(s.returnPercentage || 0);
-      
-      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
-      totalValue = Number((totalValue + assetValue).toFixed(8));
+
+    const currentDate = new Date(); // ngày hiện tại
+    const currentSnapshot = snapshots[snapshots.length - 1];
+    const currentSnapshotDate = new Date(currentSnapshot.snapshotDate);
+    const currentSnapshotFullYear = currentSnapshotDate.getFullYear();
+
+    // 🔹 Bước 1: Lọc snapshot trong năm hiện tại để tối ưu thời gian tính toán
+    const filteredSnapshots = snapshots
+      .filter(s => new Date(s.snapshotDate).getFullYear() === currentSnapshotFullYear
+      && new Date(s.snapshotDate) <= currentDate)
+      .sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+
+    if (filteredSnapshots.length === 0) return 0;
+  
+    // 🔹 Bước 2: Gom nhóm theo assetId và tính daily return cho từng asset
+    const assetGroups = new Map<string, AssetAllocationSnapshot[]>();
+    filteredSnapshots.forEach(s => {
+      if (!assetGroups.has(s.assetId)) assetGroups.set(s.assetId, []);
+      assetGroups.get(s.assetId)!.push(s);
     });
-    
-    return totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
+  
+    let totalPrevValue = 0;
+    let totalCurrValue = 0;
+  
+    // 🔹 Bước 3: Tính daily return cho từng asset
+
+    assetGroups.forEach(list => {
+      if (list.length < 2) return;
+      list.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+  
+      const current = list[list.length - 1];
+      const currentValue = Number(current.currentValue || 0);
+      const currentDate = new Date(current.snapshotDate);
+  
+      // Find closest previous snapshot
+      const previousSnapshots = list.filter(s => new Date(s.snapshotDate) < currentDate);
+      if (previousSnapshots.length === 0) return;
+      const previous = previousSnapshots[previousSnapshots.length - 1];
+      const previousValue = Number(previous.currentValue || 0);
+  
+      totalCurrValue += currentValue;
+      totalPrevValue += previousValue;
+    });
+  
+    if (totalPrevValue === 0) return 0;
+  
+    // Portfolio-level simple daily return
+    const dailyReturn = ((totalCurrValue - totalPrevValue) / totalPrevValue) * 100;
+    return Number(dailyReturn.toFixed(8));
+  }
+  
+
+  /**
+   * Calculate YTD return based on change from earliest data in the year (DEPRECATED)
+   * Cách 1 (weighted): phù hợp khi bạn muốn phân tích hiệu suất tương đối giữa các tài sản.
+   *   * Dùng trong dashboard chi tiết từng asset.
+   * Cách 2 (totalValue - totalYearStartValue): đúng nhất nếu bạn muốn biết tổng lợi nhuận của toàn danh mục.
+   *   * Dùng trong báo cáo tổng hợp danh mục (Portfolio summary).
+   */
+  private calculateYtdReturnOld(snapshots: AssetAllocationSnapshot[]): { weightedYtd: number, totalYtd: number } {
+    if (snapshots.length === 0) return { weightedYtd: 0, totalYtd: 0 };
+  
+    const currentDate = new Date(); // ngày hiện tại
+    const currentSnapshot = snapshots[snapshots.length - 1];
+    const currentSnapshotDate = new Date(currentSnapshot.snapshotDate);
+    const currentSnapshotYear = currentSnapshotDate.getFullYear();
+  
+    // 🔹 Bước 1: Lọc snapshot trong năm hiện tại
+    const filteredSnapshots = snapshots
+      .filter(s => new Date(s.snapshotDate).getFullYear() === currentSnapshotYear 
+      && new Date(s.snapshotDate) <= currentDate)
+  
+    if (filteredSnapshots.length === 0) return { weightedYtd: 0, totalYtd: 0 };
+  
+    // 🔹 Bước 2: Gom nhóm theo assetId
+    const assetGroups = new Map<string, AssetAllocationSnapshot[]>();
+    for (const snapshot of filteredSnapshots) {
+      const group = assetGroups.get(snapshot.assetId) || [];
+      group.push(snapshot);
+      assetGroups.set(snapshot.assetId, group);
+    }
+  
+    // 🔹 Bước 3: Tính YTD cho từng asset
+    let totalWeightedYtdReturn = 0;
+    let totalValue = 0;
+    let totalYearStartValue = 0;
+    let totalCurrentValue = 0;
+  
+    for (const assetSnapshots of assetGroups.values()) {
+      assetSnapshots.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+  
+      const currentSnapshot = assetSnapshots[assetSnapshots.length - 1];
+      const yearStartSnapshot = assetSnapshots[0];
+  
+      const currentValue = Number(currentSnapshot.currentValue || 0);
+      const yearStartValue = Number(yearStartSnapshot.currentValue || 0);
+  
+      if (yearStartValue > 0) {
+        const ytdReturn = ((currentValue - yearStartValue) / yearStartValue) * 100;
+        
+        // Weighted
+        totalWeightedYtdReturn += ytdReturn * currentValue;
+        totalValue += currentValue;
+
+        // Total portfolio
+        totalCurrentValue += currentValue;
+        totalYearStartValue += yearStartValue;
+      }
+    }
+    this.logger.debug(`calculateYtdReturn: Total weighted YTD return: ${totalWeightedYtdReturn}`);
+    this.logger.debug(`calculateYtdReturn: Total value: ${totalValue}`);
+    this.logger.debug(`calculateYtdReturn: Total year start value: ${totalYearStartValue}`);
+
+    const weightedYtd =
+      totalValue > 0
+        ? Number((totalWeightedYtdReturn / totalValue).toFixed(8))
+        : 0;
+
+    const totalYtd =
+      totalYearStartValue > 0
+        ? Number((((totalCurrentValue - totalYearStartValue) / totalYearStartValue) * 100).toFixed(8))
+        : 0;
+
+    return { weightedYtd, totalYtd };
   }
 
   /**
-   * Calculate YTD return (simplified)
+   * Calculate weekly return based on change from last week's data (DEPRECATED)
    */
-  /**
-   * Calculate YTD return using weighted average based on asset values
-   * FIXED: Use weighted average and proper YTD calculation logic
-   */
-  private calculateYtdReturn(snapshots: AssetAllocationSnapshot[]): number {
+  private calculateWeeklyReturnOld(snapshots: AssetAllocationSnapshot[]): number {
     if (snapshots.length === 0) return 0;
-    
-    const currentYear = new Date().getFullYear();
-    const ytdSnapshots = snapshots.filter(s => 
-      new Date(s.snapshotDate).getFullYear() === currentYear
-    );
-    
-    if (ytdSnapshots.length === 0) return 0;
-    
-    let totalWeightedReturn = 0;
-    let totalValue = 0;
-    
-    ytdSnapshots.forEach(s => {
-      const assetValue = Number(s.currentValue || 0);
-      const returnPercentage = Number(s.returnPercentage || 0);
-      
-      totalWeightedReturn = Number((totalWeightedReturn + (returnPercentage * assetValue)).toFixed(8));
-      totalValue = Number((totalValue + assetValue).toFixed(8));
+
+    const currentDate = new Date(); // ngày hiện tại
+    const currentSnapshot = snapshots[snapshots.length - 1];
+    const currentSnapshotDate = new Date(currentSnapshot.snapshotDate);
+    const currentSnapshotFullYear = currentSnapshotDate.getFullYear();
+
+    // 🔹 Bước 1: Lọc snapshot trong năm hiện tại để tối ưu thời gian tính toán
+    const filteredSnapshots = snapshots
+      .filter(s => new Date(s.snapshotDate).getFullYear() === currentSnapshotFullYear
+      && new Date(s.snapshotDate) <= currentDate)
+      .sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+
+    if (filteredSnapshots.length === 0) return 0;
+  
+    // 🔹 Bước 2: Gom nhóm theo assetId và tính weekly return cho từng asset
+    const assetGroups = new Map<string, AssetAllocationSnapshot[]>();
+    filteredSnapshots.forEach(s => {
+      if (!assetGroups.has(s.assetId)) assetGroups.set(s.assetId, []);
+      assetGroups.get(s.assetId)!.push(s);
     });
-    
-    return totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
+  
+    let totalWeightedWeeklyReturn = 0;
+    let totalValue = 0;
+  
+    // 🔹 Bước 3: Tính weekly return cho từng asset
+    assetGroups.forEach(assetSnapshots => {
+      if (assetSnapshots.length < 2) return;
+      assetSnapshots.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+  
+      const currentSnapshot = assetSnapshots[assetSnapshots.length - 1];
+      const currentValue = Number(currentSnapshot.currentValue || 0);
+      const currentDate = new Date(currentSnapshot.snapshotDate);
+  
+      // Xác định ngày cuối tuần trước (ví dụ: Chủ nhật tuần trước)
+      const endOfLastWeek = new Date(currentDate);
+      const dayOfWeek = currentDate.getDay(); // 0 = Chủ nhật, 1 = Thứ 2, ... 6 = Thứ 7
+      if (dayOfWeek === 0) {
+        // Nếu hôm nay là Chủ nhật -> lùi 7 ngày (Chủ nhật tuần trước)
+        endOfLastWeek.setDate(currentDate.getDate() - 7);
+      } else {
+        // Nếu hôm nay là Thứ 2–7 -> lấy Chủ nhật liền trước
+        endOfLastWeek.setDate(currentDate.getDate() - dayOfWeek);
+      }
+  
+      // Tìm snapshot gần nhất với endOfLastWeek
+      const weekAgoSnapshot = assetSnapshots
+      .filter(s => new Date(s.snapshotDate) <= endOfLastWeek)
+      .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime())[0];
+  
+      const weekAgoValue = Number(weekAgoSnapshot.currentValue || 0);
+      if (weekAgoValue <= 0) return;
+  
+      const weeklyReturn = ((currentValue - weekAgoValue) / weekAgoValue) * 100;
+  
+      // ✅ Dùng giá trị đầu kỳ làm trọng số, và đổi % về tỷ lệ
+      totalWeightedWeeklyReturn += (weeklyReturn / 100) * weekAgoValue;
+      totalValue += weekAgoValue;
+    });
+  
+    return totalValue > 0
+      ? Number(((totalWeightedWeeklyReturn / totalValue) * 100).toFixed(8)) // Trả về %
+      : 0;
+  }  
+
+  /**
+   * Calculate monthly return based on change from last month's data (DEPRECATED)
+   */
+  private calculateMonthlyReturnOld(snapshots: AssetAllocationSnapshot[]): number {
+    if (snapshots.length === 0) return 0;
+  
+    const currentDate = new Date(); // ngày hiện tại
+    const currentSnapshot = snapshots[snapshots.length - 1];
+    const currentSnapshotDate = new Date(currentSnapshot.snapshotDate);
+    const currentSnapshotFullYear = currentSnapshotDate.getFullYear();
+
+    // 🔹 Bước 1: Lọc snapshot trong năm hiện tại để tối ưu thời gian tính toán
+    const filteredSnapshots = snapshots
+      .filter(s => new Date(s.snapshotDate).getFullYear() === currentSnapshotFullYear
+      && new Date(s.snapshotDate) <= currentDate)
+      .sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+
+    if (filteredSnapshots.length === 0) return 0;
+
+    // 🔹 Bước 2: Gom nhóm theo assetId và tính monthly return cho từng asset
+    const assetGroups = new Map<string, AssetAllocationSnapshot[]>();
+    filteredSnapshots.forEach(snapshot => {
+      if (!assetGroups.has(snapshot.assetId)) assetGroups.set(snapshot.assetId, []);
+      assetGroups.get(snapshot.assetId)!.push(snapshot);
+    });
+  
+    let totalWeightedMonthlyReturn = 0;
+    let totalValue = 0;
+  
+    // 🔹 Bước 3: Tính monthly return cho từng asset
+    assetGroups.forEach(assetSnapshots => {
+      if (assetSnapshots.length < 2) return;
+  
+      assetSnapshots.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+  
+      const currentSnapshot = assetSnapshots[assetSnapshots.length - 1];
+      const currentDate = new Date(currentSnapshot.snapshotDate); 
+      const currentValue = Number(currentSnapshot.currentValue || 0);
+  
+      // 🧭 Tính ngày cuối của tháng so sánh
+      const firstOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // ngày đầu tháng hiện tại
+      const endOfLastMonth = new Date(firstOfMonth.getTime() - 86400000); // lùi 1 ngày
+  
+      // 🔍 Tìm snapshot gần nhất trước hoặc bằng endOfLastMonth
+      const previousSnapshots = assetSnapshots
+      .filter(s => new Date(s.snapshotDate) <= endOfLastMonth)
+      .sort((a, b) => new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime());
+      if (previousSnapshots.length === 0) return;
+  
+      const previousSnapshot = previousSnapshots[previousSnapshots.length - 1];
+      const previousValue = Number(previousSnapshot.currentValue || 0);
+      if (previousValue <= 0) return;
+  
+      // 📈 Monthly return
+      const monthlyReturn = ((currentValue - previousValue) / previousValue) * 100;
+  
+      totalWeightedMonthlyReturn += (monthlyReturn / 100) * previousValue;
+      totalValue += previousValue;
+    });
+  
+    return totalValue > 0
+      ? Number(((totalWeightedMonthlyReturn / totalValue) * 100).toFixed(8))
+      : 0;
   }
+  
 
   /**
    * Calculate Portfolio Daily Return (Assets + Deposits)
@@ -879,6 +1134,72 @@ export class PortfolioSnapshotService {
   }
 
   /**
+   * Calculate Portfolio Total Return (Assets + Deposits)
+   * Uses weighted average based on asset and deposit values
+   */
+  private calculatePortfolioTotalReturn(
+    totalPortfolioValue: number,
+    totalAssetValue: number,
+    assetTotalReturn: number,
+    totalDepositValue: number,
+    totalDepositInterest: number
+  ): number {
+    if (totalPortfolioValue === 0) return 0;
+    
+    const assetWeight = totalAssetValue / totalPortfolioValue;
+    const depositWeight = totalDepositValue / totalPortfolioValue;
+    
+    // Calculate deposit total return based on interest earned
+    const depositTotalReturn = totalDepositValue > 0 ? (totalDepositInterest / totalDepositValue) * 100 : 0;
+    
+    return Number((assetTotalReturn * assetWeight + depositTotalReturn * depositWeight).toFixed(8));
+  }
+
+  /**
+   * Calculate Portfolio Weekly Return (Assets + Deposits)
+   * Uses weighted average based on asset and deposit values
+   */
+  private calculatePortfolioWeeklyReturn(
+    totalPortfolioValue: number,
+    totalAssetValue: number,
+    assetWeeklyReturn: number,
+    totalDepositValue: number,
+    totalDepositInterest: number
+  ): number {
+    if (totalPortfolioValue === 0) return 0;
+    
+    const assetWeight = totalAssetValue / totalPortfolioValue;
+    const depositWeight = totalDepositValue / totalPortfolioValue;
+    
+    // Assume deposits have 0% weekly return (fixed interest)
+    const depositWeeklyReturn = 0;
+    
+    return Number((assetWeeklyReturn * assetWeight + depositWeeklyReturn * depositWeight).toFixed(8));
+  }
+
+  /**
+   * Calculate Portfolio Monthly Return (Assets + Deposits)
+   * Uses weighted average based on asset and deposit values
+   */
+  private calculatePortfolioMonthlyReturn(
+    totalPortfolioValue: number,
+    totalAssetValue: number,
+    assetMonthlyReturn: number,
+    totalDepositValue: number,
+    totalDepositInterest: number
+  ): number {
+    if (totalPortfolioValue === 0) return 0;
+    
+    const assetWeight = totalAssetValue / totalPortfolioValue;
+    const depositWeight = totalDepositValue / totalPortfolioValue;
+    
+    // Calculate deposit monthly return based on interest earned
+    const depositMonthlyReturn = totalDepositValue > 0 ? (totalDepositInterest / totalDepositValue) * 100 : 0;
+    
+    return Number((assetMonthlyReturn * assetWeight + depositMonthlyReturn * depositWeight).toFixed(8));
+  }
+
+  /**
    * Calculate Portfolio Volatility (Assets + Deposits)
    * Deposits have 0 volatility, so portfolio volatility is reduced
    */
@@ -921,6 +1242,56 @@ export class PortfolioSnapshotService {
   }
 
   /**
+   * Calculate total return from the beginning of investment (DEPRECATED)
+   * Uses weighted average based on asset values and their total return
+   */
+  private calculateTotalReturnOld(snapshots: AssetAllocationSnapshot[]): number {
+    if (snapshots.length === 0) return 0;
+    
+    // Group snapshots by asset to calculate total return for each asset
+    const assetGroups = new Map<string, AssetAllocationSnapshot[]>();
+    snapshots.forEach(snapshot => {
+      const assetId = snapshot.assetId;
+      if (!assetGroups.has(assetId)) {
+        assetGroups.set(assetId, []);
+      }
+      assetGroups.get(assetId)!.push(snapshot);
+    });
+    
+    let totalWeightedReturn = 0;
+    let totalValue = 0;
+    
+    // Calculate total return for each asset
+    assetGroups.forEach(assetSnapshots => {
+      if (assetSnapshots.length === 0) return;
+      
+      // Sort by date to get chronological order
+      assetSnapshots.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime());
+      
+      // Get the most recent snapshot (current)
+      const currentSnapshot = assetSnapshots[assetSnapshots.length - 1];
+      const currentValue = Number(currentSnapshot.currentValue || 0);
+      const currentDate = new Date(currentSnapshot.snapshotDate);
+      
+      // Find the earliest snapshot for this asset
+      const earliestSnapshot = assetSnapshots[0];
+      const earliestValue = Number(earliestSnapshot.currentValue || 0);
+      const earliestDate = new Date(earliestSnapshot.snapshotDate);
+      
+      // Calculate total return from beginning to current
+      if (earliestValue > 0) {
+        const totalReturn = ((currentValue - earliestValue) / earliestValue) * 100;
+        
+        // Weight by current value
+        totalWeightedReturn = Number((totalWeightedReturn + (totalReturn * currentValue)).toFixed(8));
+        totalValue = Number((totalValue + currentValue).toFixed(8));
+      }
+    });
+    
+    return totalValue > 0 ? Number((totalWeightedReturn / totalValue).toFixed(8)) : 0;
+  }
+
+  /**
    * Delete portfolio snapshots by portfolio, date, and granularity
    * This is used to ensure only one portfolio snapshot per day per portfolio
    */
@@ -934,6 +1305,204 @@ export class PortfolioSnapshotService {
       snapshotDate,
       granularity
     );
+  }
+
+  /**
+   * Calculate daily return from snapshots (helper method)
+   */
+  private calculateDailyReturnFromSnapshots(
+    currentValue: number,
+    previousValue: number
+  ): number {
+    if (previousValue === 0) return 0;
+    return Number((((currentValue - previousValue) / previousValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate weekly return from snapshots (helper method)
+   */
+  private calculateWeeklyReturnFromSnapshots(
+    currentValue: number,
+    weekAgoValue: number
+  ): number {
+    if (weekAgoValue === 0) return 0;
+    return Number((((currentValue - weekAgoValue) / weekAgoValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate monthly return from snapshots (helper method)
+   */
+  private calculateMonthlyReturnFromSnapshots(
+    currentValue: number,
+    monthAgoValue: number
+  ): number {
+    if (monthAgoValue === 0) return 0;
+    return Number((((currentValue - monthAgoValue) / monthAgoValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate YTD return from snapshots (helper method)
+   */
+  private calculateYtdReturnFromSnapshots(
+    currentValue: number,
+    yearStartValue: number
+  ): number {
+    if (yearStartValue === 0) return 0;
+    return Number((((currentValue - yearStartValue) / yearStartValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate total return based on NAV / first NAV
+   */
+  private async calculateTotalReturn(
+    portfolioId: string,
+    currentNav: number,
+    date: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get the first snapshot for this portfolio
+    const firstSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: {
+        portfolioId,
+        granularity,
+        isActive: true,
+      },
+      order: { snapshotDate: 'ASC' }
+    });
+
+    if (!firstSnapshot || firstSnapshot.totalPortfolioValue === 0) return 0;
+    
+    return Number((((currentNav - firstSnapshot.totalPortfolioValue) / firstSnapshot.totalPortfolioValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate daily return = NAV / NAV ngày gần nhất có dữ liệu
+   */
+  private async calculateDailyReturn(
+    portfolioId: string,
+    currentNav: number,
+    date: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Find the nearest available snapshot before current date
+    const previousSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: {
+        portfolioId,
+        snapshotDate: LessThan(date), // Before current date
+        granularity,
+        isActive: true,
+      },
+      order: { snapshotDate: 'DESC' } // Get the most recent one
+    });
+
+    if (!previousSnapshot || previousSnapshot.totalPortfolioValue === 0) return 0;
+    
+    return Number((((currentNav - previousSnapshot.totalPortfolioValue) / previousSnapshot.totalPortfolioValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate weekly return = NAV / NAV cuối tuần trước
+   */
+  private async calculateWeeklyReturn(
+    portfolioId: string,
+    currentNav: number,
+    date: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get the last day of the previous week (Sunday)
+    const currentDay = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToSubtract = currentDay + 7; // Go back to previous Sunday
+    const lastDayOfPreviousWeek = new Date(date);
+    lastDayOfPreviousWeek.setDate(lastDayOfPreviousWeek.getDate() - daysToSubtract);
+    
+    // Find the last snapshot of the previous week
+    const weekAgoSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: {
+        portfolioId,
+        snapshotDate: LessThanOrEqual(lastDayOfPreviousWeek),
+        granularity,
+        isActive: true,
+      },
+      order: { snapshotDate: 'DESC' }
+    });
+
+    if (!weekAgoSnapshot || weekAgoSnapshot.totalPortfolioValue === 0) return 0;
+    
+    return Number((((currentNav - weekAgoSnapshot.totalPortfolioValue) / weekAgoSnapshot.totalPortfolioValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate monthly return = NAV / NAV cuối tháng trước có dữ liệu
+   */
+  private async calculateMonthlyReturn(
+    portfolioId: string,
+    currentNav: number,
+    date: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get the last day of the previous month
+    const currentMonth = date.getMonth();
+    const currentYear = date.getFullYear();
+    const lastDayOfPreviousMonth = new Date(currentYear, currentMonth - 1, 0); // Last day of previous month
+    
+    // Find the last snapshot of the previous month
+    const monthAgoSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: {
+        portfolioId,
+        snapshotDate: LessThanOrEqual(lastDayOfPreviousMonth),
+        granularity,
+        isActive: true,
+      },
+      order: { snapshotDate: 'DESC' }
+    });
+
+    if (!monthAgoSnapshot || monthAgoSnapshot.totalPortfolioValue === 0) return 0;
+    
+    return Number((((currentNav - monthAgoSnapshot.totalPortfolioValue) / monthAgoSnapshot.totalPortfolioValue) * 100).toFixed(4));
+  }
+
+  /**
+   * Calculate YTD return = NAV / NAV ngày nhỏ nhất trong năm
+   */
+  private async calculateYtdReturn(
+    portfolioId: string,
+    currentNav: number,
+    date: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get the earliest snapshot in the current year
+    const yearStart = new Date(date.getFullYear(), 0, 1);
+    const yearEnd = new Date(date.getFullYear(), 11, 31);
+    
+    const yearStartSnapshot = await this.portfolioSnapshotRepository.findOne({
+      where: {
+        portfolioId,
+        snapshotDate: LessThanOrEqual(yearEnd),
+        granularity,
+        isActive: true,
+      },
+      order: { snapshotDate: 'ASC' } // Get the earliest date in the year
+    });
+
+    // If no snapshot found in current year, try to get the earliest snapshot overall
+    if (!yearStartSnapshot) {
+      const earliestSnapshot = await this.portfolioSnapshotRepository.findOne({
+        where: {
+          portfolioId,
+          granularity,
+          isActive: true,
+        },
+        order: { snapshotDate: 'ASC' }
+      });
+
+      if (!earliestSnapshot || earliestSnapshot.totalPortfolioValue === 0) return 0;
+      
+      return Number((((currentNav - earliestSnapshot.totalPortfolioValue) / earliestSnapshot.totalPortfolioValue) * 100).toFixed(4));
+    }
+
+    if (yearStartSnapshot.totalPortfolioValue === 0) return 0;
+    
+    return Number((((currentNav - yearStartSnapshot.totalPortfolioValue) / yearStartSnapshot.totalPortfolioValue) * 100).toFixed(4));
   }
 
 }

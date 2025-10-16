@@ -337,17 +337,17 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
                   </TableCell>
                   {/* Volatility Values */}
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall">
                       {formatPercentage(snapshot.assetVolatility1M)}
                     </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall">
                       {formatPercentage(snapshot.assetVolatility3M)}
                     </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 0.5 }}>
-                    <ResponsiveTypography variant="tableCellSmall" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="tableCellSmall">
                       {formatPercentage(snapshot.assetVolatility1Y)}
                     </ResponsiveTypography>
                   </TableCell>

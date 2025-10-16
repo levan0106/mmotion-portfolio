@@ -103,16 +103,16 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
     if (active && payload && payload.length) {
       return (
         <Paper sx={{ p: 2, boxShadow: 3 }}>
-          <ResponsiveTypography variant="cardTitle" gutterBottom>
+          <ResponsiveTypography variant="chartTooltip" gutterBottom>
             {formatDate(label)}
           </ResponsiveTypography>
           {payload.map((entry: any, index: number) => (
-            <ResponsiveTypography key={index} variant="tableCell" color={entry.color}>
+            <ResponsiveTypography key={index} variant="chartTooltip" sx={{ wordBreak: 'break-word', color: entry.color }}>
               {entry.name}: {formatPercentage(entry.value)}
             </ResponsiveTypography>
           ))}
           <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ mt: 1 }}>
-            {t('mwrBenchmark.tooltip.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
+            {t('mwrBenchmark.difference')}: {formatPercentage(payload[0]?.payload?.difference || 0)}
           </ResponsiveTypography>
         </Paper>
       );

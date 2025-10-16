@@ -300,7 +300,7 @@ export class AssetValueCalculatorService {
    * @param options - Additional calculation options
    * @returns Return percentage
    */
-  calculateReturnPercentageLater(
+  calculateReturnPercentageFinal(
     quantity: number,
     currentPrice: number,
     avgCost: number,

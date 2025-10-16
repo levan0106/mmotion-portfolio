@@ -2,7 +2,19 @@
 
 ## What Works
 ### ✅ Completed
-- **MULTI-LANGUAGE IMPLEMENTATION & COMPONENT ENHANCEMENT - COMPLETED** (Current Session - January 14, 2025)
+- **SNAPSHOT UI FIELD OPTIMIZATION & RETURN METRICS ENHANCEMENT - COMPLETED** (Current Session - January 15, 2025)
+  - **Snapshot UI Field Management**: Optimized snapshot table display by hiding unnecessary fields
+    - **Hidden Portfolio Fields**: Portfolio Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD
+    - **Hidden Asset Fields**: Asset Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD
+    - **Components Updated**: PortfolioSummaryTab.tsx and SnapshotDashboard.tsx
+    - **Code Optimization**: Removed unused imports and cleaned up code structure
+  - **Return Metrics Implementation**: Added essential return fields to snapshot UI
+    - **New Return Fields**: Daily Return %, Weekly Return %, Monthly Return %, YTD Return %, Total Return %
+    - **Data Integration**: Connected to backend fields (dailyReturn, weeklyReturn, monthlyReturn, ytdReturn, totalReturn)
+    - **Visual Enhancement**: Color-coded display (green for positive, red for negative returns)
+    - **Responsive Design**: Optimized for all screen sizes with proper formatting
+    - **User Experience**: Cleaner, more focused snapshot display with essential metrics
+- **MULTI-LANGUAGE IMPLEMENTATION & COMPONENT ENHANCEMENT - COMPLETED** (Previous Session - January 14, 2025)
   - **PublicPortfolioSelector Multi-Language Support**: Complete translation implementation
     - **Translation Keys Added**: 13 new keys for portfolio template selection
     - **Component Features**: Modal title, search placeholder, error messages, empty states
