@@ -161,7 +161,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
                 {portfolio.name}
               </ResponsiveTypography>
               {portfolio.visibility === 'PUBLIC' && (
-                <Tooltip title={t('portfolio.publicTooltip')}>
+                <Tooltip title={t('portfolio.publicTooltip') || 'Public Portfolio'}>
                   <Public 
                     className="portfolio-card__public-icon" 
                     style={{ 
@@ -253,7 +253,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
       {!hideActions && (
         <div className="portfolio-card__actions">
           {onEdit && (
-            <Tooltip title={t('portfolio.edit')}>
+            <Tooltip title={t('common.edit') || 'Edit'}>
               <IconButton
                 onClick={handleEdit}
                 color="primary"
@@ -269,7 +269,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               </IconButton>
             </Tooltip>
           )}
-          <Tooltip title={t('portfolio.copy')}>
+          <Tooltip title={t('common.copy') || 'Copy'}>
             <IconButton
               onClick={handleCopy}
               color="secondary"
@@ -285,7 +285,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             </IconButton>
           </Tooltip>
           {onDelete && (
-            <Tooltip title={t('portfolio.delete')}>
+            <Tooltip title={t('common.delete') || 'Delete'}>
               <IconButton
                 onClick={handleDelete}
                 color="error"
