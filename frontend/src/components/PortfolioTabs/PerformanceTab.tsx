@@ -44,7 +44,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   const [benchmarkMwrPeriod, setBenchmarkMwrPeriod] = useState('YTD');
 
   // State for risk metrics
-  const [riskMetricsData, setRiskMetricsData] = useState<any>(null);
+  const [, setRiskMetricsData] = useState<any>(null);
   const [isRiskMetricsLoading, setIsRiskMetricsLoading] = useState(false);
   const [riskMetricsError, setRiskMetricsError] = useState<string | null>(null);
 
@@ -361,8 +361,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           <ResponsiveTypography color="error" variant="errorText">{riskMetricsError}</ResponsiveTypography>
         ) : (
           <RiskMetricsDashboard 
-            data={riskMetricsData?.data || {}}
-            baseCurrency={portfolio.baseCurrency}
+            portfolioId={portfolioId}
             title={t('portfolio.riskMetricsDashboard')}
             compact={isCompactMode}
           />

@@ -2,7 +2,36 @@
 
 ## What Works
 ### ✅ Completed
-- **SNAPSHOT UI FIELD OPTIMIZATION & RETURN METRICS ENHANCEMENT - COMPLETED** (Current Session - January 15, 2025)
+- **TIMEZONE FIXES & RISK METRICS CONFIGURATION - COMPLETED** (Current Session - January 15, 2025)
+  - **Comprehensive Timezone Handling**: Fixed all timezone-related issues across the application
+    - **SUBSCRIBE Date Issue**: Fixed "2025-07-20" being stored as "2025-07-19T17:00:00.000Z" in fund subscriptions
+    - **Cash Flow API Fixes**: Fixed timezone issues in all cash flow endpoints (manual, deposit, withdrawal, dividend, transfer)
+    - **Frontend Update Fixes**: Fixed frontend sending wrong dates when updating cash flows
+    - **Fund Unit Transaction Fixes**: Fixed API update fund unit transaction timezone errors
+    - **Solution Pattern**: Implemented `dateString + 'T00:00:00'` pattern to force local time interpretation
+    - **ISO String Handling**: Added logic to handle existing ISO strings by extracting date part before appending 'T00:00:00'
+    - **Files Updated**: investor-holding.service.ts, cash-flow.controller.ts, cash-flow.service.ts, CashFlowLayout.tsx, DepositForm.tsx
+  - **Risk Metrics Configuration System**: Created comprehensive configurable risk metrics system
+    - **Configuration File**: Created `src/config/risk-metrics.config.ts` with environment variable support
+    - **Risk-Free Rate**: Configurable risk-free rate (default: 5%) via `RISK_FREE_RATE` environment variable
+    - **Trading Days**: Configurable trading days per year (default: 252) via `TRADING_DAYS_PER_YEAR`
+    - **Min Data Points**: Configurable minimum data points (default: 2) via `MIN_RISK_DATA_POINTS`
+    - **Service Integration**: Updated both TradingService and RiskMetricsCalculationService to use config
+    - **Docker Integration**: Updated docker-compose.yml to read from .env file with fallback values
+    - **Environment Documentation**: Updated env.example with new risk metrics configuration variables
+  - **Trades API Risk Metrics Enhancement**: Enhanced trades API risk metrics calculation to match Portfolio API
+    - **Sharpe Ratio Standardization**: Updated Trades API to use same calculation as Portfolio API
+    - **Risk-Free Rate**: Changed from 0% to configurable rate (default: 5%)
+    - **Annualization**: Added proper annualization with √252 factor
+    - **Excess Return**: Implemented excess return calculation (meanReturn - riskFreeRate/252)
+    - **Consistent Methodology**: Both APIs now use identical risk metrics calculation methods
+  - **Date Range Support for Risk Metrics**: Enhanced risk metrics to support date range filtering
+    - **Date Range Logic**: Updated calculateRiskMetrics to use startDate/endDate parameters
+    - **Repository Method**: Added getTradesByDateRange method to TradeDetailRepository
+    - **Backward Compatibility**: Maintained fallback to top/worst trades when no date range specified
+    - **Asset Filtering**: Added support for asset-specific risk metrics calculation
+    - **Chronological Ordering**: Trades ordered by date for accurate risk calculation
+- **SNAPSHOT UI FIELD OPTIMIZATION & RETURN METRICS ENHANCEMENT - COMPLETED** (Previous Session - January 15, 2025)
   - **Snapshot UI Field Management**: Optimized snapshot table display by hiding unnecessary fields
     - **Hidden Portfolio Fields**: Portfolio Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD
     - **Hidden Asset Fields**: Asset Daily %, Weekly %, Monthly %, YTD %, Vol %, Max DD

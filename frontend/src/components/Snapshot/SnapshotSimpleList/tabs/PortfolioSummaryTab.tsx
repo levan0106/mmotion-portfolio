@@ -13,7 +13,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { formatCurrency, formatPercentage, formatDate } from '../../../../utils/format';
+import { formatCurrency, formatPercentage, formatDate, formatNumber } from '../../../../utils/format';
 import { PaginationControls } from '../../../Common/PaginationControls';
 import { ResponsiveTypography } from '../../../Common/ResponsiveTypography';
 
@@ -310,7 +310,7 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                   {/* Fund Management */}
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography variant="tableCellSmall" >
-                      {Number(snapshot.totalOutstandingUnits || 0).toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                      {formatNumber(Number(snapshot.totalOutstandingUnits || 0))}
                     </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="right" sx={{ py: 1 }}>
@@ -320,7 +320,7 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
                   </TableCell>
                   <TableCell align="right" sx={{ py: 1 }}>
                     <ResponsiveTypography variant="tableCellSmall" >
-                      {Number(snapshot.numberOfInvestors || 0).toLocaleString()}
+                      {formatNumber(Number(snapshot.numberOfInvestors || 0),0)}
                     </ResponsiveTypography>
                   </TableCell>
                   <TableCell align="center" sx={{ py: 1 }}>

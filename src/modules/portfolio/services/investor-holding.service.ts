@@ -72,7 +72,8 @@ export class InvestorHoldingService {
   async subscribeToFund(dto: SubscribeToFundDto, subscriptionDate?: string): Promise<SubscriptionResult> {
     this.logger.log(`Processing fund subscription: ${dto.accountId} -> ${dto.portfolioId}, amount: ${dto.amount}`);
 
-    const subDate = subscriptionDate ? new Date(subscriptionDate) : new Date();
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const subDate = subscriptionDate ? new Date(subscriptionDate + 'T00:00:00') : new Date();
 
     // 1. Validate inputs
     await this.validateSubscription(dto);
@@ -172,7 +173,8 @@ export class InvestorHoldingService {
       });
 
       // 7. Create CashFlow record with transaction reference
-      const subscriptionDate = dto.subscriptionDate ? new Date(dto.subscriptionDate) : new Date();
+      // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+      const subscriptionDate = dto.subscriptionDate ? new Date(dto.subscriptionDate + 'T00:00:00') : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.DEPOSIT,
@@ -236,7 +238,8 @@ export class InvestorHoldingService {
   async redeemFromFund(dto: RedeemFromFundDto, redemptionDate?: string): Promise<RedemptionResult> {
     this.logger.log(`Processing fund redemption: ${dto.accountId} -> ${dto.portfolioId}, units: ${dto.units}`);
 
-    const rdDate = redemptionDate ? new Date(redemptionDate) : new Date();
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const rdDate = redemptionDate ? new Date(redemptionDate + 'T00:00:00') : new Date();
 
     // 1. Validate inputs
     await this.validateRedemption(dto);
@@ -288,7 +291,8 @@ export class InvestorHoldingService {
       });
 
       // 6. Create CashFlow record with transaction reference
-      const redemptionDate = dto.redemptionDate ? new Date(dto.redemptionDate) : new Date();
+      // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+      const redemptionDate = dto.redemptionDate ? new Date(dto.redemptionDate + 'T00:00:00') : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.WITHDRAWAL,
@@ -787,7 +791,7 @@ export class InvestorHoldingService {
    * Convert portfolio to fund
    */
   async convertPortfolioToFund(portfolioId: string, snapshotDate?: Date): Promise<Portfolio> {
-    this.logger.log(`Converting portfolio ${portfolioId} to fund${snapshotDate ? ` at snapshot date ${snapshotDate.toISOString()}` : ''}`);
+    //this.logger.log(`Converting portfolio ${portfolioId} to fund${snapshotDate ? ` at snapshot date ${snapshotDate.toISOString()}` : ''}`);
 
     // 1. Get portfolio
     const portfolio = await this.portfolioRepository.findOne({
@@ -820,8 +824,8 @@ export class InvestorHoldingService {
       navPerUnit = 10000; // NAV per Unit cố định 10,000 VND
     }
 
-    this.logger.debug(`Initial units for portfolio ${portfolioId}: ${initialUnits} (Real-time NAV: ${realTimeNavValue})`);
-    this.logger.debug(`Nav per unit for portfolio ${portfolioId}: ${navPerUnit} (Real-time NAV: ${realTimeNavValue})`);
+    //this.logger.debug(`Initial units for portfolio ${portfolioId}: ${initialUnits} (Real-time NAV: ${realTimeNavValue})`);
+    //this.logger.debug(`Nav per unit for portfolio ${portfolioId}: ${navPerUnit} (Real-time NAV: ${realTimeNavValue})`);
 
     // 3. Update portfolio to fund with calculated NAV per unit
     portfolio.isFund = true;
@@ -832,7 +836,7 @@ export class InvestorHoldingService {
     // 4. Save portfolio to DB
     const updatedPortfolio = await this.portfolioRepository.save(portfolio);
 
-    this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(3)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
+    //this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(3)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
 
 
     // 5. Create initial investor holding
@@ -845,8 +849,8 @@ export class InvestorHoldingService {
       currentValue: realTimeNavValue,
       unrealizedPnL: 0,
       realizedPnL: 0,
-      createdAt: snapshotDate ? new Date(snapshotDate) : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+      createdAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
     });
 
     // 6. Create FundUnitTransaction record
@@ -856,8 +860,8 @@ export class InvestorHoldingService {
       units: Math.round(initialUnits * 1000) / 1000,
       navPerUnit: Math.round(navPerUnit * 1000) / 1000,
       amount: Math.round(realTimeNavValue * 1000) / 1000,
-      createdAt: snapshotDate ? new Date(snapshotDate) : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate) : new Date(),
+      createdAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
       description: `Initial investment for portfolio.`,
     });
     
@@ -1132,6 +1136,23 @@ export class InvestorHoldingService {
       transaction.amount = updateData.amount;
     }
 
+    let processedDateStr: string | undefined;
+    let transactionDate: Date | undefined;
+    if (updateData.transactionDate !== undefined) {
+      // Fix timezone issue: handle both ISO string and date string formats
+      let dateStr = updateData.transactionDate;
+      if (dateStr.includes('T')) {
+        // If it's already an ISO string, extract date part
+        dateStr = dateStr.split('T')[0];
+      }
+      processedDateStr = dateStr;
+      // Append 'T00:00:00' to ensure local time interpretation
+      transactionDate = new Date(dateStr + 'T00:00:00');
+      transaction.createdAt = transactionDate;
+      transaction.updatedAt = transactionDate;
+    }
+
+
     // Update cash flow if it exists and we have updates for it
     if (transaction.cashFlowId && (updateData.description !== undefined || updateData.transactionDate !== undefined)) {
       const cashFlow = await this.cashFlowService.getCashFlowById(transaction.cashFlowId);
@@ -1140,15 +1161,16 @@ export class InvestorHoldingService {
         if (updateData.description !== undefined) {
           cashFlow.description = updateData.description;
         }
-        if (updateData.transactionDate !== undefined) {
-          cashFlow.flowDate = new Date(updateData.transactionDate);
+        this.logger.log(`🔍 DEBUG: updateData.transactionDate: ${updateData.transactionDate}`, cashFlow.flowDate);
+        if (transactionDate !== undefined) {       
+          cashFlow.flowDate = transactionDate;        
         }
         await this.cashFlowService.updateCashFlow(cashFlow.portfolioId, cashFlow.cashFlowId, {
           portfolioId: cashFlow.portfolioId,
           amount: cashFlow.amount,
           type: cashFlow.type as any,
           description: cashFlow.description,
-          flowDate: cashFlow.flowDate.toISOString().split('T')[0]
+          flowDate: processedDateStr
         });
       }
     }
@@ -1162,9 +1184,7 @@ export class InvestorHoldingService {
         where: { holdingId: transaction.holdingId }
       });
       
-      if (holding) {
-        const transactionDate = updateData.transactionDate ? new Date(updateData.transactionDate) : new Date();
-        
+      if (holding) {        
         // Update portfolio metrics first
         await this.updateTotalOutstandingUnits(holding.portfolioId, transactionDate);
         await this.updatePortfolioNavPerUnit(holding.portfolioId, transactionDate);

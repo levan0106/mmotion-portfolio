@@ -24,6 +24,23 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Timezone Handling Pattern - **IMPLEMENTED** ✅
+- **Problem**: JavaScript `new Date(dateString)` interprets "YYYY-MM-DD" as UTC midnight, causing timezone shifts
+- **Solution Pattern**: `new Date(dateString + 'T00:00:00')` to force local time interpretation
+- **ISO String Handling**: Extract date part from existing ISO strings before applying pattern
+- **Implementation**: Applied across all date-related operations (cash flows, fund transactions, deposits)
+- **Files**: investor-holding.service.ts, cash-flow.controller.ts, cash-flow.service.ts, CashFlowLayout.tsx, DepositForm.tsx
+- **Consistency**: Unified timezone handling across frontend and backend
+
+### Risk Metrics Configuration Pattern - **IMPLEMENTED** ✅
+- **Configuration File**: `src/config/risk-metrics.config.ts` with environment variable support
+- **Environment Variables**: RISK_FREE_RATE, TRADING_DAYS_PER_YEAR, MIN_RISK_DATA_POINTS
+- **Service Integration**: Both TradingService and RiskMetricsCalculationService use shared config
+- **Docker Integration**: docker-compose.yml reads from .env file with fallback values
+- **Sharpe Ratio Standardization**: Both APIs use identical calculation methodology
+- **Annualization**: Proper annualization with √252 factor for daily returns
+- **Excess Return**: meanReturn - (riskFreeRate / tradingDaysPerYear) for daily risk-free rate
+
 ### Multi-Language Implementation Pattern - **IMPLEMENTED** ✅
 - **Translation Key Structure**: Hierarchical key organization (component.section.key)
 - **Pluralization Support**: Proper handling of singular/plural forms with count interpolation

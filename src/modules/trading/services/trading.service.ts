@@ -15,6 +15,7 @@ import { CashFlowService } from '../../portfolio/services/cash-flow.service';
 import { PortfolioCalculationService } from '../../portfolio/services/portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from '../../portfolio/services/portfolio-value-calculator.service';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
+import { RiskMetricsConfig } from '../../../config/risk-metrics.config';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 import { NotificationGateway } from '../../../notification/notification.gateway';
@@ -1219,17 +1220,30 @@ export class TradingService {
     maxDrawdown: number;
   }> {
     try {
-      // Get trade details for P&L calculation
-      const topTradesRaw = await this.tradeDetailRepo.getTopPerformingTrades(100, portfolioId);
-      const worstTradesRaw = await this.tradeDetailRepo.getWorstPerformingTrades(100, portfolioId);
+      // Get trade details for P&L calculation within date range
+      let tradeDetails;
       
-      // Combine and deduplicate trades
-      const allTrades = [...topTradesRaw, ...worstTradesRaw];
-      const uniqueTrades = allTrades.filter((trade, index, self) => 
-        index === self.findIndex(t => t.detailId === trade.detailId)
-      );
+      if (startDate && endDate) {
+        // Get trades within specific date range
+        tradeDetails = await this.tradeDetailRepo.getTradesByDateRange(
+          portfolioId, 
+          startDate, 
+          endDate, 
+          assetId
+        );
+      } else {
+        // Fallback to top/worst performing trades if no date range specified
+        const topTradesRaw = await this.tradeDetailRepo.getTopPerformingTrades(100, portfolioId);
+        const worstTradesRaw = await this.tradeDetailRepo.getWorstPerformingTrades(100, portfolioId);
+        
+        // Combine and deduplicate trades
+        const allTrades = [...topTradesRaw, ...worstTradesRaw];
+        tradeDetails = allTrades.filter((trade, index, self) => 
+          index === self.findIndex(t => t.detailId === trade.detailId)
+        );
+      }
       
-      if (uniqueTrades.length === 0) {
+      if (tradeDetails.length === 0) {
         return {
           sharpeRatio: 0,
           volatility: 0,
@@ -1239,11 +1253,11 @@ export class TradingService {
       }
       
       // Extract P&L values and calculate returns
-      const pnlValues = uniqueTrades.map(trade => Number(trade.pnl) || 0);
+      const pnlValues = tradeDetails.map(trade => Number(trade.pnl) || 0);
       
       // Calculate returns as percentages (P&L / Trade Value)
       // Use sellPrice for consistency with trade analysis display
-      const returns = uniqueTrades.map(trade => {
+      const returns = tradeDetails.map(trade => {
         const pnl = Number(trade.pnl) || 0;
         const tradeValue = (Number(trade.matchedQty) || 0) * (Number(trade.sellPrice) || 0);
         return tradeValue > 0 ? (pnl / tradeValue) * 100 : 0; // Return as percentage
@@ -1251,11 +1265,16 @@ export class TradingService {
       
       // Calculate basic statistics for returns
       const meanReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
-      const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - meanReturn, 2), 0) / returns.length;
-      const volatility = Math.sqrt(variance); // Volatility as percentage
+      const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - meanReturn, 2), 0) / (returns.length - 1);
+      const volatility = Math.sqrt(variance); // Daily volatility
       
-      // Calculate Sharpe Ratio (assuming risk-free rate = 0)
-      const sharpeRatio = volatility > 0 ? meanReturn / volatility : 0;
+      // Annualize volatility (assuming daily returns)
+      const annualizedVolatility = volatility * Math.sqrt(RiskMetricsConfig.TRADING_DAYS_PER_YEAR);
+      
+      // Calculate Sharpe Ratio using configurable risk-free rate
+      const riskFreeRate = RiskMetricsConfig.DEFAULT_RISK_FREE_RATE;
+      const excessReturn = meanReturn - (riskFreeRate / RiskMetricsConfig.TRADING_DAYS_PER_YEAR); // Daily risk-free rate
+      const sharpeRatio = volatility > 0 ? (excessReturn / volatility) * Math.sqrt(RiskMetricsConfig.TRADING_DAYS_PER_YEAR) : 0;
       
       // Calculate VaR 95% (5th percentile) - using P&L values (VND)
       const sortedPnl = pnlValues.sort((a, b) => a - b);
@@ -1280,7 +1299,7 @@ export class TradingService {
       
       return {
         sharpeRatio: Math.round(sharpeRatio * 100) / 100,
-        volatility: Math.round(volatility * 100) / 100,
+        volatility: Math.round(annualizedVolatility * 100) / 100, // Use annualized volatility
         var95: Math.round(var95 * 100) / 100,
         maxDrawdown: Math.round(maxDrawdown * 100) / 100,
       };

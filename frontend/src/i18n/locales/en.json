@@ -18,6 +18,7 @@
     "refresh": "Refresh",
     "export": "Export",
     "import": "Import",
+    "back": "Back",
     "groupByDate": "Group by Date",
     "grid": "Grid",
     "list": "List",
@@ -1275,6 +1276,7 @@
   },
   "riskMetrics": {
     "noData": "No risk metrics data available",
+    "loading": "Loading risk metrics...",
     "subtitle": "Comprehensive risk analysis and portfolio health metrics",
     "var95": "Value at Risk (95%)",
     "sharpeRatio": "Sharpe Ratio",
@@ -1284,7 +1286,10 @@
     "var99": "VaR (99%)",
     "beta": "Beta",
     "calmarRatio": "Calmar Ratio",
-    "sortinoRatio": "Sortino Ratio"
+    "sortinoRatio": "Sortino Ratio",
+    "error": {
+      "loadFailed": "Failed to load risk metrics data"
+    }
   },
   "navSummary": {
     "title": "NAV Summary",

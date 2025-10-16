@@ -243,7 +243,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         type: dialogType.toUpperCase(),
         description: formData.description,
         reference: formData.reference || undefined,
-        flowDate: formData.flowDate ? new Date(formData.flowDate + 'T00:00:00').toISOString() : undefined,
+        flowDate: formData.flowDate ? formData.flowDate : undefined,
         currency: formData.currency,
         status: formData.status,
         fundingSource: formData.fundingSource || undefined,
@@ -490,7 +490,16 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         toSource: transferData.toSource,
         amount: transferData.amount,
         description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
-        transferDate: new Date(transferData.transferDate + 'T00:00:00').toISOString(),
+        // Fix timezone issue: handle both ISO string and date string formats
+        transferDate: (() => {
+          let dateStr = transferData.transferDate;
+          if (dateStr.includes('T')) {
+            // If it's already an ISO string, extract date part
+            dateStr = dateStr.split('T')[0];
+          }
+          // Append 'T00:00:00' to ensure local time interpretation
+          return new Date(dateStr + 'T00:00:00').toISOString();
+        })(),
       };
 
       await apiService.transferCashFlow(portfolioId, accountId, payload);
@@ -527,15 +536,18 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setEditingCashFlow(cashFlow);
     setDialogType(cashFlow.type.toLowerCase() as any);
     
-    // Format dates for input
-    const flowDate = new Date(cashFlow.flowDate);
+    // Format dates for input - Fix timezone issue
+    // Extract date part only to avoid timezone conversion issues
+    const flowDate = cashFlow.flowDate.includes('T') 
+      ? cashFlow.flowDate.split('T')[0] 
+      : cashFlow.flowDate;
     
     setFormData({
       amount: cashFlow.amount.toString(),
       description: cashFlow.description || '',
       reference: cashFlow.reference || '',
       currency: cashFlow.currency || 'VND',
-      flowDate: flowDate.toISOString().slice(0, 10),
+      flowDate: flowDate,
       status: cashFlow.status || 'COMPLETED',
       fundingSource: cashFlow.fundingSource || '',
     });

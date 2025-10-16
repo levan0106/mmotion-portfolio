@@ -77,7 +77,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
   const { t } = useTranslation();
   const { accountId } = useAccount();
   // State for NAV history data
-  const [navHistoryData, setNavHistoryData] = useState<NAVHistoryData[]>([]);
+  const [, setNavHistoryData] = useState<NAVHistoryData[]>([]);
   const [portfolioInfo, setPortfolioInfo] = useState<{
     isFund: boolean;
     totalOutstandingUnits: number;

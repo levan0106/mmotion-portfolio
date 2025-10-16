@@ -362,4 +362,38 @@ export class TradeDetailRepository extends Repository<TradeDetail> {
 
     return query.take(limit).getMany();
   }
+
+  /**
+   * Get trades by date range
+   * @param portfolioId Portfolio ID
+   * @param startDate Start date
+   * @param endDate End date
+   * @param assetId Optional asset ID filter
+   * @returns Array of trade details within date range
+   */
+  async getTradesByDateRange(
+    portfolioId: string,
+    startDate: Date,
+    endDate: Date,
+    assetId?: string,
+  ): Promise<TradeDetail[]> {
+    let query = this.tradeDetailRepository
+      .createQueryBuilder('detail')
+      .leftJoinAndSelect('detail.sellTrade', 'sellTrade')
+      .leftJoinAndSelect('detail.buyTrade', 'buyTrade')
+      .leftJoinAndSelect('detail.asset', 'asset')
+      .where(
+        '(sellTrade.portfolioId = :portfolioId OR buyTrade.portfolioId = :portfolioId)',
+        { portfolioId }
+      )
+      .andWhere('sellTrade.tradeDate >= :startDate', { startDate })
+      .andWhere('sellTrade.tradeDate <= :endDate', { endDate })
+      .orderBy('sellTrade.tradeDate', 'ASC');
+
+    if (assetId) {
+      query = query.andWhere('detail.assetId = :assetId', { assetId });
+    }
+
+    return query.getMany();
+  }
 }

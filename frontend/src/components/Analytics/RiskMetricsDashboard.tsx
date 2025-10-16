@@ -10,6 +10,8 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
@@ -19,33 +21,53 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 import { formatPercentage } from '../../utils/format';
-
-interface RiskMetrics {
-  var95: number;
-  var99: number;
-  sharpeRatio: number;
-  beta: number;
-  volatility: number;
-  maxDrawdown: number;
-  calmarRatio: number;
-  sortinoRatio: number;
-}
+import { useRiskMetricsWithError } from '../../hooks/useRiskMetrics';
 
 interface RiskMetricsDashboardProps {
-  data: RiskMetrics;
+  portfolioId: string;
   baseCurrency?: string;
   title?: string;
   compact?: boolean;
 }
 
 const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
-  data,
+  portfolioId,
   title = 'Risk Metrics Dashboard',
   compact = false,
 }) => {
   const { t } = useTranslation();
-  // Add null checks and default values
-  if (!data) {
+  
+  // Fetch risk metrics data using the hook
+  const {
+    riskMetrics: data,
+    isLoading,
+    error,
+    hasData
+  } = useRiskMetricsWithError({ portfolioId });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress />
+        <ResponsiveTypography variant="pageSubtitle" sx={{ ml: 2 }}>
+          {t('riskMetrics.loading')}
+        </ResponsiveTypography>
+      </Box>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Alert severity="error">
+        {t('riskMetrics.error.loadFailed')}: {error}
+      </Alert>
+    );
+  }
+
+  // No data state
+  if (!hasData || !data) {
     return (
       <Box sx={{ p: compact ? 2 : 3, textAlign: 'center' }}>
         <ResponsiveTypography 
@@ -160,7 +182,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                 color="primary" 
                 fontWeight="bold"
               >
-                {formatPercentage(data.var95)}
+                {formatPercentage(data.var95, 2)}
               </ResponsiveTypography>
               <Chip 
                 label={varLevel.toUpperCase()} 
@@ -246,7 +268,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                 color="primary" 
                 fontWeight="bold"
               >
-                {formatPercentage(data.volatility)}
+                {formatPercentage(data.volatility, 2)}
               </ResponsiveTypography>
               <Chip 
                 label={volatilityLevel.toUpperCase()} 
@@ -289,7 +311,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                 color="primary" 
                 fontWeight="bold"
               >
-                {formatPercentage(data.maxDrawdown)}
+                {formatPercentage(data.maxDrawdown, 2)}
               </ResponsiveTypography>
               <Chip 
                 label={drawdownLevel.toUpperCase()} 
@@ -337,7 +359,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue"
                       >
-                        {formatPercentage(data.var99)}
+                        {formatPercentage(data.var99, 2)}
                       </ResponsiveTypography>
                     </Box>
                   </Grid>

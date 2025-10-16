@@ -48,7 +48,6 @@ export class MWRIRRCalculationService {
   async calculatePortfolioMWRIRR(options: MWRIRRCalculationOptions): Promise<MWRIRRCalculationResult> {
     const { portfolioId, snapshotDate, granularity = SnapshotGranularity.DAILY } = options;
     
-    this.logger.log(`Calculating portfolio MWR/IRR for ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
 
     try {
       // Calculate MWR/IRR for different periods
@@ -91,7 +90,6 @@ export class MWRIRRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity = SnapshotGranularity.DAILY
   ): Promise<MWRIRRCalculationResult> {
-    this.logger.log(`Calculating asset MWR/IRR for asset ${assetId} on ${snapshotDate.toISOString().split('T')[0]}`);
 
     try {
       // Calculate MWR for different periods
@@ -138,15 +136,11 @@ export class MWRIRRCalculationService {
     const startDate = new Date(snapshotDate);
     startDate.setDate(startDate.getDate() - days);
 
-    this.logger.log(`Calculating MWR for period: ${days} days from ${startDate.toISOString().split('T')[0]} to ${snapshotDate.toISOString().split('T')[0]}`);
-
     // Get cash flows for the period
     const cashFlows = await this.getCashFlowsForPeriod(portfolioId, startDate, snapshotDate);
     
     // Get portfolio values
     const portfolioValues = await this.getPortfolioValuesForPeriod(portfolioId, startDate, snapshotDate, granularity);
-
-    this.logger.log(`Retrieved ${cashFlows.length} cash flows and ${portfolioValues.length} portfolio values`);
 
     if (cashFlows.length === 0 || portfolioValues.length < 2) {
       this.logger.warn(`Insufficient data for MWR calculation: ${cashFlows.length} cash flows, ${portfolioValues.length} portfolio values`);
@@ -344,7 +338,6 @@ export class MWRIRRCalculationService {
         return sum + amount;
       }, 0);
 
-      this.logger.log(`🔍 MWR DEBUG: Net cash flow for period: ${netCashFlow} from ${prevDate.toISOString()} to ${currDate.toISOString()}`);
 
       // Calculate period return with proper logic
       let periodReturn = 0;
@@ -468,7 +461,6 @@ export class MWRIRRCalculationService {
     const startDate = new Date(snapshotDate);
     startDate.setDate(startDate.getDate() - days);
 
-    this.logger.log(`Calculating asset MWR for period: ${days} days from ${startDate.toISOString().split('T')[0]} to ${snapshotDate.toISOString().split('T')[0]}`);
 
     // Get asset cash flows for the period (trades)
     const cashFlows = await this.getAssetCashFlowsForPeriod(portfolioId, assetId, startDate, snapshotDate);
@@ -497,7 +489,6 @@ export class MWRIRRCalculationService {
     const startDate = new Date(snapshotDate);
     startDate.setDate(startDate.getDate() - days);
 
-    this.logger.log(`Calculating asset IRR for period: ${days} days from ${startDate.toISOString().split('T')[0]} to ${snapshotDate.toISOString().split('T')[0]}`);
 
     // Get asset cash flows for the period
     const cashFlows = await this.getAssetCashFlowsForPeriod(portfolioId, assetId, startDate, snapshotDate);
@@ -640,7 +631,6 @@ export class MWRIRRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity = SnapshotGranularity.DAILY
   ): Promise<MWRIRRCalculationResult> {
-    this.logger.log(`Calculating asset group MWR/IRR for asset type ${assetType} on ${snapshotDate.toISOString().split('T')[0]}`);
 
     try {
       // Calculate MWR for different periods

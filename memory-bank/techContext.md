@@ -28,6 +28,9 @@
 - **Format Helpers**: Centralized formatting utilities for consistent number, currency, and date display ✅
 - **Modal UI/UX Enhancements**: Professional modal headers with close buttons and improved layout structure ✅
 - **PortfolioDetail Refactoring**: Successfully refactored monolithic component into 6 separate tab components ✅
+- **Timezone Handling System**: Comprehensive timezone fixes across all date-related operations ✅
+- **Risk Metrics Configuration**: Configurable risk metrics system with environment variable support ✅
+- **Risk Analytics Enhancement**: Standardized risk metrics calculation between Trades and Portfolio APIs ✅
 - **Multi-Language Support**: Complete i18n implementation with react-i18next, translation keys, and pluralization ✅
 - **Component Enhancement**: hideActions prop pattern for conditional rendering and different display modes ✅
 - **Navigation Flow Optimization**: Centralized management vs modal-based editing patterns ✅
@@ -72,6 +75,10 @@
 - **User Management API**: Full CRUD endpoints cho user management với auto role assignment ✅
 - **Settings API**: System-wide settings management với database persistence ✅
 - **Migration System**: Production-ready database migrations cho role và permission system ✅
+- **Timezone Handling System**: Comprehensive timezone fixes across all date-related operations ✅
+- **Risk Metrics Configuration**: Configurable risk metrics system with environment variable support ✅
+- **Risk Analytics Enhancement**: Standardized risk metrics calculation between Trades and Portfolio APIs ✅
+- **Date Range Support**: Enhanced risk metrics to support date range filtering with backward compatibility ✅
 
 ### Infrastructure Stack - **AWS DEPLOYED ✅**
 - **AWS CDK**: Infrastructure as Code với TypeScript ✅

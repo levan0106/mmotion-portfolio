@@ -18,6 +18,7 @@
     "refresh": "Làm mới",
     "export": "Xuất",
     "import": "Nhập",
+    "back": "Quay lại",
     "groupByDate": "Nhóm theo ngày",
     "grid": "Lưới",
     "list": "Danh sách",
@@ -127,7 +128,7 @@
     "totalAnnualReturns": "Tổng & Lợi nhuận hàng năm",
     "totalReturn": "Từ đầu",
     "annualized": "Hàng năm",
-    "ytdReturn": "Đầu năm",
+    "ytdReturn": "Từ đầu năm",
     "tradingActivity": "Hoạt động giao dịch",
     "tradingVolume": "Giao dịch & Khối lượng",
     "totalTrades": "Tổng giao dịch",
@@ -172,7 +173,7 @@
     "mwrDescription": "MWR - Lợi nhuận thực tế của nhà đầu tư với dòng tiền",
     "mwrPerformance": "Hiệu suất MWR",
     "portfolioPerformanceMWR": "Hiệu suất danh mục (MWR)",
-    "riskMetricsDashboard": "Bảng điều khiển chỉ số rủi ro",
+    "riskMetricsDashboard": "Chỉ số rủi ro danh mục",
     "summarySnapshots": "Ảnh chụp tóm tắt danh mục",
     "cashBalanceNote": "Portfolio metrics sử dụng ở tab Portfolio Performance không được tính toán tại đây.",
     "management": "Quản lý tiền gửi",
@@ -1125,7 +1126,7 @@
     "returnPercent": "Lợi nhuận %",
     "navValue": "Giá trị NAV",
     "currentNav": "NAV hiện tại",
-    "totalReturn": "Tăng trưởng",
+    "totalReturn": "Tăng trưởng NAV",
     "maxDrawdown": "Sụt giảm tối đa",
     "dataPoints": "Điểm dữ liệu",
     "loading": "Đang tải dữ liệu lịch sử NAV...",
@@ -1204,7 +1205,7 @@
     "buyTrades": "Giao dịch mua",
     "sellTrades": "Giao dịch bán",
     "totalVolume": "Tổng giá trị",
-    "riskMetrics": "Chỉ số rủi ro",
+    "riskMetrics": "Chỉ số rủi ro tài sản đã bán",
     "riskLevel": "Mức độ rủi ro",
     "riskLevels": {
       "high": "Cao",
@@ -1272,6 +1273,7 @@
   },
   "riskMetrics": {
     "noData": "Không có dữ liệu chỉ số rủi ro",
+    "loading": "Đang tải chỉ số rủi ro...",
     "subtitle": "Phân tích rủi ro toàn diện và các chỉ số sức khỏe danh mục",
     "var95": "Giá trị rủi ro (95%)",
     "sharpeRatio": "Tỷ lệ Sharpe",
@@ -1281,7 +1283,10 @@
     "var99": "VaR (99%)",
     "beta": "Beta",
     "calmarRatio": "Tỷ lệ Calmar",
-    "sortinoRatio": "Tỷ lệ Sortino"
+    "sortinoRatio": "Tỷ lệ Sortino",
+    "error": {
+      "loadFailed": "Không thể tải dữ liệu chỉ số rủi ro"
+    }
   },
   "navSummary": {
     "title": "Tóm tắt NAV",

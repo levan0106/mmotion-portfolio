@@ -48,7 +48,19 @@ export class CashFlowController {
     // Override portfolioId from URL parameter
     createCashFlowDto.portfolioId = portfolioId;
 
-    const flowDate = createCashFlowDto.flowDate ? new Date(createCashFlowDto.flowDate) : new Date();
+    // Fix timezone issue: handle both ISO string and date string formats
+    let flowDate: Date;
+    if (createCashFlowDto.flowDate) {
+      let dateStr = createCashFlowDto.flowDate;
+      if (dateStr.includes('T')) {
+        // If it's already an ISO string, extract date part
+        dateStr = dateStr.split('T')[0];
+      }
+      // Append 'T00:00:00' to ensure local time interpretation
+      flowDate = new Date(dateStr + 'T00:00:00');
+    } else {
+      flowDate = new Date();
+    }
     const currency = createCashFlowDto.currency || 'VND';
 
     return await this.cashFlowService.addManualCashFlow(
@@ -224,7 +236,8 @@ export class CashFlowController {
       fundingSource?: string;
     },
   ) {
-    const flowDate = createDepositDto.flowDate ? new Date(createDepositDto.flowDate) : undefined;
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const flowDate = createDepositDto.flowDate ? new Date(createDepositDto.flowDate + 'T00:00:00') : undefined;
     const effectiveDate = createDepositDto.effectiveDate || flowDate;
     
     return await this.cashFlowService.createCashFlow(
@@ -261,7 +274,8 @@ export class CashFlowController {
       fundingSource?: string;
     },
   ) {
-    const flowDate = createWithdrawalDto.flowDate ? new Date(createWithdrawalDto.flowDate) : undefined;
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const flowDate = createWithdrawalDto.flowDate ? new Date(createWithdrawalDto.flowDate + 'T00:00:00') : undefined;
     const effectiveDate = createWithdrawalDto.effectiveDate || flowDate;
     
     return await this.cashFlowService.createCashFlow(
@@ -298,7 +312,8 @@ export class CashFlowController {
       fundingSource?: string;
     },
   ) {
-    const flowDate = createDividendDto.flowDate ? new Date(createDividendDto.flowDate) : undefined;
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const flowDate = createDividendDto.flowDate ? new Date(createDividendDto.flowDate + 'T00:00:00') : undefined;
     const effectiveDate = createDividendDto.effectiveDate || flowDate;
     
     return await this.cashFlowService.createCashFlow(
@@ -329,6 +344,15 @@ export class CashFlowController {
     @Param('cashFlowId', ParseUUIDPipe) cashFlowId: string,
     @Body() updateCashFlowDto: CreateCashFlowDto,
   ) {
+    // Fix timezone issue: process flowDate if provided
+    if (updateCashFlowDto.flowDate) {
+      // Extract date part and append 'T00:00:00' to ensure local time interpretation
+      const dateStr = updateCashFlowDto.flowDate.includes('T') 
+        ? updateCashFlowDto.flowDate.split('T')[0] 
+        : updateCashFlowDto.flowDate;
+      updateCashFlowDto.flowDate = dateStr;
+    }
+    
     return await this.cashFlowService.updateCashFlow(
       portfolioId,
       cashFlowId,
@@ -385,7 +409,8 @@ export class CashFlowController {
     // Override portfolioId from URL parameter
     transferCashDto.portfolioId = portfolioId;
 
-    const transferDate = transferCashDto.transferDate ? new Date(transferCashDto.transferDate) : new Date();
+    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
+    const transferDate = transferCashDto.transferDate ? new Date(transferCashDto.transferDate + 'T00:00:00') : new Date();
 
     return await this.cashFlowService.transferCash(
       portfolioId,

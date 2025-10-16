@@ -116,10 +116,18 @@ const DepositForm: React.FC<DepositFormProps> = ({
           termMonths: initialData.termMonths || 0,
           notes: initialData.notes || '',
         });
-        // Calculate term from dates
+        // Calculate term from dates - Fix timezone issue
         if (initialData.startDate && initialData.endDate) {
-          const start = new Date(initialData.startDate);
-          const end = new Date(initialData.endDate);
+          // Extract date part only to avoid timezone conversion issues
+          const startDateStr = initialData.startDate.includes('T') 
+            ? initialData.startDate.split('T')[0] 
+            : initialData.startDate;
+          const endDateStr = initialData.endDate.includes('T') 
+            ? initialData.endDate.split('T')[0] 
+            : initialData.endDate;
+          
+          const start = new Date(startDateStr + 'T00:00:00');
+          const end = new Date(endDateStr + 'T00:00:00');
           const term = calculateTermFromDates(start, end);
           setSelectedTerm(term);
         }

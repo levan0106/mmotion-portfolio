@@ -38,6 +38,8 @@ services:
     container_name: portfolio_app
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/portfolio_db
@@ -70,6 +72,10 @@ services:
       - LOG_BUSINESS_EVENTS_ENABLED=true
       - PRICE_UPDATE_INTERVAL_MINUTES=120
       - AUTO_SYNC_ENABLED=false
+      # Risk Metrics Configuration
+      - RISK_FREE_RATE=${RISK_FREE_RATE:-0.05}
+      - TRADING_DAYS_PER_YEAR=${TRADING_DAYS_PER_YEAR:-252}
+      - MIN_RISK_DATA_POINTS=${MIN_RISK_DATA_POINTS:-2}
     volumes:
       - .:/app
       - /app/node_modules

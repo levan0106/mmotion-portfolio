@@ -66,6 +66,7 @@ export const createTestPortfolio = (overrides = {}) => ({
   totalValue: 50000,
   unrealizedPl: 5000,
   realizedPl: 2000,
+  totalCapitalValue: 50000,
   // New fields
   totalAssetValue: 40000,
   totalInvestValue: 50000,

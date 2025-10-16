@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.entity';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
+import { RiskMetricsConfig } from '../../../config/risk-metrics.config';
 
 export interface RiskMetricsResult {
   volatility1M: number;
@@ -30,7 +31,7 @@ export interface RiskMetricsOptions {
 @Injectable()
 export class RiskMetricsCalculationService {
   private readonly logger = new Logger(RiskMetricsCalculationService.name);
-  private readonly DEFAULT_RISK_FREE_RATE = 0.02; // 2% annual risk-free rate
+  private readonly DEFAULT_RISK_FREE_RATE = RiskMetricsConfig.DEFAULT_RISK_FREE_RATE;
 
   constructor(
     @InjectRepository(PortfolioSnapshot)
@@ -414,11 +415,11 @@ export class RiskMetricsCalculationService {
     const volatility = Math.sqrt(variance);
 
     // Annualize volatility (assuming daily returns)
-    const annualizedVolatility = volatility * Math.sqrt(252);
+    const annualizedVolatility = volatility * Math.sqrt(RiskMetricsConfig.TRADING_DAYS_PER_YEAR);
 
     // Calculate Sharpe ratio
-    const excessReturn = meanReturn - (riskFreeRate / 252); // Daily risk-free rate
-    const sharpeRatio = volatility > 0 ? (excessReturn / volatility) * Math.sqrt(252) : 0;
+    const excessReturn = meanReturn - (riskFreeRate / RiskMetricsConfig.TRADING_DAYS_PER_YEAR); // Daily risk-free rate
+    const sharpeRatio = volatility > 0 ? (excessReturn / volatility) * Math.sqrt(RiskMetricsConfig.TRADING_DAYS_PER_YEAR) : 0;
 
     // Calculate maximum drawdown
     const maxDrawdown = this.calculateMaxDrawdown(returns);

@@ -707,6 +707,30 @@ export class PortfolioAnalyticsService {
       const snapshotGranularity = granularity ? 
         (granularity.toUpperCase() as SnapshotGranularity) : 
         SnapshotGranularity.DAILY;
+      
+      
+      const currentYear = new Date(startDate).getFullYear();
+      const yearStartDate = new Date(currentYear, 0, 1); // January 1st
+      const yearEndDate = new Date(); // ngày hiện tại
+
+      // get all snapshots for the portfolio
+      const yearSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
+        portfolioId,
+        startDate: yearStartDate,
+        endDate: yearEndDate,
+        granularity: SnapshotGranularity.DAILY
+      });
+
+      //console.log('getNavHistory: yearSnapshots', yearSnapshots[0].snapshotDate, yearSnapshots[yearSnapshots.length - 1].snapshotDate);
+
+      const fundSnapshots = yearSnapshots.filter(snapshot => snapshot.totalOutstandingUnits > 0);
+
+      // Find first day of year for YTD growth from yearSnapshots
+      const yearStartSnapshot = fundSnapshots.length > 0 
+      ? fundSnapshots.sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime())[0]
+      : null;
+      
+      //console.log('getNavHistory: yearStartSnapshot', yearStartDate, yearEndDate, yearStartSnapshot);
 
       // Get portfolio snapshots
       const portfolioSnapshots = await this.portfolioSnapshotService.getPortfolioSnapshotTimeline({
@@ -757,21 +781,11 @@ export class PortfolioAnalyticsService {
               navPerUnitDailyGrowthValue = navPerUnit - previousNavPerUnit;
             }
           }
+          // If no snapshot found in current year, use the earliest snapshot overall (same as database fallback)
+          const finalYearStartSnapshot = yearStartSnapshot || portfolioSnapshots[0];
           
-          // Find first day of year for YTD growth
-          const currentYear = new Date(snapshot.snapshotDate).getFullYear();
-          const yearStartDate = new Date(currentYear, 0, 1); // January 1st
-          
-          // Find the earliest snapshot in the current year
-          const yearSnapshots = portfolioSnapshots.filter(s => {
-            const snapshotDate = new Date(s.snapshotDate);
-            return snapshotDate >= yearStartDate && snapshotDate <= new Date(snapshot.snapshotDate);
-          });
-          
-          const yearStartSnapshot = yearSnapshots.length > 0 ? yearSnapshots[0] : null;
-          
-          if (yearStartSnapshot) {
-            const yearStartNavPerUnit = parseFloat(yearStartSnapshot.navPerUnit.toString()) || 0;
+          if (finalYearStartSnapshot) {
+            const yearStartNavPerUnit = parseFloat(finalYearStartSnapshot.navPerUnit.toString()) || 0;
             if (yearStartNavPerUnit > 0) {
               navPerUnitYtdGrowth = ((navPerUnit - yearStartNavPerUnit) / yearStartNavPerUnit) * 100;
               navPerUnitYtdGrowthValue = navPerUnit - yearStartNavPerUnit;

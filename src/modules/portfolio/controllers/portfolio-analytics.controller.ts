@@ -5,6 +5,7 @@ import {
   Query,
   ParseUUIDPipe,
   ParseIntPipe,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
@@ -15,6 +16,7 @@ import { PositionManagerService } from '../services/position-manager.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { MarketDataService } from '../../market-data/services/market-data.service';
+import { RiskMetricsCalculationService } from '../services/risk-metrics-calculation.service';
 
 /**
  * Controller for Portfolio analytics and advanced reporting.
@@ -22,6 +24,8 @@ import { MarketDataService } from '../../market-data/services/market-data.servic
 @ApiTags('Portfolio Analytics')
 @Controller('api/v1/portfolios/:id/analytics')
 export class PortfolioAnalyticsController {
+  private readonly logger = new Logger(PortfolioAnalyticsController.name);
+
   constructor(
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly portfolioService: PortfolioService,
@@ -29,58 +33,8 @@ export class PortfolioAnalyticsController {
     private readonly positionManagerService: PositionManagerService,
     private readonly performanceSnapshotService: PerformanceSnapshotService,
     private readonly marketDataService: MarketDataService,
+    private readonly riskMetricsCalculationService: RiskMetricsCalculationService,
   ) {}
-
-  // /**
-  //  * Get detailed performance analytics for a portfolio.
-  //  */
-  // @Get('performance')
-  // @ApiOperation({ summary: 'Get detailed performance analytics' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiQuery({ name: 'period', required: false, description: 'Analysis period (1M, 3M, 6M, 1Y)' })
-  // @ApiResponse({ status: 200, description: 'Performance analytics retrieved successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async getPerformanceAnalytics(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Query('period') period?: string,
-  // ): Promise<any> {
-  //   const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
-    
-  //   // Add period-specific calculations based on query parameter
-  //   const now = new Date();
-  //   let periodStart: Date;
-    
-  //   switch (period) {
-  //     case '1M':
-  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  //       break;
-  //     case '3M':
-  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-  //       break;
-  //     case '6M':
-  //       periodStart = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-  //       break;
-  //     case '1Y':
-  //       periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-  //       break;
-  //     default:
-  //       periodStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-  //   }
-
-  //   const periodROE = await this.portfolioAnalyticsService.calculateROE(id, periodStart, now);
-  //   const periodTWR = await this.portfolioAnalyticsService.calculateTWR(id, periodStart, now);
-
-  //   return {
-  //     portfolioId: id,
-  //     period: period || '1Y',
-  //     periodStart: periodStart.toISOString(),
-  //     periodEnd: now.toISOString(),
-  //     ...performanceSummary,
-  //     periodRoe: periodROE,
-  //     periodTwr: periodTWR,
-  //     calculatedAt: new Date().toISOString(),
-  //   };
-  // }
 
   /**
    * Get detailed asset allocation analytics.
@@ -136,66 +90,6 @@ export class PortfolioAnalyticsController {
       calculatedAt: new Date().toISOString(),
     };
   }
-
-  // /**
-  //  * Get historical performance data.
-  //  */
-  // @Get('history')
-  // @ApiOperation({ summary: 'Get historical performance data' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
-  // @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
-  // @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of records' })
-  // @ApiResponse({ status: 200, description: 'Historical data retrieved successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async getHistoricalData(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Query('startDate') startDate?: string,
-  //   @Query('endDate') endDate?: string,
-  //   @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
-  // ): Promise<any> {
-  //   const end = endDate ? new Date(endDate) : new Date();
-  //   const start = startDate ? new Date(startDate) : new Date();
-  //   start.setDate(end.getDate() - 30); // Default to last 30 days
-
-  //   const returnHistory = await this.portfolioAnalyticsService.calculateReturnHistory(id, start, end);
-  //   const performanceSummary = await this.portfolioAnalyticsService.getPerformanceSummary(id);
-
-  //   return {
-  //     portfolioId: id,
-  //     period: {
-  //       startDate: start.toISOString(),
-  //       endDate: end.toISOString(),
-  //     },
-  //     returnHistory: returnHistory,
-  //     performanceSummary: performanceSummary,
-  //     limit: limit || 30,
-  //     retrievedAt: new Date().toISOString(),
-  //   };
-  // }
-
-  // /**
-  //  * Generate NAV snapshot for a portfolio.
-  //  */
-  // @Get('snapshot')
-  // @ApiOperation({ summary: 'Generate NAV snapshot for a portfolio' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiQuery({ name: 'date', required: false, description: 'Snapshot date (YYYY-MM-DD)' })
-  // @ApiResponse({ status: 200, description: 'NAV snapshot generated successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async generateNavSnapshot(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Query('date') date?: string,
-  // ): Promise<any> {
-  //   const snapshotDate = date ? new Date(date) : new Date();
-  //   const navSnapshot = await this.portfolioAnalyticsService.generateNavSnapshot(id, snapshotDate);
-
-  //   return {
-  //     portfolioId: id,
-  //     snapshot: navSnapshot,
-  //     generatedAt: new Date().toISOString(),
-  //   };
-  // }
 
   /**
    * Get historical performance data for charting.
@@ -513,34 +407,78 @@ export class PortfolioAnalyticsController {
   @ApiResponse({ status: 200, description: 'Risk metrics data retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Portfolio not found' })
   async getRiskMetrics(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    const allocation = await this.portfolioService.getAssetAllocation(id);
-    const portfolio = await this.portfolioService.getPortfolioDetails(id);
+    try {
+      const portfolio = await this.portfolioService.getPortfolioDetails(id);
+      if (!portfolio) {
+        throw new Error('Portfolio not found');
+      }
 
-    // Generate mock risk metrics based on allocation
-    const totalValue = portfolio.totalValue;
-    const allocationCount = allocation.length;
-    
-    // Calculate mock risk metrics
-    const baseVolatility = 0.15 + (Math.random() * 0.2); // 15% to 35%
-    const baseReturn = (Math.random() - 0.3) * 0.4; // -12% to +28%
-    
-    const riskMetrics = {
-      var95: baseVolatility * 1.65, // 95% VaR
-      var99: baseVolatility * 2.33, // 99% VaR
-      sharpeRatio: baseReturn / baseVolatility, // Sharpe ratio
-      beta: 0.8 + Math.random() * 0.4, // 0.8 to 1.2
-      volatility: baseVolatility,
-      maxDrawdown: baseVolatility * (0.8 + Math.random() * 0.4), // Max drawdown
-      calmarRatio: baseReturn / (baseVolatility * (0.8 + Math.random() * 0.4)), // Calmar ratio
-      sortinoRatio: baseReturn / (baseVolatility * 0.7), // Sortino ratio
-    };
+      const snapshotDate = new Date();
+      
+      // Calculate real risk metrics using the risk metrics calculation service
+      const riskMetrics1Y = await this.riskMetricsCalculationService.calculatePortfolioRiskMetrics({
+        portfolioId: id,
+        snapshotDate,
+        granularity: SnapshotGranularity.DAILY,
+        riskFreeRate: 0.02 // 2% annual risk-free rate
+      });
 
-    return {
-      portfolioId: id,
-      totalValue: totalValue,
-      data: riskMetrics,
-      calculatedAt: new Date().toISOString(),
-    };
+      // Calculate VaR metrics
+      const var95 = await this.riskMetricsCalculationService.calculateVaR(
+        id, snapshotDate, 252, 0.95, SnapshotGranularity.DAILY
+      );
+      const var99 = await this.riskMetricsCalculationService.calculateVaR(
+        id, snapshotDate, 252, 0.99, SnapshotGranularity.DAILY
+      );
+
+      // Calculate CVaR metrics
+      const cvar95 = await this.riskMetricsCalculationService.calculateCVaR(
+        id, snapshotDate, 252, 0.95, SnapshotGranularity.DAILY
+      );
+
+      // Calculate additional ratios
+      const calmarRatio = riskMetrics1Y.volatility1Y > 0 
+        ? (riskMetrics1Y.riskAdjustedReturn1Y / 100) / (riskMetrics1Y.maxDrawdown1Y / 100)
+        : 0;
+
+      const sortinoRatio = riskMetrics1Y.volatility1Y > 0 
+        ? (riskMetrics1Y.riskAdjustedReturn1Y / 100) / (riskMetrics1Y.volatility1Y / 100)
+        : 0;
+
+      // Calculate beta (simplified - would need benchmark data for real calculation)
+      const beta = Math.min(Math.max(riskMetrics1Y.volatility1Y / 20, 0.5), 2.0); // Estimate based on volatility
+
+      const riskMetrics = {
+        var95: var95,
+        var99: var99,
+        sharpeRatio: riskMetrics1Y.sharpeRatio1Y,
+        beta: beta,
+        volatility: riskMetrics1Y.volatility1Y,
+        maxDrawdown: riskMetrics1Y.maxDrawdown1Y,
+        calmarRatio: calmarRatio,
+        sortinoRatio: sortinoRatio,
+        cvar95: cvar95,
+        // Additional metrics for comprehensive dashboard
+        volatility1M: riskMetrics1Y.volatility1M,
+        volatility3M: riskMetrics1Y.volatility3M,
+        sharpeRatio1M: riskMetrics1Y.sharpeRatio1M,
+        sharpeRatio3M: riskMetrics1Y.sharpeRatio3M,
+        maxDrawdown1M: riskMetrics1Y.maxDrawdown1M,
+        maxDrawdown3M: riskMetrics1Y.maxDrawdown3M,
+      };
+
+      return {
+        portfolioId: id,
+        totalValue: portfolio.totalValue,
+        data: riskMetrics,
+        calculatedAt: new Date().toISOString(),
+        period: '1Y', // Primary period for main metrics
+        additionalPeriods: ['1M', '3M', '1Y']
+      };
+    } catch (error) {
+      this.logger.error(`Error calculating risk metrics for portfolio ${id}: ${error.message}`);
+      throw error;
+    }
   }
 
   /**

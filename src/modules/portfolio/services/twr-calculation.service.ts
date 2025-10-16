@@ -41,7 +41,6 @@ export class TWRCalculationService {
     
     // Ensure snapshotDate is a Date object
     const date = snapshotDate instanceof Date ? snapshotDate : new Date(snapshotDate);
-    this.logger.log(`Calculating portfolio TWR for ${portfolioId} on ${date.toISOString().split('T')[0]}`);
 
     try {
       // Calculate TWR for different periods
@@ -79,7 +78,6 @@ export class TWRCalculationService {
   ): Promise<TWRCalculationResult> {
     // Ensure snapshotDate is a Date object
     const date = snapshotDate instanceof Date ? snapshotDate : new Date(snapshotDate);
-    this.logger.log(`Calculating asset TWR for ${assetId} on ${date.toISOString().split('T')[0]}`);
 
     try {
       const twr1D = await this.calculateAssetTWRForPeriod(portfolioId, assetId, date, 1, granularity);
@@ -116,7 +114,6 @@ export class TWRCalculationService {
   ): Promise<TWRCalculationResult> {
     // Ensure snapshotDate is a Date object
     const date = snapshotDate instanceof Date ? snapshotDate : new Date(snapshotDate);
-    this.logger.log(`Calculating asset group TWR for ${assetType} on ${date.toISOString().split('T')[0]}`);
 
     try {
       const twr1D = await this.calculateAssetGroupTWRForPeriod(portfolioId, assetType, date, 1, granularity);

@@ -343,24 +343,33 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     return null;
   };
 
-  // Custom label function for pie chart
-  const renderCustomLabel = ({ name, percent, payload }: any) => {
-    // Show labels for all slices, but with different styling based on size
+  // Custom label component for pie chart
+  const CustomLabel = ({ name, percent, payload, x, y }: any) => {
     const percentage = formatPercentageWithSeparators(percent * 100, 1, locale);
     const value = payload?.formattedValue || formatCurrency(payload?.value || 0, currency, {}, locale);
 
-    // For very small slices, show only name and value
-    if (percent < 0.02) {
-      return `${name}\n${value}`;
-    }
-    
-    // For small slices, show name, percentage and value
-    if (percent < 0.05) {
-      return `${name}\n${percentage}\n${value}`;
-    }
-    
-    // For larger slices, show full info
-    return `${name}\n${percentage}\n${value}`;
+    return (
+      <g>
+        <text x={x} y={y - 6} textAnchor="middle" fill="#333" fontSize="10" fontWeight="bold">
+          {name}
+        </text>
+        {percent >= 0.02 && (
+          <text x={x} y={y + 6} textAnchor="middle" fill="#333" fontSize="9" fontWeight="normal">
+            {percentage}
+          </text>
+        )}
+        {percent >= 0.05 && (
+          <text x={x} y={y + 18} textAnchor="middle" fill="#333" fontSize="9" fontWeight="normal">
+            {value}
+          </text>
+        )}
+        {percent < 0.02 && (
+          <text x={x} y={y + 6} textAnchor="middle" fill="#333" fontSize="9" fontWeight="normal">
+            {value}
+          </text>
+        )}
+      </g>
+    );
   };
 
   if (isLoading) {
@@ -880,7 +889,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={renderCustomLabel}
+                            label={<CustomLabel />}
                             outerRadius={isCompactMode ? 60 : 90}
                             innerRadius={isCompactMode ? 25 : 35}
                             fill="#8884d8"
