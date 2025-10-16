@@ -29,6 +29,9 @@ i18n
       escapeValue: false, // React already does escaping
     },
     
+    // Enable accessing nested objects
+    returnObjects: true,
+    
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],

@@ -22,7 +22,9 @@ import {
   Card, 
   CardContent, 
   Tooltip,
-  IconButton
+  IconButton,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
@@ -65,7 +67,8 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   const { t } = useTranslation();
   const [timeframe, setTimeframe] = useState(currentTimeframe);
   const [twrPeriod, setTwrPeriod] = useState(currentTwrPeriod);
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Sync local state with prop changes
   useEffect(() => {
     setTimeframe(currentTimeframe);
@@ -191,7 +194,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
               </IconButton>
             </Tooltip>
           </Box>
-          <ResponsiveTypography variant="formHelper" color="text.secondary">
+          <ResponsiveTypography variant="formHelper" color="text.secondary" display={isMobile ? 'none' : 'block'}>
             {t('benchmark.subtitle', { benchmarkName })}
           </ResponsiveTypography>
         </Box>

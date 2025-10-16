@@ -1151,7 +1151,8 @@
     },
     "tooltip": {
       "navValue": "NAV Value",
-      "portfolioPnL": "Portfolio P&L"
+      "portfolioPnL": "Portfolio P&L",
+      "cumulativeReturn": "Cumulative Return"
     }
   },
   "benchmark": {
@@ -1229,7 +1230,48 @@
     "asset": "Asset",
     "side": "Side",
     "pnl": "P&L",
-    "date": "Date"
+    "date": "Date",
+    "tooltip": {
+      "totalPnL": "Total P&L",
+      "realizedPnL": "Realized P&L",
+      "unrealizedPnL": "Unrealized P&L",
+      "trades": "Trades",
+      "winRate": "Win Rate",
+      "volume": "Volume",
+      "symbol": "Symbol",
+      "pnl": "P&L",
+      "performance": "Performance"
+    },
+    "timeframe": {
+      "allTime": "All Time",
+      "oneMonth": "1 Month",
+      "threeMonths": "3 Months",
+      "sixMonths": "6 Months",
+      "oneYear": "1 Year"
+    },
+    "granularity": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "table": {
+      "asset": "Asset",
+      "side": "Side",
+      "pnl": "P&L",
+      "date": "Date",
+      "quantity": "Quantity",
+      "avgCost": "Avg Cost",
+      "marketValue": "Market Value",
+      "trades": "Trades"
+    },
+    "status": {
+      "win": "Win",
+      "loss": "Loss"
+    },
+    "unknown": {
+      "asset": "Unknown",
+      "assetName": "Unknown Asset"
+    }
   },
   "riskMetrics": {
     "noData": "No risk metrics data available",
@@ -1257,6 +1299,7 @@
     "investorBenefit": "Investor Benefit",
     "navPerUnitTooltip": "NAV/Unit = Total NAV ÷ Outstanding Units. Shows each investor's benefit.",
     "navPerUnitGrowth": "NAV/Unit Growth",
+    "navGrowth": "NAV Growth",
     "recent": "Recent",
     "fromStart": "From Start",
     "infoNote": "💡 Total NAV = Cash + Asset Value | NAV/Unit = Total NAV ÷ Outstanding Units"

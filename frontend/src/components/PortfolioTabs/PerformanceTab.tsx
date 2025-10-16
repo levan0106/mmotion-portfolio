@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Grid, CircularProgress } from '@mui/material';
+import { Box, Grid, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { usePortfolioAnalytics } from '../../hooks/usePortfolios';
 import { apiService } from '../../services/api';
@@ -30,6 +30,8 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   getUltraSpacing
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // State for benchmark data
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
@@ -186,7 +188,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           <Grid item xs={12} sm={12} md={6} lg={6}>
             {/* Header */}
             <Box sx={{ 
-              display: 'flex', 
+              display: isMobile || isCompactMode ? 'none' : 'flex', 
               alignItems: { xs: 'flex-start', sm: 'center' },
               gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),
@@ -266,7 +268,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           <Grid item xs={12} sm={12} md={6} lg={6}>
             {/* Header */}
             <Box sx={{ 
-              display: 'flex', 
+              display: isMobile || isCompactMode ? 'none' : 'flex', 
               alignItems: { xs: 'flex-start', sm: 'center' },
               gap: { xs: 1, sm: 1.5 }, 
               mb: getUltraSpacing(1.5, 1),

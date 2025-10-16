@@ -170,8 +170,7 @@ export class PortfolioSnapshotRepository {
         'snapshot.totalPortfolioInvested',
         'snapshot.assetCount',
         'snapshot.activeAssetCount',
-        'snapshot.portfolioVolatility',
-        'snapshot.portfolioMaxDrawdown',
+        // Performance metrics moved to portfolio_performance_snapshots table
       ])
       .where('snapshot.portfolioId = :portfolioId', { portfolioId })
       .andWhere('snapshot.snapshotDate BETWEEN :startDate AND :endDate', { startDate, endDate })

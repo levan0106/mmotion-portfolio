@@ -716,23 +716,116 @@ export class PortfolioAnalyticsService {
         granularity: snapshotGranularity
       });
 
-      // Transform data for chart
-      const navHistory = portfolioSnapshots.map(snapshot => ({
-        date: snapshot.snapshotDate,
-        navValue: parseFloat(snapshot.totalPortfolioValue.toString()),
-        totalValue: parseFloat(snapshot.totalPortfolioValue.toString()),
-        cashBalance: parseFloat(snapshot.cashBalance.toString()),
-        assetValue: parseFloat(snapshot.totalAssetValue.toString()),
-        totalReturn: parseFloat(snapshot.totalReturn.toString()),
-        portfolioPnL: parseFloat(snapshot.totalPortfolioPl.toString()),
-        portfolioDailyReturn: parseFloat(snapshot.portfolioDailyReturn.toString()),
-        portfolioWeeklyReturn: parseFloat(snapshot.portfolioWeeklyReturn.toString()),
-        portfolioMonthlyReturn: parseFloat(snapshot.portfolioMonthlyReturn.toString()),
-        portfolioYtdReturn: parseFloat(snapshot.portfolioYtdReturn.toString())
-      }));
+      // Get portfolio info to determine if it's a fund
+      const portfolio = await this.portfolioRepository.findOne({
+        where: { portfolioId }
+      });
 
+      if (!portfolio) {
+        throw new Error(`Portfolio ${portfolioId} not found`);
+      }
+
+      // Transform data for chart with pre-calculated growth metrics
+      const navHistory = portfolioSnapshots.map((snapshot, index) => {
+        const navValue = parseFloat(snapshot.totalPortfolioValue.toString());
+        const isFund = portfolio.isFund || false;
+        const totalOutstandingUnits = parseFloat(snapshot.totalOutstandingUnits.toString()) || 0;
+        const navPerUnit = parseFloat(snapshot.navPerUnit.toString()) || 0;
+        
+        // Calculate growth metrics
+        const dailyReturn = parseFloat(snapshot.dailyReturn.toString());
+        const ytdReturn = parseFloat(snapshot.ytdReturn.toString());
+        
+        // Calculate growth values
+        const dailyGrowthValue = navValue * (dailyReturn / 100);
+        const ytdGrowthValue = navValue * (ytdReturn / 100);
+        
+        // For funds, calculate NAV per unit growth based on actual NAV per unit changes
+        let navPerUnitDailyGrowth = 0;
+        let navPerUnitYtdGrowth = 0;
+        let navPerUnitDailyGrowthValue = 0;
+        let navPerUnitYtdGrowthValue = 0;
+        
+        if (isFund && totalOutstandingUnits > 0) {
+          // Calculate NAV per unit growth based on actual NAV per unit changes
+          // Find previous day's NAV per unit for daily growth
+          if (index > 0) {
+            const previousSnapshot = portfolioSnapshots[index - 1];
+            const previousNavPerUnit = parseFloat(previousSnapshot.navPerUnit.toString()) || 0;
+            if (previousNavPerUnit > 0) {
+              navPerUnitDailyGrowth = ((navPerUnit - previousNavPerUnit) / previousNavPerUnit) * 100;
+              navPerUnitDailyGrowthValue = navPerUnit - previousNavPerUnit;
+            }
+          }
+          
+          // Find first day of year for YTD growth
+          const currentYear = new Date(snapshot.snapshotDate).getFullYear();
+          const yearStartDate = new Date(currentYear, 0, 1); // January 1st
+          
+          // Find the earliest snapshot in the current year
+          const yearSnapshots = portfolioSnapshots.filter(s => {
+            const snapshotDate = new Date(s.snapshotDate);
+            return snapshotDate >= yearStartDate && snapshotDate <= new Date(snapshot.snapshotDate);
+          });
+          
+          const yearStartSnapshot = yearSnapshots.length > 0 ? yearSnapshots[0] : null;
+          
+          if (yearStartSnapshot) {
+            const yearStartNavPerUnit = parseFloat(yearStartSnapshot.navPerUnit.toString()) || 0;
+            if (yearStartNavPerUnit > 0) {
+              navPerUnitYtdGrowth = ((navPerUnit - yearStartNavPerUnit) / yearStartNavPerUnit) * 100;
+              navPerUnitYtdGrowthValue = navPerUnit - yearStartNavPerUnit;
+            }
+          }
+        }
+
+        return {
+          date: snapshot.snapshotDate,
+          navValue,
+          totalValue: navValue,
+          cashBalance: parseFloat(snapshot.cashBalance.toString()),
+          assetValue: parseFloat(snapshot.totalAssetValue.toString()),
+          totalReturn: parseFloat(snapshot.totalReturn.toString()),
+          portfolioPnL: parseFloat(snapshot.totalPortfolioPl.toString()),
+          portfolioDailyReturn: dailyReturn,
+          portfolioWeeklyReturn: parseFloat(snapshot.weeklyReturn.toString()),
+          portfolioMonthlyReturn: parseFloat(snapshot.monthlyReturn.toString()),
+          portfolioYtdReturn: ytdReturn,
+          // Fund-specific fields
+          isFund,
+          totalOutstandingUnits,
+          navPerUnit,
+          // Pre-calculated growth metrics
+          growth: {
+            // Portfolio/NAV growth
+            dailyGrowth: dailyReturn,
+            dailyGrowthValue,
+            ytdGrowth: ytdReturn,
+            ytdGrowthValue,
+            isDailyGrowing: dailyReturn > 0,
+            isYtdGrowing: ytdReturn > 0,
+            // NAV per unit growth (for funds)
+            navPerUnitDailyGrowth,
+            navPerUnitYtdGrowth,
+            navPerUnitDailyGrowthValue,
+            navPerUnitYtdGrowthValue,
+            isNavPerUnitDailyGrowing: navPerUnitDailyGrowth > 0,
+            isNavPerUnitYtdGrowing: navPerUnitYtdGrowth > 0
+          }
+        };
+      });
+
+      // Get latest growth metrics for summary
+      const latestData = navHistory.length > 0 ? navHistory[navHistory.length - 1] : null;
+      
       return {
         portfolioId,
+        portfolio: {
+          isFund: portfolio.isFund || false,
+          totalOutstandingUnits: portfolio.totalOutstandingUnits || 0,
+          name: portfolio.name,
+          baseCurrency: portfolio.baseCurrency
+        },
         period: {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
@@ -740,6 +833,12 @@ export class PortfolioAnalyticsService {
         granularity: snapshotGranularity,
         data: navHistory,
         totalRecords: navHistory.length,
+        // Summary growth metrics (from latest data)
+        summary: latestData ? {
+          navValue: latestData.navValue,
+          navPerUnit: latestData.navPerUnit,
+          growth: latestData.growth
+        } : null,
         retrievedAt: new Date().toISOString(),
       };
     } catch (error) {

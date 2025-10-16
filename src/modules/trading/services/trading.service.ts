@@ -506,7 +506,7 @@ export class TradingService {
    * @param startDate Optional start date filter
    * @param endDate Optional end date filter
    * @param timeframe Optional timeframe filter
-   * @param metric Optional metric filter
+   * @param granularity Data granularity (daily, weekly, monthly)
    * @returns Trade analysis
    */
   async getTradeAnalysis(
@@ -515,7 +515,7 @@ export class TradingService {
     startDate?: Date,
     endDate?: Date,
     timeframe?: string,
-    metric?: string,
+    granularity: 'daily' | 'weekly' | 'monthly' = 'monthly',
   ): Promise<{
     statistics: any;
     pnlSummary: any;
@@ -537,7 +537,7 @@ export class TradingService {
       startDate,
       endDate,
       timeframe,
-      metric
+      granularity
     });
 
     // Calculate date range based on timeframe if not provided
@@ -577,6 +577,14 @@ export class TradingService {
       actualEndDate: actualEndDate?.toISOString(),
       timeframe,
       portfolioId
+    });
+    
+    // Debug: Log parameters passed to calculateMonthlyPerformance
+    console.log('🔍 About to call calculateMonthlyPerformance with:', {
+      portfolioId,
+      assetId,
+      actualStartDate: actualStartDate?.toISOString(),
+      actualEndDate: actualEndDate?.toISOString()
     });
 
     // Get statistics from trades directly
@@ -660,12 +668,13 @@ export class TradingService {
       tradeDate: trade.sellTrade?.tradeDate || trade.createdAt,
     }));
 
-    // Calculate monthly performance
-    const monthlyPerformance = await this.calculateMonthlyPerformance(
+    // Calculate performance data with granularity
+    const performanceData = await this.calculatePerformanceData(
       portfolioId,
       assetId,
       actualStartDate,
       actualEndDate,
+      granularity,
     );
 
     // Calculate asset performance with proper structure
@@ -747,82 +756,146 @@ export class TradingService {
       profitFactor: Math.round(profitFactor * 100) / 100,
     };
 
-    // Apply metric-based filtering to asset performance
-    let filteredAssetPerformance = assetPerformance;
-    if (metric) {
-      switch (metric) {
-        case 'pnl':
-          // Sort by P&L (descending)
-          filteredAssetPerformance = assetPerformance.sort((a, b) => 
-            parseFloat(b.totalPl.toString()) - parseFloat(a.totalPl.toString())
-          );
-          break;
-        case 'trades':
-          // Sort by number of trades (descending)
-          filteredAssetPerformance = assetPerformance.sort((a, b) => 
-            b.tradesCount - a.tradesCount
-          );
-          break;
-        case 'winrate':
-          // Sort by win rate (descending)
-          filteredAssetPerformance = assetPerformance.sort((a, b) => {
-            const aWinRate = a.tradesCount > 0 ? (a.winCount / a.tradesCount) * 100 : 0;
-            const bWinRate = b.tradesCount > 0 ? (b.winCount / b.tradesCount) * 100 : 0;
-            return bWinRate - aWinRate;
-          });
-          break;
-        default:
-          // No filtering
-          break;
-      }
-    }
+    // Use asset performance as is (no filtering)
+    const filteredAssetPerformance = assetPerformance;
 
     return {
       statistics,
       pnlSummary: overallPnlSummary,
       topTrades,
       worstTrades,
-      monthlyPerformance: monthlyPerformance,
+      monthlyPerformance: performanceData,
       assetPerformance: filteredAssetPerformance,
       riskMetrics: riskMetrics,
     };
   }
 
   /**
-   * Calculate monthly performance data
+   * Calculate performance data with configurable granularity (daily, weekly, monthly)
    */
-  private async calculateMonthlyPerformance(
+  private async calculatePerformanceData(
     portfolioId: string,
     assetId?: string,
     startDate?: Date,
     endDate?: Date,
+    granularity: 'daily' | 'weekly' | 'monthly' = 'monthly',
   ): Promise<any[]> {
-
-    // Get all trades for the portfolio
-    const trades = await this.tradeRepo.find({
-      where: {
-        portfolioId: portfolioId,
-        ...(assetId && { assetId: assetId }),
-        ...(startDate && { tradeDate: MoreThanOrEqual(startDate) }),
-        ...(endDate && { tradeDate: LessThanOrEqual(endDate) }),
-      },
-      order: { tradeDate: 'ASC' },
-      relations: ['asset'],
+    console.log('🚀 calculatePerformanceData called with:', {
+      portfolioId,
+      assetId,
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+      granularity
     });
+    console.log('🔍 DEBUG: Method started successfully');
 
-    // Group trades by month
-    const monthlyData = new Map<string, any>();
+    // Step 1: Query Snapshot theo startDate và endDate
+    let allSnapshots: any[] = [];
+    try {
+      const queryStartDate = startDate || new Date('2020-01-01');
+      const queryEndDate = endDate || new Date();
+      
+      allSnapshots = await this.portfolioRepo.manager.query(`
+        SELECT 
+          snapshot_date,
+          unrealized_asset_pl,
+          realized_asset_pl
+        FROM portfolio_snapshots 
+        WHERE portfolio_id = $1 
+        AND snapshot_date >= $2
+        AND snapshot_date <= $3
+        ORDER BY snapshot_date ASC
+      `, [portfolioId, queryStartDate, queryEndDate]);
+
+      console.log(`🔍 Step 1: Retrieved ${allSnapshots.length} snapshots for date range ${queryStartDate.toISOString().split('T')[0]} to ${queryEndDate.toISOString().split('T')[0]}`);
+    } catch (error) {
+      console.error('Error fetching snapshots:', error);
+    }
+
+    // Step 2: Xác định lại startDate dựa vào data của snapshot vừa có
+    let actualStartDate = startDate;
+    let actualEndDate = endDate;
+    
+    if (!startDate && allSnapshots.length > 0) {
+      actualStartDate = new Date(allSnapshots[0].snapshot_date);
+      console.log(`🔍 Step 2: Using first snapshot date as startDate: ${actualStartDate.toISOString()}`);
+    }
+    
+    if (!endDate && allSnapshots.length > 0) {
+      actualEndDate = new Date(allSnapshots[allSnapshots.length - 1].snapshot_date);
+      console.log(`🔍 Step 2: Using last snapshot date as endDate: ${actualEndDate.toISOString()}`);
+    }
+
+    // Step 3: Query trade theo startDate và endDate mới
+    const tradesQuery = `
+      SELECT t.*, a.*
+      FROM trades t
+      LEFT JOIN assets a ON t.asset_id = a.id
+      WHERE t.portfolio_id = $1 
+        AND t.trade_date >= $2 
+        AND t.trade_date <= $3 
+      ORDER BY t.trade_date ASC
+    `;
+    
+    const trades = await this.tradeRepo.query(tradesQuery, [portfolioId, actualStartDate, actualEndDate]);
+    console.log(`🔍 Step 3: Retrieved ${trades.length} trades for date range ${actualStartDate?.toISOString()} to ${actualEndDate?.toISOString()}`);
+
+
+    // Step 4: Xử lý logic như cũ
+    const performanceData = new Map<string, any>();
+    
+    // Generate date ranges based on granularity
+    let dateRanges: string[] = [];
+    
+    if (granularity === 'daily') {
+      dateRanges = this.generateDailyRange(actualStartDate, actualEndDate);
+    } else if (granularity === 'weekly') {
+      dateRanges = this.generateWeeklyRange(actualStartDate, actualEndDate);
+    } else {
+      // monthly (default)
+      const firstMonth = actualStartDate ? actualStartDate.toISOString().substring(0, 7) : '2020-01';
+      const lastMonth = actualEndDate ? actualEndDate.toISOString().substring(0, 7) : new Date().toISOString().substring(0, 7);
+      dateRanges = this.generateMonthRange(firstMonth, lastMonth);
+    }
+    
+    console.log(`🔍 Step 4: Generated ${dateRanges.length} periods for granularity: ${granularity}`);
+    
+    // Initialize all periods with zero data
+    for (const period of dateRanges) {
+      performanceData.set(period, {
+        period: period,
+        tradesCount: 0,
+        totalPl: 0,
+        realizedPl: 0,
+        unrealizedPl: 0,
+        totalVolume: 0,
+        winRate: 0,
+        winningTrades: 0,
+        losingTrades: 0,
+      });
+    }
+    
+    // Process trades and update performance data
+    let cumulativeRealizedPl = 0;
     
     for (const trade of trades) {
-      const monthKey = trade.tradeDate.toISOString().substring(0, 7); // YYYY-MM
+      let periodKey: string;
       
-      if (!monthlyData.has(monthKey)) {
-        monthlyData.set(monthKey, {
-          month: monthKey,
+      if (granularity === 'daily') {
+        periodKey = new Date(trade.trade_date).toISOString().substring(0, 10);
+      } else if (granularity === 'weekly') {
+        periodKey = this.getWeekKey(new Date(trade.trade_date));
+      } else {
+        periodKey = new Date(trade.trade_date).toISOString().substring(0, 7);
+      }
+      
+      if (!performanceData.has(periodKey)) {
+        performanceData.set(periodKey, {
+          period: periodKey,
           tradesCount: 0,
-          totalPl: 0, // Total P&L (realized + unrealized)
-          realizedPl: 0, // Realized P&L from trades
-          unrealizedPl: 0, // Unrealized P&L from current positions
+          totalPl: 0,
+          realizedPl: 0,
+          unrealizedPl: 0,
           totalVolume: 0,
           winRate: 0,
           winningTrades: 0,
@@ -830,142 +903,178 @@ export class TradingService {
         });
       }
       
-      const monthData = monthlyData.get(monthKey);
-      monthData.tradesCount++;
-      monthData.totalVolume += trade.quantity * trade.price;
+      const periodData = performanceData.get(periodKey);
+      periodData.tradesCount++;
+      periodData.totalVolume += trade.quantity * trade.price;
       
-      // Calculate P&L for this trade based on trade details
+      // Calculate P&L for this trade
       let tradePnl = 0;
       if (trade.side === 'SELL') {
-        // Get trade details for realized P&L
-        const tradeDetails = await this.tradeDetailRepository.find({
+        const tradeDetails = await this.tradeDetailRepo.find({
           where: { sellTradeId: trade.tradeId },
         });
         tradePnl = tradeDetails.reduce((sum, detail) => sum + parseFloat(detail.pnl?.toString() || '0'), 0);
       }
       
-      monthData.realizedPl += tradePnl;
+      cumulativeRealizedPl += tradePnl;
+      periodData.realizedPl = cumulativeRealizedPl;
       
       if (tradePnl > 0) {
-        monthData.winningTrades++;
+        periodData.winningTrades++;
       } else if (tradePnl < 0) {
-        monthData.losingTrades++;
+        periodData.losingTrades++;
+      }
+    }
+    
+    // Carry forward cumulative realized P&L for periods without trades
+    const sortedPeriods = Array.from(performanceData.values()).sort((a, b) => a.period.localeCompare(b.period));
+    let lastCumulativeRealizedPl = 0;
+    
+    for (const periodData of sortedPeriods) {
+      if (periodData.tradesCount > 0) {
+        lastCumulativeRealizedPl = periodData.realizedPl;
+      } else {
+        periodData.realizedPl = lastCumulativeRealizedPl;
       }
     }
     
     // Calculate win rates
-    for (const monthData of monthlyData.values()) {
-      const totalTrades = monthData.winningTrades + monthData.losingTrades;
-      monthData.winRate = totalTrades > 0 ? (monthData.winningTrades / totalTrades) * 100 : 0;
+    for (const periodData of performanceData.values()) {
+      const totalTrades = periodData.winningTrades + periodData.losingTrades;
+      periodData.winRate = totalTrades > 0 ? (periodData.winningTrades / totalTrades) * 100 : 0;
     }
 
-        // Get historical portfolio snapshots for accurate unrealized P&L calculation
-        try {
-          // Get portfolio snapshots for the portfolio - use LAST_DAY of each month
-          const queryStartDate = startDate || new Date('2020-01-01');
-          const queryEndDate = endDate || new Date();
-          
-          const portfolioSnapshots = await this.portfolioRepo.manager.query(`
-            SELECT 
-              DATE_TRUNC('month', snapshot_date) as month,
-              total_value,
-              unrealized_asset_pl,
-              realized_asset_pl,
-              cash_balance,
-              invested_value,
-              snapshot_date,
-              ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('month', snapshot_date) ORDER BY snapshot_date DESC) as rn
-            FROM portfolio_snapshots 
-            WHERE portfolio_id = $1 
-            AND snapshot_date >= $2 
-            AND snapshot_date <= $3
-          `, [
-            portfolioId, 
-            queryStartDate, 
-            queryEndDate
-          ]);
-
-          // Filter to get only the last day of each month
-          const monthlySnapshots = portfolioSnapshots.filter(snapshot => snapshot.rn === '1');
-
-
-          // Create a map of month to snapshot data (using last day of month data)
-          const snapshotDataMap = new Map();
-          for (const snapshot of monthlySnapshots) {
-            const monthKey = snapshot.month.toISOString().substring(0, 7); // YYYY-MM
-            snapshotDataMap.set(monthKey, {
-              totalValue: parseFloat(snapshot.total_value || '0'),
-              unrealizedPl: parseFloat(snapshot.unrealized_asset_pl || '0'),
-              realizedPl: parseFloat(snapshot.realized_asset_pl || '0'),
-              cashBalance: parseFloat(snapshot.cash_balance || '0'),
-              investedValue: parseFloat(snapshot.invested_value || '0')
-            });
-          }
-
-      // Calculate unrealized P&L for each month using snapshot data
-      const months = Array.from(monthlyData.values());
-      for (const monthData of months) {
-        const snapshotData = snapshotDataMap.get(monthData.month);
-        
-        if (snapshotData) {
-          // Use unrealized P&L directly from snapshot
-          monthData.unrealizedPl = snapshotData.unrealizedPl;
+    // Calculate unrealized P&L for each period using snapshot data
+    const periods = Array.from(performanceData.values());
+    for (const periodData of periods) {
+      let periodStart: Date;
+      let periodEnd: Date;
+      
+      if (granularity === 'daily') {
+        periodStart = new Date(periodData.period);
+        periodEnd = new Date(periodData.period);
+        periodEnd.setHours(23, 59, 59, 999);
+      } else if (granularity === 'weekly') {
+        const weekMatch = periodData.period.match(/(\d{4})-W(\d{2})/);
+        if (weekMatch) {
+          const year = parseInt(weekMatch[1]);
+          const week = parseInt(weekMatch[2]);
+          periodStart = this.getWeekStartDate(year, week);
+          periodEnd = this.getWeekEndDate(year, week);
         } else {
-          // If no snapshot data for this month, try to find the closest snapshot
-          // Look for snapshots in the same month or previous months
-          let closestSnapshot = null;
-          const currentMonth = new Date(monthData.month + '-01');
-          
-          // Find the most recent snapshot before or during this month
-          for (const [snapshotMonth, data] of snapshotDataMap.entries()) {
-            const snapshotDate = new Date(snapshotMonth + '-01');
-            if (snapshotDate <= currentMonth) {
-              if (!closestSnapshot || snapshotDate > new Date(closestSnapshot.month + '-01')) {
-                closestSnapshot = { month: snapshotMonth, ...data };
-              }
-            }
-          }
-          
-          if (closestSnapshot) {
-            monthData.unrealizedPl = closestSnapshot.unrealizedPl;
-          } else {
-            // If no snapshot found, use 0
-            monthData.unrealizedPl = 0;
-          }
+          periodStart = new Date(periodData.period);
+          periodEnd = new Date(periodData.period);
         }
-        
-        monthData.totalPl = monthData.realizedPl + monthData.unrealizedPl;
+      } else {
+        const monthDate = new Date(periodData.period + '-01');
+        periodStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        periodEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
       }
-
-
-    } catch (error) {
-      console.error('Error calculating unrealized P&L from NAV snapshots:', error);
-      // Fallback: use current portfolio calculation
-      try {
-        const portfolioCalculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
-        const currentUnrealizedPl = portfolioCalculation.assetPositions.reduce(
-          (sum, position) => sum + (parseFloat(position.unrealizedPl?.toString() || '0') || 0),
-          0
-        );
-
-        const months = Array.from(monthlyData.values());
-        if (months.length > 0) {
-          const unrealizedPlPerMonth = currentUnrealizedPl / months.length;
-          for (const monthData of months) {
-            monthData.unrealizedPl = unrealizedPlPerMonth;
-            monthData.totalPl = monthData.realizedPl + monthData.unrealizedPl;
-          }
-        }
-      } catch (fallbackError) {
-        console.error('Fallback calculation also failed:', fallbackError);
-        // If all calculations fail, just use realized P&L
-        for (const monthData of monthlyData.values()) {
-          monthData.totalPl = monthData.realizedPl;
-        }
+      
+      // Find the last snapshot for this period
+      const periodSnapshots = allSnapshots.filter(snapshot => {
+        const snapshotDate = new Date(snapshot.snapshot_date);
+        return snapshotDate >= periodStart && snapshotDate <= periodEnd;
+      });
+      
+      if (periodSnapshots.length > 0) {
+        const lastSnapshot = periodSnapshots[periodSnapshots.length - 1];
+        periodData.unrealizedPl = parseFloat(lastSnapshot.unrealized_asset_pl?.toString() || '0');
+        console.log(`📊 ${periodData.period}: Using last snapshot from ${lastSnapshot.snapshot_date}, unrealized P&L: ${periodData.unrealizedPl}`);
+      } else {
+        periodData.unrealizedPl = 0;
+        console.log(`📊 ${periodData.period}: No snapshots found, using unrealized P&L: 0`);
       }
+      
+      periodData.totalPl = periodData.realizedPl + periodData.unrealizedPl;
     }
     
-    return Array.from(monthlyData.values()).sort((a, b) => a.month.localeCompare(b.month));
+    const result = Array.from(performanceData.values()).sort((a, b) => a.period.localeCompare(b.period));
+    
+    console.log(`🔍 Final result: ${result.length} periods of data`);
+    result.forEach(period => {
+      console.log(`📊 ${period.period}: ${period.tradesCount} trades, Total P&L: ${period.totalPl}, Realized: ${period.realizedPl}, Unrealized: ${period.unrealizedPl}`);
+    });
+    
+    return result;
+  }
+
+  /**
+   * Generate array of months between start and end month
+   */
+  private generateMonthRange(startMonth: string, endMonth: string): string[] {
+    const months: string[] = [];
+    const start = new Date(startMonth + '-01');
+    const end = new Date(endMonth + '-01');
+    
+    const current = new Date(start);
+    while (current <= end) {
+      months.push(current.toISOString().substring(0, 7));
+      current.setMonth(current.getMonth() + 1);
+    }
+    
+    return months;
+  }
+
+  /**
+   * Get unrealized P&L for a specific period (day, week, month)
+   */
+  private getUnrealizedPlForPeriod(
+    snapshots: any[],
+    period: string,
+    periodValue: string
+  ): number {
+    if (!snapshots || snapshots.length === 0) {
+      return 0;
+    }
+
+    let filteredSnapshots: any[] = [];
+
+    switch (period) {
+      case 'day':
+        // Get snapshot for specific day
+        const targetDate = new Date(periodValue);
+        filteredSnapshots = snapshots.filter(snapshot => {
+          const snapshotDate = new Date(snapshot.snapshot_date);
+          return snapshotDate.toDateString() === targetDate.toDateString();
+        });
+        break;
+
+      case 'week':
+        // Get snapshot for specific week
+        const weekStart = new Date(periodValue);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        filteredSnapshots = snapshots.filter(snapshot => {
+          const snapshotDate = new Date(snapshot.snapshot_date);
+          return snapshotDate >= weekStart && snapshotDate <= weekEnd;
+        });
+        break;
+
+      case 'month':
+        // Get snapshot for specific month
+        const monthDate = new Date(periodValue + '-01');
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        filteredSnapshots = snapshots.filter(snapshot => {
+          const snapshotDate = new Date(snapshot.snapshot_date);
+          return snapshotDate >= monthStart && snapshotDate <= monthEnd;
+        });
+        break;
+
+      default:
+        return 0;
+    }
+
+    if (filteredSnapshots.length === 0) {
+      return 0;
+    }
+
+    // Return the last snapshot of the period
+    const lastSnapshot = filteredSnapshots[filteredSnapshots.length - 1];
+    return parseFloat(lastSnapshot.unrealized_asset_pl?.toString() || '0');
   }
 
   /**
@@ -1291,5 +1400,87 @@ export class TradingService {
     );
 
     return tradesWithPnl;
+  }
+
+  /**
+   * Generate daily date range
+   */
+  private generateDailyRange(startDate?: Date, endDate?: Date): string[] {
+    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: 30 days ago
+    const end = endDate || new Date();
+    
+    const dates: string[] = [];
+    const current = new Date(start);
+    
+    while (current <= end) {
+      dates.push(current.toISOString().substring(0, 10)); // YYYY-MM-DD
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return dates;
+  }
+
+  /**
+   * Generate weekly date range
+   */
+  private generateWeeklyRange(startDate?: Date, endDate?: Date): string[] {
+    const start = startDate || new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // Default: 12 weeks ago
+    const end = endDate || new Date();
+    
+    const weeks: string[] = [];
+    const current = new Date(start);
+    
+    // Start from the beginning of the week
+    current.setDate(current.getDate() - current.getDay());
+    
+    while (current <= end) {
+      weeks.push(this.getWeekKey(current));
+      current.setDate(current.getDate() + 7);
+    }
+    
+    return weeks;
+  }
+
+  /**
+   * Get week key in format YYYY-WW
+   */
+  private getWeekKey(date: Date): string {
+    const year = date.getFullYear();
+    const week = this.getWeekNumber(date);
+    return `${year}-W${week.toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Get week number of the year
+   */
+  private getWeekNumber(date: Date): number {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  }
+
+  /**
+   * Get week start date
+   */
+  private getWeekStartDate(year: number, week: number): Date {
+    const firstDayOfYear = new Date(year, 0, 1);
+    const daysToAdd = (week - 1) * 7;
+    const weekStart = new Date(firstDayOfYear.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+    // Adjust to start of week (Monday)
+    const dayOfWeek = weekStart.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    weekStart.setDate(weekStart.getDate() - daysToMonday);
+    return weekStart;
+  }
+
+  /**
+   * Get week end date
+   */
+  private getWeekEndDate(year: number, week: number): Date {
+    const weekStart = this.getWeekStartDate(year, week);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    return weekEnd;
   }
 }

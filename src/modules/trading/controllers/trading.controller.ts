@@ -67,8 +67,8 @@ export class TradeAnalysisQueryDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['pnl', 'trades', 'winrate'])
-  metric?: string;
+  @IsIn(['daily', 'weekly', 'monthly'])
+  granularity?: string;
 }
 
 /**
@@ -201,7 +201,7 @@ export class TradingController {
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date filter (ISO string)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date filter (ISO string)' })
   @ApiQuery({ name: 'timeframe', required: false, description: 'Timeframe filter (1M, 3M, 6M, 1Y, ALL)' })
-  @ApiQuery({ name: 'metric', required: false, description: 'Metric filter (pnl, trades, winrate)' })
+  @ApiQuery({ name: 'granularity', required: false, description: 'Data granularity (daily, weekly, monthly)', enum: ['daily', 'weekly', 'monthly'] })
   async getTradeAnalysis(@Query() query: TradeAnalysisQueryDto): Promise<{
     statistics: any;
     pnlSummary: any;
@@ -214,7 +214,7 @@ export class TradingController {
       startDate,
       endDate,
       timeframe,
-      metric,
+      granularity = 'monthly',
     } = query;
 
     const startDateObj = startDate ? new Date(startDate) : undefined;
@@ -226,7 +226,7 @@ export class TradingController {
       startDateObj,
       endDateObj,
       timeframe,
-      metric,
+      granularity as 'daily' | 'weekly' | 'monthly',
     );
   }
 

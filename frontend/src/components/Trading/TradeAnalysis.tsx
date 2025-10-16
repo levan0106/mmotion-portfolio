@@ -14,6 +14,8 @@ import {
   Alert,
   CircularProgress,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
@@ -47,9 +49,9 @@ export interface TradeAnalysisProps {
   isLoading?: boolean;
   error?: string;
   selectedTimeframe?: string;
-  selectedMetric?: string;
+  selectedGranularity?: string;
   onTimeframeChange?: (timeframe: string) => void;
-  onMetricChange?: (metric: string) => void;
+  onGranularityChange?: (granularity: string) => void;
   isCompactMode?: boolean;
 }
 
@@ -59,16 +61,18 @@ export interface TradeAnalysisProps {
  */
 export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   analysis,
-  currency = 'USD', // Default fallback
+  currency = 'VND', // Default fallback
   isLoading = false,
   error,
-  selectedTimeframe = 'ALL',
-  selectedMetric = 'pnl',
+  selectedTimeframe = '3M',
+  selectedGranularity = 'weekly',
   onTimeframeChange,
-  onMetricChange,
+  onGranularityChange,
   isCompactMode = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [chartView, setChartView] = useState<'pie' | 'compact'>('pie');
   const [pnlLines, setPnlLines] = useState({
     total: true,
@@ -100,8 +104,6 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
     '#D2691E'  // Chocolate
   ];
 
-  // ✅ ĐÚNG - Sử dụng formatting utils từ UTILS_GUIDE.md
-  // formatCurrency, formatPercentage, formatNumber đã được import từ utils/format
 
   // ✅ ĐÚNG - Xác định locale dựa trên currency
   const getLocale = (currency: string): string => {
@@ -110,14 +112,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         return 'vi-VN';
       case 'USD':
         return 'en-US';
-      case 'EUR':
-        return 'de-DE';
-      case 'GBP':
-        return 'en-GB';
-      case 'JPY':
-        return 'ja-JP';
       default:
-        return 'en-US';
+        return 'vi-VN';
     }
   };
 
@@ -159,7 +155,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
   // Prepare chart data
   const monthlyChartData = useMemo(() => {
     return analysis.monthlyPerformance.map((month) => ({
-      month: month.month,
+      month: month.period,
       // Total P&L (realized + unrealized)
       pnl: parseFloat(month.totalPl?.toString() || '0'),
       // Realized P&L from trades
@@ -195,8 +191,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       
       return {
         assetId: asset.assetId || `asset-${index}`,
-        name: asset.assetSymbol || 'Unknown',
-        fullName: asset.assetName || 'Unknown Asset',
+        name: asset.assetSymbol || t('tradeAnalysis.unknown.asset'),
+        fullName: asset.assetName || t('tradeAnalysis.unknown.assetName'),
         value: chartValue, // Use absolute value for pie chart
         originalValue: originalValue, // Keep original for reference
         trades: asset.tradesCount || 0,
@@ -229,130 +225,117 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             border: '1px solid #e0e0e0',
             borderRadius: 2,
             p: 2,
-            boxShadow: 3,
-            minWidth: 280,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            minWidth: 250,
+            maxWidth: 300,
           }}
         >
-          <ResponsiveTypography variant="cardTitle" color="primary" gutterBottom>
+          {/* Header */}
+          <ResponsiveTypography variant="subtitle1" fontWeight="bold" color="primary" gutterBottom>
             {label}
           </ResponsiveTypography>
           
           {/* Monthly Performance Chart Tooltip */}
           {data?.month && (
-            <>
-              {/* P&L Summary */}
-              <Box sx={{ mb: 1.5 }}>
-                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
-                  P&L Summary
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {/* P&L Information */}
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.totalPnL')}:
                 </ResponsiveTypography>
-                <Box sx={{ pl: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Total P&L:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color={data.pnl >= 0 ? 'success.main' : 'error.main'}>
-                      {formatCurrency(data.pnl || 0, currency, {}, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Realized P&L:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.realizedPnl >= 0 ? 'success.main' : 'error.main'}>
-                      {formatCurrency(data.realizedPnl || 0, currency, {}, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Unrealized P&L:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}>
-                      {formatCurrency(data.unrealizedPnl || 0, currency, {}, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                </Box>
+                <ResponsiveTypography variant="body2" fontWeight="bold" color={data.pnl >= 0 ? 'success.main' : 'error.main'}>
+                  {formatCurrency(data.pnl || 0, currency, {}, locale)}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.realizedPnL')}:
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2" fontWeight="medium" color={data.realizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                  {formatCurrency(data.realizedPnl || 0, currency, {}, locale)}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.unrealizedPnL')}:
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2" fontWeight="medium" color={data.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}>
+                  {formatCurrency(data.unrealizedPnl || 0, currency, {}, locale)}
+                </ResponsiveTypography>
               </Box>
 
               {/* Trading Statistics */}
-              <Box sx={{ mb: 1.5, pt: 1, borderTop: '1px solid #f0f0f0' }}>
-                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
-                  Trading Statistics
-                </ResponsiveTypography>
-                <Box sx={{ pl: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Trades:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                      {data.trades || 0}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Win Rate:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                      {formatPercentage(data.winRate || 0, 1, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Volume:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                      {formatCurrency(data.totalVolume || 0, currency, {}, locale)}
-                    </ResponsiveTypography>
-                  </Box>
+              <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #f0f0f0' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                  <ResponsiveTypography variant="body2" color="text.secondary">
+                    {t('tradeAnalysis.tooltip.trades')}:
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
+                    {data.trades || 0}
+                  </ResponsiveTypography>
+                </Box>
+                
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                  <ResponsiveTypography variant="body2" color="text.secondary">
+                    {t('tradeAnalysis.tooltip.winRate')}:
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium" color={data.winRate >= 50 ? 'success.main' : 'warning.main'}>
+                    {formatPercentage(data.winRate || 0, 1, locale)}
+                  </ResponsiveTypography>
+                </Box>
+                
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <ResponsiveTypography variant="body2" color="text.secondary">
+                    {t('tradeAnalysis.tooltip.volume')}:
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="body2" fontWeight="medium">
+                    {formatCurrency(data.totalVolume || 0, currency, {}, locale)}
+                  </ResponsiveTypography>
                 </Box>
               </Box>
-
-            </>
+            </Box>
           )}
 
           {/* Asset Performance Chart Tooltip */}
           {data?.name && !data?.month && (
-            <>
-              <Box sx={{ mb: 1 }}>
-                <ResponsiveTypography variant="formHelper" color="text.secondary" gutterBottom>
-                  Asset Performance
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.symbol')}:
                 </ResponsiveTypography>
-                <Box sx={{ pl: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Symbol:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color="primary">
-                      {data.name}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      P&L:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="bold" color={data.originalValue >= 0 ? 'success.main' : 'error.main'}>
-                      {formatCurrency(data.originalValue || 0, currency, {}, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <ResponsiveTypography variant="formHelper" color="text.secondary">
-                      Percentage:
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color={data.percentage >= 0 ? 'success.main' : 'error.main'}>
-                      {formatPercentage(data.percentage || 0, 2, locale)}
-                    </ResponsiveTypography>
-                  </Box>
-                </Box>
+                <ResponsiveTypography variant="body2" fontWeight="bold" color="primary">
+                  {data.name}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.pnl')}:
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2" fontWeight="bold" color={data.originalValue >= 0 ? 'success.main' : 'error.main'}>
+                  {formatCurrency(data.originalValue || 0, currency, {}, locale)}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  {t('tradeAnalysis.tooltip.performance')}:
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="body2" fontWeight="medium" color={data.percentage >= 0 ? 'success.main' : 'error.main'}>
+                  {formatPercentage(data.percentage || 0, 2, locale)}
+                </ResponsiveTypography>
               </Box>
 
-              {/* Additional info for asset performance */}
               {data?.fullName && (
                 <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #f0f0f0' }}>
-                  <ResponsiveTypography variant="formHelper" color="text.secondary">
+                  <ResponsiveTypography variant="body2" color="text.secondary">
                     {data.fullName}
                   </ResponsiveTypography>
                 </Box>
               )}
-            </>
+            </Box>
           )}
         </Box>
       );
@@ -422,7 +405,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
             {t('tradeAnalysis.title')}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+          <ResponsiveTypography variant="pageSubtitle" color="text.secondary" display={isMobile ? 'none' : 'block'}>
             {t('tradeAnalysis.subtitle')}
           </ResponsiveTypography>
         </Box>
@@ -431,28 +414,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
             compact={isCompactMode}
             size="small"
             options={[
-              { value: 'ALL', label: 'All Time' },
-              { value: '1M', label: '1 Month' },
-              { value: '3M', label: '3 Months' },
-              { value: '6M', label: '6 Months' },
-              { value: '1Y', label: '1 Year' },
+              { value: 'ALL', label: t('tradeAnalysis.timeframe.allTime') },
+              { value: '1M', label: t('tradeAnalysis.timeframe.oneMonth') },
+              { value: '3M', label: t('tradeAnalysis.timeframe.threeMonths') },
+              { value: '6M', label: t('tradeAnalysis.timeframe.sixMonths') },
+              { value: '1Y', label: t('tradeAnalysis.timeframe.oneYear') },
             ]}
             value={selectedTimeframe}
             onChange={(value) => onTimeframeChange?.(String(value))}
-            formControlSx={{ minWidth: 140 }}
+            formControlSx={{ minWidth: 80 }}
             selectSx={{ borderRadius: 2 }}
           />
           <ResponsiveFormSelect
             compact={isCompactMode}
             size="small"
             options={[
-              { value: 'pnl', label: 'P&L' },
-              { value: 'trades', label: 'Trades' },
-              { value: 'winrate', label: 'Win Rate' },
+              { value: 'daily', label: t('tradeAnalysis.granularity.daily') },
+              { value: 'weekly', label: t('tradeAnalysis.granularity.weekly') },
+              { value: 'monthly', label: t('tradeAnalysis.granularity.monthly') },
             ]}
-            value={selectedMetric}
-            onChange={(value) => onMetricChange?.(String(value))}
-            formControlSx={{ minWidth: 140 }}
+            value={selectedGranularity}
+            onChange={(value) => onGranularityChange?.(String(value))}
+            formControlSx={{ minWidth: 80 }}
             selectSx={{ borderRadius: 2 }}
           />
         </Box>
@@ -776,12 +759,12 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <Tooltip 
                     content={<CustomTooltip />}
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 8,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      fontSize: isCompactMode ? '0.75rem' : '0.875rem'
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      boxShadow: 'none',
+                      padding: 0
                     }}
+                    cursor={{ stroke: '#1976d2', strokeWidth: 1, strokeDasharray: '3 3' }}
                   />
                   
                   {/* Total P&L Line */}
@@ -829,7 +812,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
           </Card>
         </Grid>
 
-        {/* Asset Performance Pie Chart */}
+        {/* Asset Performance Chart */}
+        {!isMobile && (
         <Grid item xs={12} lg={4}>
           <Card sx={{ 
             boxShadow: 2, 
@@ -911,10 +895,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           <Tooltip 
                             content={<CustomTooltip />}
                             contentStyle={{
-                              backgroundColor: 'white',
-                              border: '1px solid #e0e0e0',
-                              borderRadius: 8,
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              boxShadow: 'none',
+                              padding: 0
                             }}
                           />
                         </PieChart>
@@ -955,6 +939,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                                 <Box display="flex" alignItems="center" gap={0.5}>
                                   <ResponsiveTypography 
                                     variant="formHelper" 
+                                    sx={{ color: 'text.primary' }}
                                     fontWeight="bold"
                                   >
                                     {entry.name}
@@ -962,13 +947,13 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                                   <ResponsiveTypography 
                                     variant="formHelper" 
                                     fontWeight="bold"
-                                    color={entry.originalValue >= 0 ? 'success.main' : 'error.main'}
+                                    sx={{ color: entry.originalValue >= 0 ? 'success.main' : 'error.main' }}
                                   >
                                     {entry.formattedValue}
                                   </ResponsiveTypography>
                                   <ResponsiveTypography 
                                     variant="formHelper" 
-                                    color="primary" 
+                                    sx={{ color: 'primary' }}
                                     fontWeight="bold"
                                   >
                                     ({formatPercentage(percentage, 1, locale)})
@@ -1004,35 +989,13 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   >
                     {t('tradeAnalysis.noAssetData')}
                   </ResponsiveTypography>
-                  <ResponsiveTypography 
-                    variant="formHelper" 
-                    color="text.secondary"
-                  >
-                    Debug: assetChartData length = {assetChartData?.length || 0}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography 
-                    variant="formHelper" 
-                    color="text.secondary"
-                  >
-                    Analysis has assetPerformance: {analysis?.assetPerformance ? 'Yes' : 'No'}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography 
-                    variant="formHelper" 
-                    color="text.secondary"
-                  >
-                    Has positive values: {assetChartData?.some(item => item.value > 0) ? 'Yes' : 'No'}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography 
-                    variant="formHelper" 
-                    color="text.secondary"
-                  >
-                    Values: {assetChartData?.map(item => `${item.name}: ${item.value}`).join(', ')}
-                  </ResponsiveTypography>
+                  
                 </Box>
               )}
             </CardContent>
           </Card>
         </Grid>
+        )}
       </Grid>
 
       {/* Top and Worst Trades Tables */}
@@ -1093,28 +1056,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Asset
+                        {t('tradeAnalysis.table.asset')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Side
+                        {t('tradeAnalysis.table.side')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        P&L
+                        {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Date
+                        {t('tradeAnalysis.table.date')}
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -1225,28 +1188,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Asset
+                        {t('tradeAnalysis.table.asset')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Side
+                        {t('tradeAnalysis.table.side')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        P&L
+                        {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Date
+                        {t('tradeAnalysis.table.date')}
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -1335,49 +1298,49 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Asset
+                        {t('tradeAnalysis.table.asset')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Quantity
+                        {t('tradeAnalysis.table.quantity')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Avg Cost
+                        {t('tradeAnalysis.table.avgCost')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Market Value
+                        {t('tradeAnalysis.table.marketValue')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        P&L
+                        {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Trades
+                        {t('tradeAnalysis.table.trades')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
-                        Win Rate
+                        {t('tradeAnalysis.winRate')}
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -1443,7 +1406,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                                 {asset.trades}
                               </ResponsiveTypography>
                               <Chip
-                                label={asset.winRate >= 50 ? 'Win' : 'Loss'}
+                                label={asset.winRate >= 50 ? t('tradeAnalysis.status.win') : t('tradeAnalysis.status.loss')}
                                 size={isCompactMode ? "small" : "medium"}
                                 color={asset.winRate >= 50 ? 'success' : 'error'}
                                 variant="outlined"
@@ -1490,8 +1453,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
 // Wrapper component that uses the hook
 export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMode?: boolean }> = ({ portfolioId, isCompactMode = false }) => {
   const { t } = useTranslation();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('ALL');
-  const [selectedMetric, setSelectedMetric] = useState('pnl');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('3M');
+  const [selectedGranularity, setSelectedGranularity] = useState('weekly');
 
   // ✅ ĐÚNG - Sử dụng validation utils theo UTILS_GUIDE.md
   if (!isValidUUID(portfolioId)) {
@@ -1508,7 +1471,7 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
   // Always pass filters to ensure React Query detects changes
   const filters = {
     timeframe: selectedTimeframe,
-    metric: selectedMetric,
+    granularity: selectedGranularity,
   };
   
   const { data: analysis, isLoading, error } = useTradeAnalysis(portfolioId, filters);
@@ -1561,9 +1524,9 @@ export const TradeAnalysisContainer: React.FC<{ portfolioId: string; isCompactMo
       analysis={analysis} 
       currency={portfolio.baseCurrency}
       selectedTimeframe={selectedTimeframe}
-      selectedMetric={selectedMetric}
+      selectedGranularity={selectedGranularity}
       onTimeframeChange={setSelectedTimeframe}
-      onMetricChange={setSelectedMetric}
+      onGranularityChange={setSelectedGranularity}
       isCompactMode={isCompactMode}
     />
   );

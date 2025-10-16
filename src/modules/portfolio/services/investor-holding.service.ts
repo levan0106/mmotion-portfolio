@@ -1082,12 +1082,21 @@ export class InvestorHoldingService {
 
       console.log(`🔍 DEBUG: Transactions after filtering:`, transactions);
       
-      const outstandingUnits = transactions.reduce((acc, transaction) => acc + Number(transaction.units), 0);
+      // Calculate total outstanding units: SUBSCRIBE (+) - REDEEM (-)
+      const outstandingUnits = transactions.reduce((acc, transaction) => {
+        const units = Number(transaction.units);
+        if (transaction.holdingType === HoldingType.SUBSCRIBE) {
+          return acc + units; // Add units for SUBSCRIBE
+        } else if (transaction.holdingType === HoldingType.REDEEM) {
+          return acc - units; // Subtract units for REDEEM
+        }
+        return acc;
+      }, 0);
       console.log(`🔍 DEBUG: Outstanding units: ${snapshotDate.toISOString()}:`, outstandingUnits);
       return outstandingUnits;
     }else {      
       // lấy tất cả holdings tối ưu performance để tính toán total outstanding units
-      // Calculate total outstanding units
+      // Calculate total outstanding units from current holdings
       console.log(`🔍 DEBUG: holdings:`, holdings.map(holding => holding.createdAt));
       const outstandingUnits = holdings.reduce((acc, holding) => acc + Number(holding.totalUnits), 0);
       return outstandingUnits;

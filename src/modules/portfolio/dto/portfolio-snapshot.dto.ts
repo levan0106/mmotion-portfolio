@@ -89,106 +89,27 @@ export class CreatePortfolioSnapshotDto {
   @Type(() => Number)
   totalPortfolioInvested: number;
 
-  // Asset Performance Metrics (Assets Only)
-  @ApiProperty({ description: 'Asset Daily return percentage (Assets Only)', example: 0.5 })
-  @IsNumber()
-  @Type(() => Number)
-  assetDailyReturn: number;
-
-  @ApiProperty({ description: 'Asset Weekly return percentage (Assets Only)', example: 3.5 })
-  @IsNumber()
-  @Type(() => Number)
-  assetWeeklyReturn: number;
-
-  @ApiProperty({ description: 'Asset Monthly return percentage (Assets Only)', example: 15.0 })
-  @IsNumber()
-  @Type(() => Number)
-  assetMonthlyReturn: number;
-
-  @ApiProperty({ description: 'Asset Year-to-date return percentage (Assets Only)', example: 20.0 })
-  @IsNumber()
-  @Type(() => Number)
-  assetYtdReturn: number;
-
-  // Asset Risk Metrics (Assets Only)
-  @ApiProperty({ description: 'Asset Volatility percentage (Assets Only)', example: 2.5 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  assetVolatility: number;
-
-  @ApiProperty({ description: 'Asset Maximum drawdown percentage (Assets Only)', example: 5.0 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  assetMaxDrawdown: number;
-
-  // Portfolio Performance Metrics (Assets + Deposits)
-  @ApiProperty({ description: 'Portfolio Daily return percentage (Assets + Deposits)', example: 0.3 })
-  @IsNumber()
-  @Type(() => Number)
-  portfolioDailyReturn: number;
-
-  @ApiProperty({ description: 'Portfolio Weekly return percentage (Assets + Deposits)', example: 2.1 })
-  @IsNumber()
-  @Type(() => Number)
-  portfolioWeeklyReturn: number;
-
-  @ApiProperty({ description: 'Portfolio Monthly return percentage (Assets + Deposits)', example: 9.0 })
-  @IsNumber()
-  @Type(() => Number)
-  portfolioMonthlyReturn: number;
-
-  @ApiProperty({ description: 'Portfolio Year-to-date return percentage (Assets + Deposits)', example: 12.0 })
-  @IsNumber()
-  @Type(() => Number)
-  portfolioYtdReturn: number;
-
-  // Portfolio Risk Metrics (Assets + Deposits)
-  @ApiProperty({ description: 'Portfolio Volatility percentage (Assets + Deposits)', example: 1.8 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  portfolioVolatility: number;
-
-  @ApiProperty({ description: 'Portfolio Maximum drawdown percentage (Assets + Deposits)', example: 3.2 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  portfolioMaxDrawdown: number;
-
-  // Legacy fields for backward compatibility (deprecated)
-  @ApiProperty({ description: 'Daily return percentage (DEPRECATED - use assetDailyReturn or portfolioDailyReturn)', example: 0.5 })
+  // Essential Return Fields (different from portfolio_performance_snapshots)
+  @ApiProperty({ description: 'Daily return percentage', example: 0.5 })
   @IsNumber()
   @Type(() => Number)
   dailyReturn: number;
 
-  @ApiProperty({ description: 'Weekly return percentage (DEPRECATED - use assetWeeklyReturn or portfolioWeeklyReturn)', example: 3.5 })
+  @ApiProperty({ description: 'Weekly return percentage', example: 3.5 })
   @IsNumber()
   @Type(() => Number)
   weeklyReturn: number;
 
-  @ApiProperty({ description: 'Monthly return percentage (DEPRECATED - use assetMonthlyReturn or portfolioMonthlyReturn)', example: 15.0 })
+  @ApiProperty({ description: 'Monthly return percentage', example: 15.0 })
   @IsNumber()
   @Type(() => Number)
   monthlyReturn: number;
 
-  @ApiProperty({ description: 'Year-to-date return percentage (DEPRECATED - use assetYtdReturn or portfolioYtdReturn)', example: 20.0 })
+  @ApiProperty({ description: 'Year-to-date return percentage', example: 20.0 })
   @IsNumber()
   @Type(() => Number)
   ytdReturn: number;
 
-  @ApiProperty({ description: 'Volatility percentage (DEPRECATED - use assetVolatility or portfolioVolatility)', example: 2.5 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  volatility: number;
-
-  @ApiProperty({ description: 'Maximum drawdown percentage (DEPRECATED - use assetMaxDrawdown or portfolioMaxDrawdown)', example: 5.0 })
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  maxDrawdown: number;
 
   @ApiProperty({ 
     description: 'Asset allocation by type', 

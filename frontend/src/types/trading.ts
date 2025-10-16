@@ -208,7 +208,7 @@ export interface TradeAnalysis {
     tradeDate: string;
   }>;
   monthlyPerformance: Array<{
-    month: string;
+    period: string;
     tradesCount: number;
     totalPl: number;
     totalVolume: number;

@@ -369,7 +369,7 @@ class ApiService {
     startDate?: string;
     endDate?: string;
     timeframe?: string;
-    metric?: string;
+    granularity?: string;
   }): Promise<any> {
     const params = new URLSearchParams({ portfolioId });
     if (filters) {

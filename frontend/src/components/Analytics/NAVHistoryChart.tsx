@@ -232,7 +232,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                 </ResponsiveTypography>
               )}
             </Box>
-            <Tooltip title={t('navHistory.tooltip')}>
+            <Tooltip title={t('navHistory.tooltipDescription')}>
               <IconButton size="small" sx={{ ml: 1 }}>
                 <InfoOutlined fontSize="small" sx={{ color: '#666' }} />
               </IconButton>

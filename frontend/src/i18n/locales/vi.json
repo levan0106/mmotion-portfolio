@@ -125,9 +125,9 @@
     "assetValueNav": "Giá trị tài sản & NAV",
     "currentNav": "Giá trị hiện tại (NAV)",
     "totalAnnualReturns": "Tổng & Lợi nhuận hàng năm",
-    "totalReturn": "Từ đầu(xem lại)",
-    "annualized": "Hàng năm (xem lại)",
-    "ytdReturn": "Trong năm (xem lại)",
+    "totalReturn": "Từ đầu",
+    "annualized": "Hàng năm",
+    "ytdReturn": "Đầu năm",
     "tradingActivity": "Hoạt động giao dịch",
     "tradingVolume": "Giao dịch & Khối lượng",
     "totalTrades": "Tổng giao dịch",
@@ -294,7 +294,7 @@
     "title": "Giao dịch",
     "tradeSummary": "Tóm tắt giao dịch",
     "manageAndTrack": "Quản lý và theo dõi tất cả hoạt động giao dịch của bạn",
-    "totalVolume": "Tổng khối lượng",
+    "totalVolume": "Tổng giá trị",
     "trades": "Giao dịch",
     "trade": "giao dịch",
     "fees": "Phí",
@@ -1148,7 +1148,8 @@
     },
     "tooltip": {
       "navValue": "Giá trị NAV",
-      "portfolioPnL": "P&L danh mục"
+      "portfolioPnL": "P&L danh mục",
+      "cumulativeReturn": "Lợi nhuận tích lũy"
     }
   },
   "benchmark": {
@@ -1202,7 +1203,7 @@
     "average": "Trung bình",
     "buyTrades": "Giao dịch mua",
     "sellTrades": "Giao dịch bán",
-    "totalVolume": "Tổng khối lượng",
+    "totalVolume": "Tổng giá trị",
     "riskMetrics": "Chỉ số rủi ro",
     "riskLevel": "Mức độ rủi ro",
     "riskLevels": {
@@ -1214,7 +1215,7 @@
     "var95": "VaR 95%",
     "sharpeRatio": "Tỷ lệ Sharpe",
     "monthlyPerformance": "Hiệu suất hàng tháng",
-    "assetPerformance": "Hiệu suất tài sản",
+    "assetPerformance": "Hiệu suất tài sản đã bán",
     "pieChart": "Biểu đồ tròn",
     "compactList": "Danh sách gọn",
     "noAssetData": "Không có dữ liệu hiệu suất tài sản",
@@ -1226,7 +1227,48 @@
     "asset": "Tài sản",
     "side": "Hướng",
     "pnl": "P&L",
-    "date": "Ngày"
+    "date": "Ngày",
+    "tooltip": {
+      "totalPnL": "Tổng P&L",
+      "realizedPnL": "P&L đã thực hiện",
+      "unrealizedPnL": "P&L chưa thực hiện",
+      "trades": "Giao dịch",
+      "winRate": "Tỷ lệ thắng",
+      "volume": "Khối lượng",
+      "symbol": "Mã",
+      "pnl": "P&L",
+      "performance": "Hiệu suất"
+    },
+    "timeframe": {
+      "allTime": "Tất cả",
+      "oneMonth": "1 Tháng",
+      "threeMonths": "3 Tháng",
+      "sixMonths": "6 Tháng",
+      "oneYear": "1 Năm"
+    },
+    "granularity": {
+      "daily": "Ngày",
+      "weekly": "Tuần",
+      "monthly": "Tháng"
+    },
+    "table": {
+      "asset": "Tài sản",
+      "side": "Hướng",
+      "pnl": "P&L",
+      "date": "Ngày",
+      "quantity": "Số lượng",
+      "avgCost": "Giá TB",
+      "marketValue": "Giá trị thị trường",
+      "trades": "Giao dịch"
+    },
+    "status": {
+      "win": "Thắng",
+      "loss": "Thua"
+    },
+    "unknown": {
+      "asset": "Không xác định",
+      "assetName": "Tài sản không xác định"
+    }
   },
   "riskMetrics": {
     "noData": "Không có dữ liệu chỉ số rủi ro",
@@ -1254,6 +1296,7 @@
     "investorBenefit": "Lợi ích mỗi NĐT",
     "navPerUnitTooltip": "NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ đang lưu hành. Thể hiện lợi ích của mỗi nhà đầu tư.",
     "navPerUnitGrowth": "Tăng trưởng NAV/Unit",
+    "navGrowth": "Tăng trưởng NAV",
     "recent": "Gần nhất",
     "fromStart": "Từ đầu",
     "infoNote": "💡 NAV Tổng = Tiền mặt + Giá trị tài sản | NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ"

@@ -111,14 +111,14 @@ export const useTradeAnalysis = (portfolioId: string, filters?: {
   startDate?: string;
   endDate?: string;
   timeframe?: string;
-  metric?: string;
+  granularity?: string;
 }) => {
   // Create a stable query key
   const queryKey = [
     'tradeAnalysis', 
     portfolioId, 
     filters?.timeframe || 'ALL',
-    filters?.metric || 'pnl'
+    filters?.granularity || 'monthly'
   ];
 
   return useQuery<TradeAnalysis>(

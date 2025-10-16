@@ -22,7 +22,9 @@ import {
   Card, 
   CardContent, 
   Tooltip,
-  IconButton
+  IconButton,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
@@ -60,7 +62,8 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
   const { t } = useTranslation();
   const [selectedMwrPeriod, setSelectedMwrPeriod] = useState(currentMWRPeriod || 'YTD');
   const [timeframe, setTimeframe] = useState(currentTimeframe);
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   useEffect(() => {
     if (currentMWRPeriod) {
       setSelectedMwrPeriod(currentMWRPeriod);
@@ -184,7 +187,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
                 </IconButton>
               </Tooltip>
             </Box>
-            <ResponsiveTypography variant="formHelper" color="text.secondary">
+            <ResponsiveTypography variant="formHelper" color="text.secondary" display={isMobile ? 'none' : 'block'}>
               {t('mwrBenchmark.subtitle', { benchmarkName })}
             </ResponsiveTypography>
           </Box>

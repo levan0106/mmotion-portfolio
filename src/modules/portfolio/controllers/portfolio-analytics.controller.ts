@@ -1139,59 +1139,69 @@ export class PortfolioAnalyticsController {
     return await this.portfolioAnalyticsService.getAssetDetailSummary(id);
   }
 
-  // /**
-  //  * Get comprehensive portfolio analytics report.
-  //  */
-  // @Get('report')
-  // @ApiOperation({ summary: 'Get comprehensive portfolio analytics report' })
-  // @ApiParam({ name: 'id', description: 'Portfolio ID' })
-  // @ApiResponse({ status: 200, description: 'Analytics report generated successfully' })
-  // @ApiResponse({ status: 404, description: 'Portfolio not found' })
-  // async getAnalyticsReport(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-  //   const [
-  //     performanceSummary,
-  //     allocation,
-  //     portfolio,
-  //   ] = await Promise.all([
-  //     this.portfolioAnalyticsService.getPerformanceSummary(id),
-  //     this.portfolioService.getAssetAllocation(id),
-  //     this.portfolioService.getPortfolioDetails(id),
-  //   ]);
-
-  //   return {
-  //     portfolioId: id,
-  //     portfolioName: portfolio.name,
-  //     reportDate: new Date().toISOString(),
-  //     performance: performanceSummary,
-  //     allocation: allocation.reduce((acc, item) => {
-  //       acc[item.assetType.toLowerCase()] = item.percentage;
-  //       return acc;
-  //     }, {}),
-  //     summary: {
-  //       totalValue: portfolio.totalValue,
-  //       cashBalance: portfolio.cashBalance,
-  //       unrealizedPl: portfolio.unrealizedPl,
-  //       realizedPl: portfolio.realizedPl,
-  //       assetCount: allocation.length,
-  //     },
-  //   };
-  // }
-
   /**
-   * Generate date list based on timeframe
+   * Generate optimized date list based on user's date range filter
+   * Adaptive sampling based on actual date range
    */
   private generateDateList(startDate: Date, endDate: Date, months: number): Date[] {
     const dates: Date[] = [];
     const current = new Date(startDate);
     const end = new Date(endDate);
     
-    // Generate daily dates
-    while (current <= end) {
-      dates.push(new Date(current));
-      current.setDate(current.getDate() + 1);
+    // Calculate actual days in the user's filter range
+    const daysBetween = Math.ceil((end.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Adaptive sampling based on user's actual date range:
+    // - Very short range (≤7 days): Daily data (7 points)
+    // - Short range (8-30 days): Daily data (8-30 points)
+    // - Medium range (31-90 days): Every 2-3 days (~30-45 points)
+    // - Long range (91-180 days): Weekly data (~13-26 points)
+    // - Very long range (181-365 days): Bi-weekly data (~13-26 points)
+    // - Ultra long range (>365 days): Monthly data (~12-24 points)
+    let sampleInterval = 1;
+    let samplingStrategy = '';
+    
+    if (daysBetween <= 7) {
+      sampleInterval = 1;
+      samplingStrategy = 'Daily (very short range)';
+    } else if (daysBetween <= 30) {
+      sampleInterval = 1;
+      samplingStrategy = 'Daily (short range)';
+    } else if (daysBetween <= 90) {
+      sampleInterval = Math.max(1, Math.floor(daysBetween / 30));
+      samplingStrategy = 'Every 2-3 days (medium range)';
+    } else if (daysBetween <= 180) {
+      sampleInterval = Math.max(1, Math.floor(daysBetween / 25));
+      samplingStrategy = 'Weekly (long range)';
+    } else if (daysBetween <= 365) {
+      sampleInterval = Math.max(1, Math.floor(daysBetween / 20));
+      samplingStrategy = 'Bi-weekly (very long range)';
+    } else {
+      sampleInterval = Math.max(1, Math.floor(daysBetween / 15));
+      samplingStrategy = 'Monthly (ultra long range)';
     }
     
-    console.log(`Generated ${dates.length} daily dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    let dayCount = 0;
+    while (current <= end) {
+      if (dayCount % sampleInterval === 0) {
+        dates.push(new Date(current));
+      }
+      current.setDate(current.getDate() + 1);
+      dayCount++;
+    }
+    
+    // Always include the end date if not already included
+    if (dates.length === 0 || dates[dates.length - 1]?.getTime() !== end.getTime()) {
+      dates.push(new Date(end));
+    }
+    
+    // Ensure we have at least 2 points for meaningful comparison
+    if (dates.length < 2) {
+      dates.push(new Date(startDate));
+      dates.push(new Date(end));
+    }
+    
+    console.log(`Generated ${dates.length} adaptive dates using ${samplingStrategy} (${sampleInterval}-day intervals) for ${daysBetween} days from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
     return dates;
   }
 
@@ -1205,28 +1215,41 @@ export class PortfolioAnalyticsController {
       return new Array(dateList.length).fill(0);
     }
     
+    // Pre-sort snapshots by date for optimized lookup
+    const sortedSnapshots = snapshots.sort((a, b) => 
+      new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime()
+    );
+    
     // Find the first snapshot value as baseline
-    const firstSnapshot = snapshots[0];
-    console.log(`DEBUG: First snapshot data:`, JSON.stringify(firstSnapshot, null, 2));
+    const firstSnapshot = sortedSnapshots[0];
     const baselineValue = parseFloat(firstSnapshot.totalPortfolioValue) || 0;
     const baselineDate = new Date(firstSnapshot.snapshotDate);
     
-    console.log(`Baseline: ${baselineValue} on ${baselineDate.toISOString().split('T')[0]}`);
+    console.log(`Optimized baseline: ${baselineValue} on ${baselineDate.toISOString().split('T')[0]}`);
+    
+    // Create a map for O(1) snapshot lookup by date
+    const snapshotMap = new Map();
+    sortedSnapshots.forEach(snapshot => {
+      const dateKey = new Date(snapshot.snapshotDate).toISOString().split('T')[0];
+      snapshotMap.set(dateKey, snapshot);
+    });
     
     for (let i = 0; i < dateList.length; i++) {
       const currentDate = dateList[i];
+      const dateKey = currentDate.toISOString().split('T')[0];
       
-      // Find the closest snapshot that is on or before this date
-      const closestSnapshot = this.findClosestSnapshotOnOrBefore(currentDate, snapshots);
+      // Try exact date match first (O(1))
+      let closestSnapshot = snapshotMap.get(dateKey);
+      
+      // If no exact match, find closest snapshot (optimized)
+      if (!closestSnapshot) {
+        closestSnapshot = this.findClosestSnapshotOnOrBeforeOptimized(currentDate, sortedSnapshots);
+      }
       
       if (closestSnapshot) {
         const currentValue = parseFloat(closestSnapshot.totalPortfolioValue) || 0;
         const returnValue = baselineValue > 0 ? ((currentValue - baselineValue) / baselineValue) * 100 : 0;
         returns.push(returnValue);
-        
-        if (i < 5 || i % 30 === 0) { // Log first 5 and every 30th for debugging
-          console.log(`Date ${currentDate.toISOString().split('T')[0]}: value=${currentValue}, return=${returnValue.toFixed(4)}%`);
-        }
       } else {
         // No snapshot found, use previous return or 0
         const previousReturn = returns.length > 0 ? returns[returns.length - 1] : 0;
@@ -1237,6 +1260,34 @@ export class PortfolioAnalyticsController {
     return returns;
   }
 
+
+  /**
+   * Find the closest snapshot that is on or before a given date (optimized)
+   */
+  private findClosestSnapshotOnOrBeforeOptimized(targetDate: Date, sortedSnapshots: any[]): any | null {
+    if (sortedSnapshots.length === 0) return null;
+    
+    const targetTime = targetDate.getTime();
+    let closestSnapshot = null;
+    
+    // Binary search for better performance
+    let left = 0;
+    let right = sortedSnapshots.length - 1;
+    
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const snapshotTime = new Date(sortedSnapshots[mid].snapshotDate).getTime();
+      
+      if (snapshotTime <= targetTime) {
+        closestSnapshot = sortedSnapshots[mid];
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+    
+    return closestSnapshot;
+  }
 
   /**
    * Find the closest snapshot that is on or before a given date
@@ -1375,8 +1426,13 @@ export class PortfolioAnalyticsController {
     return closest.return / 100; // Convert percentage to decimal
   }
 
+  // Cache for benchmark data to avoid repeated API calls
+  private benchmarkDataCache = new Map<string, Array<{date: string, return: number}>>();
+  private cacheExpiry = new Map<string, number>();
+  private readonly CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+
   /**
-   * Get data for benchmark comparison
+   * Get data for benchmark comparison (with caching)
    * @param startDate - Start date
    * @param endDate - End date
    * @returns Promise<Array<{date: string, return: number}>> data returns
@@ -1385,10 +1441,24 @@ export class PortfolioAnalyticsController {
     startDate: Date,
     endDate: Date
   ): Promise<Array<{date: string, return: number}>> {
+    const cacheKey = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`;
+    const now = Date.now();
+    
+    // Check cache first
+    if (this.benchmarkDataCache.has(cacheKey) && this.cacheExpiry.get(cacheKey) > now) {
+      console.log(`Using cached benchmark data for ${cacheKey}`);
+      return this.benchmarkDataCache.get(cacheKey);
+    }
+    
     try {
       console.log(`Fetching real VNIndex data for benchmark comparison from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
       const dataReturns = await this.marketDataService.getMarketDataReturnsHistoryForBenchmarkFromAPI('VN30INDEX', 'STOCK', startDate, endDate);
       console.log(`Successfully fetched ${dataReturns.length} data return data points`);
+      
+      // Cache the result
+      this.benchmarkDataCache.set(cacheKey, dataReturns);
+      this.cacheExpiry.set(cacheKey, now + this.CACHE_DURATION);
+      
       return dataReturns;
     } catch (error) {
       console.error(`Error fetching data: ${error.message}`);
