@@ -91,7 +91,7 @@ const customBorders = {
 const customTypography = {
   // Header variants
   header: {
-    xs: '1.2rem',    // 19.2px (increased from 16px)
+    xs: '1.4rem',    // 22.4px (increased for mobile readability)
     sm: '1.4rem',    // 22.4px (increased from 18.7px)
     md: '1.6rem',    // 25.6px (increased from 21.3px)
     lg: '1.8rem',    // 28.8px (increased from 24px)
@@ -100,7 +100,7 @@ const customTypography = {
   
   // Title variants
   title: {
-    xs: '0.9rem',    // 14.4px (increased from 11.7px)
+    xs: '1.1rem',    // 17.6px (increased for mobile readability)
     sm: '1rem',      // 16px (increased from 13.3px)
     md: '1.1rem',    // 17.6px (increased from 14.7px)
     lg: '1.2rem',    // 19.2px (increased from 16px)
@@ -109,7 +109,7 @@ const customTypography = {
   
   // Subtitle variants
   subtitle: {
-    xs: '0.6rem',    // 11.2px (increased from 9.3px)
+    xs: '0.8rem',    // 12.8px (increased for mobile readability)
     sm: '0.7rem',    // 12.8px (increased from 10.7px)
     md: '0.8rem',    // 14.4px (increased from 12px)
     lg: '0.9rem',      // 16px (increased from 13.3px)
@@ -118,7 +118,7 @@ const customTypography = {
   
   // Body text variants
   body: {
-    xs: '0.875rem',  // 14px (mobile standard minimum)
+    xs: '1rem',      // 16px (increased for mobile readability)
     sm: '0.9rem',    // 14.4px
     md: '1rem',      // 16px (desktop standard)
     lg: '1.1rem',    // 17.6px
@@ -127,7 +127,7 @@ const customTypography = {
   
   // Small text variants
   small: {
-    xs: '0.75rem',   // 12px (mobile readable minimum)
+    xs: '0.875rem',  // 14px (increased for mobile readability)
     sm: '0.8rem',    // 12.8px
     md: '0.875rem',  // 14px
     lg: '0.9rem',    // 14.4px
@@ -136,7 +136,7 @@ const customTypography = {
 
   // XSmall text variants
   xSmall: {
-    xs: '0.625rem',  // 10px (mobile readable minimum)
+    xs: '0.75rem',   // 12px (increased for mobile readability)
     sm: '0.65rem',    // 10.4px
     md: '0.7rem',    // 11.2px
     lg: '0.7rem',     // 12px
@@ -145,7 +145,7 @@ const customTypography = {
   
   // Caption variants
   caption: {
-    xs: '0.625rem',  // 10px (mobile readable minimum)
+    xs: '0.75rem',   // 12px (increased for mobile readability)
     sm: '0.7rem',    // 11.2px
     md: '0.75rem',   // 12px
     lg: '0.8rem',    // 12.8px
@@ -154,7 +154,7 @@ const customTypography = {
 
   // Chart title variants
   chartTitle: {
-    xs: '0.75rem',  // 12px (mobile readable)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
@@ -163,7 +163,7 @@ const customTypography = {
   
   // Chart subtitle variants
   chartSubtitle: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -172,7 +172,7 @@ const customTypography = {
   
   // Chart legend variants
   chartLegend: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -181,7 +181,7 @@ const customTypography = {
   
   // Chart tooltip variants
   chartTooltip: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -190,7 +190,7 @@ const customTypography = {
   
   // Card title variants
   cardTitle: {
-    xs: '0.75rem',  // 12px (mobile readable)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
@@ -199,7 +199,7 @@ const customTypography = {
   
   // Card value variants
   cardValue: {
-    xs: '1rem',     // 16px (increased for mobile readability)
+    xs: '1.1rem',   // 17.6px (increased for mobile readability)
     sm: '0.9rem',   // 14.4px
     md: '1rem',     // 16px
     lg: '1.1rem',   // 17.6px
@@ -207,7 +207,7 @@ const customTypography = {
   },
 
   cardValueLarge: {
-    xs: '1.125rem', // 18px (increased for mobile readability)
+    xs: '1.3rem',   // 20.8px (increased for mobile readability)
     sm: '1.1rem',   // 17.6px
     md: '1.2rem',   // 19.2px
     lg: '1.3rem',   // 20.8px
@@ -215,7 +215,7 @@ const customTypography = {
   },
 
   cardValueMedium: {
-    xs: '0.875rem', // 14px (increased for mobile readability)
+    xs: '1rem',     // 16px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
@@ -223,7 +223,7 @@ const customTypography = {
   },
 
   cardValueSmall: {
-    xs: '0.75rem',  // 12px (increased for mobile readability)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -232,7 +232,7 @@ const customTypography = {
 
   // Card label variants
   cardLabel: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -241,7 +241,7 @@ const customTypography = {
 
   // Label small variants
   labelSmall: {
-    xs: '0.625rem', // 10px (mobile readable)
+    xs: '0.75rem',  // 12px (increased for mobile readability)
     sm: '0.7rem',   // 11.2px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
@@ -250,7 +250,7 @@ const customTypography = {
   
   // Tab variants
   tab: {
-    xs: '0.75rem',  // 12px (mobile readable)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
@@ -259,7 +259,7 @@ const customTypography = {
   
   // Button variants
   button: {
-    xs: '0.75rem',  // 12px (mobile readable)
+    xs: '0.875rem', // 14px (increased for mobile readability)
     sm: '0.8rem',   // 12.8px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px

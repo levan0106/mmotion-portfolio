@@ -68,7 +68,7 @@
     "deposits": "Tiền gửi",
     "snapshots": "Sao lưu dữ liệu",
     "globalAssets": "Quản lý giá",
-    "roleManagement": "Quản lý hệ thống",
+    "adminManagement": "Quản trị hệ thống",
     "transactions": "Giao dịch"
   },
   "portfolio": {

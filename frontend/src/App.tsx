@@ -27,7 +27,7 @@ import Login from './pages/Login';
 import Welcome from './pages/Welcome';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import { RoleManagement } from './pages/RoleManagement';
+import { AdminManagement } from './pages/AdminManagement';
 // import { I18nTest } from './pages/I18nTest'; // Commented out as not used
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
@@ -200,10 +200,10 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
-          <Route path="/role-management" element={
+          <Route path="/admin-management" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
-                <RoleManagement />
+                <AdminManagement />
               </Box>
             </AppLayout>
           } />

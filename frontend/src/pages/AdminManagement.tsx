@@ -19,6 +19,7 @@ import {
   Person as PersonIcon,
   Settings as SettingsIcon,
   CameraAlt as SnapshotIcon,
+  Assessment as TrackingIcon,
 } from '@mui/icons-material';
 import { RoleList } from '../components/RoleManagement/RoleList';
 import { RoleForm } from '../components/RoleManagement/RoleForm';
@@ -31,6 +32,7 @@ import { UserDetails } from '../components/RoleManagement/UserDetails';
 import { UserForm } from '../components/RoleManagement/UserForm';
 import { Settings } from '../components/RoleManagement/Settings';
 import { AutomatedSnapshotManagement } from '../components/AutomatedSnapshot/AutomatedSnapshotManagement';
+import SnapshotTrackingDashboard from '../components/SnapshotTracking/SnapshotTrackingDashboard';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { ToastService } from '../services/toast';
 import { useRoles } from '../hooks/useRoles';
@@ -61,17 +63,17 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export const RoleManagement: React.FC = () => {
+export const AdminManagement: React.FC = () => {
   return (
     <PermissionGuard 
       role="super_admin"
     >
-      <RoleManagementContent />
+      <AdminManagementContent />
     </PermissionGuard>
   );
 };
 
-const RoleManagementContent: React.FC = () => {
+const AdminManagementContent: React.FC = () => {
   const theme = useTheme();
   const { roles, isLoading, error, assignPermissions, isAssigningPermissions } = useRoles();
   // const { users, isLoading: isLoadingUsers, error: usersError } = useUsers();
@@ -267,10 +269,10 @@ const RoleManagementContent: React.FC = () => {
             filter: 'none'
           }}
         >
-          Role & Permission Management
+          System Administration
         </ResponsiveTypography>
         <ResponsiveTypography variant="pageSubtitle">
-          Manage user roles and permissions for the system
+          Manage system roles, users, permissions, and automated processes
         </ResponsiveTypography>
       </Box>
 
@@ -304,6 +306,12 @@ const RoleManagementContent: React.FC = () => {
             label="Automated Snapshots"
             id="role-tab-3"
             aria-controls="role-tabpanel-3"
+          />
+          <Tab 
+            icon={<TrackingIcon />}
+            label="Snapshot Tracking"
+            id="role-tab-4"
+            aria-controls="role-tabpanel-4"
           />
         </Tabs>
       </Paper>
@@ -377,6 +385,10 @@ const RoleManagementContent: React.FC = () => {
 
       <TabPanel value={tabValue} index={3}>
         <AutomatedSnapshotManagement />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={4}>
+        <SnapshotTrackingDashboard />
       </TabPanel>
 
       {/* Role Form Dialog */}

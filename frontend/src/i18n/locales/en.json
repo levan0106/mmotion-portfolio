@@ -68,7 +68,7 @@
     "deposits": "Deposits",
     "snapshots": "Snapshots",
     "globalAssets": "Global Assets",
-    "roleManagement": "Role Management",
+    "adminManagement": "System Administration",
     "transactions": "Transactions"
   },
   "portfolio": {

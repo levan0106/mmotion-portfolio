@@ -32,6 +32,8 @@ import { NavUtilsService } from './services/nav-utils.service';
 import { SnapshotService } from './services/snapshot.service';
 import { PortfolioSnapshotService } from './services/portfolio-snapshot.service';
 import { PerformanceSnapshotService } from './services/performance-snapshot.service';
+import { AutomatedSnapshotService } from './services/automated-snapshot.service';
+import { SnapshotTrackingService } from './services/snapshot-tracking.service';
 import { TWRCalculationService } from './services/twr-calculation.service';
 import { MWRIRRCalculationService } from './services/mwr-irr-calculation.service';
 import { AlphaBetaCalculationService } from './services/alpha-beta-calculation.service';
@@ -41,6 +43,9 @@ import { PortfolioAnalyticsController } from './controllers/portfolio-analytics.
 import { CashFlowController } from './controllers/cash-flow.controller';
 import { InvestorHoldingController } from './controllers/investor-holding.controller';
 import { PerformanceSnapshotController } from './controllers/performance-snapshot.controller';
+import { AutomatedSnapshotController } from './controllers/automated-snapshot.controller';
+import { SnapshotTrackingController } from './controllers/snapshot-tracking.controller';
+import { SnapshotTracking } from './entities/snapshot-tracking.entity';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { SnapshotRepository } from './repositories/snapshot.repository';
 import { PortfolioSnapshotRepository } from './repositories/portfolio-snapshot.repository';
@@ -76,6 +81,7 @@ import { SharedModule } from '../shared/shared.module';
       AssetPrice,
       Trade,
       TradeDetail,
+      SnapshotTracking,
     ]),
     // Import CacheModule conditionally
     ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
@@ -94,6 +100,8 @@ import { SharedModule } from '../shared/shared.module';
     CashFlowController,
     InvestorHoldingController,
     PerformanceSnapshotController,
+    AutomatedSnapshotController,
+    SnapshotTrackingController,
   ],
   providers: [
     PortfolioRepository,
@@ -108,6 +116,8 @@ import { SharedModule } from '../shared/shared.module';
     SnapshotService,
     PortfolioSnapshotService,
     PerformanceSnapshotService,
+    AutomatedSnapshotService,
+    SnapshotTrackingService,
     TWRCalculationService,
     MWRIRRCalculationService,
     AlphaBetaCalculationService,
@@ -136,6 +146,8 @@ import { SharedModule } from '../shared/shared.module';
     CashFlowService,
     InvestorHoldingService,
     PerformanceSnapshotService,
+    AutomatedSnapshotService,
+    SnapshotTrackingService,
     TWRCalculationService,
     MWRIRRCalculationService,
     AlphaBetaCalculationService,

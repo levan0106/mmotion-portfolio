@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { TradingModule } from './modules/trading/trading.module';
 import { AssetModule } from './modules/asset/asset.module';
@@ -55,6 +56,9 @@ import { TestLoggingController } from './test-logging.controller';
       ttl: parseInt(process.env.CACHE_TTL) || 300000, // 5 minutes
       max: parseInt(process.env.CACHE_MAX_ITEMS) || 1000,
     })] : []),
+
+    // Schedule module for cron jobs
+    ScheduleModule.forRoot(),
 
     // Feature modules
       PortfolioModule,

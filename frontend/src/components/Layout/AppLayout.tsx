@@ -152,10 +152,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       roles: ['admin', 'super_admin']
     },
     {
-      text: t('navigation.roleManagement'),
+      text: t('navigation.adminManagement'),
       icon: <SecurityIcon />,
-      path: '/role-management',
-      description: t('navigation.roleManagement'),
+      path: '/admin-management',
+      description: t('navigation.adminManagement'),
       badge: null,
       roles: ['super_admin']
     },

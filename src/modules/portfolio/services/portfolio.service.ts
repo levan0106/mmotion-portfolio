@@ -1519,6 +1519,21 @@ export class PortfolioService {
   }
 
   /**
+   * Get all portfolios in the system (for automated snapshot creation)
+   */
+  async getAllPortfolios(): Promise<Portfolio[]> {
+    this.logger.log('Fetching all portfolios for automated snapshot creation');
+    
+    const portfolios = await this.portfolioRepository.find({
+      relations: ['account', 'account.user'],
+      order: { createdAt: 'DESC' }
+    });
+
+    this.logger.log(`Found ${portfolios.length} portfolios in the system`);
+    return portfolios;
+  }
+
+  /**
    * Update portfolio visibility
    * @param portfolioId - Portfolio ID
    * @param visibility - New visibility setting
