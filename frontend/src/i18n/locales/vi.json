@@ -207,7 +207,7 @@
     "riskVsReturnAnalysis": "Phân tích rủi ro so với lợi nhuận của tài sản danh mục",
     "performanceComparison": "So sánh hiệu suất giữa các loại tài sản",
     "correlationMatrix": "Ma trận tương quan thể hiện đa dạng hóa giữa các loại tài sản",
-    "returnBubbleSize": "Lợi nhuận (Kích thước bong bóng)",
+    "returnBubbleSize": "Lợi nhuận",
     "bubbleSizeDescription": "Bong bóng lớn hơn = Hiệu suất lợi nhuận cao hơn (đầu tư tốt hơn)",
     "riskVolatility": "Rủi ro (Biến động)",
     "performanceRating": "Đánh giá hiệu suất",
@@ -434,7 +434,16 @@
     "balanced": "Cân bằng",
     "refreshData": "Làm mới dữ liệu",
     "systemStatus": "Trạng thái hệ thống: Hoạt động",
-    "lastUpdated": "Cập nhật lần cuối",
+    "lastUpdated": "Cập nhật cuối",
+    "dataUpdateStatus": {
+      "justUpdated": "Vừa cập nhật",
+      "minutesAgo": "{{minutes}} phút trước",
+      "hoursAgo": "{{hours}} giờ trước", 
+      "daysAgo": "{{days}} ngày trước",
+      "noData": "Không có dữ liệu",
+      "loading": "Đang tải...",
+      "systemPaused": "Cập nhật giá tạm dừng"
+    },
     "portfoliosActive": "Danh mục hoạt động",
     "portfolioPerformance": "Phân tích hiệu suất danh mục",
     "bestPerforming": "Danh mục tốt nhất",
@@ -452,6 +461,59 @@
     "startInvestment": "Bắt đầu hành trình đầu tư bằng cách tạo danh mục đầu tiên để theo dõi và quản lý tài sản",
     "createFirstPortfolio": "Tạo danh mục đầu tiên",
     "active": "Hoạt động"
+  },
+  "profile": {
+    "title": "Hồ sơ cá nhân",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "saveChanges": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "cancel": "Hủy",
+    "basicInformation": "Thông tin cơ bản",
+    "advancedInformation": "Thông tin nâng cao",
+    "security": "Bảo mật",
+    "username": "Tên đăng nhập",
+    "usernameHelper": "Tên đăng nhập không thể thay đổi",
+    "fullName": "Họ và tên",
+    "email": "Email",
+    "emailVerified": "Email đã xác thực",
+    "emailVerificationRequired": "Cần xác thực email",
+    "phone": "Số điện thoại",
+    "dateOfBirth": "Ngày sinh",
+    "address": "Địa chỉ",
+    "completeProfileNotice": "Hoàn thiện hồ sơ của bạn",
+    "completeProfileDescription": "Vui lòng điền thông tin để truy cập đầy đủ các tính năng. Trang này đang ở chế độ chỉnh sửa để giúp bạn bắt đầu.",
+    "setPassword": "Đặt mật khẩu",
+    "setPasswordDescription": "Đặt mật khẩu để bảo mật tài khoản của bạn",
+    "newPassword": "Mật khẩu mới",
+    "passwordHelper": "Mật khẩu phải có ít nhất 6 ký tự (chữ cái, số hoặc ký tự đặc biệt)",
+    "setting": "Đang đặt...",
+    "changePassword": "Đổi mật khẩu",
+    "changePasswordDescription": "Mật khẩu đã được đặt. Bạn có thể thay đổi bên dưới.",
+    "currentPassword": "Mật khẩu hiện tại",
+    "changing": "Đang đổi...",
+    "userNotFound": "Không tìm thấy người dùng",
+    "failedToLoadProfile": "Không thể tải hồ sơ",
+    "profileUpdatedSuccessfully": "Cập nhật hồ sơ thành công",
+    "passwordSetSuccessfully": "Đặt mật khẩu thành công",
+    "passwordChangedSuccessfully": "Đổi mật khẩu thành công",
+    "pleaseCompleteProfile": "Vui lòng hoàn thiện hồ sơ trước khi hủy",
+    "authStates": {
+      "complete": "Tài khoản bảo mật",
+      "partial": "Hồ sơ hoàn chỉnh",
+      "demo": "Tài khoản demo",
+      "unknown": "Không xác định"
+    },
+    "errors": {
+      "failedToUpdateProfile": "Không thể cập nhật hồ sơ",
+      "failedToSetPassword": "Không thể đặt mật khẩu",
+      "currentPasswordIncorrect": "Mật khẩu hiện tại không đúng. Vui lòng kiểm tra lại mật khẩu hiện tại.",
+      "userHasNoPassword": "Tài khoản chưa có mật khẩu. Vui lòng đặt mật khẩu trước.",
+      "authenticationFailed": "Xác thực thất bại. Vui lòng đăng nhập lại.",
+      "passwordTooShort": "Mật khẩu mới không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.",
+      "invalidData": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.",
+      "userNotFound": "Không tìm thấy tài khoản. Vui lòng đăng nhập lại.",
+      "cannotChangePassword": "Không thể thay đổi mật khẩu. Vui lòng thử lại."
+    }
   },
   "forms": {
     "required": "Trường này là bắt buộc",
@@ -676,7 +738,7 @@
       "transactionDetails": "Chi tiết giao dịch",
       "recalculationImpact": "⚠️ Tác động tính lại dữ liệu",
       "recalculationMessage": "Xóa giao dịch này sẽ kích hoạt tính lại tự động:",
-      "recalculationItem1": "NAV/đơn vị của Portfolio và tổng đơn vị đang lưu hành",
+      "recalculationItem1": "NAV/đơn vị của Danh mục và tổng đơn vị đang lưu hành",
       "recalculationItem2": "Tất cả chỉ số danh mục (đơn vị, đầu tư, P&L) sẽ được tính lại từ các giao dịch còn lại",
       "recalculationItem3": "Các bản ghi dòng tiền liên quan sẽ bị xóa",
       "recalculationDate": "Tính lại sẽ dựa trên ngày giao dịch gốc: {{date}}",
@@ -686,8 +748,8 @@
   },
   "nav": {
     "holdings": {
-      "notFund": "Portfolio không phải là Quỹ",
-      "notFundMessage": "Portfolio này chưa được cấu hình là quỹ. Chuyển đổi thành quỹ để quản lý NAV/Đơn vị.",
+      "notFund": "Danh mục này không phải là Quỹ",
+      "notFundMessage": "Danh mục này chưa được cấu hình là quỹ. Chuyển đổi thành quỹ để quản lý NAV/Đơn vị.",
       "convert": "Chuyển đổi",
       "convertToFund": "Chuyển đổi thành Quỹ",
       "fundSummary": "Tóm tắt Quỹ",
@@ -1865,6 +1927,201 @@
       "loadFailed": "Lỗi khi tải danh sách assets",
       "createFailed": "❌ Lỗi khi tạo assets",
       "allFailed": "❌ Tạo thất bại tất cả {{count}} assets"
+    }
+  },
+  "login": {
+    "title": "Hệ thống Quản lý Danh mục Đầu tư",
+    "subtitle": {
+      "enterUsername": "Nhập tên người dùng để bắt đầu",
+      "welcomeBack": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)",
+      "signIn": "Nhập tên người dùng và mật khẩu để đăng nhập",
+      "continue": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)"
+    },
+    "form": {
+      "username": "Tên người dùng",
+      "password": "Mật khẩu",
+      "usernamePlaceholder": "Nhập tên người dùng",
+      "passwordPlaceholder": "Nhập mật khẩu để tiếp tục",
+      "usernameHelper": "Nhập tên người dùng",
+      "passwordHelper": "Nhập mật khẩu để tiếp tục",
+      "passwordHelperError": "Vui lòng nhập mật khẩu chính xác"
+    },
+    "buttons": {
+      "enterUsername": "Đăng nhập",
+      "welcomeBack": "Chào Mừng Trở Lại",
+      "signIn": "Đăng Nhập",
+      "continue": "Tiếp Tục",
+      "signingIn": "Đang đăng nhập...",
+      "backToWelcome": "Quay Lại Trang Chào Mừng",
+      "hide": "Ẩn",
+      "show": "Hiện"
+    },
+    "messages": {
+      "welcomeBack": "Chào mừng trở lại, {{username}}",
+      "enterPassword": "Nhập mật khẩu để tiếp tục",
+      "userHasPassword": "Người dùng này đã có mật khẩu - vui lòng nhập mật khẩu để tiếp tục",
+      "userIncomplete": "Người dùng này có hồ sơ chưa hoàn chỉnh - không cần mật khẩu",
+      "easyStart": "Bắt đầu dễ dàng - không cần mật khẩu cho người dùng mới",
+      "usernameRequired": "Vui lòng nhập tên người dùng",
+      "passwordRequired": "Mật khẩu là bắt buộc cho người dùng này",
+      "incorrectPassword": "Mật khẩu không chính xác. Vui lòng thử lại.",
+      "loginFailed": "Đăng nhập thất bại. Vui lòng thử lại.",
+      "usernameFormat": "Tên người dùng chỉ được chứa chữ cái, số, dấu gạch ngang (-) và gạch dưới (_)",
+      "newUserWelcome": "🎉 Chào mừng đến với Hệ thống Quản lý Danh mục! Nhấp vào đây để bắt đầu với hướng dẫn của chúng tôi.",
+      "newUserWelcomeTitle": "Chào mừng đến với Hệ thống Quản lý Danh mục!",
+      "newUserWelcomeMessage": "Bạn đã sẵn sàng! Hãy cùng tham quan nhanh để giúp bạn bắt đầu quản lý các khoản đầu tư của mình."
+    },
+    "history": {
+      "title": "Người Dùng Gần Đây - Đăng Nhập Nhanh",
+      "secure": "Bảo mật",
+      "removeUser": "Xóa người dùng khỏi lịch sử"
+    },
+    "errors": {
+      "loginFailed": "Đăng nhập thất bại. Vui lòng thử lại.",
+      "incorrectPassword": "Mật khẩu không chính xác. Vui lòng thử lại.",
+      "usernameFormat": "Tên người dùng chỉ được chứa chữ cái, số, dấu gạch ngang (-) và gạch dưới (_)",
+      "usernameRequired": "Vui lòng nhập tên người dùng",
+      "passwordRequired": "Mật khẩu là bắt buộc cho người dùng này"
+    }
+  },
+  "welcome": {
+    "title": "Chào mừng đến với Hệ thống Quản lý Danh mục Đầu tư",
+    "subtitle": "Quản lý danh mục đầu tư toàn diện với phân tích thời gian thực, công cụ giao dịch và báo cáo nâng cao",
+    "buttons": {
+      "getStarted": "Bắt đầu",
+      "viewDashboard": "Xem Tổng quan"
+    },
+    "features": {
+      "title": "Tính năng chính",
+      "portfolio": {
+        "title": "Quản lý Danh mục",
+        "description": "Tạo và quản lý nhiều danh mục đầu tư với theo dõi thời gian thực",
+        "feature1": "Hỗ trợ đa danh mục",
+        "feature2": "Theo dõi hiệu suất thời gian thực",
+        "feature3": "Trực quan hóa phân bổ tài sản",
+        "feature4": "Phân tích hiệu suất lịch sử"
+      },
+      "trading": {
+        "title": "Hệ thống Giao dịch",
+        "description": "Công cụ giao dịch nâng cao với khớp lệnh FIFO/LIFO và quản lý rủi ro",
+        "feature1": "Khớp lệnh FIFO/LIFO",
+        "feature2": "Quản lý vị thế",
+        "feature3": "Công cụ quản lý rủi ro",
+        "feature4": "Cắt lỗ và chốt lời"
+      },
+      "analytics": {
+        "title": "Phân tích & Báo cáo",
+        "description": "Phân tích toàn diện với TWR, IRR và các chỉ số rủi ro",
+        "feature1": "Phân tích hiệu suất (TWR, IRR)",
+        "feature2": "Chỉ số rủi ro (Sharpe ratio, VaR)",
+        "feature3": "Biểu đồ tương tác",
+        "feature4": "So sánh với benchmark"
+      },
+      "assets": {
+        "title": "Quản lý Tài sản",
+        "description": "Quản lý đa dạng loại tài sản với dữ liệu thị trường thời gian thực",
+        "feature1": "Hỗ trợ nhiều loại tài sản",
+        "feature2": "Dữ liệu thị trường thời gian thực",
+        "feature3": "Theo dõi lịch sử giá",
+        "feature4": "Phân tích hiệu suất tài sản"
+      },
+      "deposits": {
+        "title": "Quản lý Tiền gửi",
+        "description": "Theo dõi tiền gửi ngân hàng với tính toán lãi suất",
+        "feature1": "Theo dõi tiền gửi ngân hàng",
+        "feature2": "Tính toán lãi suất",
+        "feature3": "Hỗ trợ tất toán sớm",
+        "feature4": "Quản lý dòng tiền"
+      },
+      "funds": {
+        "title": "Quản lý Quỹ",
+        "description": "Quản lý quỹ chuyên nghiệp với theo dõi NAV/Đơn vị",
+        "feature1": "Quản lý NAV/Đơn vị",
+        "feature2": "Cổ phần nhà đầu tư",
+        "feature3": "Đăng ký/Mua lại",
+        "feature4": "Theo dõi hiệu suất quỹ"
+      }
+    },
+    "quickStart": {
+      "title": "Hướng dẫn Bắt đầu Nhanh",
+      "step1": {
+        "title": "Tạo Danh mục Đầu tiên",
+        "description": "Bắt đầu bằng cách tạo danh mục để theo dõi các khoản đầu tư",
+        "action": "Tạo Danh mục"
+      },
+      "step2": {
+        "title": "Thêm Giao dịch Đầu tiên",
+        "description": "Ghi lại các giao dịch đầu tư và theo dõi vị thế",
+        "action": "Thêm Giao dịch"
+      },
+      "step3": {
+        "title": "Quản lý Tài sản",
+        "description": "Thêm và quản lý tài sản đầu tư với giá thời gian thực",
+        "action": "Quản lý Tài sản"
+      },
+      "step4": {
+        "title": "Xem Phân tích",
+        "description": "Phân tích hiệu suất danh mục và đưa ra quyết định sáng suốt",
+        "action": "Xem Phân tích"
+      }
+    },
+    "capabilities": {
+      "title": "Khả năng Hệ thống",
+      "realTime": "Cập nhật Dữ liệu Thời gian thực",
+      "analytics": "Phân tích Nâng cao",
+      "multiAccount": "Quản lý nhiều tài khoản",
+      "mobile": "Tương thích Di động",
+      "secure": "Bảo mật & Đáng tin cậy",
+      "scalable": "Kiến trúc Mở rộng"
+    },
+    "footer": {
+      "message": "Sẵn sàng bắt đầu quản lý danh mục đầu tư?",
+      "dashboard": "Tổng quan",
+      "portfolios": "Danh mục"
+    },
+    "quickStartGuide": {
+      "subtitle": "Làm theo các bước đơn giản này để bắt đầu với quản lý danh mục của bạn",
+      "progress": {
+        "step": "Bước {{current}} trong {{total}}",
+        "complete": "{{percentage}}% Hoàn thành"
+      },
+      "navigation": {
+        "previous": "Trước",
+        "next": "Tiếp theo"
+      },
+      "completion": {
+        "title": "Chúc mừng! 🎉",
+        "message": "Bạn đã hoàn thành tất cả các bước thiết lập. Hệ thống quản lý danh mục của bạn đã sẵn sàng sử dụng!"
+      },
+      "steps": {
+        "currentStep": "Bước hiện tại",
+        "clickToContinue": "Nhấp để tiếp tục",
+        "createPortfolio": {
+          "title": "Tạo Danh mục Đầu tiên",
+          "description": "Bắt đầu bằng cách tạo danh mục mới để tổ chức các khoản đầu tư của bạn. Đây sẽ là không gian làm việc chính để theo dõi hiệu suất và quản lý tài sản.",
+          "action": "Tạo Danh mục"
+        },
+        "addCashFlow": {
+          "title": "Thêm Nguồn Tiền",
+          "description": "Thiết lập nguồn tiền ban đầu để tài trợ cho danh mục của bạn. Đây có thể là lương, tiết kiệm hoặc các nguồn thu nhập khác.",
+          "action": "Thêm Nguồn Tiền"
+        },
+        "addTrade": {
+          "title": "Thêm Giao dịch Đầu tiên",
+          "description": "Ghi lại giao dịch mua hoặc bán đầu tiên của bạn. Hệ thống sẽ tự động tính toán vị thế và theo dõi hiệu suất của bạn.",
+          "action": "Bắt đầu Giao dịch"
+        },
+        "manageAssets": {
+          "title": "Quản lý Tài sản",
+          "description": "Thêm và tổ chức các tài sản đầu tư của bạn. Theo dõi cổ phiếu, trái phiếu, vàng, tiền gửi và các công cụ đầu tư khác.",
+          "action": "Quản lý Tài sản"
+        },
+        "viewDashboard": {
+          "title": "Xem Bảng điều khiển",
+          "description": "Theo dõi hiệu suất danh mục của bạn với phân tích thời gian thực, biểu đồ và công cụ báo cáo toàn diện.",
+          "action": "Xem Bảng điều khiển"
+        }
+      }
     }
   }
 }

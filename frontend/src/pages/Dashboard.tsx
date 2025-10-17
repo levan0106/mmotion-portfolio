@@ -18,6 +18,7 @@ import {
   useTheme,
   Fade,
   Slide,
+  useMediaQuery,
 } from '@mui/material';
 import {
   AccountBalance,
@@ -38,6 +39,7 @@ import {
 import { usePortfolios } from '../hooks/usePortfolios';
 import { usePortfolioChangeForAllPortfolios } from '../hooks/usePortfolioChange';
 import { useAccount } from '../contexts/AccountContext';
+import { useLastUpdateTime } from '../hooks/useSystemStatus';
 import { formatCurrency, formatPercentage } from '../utils/format';
 import PortfolioCard from '../components/Portfolio/PortfolioCard';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
@@ -49,7 +51,8 @@ const Dashboard: React.FC = () => {
   const theme = useTheme();
   const { accountId } = useAccount();
   const { portfolios, isLoading, error } = usePortfolios(accountId);
-
+  const { formattedLastUpdateTime, isLoading: isSystemStatusLoading, isAutoSyncEnabled } = useLastUpdateTime();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
 
   if (isLoading) {
@@ -235,25 +238,26 @@ const Dashboard: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Chip
               icon={<Security />}
-              label={t('dashboard.systemStatus')}
-              color="success"
+              label={isAutoSyncEnabled ? t('dashboard.systemStatus') : t('dashboard.dataUpdateStatus.systemPaused')}
+              color={isAutoSyncEnabled ? "success" : "warning"}
               variant="outlined"
               sx={{ borderRadius: 2 }}
             />
             <Chip
               icon={<Timeline />}
-              label={`${t('dashboard.lastUpdated')}: ${new Date().toLocaleTimeString()}`}
+              label={`${t('dashboard.lastUpdated')}: ${isSystemStatusLoading ? t('dashboard.dataUpdateStatus.loading') : formattedLastUpdateTime}`}
               color="info"
               variant="outlined"
               sx={{ borderRadius: 2 }}
             />
-            <Chip
+            { !isMobile && (<Chip
+              key="activePortfolios"
               icon={<Assessment />}
               label={`${totalPortfolios} ${t('dashboard.portfolio', { count: totalPortfolios })} ${t('dashboard.active')}`}
               color="primary"
               variant="outlined"
               sx={{ borderRadius: 2 }}
-            />
+            />)}
           </Box>
         </Box>
 

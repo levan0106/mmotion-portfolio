@@ -1841,7 +1841,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   </ResponsiveTypography> */}
                 </FormControl>
                 
-                <FormControl fullWidth margin="normal">
+                {/* <FormControl fullWidth margin="normal">
                   <InputLabel>{t('cashflow.form.status')}</InputLabel>
                   <Select
                     value={formData.status}
@@ -1852,12 +1852,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <MenuItem value="PENDING">{t('cashflow.status.pending')}</MenuItem>
                     <MenuItem value="CANCELLED">{t('cashflow.status.cancelled')}</MenuItem>
                   </Select>
-                  {/* {editingCashFlow && (
-                    <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                      {t('cashflow.form.originalStatus')}: {editingCashFlow.status}
-                    </ResponsiveTypography>
-                  )} */}
-                </FormControl>
+                </FormControl> */}
                 
                 <TextField
                   fullWidth
@@ -1888,14 +1883,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   helperText={t('cashflow.form.flowDateHelper')}
                 />
                 
-                <TextField
+                {/* <TextField
                   fullWidth
                   label={t('cashflow.form.reference')}
                   value={formData.reference}
                   onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                   margin="normal"
                   //helperText={t('cashflow.form.referenceHelper')}
-                />
+                /> */}
                 
                 <TextField
                   fullWidth

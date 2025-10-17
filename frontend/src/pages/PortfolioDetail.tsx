@@ -104,8 +104,26 @@ const PortfolioDetail: React.FC = () => {
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
-      const tabIndex = parseInt(tabParam, 10);
-      if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 5) {
+      // Support both numeric index and tab name
+      let tabIndex: number;
+      
+      if (isNaN(Number(tabParam))) {
+        // Tab name provided
+        const tabNameMap: { [key: string]: number } = {
+          'performance': 0,
+          'allocation': 1,
+          'trading': 2,
+          'deposit': 3,
+          'cash-flow': 4,
+          'holdings': 5
+        };
+        tabIndex = tabNameMap[tabParam] ?? 0;
+      } else {
+        // Numeric index provided
+        tabIndex = parseInt(tabParam, 10);
+      }
+      
+      if (tabIndex >= 0 && tabIndex <= 5) {
         setTabValue(tabIndex);
         // Scroll to top when tab is set from URL
         window.scrollTo({ top: 0, behavior: 'smooth' });

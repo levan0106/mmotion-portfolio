@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Portfolios from './pages/Portfolios';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Trading from './pages/Trading';
+import TradingRedirect from './components/Trading/TradingRedirect';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
 import DepositManagement from './pages/DepositManagement';
@@ -23,6 +24,7 @@ import Transactions from './pages/Transactions';
 import Assets from './pages/Assets';
 import Report from './pages/Report';
 import Login from './pages/Login';
+import Welcome from './pages/Welcome';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { RoleManagement } from './pages/RoleManagement';
@@ -62,37 +64,153 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Only redirect to login if user is not authenticated
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
   return (
-    <AppLayout>
-      <Box sx={{ minHeight: '100vh' }}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/portfolios" element={<Portfolios />} />
-          <Route path="/portfolios/new" element={<Portfolios />} />
-          <Route path="/portfolios/:portfolioId" element={<PortfolioDetail />} />
-          <Route path="/portfolios/:portfolioId/trading" element={<Trading />} />
-          <Route path="/holdings/:holdingId" element={<HoldingDetail />} />
-          <Route path="/assets" element={<Assets />} />
-          <Route path="/global-assets" element={<GlobalAssetsPage />} />
-          <Route path="/snapshots" element={<SnapshotManagementPage />} />
-          <Route path="/deposits" element={<DepositManagement />} />
-          <Route path="/holdings" element={<Holdings />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/analytics" element={<div>Analytics Page - Coming Soon</div>} />
-          <Route path="/reports" element={<Report />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/role-management" element={<RoleManagement />} />
-          {/* <Route path="/i18n-test" element={<I18nTest />} /> */} {/* Commented out as I18nTest is not used */}
+    <Routes>
+      {/* Public routes - no authentication required */}
+      {!isAuthenticated ? (
+        <>
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="*" element={<Login />} />
+        </>
+      ) : (
+        <>
+          <Route path="/" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Dashboard />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/welcome" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Welcome />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/portfolios" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Portfolios />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/portfolios/new" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Portfolios />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/portfolios/:portfolioId" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <PortfolioDetail />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/trading" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <TradingRedirect />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/portfolios/:portfolioId/trading" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Trading />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/holdings/:holdingId" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <HoldingDetail />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/assets" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Assets />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/global-assets" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <GlobalAssetsPage />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/snapshots" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <SnapshotManagementPage />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/deposits" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <DepositManagement />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/holdings" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Holdings />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/transactions" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Transactions />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/analytics" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <div>Analytics Page - Coming Soon</div>
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/reports" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Report />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/profile" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Profile />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/settings" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Settings />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/role-management" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <RoleManagement />
+              </Box>
+            </AppLayout>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Box>
-    </AppLayout>
+        </>
+      )}
+    </Routes>
   );
 };
 

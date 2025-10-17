@@ -1,5 +1,148 @@
 # Portfolio Management System - Version History
 
+## Version 1.3.5 - Welcome Page Implementation & Public Access
+**Release Date: January 15, 2025**
+
+### 🎉 Welcome Page Implementation
+- **Public Access**
+  - Welcome page accessible without authentication for new users
+  - Clean, focused experience for exploring system features
+  - No authentication barrier for understanding system value
+
+- **Layout Integration**
+  - Authenticated users see Welcome page within AppLayout
+  - Full app experience with sidebar navigation and header
+  - Consistent experience with other protected pages
+
+- **Smart Navigation**
+  - Navigation handlers adapt based on authentication status
+  - Direct navigation for authenticated users
+  - Login redirect with proper redirect parameters for public users
+
+### 🚀 Quick Start Guide Enhancement
+- **Interactive Step-by-Step Guide**
+  - Visual progress tracking with step indicators
+  - Clickable step navigation with Previous/Next buttons
+  - Completion tracking with celebration message
+  - Color-coded step avatars with active/completed states
+
+- **Enhanced Step Components**
+  - Custom StepIconComponent with Material-UI avatars
+  - Gradient action buttons with hover effects
+  - "Click to continue" messaging for active steps
+  - Progress bar showing completion percentage
+
+- **Cash Flow Integration**
+  - Added "Add Cash Flow Source" step before trading step
+  - 5-step process: Portfolio → Cash Flow → Trading → Assets → Dashboard
+  - Proper step indexing and navigation flow
+
+### 🌐 Multi-Language Support
+- **Complete Translation Coverage**
+  - All welcome page content translated to Vietnamese
+  - Quick Start Guide steps fully localized
+  - Progress indicators and navigation buttons translated
+  - Completion messages and helper text localized
+
+- **Translation Key Structure**
+  - Hierarchical structure: welcome.section.key
+  - Variable interpolation for dynamic content
+  - Consistent naming convention across all components
+
+### 🔄 Trading Redirect Enhancement
+- **Query Parameter Support**
+  - TradingRedirect accepts tab parameter from querystring
+  - Default to 'trading' tab when no parameter specified
+  - Support for all tab types: cash-flow, performance, allocation, etc.
+
+- **URL Examples**
+  - `/trading` → Portfolio detail with trading tab
+  - `/trading?tab=cash-flow` → Portfolio detail with cash-flow tab
+  - `/trading?tab=performance` → Portfolio detail with performance tab
+
+### 🎨 Responsive Design
+- **Material-UI Integration**
+  - Consistent with existing design system
+  - ResponsiveTypography for all text elements
+  - Material-UI components for icons, buttons, and layout
+  - Theme-aware color palette access
+
+- **Mobile Optimization**
+  - Responsive grid layout for feature cards
+  - Mobile-friendly step navigation
+  - Touch-optimized button sizes and spacing
+  - Adaptive typography for different screen sizes
+
+### 🔧 Technical Implementation
+- **Routing Structure**
+  - Dual routing for public and authenticated access
+  - Clean separation of public vs protected routes
+  - No nested Routes (React Router v6 compliance)
+  - Proper AppLayout wrapping for authenticated routes
+
+- **Authentication Integration**
+  - useAccount hook for authentication status
+  - Conditional navigation logic in all handlers
+  - Seamless login redirect flow
+  - Back to Welcome button in login page
+
+- **Files Updated**
+  - Welcome.tsx: Complete welcome page implementation
+  - App.tsx: Updated routing structure
+  - Login.tsx: Added redirect parameter handling
+  - en.json/vi.json: Added welcome page translations
+  - TradingRedirect.tsx: Enhanced with query parameter support
+
+## Version 1.3.4 - Login Page Multi-Language & Holdings UI Enhancement
+**Release Date: January 15, 2025**
+
+### 🌐 Login Page Multi-Language Implementation
+- **Complete Translation Support**
+  - Added comprehensive translation keys for login functionality in both EN/VI
+  - Dynamic language switching based on user settings
+  - Contextual messages that change based on user state (COMPLETE, PARTIAL, DEMO)
+  - All error messages fully localized with proper fallbacks
+
+- **Enhanced User Experience**
+  - Translated form labels, placeholders, and helper text
+  - Localized button text for all states (loading, success, error)
+  - Translated user history section with secure badges
+  - ResponsiveTypography integration for consistency
+
+- **Technical Implementation**
+  - useTranslation hook integration throughout Login.tsx
+  - Hierarchical translation key structure (login.section.key)
+  - Variable interpolation for dynamic content ({{username}})
+  - Fallback handling for missing translations
+
+### 🎨 Holdings Page UI Enhancement
+- **Professional Icon-Left, Text-Right Layout**
+  - Enhanced summary cards with icon-left, content-right layout
+  - Larger icons (48x48px) with rounded corners and shadows
+  - Improved typography hierarchy (title, value, subtitle)
+  - Professional spacing and visual hierarchy
+
+- **Contextual Table Icons**
+  - Portfolio Column: AccountBalance icon for portfolio identification
+  - Units Column: Assessment icon (info) for quantity display
+  - Avg Cost Column: MonetizationOn icon (warning) for cost information
+  - Total Investment Column: AccountBalanceWallet icon (primary) for investment amount
+  - Current Value Column: TrendingUp icon (success) for current value
+  - Unrealized P&L Column: TrendingUp/Down icon (success/error) based on value
+  - Realized P&L Column: ArrowUp/Down icon (success/error) based on value
+
+- **Visual Enhancements**
+  - Smart color coding for P&L values (green for profit, red for loss)
+  - Responsive design optimized for all screen sizes
+  - Professional UI with consistent spacing and typography
+  - Improved accessibility and user experience
+
+### 🔧 Technical Improvements
+- **ResponsiveTypography Migration**: Migrated all Typography to ResponsiveTypography for consistency
+- **Translation Key Organization**: Structured translation keys for maintainability
+- **Component Enhancement**: Improved component architecture and reusability
+- **Code Quality**: Clean, maintainable code with proper error handling
+
 ## Version 1.3.3 - Snapshot UI Field Optimization & Return Metrics Enhancement
 **Release Date: January 15, 2025**
 

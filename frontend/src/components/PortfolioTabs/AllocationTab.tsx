@@ -23,7 +23,6 @@ import { apiService } from '../../services/api';
 import AssetAllocationChart from '../Analytics/AssetAllocationChart';
 import UnrealizedPnLChart from '../Analytics/UnrealizedPnLChart';
 import RiskReturnChart from '../Analytics/RiskReturnChart';
-import AssetPerformanceChart from '../Analytics/AssetPerformanceChart';
 import DiversificationHeatmap from '../Analytics/DiversificationHeatmap';
 import AssetAllocationTimeline from '../Analytics/AssetAllocationTimeline';
 import AssetDetailSummary from '../Analytics/AssetDetailSummary';
@@ -58,9 +57,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
   const [isAssetDetailLoading, setIsAssetDetailLoading] = useState(false);
   const [assetDetailError, setAssetDetailError] = useState<string | null>(null);
   
-  const [assetPerformanceData, setAssetPerformanceData] = useState<any[]>([]);
-  const [assetPerformanceLoading, setAssetPerformanceLoading] = useState(false);
-  const [assetPerformanceError, setAssetPerformanceError] = useState<string | null>(null);
 
   // Allocation timeline data using new hook
   const [allocationTimelineGranularity, setAllocationTimelineGranularity] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
@@ -77,28 +73,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
     error: analyticsError,
   } = usePortfolioAnalytics(portfolioId);
 
-  // Fetch asset performance data
-  useEffect(() => {
-    const fetchAssetPerformanceData = async () => {
-      if (!portfolioId) return;
-      
-      setAssetPerformanceLoading(true);
-      setAssetPerformanceError(null);
-      
-      try {
-        const response = await apiService.getPortfolioAnalyticsPerformance(portfolioId);
-        setAssetPerformanceData(response.data || []);
-      } catch (error) {
-        console.error('Error fetching asset performance data:', error);
-        setAssetPerformanceError('Failed to load asset performance data');
-        setAssetPerformanceData([]);
-      } finally {
-        setAssetPerformanceLoading(false);
-      }
-    };
-
-    fetchAssetPerformanceData();
-  }, [portfolioId]);
 
   // Fetch risk-return data
   useEffect(() => {
@@ -435,18 +409,22 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             flexDirection: 'column',
             ...applyBorderStyle('chart')
           }}>
-            {assetPerformanceLoading ? (
+            {isAnalyticsLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
                 <CircularProgress size={20} />
               </Box>
-            ) : assetPerformanceError ? (
+            ) : analyticsError ? (
               <ResponsiveTypography variant="errorText">{t('portfolio.failedToLoadPL')}</ResponsiveTypography>
             ) : (
               <UnrealizedPnLChart 
-                data={(assetPerformanceData || []).map((item: any) => ({
-                  ...item,
-                  color: getAssetTypeColor(item.assetType)
-                }))} 
+                data={allocationData ? Object.entries(allocationData.allocation || {}).map(([assetType, allocation]: [string, any]) => ({
+                  assetType,
+                  value: allocation.value,
+                  performance: allocation.percentage || 0,
+                  unrealizedPl: allocation.value * (allocation.percentage || 0) / 100,
+                  positionCount: 1,
+                  color: getAssetTypeColor(assetType)
+                })) : []} 
                 baseCurrency={portfolio.baseCurrency} 
                 compact={isCompactMode}
                 colorScheme="default"
@@ -642,46 +620,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             backgroundColor: 'white', 
             boxShadow: 0,
             height: '100%',
-            ...applyBorderStyle('chart')
-          }}>
-            {assetPerformanceLoading ? (
-              <Box display="flex" justifyContent="center" p={2}>
-                <CircularProgress size={24} />
-              </Box>
-            ) : assetPerformanceError ? (
-              <ResponsiveTypography variant="errorText">{assetPerformanceError}</ResponsiveTypography>
-            ) : (
-              <AssetPerformanceChart 
-                data={(assetPerformanceData || []).map((item: any) => ({
-                  ...item,
-                  color: getAssetTypeColor(item.assetType)
-                }))} 
-                baseCurrency={portfolio.baseCurrency}
-                title={t('portfolio.assetPerformanceComparison')}
-                compact={isCompactMode}
-              />
-            )}
-          </Box>
-        </Grid>
-      </Grid>
-
-      {/* Diversification & Timeline Section */}
-      <ResponsiveTypography variant="pageTitle" sx={{ 
-        mb: getUltraSpacing(3, 1),
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1
-      }}>
-        <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-        {t('portfolio.diversificationTimeline')}
-      </ResponsiveTypography>
-      <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ 
-            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
-            backgroundColor: 'white', 
-            boxShadow: 0,
-            height: '100%',
             overflow: 'hidden',
             ...applyBorderStyle('chart')
           }}>
@@ -700,34 +638,43 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             )}
           </Box>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ 
-            p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
-            backgroundColor: 'white', 
-            boxShadow: 0,
-            height: '100%',
-            ...applyBorderStyle('chart')
-          }}>
-            {isAllocationTimelineLoading ? (
-              <Box display="flex" justifyContent="center" p={2}>
-                <CircularProgress size={24} />
-              </Box>
-            ) : allocationTimelineError ? (
-              <ResponsiveTypography variant="errorText">{allocationTimelineError}</ResponsiveTypography>
-            ) : (
-              <AssetAllocationTimeline 
-                data={allocationTimelineData || []} 
-                baseCurrency={portfolio.baseCurrency}
-                title={t('portfolio.allocationTimeline')}
-                compact={isCompactMode}
-                granularity={allocationTimelineGranularity}
-                onGranularityChange={setAllocationTimelineGranularity}
-                showGranularitySelector={true}
-              />
-            )}
-          </Box>
-        </Grid>
       </Grid>
+
+      {/* Allocation Timeline Section */}
+      <ResponsiveTypography variant="pageTitle" sx={{ 
+        mb: getUltraSpacing(3, 1),
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1
+      }}>
+        <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+        {t('portfolio.allocationTimeline')}
+      </ResponsiveTypography>
+      <Box sx={{ 
+        p: { xs: 0.5, sm: getUltraSpacing(2, 1) }, 
+        backgroundColor: 'white', 
+        boxShadow: 0,
+        mb: getUltraSpacing(4, 2),
+        ...applyBorderStyle('chart')
+      }}>
+        {isAllocationTimelineLoading ? (
+          <Box display="flex" justifyContent="center" p={2}>
+            <CircularProgress size={24} />
+          </Box>
+        ) : allocationTimelineError ? (
+          <ResponsiveTypography variant="errorText">{allocationTimelineError}</ResponsiveTypography>
+        ) : (
+          <AssetAllocationTimeline 
+            data={allocationTimelineData || []} 
+            baseCurrency={portfolio.baseCurrency}
+            title={t('portfolio.allocationTimeline')}
+            compact={isCompactMode}
+            granularity={allocationTimelineGranularity}
+            onGranularityChange={setAllocationTimelineGranularity}
+            showGranularitySelector={true}
+          />
+        )}
+      </Box>
     </Box>
   );
 };

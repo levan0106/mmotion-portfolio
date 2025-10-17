@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
   CardContent,
-  Typography,
   Alert,
   CircularProgress,
   Container,
@@ -31,13 +31,16 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../components/Common';
-import { useNavigate } from 'react-router-dom';
+import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAccount } from '../contexts/AccountContext';
 import { userHistoryService, UserHistory } from '../services/userHistoryService';
 
 export const Login: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { updateAuthState } = useAccount();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -48,6 +51,12 @@ export const Login: React.FC = () => {
   const [userHistory, setUserHistory] = useState<UserHistory[]>([]);
   const [showHistory, setShowHistory] = useState(true);
   const [currentStep, setCurrentStep] = useState<'username' | 'password'>('username');
+
+  // Get redirect URL from query parameters
+  const getRedirectUrl = () => {
+    const redirect = searchParams.get('redirect');
+    return redirect || '/';
+  };
 
   // Load user history on component mount
   useEffect(() => {
@@ -65,7 +74,7 @@ export const Login: React.FC = () => {
 
   const handleLogin = async () => {
     if (!username.trim()) {
-      setError('Please enter a username');
+      setError(t('login.errors.usernameRequired'));
       return;
     }
 
@@ -75,7 +84,7 @@ export const Login: React.FC = () => {
     // Validate username format (letters, numbers, hyphens, and underscores only)
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(normalizedUsername)) {
-      setError('Username must contain only letters, numbers, hyphens (-), and underscores (_)');
+      setError(t('login.errors.usernameFormat'));
       return;
     }
 
@@ -92,7 +101,7 @@ export const Login: React.FC = () => {
           const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
-          navigate('/');
+          navigate('/welcome');
           return;
         }
         
@@ -107,7 +116,7 @@ export const Login: React.FC = () => {
           const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
-          navigate('/');
+          navigate(getRedirectUrl());
           return;
         }
       }
@@ -115,7 +124,7 @@ export const Login: React.FC = () => {
       // If we're in password step, try to login with password
       if (currentStep === 'password') {
         if (!password.trim()) {
-          setError('Password is required for this user');
+          setError(t('login.errors.passwordRequired'));
           setLoading(false);
           return;
         }
@@ -125,19 +134,19 @@ export const Login: React.FC = () => {
           
           // Double check: if user requires password but we got here, something is wrong
           if (authResponse.user?.isPasswordSet && !password) {
-            setError('Password is required for this user');
+            setError(t('login.errors.passwordRequired'));
             setLoading(false);
             return;
           }
           
           authService.saveUserSession(authResponse);
           await updateAuthState();
-          navigate('/');
+          navigate(getRedirectUrl());
         } catch (passwordError: any) {
-          const errorMessage = passwordError.response?.data?.message || passwordError.message || 'Login failed. Please try again.';
+          const errorMessage = passwordError.response?.data?.message || passwordError.message || t('login.errors.loginFailed');
           
           if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('unauthorized')) {
-            setError('Incorrect password. Please try again.');
+            setError(t('login.errors.incorrectPassword'));
             setPassword(''); // Clear password field for retry
           } else {
             setError(errorMessage);
@@ -148,12 +157,12 @@ export const Login: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage = err.response?.data?.message || t('login.errors.loginFailed');
       
       // If we're in password step and there's an error, provide more specific feedback
       if (currentStep === 'password') {
         if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid')) {
-          setError('Incorrect password. Please try again.');
+          setError(t('login.errors.incorrectPassword'));
           setPassword(''); // Clear password field for retry
         } else {
           setError(errorMessage);
@@ -198,7 +207,7 @@ export const Login: React.FC = () => {
         const authResponse = await authService.loginOrRegister(normalizedUsername, '');
         authService.saveUserSession(authResponse);
         await updateAuthState();
-        navigate('/');
+        navigate('/welcome');
         return;
       }
       
@@ -214,7 +223,7 @@ export const Login: React.FC = () => {
           const authResponse = await authService.loginOrRegister(normalizedUsername, '');
           authService.saveUserSession(authResponse);
           await updateAuthState();
-          navigate('/');
+          navigate(getRedirectUrl());
           return;
         } catch (loginError: any) {
           console.error('Quick login error:', loginError);
@@ -257,26 +266,26 @@ export const Login: React.FC = () => {
   const getFormTitle = () => {
     switch (userState) {
       case 'COMPLETE':
-        return 'Sign In';
+        return t('login.buttons.signIn');
       case 'PARTIAL':
-        return 'Welcome Back';
+        return t('login.buttons.welcomeBack');
       case 'DEMO':
-        return 'Continue';
+        return t('login.buttons.continue');
       default:
-        return 'Enter Username';
+        return t('login.buttons.enterUsername');
     }
   };
 
   const getFormDescription = () => {
     switch (userState) {
       case 'COMPLETE':
-        return 'Enter your username and password to sign in';
+        return t('login.subtitle.signIn');
       case 'PARTIAL':
-        return 'Enter your username to continue (no password required)';
+        return t('login.subtitle.welcomeBack');
       case 'DEMO':
-        return 'Enter your username to continue (no password required)';
+        return t('login.subtitle.continue');
       default:
-        return 'Enter your username to get started';
+        return t('login.subtitle.enterUsername');
     }
   };
 
@@ -315,12 +324,12 @@ export const Login: React.FC = () => {
               >
                 <AccountIcon sx={{ fontSize: 32, color: 'white' }} />
               </Avatar>
-              <Typography variant="h4" component="h1" gutterBottom>
-                Portfolio Management System
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <ResponsiveTypography variant="pageTitle" gutterBottom>
+                {t('login.title')}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
                 {getFormDescription()}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
 
             {error && (
@@ -334,7 +343,7 @@ export const Login: React.FC = () => {
               <Box sx={{ mb: 3 }}>
                 <TextField
                   fullWidth
-                  label="Username"
+                  label={t('login.form.username')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -346,7 +355,6 @@ export const Login: React.FC = () => {
                       </InputAdornment>
                     ),
                   }}
-                  helperText="Enter your username (letters, numbers, hyphens (-), and underscores (_) only)"
                 />
               </Box>
             )}
@@ -358,14 +366,14 @@ export const Login: React.FC = () => {
                   <IconButton onClick={handleBackToUsername} sx={{ mr: 1 }}>
                     <ArrowBack />
                   </IconButton>
-                  <Typography variant="body2" color="text.secondary" component="div">
-                    Welcome back, <strong>{username}</strong>
-                  </Typography>
+                  <ResponsiveTypography variant="tableCell" color="text.secondary" component="div">
+                    {t('login.messages.welcomeBack', { username })}
+                  </ResponsiveTypography>
                 </Box>
                 
                 <TextField
                   fullWidth
-                  label="Password"
+                  label={t('login.form.password')}
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -384,10 +392,32 @@ export const Login: React.FC = () => {
                       </InputAdornment>
                     ),
                   }}
-                  helperText={error ? "Please enter the correct password" : "Enter your password to continue"}
+                  helperText={error ? t('login.form.passwordHelperError') : t('login.form.passwordHelper')}
                 />
               </Box>
             )}
+
+            {/* Back to Welcome Button */}
+            {/* <ResponsiveButton
+              type="button"
+              fullWidth
+              variant="outlined"
+              size="medium"
+              onClick={() => navigate('/welcome')}
+              icon={<ArrowBack />}
+              sx={{
+                mb: 2,
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  borderColor: 'primary.dark',
+                  backgroundColor: 'primary.light',
+                  color: 'primary.dark',
+                },
+              }}
+            >
+              {t('login.buttons.backToWelcome')}
+            </ResponsiveButton> */}
 
             <ResponsiveButton
               type="button"
@@ -397,8 +427,8 @@ export const Login: React.FC = () => {
               onClick={handleLogin}
               disabled={(!username.trim() || loading) || (currentStep === 'password' && !password.trim())}
               icon={loading ? <CircularProgress size={20} /> : <LoginIcon />}
-              mobileText={loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
-              desktopText={loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
+              mobileText={loading ? t('login.buttons.signingIn') : (currentStep === 'password' ? t('login.buttons.signIn') : getFormTitle())}
+              desktopText={loading ? t('login.buttons.signingIn') : (currentStep === 'password' ? t('login.buttons.signIn') : getFormTitle())}
               sx={{
                 py: 1.5,
                 fontSize: '1.1rem',
@@ -418,20 +448,20 @@ export const Login: React.FC = () => {
                 },
               }}
             >
-              {loading ? 'Signing In...' : (currentStep === 'password' ? 'Sign In' : getFormTitle())}
+              {loading ? t('login.buttons.signingIn') : (currentStep === 'password' ? t('login.buttons.signIn') : getFormTitle())}
             </ResponsiveButton>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary">
+              <ResponsiveTypography variant="formHelper" color="text.secondary">
                 {currentStep === 'password' 
-                  ? 'Enter your password to continue'
+                  ? t('login.messages.enterPassword')
                   : userState === 'COMPLETE' 
-                  ? 'This user has a password set - please enter your password to continue'
+                  ? t('login.messages.userHasPassword')
                   : userState === 'PARTIAL'
-                  ? 'This user has incomplete profile - no password required'
-                  : 'Easy start - no password required for new users'
+                  ? t('login.messages.userIncomplete')
+                  : t('login.messages.easyStart')
                 }
-              </Typography>
+              </ResponsiveTypography>
             </Box>
 
             {/* User History Section */}
@@ -441,18 +471,18 @@ export const Login: React.FC = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <HistoryIcon fontSize="small" />
-                    <Typography variant="h6">
-                      Recent Users - Quick Login
-                    </Typography>
+                    <ResponsiveTypography variant="cardTitle">
+                      {t('login.history.title')}
+                    </ResponsiveTypography>
                   </Box>
                   <ResponsiveButton
                     size="small"
                     onClick={toggleHistory}
-                    mobileText={showHistory ? 'Hide' : 'Show'}
-                    desktopText={`${showHistory ? 'Hide' : 'Show'} (${userHistory.length})`}
+                    mobileText={showHistory ? t('login.buttons.hide') : t('login.buttons.show')}
+                    desktopText={`${showHistory ? t('login.buttons.hide') : t('login.buttons.show')} (${userHistory.length})`}
                     sx={{ textTransform: 'none' }}
                   >
-                    {showHistory ? 'Hide' : 'Show'} ({userHistory.length})
+                    {showHistory ? t('login.buttons.hide') : t('login.buttons.show')} ({userHistory.length})
                   </ResponsiveButton>
                 </Box>
 
@@ -484,19 +514,18 @@ export const Login: React.FC = () => {
                             <ListItemText
                               primary={
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                                     {user.fullName || user.username}
-                                  </Typography>
-                                  <Typography 
-                                    variant="caption" 
+                                  </ResponsiveTypography>
+                                  <ResponsiveTypography 
+                                    variant="formHelper" 
                                     color="text.secondary"
-                                    sx={{ fontSize: '0.75rem' }}
                                   >
                                     @{user.username}
-                                  </Typography>
+                                  </ResponsiveTypography>
                                   {user.isProfileComplete && (
                                     <Chip
-                                      label="Secure"
+                                      label={t('login.history.secure')}
                                       size="small"
                                       color="success"
                                       sx={{ height: 16, fontSize: '0.7rem' }}

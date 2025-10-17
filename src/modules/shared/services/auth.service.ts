@@ -116,9 +116,9 @@ export class AuthService {
     try {
       await this.notificationGateway.sendSystemNotification(
         user.userId,
-        'Welcome to Portfolio Management System!',
-        `Hello ${username}! Welcome to our portfolio management platform. Your demo account is ready. Start by creating your first portfolio.`,
-        '/portfolios',
+        'Chào mừng đến với Hệ thống Quản lý Danh mục!',
+        `Xin chào ${username}! Chào mừng bạn đến với nền tảng quản lý danh mục đầu tư. Tài khoản của bạn đã sẵn sàng. Hãy cài đặt mật khẩu để bảo vệ tài khoản và tạo danh mục đầu tiên của bạn.`,
+        '/welcome',
         {
           type: 'welcome',
           userId: user.userId,
@@ -126,9 +126,9 @@ export class AuthService {
           isDemo: true,
         }
       );
-      this.logger.log(`Sent welcome notification to demo user: ${username}`);
+      this.logger.log(`Đã gửi thông báo chào mừng đến user demo: ${username}`);
     } catch (error) {
-      this.logger.warn(`Failed to send welcome notification to demo user ${username}: ${error.message}`);
+      this.logger.warn(`Không thể gửi thông báo chào mừng đến user demo ${username}: ${error.message}`);
       // Don't throw error - user creation should succeed even if notification fails
     }
 
@@ -136,8 +136,8 @@ export class AuthService {
     try {
       await this.notificationGateway.sendSystemNotification(
         user.userId,
-        'Explore Public Portfolio Templates',
-        `Discover our collection of public portfolio templates! These templates are created by experienced users and can help you get started quickly. Browse templates, see their structure, and create your own portfolio based on successful strategies.`,
+        'Khám phá Danh mục mẫu',
+        `Khám phá bộ sưu tập mẫu danh mục công khai của chúng tôi! Những mẫu này được tạo bởi các user có kinh nghiệm và có thể giúp bạn bắt đầu nhanh chóng. Duyệt qua các mẫu, xem cấu trúc của chúng và tạo danh mục riêng của bạn dựa trên các chiến lược thành công.`,
         '/portfolios?tab=templates',
         {
           type: 'system',

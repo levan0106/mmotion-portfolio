@@ -49,6 +49,34 @@ flowchart LR
 - **Translation Files**: en.json and vi.json with complete key coverage
 - **Responsive Typography**: Translation-aware typography system
 
+### Public Access with Layout Integration Pattern - **IMPLEMENTED** ✅
+- **Dual Routing Structure**: Public and authenticated routes with conditional rendering
+- **Authentication-Aware Navigation**: Navigation handlers adapt based on authentication status
+- **Layout Integration**: Authenticated users see pages within AppLayout, public users see standalone
+- **Smart Redirects**: Public actions redirect to login with proper redirect parameters
+- **Consistent URL Structure**: Same URL works for both public and authenticated access
+- **Implementation**: Welcome page accessible both publicly and within app layout
+- **Benefits**: Seamless user experience, no broken links, flexible access patterns
+- **Login Page Implementation**: Complete multi-language support for authentication flow
+  - **Contextual Messages**: Dynamic messages based on user state (COMPLETE, PARTIAL, DEMO)
+  - **Error Handling**: Localized error messages with proper fallbacks
+  - **Form Labels**: Translated form fields and validation messages
+  - **User History**: Translated recent users section with secure badges
+  - **Button States**: Translated button text for all states (loading, success, error)
+
+### UI Enhancement Pattern - **IMPLEMENTED** ✅
+- **Icon-Left, Text-Right Layout**: Consistent layout pattern for cards and table rows
+- **Contextual Icons**: Meaningful icons that represent data type and value
+- **Color Coding**: Smart color coding based on data values (profit/loss, status)
+- **Typography Hierarchy**: Clear visual hierarchy with ResponsiveTypography variants
+- **Responsive Design**: Mobile-optimized layouts with proper spacing
+- **Professional Styling**: Modern UI with shadows, gradients, and hover effects
+- **Holdings Page Implementation**: Enhanced holdings display with professional layout
+  - **Summary Cards**: Icon-left layout with improved typography hierarchy
+  - **Table Icons**: Contextual icons for each data column type
+  - **Visual Feedback**: Color-coded P&L values with appropriate icons
+  - **Accessibility**: Improved readability and user experience
+
 ### Component Enhancement Pattern - **IMPLEMENTED** ✅
 - **Conditional Rendering**: hideActions prop for different display modes
 - **Navigation Flow**: Centralized management vs modal-based editing

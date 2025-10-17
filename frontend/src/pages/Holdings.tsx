@@ -229,54 +229,63 @@ const Holdings: React.FC = () => {
                     }
                   }}
                 >
-                  <CardContent sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {/* Icon Section - Left */}
                       <Box
                         sx={{
-                          borderRadius: '50%',
-                          background: alpha(theme.palette[metric.color].main, 0.08),
+                          borderRadius: '12px',
+                          background: alpha(theme.palette[metric.color].main, 0.1),
                           color: `${metric.color}.main`,
-                          width: 36,
-                          height: 36,
+                          width: 48,
+                          height: 48,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          boxShadow: `0 2px 4px ${alpha(theme.palette[metric.color].main, 0.15)}`,
+                          boxShadow: `0 4px 12px ${alpha(theme.palette[metric.color].main, 0.15)}`,
+                          flexShrink: 0
                         }}
                       >
-                        {React.cloneElement(metric.icon, { sx: { fontSize: 20 } })}
+                        {React.cloneElement(metric.icon, { sx: { fontSize: 24 } })}
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        {metric.title === 'Total P&L' && totalPnL >= 0 && <ArrowUpward sx={{ color: 'success.main', fontSize: 20 }} />}
-                        {metric.title === 'Total P&L' && totalPnL < 0 && <ArrowDownward sx={{ color: 'error.main', fontSize: 20 }} />}
+                      
+                      {/* Content Section - Right */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                          <ResponsiveTypography 
+                            variant="cardLabel" 
+                            sx={{ 
+                              color: 'text.secondary'
+                            }}
+                          >
+                            {metric.title}
+                          </ResponsiveTypography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {metric.title === t('holdings.summary.totalPnL') && totalPnL >= 0 && <ArrowUpward sx={{ color: 'success.main', fontSize: 18 }} />}
+                            {metric.title === t('holdings.summary.totalPnL') && totalPnL < 0 && <ArrowDownward sx={{ color: 'error.main', fontSize: 18 }} />}
+                          </Box>
+                        </Box>
+                        
+                        <ResponsiveTypography 
+                          variant="cardValueLarge" 
+                          sx={{ 
+                            color: 'text.primary',
+                            mb: 0.5
+                          }}
+                        >
+                          {metric.value}
+                        </ResponsiveTypography>
+                        
+                        {/* <ResponsiveTypography 
+                          variant="labelXSmall" 
+                          sx={{ 
+                            color: 'text.secondary',
+                          }}
+                        >
+                          {metric.subtitle}
+                        </ResponsiveTypography> */}
                       </Box>
                     </Box>
-                    
-                    <ResponsiveTypography 
-                      variant="cardValueLarge" 
-                      sx={{ 
-                        color: 'text.primary',
-                        mb: 0.5,
-                        lineHeight: 1.2
-                      }}
-                    >
-                      {metric.value}
-                    </ResponsiveTypography>
-                    
-                    <ResponsiveTypography 
-                      variant="cardLabel" 
-                      sx={{ 
-                        mb: 0.5,
-                      }}
-                    >
-                      {metric.title}
-                    </ResponsiveTypography>
-                    
-                    {/* <ResponsiveTypography 
-                      variant="formHelper" 
-                    >
-                      {metric.subtitle}
-                    </ResponsiveTypography> */}
                   </CardContent>
                 </Card>
             </Grid>
@@ -361,56 +370,185 @@ const Holdings: React.FC = () => {
                               onClick={() => handleViewHoldingDetail(holding.holdingId, holding.portfolio?.name || 'Unknown Portfolio')}
                             >
                               <TableCell>
-                                <Box>
-                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
-                                    {holding.portfolio?.name || 'Unknown Portfolio'}
-                                  </ResponsiveTypography>
-                                  <ResponsiveTypography variant="formHelper">
-                                    {holding.portfolio?.baseCurrency || 'VND'}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '8px',
+                                      background: alpha(theme.palette.primary.main, 0.1),
+                                      color: 'primary.main',
+                                      width: 32,
+                                      height: 32,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    <AccountBalance sx={{ fontSize: 16 }} />
+                                  </Box>
+                                  <Box>
+                                    <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
+                                      {holding.portfolio?.name || 'Unknown Portfolio'}
+                                    </ResponsiveTypography>
+                                    <ResponsiveTypography variant="formHelper">
+                                      {holding.portfolio?.baseCurrency || 'VND'}
+                                    </ResponsiveTypography>
+                                  </Box>
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: alpha(theme.palette.info.main, 0.1),
+                                      color: 'info.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    <Assessment sx={{ fontSize: 14 }} />
+                                  </Box>
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                                    {formatNumberWithSeparators(Number(holding.totalUnits), 1)}
                                   </ResponsiveTypography>
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                                  {formatNumberWithSeparators(Number(holding.totalUnits), 1)}
-                                </ResponsiveTypography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: alpha(theme.palette.warning.main, 0.1),
+                                      color: 'warning.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    <MonetizationOn sx={{ fontSize: 14 }} />
+                                  </Box>
+                                  <ResponsiveTypography variant="tableCell">
+                                    {formatCurrency(Number(holding.avgCostPerUnit), displayCurrency)}
+                                  </ResponsiveTypography>
+                                </Box>
                               </TableCell>
                               <TableCell>
-                                <ResponsiveTypography variant="tableCell">
-                                  {formatCurrency(Number(holding.avgCostPerUnit), displayCurrency)}
-                                </ResponsiveTypography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: alpha(theme.palette.primary.main, 0.1),
+                                      color: 'primary.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    <AccountBalanceWallet sx={{ fontSize: 14 }} />
+                                  </Box>
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                                    {formatCurrency(Number(holding.totalInvestment), displayCurrency)}
+                                  </ResponsiveTypography>
+                                </Box>
                               </TableCell>
                               <TableCell>
-                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                                  {formatCurrency(Number(holding.totalInvestment), displayCurrency)}
-                                </ResponsiveTypography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: alpha(theme.palette.success.main, 0.1),
+                                      color: 'success.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    <TrendingUp sx={{ fontSize: 14 }} />
+                                  </Box>
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                                    {formatCurrency(Number(holding.currentValue), displayCurrency)}
+                                  </ResponsiveTypography>
+                                </Box>
                               </TableCell>
                               <TableCell>
-                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                                  {formatCurrency(Number(holding.currentValue), displayCurrency)}
-                                </ResponsiveTypography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: Number(holding.unrealizedPnL) >= 0 
+                                        ? alpha(theme.palette.success.main, 0.1)
+                                        : alpha(theme.palette.error.main, 0.1),
+                                      color: Number(holding.unrealizedPnL) >= 0 ? 'success.main' : 'error.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    {Number(holding.unrealizedPnL) >= 0 ? 
+                                      <TrendingUp sx={{ fontSize: 14 }} /> : 
+                                      <TrendingDown sx={{ fontSize: 14 }} />
+                                    }
+                                  </Box>
+                                  <ResponsiveTypography 
+                                    variant="tableCell" 
+                                    sx={{ 
+                                      fontWeight: 500,
+                                      color: Number(holding.unrealizedPnL) >= 0 ? 'success.main' : 'error.main'
+                                    }}
+                                  >
+                                    {formatCurrency(Number(holding.unrealizedPnL), displayCurrency)}
+                                  </ResponsiveTypography>
+                                </Box>
                               </TableCell>
                               <TableCell>
-                                <ResponsiveTypography 
-                                  variant="tableCell" 
-                                  sx={{ 
-                                    fontWeight: 500,
-                                    color: Number(holding.unrealizedPnL) >= 0 ? 'success.main' : 'error.main'
-                                  }}
-                                >
-                                  {formatCurrency(Number(holding.unrealizedPnL), displayCurrency)}
-                                </ResponsiveTypography>
-                              </TableCell>
-                              <TableCell>
-                                <ResponsiveTypography 
-                                  variant="tableCell" 
-                                  sx={{ 
-                                    fontWeight: 500,
-                                    color: Number(holding.realizedPnL) >= 0 ? 'success.main' : 'error.main'
-                                  }}
-                                >
-                                  {formatCurrency(Number(holding.realizedPnL), displayCurrency)}
-                                </ResponsiveTypography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box
+                                    sx={{
+                                      borderRadius: '6px',
+                                      background: Number(holding.realizedPnL) >= 0 
+                                        ? alpha(theme.palette.success.main, 0.1)
+                                        : alpha(theme.palette.error.main, 0.1),
+                                      color: Number(holding.realizedPnL) >= 0 ? 'success.main' : 'error.main',
+                                      width: 24,
+                                      height: 24,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    {Number(holding.realizedPnL) >= 0 ? 
+                                      <ArrowUpward sx={{ fontSize: 14 }} /> : 
+                                      <ArrowDownward sx={{ fontSize: 14 }} />
+                                    }
+                                  </Box>
+                                  <ResponsiveTypography 
+                                    variant="tableCell" 
+                                    sx={{ 
+                                      fontWeight: 500,
+                                      color: Number(holding.realizedPnL) >= 0 ? 'success.main' : 'error.main'
+                                    }}
+                                  >
+                                    {formatCurrency(Number(holding.realizedPnL), displayCurrency)}
+                                  </ResponsiveTypography>
+                                </Box>
                               </TableCell>
                               <TableCell>
                                 <Chip

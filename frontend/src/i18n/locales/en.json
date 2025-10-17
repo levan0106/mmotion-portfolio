@@ -434,6 +434,16 @@
     "refreshData": "Refresh Data",
     "systemStatus": "System Status: Active",
     "lastUpdated": "Last Updated",
+    "dataUpdateStatus": {
+      "justUpdated": "Just updated",
+      "minutesAgo": "{{minutes}} minutes ago",
+      "hoursAgo": "{{hours}} hours ago",
+      "daysAgo": "{{days}} days ago", 
+      "noData": "No data available",
+      "loading": "Loading...",
+      "systemPaused": "Auto sync disabled",
+      "systemPausedMessage": "System paused due to auto sync disabled"
+    },
     "portfoliosActive": "Portfolios Active",
     "portfolioPerformance": "Portfolio Performance Analytics",
     "bestPerforming": "Best Performing Portfolio",
@@ -451,6 +461,59 @@
     "startInvestment": "Start your investment journey by creating your first portfolio to track and manage your assets",
     "createFirstPortfolio": "Create Your First Portfolio",
     "active": "Active"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "basicInformation": "Basic Information",
+    "advancedInformation": "Advanced Information",
+    "security": "Security",
+    "username": "Username",
+    "usernameHelper": "Username cannot be changed",
+    "fullName": "Full Name",
+    "email": "Email",
+    "emailVerified": "Email verified",
+    "emailVerificationRequired": "Email verification required",
+    "phone": "Phone",
+    "dateOfBirth": "Date of Birth",
+    "address": "Address",
+    "completeProfileNotice": "Complete your profile",
+    "completeProfileDescription": "Please fill in your information to access all features. This page is in edit mode to help you get started.",
+    "setPassword": "Set Password",
+    "setPasswordDescription": "Set a password to secure your account",
+    "newPassword": "New Password",
+    "passwordHelper": "Password must be at least 6 characters (letters, numbers, or special characters)",
+    "setting": "Setting...",
+    "changePassword": "Change Password",
+    "changePasswordDescription": "Password is set. You can change it below.",
+    "currentPassword": "Current Password",
+    "changing": "Changing...",
+    "userNotFound": "User not found",
+    "failedToLoadProfile": "Failed to load profile",
+    "profileUpdatedSuccessfully": "Profile updated successfully",
+    "passwordSetSuccessfully": "Password set successfully",
+    "passwordChangedSuccessfully": "Password changed successfully",
+    "pleaseCompleteProfile": "Please complete your profile before canceling",
+    "authStates": {
+      "complete": "Secure Account",
+      "partial": "Profile Complete",
+      "demo": "Demo Account",
+      "unknown": "Unknown"
+    },
+    "errors": {
+      "failedToUpdateProfile": "Failed to update profile",
+      "failedToSetPassword": "Failed to set password",
+      "currentPasswordIncorrect": "Current password is incorrect. Please check your current password.",
+      "userHasNoPassword": "Account has no password set. Please set a password first.",
+      "authenticationFailed": "Authentication failed. Please log in again.",
+      "passwordTooShort": "New password is invalid. Password must be at least 6 characters.",
+      "invalidData": "Invalid data. Please check your information.",
+      "userNotFound": "User not found. Please log in again.",
+      "cannotChangePassword": "Cannot change password. Please try again."
+    }
   },
   "forms": {
     "required": "This field is required",
@@ -1868,6 +1931,272 @@
       "loadFailed": "Failed to load asset list",
       "createFailed": "❌ Error creating assets",
       "allFailed": "❌ Failed to create all {{count}} assets"
+    }
+  },
+  "login": {
+    "title": "Portfolio Management System",
+    "subtitle": {
+      "enterUsername": "Enter your username to get started",
+      "welcomeBack": "Enter your username to continue (no password required)",
+      "signIn": "Enter your username and password to sign in",
+      "continue": "Enter your username to continue (no password required)"
+    },
+    "form": {
+      "username": "Username",
+      "password": "Password",
+      "usernamePlaceholder": "Enter your username",
+      "passwordPlaceholder": "Enter your password to continue",
+      "usernameHelper": "Enter your username",
+      "passwordHelper": "Enter your password to continue",
+      "passwordHelperError": "Please enter the correct password"
+    },
+    "buttons": {
+      "enterUsername": "Enter Username",
+      "welcomeBack": "Welcome Back",
+      "signIn": "Sign In",
+      "continue": "Continue",
+      "signingIn": "Signing In...",
+      "backToWelcome": "Back to Welcome",
+      "hide": "Hide",
+      "show": "Show"
+    },
+    "messages": {
+      "welcomeBack": "Welcome back, {{username}}",
+      "enterPassword": "Enter your password to continue",
+      "userHasPassword": "This user has a password set - please enter your password to continue",
+      "userIncomplete": "This user has incomplete profile - no password required",
+      "easyStart": "Easy start - no password required for new users",
+      "usernameRequired": "Please enter a username",
+      "passwordRequired": "Password is required for this user",
+      "incorrectPassword": "Incorrect password. Please try again.",
+      "loginFailed": "Login failed. Please try again.",
+      "usernameFormat": "Username must contain only letters, numbers, hyphens (-), and underscores (_)",
+      "newUserWelcome": "🎉 Welcome to Portfolio Management System! Click here to get started with our guided tour.",
+      "newUserWelcomeTitle": "Welcome to Portfolio Management System!",
+      "newUserWelcomeMessage": "You're all set! Let's take a quick tour to help you get started with managing your investments."
+    },
+    "history": {
+      "title": "Recent Users - Quick Login",
+      "secure": "Secure",
+      "removeUser": "Remove user from history"
+    },
+    "errors": {
+      "loginFailed": "Login failed. Please try again.",
+      "incorrectPassword": "Incorrect password. Please try again.",
+      "usernameFormat": "Username must contain only letters, numbers, hyphens (-), and underscores (_)",
+      "usernameRequired": "Please enter a username",
+      "passwordRequired": "Password is required for this user"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account information and security settings",
+    "basicInfo": {
+      "title": "Basic Information",
+      "username": "Username",
+      "usernameHelper": "Username cannot be changed",
+      "fullName": "Full Name",
+      "email": "Email",
+      "emailVerified": "Email verified",
+      "emailVerificationRequired": "Email verification required"
+    },
+    "advancedInfo": {
+      "title": "Advanced Information",
+      "phone": "Phone",
+      "dateOfBirth": "Date of Birth",
+      "address": "Address"
+    },
+    "security": {
+      "title": "Security",
+      "setPasswordDescription": "Set a password to secure your account",
+      "passwordSetDescription": "Password is set. You can change it below.",
+      "newPassword": "New Password",
+      "currentPassword": "Current Password",
+      "passwordHelper": "Password must be at least 6 characters (letters, numbers, or special characters)"
+    },
+    "authStates": {
+      "complete": "Secure Account",
+      "partial": "Profile Complete", 
+      "demo": "Demo Account",
+      "unknown": "Unknown"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "editProfile": "Edit Profile",
+      "save": "Save",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "setPassword": "Set Password",
+      "set": "Set",
+      "setting": "Setting...",
+      "changePassword": "Change Password",
+      "change": "Change",
+      "changing": "Changing...",
+      "advanced": "Advanced",
+      "advancedInformation": "Advanced Information"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully",
+      "passwordSet": "Password set successfully",
+      "passwordChanged": "Password changed successfully",
+      "userNotFound": "User not found",
+      "completeProfile": "Complete your profile",
+      "completeProfileDescription": "Please fill in your information to access all features. This page is in edit mode to help you get started.",
+      "cannotCancel": "Please complete your profile before canceling",
+      "failedToLoad": "Failed to load profile",
+      "failedToUpdate": "Failed to update profile",
+      "failedToSetPassword": "Failed to set password",
+      "failedToChangePassword": "Failed to change password"
+    },
+    "errors": {
+      "currentPasswordIncorrect": "Current password is incorrect. Please check your current password.",
+      "noPasswordSet": "Account has no password. Please set a password first.",
+      "authenticationFailed": "Authentication failed. Please log in again.",
+      "invalidData": "Invalid data. Please check your information.",
+      "userNotFound": "User not found. Please log in again.",
+      "passwordTooShort": "New password is invalid. Password must be at least 6 characters.",
+      "cannotChangePassword": "Cannot change password. Please try again."
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Portfolio Management System",
+    "subtitle": "Your comprehensive solution for tracking investments, managing portfolios, and analyzing performance with real-time data and advanced analytics.",
+    "buttons": {
+      "getStarted": "Get Started",
+      "viewDashboard": "View Dashboard"
+    },
+    "features": {
+      "title": "Key Features",
+      "portfolio": {
+        "title": "Portfolio Management",
+        "description": "Comprehensive portfolio tracking and management",
+        "feature1": "Real-time portfolio valuation",
+        "feature2": "Performance analytics and reporting",
+        "feature3": "Asset allocation tracking",
+        "feature4": "Historical performance analysis"
+      },
+      "trading": {
+        "title": "Trading Management",
+        "description": "Advanced trading and position management",
+        "feature1": "Buy/sell transaction recording",
+        "feature2": "FIFO/LIFO trade matching",
+        "feature3": "P&L calculation and tracking",
+        "feature4": "Risk management tools"
+      },
+      "analytics": {
+        "title": "Analytics & Reporting",
+        "description": "Comprehensive analytics and insights",
+        "feature1": "Interactive performance charts",
+        "feature2": "Risk metrics and analysis",
+        "feature3": "Benchmark comparisons",
+        "feature4": "Custom reporting tools"
+      },
+      "assets": {
+        "title": "Asset Management",
+        "description": "Multi-asset investment tracking",
+        "feature1": "Stocks, bonds, and commodities",
+        "feature2": "Real-time market data",
+        "feature3": "Price history tracking",
+        "feature4": "Asset performance analysis"
+      },
+      "deposits": {
+        "title": "Deposit Management",
+        "description": "Bank deposit and interest tracking",
+        "feature1": "Interest rate calculations",
+        "feature2": "Early settlement support",
+        "feature3": "Deposit performance tracking",
+        "feature4": "Cash flow management"
+      },
+      "funds": {
+        "title": "Fund Management",
+        "description": "Investment fund management",
+        "feature1": "Fund subscription/redemption",
+        "feature2": "NAV tracking and updates",
+        "feature3": "Investor management",
+        "feature4": "Fund performance analytics"
+      }
+    },
+    "quickStart": {
+      "title": "Quick Start Guide",
+      "step1": {
+        "title": "Create Your First Portfolio",
+        "description": "Start by creating a new portfolio to organize your investments. This will be your main workspace for tracking performance and managing assets.",
+        "action": "Create Portfolio"
+      },
+      "step2": {
+        "title": "Add Your First Trade",
+        "description": "Record your first buy or sell transaction. The system will automatically calculate your position and track your performance.",
+        "action": "Start Trading"
+      },
+      "step3": {
+        "title": "Manage Your Assets",
+        "description": "Add and organize your investment assets. Track stocks, bonds, gold, deposits, and other investment instruments.",
+        "action": "Manage Assets"
+      },
+      "step4": {
+        "title": "View Your Dashboard",
+        "description": "Monitor your portfolio performance with real-time analytics, charts, and comprehensive reporting tools.",
+        "action": "View Dashboard"
+      }
+    },
+    "capabilities": {
+      "title": "System Capabilities",
+      "realTime": "Real-time Data",
+      "analytics": "Advanced Analytics",
+      "multiAccount": "Multi-Account Support",
+      "mobile": "Mobile Responsive",
+      "secure": "Secure & Reliable",
+      "scalable": "Scalable Architecture"
+    },
+    "footer": {
+      "message": "Ready to start managing your investments? Choose your next step below.",
+      "dashboard": "Dashboard",
+      "portfolios": "Portfolios"
+    },
+    "quickStartGuide": {
+      "subtitle": "Follow these simple steps to get started with your portfolio management",
+      "progress": {
+        "step": "Step {{current}} of {{total}}",
+        "complete": "{{percentage}}% Complete"
+      },
+      "navigation": {
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "completion": {
+        "title": "Congratulations! 🎉",
+        "message": "You've completed all the setup steps. Your portfolio management system is ready to use!"
+      },
+      "steps": {
+        "currentStep": "Current Step",
+        "clickToContinue": "Click to continue",
+        "createPortfolio": {
+          "title": "Create Your First Portfolio",
+          "description": "Start by creating a new portfolio to organize your investments. This will be your main workspace for tracking performance and managing assets.",
+          "action": "Create Portfolio"
+        },
+        "addCashFlow": {
+          "title": "Add Cash Flow Source",
+          "description": "Set up your initial cash flow source to fund your portfolio. This could be salary, savings, or other income streams.",
+          "action": "Add Cash Flow"
+        },
+        "addTrade": {
+          "title": "Add Your First Trade",
+          "description": "Record your first buy or sell transaction. The system will automatically calculate your position and track your performance.",
+          "action": "Start Trading"
+        },
+        "manageAssets": {
+          "title": "Manage Your Assets",
+          "description": "Add and organize your investment assets. Track stocks, bonds, gold, deposits, and other investment instruments.",
+          "action": "Manage Assets"
+        },
+        "viewDashboard": {
+          "title": "View Your Dashboard",
+          "description": "Monitor your portfolio performance with real-time analytics, charts, and comprehensive reporting tools.",
+          "action": "View Dashboard"
+        }
+      }
     }
   }
 }

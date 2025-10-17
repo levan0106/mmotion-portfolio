@@ -3,18 +3,17 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   TextField,
   Alert,
   CircularProgress,
   Container,
   Avatar,
   Divider,
-  Chip,
   Collapse,
   Grid,
 } from '@mui/material';
-import { ResponsiveButton } from '../components/Common';
+import { useTranslation } from 'react-i18next';
+import { ResponsiveButton, ResponsiveTypography } from '../components/Common';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
@@ -27,13 +26,13 @@ import {
   Cake as CakeIcon,
   Home as HomeIcon,
   Lock as LockIcon,
-  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { authService, User, UpdateProfileRequest, SetPasswordRequest, ChangePasswordRequest } from '../services/authService';
 import { useAccount } from '../contexts/AccountContext';
 import { userHistoryService } from '../services/userHistoryService';
 
 export const Profile: React.FC = () => {
+  const { t } = useTranslation();
   const { updateAuthState } = useAccount();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,7 +80,7 @@ export const Profile: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error loading profile:', err);
-      setError('Failed to load profile');
+      setError(t('profile.failedToLoadProfile'));
     } finally {
       setLoading(false);
     }
@@ -96,7 +95,7 @@ export const Profile: React.FC = () => {
   const handleCancel = () => {
     // Don't allow cancel if profile is incomplete
     if (user && !user.isProfileComplete) {
-      setError('Please complete your profile before canceling');
+      setError(t('profile.pleaseCompleteProfile'));
       return;
     }
     
@@ -141,7 +140,7 @@ export const Profile: React.FC = () => {
       const updatedUser = await authService.updateProfile(finalFormData);
       setUser(updatedUser);
       setIsEditing(false);
-      setSuccess('Profile updated successfully');
+      setSuccess(t('profile.profileUpdatedSuccessfully'));
       
       // Update localStorage with fresh data
       const currentSession = JSON.parse(localStorage.getItem('user_session') || '{}');
@@ -164,7 +163,7 @@ export const Profile: React.FC = () => {
       await updateAuthState();
     } catch (err: any) {
       console.error('Error updating profile:', err);
-      setError(err.response?.data?.message || 'Failed to update profile');
+      setError(err.response?.data?.message || t('profile.errors.failedToUpdateProfile'));
     } finally {
       setSaving(false);
     }
@@ -180,7 +179,7 @@ export const Profile: React.FC = () => {
       await authService.setPassword(passwordData.password);
       setShowPassword(false);
       setPasswordData({ password: '' });
-      setSuccess('Password set successfully');
+      setSuccess(t('profile.passwordSetSuccessfully'));
       
       // Reload user profile and refresh AccountContext
       await loadUserProfile();
@@ -206,7 +205,7 @@ export const Profile: React.FC = () => {
       await updateAuthState();
     } catch (err: any) {
       console.error('Error setting password:', err);
-      setError(err.response?.data?.message || 'Failed to set password');
+      setError(err.response?.data?.message || t('profile.errors.failedToSetPassword'));
     } finally {
       setSaving(false);
     }
@@ -225,7 +224,7 @@ export const Profile: React.FC = () => {
       );
       setShowChangePassword(false);
       setChangePasswordData({ currentPassword: '', newPassword: '' });
-      setSuccess('Password changed successfully');
+      setSuccess(t('profile.passwordChangedSuccessfully'));
       
       // Update localStorage with fresh data
       const updatedUser = await authService.getProfile();
@@ -253,36 +252,36 @@ export const Profile: React.FC = () => {
       // console.error('Error response data:', err.response?.data);
       // console.error('Error response message:', err.response?.data?.message);
       
-      // Xử lý các loại lỗi khác nhau với thông báo rõ ràng
-      let errorMessage = 'Không thể thay đổi mật khẩu. Vui lòng thử lại.';
+      // Handle different types of errors with clear messages
+      let errorMessage = t('profile.errors.cannotChangePassword');
       
       if (err.response?.status === 401) {
         if (err.response?.data?.message?.includes('Current password is incorrect')) {
-          errorMessage = 'Mật khẩu hiện tại không đúng. Vui lòng kiểm tra lại mật khẩu hiện tại.';
+          errorMessage = t('profile.errors.currentPasswordIncorrect');
         } else if (err.response?.data?.message?.includes('User has no password set')) {
-          errorMessage = 'Tài khoản chưa có mật khẩu. Vui lòng đặt mật khẩu trước.';
+          errorMessage = t('profile.errors.userHasNoPassword');
         } else {
-          errorMessage = 'Xác thực thất bại. Vui lòng đăng nhập lại.';
+          errorMessage = t('profile.errors.authenticationFailed');
         }
       } else if (err.response?.status === 400) {
         if (err.response?.data?.message?.includes('Password must be at least 6 characters')) {
-          errorMessage = 'Mật khẩu mới không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.';
+          errorMessage = t('profile.errors.passwordTooShort');
         } else {
-          errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+          errorMessage = t('profile.errors.invalidData');
         }
       } else if (err.response?.status === 404) {
-        errorMessage = 'Không tìm thấy tài khoản. Vui lòng đăng nhập lại.';
+        errorMessage = t('profile.errors.userNotFound');
       } else if (err.response?.data?.message) {
-        // Sử dụng thông báo lỗi từ backend và dịch sang tiếng Việt
+        // Use backend error message and translate
         const backendMessage = err.response.data.message;
         if (backendMessage.includes('Current password is incorrect')) {
-          errorMessage = 'Mật khẩu hiện tại không đúng. Vui lòng kiểm tra lại mật khẩu hiện tại.';
+          errorMessage = t('profile.errors.currentPasswordIncorrect');
         } else if (backendMessage.includes('User has no password set')) {
-          errorMessage = 'Tài khoản chưa có mật khẩu. Vui lòng đặt mật khẩu trước.';
+          errorMessage = t('profile.errors.userHasNoPassword');
         } else if (backendMessage.includes('Password must be at least 6 characters')) {
-          errorMessage = 'Mật khẩu mới không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.';
+          errorMessage = t('profile.errors.passwordTooShort');
         } else if (backendMessage.includes('User not found')) {
-          errorMessage = 'Không tìm thấy tài khoản. Vui lòng đăng nhập lại.';
+          errorMessage = t('profile.errors.userNotFound');
         } else {
           errorMessage = backendMessage;
         }
@@ -303,31 +302,6 @@ export const Profile: React.FC = () => {
       .slice(0, 2);
   };
 
-  const getAuthStateColor = (state: string) => {
-    switch (state) {
-      case 'COMPLETE':
-        return 'success';
-      case 'PARTIAL':
-        return 'warning';
-      case 'DEMO':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const getAuthStateText = (state: string) => {
-    switch (state) {
-      case 'COMPLETE':
-        return 'Secure Account';
-      case 'PARTIAL':
-        return 'Profile Complete';
-      case 'DEMO':
-        return 'Demo Account';
-      default:
-        return 'Unknown';
-    }
-  };
 
   if (loading) {
     return (
@@ -342,7 +316,7 @@ export const Profile: React.FC = () => {
   if (!user) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error">User not found</Alert>
+        <Alert severity="error">{t('profile.userNotFound')}</Alert>
       </Container>
     );
   }
@@ -365,10 +339,10 @@ export const Profile: React.FC = () => {
               {user.avatarText || getInitials(user.username)}
             </Avatar>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom>
+              <ResponsiveTypography variant="h4" component="h1" gutterBottom>
                 {user.fullName || user.username}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              </ResponsiveTypography>
+              {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Chip
                   label={getAuthStateText(user.authState)}
                   color={getAuthStateColor(user.authState)}
@@ -377,25 +351,25 @@ export const Profile: React.FC = () => {
                 {user.isEmailVerified && (
                   <Chip
                     icon={<CheckCircleIcon />}
-                    label="Email Verified"
+                    label={t('profile.emailVerified')}
                     color="success"
                     size="small"
                   />
                 )}
-              </Box>
-              <Typography variant="body2" color="text.secondary">
+              </Box> */}
+              <ResponsiveTypography variant="body2" color="text.secondary">
                 @{user.username}
-              </Typography>
+              </ResponsiveTypography>
             </Box>
             {!isEditing && (
               <ResponsiveButton
                 variant="outlined"
                 icon={<EditIcon />}
                 onClick={handleEdit}
-                mobileText="Edit"
-                desktopText="Edit Profile"
+                mobileText={t('profile.editProfile')}
+                desktopText={t('profile.editProfile')}
               >
-                Edit Profile
+                {t('profile.editProfile')}
               </ResponsiveButton>
             )}
           </Box>
@@ -415,31 +389,30 @@ export const Profile: React.FC = () => {
           {/* Incomplete Profile Notice */}
           {!user.isProfileComplete && isEditing && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              <Typography variant="body2">
-                <strong>Complete your profile</strong> - Please fill in your information to access all features. 
-                This page is in edit mode to help you get started.
-              </Typography>
+              <ResponsiveTypography variant="cardTitle" ellipsis={false}>
+                <strong>{t('profile.completeProfileNotice')}</strong> - {t('profile.completeProfileDescription')}
+              </ResponsiveTypography>
             </Alert>
           )}
 
           {/* Basic Information */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-            Basic Information
-          </Typography>
+          <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mt: 3, mb:2 }}>
+            {t('profile.basicInformation')}
+          </ResponsiveTypography>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Username"
+                label={t('profile.username')}
                 value={user.username}
                 disabled
-                helperText="Username cannot be changed"
+                helperText={t('profile.usernameHelper')}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Full Name"
+                label={t('profile.fullName')}
                 value={isEditing ? formData.fullName : user.fullName || ''}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 disabled={!isEditing}
@@ -451,14 +424,14 @@ export const Profile: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Email"
+                label={t('profile.email')}
                 value={isEditing ? formData.email : user.email || ''}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={!isEditing}
                 InputProps={{
                   startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                 }}
-                helperText={user.isEmailVerified ? 'Email verified' : 'Email verification required'}
+                //helperText={user.isEmailVerified ? t('profile.emailVerified') : t('profile.emailVerificationRequired')}
               />
             </Grid>
           </Grid>
@@ -468,18 +441,18 @@ export const Profile: React.FC = () => {
             <ResponsiveButton
               onClick={() => setShowAdvanced(!showAdvanced)}
               icon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              mobileText="Advanced"
-              desktopText="Advanced Information"
+              mobileText={t('profile.advancedInformation')}
+              desktopText={t('profile.advancedInformation')}
               sx={{ mb: 2 }}
             >
-              Advanced Information
+              {t('profile.advancedInformation')}
             </ResponsiveButton>
             <Collapse in={showAdvanced}>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Phone"
+                    label={t('profile.phone')}
                     value={isEditing ? formData.phone : user.phone || ''}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     disabled={!isEditing}
@@ -491,7 +464,7 @@ export const Profile: React.FC = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Date of Birth"
+                    label={t('profile.dateOfBirth')}
                     type="date"
                     value={isEditing ? formData.dateOfBirth : user.dateOfBirth || ''}
                     onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
@@ -505,7 +478,7 @@ export const Profile: React.FC = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Address"
+                    label={t('profile.address')}
                     multiline
                     rows={3}
                     value={isEditing ? formData.address : user.address || ''}
@@ -528,54 +501,54 @@ export const Profile: React.FC = () => {
                 onClick={handleSave}
                 disabled={saving}
                 icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                mobileText={saving ? 'Saving...' : 'Save'}
-                desktopText={saving ? 'Saving...' : 'Save Changes'}
+                mobileText={saving ? t('profile.saving') : t('profile.saveChanges')}
+                desktopText={saving ? t('profile.saving') : t('profile.saveChanges')}
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('profile.saving') : t('profile.saveChanges')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="outlined"
                 onClick={handleCancel}
                 disabled={saving || (user && !user.isProfileComplete)}
                 icon={<CancelIcon />}
-                mobileText="Cancel"
-                desktopText="Cancel"
+                mobileText={t('profile.cancel')}
+                desktopText={t('profile.cancel')}
               >
-                Cancel
+                {t('profile.cancel')}
               </ResponsiveButton>
             </Box>
           )}
 
           {/* Security Section */}
           <Divider sx={{ my: 4 }} />
-          <Typography variant="h6" gutterBottom>
-            Security
-          </Typography>
+          <ResponsiveTypography variant="h6" gutterBottom>
+            {t('profile.security')}
+          </ResponsiveTypography>
 
           {!user.isPasswordSet ? (
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Set a password to secure your account
-              </Typography>
+              <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('profile.setPasswordDescription')}
+              </ResponsiveTypography>
               {!showPassword ? (
                 <ResponsiveButton
                   variant="outlined"
                   icon={<LockIcon />}
                   onClick={() => setShowPassword(true)}
-                  mobileText="Set"
-                  desktopText="Set Password"
+                  mobileText={t('profile.setPassword')}
+                  desktopText={t('profile.setPassword')}
                 >
-                  Set Password
+                  {t('profile.setPassword')}
                 </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
                   <TextField
                     fullWidth
-                    label="New Password"
+                    label={t('profile.newPassword')}
                     type="password"
                     value={passwordData.password}
                     onChange={(e) => setPasswordData({ password: e.target.value })}
-                    helperText="Password must be at least 6 characters (letters, numbers, or special characters)"
+                    helperText={t('profile.passwordHelper')}
                     sx={{ mb: 2 }}
                   />
                   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -584,10 +557,10 @@ export const Profile: React.FC = () => {
                       onClick={handleSetPassword}
                       disabled={saving || !passwordData.password}
                       icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                      mobileText={saving ? 'Setting...' : 'Set'}
-                      desktopText={saving ? 'Setting...' : 'Set Password'}
+                      mobileText={saving ? t('profile.setting') : t('profile.setPassword')}
+                      desktopText={saving ? t('profile.setting') : t('profile.setPassword')}
                     >
-                      {saving ? 'Setting...' : 'Set Password'}
+                      {saving ? t('profile.setting') : t('profile.setPassword')}
                     </ResponsiveButton>
                     <ResponsiveButton
                       variant="outlined"
@@ -595,10 +568,10 @@ export const Profile: React.FC = () => {
                         setShowPassword(false);
                         setPasswordData({ password: '' });
                       }}
-                      mobileText="Cancel"
-                      desktopText="Cancel"
+                      mobileText={t('profile.cancel')}
+                      desktopText={t('profile.cancel')}
                     >
-                      Cancel
+                      {t('profile.cancel')}
                     </ResponsiveButton>
                   </Box>
                 </Box>
@@ -606,24 +579,24 @@ export const Profile: React.FC = () => {
             </Box>
           ) : (
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Password is set. You can change it below.
-              </Typography>
+              <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('profile.changePasswordDescription')}
+              </ResponsiveTypography>
               {!showChangePassword ? (
                 <ResponsiveButton
                   variant="outlined"
                   icon={<LockIcon />}
                   onClick={() => setShowChangePassword(true)}
-                  mobileText="Change"
-                  desktopText="Change Password"
+                  mobileText={t('profile.changePassword')}
+                  desktopText={t('profile.changePassword')}
                 >
-                  Change Password
+                  {t('profile.changePassword')}
                 </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
                   <TextField
                     fullWidth
-                    label="Current Password"
+                    label={t('profile.currentPassword')}
                     type="password"
                     value={changePasswordData.currentPassword}
                     onChange={(e) => setChangePasswordData({ ...changePasswordData, currentPassword: e.target.value })}
@@ -631,11 +604,11 @@ export const Profile: React.FC = () => {
                   />
                   <TextField
                     fullWidth
-                    label="New Password"
+                    label={t('profile.newPassword')}
                     type="password"
                     value={changePasswordData.newPassword}
                     onChange={(e) => setChangePasswordData({ ...changePasswordData, newPassword: e.target.value })}
-                    helperText="Password must be at least 6 characters (letters, numbers, or special characters)"
+                    helperText={t('profile.passwordHelper')}
                     sx={{ mb: 2 }}
                   />
                   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -644,10 +617,10 @@ export const Profile: React.FC = () => {
                       onClick={handleChangePassword}
                       disabled={saving || !changePasswordData.currentPassword || !changePasswordData.newPassword}
                       icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                      mobileText={saving ? 'Changing...' : 'Change'}
-                      desktopText={saving ? 'Changing...' : 'Change Password'}
+                      mobileText={saving ? t('profile.changing') : t('profile.changePassword')}
+                      desktopText={saving ? t('profile.changing') : t('profile.changePassword')}
                     >
-                      {saving ? 'Changing...' : 'Change Password'}
+                      {saving ? t('profile.changing') : t('profile.changePassword')}
                     </ResponsiveButton>
                     <ResponsiveButton
                       variant="outlined"
@@ -655,10 +628,10 @@ export const Profile: React.FC = () => {
                         setShowChangePassword(false);
                         setChangePasswordData({ currentPassword: '', newPassword: '' });
                       }}
-                      mobileText="Cancel"
-                      desktopText="Cancel"
+                      mobileText={t('profile.cancel')}
+                      desktopText={t('profile.cancel')}
                     >
-                      Cancel
+                      {t('profile.cancel')}
                     </ResponsiveButton>
                   </Box>
                 </Box>
