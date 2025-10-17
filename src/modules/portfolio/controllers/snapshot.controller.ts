@@ -31,6 +31,7 @@ import {
 import { SnapshotService } from '../services/snapshot.service';
 import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
+import { PortfolioService } from '../services/portfolio.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
 import {
   CreateSnapshotDto,
@@ -55,59 +56,66 @@ export class SnapshotController {
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
     @Inject(forwardRef(() => PerformanceSnapshotService))
     private readonly performanceSnapshotService: PerformanceSnapshotService,
+    @Inject(forwardRef(() => PortfolioService))
+    private readonly portfolioService: PortfolioService,
     private readonly accountValidationService: AccountValidationService,
   ) {}
 
-  // @Post()
-  // @ApiOperation({ summary: 'Create a new snapshot' })
-  // @ApiCreatedResponse({
-  //   description: 'Snapshot created successfully',
-  //   type: SnapshotResponseDto,
-  // })
-  // @ApiBadRequestResponse({ description: 'Invalid input data or snapshot already exists' })
-  // @ApiNotFoundResponse({ description: 'Portfolio or asset not found' })
-  // async createSnapshot(@Body() createDto: CreateSnapshotDto): Promise<SnapshotResponseDto> {
-  //   const snapshot = await this.snapshotService.createSnapshot({
-  //     ...createDto,
-  //     snapshotDate: new Date(createDto.snapshotDate),
-  //   });
-  //   return this.mapToResponseDto(snapshot);
-  // }
-
-  @Post('portfolio/:portfolioId')
-  @ApiOperation({ summary: 'Create snapshots for all assets in a portfolio and portfolio snapshot (supports both single date and date range)' })
-  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
+  @Post('portfolio/bulk')
+  @ApiOperation({ summary: 'Create snapshots for multiple portfolios (supports both single date and date range)' })
   @ApiCreatedResponse({
     description: 'Portfolio snapshots created successfully',
     schema: {
       type: 'object',
       properties: {
         message: { type: 'string' },
-        assetSnapshots: { type: 'array', items: { $ref: '#/components/schemas/SnapshotResponseDto' } },
-        portfolioSnapshot: { type: 'object' },
-        assetCount: { type: 'number' },
+        totalPortfolios: { type: 'number' },
         totalSnapshots: { type: 'number' },
-        datesProcessed: { type: 'array', items: { type: 'string' } },
+        results: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              portfolioId: { type: 'string' },
+              portfolioName: { type: 'string' },
+              success: { type: 'boolean' },
+              assetSnapshots: { type: 'array', items: { $ref: '#/components/schemas/SnapshotResponseDto' } },
+              portfolioSnapshot: { type: 'object' },
+              assetCount: { type: 'number' },
+              snapshotsCreated: { type: 'number' },
+              datesProcessed: { type: 'array', items: { type: 'string' } },
+              error: { type: 'string' }
+            }
+          }
+        }
       },
     },
   })
   @ApiNotFoundResponse({ description: 'Portfolio not found' })
   @ApiBadRequestResponse({ description: 'Invalid date range or date format' })
-  async createPortfolioSnapshot(
-    @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
+  async createPortfolioSnapshots(
     @Body() body: {
+      portfolioIds: string[];
       startDate?: string;
       endDate?: string;
       granularity?: SnapshotGranularity;
       createdBy?: string;
-    } = {},
+    },
   ): Promise<{ 
     message: string; 
-    assetSnapshots: SnapshotResponseDto[]; 
-    portfolioSnapshot: any;
-    assetCount: number;
+    totalPortfolios: number;
     totalSnapshots: number;
-    datesProcessed: string[];
+    results: Array<{
+      portfolioId: string;
+      portfolioName: string;
+      success: boolean;
+      assetSnapshots: SnapshotResponseDto[];
+      portfolioSnapshot: any;
+      assetCount: number;
+      snapshotsCreated: number;
+      datesProcessed: string[];
+      error?: string;
+    }>;
   }> {
     const granularityValue = body.granularity || SnapshotGranularity.DAILY;
 
@@ -142,68 +150,127 @@ export class SnapshotController {
       throw new BadRequestException('Start date cannot be in the future.');
     }
 
-    const datesProcessed: string[] = [];
+    // Validate portfolio IDs
+    if (!body.portfolioIds || body.portfolioIds.length === 0) {
+      throw new BadRequestException('portfolioIds array is required and cannot be empty.');
+    }
+
+    const results: Array<{
+      portfolioId: string;
+      portfolioName: string;
+      success: boolean;
+      assetSnapshots: SnapshotResponseDto[];
+      portfolioSnapshot: any;
+      assetCount: number;
+      snapshotsCreated: number;
+      datesProcessed: string[];
+      error?: string;
+    }> = [];
+
     let totalSnapshots = 0;
-    let assetCount = 0;
-    const allAssetSnapshots: any[] = [];
 
-    this.logger.log(`Creating snapshots for portfolio ${portfolioId} from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    this.logger.log(`Creating snapshots for ${body.portfolioIds.length} portfolios from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
 
-    // Generate dates between start and end date
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const snapshotDate = normalizeDateToString(currentDate);
-      
+    // Process each portfolio
+    for (const portfolioId of body.portfolioIds) {
       try {
-        // Create snapshots for this date
-        const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
-          portfolioId,
-          snapshotDate,
-          granularityValue,
-          body.createdBy,
-        );
-        
-        // Create performance snapshots if asset snapshots were created
-        if (assetSnapshots.length > 0) {
+        const datesProcessed: string[] = [];
+        let portfolioSnapshots = 0;
+        const allAssetSnapshots: any[] = [];
+        let assetCount = 0;
+
+        // Get portfolio name for response
+        let portfolioName = 'Unknown Portfolio';
+        try {
+          const portfolio = await this.portfolioService.getPortfolioDetails(portfolioId);
+          portfolioName = portfolio.name;
+          // Get asset count separately
+          const assets = await this.portfolioService.getPortfolioAssets(portfolioId);
+          assetCount = assets.length;
+        } catch (error) {
+          this.logger.warn(`Could not get portfolio info for ${portfolioId}: ${error.message}`);
+        }
+
+        // Generate dates between start and end date
+        const currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+          const snapshotDate = normalizeDateToString(currentDate);
+          
           try {
-            await this.performanceSnapshotService.createPerformanceSnapshots(
+            // Create snapshots for this date
+            const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
               portfolioId,
               snapshotDate,
               granularityValue,
-              body.createdBy,
+              body.createdBy
             );
+            
+            // Create performance snapshots if asset snapshots were created
+            if (assetSnapshots.length > 0) {
+              try {
+                await this.performanceSnapshotService.createPerformanceSnapshots(
+                  portfolioId,
+                  snapshotDate,
+                  granularityValue,
+                  body.createdBy,
+                );
+              } catch (error) {
+                this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioName} on ${snapshotDate}:`, error);
+                // Continue with next date even if performance snapshots fail
+              }
+              
+              portfolioSnapshots += assetSnapshots.length;
+              datesProcessed.push(snapshotDate);
+              allAssetSnapshots.push(...assetSnapshots);
+            }
+            
+            this.logger.log(`Created ${assetSnapshots.length} snapshots for portfolio ${portfolioName} on ${snapshotDate}`);
           } catch (error) {
-            this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioId} on ${snapshotDate}:`, error);
-            // Continue with next date even if performance snapshots fail
+            this.logger.error(`Failed to create snapshots for portfolio ${portfolioName} on ${snapshotDate}: ${error.message}`);
+            // Continue with next date even if one date fails
           }
           
-          totalSnapshots += assetSnapshots.length;
-          if (assetCount === 0) {
-            assetCount = assetSnapshots.length;
-          }
-          datesProcessed.push(snapshotDate);
-          allAssetSnapshots.push(...assetSnapshots);
+          // Move to next date
+          currentDate.setDate(currentDate.getDate() + 1);
         }
-        
-        this.logger.log(`Created ${assetSnapshots.length} snapshots for ${snapshotDate}`);
+
+        totalSnapshots += portfolioSnapshots;
+
+        results.push({
+          portfolioId,
+          portfolioName,
+          success: true,
+          assetSnapshots: allAssetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
+          portfolioSnapshot: null, // Portfolio snapshot is created within createPortfolioSnapshot
+          assetCount,
+          snapshotsCreated: portfolioSnapshots,
+          datesProcessed,
+        });
+
       } catch (error) {
-        this.logger.error(`Failed to create snapshots for portfolio ${portfolioId} on ${snapshotDate}:`, error);
-        // Continue with next date even if one date fails
+        this.logger.error(`Failed to create snapshots for portfolio ${portfolioId}: ${error.message}`);
+        
+        results.push({
+          portfolioId,
+          portfolioName: 'Unknown Portfolio',
+          success: false,
+          assetSnapshots: [],
+          portfolioSnapshot: null,
+          assetCount: 0,
+          snapshotsCreated: 0,
+          datesProcessed: [],
+          error: error.message,
+        });
       }
-      
-      // Move to next date
-      currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
+    const successfulPortfolios = results.filter(r => r.success).length;
+
     const response = {
-      message: totalSnapshots > 0 
-        ? `Successfully created ${totalSnapshots} snapshots for ${datesProcessed.length} dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`
-        : `No snapshots created for portfolio ${portfolioId} in the specified date range.`,
-      assetSnapshots: allAssetSnapshots.map(snapshot => this.mapToResponseDto(snapshot)),
-      portfolioSnapshot: null,
-      assetCount,
+      message: `Successfully processed ${successfulPortfolios}/${body.portfolioIds.length} portfolios. Created ${totalSnapshots} total snapshots.`,
+      totalPortfolios: body.portfolioIds.length,
       totalSnapshots,
-      datesProcessed,
+      results,
     };
     
     this.logger.log(`Portfolio snapshot creation result: ${response.message}`);
@@ -313,37 +380,6 @@ export class SnapshotController {
     });
     return snapshots.map(snapshot => this.mapToResponseDto(snapshot));
   }
-
-  // @Get('timeline/aggregated')
-  // @ApiOperation({ summary: 'Get aggregated timeline data for portfolio' })
-  // @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID' })
-  // @ApiQuery({ name: 'startDate', description: 'Start date' })
-  // @ApiQuery({ name: 'endDate', description: 'End date' })
-  // @ApiQuery({ name: 'granularity', enum: SnapshotGranularity, description: 'Snapshot granularity', required: false })
-  // @ApiOkResponse({
-  //   description: 'Aggregated timeline data retrieved successfully',
-  //   type: [SnapshotAggregationDto],
-  // })
-  // async getAggregatedTimelineData(
-  //   @Query('portfolioId', ParseUUIDPipe) portfolioId: string,
-  //   @Query('startDate') startDate: string,
-  //   @Query('endDate') endDate: string,
-  //   @Query('granularity') granularity?: SnapshotGranularity,
-  // ): Promise<SnapshotAggregationDto[]> {
-  //   const results = await this.snapshotService.getAggregatedTimelineData(
-  //     portfolioId,
-  //     new Date(startDate),
-  //     new Date(endDate),
-  //     granularity || SnapshotGranularity.DAILY,
-  //   );
-    
-  //   return results.map(result => ({
-  //     ...result,
-  //     snapshotDate: result.snapshotDate instanceof Date 
-  //       ? result.snapshotDate.toISOString().split('T')[0]
-  //       : result.snapshotDate,
-  //   }));
-  // }
 
   @Get('latest/:portfolioId')
   @ApiOperation({ summary: 'Get latest snapshot for portfolio' })
@@ -504,53 +540,12 @@ export class SnapshotController {
     // Validate portfolio ownership
     await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
     const date = snapshotDate ? new Date(snapshotDate) : undefined;
-    const updatedCount = await this.snapshotService.bulkRecalculateSnapshots(portfolioId, date);
+    const updatedCount = await this.snapshotService.bulkRecalculateSnapshots(portfolioId, accountId, date);
     return {
       message: `Successfully recalculated ${updatedCount} snapshots`,
       updatedCount,
     };
   }
-
-  // @Delete(':id')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @ApiOperation({ summary: 'Soft delete snapshot' })
-  // @ApiParam({ name: 'id', description: 'Snapshot ID' })
-  // @ApiOkResponse({ description: 'Snapshot deleted successfully' })
-  // @ApiNotFoundResponse({ description: 'Snapshot not found' })
-  // async deleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-  //   await this.snapshotService.deleteSnapshot(id);
-  // }
-
-  // @Delete(':id/hard')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @ApiOperation({ summary: 'Hard delete snapshot' })
-  // @ApiParam({ name: 'id', description: 'Snapshot ID' })
-  // @ApiOkResponse({ description: 'Snapshot permanently deleted' })
-  // @ApiNotFoundResponse({ description: 'Snapshot not found' })
-  // async hardDeleteSnapshot(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-  //   await this.snapshotService.hardDeleteSnapshot(id);
-  // }
-
-  // @Post('cleanup')
-  // @ApiOperation({ summary: 'Clean up old snapshots based on retention policy' })
-  // @ApiQuery({ name: 'portfolioId', description: 'Portfolio ID', required: false })
-  // @ApiOkResponse({
-  //   description: 'Old snapshots cleaned up successfully',
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       message: { type: 'string' },
-  //       cleanedCount: { type: 'number' },
-  //     },
-  //   },
-  // })
-  // async cleanupOldSnapshots(@Query('portfolioId') portfolioId?: string) {
-  //   const cleanedCount = await this.snapshotService.cleanupOldSnapshots(portfolioId);
-  //   return {
-  //     message: `Successfully cleaned up ${cleanedCount} old snapshots`,
-  //     cleanedCount,
-  //   };
-  // }
 
   /**
    * Map entity to response DTO

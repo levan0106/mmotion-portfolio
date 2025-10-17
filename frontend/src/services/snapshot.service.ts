@@ -145,6 +145,36 @@ export class UnifiedSnapshotService {
   }
 
   /**
+   * Create snapshots for multiple portfolios
+   */
+  async createBulkPortfolioSnapshots(
+    portfolioIds: string[],
+    options: {
+      startDate?: string;
+      endDate?: string;
+      granularity?: string;
+      createdBy?: string;
+    } = {}
+  ): Promise<{
+    message: string;
+    totalPortfolios: number;
+    totalSnapshots: number;
+    results: Array<{
+      portfolioId: string;
+      portfolioName: string;
+      success: boolean;
+      assetSnapshots: SnapshotResponse[];
+      portfolioSnapshot: any;
+      assetCount: number;
+      snapshotsCreated: number;
+      datesProcessed: string[];
+      error?: string;
+    }>;
+  }> {
+    return await apiService.createBulkPortfolioSnapshots(portfolioIds, options);
+  }
+
+  /**
    * Update snapshot
    */
   async updateSnapshot(id: string, data: UpdateSnapshotRequest): Promise<SnapshotResponse> {
@@ -164,12 +194,10 @@ export class UnifiedSnapshotService {
    */
   async bulkRecalculateSnapshots(
     portfolioId: string,
+    accountId: string,
     snapshotDate?: string
   ): Promise<BulkRecalculateResponse> {
-    const queryParams = new URLSearchParams();
-    if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
-
-    return await apiService.bulkRecalculateSnapshots(portfolioId, snapshotDate);
+    return await apiService.bulkRecalculateSnapshots(portfolioId, accountId, snapshotDate);
   }
 
   /**

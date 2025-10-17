@@ -93,23 +93,27 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
       {/* Pagination Controls */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Tooltip title="First page">
-          <IconButton
-            onClick={handleFirstPage}
-            disabled={!hasPrev}
-            size="small"
-          >
-            <FirstPage />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={handleFirstPage}
+              disabled={!hasPrev}
+              size="small"
+            >
+              <FirstPage />
+            </IconButton>
+          </span>
         </Tooltip>
 
         <Tooltip title="Previous page">
-          <IconButton
-            onClick={handlePrevPage}
-            disabled={!hasPrev}
-            size="small"
-          >
-            <NavigateBefore />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={handlePrevPage}
+              disabled={!hasPrev}
+              size="small"
+            >
+              <NavigateBefore />
+            </IconButton>
+          </span>
         </Tooltip>
 
         <Typography variant="body2" sx={{ mx: 1 }}>
@@ -117,23 +121,27 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
         </Typography>
 
         <Tooltip title="Next page">
-          <IconButton
-            onClick={handleNextPage}
-            disabled={!hasNext}
-            size="small"
-          >
-            <NavigateNext />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={handleNextPage}
+              disabled={!hasNext}
+              size="small"
+            >
+              <NavigateNext />
+            </IconButton>
+          </span>
         </Tooltip>
 
         <Tooltip title="Last page">
-          <IconButton
-            onClick={handleLastPage}
-            disabled={!hasNext}
-            size="small"
-          >
-            <LastPage />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={handleLastPage}
+              disabled={!hasNext}
+              size="small"
+            >
+              <LastPage />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
     </Box>

@@ -19,13 +19,14 @@ import {
 } from '@mui/material';
 import {
   AccountBalance as PortfolioIcon,
-  Assessment as SnapshotIcon,
   CalendarToday as CalendarIcon,
   TrendingUp as TrendingIcon,
+  Assessment as SnapshotIcon,
 } from '@mui/icons-material';
-import { snapshotService } from '../../services/snapshot.service';
-import { PortfolioWithSnapshots } from '../../types/snapshot.types';
+import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
+import { snapshotService } from '../../services/snapshot.service';
+import { useTranslation } from 'react-i18next';
 
 interface PortfolioSelectorProps {
   selectedPortfolioId?: string;
@@ -33,34 +34,78 @@ interface PortfolioSelectorProps {
   disabled?: boolean;
 }
 
+interface PortfolioWithSnapshots {
+  portfolioId: string;
+  name: string;
+  baseCurrency: string;
+  createdAt: string;
+  snapshotCount: number;
+  latestSnapshotDate?: string;
+  oldestSnapshotDate?: string;
+}
+
 export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
   selectedPortfolioId,
   onPortfolioChange,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const theme = useTheme();
-  const [portfolios, setPortfolios] = useState<PortfolioWithSnapshots[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { portfolios, isLoading: loading, error } = usePortfolios(accountId);
+  const [portfoliosWithSnapshots, setPortfoliosWithSnapshots] = useState<PortfolioWithSnapshots[]>([]);
+  const [snapshotStatsLoading, setSnapshotStatsLoading] = useState(false);
 
   useEffect(() => {
-    fetchPortfolios();
-  }, [accountId]);
+    if (portfolios.length > 0 && accountId) {
+      fetchSnapshotStats();
+    }
+  }, [portfolios, accountId]);
 
-  const fetchPortfolios = async () => {
-    if (!accountId) return;
-    
-    setLoading(true);
-    setError(null);
-    
+  const fetchSnapshotStats = async () => {
+    setSnapshotStatsLoading(true);
     try {
-      const data = await snapshotService.getPortfoliosWithSnapshots(accountId);
-      setPortfolios(data);
+      const portfoliosWithStats = await Promise.all(
+        portfolios.map(async (portfolio) => {
+          try {
+            const snapshots = await snapshotService.getSnapshots({ 
+              portfolioId: portfolio.portfolioId
+            }, accountId);
+            
+            const snapshotCount = snapshots.length;
+            const latestSnapshotDate = snapshotCount > 0 ? snapshots[0].snapshotDate : undefined;
+            const oldestSnapshotDate = snapshotCount > 0 ? snapshots[snapshots.length - 1].snapshotDate : undefined;
+            
+            return {
+              ...portfolio,
+              snapshotCount,
+              latestSnapshotDate,
+              oldestSnapshotDate,
+            };
+          } catch (error) {
+            // If no snapshots exist, return portfolio with zero stats
+            return {
+              ...portfolio,
+              snapshotCount: 0,
+              latestSnapshotDate: undefined,
+              oldestSnapshotDate: undefined,
+            };
+          }
+        })
+      );
+      setPortfoliosWithSnapshots(portfoliosWithStats);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch portfolios');
+      console.error('Failed to fetch snapshot stats:', error);
+      // Fallback to portfolios without stats
+      const fallbackPortfolios = portfolios.map(p => ({
+        ...p,
+        snapshotCount: 0,
+        latestSnapshotDate: undefined,
+        oldestSnapshotDate: undefined,
+      }));
+      setPortfoliosWithSnapshots(fallbackPortfolios);
     } finally {
-      setLoading(false);
+      setSnapshotStatsLoading(false);
     }
   };
 
@@ -72,39 +117,19 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
     });
   };
 
-  const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+  const selectedPortfolio = portfoliosWithSnapshots.find(p => p.portfolioId === selectedPortfolioId);
 
   return (
-    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: 1, borderColor: 'divider' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Box
-          sx={{
-            p: 1.5,
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.primary.main, 0.1),
-            color: theme.palette.primary.main,
-          }}
-        >
-          <PortfolioIcon fontSize="large" />
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-            Select Portfolio
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Choose a portfolio to view its snapshots
-          </Typography>
-        </Box>
-      </Box>
+    <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
 
-      <FormControl fullWidth size="small" disabled={disabled || loading}>
-        <InputLabel>Portfolio</InputLabel>
+      <FormControl fullWidth size="medium" disabled={disabled || loading || snapshotStatsLoading}>
+        <InputLabel>{t('snapshots.selectPortfolio')} {snapshotStatsLoading ? t('snapshots.loadingSnapshots') : ''}</InputLabel>
         <Select
           value={selectedPortfolioId || ''}
           onChange={(e) => onPortfolioChange(e.target.value)}
-          label="Portfolio"
+          label={t('snapshots.selectPortfolio')}
         >
-          {portfolios.map((portfolio) => (
+          {(portfoliosWithSnapshots.length > 0 ? portfoliosWithSnapshots : portfolios).map((portfolio) => (
             <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <Avatar
@@ -119,19 +144,35 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    {portfolio.portfolioName}
+                    {portfolio.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
-                    {portfolio.portfolioId} • {portfolio.snapshotCount} snapshots
+                    {portfolio.portfolioId} • {(portfolio as any).snapshotCount || 0} {t('snapshots.snapshots')}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Chip
-                    label={`Latest: ${formatDate(portfolio.latestSnapshotDate)}`}
+                    label={portfolio.baseCurrency}
                     size="small"
                     color="primary"
                     variant="outlined"
                   />
+                  {(portfolio as any).latestSnapshotDate && (
+                    <Chip
+                      label={`${t('snapshots.latest')}: ${formatDate((portfolio as any).latestSnapshotDate)}`}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                  )}
+                  {!(portfolio as any).latestSnapshotDate && (portfolio as any).snapshotCount === 0 && (
+                    <Chip
+                      label={t('snapshots.noSnapshots')}
+                      size="small"
+                      color="default"
+                      variant="outlined"
+                    />
+                  )}
                 </Box>
               </Box>
             </MenuItem>
@@ -139,16 +180,16 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
         </Select>
       </FormControl>
 
-      {error && (
+      {Boolean(error) && (
         <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-          {error}
+          {t('snapshots.failedToLoadPortfolios')}
         </Typography>
       )}
 
       {selectedPortfolio && (
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-            Portfolio Details
+            {t('snapshots.portfolioDetails')}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
@@ -157,10 +198,10 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography color="text.secondary" gutterBottom variant="body2">
-                        Total Snapshots
+                        {t('snapshots.totalSnapshots')}
                       </Typography>
                       <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                        {selectedPortfolio.snapshotCount}
+                        {(selectedPortfolio as any).snapshotCount || 0}
                       </Typography>
                     </Box>
                     <Box
@@ -184,10 +225,10 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography color="text.secondary" gutterBottom variant="body2">
-                        Latest Snapshot
+                        {t('snapshots.latestSnapshot')}
                       </Typography>
                       <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                        {formatDate(selectedPortfolio.latestSnapshotDate)}
+                        {(selectedPortfolio as any).latestSnapshotDate ? formatDate((selectedPortfolio as any).latestSnapshotDate) : t('snapshots.noSnapshots')}
                       </Typography>
                     </Box>
                     <Box
@@ -211,10 +252,10 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography color="text.secondary" gutterBottom variant="body2">
-                        Oldest Snapshot
+                        {t('snapshots.oldestSnapshot')}
                       </Typography>
                       <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                        {formatDate(selectedPortfolio.oldestSnapshotDate)}
+                        {(selectedPortfolio as any).oldestSnapshotDate ? formatDate((selectedPortfolio as any).oldestSnapshotDate) : t('snapshots.noSnapshots')}
                       </Typography>
                     </Box>
                     <Box
@@ -238,14 +279,14 @@ export const PortfolioSelector: React.FC<PortfolioSelectorProps> = ({
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography color="text.secondary" gutterBottom variant="body2">
-                        Portfolio Details
+                        {t('snapshots.portfolioInfo')}
                       </Typography>
                       <Typography variant="body2" component="div" sx={{ fontWeight: 'bold' }}>
-                        {selectedPortfolio.portfolioName}
+                        {selectedPortfolio.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
-                        ID: {selectedPortfolio.portfolioId}
-                      </Typography>
+                      {/* <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                        {selectedPortfolio.baseCurrency}
+                      </Typography> */}
                     </Box>
                     <Box
                       sx={{

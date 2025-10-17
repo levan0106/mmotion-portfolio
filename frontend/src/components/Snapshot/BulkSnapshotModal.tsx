@@ -2,10 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Typography,
   FormControl,
   InputLabel,
@@ -18,11 +14,8 @@ import {
   alpha,
   useTheme,
   Chip,
-  Divider,
-  IconButton,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
   CameraAlt as SnapshotIcon,
   Add as AddIcon,
   CheckCircle as SuccessIcon,
@@ -30,10 +23,12 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
 import { SnapshotGranularity } from '../../types/snapshot.types';
 import { useQueryClient } from 'react-query';
+import { useTranslation } from 'react-i18next';
 
 interface Portfolio {
   portfolioId: string;
@@ -49,6 +44,7 @@ interface BulkSnapshotModalProps {
   onSuccess?: (portfolioId: string, snapshotDate: string) => void;
   onError?: (error: string) => void;
   onPortfolioRefresh?: (portfolioId: string) => void; // Add portfolio refresh callback
+  selectedPortfolioId?: string; // Add selected portfolio ID prop
 }
 
 export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
@@ -57,12 +53,14 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   onSuccess,
   onError,
   onPortfolioRefresh,
+  selectedPortfolioId,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const theme = useTheme();
   const queryClient = useQueryClient();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
-  const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
+  const [selectedPortfolioIdState, setSelectedPortfolioIdState] = useState<string>('');
   const [granularity, setGranularity] = useState<SnapshotGranularity>(SnapshotGranularity.DAILY);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(false);
@@ -80,7 +78,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     new Date().toISOString().split('T')[0] // today
   );
 
-  const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+  const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioIdState);
 
   // Function to refresh portfolio data after snapshot creation
   const refreshPortfolioData = async (portfolioId: string) => {
@@ -110,8 +108,12 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   useEffect(() => {
     if (open) {
       loadPortfolios();
+      // Set default selected portfolio if provided
+      if (selectedPortfolioId) {
+        setSelectedPortfolioIdState(selectedPortfolioId);
+      }
     }
-  }, [open]);
+  }, [open, selectedPortfolioId]);
 
   const loadPortfolios = async () => {
     setIsLoadingPortfolios(true);
@@ -126,7 +128,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       console.error('Failed to load portfolios:', error);
       setStatus({
         type: 'error',
-        message: 'Failed to load portfolios'
+        message: t('snapshots.modals.createSnapshot.failedToLoadPortfolios')
       });
     } finally {
       setIsLoadingPortfolios(false);
@@ -134,10 +136,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   };
 
   const handleCreateSnapshot = async () => {
-    if (!selectedPortfolioId || !granularity) {
+    if (!selectedPortfolioIdState || !granularity) {
       setStatus({
         type: 'error',
-        message: 'Please select a portfolio and granularity'
+        message: t('snapshots.modals.createSnapshot.selectPortfolioAndGranularity')
       });
       return;
     }
@@ -145,7 +147,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     if (!startDate) {
       setStatus({
         type: 'error',
-        message: 'Please select a start date'
+        message: t('snapshots.modals.createSnapshot.selectStartDate')
       });
       return;
     }
@@ -153,7 +155,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     if (useDateRange && !endDate) {
       setStatus({
         type: 'error',
-        message: 'Please select an end date'
+        message: t('snapshots.modals.createSnapshot.selectEndDate')
       });
       return;
     }
@@ -161,7 +163,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     if (useDateRange && new Date(startDate) > new Date(endDate)) {
       setStatus({
         type: 'error',
-        message: 'Start date must be before end date'
+        message: t('snapshots.modals.createSnapshot.startDateBeforeEndDate')
       });
       return;
     }
@@ -169,7 +171,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     if (new Date(startDate) > new Date()) {
       setStatus({
         type: 'error',
-        message: 'Start date cannot be in the future'
+        message: t('snapshots.modals.createSnapshot.startDateNotFuture')
       });
       return;
     }
@@ -189,12 +191,12 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       if (daysDiff > 7) {
         setStatus({
           type: 'info',
-          message: `Processing ${daysDiff} days of snapshots... This may take a few minutes.`
+          message: t('snapshots.modals.createSnapshot.processingDays', { days: daysDiff })
         });
       }
       
       const response = await apiService.api.post(
-        `/api/v1/snapshots/portfolio/${selectedPortfolioId}`,
+        `/api/v1/snapshots/portfolio/${selectedPortfolioIdState}`,
         useDateRange 
           ? {
               startDate: startDate,
@@ -216,14 +218,17 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
         if (responseData.totalSnapshots > 0) {
           setStatus({
             type: 'success',
-            message: responseData.message || `Successfully created ${responseData.totalSnapshots} snapshots for ${selectedPortfolio?.name || 'portfolio'}`
+            message: responseData.message || t('snapshots.modals.createSnapshot.successCreated', { 
+              count: responseData.totalSnapshots, 
+              portfolioName: selectedPortfolio?.name || 'portfolio' 
+            })
           });
           
           // Call success callback
-          onSuccess?.(selectedPortfolioId, startDate);
+          onSuccess?.(selectedPortfolioIdState, startDate);
           
           // Auto-refresh portfolio data after successful snapshot creation
-          await refreshPortfolioData(selectedPortfolioId);
+          await refreshPortfolioData(selectedPortfolioIdState);
           
           // Close modal after refresh is complete
           setTimeout(() => {
@@ -233,7 +238,9 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
         } else {
           setStatus({
             type: 'info',
-            message: responseData.message || `No snapshots created for portfolio ${selectedPortfolio?.name || 'portfolio'}.`
+            message: responseData.message || t('snapshots.modals.createSnapshot.noSnapshotsCreated', { 
+              portfolioName: selectedPortfolio?.name || 'portfolio' 
+            })
           });
           
           // Close modal for info case too
@@ -260,11 +267,14 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
         }
       });
       
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to create snapshot';
+      const errorMessage = error.response?.data?.message || error.message || t('snapshots.modals.createSnapshot.errorCreating', {
+        status: error.response?.status || 'Unknown',
+        message: error.response?.data?.message || error.message || 'Unknown error'
+      });
       
       setStatus({
         type: 'error',
-        message: `Error ${error.response?.status}: ${errorMessage}`
+        message: errorMessage
       });
 
       onError?.(errorMessage);
@@ -274,7 +284,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
   };
 
   const handleReset = () => {
-    setSelectedPortfolioId('');
+    setSelectedPortfolioIdState('');
     setGranularity(SnapshotGranularity.DAILY);
     setUseDateRange(false);
     setStartDate(new Date().toISOString().split('T')[0]);
@@ -289,50 +299,62 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
     }
   };
 
+  const modalIcon = (
+    <Box
+      sx={{
+        p: 1.5,
+        borderRadius: '50%',
+        bgcolor: alpha(theme.palette.primary.main, 0.1),
+        color: theme.palette.primary.main,
+      }}
+    >
+      <SnapshotIcon fontSize="medium" />
+    </Box>
+  );
+
+  const modalActions = (
+    <>
+      <ResponsiveButton
+        variant="text"
+        onClick={handleClose}
+        disabled={isCreating}
+        sx={{ textTransform: 'none' }}
+      >
+        {t('snapshots.modals.createSnapshot.cancel')}
+      </ResponsiveButton>
+      <ResponsiveButton
+        variant="contained"
+        icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+        mobileText={t('snapshots.modals.createSnapshot.create')}
+        desktopText={t('snapshots.modals.createSnapshot.createSnapshot')}
+        onClick={handleCreateSnapshot}
+        disabled={!selectedPortfolioIdState || !startDate || !granularity || isCreating || isLoadingPortfolios}
+        sx={{ textTransform: 'none', minWidth: 140 }}
+      >
+        {isCreating ? t('snapshots.modals.createSnapshot.creating') : t('snapshots.modals.createSnapshot.createSnapshot')}
+      </ResponsiveButton>
+    </>
+  );
+
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={handleClose}
+      title={t('snapshots.modals.createSnapshot.title')}
+      icon={modalIcon}
+      actions={modalActions}
+      loading={isCreating}
       maxWidth="sm"
-      fullWidth
+      titleColor="primary"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-              }}
-            >
-              <SnapshotIcon fontSize="large" />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                Create Snapshot for All Assets
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Generate a snapshot for all assets in the selected portfolio
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton onClick={handleClose} disabled={isCreating} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent sx={{ pt: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
           {/* Portfolio Selection */}
           <FormControl fullWidth>
-            <InputLabel>Select Portfolio</InputLabel>
+            <InputLabel>{t('snapshots.modals.createSnapshot.selectPortfolio')}</InputLabel>
             <Select
-              value={selectedPortfolioId}
-              onChange={(e) => setSelectedPortfolioId(e.target.value)}
-              label="Select Portfolio"
+              value={selectedPortfolioIdState}
+              onChange={(e) => setSelectedPortfolioIdState(e.target.value)}
+              label={t('snapshots.modals.createSnapshot.selectPortfolio')}
               disabled={isCreating || isLoadingPortfolios}
             >
               {portfolios.map((portfolio) => (
@@ -345,14 +367,14 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
                       <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                         {portfolio.portfolioId}
                       </Typography>
-                      {portfolio.description && (
+                      {/* {portfolio.description && (
                         <Typography variant="caption" color="text.secondary" display="block">
                           {portfolio.description}
                         </Typography>
-                      )}
+                      )} */}
                     </Box>
                     <Chip
-                      label={`Created: ${new Date(portfolio.createdAt).toLocaleDateString()}`}
+                      label={`${t('snapshots.modals.createSnapshot.created')}: ${new Date(portfolio.createdAt).toLocaleDateString()}`}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -372,10 +394,10 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
               icon={<AddIcon />}
               size="small"
             >
-              {useDateRange ? 'Date Range Mode' : 'Single Date Mode'}
+              {useDateRange ? t('snapshots.modals.createSnapshot.singleDateMode') : t('snapshots.modals.createSnapshot.dateRangeMode')}
             </ResponsiveButton>
             <Typography variant="body2" color="text.secondary">
-              {useDateRange ? 'Create snapshots for multiple dates' : 'Create snapshot for a single date'}
+              {useDateRange ? t('snapshots.modals.createSnapshot.singleDateModeDescription') : t('snapshots.modals.createSnapshot.dateRangeModeDescription')}
             </Typography>
           </Box>
 
@@ -384,88 +406,37 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
             <TextField
               fullWidth
               type="date"
-              label="Snapshot Date"
+              label={t('snapshots.modals.createSnapshot.snapshotDate')}
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
               disabled={isCreating}
-              helperText="Select the date for the snapshot"
+              // helperText={t('snapshots.modals.createSnapshot.selectDate')}
             />
           ) : (
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <TextField
                 type="date"
-                label="Start Date"
+                label={t('snapshots.modals.createSnapshot.startDate')}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 disabled={isCreating}
-                helperText="Start date for snapshot range"
+                // helperText={t('snapshots.modals.createSnapshot.startDateHelper')}
                 sx={{ flex: 1, minWidth: 200 }}
               />
               <TextField
                 type="date"
-                label="End Date"
+                label={t('snapshots.modals.createSnapshot.endDate')}
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 disabled={isCreating}
-                helperText="End date for snapshot range"
+                // helperText={t('snapshots.modals.createSnapshot.endDateHelper')}
                 sx={{ flex: 1, minWidth: 200 }}
               />
             </Box>
           )}
-
-          {/* Granularity Selection */}
-          <FormControl fullWidth>
-            <InputLabel>Snapshot Granularity</InputLabel>
-            <Select
-              value={granularity}
-              onChange={(e) => setGranularity(e.target.value as SnapshotGranularity)}
-              label="Snapshot Granularity"
-              disabled={isCreating}
-            >
-              <MenuItem value={SnapshotGranularity.DAILY}>Daily</MenuItem>
-              <MenuItem value={SnapshotGranularity.WEEKLY}>Weekly</MenuItem>
-              <MenuItem value={SnapshotGranularity.MONTHLY}>Monthly</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Selected Portfolio Info */}
-          {selectedPortfolio && (
-            <Box sx={{ 
-              p: 2, 
-              bgcolor: alpha(theme.palette.info.main, 0.05), 
-              borderRadius: 1,
-              border: 1,
-              borderColor: alpha(theme.palette.info.main, 0.2),
-            }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                Selected Portfolio Details
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Chip
-                  label={`Name: ${selectedPortfolio.name}`}
-                  size="small"
-                  color="info"
-                  variant="outlined"
-                />
-                <Chip
-                  label={`ID: ${selectedPortfolio.portfolioId}`}
-                  size="small"
-                  color="info"
-                  variant="outlined"
-                />
-                <Chip
-                  label={`Created: ${new Date(selectedPortfolio.createdAt).toLocaleDateString()}`}
-                  size="small"
-                  color="info"
-                  variant="outlined"
-                />
-              </Box>
-            </Box>
-          )}
-
           {/* Status Alert */}
           {status.type && (
             <Alert 
@@ -481,31 +452,7 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
             </Alert>
           )}
 
-          <Divider />
-        </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, pt: 1 }}>
-        <ResponsiveButton
-          variant="outlined"
-          onClick={handleReset}
-          disabled={isCreating}
-          sx={{ textTransform: 'none' }}
-        >
-          Reset
-        </ResponsiveButton>
-        <ResponsiveButton
-          variant="contained"
-          icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
-          mobileText="Create"
-          desktopText="Create Snapshot"
-          onClick={handleCreateSnapshot}
-          disabled={!selectedPortfolioId || !startDate || !granularity || isCreating || isLoadingPortfolios}
-          sx={{ textTransform: 'none', minWidth: 140 }}
-        >
-          {isCreating ? 'Creating...' : 'Create Snapshot'}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ModalWrapper>
   );
 };

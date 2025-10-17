@@ -13,6 +13,7 @@ import { AssetGlobalSyncService } from '../asset/services/asset-global-sync.serv
 import { MarketDataService } from '../asset/services/market-data.service';
 import { AssetValueCalculatorService } from '../asset/services/asset-value-calculator.service';
 import { PortfolioSnapshotModule } from './portfolio-snapshot.module';
+import { PortfolioModule } from './portfolio.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PortfolioSnapshotModule } from './portfolio-snapshot.module';
     LoggingModule,
     SharedModule,
     forwardRef(() => PortfolioSnapshotModule),
+    forwardRef(() => PortfolioModule),
   ],
   providers: [
     SnapshotRepository,

@@ -9,6 +9,7 @@ import {
 import { SnapshotManagement } from '../components/Snapshot';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { useTranslation } from 'react-i18next';
 
 const SnapshotManagementPage: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const SnapshotManagementPage: React.FC = () => {
 };
 
 const SnapshotManagementContent: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   return (
     <Box>
@@ -38,10 +40,10 @@ const SnapshotManagementContent: React.FC = () => {
                 WebkitTextFillColor: 'transparent',
                 mb: 1,
                 filter: 'none' }}>
-                Asset Snapshot Management
+                {t('snapshots.pageTitle')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 1 }}>
-                Manage portfolio snapshots, view performance charts, and export/import data
+                {t('snapshots.pageSubtitle')}
               </ResponsiveTypography>
             </Box>
           </Box>

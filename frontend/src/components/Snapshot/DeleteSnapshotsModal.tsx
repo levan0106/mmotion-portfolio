@@ -2,22 +2,16 @@
 
 import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Box,
-  Typography,
   Alert,
   LinearProgress,
   Chip,
   Stack,
-  Divider,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -27,8 +21,11 @@ import {
   DateRange as DateRangeIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import { SnapshotGranularity } from '../../types/snapshot.types';
 import { snapshotService } from '../../services/snapshot.service';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteSnapshotsModalProps {
   open: boolean;
@@ -49,6 +46,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { t } = useTranslation();
   const [deleteMode, setDeleteMode] = useState<DeleteMode>('date');
   const [snapshotDate, setSnapshotDate] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
@@ -74,7 +72,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
 
   const handleDelete = async () => {
     if (!portfolioId) {
-      setStatus({ type: 'error', message: 'Portfolio ID is required' });
+      setStatus({ type: 'error', message: t('snapshots.modals.deleteSnapshots.portfolioIdRequired') });
       return;
     }
 
@@ -87,7 +85,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
       switch (deleteMode) {
         case 'date':
           if (!snapshotDate) {
-            setStatus({ type: 'error', message: 'Please select a snapshot date' });
+            setStatus({ type: 'error', message: t('snapshots.modals.deleteSnapshots.selectSnapshotDate') });
             setIsDeleting(false);
             return;
           }
@@ -100,12 +98,12 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
 
         case 'dateRange':
           if (!startDate || !endDate) {
-            setStatus({ type: 'error', message: 'Please select both start and end dates' });
+            setStatus({ type: 'error', message: t('snapshots.modals.deleteSnapshots.selectBothDates') });
             setIsDeleting(false);
             return;
           }
           if (new Date(startDate) > new Date(endDate)) {
-            setStatus({ type: 'error', message: 'Start date must be before end date' });
+            setStatus({ type: 'error', message: t('snapshots.modals.deleteSnapshots.startDateBeforeEndDate') });
             setIsDeleting(false);
             return;
           }
@@ -125,7 +123,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
           break;
 
         default:
-          throw new Error('Invalid delete mode');
+          throw new Error(t('snapshots.modals.deleteSnapshots.invalidDeleteMode'));
       }
 
       setStatus({
@@ -142,7 +140,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
 
     } catch (error: any) {
       console.error('Failed to delete snapshots:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete snapshots';
+      const errorMessage = error.response?.data?.message || error.message || t('snapshots.modals.deleteSnapshots.failedToDelete');
       
       setStatus({
         type: 'error',
@@ -158,195 +156,275 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
   const getModeDescription = () => {
     switch (deleteMode) {
       case 'date':
-        return 'Delete all snapshots for a specific date';
+        return t('snapshots.modals.deleteSnapshots.specificDateDescription');
       case 'dateRange':
-        return 'Delete all snapshots within a date range';
+        return t('snapshots.modals.deleteSnapshots.dateRangeDescription');
       case 'granularity':
-        return 'Delete all snapshots of a specific granularity (daily/weekly/monthly)';
+        return t('snapshots.modals.deleteSnapshots.granularityDescription');
       default:
         return '';
     }
   };
 
-  // const getModeIcon = () => {
-  //   switch (deleteMode) {
-  //     case 'date':
-  //       return <CalendarIcon />;
-  //     case 'dateRange':
-  //       return <DateRangeIcon />;
-  //     case 'granularity':
-  //       return <ScheduleIcon />;
-  //     default:
-  //       return <DeleteIcon />;
-  //   }
-  // };
-
-  return (
-    <Dialog 
-      open={open} 
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 }
+  const modalIcon = (
+    <Box
+      sx={{
+        p: 1.5,
+        borderRadius: '50%',
+        bgcolor: 'error.light',
+        color: 'error.contrastText',
       }}
     >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DeleteIcon color="error" />
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Delete Snapshots
-          </Typography>
-        </Box>
-        {portfolioName && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Portfolio: {portfolioName}
-          </Typography>
-        )}
-      </DialogTitle>
+      <DeleteIcon fontSize="medium" />
+    </Box>
+  );
 
-      <DialogContent>
-        {isDeleting && <LinearProgress sx={{ mb: 2 }} />}
+  const modalActions = (
+    <>
+      <ResponsiveButton
+        variant="text"
+        onClick={handleClose}
+        disabled={isDeleting}
+        sx={{ textTransform: 'none' }}
+      >
+        {t('snapshots.modals.deleteSnapshots.cancel')}
+      </ResponsiveButton>
+      <ResponsiveButton
+        variant="contained"
+        color="error"
+        icon={isDeleting ? undefined : <DeleteIcon />}
+        mobileText={t('snapshots.modals.deleteSnapshots.delete')}
+        desktopText={t('snapshots.modals.deleteSnapshots.deleteSnapshots')}
+        onClick={handleDelete}
+        disabled={isDeleting}
+        sx={{ textTransform: 'none', minWidth: 140 }}
+      >
+        {isDeleting ? t('snapshots.modals.deleteSnapshots.deleting') : t('snapshots.modals.deleteSnapshots.deleteSnapshots')}
+      </ResponsiveButton>
+    </>
+  );
 
-        {status.type && (
-          <Alert 
-            severity={status.type} 
-            icon={status.type === 'error' ? <WarningIcon /> : undefined}
-            onClose={() => setStatus({ type: null, message: '' })}
-            sx={{ mb: 2 }}
-          >
-            {status.message}
-          </Alert>
-        )}
+  return (
+    <ModalWrapper
+      open={open}
+      onClose={handleClose}
+      title={`${t('snapshots.modals.deleteSnapshots.title')}${portfolioName ? ` - ${portfolioName}` : ''}`}
+      icon={modalIcon}
+      actions={modalActions}
+      loading={isDeleting}
+      maxWidth="sm"
+      titleColor="error"
+      size="medium"
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+          {isDeleting && <LinearProgress sx={{ mb: 2 }} />}
 
-        {/* Delete Mode Selection */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-            Delete Mode
-          </Typography>
-          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-            <Chip
-              label="Specific Date"
-              onClick={() => setDeleteMode('date')}
-              color={deleteMode === 'date' ? 'primary' : 'default'}
-              icon={<CalendarIcon />}
-              clickable
-            />
-            <Chip
-              label="Date Range"
-              onClick={() => setDeleteMode('dateRange')}
-              color={deleteMode === 'dateRange' ? 'primary' : 'default'}
-              icon={<DateRangeIcon />}
-              clickable
-            />
-            <Chip
-              label="By Granularity"
-              onClick={() => setDeleteMode('granularity')}
-              color={deleteMode === 'granularity' ? 'primary' : 'default'}
-              icon={<ScheduleIcon />}
-              clickable
-            />
-          </Stack>
-          <Typography variant="body2" color="text.secondary">
-            {getModeDescription()}
-          </Typography>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Granularity Selection */}
-        <Box sx={{ mb: 3 }}>
-          <FormControl fullWidth>
-            <InputLabel>Granularity</InputLabel>
-            <Select
-              value={granularity}
-              onChange={(e) => setGranularity(e.target.value as SnapshotGranularity)}
-              label="Granularity"
-              disabled={isDeleting}
+          {status.type && (
+            <Alert 
+              severity={status.type} 
+              icon={status.type === 'error' ? <WarningIcon /> : undefined}
+              onClose={() => setStatus({ type: null, message: '' })}
             >
-              <MenuItem value={SnapshotGranularity.DAILY}>Daily</MenuItem>
-              <MenuItem value={SnapshotGranularity.WEEKLY}>Weekly</MenuItem>
-              <MenuItem value={SnapshotGranularity.MONTHLY}>Monthly</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+              {status.message}
+            </Alert>
+          )}
 
-        {/* Date Inputs */}
-        {deleteMode === 'date' && (
-          <Box sx={{ mb: 3 }}>
+          {/* Delete Mode Selection */}
+          <Box>
+            <ResponsiveTypography 
+              variant="formLabel" 
+              sx={{ 
+                mb: 2, 
+                fontWeight: 600
+              }}
+            >
+              {t('snapshots.modals.deleteSnapshots.deleteMode')}
+            </ResponsiveTypography>
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <Chip
+                label={t('snapshots.modals.deleteSnapshots.specificDate')}
+                onClick={() => setDeleteMode('date')}
+                color={deleteMode === 'date' ? 'primary' : 'default'}
+                icon={<CalendarIcon />}
+                clickable
+                size="medium"
+                sx={{ mb: 1 }}
+              />
+              <Chip
+                label={t('snapshots.modals.deleteSnapshots.dateRange')}
+                onClick={() => setDeleteMode('dateRange')}
+                color={deleteMode === 'dateRange' ? 'primary' : 'default'}
+                icon={<DateRangeIcon />}
+                clickable
+                size="medium"
+                sx={{ mb: 1 }}
+              />
+              <Chip
+                label={t('snapshots.modals.deleteSnapshots.byGranularity')}
+                onClick={() => setDeleteMode('granularity')}
+                color={deleteMode === 'granularity' ? 'primary' : 'default'}
+                icon={<ScheduleIcon />}
+                clickable
+                size="medium"
+                sx={{ mb: 1 }}
+              />
+            </Stack>
+            <ResponsiveTypography 
+              variant="formHelper" 
+              color="text.secondary"
+            >
+              {getModeDescription()}
+            </ResponsiveTypography>
+          </Box>
+
+          {/* Granularity Selection */}
+          {deleteMode === 'granularity' && (
+            <FormControl fullWidth>
+              <InputLabel>{t('snapshots.modals.deleteSnapshots.granularity')}</InputLabel>
+              <Select
+                value={granularity}
+                onChange={(e) => setGranularity(e.target.value as SnapshotGranularity)}
+                label={t('snapshots.modals.deleteSnapshots.granularity')}
+                disabled={isDeleting}
+                size="medium"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiFormLabel-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }
+                }}
+              >
+                <MenuItem 
+                  value={SnapshotGranularity.DAILY}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
+                  {t('snapshots.modals.deleteSnapshots.daily')}
+                </MenuItem>
+                <MenuItem 
+                  value={SnapshotGranularity.WEEKLY}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
+                  {t('snapshots.modals.deleteSnapshots.weekly')}
+                </MenuItem>
+                <MenuItem 
+                  value={SnapshotGranularity.MONTHLY}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
+                  {t('snapshots.modals.deleteSnapshots.monthly')}
+                </MenuItem>
+              </Select>
+            </FormControl>
+          )}
+
+          {/* Date Inputs */}
+          {deleteMode === 'date' && (
             <TextField
               fullWidth
               type="date"
-              label="Snapshot Date"
+              label={t('snapshots.modals.deleteSnapshots.snapshotDate')}
               value={snapshotDate}
               onChange={(e) => setSnapshotDate(e.target.value)}
               disabled={isDeleting}
               InputLabelProps={{ shrink: true }}
               required
+              helperText={t('snapshots.modals.deleteSnapshots.selectDate')}
+              size="medium"
+              sx={{
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormHelperText-root': {
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }
+              }}
             />
-          </Box>
-        )}
+          )}
 
-        {deleteMode === 'dateRange' && (
-          <Box sx={{ mb: 3 }}>
-            <Stack direction="row" spacing={2}>
+          {deleteMode === 'dateRange' && (
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <TextField
-                fullWidth
                 type="date"
-                label="Start Date"
+                label={t('snapshots.modals.deleteSnapshots.startDate')}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 disabled={isDeleting}
                 InputLabelProps={{ shrink: true }}
                 required
+                helperText={t('snapshots.modals.deleteSnapshots.startDateHelper')}
+                size="medium"
+                sx={{ 
+                  flex: 1, 
+                  minWidth: 200,
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiFormLabel-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }
+                }}
               />
               <TextField
-                fullWidth
                 type="date"
-                label="End Date"
+                label={t('snapshots.modals.deleteSnapshots.endDate')}
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 disabled={isDeleting}
                 InputLabelProps={{ shrink: true }}
                 required
+                helperText={t('snapshots.modals.deleteSnapshots.endDateHelper')}
+                size="medium"
+                sx={{ 
+                  flex: 1, 
+                  minWidth: 200,
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiFormLabel-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }
+                }}
               />
-            </Stack>
-          </Box>
-        )}
+            </Box>
+          )}
 
-        {/* Warning */}
-        <Alert severity="warning" icon={<WarningIcon />} sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            Warning: This action cannot be undone!
-          </Typography>
-          <Typography variant="body2">
-            All selected snapshots will be permanently deleted from the database.
-          </Typography>
-        </Alert>
-      </DialogContent>
+          {/* Warning */}
+          <Alert 
+            severity="warning" 
+            icon={<WarningIcon />}
+            sx={{
+              '& .MuiAlert-message': {
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }
+            }}
+          >
+            <ResponsiveTypography 
+              variant="formLabel" 
+              sx={{ 
+                fontWeight: 600
+              }}
+            >
+              {t('snapshots.modals.deleteSnapshots.warning')}
+            </ResponsiveTypography>
+            <ResponsiveTypography 
+              variant="formHelper"
+            >
+              {t('snapshots.modals.deleteSnapshots.warningDescription')}
+            </ResponsiveTypography>
+          </Alert>
 
-      <DialogActions sx={{ p: 3, pt: 1 }}>
-        <ResponsiveButton
-          onClick={handleClose}
-          disabled={isDeleting}
-          sx={{ textTransform: 'none' }}
-        >
-          Cancel
-        </ResponsiveButton>
-        <ResponsiveButton
-          onClick={handleDelete}
-          variant="contained"
-          color="error"
-          icon={<DeleteIcon />}
-          mobileText="Delete"
-          desktopText="Delete Snapshots"
-          disabled={isDeleting}
-          sx={{ textTransform: 'none' }}
-        >
-          {isDeleting ? 'Deleting...' : 'Delete Snapshots'}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ModalWrapper>
   );
 };
 

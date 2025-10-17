@@ -40,9 +40,9 @@ const SnapshotPortfolioPerformanceTab: React.FC<SnapshotPortfolioPerformanceTabP
 }) => {
   return (
     <Box>
-      <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'primary.main' }}>
+      {/* <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'primary.main' }}>
         Portfolio Performance Snapshots
-      </ResponsiveTypography>
+      </ResponsiveTypography> */}
       <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.6 }}>
         Cash Inflows | Cash Outflows | Net Cash Flow được tính từ Cash Flows và filter theo ngày snapshot
       </ResponsiveTypography>

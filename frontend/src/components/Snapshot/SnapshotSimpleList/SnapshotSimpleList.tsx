@@ -31,6 +31,7 @@ import { useAccount } from '../../../contexts/AccountContext';
 import { usePagination } from '../../../hooks/usePagination';
 import { SnapshotResponse, SnapshotQueryParams, SnapshotGranularity } from '../../../types/snapshot.types';
 import { snapshotService } from '../../../services/snapshot.service';
+import { useTranslation } from 'react-i18next';
 // Simplified logic - useQueryClient removed
 
 // Import tab components
@@ -60,6 +61,7 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   pageSize = 10,
   // refreshTrigger and onPortfolioRefresh removed for simplified logic
 }) => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   
@@ -399,9 +401,9 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
   }, [snapshots, assets]);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       {/* Content */}
-      <Paper elevation={0} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+      <Paper elevation={0} sx={{ display: 'flex', flexDirection: 'column', borderRadius: 2, border: 1, borderColor: 'divider' }}>
         {/* Loading */}
         {(loading || portfoliosLoading || assetsLoading || portfolioSnapshotsLoading) && <LinearProgress />}
 
@@ -424,31 +426,31 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
             <Tab 
               icon={<PortfolioIcon />} 
               iconPosition="start" 
-              label="Portfolio Summary" 
+              label={t('snapshots.tabs.portfolioSummary')} 
               sx={{ minWidth: 120, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<PerformanceIcon />} 
               iconPosition="start" 
-              label="Portfolio Performance" 
+              label={t('snapshots.tabs.portfolioPerformance')} 
               sx={{ minWidth: 160, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<AssetGroupIcon />} 
               iconPosition="start" 
-              label="Asset Group Performance" 
+              label={t('snapshots.tabs.assetGroupPerformance')} 
               sx={{ minWidth: 180, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<AssetIcon />} 
               iconPosition="start" 
-              label="Asset Performance" 
+              label={t('snapshots.tabs.assetPerformance')} 
               sx={{ minWidth: 160, fontWeight: 600, letterSpacing: '0.3px' }}
             />
             <Tab 
               icon={<TrendingUpIcon />} 
               iconPosition="start" 
-              label="Asset Snapshots" 
+              label={t('snapshots.tabs.assetSnapshots')} 
               sx={{ minWidth: 140, fontWeight: 600, letterSpacing: '0.3px' }}
             />
           </Tabs>
@@ -459,13 +461,13 @@ export const SnapshotSimpleList: React.FC<SnapshotSimpleListProps> = ({
               variant="outlined"
               size="small"
               icon={<RefreshIcon />}
-              mobileText="Refresh"
-              desktopText="Refresh Data"
+              mobileText={t('snapshots.refreshData')}
+              desktopText={t('snapshots.refreshData')}
               onClick={handleRefresh}
               disabled={loading || portfolioSnapshotsLoading || performanceLoading}
               sx={{ fontWeight: 600, letterSpacing: '0.3px' }}
             >
-              Refresh Data
+              {t('snapshots.refreshData')}
             </ResponsiveButton>
           </Box>
         </Box>

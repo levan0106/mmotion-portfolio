@@ -812,6 +812,17 @@ class ApiService {
     return response.data;
   }
 
+  async createBulkPortfolioSnapshots(
+    portfolioIds: string[],
+    options: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string } = {}
+  ): Promise<any> {
+    const response = await this.api.post('/api/v1/snapshots/portfolio/bulk', {
+      portfolioIds,
+      ...options
+    });
+    return response.data;
+  }
+
   async updateSnapshot(id: string, data: any): Promise<any> {
     const response = await this.api.put(`/api/v1/snapshots/${id}`, data);
     return response.data;
@@ -840,8 +851,9 @@ class ApiService {
     return response.data;
   }
 
-  async bulkRecalculateSnapshots(portfolioId: string, snapshotDate?: string): Promise<any> {
+  async bulkRecalculateSnapshots(portfolioId: string, accountId: string, snapshotDate?: string): Promise<any> {
     const queryParams = new URLSearchParams();
+    queryParams.append('accountId', accountId);
     if (snapshotDate) queryParams.append('snapshotDate', snapshotDate);
 
     const response = await this.api.post(`/api/v1/snapshots/bulk-recalculate/${portfolioId}?${queryParams.toString()}`);

@@ -44,12 +44,12 @@ const PortfolioSummaryTab: React.FC<PortfolioSummaryTabProps> = ({
   const { t } = useTranslation();
   return (
     <Box>
-      <ResponsiveTypography 
+      {/* <ResponsiveTypography 
         variant="pageTitle" 
         sx={{ mb: 2, color: 'primary.main' }}
       >
         {t('portfolio.summarySnapshots')}
-      </ResponsiveTypography>
+      </ResponsiveTypography> */}
       <ResponsiveTypography 
         variant="pageSubtitle" 
         sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.6 }}

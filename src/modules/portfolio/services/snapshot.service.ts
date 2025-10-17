@@ -1133,8 +1133,9 @@ export class SnapshotService {
 
   /**
    * Bulk recalculate snapshots for a portfolio
+   * Uses createPortfolioSnapshot for business consistency
    */
-  async bulkRecalculateSnapshots(portfolioId: string, snapshotDate?: Date): Promise<number> {
+  async bulkRecalculateSnapshots(portfolioId: string, accountId: string, snapshotDate?: Date): Promise<number> {
 
     const options: SnapshotQueryOptions = {
       portfolioId,
@@ -1149,15 +1150,58 @@ export class SnapshotService {
     const snapshots = await this.snapshotRepo.findMany(options);
     let updatedCount = 0;
 
+    // Group snapshots by date and granularity for efficient processing
+    const snapshotGroups = new Map<string, { date: Date; granularity: SnapshotGranularity; count: number }>();
+    
     for (const snapshot of snapshots) {
       try {
-        await this.recalculateSnapshot(snapshot.id);
-        updatedCount++;
+        // Ensure snapshotDate is a Date object
+        const snapshotDate = snapshot.snapshotDate instanceof Date 
+          ? snapshot.snapshotDate 
+          : new Date(snapshot.snapshotDate);
+        
+        // Validate the date is valid
+        if (isNaN(snapshotDate.getTime())) {
+          this.logger.warn(`Invalid snapshot date for snapshot ${snapshot.id}: ${snapshot.snapshotDate}`);
+          continue;
+        }
+        
+        const key = `${snapshotDate.toISOString().split('T')[0]}-${snapshot.granularity}`;
+        if (!snapshotGroups.has(key)) {
+          snapshotGroups.set(key, {
+            date: snapshotDate,
+            granularity: snapshot.granularity,
+            count: 0
+          });
+        }
+        snapshotGroups.get(key)!.count++;
       } catch (error) {
-        this.logger.error(`Failed to recalculate snapshot ${snapshot.id}: ${error.message}`);
+        this.logger.error(`Error processing snapshot ${snapshot.id}: ${error.message}`);
+        continue;
       }
     }
 
+    // Recreate snapshots using createPortfolioSnapshot for each unique date/granularity combination
+    for (const [key, group] of snapshotGroups) {
+      try {
+        this.logger.log(`Recreating ${group.count} snapshots for ${key} using createPortfolioSnapshot`);
+        
+        // Use createPortfolioSnapshot to ensure business consistency
+        const createdSnapshots = await this.createPortfolioSnapshot(
+          portfolioId,
+          group.date,
+          group.granularity,
+          accountId
+        );
+        
+        updatedCount += createdSnapshots.length;
+        this.logger.log(`Successfully recreated ${createdSnapshots.length} snapshots for ${key}`);
+      } catch (error) {
+        this.logger.error(`Failed to recreate snapshots for ${key}: ${error.message}`);
+      }
+    }
+
+    this.logger.log(`Bulk recalculate completed. Updated ${updatedCount} snapshots for portfolio ${portfolioId}`);
     return updatedCount;
   }
 

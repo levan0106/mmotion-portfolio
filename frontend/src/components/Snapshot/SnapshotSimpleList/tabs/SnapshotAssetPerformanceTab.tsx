@@ -31,9 +31,9 @@ const SnapshotAssetPerformanceTab: React.FC<SnapshotAssetPerformanceTabProps> = 
 }) => {
   return (
     <Box>
-      <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'primary.main' }}>
+      {/* <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'primary.main' }}>
         Asset Performance Snapshots
-      </ResponsiveTypography>
+      </ResponsiveTypography> */}
       
       {performanceLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>

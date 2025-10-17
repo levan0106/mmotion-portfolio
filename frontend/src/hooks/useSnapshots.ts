@@ -32,7 +32,8 @@ export interface UseSnapshotsActions {
   updateSnapshot: (id: string, data: UpdateSnapshotRequest) => Promise<SnapshotResponse>;
   deleteSnapshot: (id: string) => Promise<void>;
   recalculateSnapshot: (id: string) => Promise<SnapshotResponse>;
-  bulkRecalculateSnapshots: (portfolioId: string, snapshotDate?: string) => Promise<void>;
+  bulkRecalculateSnapshots: (portfolioId: string, accountId: string, snapshotDate?: string) => Promise<void>;
+  createBulkPortfolioSnapshots: (portfolioIds: string[], options?: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string }) => Promise<any>;
   refreshSnapshots: () => Promise<void>;
   clearError: () => void;
 }
@@ -183,12 +184,12 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
     }
   }, []);
 
-  const bulkRecalculateSnapshots = useCallback(async (portfolioId: string, snapshotDate?: string): Promise<void> => {
+  const bulkRecalculateSnapshots = useCallback(async (portfolioId: string, accountId: string, snapshotDate?: string): Promise<void> => {
     setLoading(true);
     setError(null);
     
     try {
-      await snapshotService.bulkRecalculateSnapshots(portfolioId, snapshotDate);
+      await snapshotService.bulkRecalculateSnapshots(portfolioId, accountId, snapshotDate);
       // Refresh snapshots after bulk recalculate
       await fetchSnapshots(params);
     } catch (error) {
@@ -199,6 +200,24 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
       setLoading(false);
     }
   }, []);
+
+  const createBulkPortfolioSnapshots = useCallback(async (portfolioIds: string[], options?: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string }): Promise<any> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await snapshotService.createBulkPortfolioSnapshots(portfolioIds, options);
+      // Refresh snapshots after bulk create
+      await fetchSnapshots(params);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create bulk portfolio snapshots';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchSnapshots, params]);
 
   const refreshSnapshots = useCallback(async () => {
     await fetchSnapshots(params);
@@ -223,6 +242,7 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
     deleteSnapshot,
     recalculateSnapshot,
     bulkRecalculateSnapshots,
+    createBulkPortfolioSnapshots,
     refreshSnapshots,
     clearError,
   };

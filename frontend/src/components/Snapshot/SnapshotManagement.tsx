@@ -4,60 +4,42 @@ import React, { useState, useMemo } from 'react';
 import {
   Box,
   Paper,
-  Tabs,
-  Tab,
-  Typography,
-  Tooltip,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
   Alert,
   Snackbar,
-  alpha,
-  useTheme,
+  CircularProgress,
+  LinearProgress,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
-  List as ListIcon,
-  Add as AddIcon,
-  FileDownload as ExportIcon,
   Refresh as RefreshIcon,
-  MoreVert as MoreIcon,
   CameraAlt as SnapshotIcon,
   Delete as DeleteIcon,
-  BarChart as PerformanceIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { SnapshotSimpleList } from './SnapshotSimpleList';
-import { SnapshotForm } from './SnapshotForm';
-import { SnapshotDashboard } from './SnapshotDashboard';
-import { SnapshotExportImport } from './SnapshotExportImport';
 import { PortfolioSelector } from './PortfolioSelector';
-import { BulkSnapshotModal } from './BulkSnapshotModal';
-import DeleteSnapshotsModal from './DeleteSnapshotsModal';
-import PerformanceSnapshotDashboard from '../PerformanceSnapshot/PerformanceSnapshotDashboard';
-import { SnapshotResponse, SnapshotFormData, CreateSnapshotRequest, UpdateSnapshotRequest } from '../../types/snapshot.types';
+import SnapshotModals from './SnapshotModals';
+import BulkSnapshotModalV2 from './BulkSnapshotModalV2';
+import { SnapshotResponse } from '../../types/snapshot.types';
 import { useSnapshots } from '../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../hooks/usePortfolioSnapshots';
+import { useAccount } from '../../contexts/AccountContext';
+import { useTranslation } from 'react-i18next';
 
 interface SnapshotManagementProps {
   portfolioId?: string;
 }
 
-type ViewMode = 'dashboard' | 'list' | 'create' | 'edit' | 'export-import' | 'performance';
 
 export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   portfolioId: initialPortfolioId,
 }) => {
-  const theme = useTheme();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const { t } = useTranslation();
+  const { accountId } = useAccount();
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | undefined>(initialPortfolioId);
-  const [selectedSnapshot, setSelectedSnapshot] = useState<SnapshotResponse | null>(null);
-  const [isFormLoading, setIsFormLoading] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [bulkCreateModalOpen, setBulkCreateModalOpen] = useState(false);
+  const [bulkCreateModalV2Open, setBulkCreateModalV2Open] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -70,6 +52,8 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   });
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [recalculateConfirmOpen, setRecalculateConfirmOpen] = useState(false);
 
   // Memoize the params to prevent unnecessary re-renders
   const snapshotParams = useMemo(() => 
@@ -78,8 +62,6 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   );
 
   const {
-    createSnapshot,
-    updateSnapshot,
     deleteSnapshot,
     bulkRecalculateSnapshots,
     refreshSnapshots,
@@ -96,100 +78,54 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
     setSnackbar({ open: true, message, severity });
   };
 
-  const handleCreateSnapshot = async (data: CreateSnapshotRequest | UpdateSnapshotRequest) => {
-    setIsFormLoading(true);
-    try {
-      await createSnapshot(data as CreateSnapshotRequest);
-      setViewMode('list');
-      refreshSnapshots();
-      showSnackbar('Snapshot created successfully!', 'success');
-    } catch (error) {
-      console.error('Failed to create snapshot:', error);
-      showSnackbar('Failed to create snapshot. Please try again.', 'error');
-    } finally {
-      setIsFormLoading(false);
-    }
-  };
 
-  const handleUpdateSnapshot = async (data: UpdateSnapshotRequest) => {
-    if (!selectedSnapshot) return;
-    
-    setIsFormLoading(true);
-    try {
-      await updateSnapshot(selectedSnapshot.id, data);
-      setViewMode('list');
-      setSelectedSnapshot(null);
-      refreshSnapshots();
-      showSnackbar('Snapshot updated successfully!', 'success');
-    } catch (error) {
-      console.error('Failed to update snapshot:', error);
-      showSnackbar('Failed to update snapshot. Please try again.', 'error');
-    } finally {
-      setIsFormLoading(false);
-    }
-  };
 
   const handleDeleteSnapshot = async (snapshot: SnapshotResponse) => {
     try {
       await deleteSnapshot(snapshot.id);
       refreshSnapshots();
-      showSnackbar('Snapshot deleted successfully!', 'success');
+      showSnackbar(t('snapshots.snapshotDeletedSuccess'), 'success');
     } catch (error) {
       console.error('Failed to delete snapshot:', error);
-      showSnackbar('Failed to delete snapshot. Please try again.', 'error');
+      showSnackbar(t('snapshots.snapshotDeleteFailed'), 'error');
     }
   };
 
-  const handleEditSnapshot = (snapshot: SnapshotResponse) => {
-    setSelectedSnapshot(snapshot);
-    setViewMode('edit');
+
+  const handleBulkRecalculate = () => {
+    setRecalculateConfirmOpen(true);
   };
 
-  const handleBulkRecalculate = async () => {
-    if (window.confirm('Are you sure you want to recalculate all snapshots for this portfolio?')) {
-      try {
-        await bulkRecalculateSnapshots(selectedPortfolioId!);
-        refreshSnapshots();
-        showSnackbar('All snapshots recalculated successfully!', 'success');
-      } catch (error) {
-        console.error('Failed to bulk recalculate snapshots:', error);
-        showSnackbar('Failed to recalculate snapshots. Please try again.', 'error');
-      }
-    }
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleRefresh = async () => {
+  const handleConfirmRecalculate = async () => {
+    setRecalculateConfirmOpen(false);
+    setIsRecalculating(true);
+    showSnackbar(t('snapshots.recalculating'), 'info');
     try {
-      // Refresh asset snapshots
-      if (refreshSnapshots) {
-        await refreshSnapshots();
-      } else {
-        console.error('refreshSnapshots is not available');
-      }
-      
-      // Refresh portfolio snapshots
-      if (refreshPortfolioSnapshots) {
-        await refreshPortfolioSnapshots();
-      } else {
-        console.error('refreshPortfolioSnapshots is not available');
-      }
-      
-      // Trigger refresh for SnapshotSimpleList
+      await bulkRecalculateSnapshots(selectedPortfolioId!, accountId);
+      await refreshSnapshots();
+      await refreshPortfolioSnapshots();
       setRefreshTrigger(prev => prev + 1);
-      showSnackbar('Data refreshed successfully!', 'success');
+      showSnackbar(t('snapshots.recalculateSuccess'), 'success');
     } catch (error) {
-      console.error('Error refreshing data:', error);
-      showSnackbar('Error refreshing data', 'error');
+      console.error('Failed to bulk recalculate snapshots:', error);
+      showSnackbar(t('snapshots.recalculateFailed'), 'error');
+    } finally {
+      setIsRecalculating(false);
     }
   };
+
+  const handleCancelRecalculate = () => {
+    setRecalculateConfirmOpen(false);
+  };
+
+  // const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
+
+  // const handleMenuClose = () => {
+  //   setAnchorEl(null);
+  // };
+
 
   const handleDeleteSuccess = (_deletedCount: number, message: string) => {
     showSnackbar(message, 'success');
@@ -197,297 +133,183 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
   };
 
   const handleDeleteError = (error: string) => {
-    showSnackbar(`Delete failed: ${error}`, 'error');
+    showSnackbar(`${t('snapshots.deleteFailed')}: ${error}`, 'error');
   };
 
-  const getFormData = (): Partial<SnapshotFormData> => {
-    if (selectedSnapshot) {
-      return {
-        portfolioId: selectedSnapshot.portfolioId,
-        assetId: selectedSnapshot.assetId,
-        assetSymbol: selectedSnapshot.assetSymbol,
-        snapshotDate: selectedSnapshot.snapshotDate,
-        granularity: selectedSnapshot.granularity,
-        quantity: selectedSnapshot.quantity,
-        currentPrice: selectedSnapshot.currentPrice,
-        currentValue: selectedSnapshot.currentValue,
-        costBasis: selectedSnapshot.costBasis,
-        avgCost: selectedSnapshot.avgCost,
-        realizedPl: selectedSnapshot.realizedPl,
-        unrealizedPl: selectedSnapshot.unrealizedPl,
-        totalPl: selectedSnapshot.totalPl,
-        allocationPercentage: selectedSnapshot.allocationPercentage,
-        portfolioTotalValue: selectedSnapshot.portfolioTotalValue,
-        returnPercentage: selectedSnapshot.returnPercentage,
-        dailyReturn: selectedSnapshot.dailyReturn,
-        cumulativeReturn: selectedSnapshot.cumulativeReturn,
-        isActive: selectedSnapshot.isActive,
-        createdBy: selectedSnapshot.createdBy,
-        notes: selectedSnapshot.notes,
-      };
-    }
-    return {
-      portfolioId: selectedPortfolioId || '',
-      isActive: true,
-    };
-  };
 
-  const renderView = () => {
-    if (!selectedPortfolioId) return null;
-    
-    switch (viewMode) {
-      case 'dashboard':
-        return (
-          <SnapshotDashboard
-            key={selectedPortfolioId}
-            portfolioId={selectedPortfolioId}
-            onSnapshotCreate={() => setViewMode('create')}
-            onSnapshotManage={() => setViewMode('list')}
-          />
-        );
-      
-      case 'list':
-        return (
-          <SnapshotSimpleList
-            key={selectedPortfolioId}
-            portfolioId={selectedPortfolioId}
-            onSnapshotSelect={(snapshot) => {
-              setSelectedSnapshot(snapshot);
-              setViewMode('edit');
-            }}
-            onSnapshotEdit={handleEditSnapshot}
-            onSnapshotDelete={handleDeleteSnapshot}
-            showActions={true}
-            pageSize={10}
-            refreshTrigger={refreshTrigger}
-            onPortfolioRefresh={() => {
-              // Auto-refresh portfolio data when snapshot is created
-              // Trigger refresh of all portfolio-related data
-              setRefreshTrigger(prev => prev + 1);
-              refreshSnapshots();
-              refreshPortfolioSnapshots();
-            }}
-          />
-        );
-      
-      case 'create':
-        return (
-          <SnapshotForm
-            initialData={getFormData()}
-            onSubmit={handleCreateSnapshot}
-            onCancel={() => setViewMode('list')}
-            isEdit={false}
-            loading={isFormLoading}
-          />
-        );
-      
-      case 'edit':
-        return (
-          <SnapshotForm
-            initialData={getFormData()}
-            onSubmit={handleUpdateSnapshot}
-            onCancel={() => {
-              setViewMode('list');
-              setSelectedSnapshot(null);
-            }}
-            isEdit={true}
-            loading={isFormLoading}
-          />
-        );
-      
-      case 'export-import':
-        return (
-          <SnapshotExportImport
-            portfolioId={selectedPortfolioId!}
-            onImportComplete={() => {
-              setViewMode('list');
-            }}
-            onExportComplete={() => {
-            }}
-          />
-        );
-      
-      case 'performance':
-        return (
-          <PerformanceSnapshotDashboard
-            key={selectedPortfolioId}
-            portfolioId={selectedPortfolioId}
-          />
-        );
-      
-      default:
-        return null;
-    }
-  };
 
-  const getTabValue = (mode: ViewMode) => {
-    switch (mode) {
-      case 'dashboard': return 0;
-      case 'list': return 1;
-      case 'create': return 2;
-      case 'edit': return 2;
-      case 'export-import': return 3;
-      case 'performance': return 4;
-      default: return 0;
-    }
-  };
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    switch (newValue) {
-      case 0: setViewMode('dashboard'); break;
-      case 1: setViewMode('list'); break;
-      case 2: setViewMode('create'); break;
-      case 3: setViewMode('export-import'); break;
-      case 4: setViewMode('performance'); break;
-      default: setViewMode('dashboard');
-    }
-  };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
-      {/* Header */}
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'grey.50' }}>
+      {/* Top Header - Fixed */}
       <Paper 
-        elevation={0} 
+        elevation={1} 
         sx={{ 
-          p: 2.5, 
-          mb: 2, 
-          borderRadius: 2,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-          border: 1,
-          borderColor: alpha(theme.palette.primary.main, 0.1),
+          p: 3,
+          borderRadius: 0,
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: 'white',
         }}
       >
-        {/* Portfolio Selector */}
-        <Box sx={{ mb: 2 }}>
-          <PortfolioSelector
-            selectedPortfolioId={selectedPortfolioId}
-            onPortfolioChange={setSelectedPortfolioId}
-          />
-        </Box>
-
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1.5 }}>
-          <Tabs
-            value={getTabValue(viewMode)}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              '& .MuiTab-root': {
-                textTransform: 'none',
-                fontWeight: 600,
-                minHeight: 44,
-                px: 2,
-              },
-            }}
-          >
-            <Tab
-              icon={<DashboardIcon />}
-              iconPosition="start"
-              label="Dashboard"
-              sx={{ minWidth: 120 }}
-            />
-            <Tab
-              icon={<ListIcon />}
-              iconPosition="start"
-              label="List"
-              sx={{ minWidth: 120 }}
-            />
-            <Tab
-              icon={<AddIcon />}
-              iconPosition="start"
-              label="Create"
-              sx={{ minWidth: 120 }}
-            />
-            <Tab
-              icon={<ExportIcon />}
-              iconPosition="start"
-              label="Export/Import"
-              sx={{ minWidth: 140 }}
-            />
-            <Tab
-              icon={<PerformanceIcon />}
-              iconPosition="start"
-              label="Performance"
-              sx={{ minWidth: 140 }}
-            />
-          </Tabs>
-        </Box>
-
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box>
+            <ResponsiveTypography variant="pageTitle" sx={{ color: 'text.primary', mb: 0.5 }}>
+              {t('snapshots.title')}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" sx={{ color: 'text.secondary' }}>
+              {t('snapshots.subtitle')}
+            </ResponsiveTypography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <ResponsiveButton
-              variant="outlined"
+              variant="contained"
+              color="secondary"
               icon={<SnapshotIcon />}
-              mobileText="Create"
-              desktopText="Create Portfolio Snapshots"
-              onClick={() => setBulkCreateModalOpen(true)}
-              size="small"
-              sx={{ px: 2, textTransform: 'none' }}
+              mobileText={t('snapshots.createForAllPortfolios')}
+              desktopText={t('snapshots.createForAllPortfolios')}
+              onClick={() => setBulkCreateModalV2Open(true)}
+              size="medium"
+              sx={{ textTransform: 'none', fontWeight: 600 }}
             >
-              Create Portfolio Snapshots
+              {t('snapshots.createForAllPortfolios')}
             </ResponsiveButton>
-            <ResponsiveButton
-              variant="outlined"
-              color="warning"
-              icon={<RefreshIcon />}
-              mobileText="Recalc"
-              desktopText="Recalculate All"
-              onClick={handleBulkRecalculate}
-              disabled={viewMode !== 'list'}
-              size="small"
-              sx={{ px: 2 }}
-            >
-              Recalculate All
-            </ResponsiveButton>
-            <ResponsiveButton
-              variant="outlined"
-              color="error"
-              icon={<DeleteIcon />}
-              mobileText="Delete"
-              desktopText="Delete Snapshots"
-              onClick={() => setDeleteModalOpen(true)}
-              disabled={!selectedPortfolioId}
-              size="small"
-              sx={{ px: 2 }}
-            >
-              Delete Snapshots
-            </ResponsiveButton>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Tooltip title="Refresh Data 1">
-              <IconButton onClick={handleRefresh} size="small">
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
             
-            <Tooltip title="More Actions">
-              <IconButton onClick={handleMenuOpen} size="small">
-                <MoreIcon />
-              </IconButton>
-            </Tooltip>
+            {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tooltip title={t('snapshots.refreshDataTooltip')}>
+                <IconButton onClick={handleRefresh} size="medium" sx={{ bgcolor: 'grey.100' }}>
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+              
+              <Tooltip title={t('snapshots.moreActionsTooltip')}>
+                <IconButton onClick={handleMenuOpen} size="medium" sx={{ bgcolor: 'grey.100' }}>
+                  <MoreIcon />
+                </IconButton>
+              </Tooltip>
+            </Box> */}
           </Box>
         </Box>
+
+        {/* Portfolio Selector */}
+        <PortfolioSelector
+          selectedPortfolioId={selectedPortfolioId}
+          onPortfolioChange={setSelectedPortfolioId}
+        />
       </Paper>
 
-      {/* Content */}
-      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-        {selectedPortfolioId ? renderView() : (
-          <Paper elevation={0} sx={{ p: 3, textAlign: 'center', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Select a Portfolio
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Choose a portfolio from the dropdown above to view its snapshots
-            </Typography>
-          </Paper>
+      {/* Action Bar */}
+      {selectedPortfolioId && (
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'white', 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          display: 'flex',
+          gap: 2,
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          <ResponsiveButton
+            variant="contained"
+            icon={<SnapshotIcon />}
+            mobileText={t('snapshots.createSnapshots')}
+            desktopText={t('snapshots.createSnapshots')}
+            onClick={() => setBulkCreateModalOpen(true)}
+            size="medium"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          >
+            {t('snapshots.createSnapshots')}
+          </ResponsiveButton>
+          
+          <ResponsiveButton
+            variant="outlined"
+            color="warning"
+            icon={isRecalculating ? <CircularProgress size={20} /> : <RefreshIcon />}
+            mobileText={isRecalculating ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
+            desktopText={isRecalculating ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
+            onClick={handleBulkRecalculate}
+            disabled={isRecalculating}
+            size="medium"
+            sx={{ textTransform: 'none' }}
+          >
+            {isRecalculating ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
+          </ResponsiveButton>
+          
+          <ResponsiveButton
+            variant="outlined"
+            color="error"
+            icon={<DeleteIcon />}
+            mobileText={t('snapshots.deleteSnapshots')}
+            desktopText={t('snapshots.deleteSnapshots')}
+            onClick={() => setDeleteModalOpen(true)}
+            size="medium"
+            sx={{ textTransform: 'none' }}
+          >
+            {t('snapshots.deleteSnapshots')}
+          </ResponsiveButton>
+        </Box>
+      )}
+
+      {/* Global Progress Indicator */}
+      {isRecalculating && (
+        <LinearProgress 
+          sx={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            zIndex: 9999,
+            height: 4
+          }} 
+        />
+      )}
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1 }}>
+        {selectedPortfolioId ? (
+          <Box sx={{ p: 2 }}>
+            <SnapshotSimpleList
+              key={selectedPortfolioId}
+              portfolioId={selectedPortfolioId}
+              onSnapshotSelect={() => {
+                // Snapshot selected for viewing
+              }}
+              onSnapshotDelete={handleDeleteSnapshot}
+              showActions={true}
+              pageSize={10}
+              refreshTrigger={refreshTrigger}
+              onPortfolioRefresh={() => {
+                setRefreshTrigger(prev => prev + 1);
+                refreshSnapshots();
+                refreshPortfolioSnapshots();
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{  
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            bgcolor: 'grey.50',
+            width: '100%'
+          }}>
+            <Box sx={{ 
+              p: 6, 
+              textAlign: 'center', 
+              width: '100%'
+            }}>
+              <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                {t('snapshots.selectPortfolioPlaceholder')}
+              </ResponsiveTypography>
+            </Box>
+          </Box>
         )}
       </Box>
 
       {/* Action Menu */}
-      <Menu
+      {/* <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
@@ -504,15 +326,28 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
           <ListItemIcon>
             <RefreshIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Refresh Data</ListItemText>
+          <ListItemText>{t('snapshots.refreshData')}</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => { handleBulkRecalculate(); handleMenuClose(); }}>
+        <MenuItem 
+          onClick={() => { setBulkCreateModalV2Open(true); handleMenuClose(); }}
+        >
           <ListItemIcon>
-            <RefreshIcon fontSize="small" />
+            <SnapshotIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Recalculate All</ListItemText>
+          <ListItemText>{t('snapshots.createForAllPortfolios')}</ListItemText>
         </MenuItem>
-      </Menu>
+        <MenuItem 
+          onClick={() => { handleBulkRecalculate(); handleMenuClose(); }}
+          disabled={isRecalculating}
+        >
+          <ListItemIcon>
+            {isRecalculating ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>
+            {isRecalculating ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
+          </ListItemText>
+        </MenuItem>
+      </Menu> */}
 
       {/* Snackbar */}
       <Snackbar
@@ -530,12 +365,50 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
         </Alert>
       </Snackbar>
 
-      {/* Bulk Create Modal */}
-      <BulkSnapshotModal
-        open={bulkCreateModalOpen}
-        onClose={() => setBulkCreateModalOpen(false)}
+      {/* All Snapshot Modals */}
+      <SnapshotModals
+        // Bulk Create Modal
+        bulkCreateModalOpen={bulkCreateModalOpen}
+        onBulkCreateModalClose={() => setBulkCreateModalOpen(false)}
+        selectedPortfolioId={selectedPortfolioId}
+        onBulkCreateSuccess={(_, snapshotDate) => {
+          showSnackbar(`${t('snapshots.snapshotCreatedSuccess')} ${snapshotDate}`, 'success');
+          
+          // Refresh all snapshot-related data
+          refreshSnapshots();
+          refreshPortfolioSnapshots();
+          
+          // Trigger refresh trigger for UI updates
+          setRefreshTrigger(prev => prev + 1);
+        }}
+        onBulkCreateError={(error) => {
+          showSnackbar(`${t('snapshots.snapshotCreateFailed')}: ${error}`, 'error');
+        }}
+        onPortfolioRefresh={() => {
+          // Auto-refresh portfolio data when snapshot is created
+          // Additional refresh actions if needed
+          setRefreshTrigger(prev => prev + 1);
+        }}
+
+        // Delete Modal
+        deleteModalOpen={deleteModalOpen}
+        onDeleteModalClose={() => setDeleteModalOpen(false)}
+        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteError={handleDeleteError}
+
+        // Recalculate Modal
+        recalculateConfirmOpen={recalculateConfirmOpen}
+        onRecalculateConfirmClose={handleCancelRecalculate}
+        onRecalculateConfirm={handleConfirmRecalculate}
+        isRecalculating={isRecalculating}
+      />
+
+      {/* Bulk Create Modal V2 - Multiple Portfolios */}
+      <BulkSnapshotModalV2
+        open={bulkCreateModalV2Open}
+        onClose={() => setBulkCreateModalV2Open(false)}
         onSuccess={(_, snapshotDate) => {
-          showSnackbar(`Snapshot created successfully for portfolio on ${snapshotDate}`, 'success');
+          showSnackbar(`${t('snapshots.snapshotCreatedSuccess')} ${snapshotDate}`, 'success');
           
           // Refresh all snapshot-related data
           refreshSnapshots();
@@ -545,22 +418,13 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
           setRefreshTrigger(prev => prev + 1);
         }}
         onError={(error) => {
-          showSnackbar(`Failed to create snapshot: ${error}`, 'error');
+          showSnackbar(`${t('snapshots.snapshotCreateFailed')}: ${error}`, 'error');
         }}
         onPortfolioRefresh={() => {
           // Auto-refresh portfolio data when snapshot is created
-          // Additional refresh actions if needed
           setRefreshTrigger(prev => prev + 1);
         }}
-      />
-
-      {/* Delete Snapshots Modal */}
-      <DeleteSnapshotsModal
-        open={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        portfolioId={selectedPortfolioId || ''}
-        onSuccess={handleDeleteSuccess}
-        onError={handleDeleteError}
+        selectedPortfolioId={selectedPortfolioId}
       />
     </Box>
   );
