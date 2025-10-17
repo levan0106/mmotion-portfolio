@@ -26,6 +26,8 @@ import {
   Alert,
   Card,
   CardContent,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -123,6 +125,8 @@ export const TradeList: React.FC<TradeListProps> = ({
   isCompactMode = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchTerm, setSearchTerm] = useState('');
   const [sideFilter, setSideFilter] = useState<TradeSide | 'ALL'>('ALL');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -247,7 +251,7 @@ export const TradeList: React.FC<TradeListProps> = ({
               color="primary"
             />
           </Box>
-          {!isCompactMode && (
+          {!isCompactMode && !isMobile && (
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
               {t('trading.manageAndTrack')}
             </ResponsiveTypography>

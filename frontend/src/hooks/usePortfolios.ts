@@ -226,3 +226,24 @@ export const usePortfolioHistory = (portfolioId: string, period?: string) => {
     error,
   };
 };
+
+export const usePortfolioAssetPerformance = (portfolioId: string) => {
+  const {
+    data: performanceData,
+    isLoading,
+    error,
+  } = useQuery(
+    ['portfolio-asset-performance', portfolioId],
+    () => apiService.getPortfolioAssetPerformance(portfolioId),
+    {
+      enabled: !!portfolioId,
+      staleTime: 30 * 1000, // 30 seconds
+    }
+  );
+
+  return {
+    performanceData: performanceData || null,
+    isLoading,
+    error,
+  };
+};

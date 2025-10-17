@@ -263,6 +263,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
               variant="outlined"
               onClick={onCancel}
               size="large"
+              forceTextOnly={true}
               mobileText={t('common.cancel')}
               desktopText={t('common.cancel')}
             >
@@ -275,6 +276,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
             size="large"
             disabled={_loading}
             icon={_loading ? <CircularProgress size={20} /> : undefined}
+            forceTextOnly={true}
             mobileText={_loading ? t('common.processing') : submitText}
             desktopText={_loading ? t('common.processing') : submitText}
           >

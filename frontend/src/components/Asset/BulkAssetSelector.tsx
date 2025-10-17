@@ -17,6 +17,7 @@ import {
   Grid,
   alpha,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { ResponsiveButton } from '../Common';
 import { ResponsiveTypography } from '../Common';
@@ -55,6 +56,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<AssetType | 'ALL'>('ALL');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
@@ -233,8 +235,8 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
               overflow: 'hidden'
             }}>
-              <ResponsiveButton
-                fullWidth
+              {!isMobile && ( <ResponsiveButton
+                forceTextOnly={true}
                 onClick={() => setShowHelp(!showHelp)}
                 sx={{
                   justifyContent: 'flex-start',
@@ -251,7 +253,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                 desktopText={t('bulkAssetSelector.help.title')}
               >
                 {t('bulkAssetSelector.help.title')}
-              </ResponsiveButton>
+              </ResponsiveButton> )}
               
               {showHelp && (
                 <Box sx={{ p: 3, pt: 0 }}>
@@ -260,7 +262,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                     fontWeight: 500,
                     lineHeight: 1.6
                   }}>
-                    {t('bulkAssetSelector.help.description')}
+                    {t('bulkAssetSelector.help.description')} 
                   </ResponsiveTypography>
                 </Box>
               )}
@@ -299,6 +301,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <ResponsiveButton
+                    forceTextOnly={true}
                     fullWidth
                     variant="outlined"
                     onClick={handleSelectAll}

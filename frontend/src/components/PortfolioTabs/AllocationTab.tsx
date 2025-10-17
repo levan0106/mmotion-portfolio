@@ -17,7 +17,7 @@ import {
   Analytics as AnalyticsIcon,
   Timeline as TimelineIcon
 } from '@mui/icons-material';
-import { usePortfolioAnalytics } from '../../hooks/usePortfolios';
+import { usePortfolioAnalytics, usePortfolioAssetPerformance } from '../../hooks/usePortfolios';
 import { usePortfolioAllocationTimeline } from '../../hooks/usePortfolioAnalytics';
 import { apiService } from '../../services/api';
 import AssetAllocationChart from '../Analytics/AssetAllocationChart';
@@ -72,6 +72,13 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
     isLoading: isAnalyticsLoading,
     error: analyticsError,
   } = usePortfolioAnalytics(portfolioId);
+
+  // Asset performance data with real unrealized P&L
+  const {
+    performanceData,
+    isLoading: isPerformanceLoading,
+    error: performanceError,
+  } = usePortfolioAssetPerformance(portfolioId);
 
 
   // Fetch risk-return data
@@ -409,21 +416,21 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             flexDirection: 'column',
             ...applyBorderStyle('chart')
           }}>
-            {isAnalyticsLoading ? (
+            {isPerformanceLoading ? (
               <Box display="flex" justifyContent="center" p={1}>
                 <CircularProgress size={20} />
               </Box>
-            ) : analyticsError ? (
+            ) : performanceError ? (
               <ResponsiveTypography variant="errorText">{t('portfolio.failedToLoadPL')}</ResponsiveTypography>
             ) : (
               <UnrealizedPnLChart 
-                data={allocationData ? Object.entries(allocationData.allocation || {}).map(([assetType, allocation]: [string, any]) => ({
-                  assetType,
-                  value: allocation.value,
-                  performance: allocation.percentage || 0,
-                  unrealizedPl: allocation.value * (allocation.percentage || 0) / 100,
-                  positionCount: 1,
-                  color: getAssetTypeColor(assetType)
+                data={performanceData?.data ? performanceData.data.map((item: any) => ({
+                  assetType: item.assetType,
+                  value: item.value,
+                  performance: item.performance,
+                  unrealizedPl: item.unrealizedPl, // Use actual unrealized P&L from API
+                  positionCount: item.positionCount,
+                  color: item.color
                 })) : []} 
                 baseCurrency={portfolio.baseCurrency} 
                 compact={isCompactMode}

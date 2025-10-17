@@ -23,6 +23,7 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
+  useMediaQuery,
 } from '@mui/material';
 import {
   AccountBalance,
@@ -60,6 +61,7 @@ interface ReportData {
 const Report: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { accountId, baseCurrency } = useAccount();
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -439,12 +441,13 @@ const Report: React.FC = () => {
               WebkitTextFillColor: 'transparent',
               mb: 1,
               filter: 'none'
-            }}>
+            }}
+            ellipsis={false}>
               {t('report.title')}
             </ResponsiveTypography>
           </Box>
           <Box sx={{ ml: 2 }}>
-            <FormControl sx={{ minWidth: 200, '& .MuiOutlinedInput-root': { height: '40px' } }}>
+            <FormControl sx={{ minWidth: 160, '& .MuiOutlinedInput-root': { height: '40px' } }}>
               <InputLabel sx={{ fontSize: '0.875rem!important' }}>{t('report.portfolioFilter')}</InputLabel>
               <Select
                 multiple
@@ -532,9 +535,9 @@ const Report: React.FC = () => {
             </FormControl>
           </Box>
         </Box>
-        <ResponsiveTypography variant="pageSubtitle">
+        {!isMobile && ( <ResponsiveTypography variant="pageSubtitle">
           {t('report.subtitle')}
-        </ResponsiveTypography>
+        </ResponsiveTypography> )}
       </Box>
 
       {/* 3-Column Layout */}

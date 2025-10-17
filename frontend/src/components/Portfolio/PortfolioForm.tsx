@@ -188,6 +188,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
             onClick={handleSubmit(handleFormSubmit)}
             variant="contained"
             disabled={isLoading || (creationMode === 'copy' && !selectedPublicPortfolio)}
+            forceTextOnly={true}
             mobileText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
             desktopText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
           >
@@ -272,6 +273,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                     onClick={() => setShowPublicSelector(true)}
                     variant="outlined"
                     startIcon={<SearchIcon />}
+                    forceTextOnly={true}
                   >
                     {t('portfolio.form.templateSelector.browseTemplates')}
                   </ResponsiveButton>
@@ -339,22 +341,6 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
               </>
             )}
 
-            {/* Account ID field hidden for simpler layout - value is set automatically */}
-            {/* <Controller
-              name="accountId"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Account ID"
-                  fullWidth
-                  error={!!errors.accountId}
-                  helperText={errors.accountId?.message}
-                  placeholder="Enter account ID"
-                  disabled={true} // Always disabled - account ID is set automatically
-                />
-              )}
-            /> */}
           </Box>
 
           {/* Portfolio Visibility Settings - Only for editing portfolios and users with permission */}

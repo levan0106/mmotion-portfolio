@@ -153,7 +153,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.25rem' }}>
               {holdingName}
             </ResponsiveTypography>
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary">

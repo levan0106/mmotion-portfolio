@@ -439,7 +439,7 @@ const Welcome: React.FC = () => {
         <Container maxWidth="lg">
           {/* Header Section */}
           <Box sx={{ textAlign: 'center', mb: 6, position: 'relative' }}>
-            <IconButton
+            {/* <IconButton
               onClick={handleCloseWelcome}
               sx={{
                 position: 'absolute',
@@ -451,7 +451,7 @@ const Welcome: React.FC = () => {
               }}
             >
               <CloseIcon />
-            </IconButton>
+            </IconButton> */}
             
             <Box sx={{ mb: 4 }}>
               <Avatar

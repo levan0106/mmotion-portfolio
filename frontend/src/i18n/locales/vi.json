@@ -1035,6 +1035,7 @@
       "groupByDate": "Nhóm theo ngày",
       "expand": "Mở rộng",
       "expandAll": "Mở rộng tất cả",
+      "collapse": "Thu gọn",
       "collapseAll": "Thu gọn tất cả"
     },
     "form": {
@@ -1122,7 +1123,8 @@
     },
     "tooltips": {
       "cannotEditCancelled": "Không thể chỉnh sửa dòng tiền đã hủy",
-      "edit": "Chỉnh sửa"
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa"
     },
     "pagination": {
       "showing": "Hiển thị {{start}} đến {{end}} trong {{total}} mục",
@@ -1662,7 +1664,7 @@
       "name": "Tên chủ tài khoản",
       "nameHelper": "Nhập tên đầy đủ của chủ tài khoản",
       "email": "Địa chỉ email (Tùy chọn)",
-      "emailHelper": "Tùy chọn: Nhập địa chỉ email để nhận dạng tài khoản",
+      "emailHelper": "Nhập địa chỉ email để có thể nhận thông báo từ hệ thống",
       "baseCurrency": "Tiền tệ cơ sở",
       "canInvest": "Có thể đầu tư vào quỹ",
       "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"

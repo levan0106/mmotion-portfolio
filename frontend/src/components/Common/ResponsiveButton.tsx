@@ -4,6 +4,7 @@ import { Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
 interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
   children: React.ReactNode;
   icon?: React.ReactNode;
+  endIcon?: React.ReactNode;
   mobileText?: string;
   desktopText?: string;
   forceIconOnly?: boolean;
@@ -20,6 +21,7 @@ interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
 export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
   children,
   icon,
+  endIcon,
   mobileText,
   desktopText,
   forceIconOnly = false,
@@ -34,7 +36,8 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down(breakpoint));
   
   // Determine if we should show icon only
-  const shouldShowIconOnly = forceIconOnly || (!forceTextOnly && isMobile);
+  // Only show icon-only on mobile if there's a start icon available, otherwise show text
+  const shouldShowIconOnly = forceIconOnly || (!forceTextOnly && isMobile && (icon || endIcon));
   
   // Determine the text to display
   const getDisplayText = () => {
@@ -47,7 +50,7 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
     return children;
   };
   
-  // Determine the icon to display
+  // Determine the start icon to display
   const getDisplayIcon = () => {
     if (!icon) return undefined;
     
@@ -69,6 +72,29 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
     
     return icon;
   };
+
+  // Determine the end icon to display
+  const getDisplayEndIcon = () => {
+    if (!endIcon) return undefined;
+    
+    // Clone endIcon with responsive sizing
+    if (React.isValidElement(endIcon) && responsiveSizing) {
+      const iconSizeMap = {
+        small: { xs: 16, sm: 18, md: 20 },
+        medium: { xs: 18, sm: 20, md: 24 },
+        large: { xs: 20, sm: 24, md: 28 }
+      };
+      
+      return React.cloneElement(endIcon as React.ReactElement<any>, {
+        sx: {
+          fontSize: iconSizeMap[iconSize],
+          ...(endIcon.props as any).sx
+        }
+      });
+    }
+    
+    return endIcon;
+  };
   
   // Get responsive button styles
   const getResponsiveStyles = () => {
@@ -84,14 +110,17 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
     
     // Responsive sizing based on screen size
     const responsiveStyles = {
-      // Mobile styles (icon-only or compact)
+      // Mobile styles (icon-only if icon exists, otherwise compact text)
       ...(isMobile && {
-        minWidth: shouldShowIconOnly ? 'auto' : '120px',
+        minWidth: shouldShowIconOnly ? 'auto' : '100px',
         px: shouldShowIconOnly ? 1.5 : 2,
         py: shouldShowIconOnly ? 1.5 : 1,
         fontSize: '0.75rem',
         '& .MuiButton-startIcon': {
           marginRight: shouldShowIconOnly ? 0 : 0.5,
+        },
+        '& .MuiButton-endIcon': {
+          marginLeft: shouldShowIconOnly ? 0 : 0.5,
         }
       }),
       
@@ -103,6 +132,9 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
         fontSize: '0.875rem',
         '& .MuiButton-startIcon': {
           marginRight: 0.5,
+        },
+        '& .MuiButton-endIcon': {
+          marginLeft: 0.5,
         }
       }),
       
@@ -120,6 +152,7 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
     <Button
       {...buttonProps}
       startIcon={shouldShowIconOnly ? undefined : getDisplayIcon()}
+      endIcon={shouldShowIconOnly ? getDisplayEndIcon() : undefined}
       sx={getResponsiveStyles()}
     >
       {shouldShowIconOnly ? getDisplayIcon() : getDisplayText()}

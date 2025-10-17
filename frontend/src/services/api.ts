@@ -1105,6 +1105,11 @@ class ApiService {
     return response.data;
   }
 
+  async getPortfolioAssetPerformance(portfolioId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/asset-performance`);
+    return response.data;
+  }
+
   async settleDeposit(depositId: string, data: any): Promise<any> {
     const response = await this.api.post(`/api/v1/deposits/${depositId}/settle`, data);
     return response.data;

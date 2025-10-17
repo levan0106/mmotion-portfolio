@@ -16,6 +16,8 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
@@ -108,7 +110,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   // const { t } = useTranslation(); // Commented out as not used
   const { accountId, currentAccount } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Asset creation modal state
   const [showAssetForm, setShowAssetForm] = useState(false);
   const [assetFormError, setAssetFormError] = useState<string | null>(null);
@@ -354,7 +357,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 <Grid container spacing={isModal ? 1 : 1.5}>
                   {/* Portfolio Selection */}
                   <Grid item xs={12} md={4}>
-                    <Controller
+                    {!isMobile && ( <Controller
                       name="portfolioId"
                       control={control}
                       render={({ field }) => (
@@ -389,7 +392,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                           )}
                         </FormControl>
                       )}
-                    />
+                    /> )}
                   </Grid>
 
                   {/* Asset Selection */}
@@ -618,7 +621,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   </Grid>
 
                   {/* Trade Type */}
-                  <Grid item xs={12} md={4}>
+                  {!isMobile && ( <Grid item xs={12} md={4}>
                     <Controller
                       name="tradeType"
                       control={control}
@@ -647,7 +650,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     </FormControl>
                   )}
                 />
-                  </Grid>
+                  </Grid> )}
                 </Grid>
               </Box>
 

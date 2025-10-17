@@ -829,9 +829,10 @@ export class TradingService {
 
     // Step 3: Query trade theo startDate và endDate mới
     const tradesQuery = `
-      SELECT t.*, a.*
+      SELECT t.*, a.*, td.pnl
       FROM trades t
       LEFT JOIN assets a ON t.asset_id = a.id
+      LEFT JOIN trade_details td on t.trade_id = td.sell_trade_id
       WHERE t.portfolio_id = $1 
         AND t.trade_date >= $2 
         AND t.trade_date <= $3 
@@ -911,13 +912,16 @@ export class TradingService {
       // Calculate P&L for this trade
       let tradePnl = 0;
       if (trade.side === 'SELL') {
-        const tradeDetails = await this.tradeDetailRepo.find({
-          where: { sellTradeId: trade.tradeId },
-        });
-        tradePnl = tradeDetails.reduce((sum, detail) => sum + parseFloat(detail.pnl?.toString() || '0'), 0);
+          // const tradeDetails = await this.tradeDetailRepo.find({
+          //   where: { sellTradeId: trade.tradeId },
+          // });
+        // tradePnl = tradeDetails.reduce((sum, detail) => sum + parseFloat(detail.pnl?.toString() || '0'), 0);
+        tradePnl = parseFloat(trade.pnl?.toString() || '0'); 
       }
       
-      cumulativeRealizedPl += tradePnl;
+      // TODO: implement + lãi tiền gửi đã tất toán tương tự trading
+      const interestEarned = 0; // await this.interestEarnedService.getInterestEarned(portfolioId);
+      cumulativeRealizedPl += tradePnl + interestEarned;
       periodData.realizedPl = cumulativeRealizedPl;
       
       if (tradePnl > 0) {
