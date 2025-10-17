@@ -213,7 +213,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isDrawerCollapsed = isMobile ? false : drawerCollapsed;
 
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Professional Header */}
       <Box
         sx={{
@@ -337,8 +337,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Professional Navigation */}
-      <Box sx={{ flexGrow: 1, overflow: 'visible', py: 0.25 }}>
-        <List sx={{ px: 0.25 }}>
+      <Box sx={{ flexGrow: 1, overflow: 'auto', py: 0.25, minHeight: 0 }}>
+        <List sx={{ 
+          px: 0.25,
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: theme.palette.divider,
+            borderRadius: '3px',
+            '&:hover': {
+              background: theme.palette.text.secondary,
+            },
+          },
+        }}>
           {menuItems
             .filter((item) => {
               // Show item if no access control required
