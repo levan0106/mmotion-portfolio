@@ -24,6 +24,7 @@ import {
   Slide,
   alpha,
   useTheme,
+  useMediaQuery,
   Divider,
 } from '@mui/material';
 import {
@@ -251,6 +252,7 @@ const Welcome: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAccount();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showWelcome, setShowWelcome] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -473,8 +475,9 @@ const Welcome: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                   mb: 2,
                 }}
+                ellipsis={false}
               >
-                {t('welcome.title')}
+               {t('welcome.title')}
               </ResponsiveTypography>
               
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
@@ -568,7 +571,7 @@ const Welcome: React.FC = () => {
               </Box>
               
               {/* Progress Indicator */}
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+               {!isMobile && ( <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {[0, 1, 2, 3, 4].map((step) => (
                     <Box key={step} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -614,6 +617,7 @@ const Welcome: React.FC = () => {
                   ))}
                 </Box>
               </Box>
+              )}
 
               {/* Navigation Controls */}
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}>

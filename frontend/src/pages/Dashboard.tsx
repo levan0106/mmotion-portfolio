@@ -2,9 +2,10 @@
  * Professional Financial Dashboard component
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from 'react-query';
 import {
   Box,
   Grid,
@@ -49,11 +50,13 @@ const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const queryClient = useQueryClient();
   const { accountId } = useAccount();
-  const { portfolios, isLoading, error } = usePortfolios(accountId);
+  const { portfolios, isLoading, error, refetch: refetchPortfolios } = usePortfolios(accountId);
   const { formattedLastUpdateTime, isLoading: isSystemStatusLoading, isAutoSyncEnabled } = useLastUpdateTime();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   if (isLoading) {
     return (
@@ -134,6 +137,25 @@ const Dashboard: React.FC = () => {
     navigate(`/portfolios/${newPortfolio.portfolioId}`);
   };
 
+  const handleRefresh = async () => {
+    if (isRefreshing) return; // Prevent multiple simultaneous refreshes
+    
+    setIsRefreshing(true);
+    try {
+      // Refresh portfolios data
+      await refetchPortfolios();
+      // Invalidate and refetch system status queries
+      queryClient.invalidateQueries('autoSyncStatus');
+      queryClient.invalidateQueries('latestPriceUpdate');
+      // Invalidate portfolio change queries
+      queryClient.invalidateQueries(['portfolio-change']);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Professional financial metrics cards
   const financialMetrics = [
     {
@@ -206,13 +228,15 @@ const Dashboard: React.FC = () => {
             <Box sx={{ display: 'flex', gap: 1 }}>
               <ResponsiveButton
                 variant="outlined"
-                icon={<Refresh />}
-                startIcon={<Refresh />}
-                mobileText={t('common.refresh')}
-                desktopText={t('dashboard.refreshData')}
+                icon={isRefreshing ? <CircularProgress size={20} color="inherit" /> : <Refresh />}
+                startIcon={isRefreshing ? <CircularProgress size={20} color="inherit" /> : <Refresh />}
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                mobileText={isRefreshing ? t('common.refreshing') : t('common.refresh')}
+                desktopText={isRefreshing ? t('dashboard.refreshing') : t('dashboard.refreshData')}
                 sx={{ borderRadius: 2 }}
               >
-                {t('dashboard.refreshData')}
+                {isRefreshing ? t('dashboard.refreshing') : t('dashboard.refreshData')}
               </ResponsiveButton>
               <ResponsiveButton
                 variant="contained"

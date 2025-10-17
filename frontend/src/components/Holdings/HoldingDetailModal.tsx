@@ -210,31 +210,37 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                       borderRadius: 2,
                     }}>
                       <CardContent sx={{ p: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          {/* Left Column - Icon */}
                           <Box
                             sx={{
                               borderRadius: '50%',
                               background: alpha(theme.palette[metric.color].main, 0.08),
                               color: `${metric.color}.main`,
-                              width: 32,
-                              height: 32,
+                              width: 40,
+                              height: 40,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              flexShrink: 0,
                             }}
                           >
-                            {React.cloneElement(metric.icon, { sx: { fontSize: 18 } })}
+                            {React.cloneElement(metric.icon, { sx: { fontSize: 20 } })}
                           </Box>
-                          <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                            {metric.title}
-                          </ResponsiveTypography>
+                          
+                          {/* Right Column - Text/Value */}
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <ResponsiveTypography variant="cardLabel" sx={{color: 'text.primary', mb: 0.5 }}>
+                              {metric.title}
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
+                              {metric.value}
+                            </ResponsiveTypography>
+                            {/* <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                              {metric.subtitle}
+                            </ResponsiveTypography> */}
+                          </Box>
                         </Box>
-                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
-                          {metric.value}
-                        </ResponsiveTypography>
-                        <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                          {metric.subtitle}
-                        </ResponsiveTypography>
                       </CardContent>
                     </Card>
                   </Grid>
