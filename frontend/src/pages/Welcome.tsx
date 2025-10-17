@@ -19,7 +19,6 @@ import {
   StepContent,
   Chip,
   Avatar,
-  IconButton,
   Fade,
   Slide,
   alpha,
@@ -37,7 +36,6 @@ import {
   PlayArrow as PlayIcon,
   CheckCircle as CheckIcon,
   ArrowForward as ArrowIcon,
-  Close as CloseIcon,
   Language as LanguageIcon,
   Add as AddIcon,
   ShoppingCart as TradingIcon2,
@@ -253,7 +251,7 @@ const Welcome: React.FC = () => {
   const { isAuthenticated } = useAccount();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
@@ -311,10 +309,6 @@ const Welcome: React.FC = () => {
     }
   };
 
-  const handleCloseWelcome = () => {
-    setShowWelcome(false);
-    navigate('/');
-  };
 
   const handleStepClick = (stepIndex: number) => {
     setActiveStep(stepIndex);
