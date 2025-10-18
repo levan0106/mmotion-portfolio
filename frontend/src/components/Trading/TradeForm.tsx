@@ -1,38 +1,31 @@
-import React, { useState, useEffect, useMemo } from 'react';
-// import { useTranslation } from 'react-i18next'; // Commented out as not used
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
   CardContent,
   Typography,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Grid,
   Alert,
   CircularProgress,
   Chip,
-  IconButton,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+// Removed React Hook Form - using useState instead
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 import { TradeSide, TradeType, TradeSource, TradeFormData } from '../../types';
 import { CreateAssetRequest } from '../../types/asset.types';
 import { 
-  Refresh as RefreshIcon,
   MonetizationOn as MonetizationOnIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
@@ -47,35 +40,25 @@ import { assetService } from '../../services/asset.service';
 export type { TradeFormData };
 import { formatCurrency } from '../../utils/format';
 import { 
-  getBaseCurrency, 
-  getCurrencySymbol, 
-  getCurrencyPriorityInfo
+  getBaseCurrency
 } from '../../utils/currency';
 import { useCurrencyCache } from '../../hooks/useCurrencyCache';
 
-// Validation schema
-const tradeSchema = yup.object({
-  portfolioId: yup.string().uuid('Invalid portfolio ID').required('Portfolio is required'),
-  assetId: yup.string().uuid('Invalid asset ID').required('Asset is required'),
-  tradeDate: yup.string().required('Trade date is required'),
-  side: yup.mixed<TradeSide>().oneOf(Object.values(TradeSide)).required('Trade side is required'),
-  quantity: yup
-    .number()
-    .positive('Quantity must be positive')
-    .min(0.00001, 'Quantity must be at least 0.00001')
-    .required('Quantity is required'),
-  price: yup
-    .number()
-    .min(0, 'Price must be non-negative')
-    .required('Price is required'),
-  fee: yup.number().min(0, 'Fee cannot be negative').optional(),
-  tax: yup.number().min(0, 'Tax cannot be negative').optional(),
-  tradeType: yup.mixed<TradeType>().oneOf(Object.values(TradeType)).optional(),
-  source: yup.mixed<TradeSource>().oneOf(Object.values(TradeSource)).optional(),
-  exchange: yup.string().max(100, 'Exchange cannot exceed 100 characters').optional(),
-  fundingSource: yup.string().max(100, 'Funding source cannot exceed 100 characters').optional(),
-  notes: yup.string().max(500, 'Notes cannot exceed 500 characters').optional(),
-});
+// Simple validation functions
+const validateForm = (formData: any) => {
+  const errors: any = {};
+  
+  if (!formData.portfolioId) errors.portfolioId = 'Portfolio is required';
+  if (!formData.assetId) errors.assetId = 'Asset is required';
+  if (!formData.tradeDate) errors.tradeDate = 'Trade date is required';
+  if (!formData.side) errors.side = 'Trade side is required';
+  if (!formData.quantity || formData.quantity <= 0) errors.quantity = 'Quantity must be positive';
+  if (formData.price === undefined || formData.price === null || formData.price < 0) errors.price = 'Price must be non-negative';
+  if (formData.fee && formData.fee < 0) errors.fee = 'Fee cannot be negative';
+  if (formData.tax && formData.tax < 0) errors.tax = 'Tax cannot be negative';
+  
+  return errors;
+};
 
 export interface TradeFormProps {
   onSubmit: (data: TradeFormData) => Promise<void>;
@@ -88,6 +71,14 @@ export interface TradeFormProps {
   formRef?: React.RefObject<HTMLFormElement>;
   isModal?: boolean;
   onAssetCreated?: (asset: any) => void; // Callback when asset is created
+  // Modal props
+  open?: boolean;
+  onClose?: () => void;
+  title?: string;
+  icon?: React.ReactNode;
+  actions?: React.ReactNode;
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'small' | 'medium' | 'large';
 }
 
 /**
@@ -102,55 +93,60 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   error,
   mode = 'create',
   defaultPortfolioId,
-  showSubmitButton = true,
+  showSubmitButton = true, // eslint-disable-line @typescript-eslint/no-unused-vars
   formRef,
   isModal = false,
   onAssetCreated,
+  // Modal props
+  open,
+  onClose,
+  title,
+  icon,
+  actions,
+  maxWidth = 'md',
+  size = 'medium',
 }) => {
-  // const { t } = useTranslation(); // Commented out as not used
+  const { t } = useTranslation();
   const { accountId, currentAccount } = useAccount();
   const { portfolios, isLoading: portfoliosLoading, error: portfoliosError } = usePortfolios(accountId);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Asset creation modal state
   const [showAssetForm, setShowAssetForm] = useState(false);
   const [assetFormError, setAssetFormError] = useState<string | null>(null);
   const [isSubmittingAsset, setIsSubmittingAsset] = useState(false);
 
   
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm<TradeFormData>({
-    resolver: yupResolver(tradeSchema),
-    defaultValues: {
-      portfolioId: initialData?.portfolioId || defaultPortfolioId || '',
-      assetId: initialData?.assetId || '',
-      tradeDate: initialData?.tradeDate || new Date().toISOString(),
-      side: initialData?.side || TradeSide.BUY,
-      quantity: initialData?.quantity || 0,
-      price: initialData?.price || 0,
-      fee: initialData?.fee || 0,
-      tax: initialData?.tax || 0,
-      tradeType: initialData?.tradeType || TradeType.MARKET,
-      source: initialData?.source || TradeSource.MANUAL,
-      exchange: initialData?.exchange || '',
-      fundingSource: initialData?.fundingSource || '',
-      notes: initialData?.notes || '',
-    },
+  // Form state management
+  const [formData, setFormData] = useState({
+    portfolioId: initialData?.portfolioId || defaultPortfolioId || '',
+    assetId: initialData?.assetId || '',
+    tradeDate: initialData?.tradeDate || new Date().toISOString(),
+    side: initialData?.side || TradeSide.BUY,
+    quantity: initialData?.quantity || 0,
+    price: initialData?.price || 0,
+    fee: initialData?.fee || 0,
+    tax: initialData?.tax || 0,
+    tradeType: initialData?.tradeType || TradeType.MARKET,
+    source: initialData?.source || TradeSource.MANUAL,
+    exchange: initialData?.exchange || '',
+    fundingSource: initialData?.fundingSource || '',
+    notes: initialData?.notes || '',
   });
 
-  // Form validation state available for debugging if needed
+  // Validation state - only show errors after user interaction
+  const [errors, setErrors] = useState<any>({});
+  const [isValid, setIsValid] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  const watchedQuantity = watch('quantity');
-  const watchedPrice = watch('price');
-  const watchedFee = watch('fee') || 0;
-  const watchedTax = watch('tax') || 0;
-  const watchedPortfolioId = watch('portfolioId');
-  const watchedAssetId = watch('assetId');
+  // Force re-render of AssetAutocomplete when assetId changes in edit mode
+  const [assetKey, setAssetKey] = useState(0);
+
+  // Form values for calculations
+  const watchedQuantity = formData.quantity;
+  const watchedPrice = formData.price;
+  const watchedFee = formData.fee || 0;
+  const watchedTax = formData.tax || 0;
+  const watchedPortfolioId = formData.portfolioId;
+  const watchedSide = formData.side;
   
   // Get selected portfolio for currency
   const selectedPortfolio = portfolios?.find(p => p.portfolioId === watchedPortfolioId);
@@ -164,11 +160,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     'VND' // default currency
   );
   
-  // Get currency priority info for debugging/display
-  const currencyInfo = getCurrencyPriorityInfo(
-    selectedPortfolio,
-    'VND'
-  );
 
   // Auto-fill market price when asset is selected
   // Note: AssetAutocomplete will handle asset selection, but we need to get current price
@@ -180,7 +171,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     const price = Number(watchedPrice) || 0;
     const fee = Number(watchedFee) || 0;
     const tax = Number(watchedTax) || 0;
-    const side = watch('side');
+    const side = watchedSide;
     
     const value = quantity * price;
     
@@ -192,77 +183,98 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       : value + fee + tax; // BUY: add fees and taxes
     
     return { value, cost, fee, tax };
-  }, [watchedQuantity, watchedPrice, watchedFee, watchedTax, watch('side')]);
+  }, [watchedQuantity, watchedPrice, watchedFee, watchedTax, watchedSide]);
 
-  // Update form values when initialData changes (for edit mode)
+  // Update form data when initialData changes (for edit mode)
   useEffect(() => {
     if (initialData && mode === 'edit') {
-      setValue('portfolioId', initialData.portfolioId || '');
-      setValue('assetId', initialData.assetId || '');
-      setValue('tradeDate', initialData.tradeDate || new Date().toISOString());
-      setValue('side', initialData.side || TradeSide.BUY);
-      setValue('quantity', initialData.quantity || 0);
-      setValue('price', initialData.price || 0);
-      setValue('fee', initialData.fee || 0);
-      setValue('tax', initialData.tax || 0);
-      setValue('tradeType', initialData.tradeType || TradeType.MARKET);
-      setValue('source', initialData.source || TradeSource.MANUAL);
-      setValue('exchange', initialData.exchange || '');
-      setValue('fundingSource', initialData.fundingSource || '');
-      setValue('notes', initialData.notes || '');
+      setFormData({
+        portfolioId: initialData.portfolioId || '',
+        assetId: initialData.assetId || '',
+        tradeDate: initialData.tradeDate || new Date().toISOString(),
+        side: initialData.side || TradeSide.BUY,
+        quantity: initialData.quantity || 0,
+        price: initialData.price || 0,
+        fee: initialData.fee || 0,
+        tax: initialData.tax || 0,
+        tradeType: initialData.tradeType || TradeType.MARKET,
+        source: initialData.source || TradeSource.MANUAL,
+        exchange: initialData.exchange || '',
+        fundingSource: initialData.fundingSource || '',
+        notes: initialData.notes || '',
+      });
     }
-  }, [initialData, mode, setValue]);
+  }, [initialData, mode]);
 
-  // Force re-render of AssetAutocomplete when assetId changes in edit mode
-  const [assetKey, setAssetKey] = useState(0);
+  // Validate form only after user interaction - debounced to prevent excessive re-renders
   useEffect(() => {
-    if (initialData?.assetId && mode === 'edit') {
-      // Force re-render of AssetAutocomplete to ensure it picks up the value
-      setAssetKey(prev => prev + 1);
-    }
-  }, [initialData?.assetId, mode]);
+    if (!hasUserInteracted) return;
+    
+    const timeoutId = setTimeout(() => {
+      const validationErrors = validateForm(formData);
+      setErrors(validationErrors);
+      setIsValid(Object.keys(validationErrors).length === 0);
+    }, 300); // Debounce validation by 300ms
 
-  const handleFormSubmit = async (_data: TradeFormData) => {
+    return () => clearTimeout(timeoutId);
+  }, [formData, hasUserInteracted]);
+
+  // Only update assetKey when necessary in edit mode
+  useEffect(() => {
+    if (initialData?.assetId && mode === 'edit' && assetKey === 0) {
+      // Force re-render of AssetAutocomplete to ensure it picks up the value
+      setAssetKey(1);
+    }
+  }, [initialData?.assetId, mode, assetKey]);
+
+
+  // Track user interaction for validation - memoized to prevent re-render
+  const handleFieldChange = useCallback((field: string, value: any) => {
+    setHasUserInteracted(true);
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleFormSubmit = useCallback(async () => {
     try {
-      // Get all form values instead of relying on validated data
-      const allFormValues = watch();
+      // Mark as user interacted to show validation errors
+      setHasUserInteracted(true);
       
-      // Ensure all required fields are present
+      // Use the form data directly
       const submitData: TradeFormData = {
-        portfolioId: allFormValues.portfolioId,
-        assetId: allFormValues.assetId,
-        tradeDate: typeof allFormValues.tradeDate === 'string' 
-          ? allFormValues.tradeDate 
-          : (allFormValues.tradeDate as Date).toISOString(),
-        side: allFormValues.side,
-        quantity: allFormValues.quantity,
-        price: allFormValues.price,
-        fee: allFormValues.fee || 0,
-        tax: allFormValues.tax || 0,
-        tradeType: allFormValues.tradeType || TradeType.MARKET,
-        source: allFormValues.source || TradeSource.MANUAL,
-        exchange: allFormValues.exchange || '',
-        fundingSource: allFormValues.fundingSource || '',
-        notes: allFormValues.notes || '',
+        portfolioId: formData.portfolioId,
+        assetId: formData.assetId,
+        tradeDate: typeof formData.tradeDate === 'string' 
+          ? formData.tradeDate 
+          : (formData.tradeDate as Date).toISOString(),
+        side: formData.side,
+        quantity: formData.quantity,
+        price: formData.price,
+        fee: formData.fee || 0,
+        tax: formData.tax || 0,
+        tradeType: formData.tradeType || TradeType.MARKET,
+        source: formData.source || TradeSource.MANUAL,
+        exchange: formData.exchange || '',
+        fundingSource: formData.fundingSource || '',
+        notes: formData.notes || '',
       };
       
       await onSubmit(submitData);
     } catch (err) {
       console.error('Error submitting trade form:', err);
     }
-  };
+  }, [formData, onSubmit]);
 
   // Asset creation handlers
-  const handleCreateAsset = () => {
+  const handleCreateAsset = useCallback(() => {
     setShowAssetForm(true);
     setAssetFormError(null);
-  };
+  }, []);
 
-  const handleCloseAssetForm = () => {
+  const handleCloseAssetForm = useCallback(() => {
     setShowAssetForm(false);
     setAssetFormError(null);
     setIsSubmittingAsset(false);
-  };
+  }, []);
 
   const handleAssetFormSubmit = async (assetData: CreateAssetRequest) => {
     setIsSubmittingAsset(true);
@@ -287,51 +299,37 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     }
   };
 
-  const getSideColor = (side: TradeSide) => {
+  const getSideColor = useCallback((side: TradeSide) => {
     return side === TradeSide.BUY ? 'success' : 'error';
-  };
+  }, []);
 
-  // Function to refresh market price
-  const refreshMarketPrice = () => {
-    // TODO: Implement market price refresh functionality
-    // This would typically call an API to get the latest price for the selected asset
-  };
 
-  // Show loading state
-  if (portfoliosLoading) {
-    return (
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Card>
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={2} mb={3}>
-              <CircularProgress size={20} />
-              <Typography variant="h5">Loading trade form...</Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </LocalizationProvider>
-    );
-  }
 
-  // Show error state if no portfolios or assets available (only if not loading)
-  if (!portfolios?.length && !portfoliosLoading) {
-    return (
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Card>
-          <CardContent>
-            <Alert severity="error" sx={{ mb: 3 }}>
-              No portfolios available. Please create a portfolio first.
-            </Alert>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              {portfoliosError ? `Error: ${portfoliosError}` : 'No portfolios found. Please check if the backend is running and try again.'}
-            </Typography>
-          </CardContent>
-        </Card>
-      </LocalizationProvider>
-    );
-  }
+  // Memoize default actions to prevent re-render
+  const defaultActions = useMemo(() => (
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <ResponsiveButton 
+        onClick={onClose} 
+        disabled={isLoading}
+      >
+        {t('common.cancel')}
+      </ResponsiveButton>
+      <ResponsiveButton
+        onClick={handleFormSubmit}
+        variant="contained"
+        disabled={isLoading}
+        icon={mode === 'create' ? <AddIcon /> : <EditIcon />}
+        mobileText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.create') : t('trading.form.update')}
+        desktopText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
+      >
+        {isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
+      </ResponsiveButton>
+    </Box>
+  ), [onClose, isLoading, mode, t, handleFormSubmit]);
 
-  return (
+  // Form content component - memoized to prevent unnecessary re-renders
+  // MUST be called before any conditional returns to maintain hooks order
+  const FormContent = useMemo(() => (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       {error && (
         <Alert 
@@ -348,209 +346,127 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         </Alert>
       )}
 
-      <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
+      <form ref={formRef} onSubmit={(e) => { e.preventDefault(); handleFormSubmit(); }}>
               {/* Basic Information Section */}
-              <Box mb={isModal ? 1 : 1.5} mt={isModal ? 1 : 1.5}>
-                <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
-                  Basic Information
-                </Typography>
-                <Grid container spacing={isModal ? 1 : 1.5}>
-                  {/* Portfolio Selection */}
-                  <Grid item xs={12} md={4}>
-                    {!isMobile && ( <Controller
-                      name="portfolioId"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl fullWidth error={!!errors.portfolioId}>
-                          <InputLabel>Portfolio *</InputLabel>
-                          <Select
-                            {...field}
-                            label="Portfolio *"
-                            disabled={isLoading || portfoliosLoading}
-                            sx={{ 
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2
-                              }
-                            }}
-                          >
-                            {portfoliosLoading ? (
-                              <MenuItem disabled>Loading portfolios...</MenuItem>
-                            ) : portfolios?.length > 0 ? (
-                              portfolios.map((portfolio) => (
-                                <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
-                                  {portfolio.name}
-                                </MenuItem>
-                              ))
-                            ) : (
-                              <MenuItem disabled>No portfolios found</MenuItem>
-                            )}
-                          </Select>
-                          {errors.portfolioId && (
-                            <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                              {errors.portfolioId.message}
-                            </Typography>
-                          )}
-                        </FormControl>
-                      )}
-                    /> )}
-                  </Grid>
+              <Box mb={isModal ? 0.5 : 1.5} mt={isModal ? 0.5 : 1.5}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <ResponsiveTypography variant="cardLabel" sx={{ mb: 1 }}>
+                    {t('trading.form.basicInformation')}
+                  </ResponsiveTypography>
+                  {/* Trade Side Toggle */}
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.side === TradeSide.BUY}
+                        onChange={(e) => handleFieldChange('side', e.target.checked ? TradeSide.BUY : TradeSide.SELL)}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <ResponsiveTypography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formData.side === TradeSide.BUY ? t('trading.form.buy') : t('trading.form.sell')}
+                      </ResponsiveTypography>
+                    }
+                    sx={{ ml: 1 }}
+                  />
+                </Box>
+                <Grid container spacing={2} sx={{ px: 1 }}>
 
                   {/* Asset Selection */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="assetId"
-                      control={control}
-                      render={({ field }) => (
-                        <AssetAutocomplete
-                          key={assetKey}
-                          value={field.value}
-                          onChange={field.onChange}
-                          error={!!errors.assetId}
-                          disabled={isLoading}
-                          label="Asset"
-                          required={true}
-                          placeholder="Search and select asset..."
-                          currency={baseCurrency}
-                          showCreateOption={true}
-                          onCreateAsset={handleCreateAsset}
-                        />
-                      )}
+                  <Grid item xs={12} md={6}>
+                    <AssetAutocomplete
+                      key={assetKey}
+                      value={formData.assetId}
+                      onChange={(assetId) => handleFieldChange('assetId', assetId || '')}
+                      error={!!errors.assetId}
+                      disabled={isLoading}
+                      label={t('trading.form.asset')}
+                      required={true}
+                      placeholder={t('trading.form.searchAsset')}
+                      currency={baseCurrency}
+                      showCreateOption={true}
+                      onCreateAsset={handleCreateAsset}
                     />
-                    
                   </Grid>
 
                   {/* Trade Date */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="tradeDate"
-                      control={control}
-                      render={({ field }) => (
-                        <DatePicker
-                          label="Trade Date *"
-                          disabled={isLoading}
-                          value={(() => {
-                            try {
-                              if (!field.value) return new Date();
-                              if (typeof field.value === 'string') {
-                                const date = new Date(field.value);
-                                return isNaN(date.getTime()) ? new Date() : date;
-                              }
-                              return field.value;
-                            } catch {
-                              return new Date();
+                  <Grid item xs={12} md={6}>
+                    <DatePicker
+                      label={`${t('trading.form.tradeDate')} *`}
+                      disabled={isLoading}
+                      value={(() => {
+                        try {
+                          if (!formData.tradeDate) return new Date();
+                          if (typeof formData.tradeDate === 'string') {
+                            const date = new Date(formData.tradeDate);
+                            return isNaN(date.getTime()) ? new Date() : date;
+                          }
+                          return formData.tradeDate;
+                        } catch {
+                          return new Date();
+                        }
+                      })()}
+                      onChange={(newValue) => {
+                        try {
+                          if (newValue && !isNaN(newValue.getTime())) {
+                            handleFieldChange('tradeDate', newValue.toISOString());
+                          } else {
+                            handleFieldChange('tradeDate', new Date().toISOString());
+                          }
+                        } catch {
+                          handleFieldChange('tradeDate', new Date().toISOString());
+                        }
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!errors.tradeDate,
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2
                             }
-                          })()}
-                          onChange={(newValue) => {
-                            try {
-                              if (newValue && !isNaN(newValue.getTime())) {
-                                field.onChange(newValue.toISOString());
-                              } else {
-                                field.onChange(new Date().toISOString());
-                              }
-                            } catch {
-                              field.onChange(new Date().toISOString());
-                            }
-                          }}
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                              error: !!errors.tradeDate,
-                              sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 2
-                                }
-                              }
-                            },
-                          }}
-                        />
-                      )}
+                          }
+                        },
+                      }}
                     />
                   </Grid>
                 </Grid>
               </Box>
 
             {/* Trade Details Section */}
-            <Box mb={isModal ? 1 : 1.5}>
-              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
-                Trade Details
-              </Typography>
-              <Grid container spacing={isModal ? 1 : 1.5}>
-                  {/* Trade Side */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="side"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl fullWidth error={!!errors.side}>
-                          <InputLabel>Trade Side *</InputLabel>
-                          <Select
-                            {...field}
-                            label="Trade Side *"
-                            disabled={isLoading}
-                            sx={{ 
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2
-                              }
-                            }}
-                          >
-                            <MenuItem value={TradeSide.BUY}>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <Typography color="success.main" fontWeight="medium">↗ BUY</Typography>
-                              </Box>
-                            </MenuItem>
-                            <MenuItem value={TradeSide.SELL}>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <Typography color="error.main" fontWeight="medium">↘ SELL</Typography>
-                              </Box>
-                            </MenuItem>
-                          </Select>
-                          {errors.side && (
-                            <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                              {errors.side.message}
-                            </Typography>
-                          )}
-                        </FormControl>
-                      )}
-                    />
-                  </Grid>
+            <Box>
+              {/* <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
+                {t('trading.form.tradeDetails')}
+              </ResponsiveTypography> */}
+              <Grid container spacing={2} sx={{ px: 1, mt: 2 }}>
 
-                  {/* Quantity */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="quantity"
-                      control={control}
-                      render={({ field }) => (
-                        <NumberInput
-                          value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
-                          onChange={(value) => field.onChange(value)}
-                          label="Quantity *"
-                          error={!!errors.quantity}
-                          disabled={isLoading}
-                          decimalPlaces={5}
-                          min={0.00001}
-                          step={0.00001}
-                        />
-                      )}
+                {/* Quantity */}
+                <Grid item xs={12} md={6}>
+                    <NumberInput
+                      value={formData.quantity || 0}
+                      onChange={(quantity) => handleFieldChange('quantity', quantity)}
+                      label={`${t('trading.form.quantity')} *`}
+                      error={!!errors.quantity}
+                      disabled={isLoading}
+                      decimalPlaces={5}
+                      min={0.00001}
+                      step={0.00001}
                     />
                   </Grid>
 
                   {/* Price */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="price"
-                      control={control}
-                      render={({ field }) => (
-                        <Box sx={{ position: 'relative' }}>
-                          <MoneyInput
-                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
-                            onChange={(value) => field.onChange(value)}
-                            label={`Price per Unit (${baseCurrency}) *`}
-                            error={!!errors.price}
-                            disabled={isLoading}
-                            currency={baseCurrency}
-                          />
-                          {watchedAssetId && (
-                            <Tooltip title="Refresh market price">
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ position: 'relative' }}>
+                      <MoneyInput
+                        value={formData.price || 0}
+                        onChange={(price) => handleFieldChange('price', price)}
+                        label={`${t('trading.form.pricePerUnit')} (${baseCurrency})`}
+                        error={!!errors.price}
+                        disabled={isLoading}
+                        currency={baseCurrency}
+                      />
+                          {/* {watchedAssetId && (
+                            <Tooltip title={t('trading.form.refreshMarketPrice')}>
                               <IconButton
                                 size="small"
                                 onClick={refreshMarketPrice}
@@ -570,200 +486,104 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                                 <RefreshIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                          )}
+                          )} */}
                         </Box>
-                      )}
-                    />
                   </Grid>
                 </Grid>
               </Box>
 
             {/* Additional Information Section */}
-            <Box mb={isModal ? 1 : 1.5}>
-              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: isModal ? 1 : 1.5 }}>
-                Additional Information
-              </Typography>
-              <Grid container spacing={isModal ? 1 : 1.5}>
-                  {/* Fee */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="fee"
-                      control={control}
-                      render={({ field }) => (
-                          <MoneyInput
-                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
-                            onChange={(value) => field.onChange(value)}
-                            label={`Trading Fee (${baseCurrency})`}
-                            error={!!errors.fee}
-                            disabled={isLoading}
-                            currency={baseCurrency}
-                          />
-                      )}
+            <Box mb={isModal ? 0.5 : 1.5}>
+                <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
+                {t('trading.form.additionalInformation')}
+              </ResponsiveTypography>
+              <Grid container spacing={2} sx={{ px: 1 }}>
+                {/* Fee */}
+                <Grid item xs={12} md={6}>
+                    <MoneyInput
+                      value={formData.fee || 0}
+                      onChange={(fee) => handleFieldChange('fee', fee)}
+                      label={`${t('trading.form.tradingFee')} (${baseCurrency})`}
+                      error={!!errors.fee}
+                      disabled={isLoading}
+                      currency={baseCurrency}
                     />
                   </Grid>
 
                   {/* Tax */}
-                  <Grid item xs={12} md={4}>
-                    <Controller
-                      name="tax"
-                      control={control}
-                      render={({ field }) => (
-                          <MoneyInput
-                            value={typeof field.value === 'string' ? parseFloat(field.value) || 0 : field.value || 0}
-                            onChange={(value) => field.onChange(value)}
-                            label={`Tax (${baseCurrency})`}
-                            error={!!errors.tax}
-                            disabled={isLoading}
-                            currency={baseCurrency}
-                          />
-                      )}
+                  <Grid item xs={12} md={6}>
+                    <MoneyInput
+                      value={formData.tax || 0}
+                      onChange={(tax) => handleFieldChange('tax', tax)}
+                      label={`${t('trading.form.tax')} (${baseCurrency})`}
+                      error={!!errors.tax}
+                      disabled={isLoading}
+                      currency={baseCurrency}
                     />
                   </Grid>
 
-                  {/* Trade Type */}
-                  {!isMobile && ( <Grid item xs={12} md={4}>
-                    <Controller
-                      name="tradeType"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl fullWidth error={!!errors.tradeType}>
-                          <InputLabel>Trade Type</InputLabel>
-                          <Select
-                            {...field}
-                            label="Trade Type"
-                            disabled={isLoading}
-                            sx={{ 
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2
-                              }
-                            }}
-                      >
-                        <MenuItem value={TradeType.MARKET}>Market Order</MenuItem>
-                        <MenuItem value={TradeType.LIMIT}>Limit Order</MenuItem>
-                        <MenuItem value={TradeType.STOP}>Stop Order</MenuItem>
-                      </Select>
-                      {errors.tradeType && (
-                        <Typography variant="caption" color="error">
-                          {errors.tradeType.message}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  )}
-                />
-                  </Grid> )}
+
                 </Grid>
               </Box>
 
-            {/* Exchange, Funding Source and Notes Section */}
-            <Box mb={1.5}>
-              <Typography variant="h6" gutterBottom color="primary" fontWeight="bold" sx={{ mb: 1.5 }}>
-                Exchange, Funding & Notes
-              </Typography>
-              <Grid container spacing={1.5}>
+            {/* Exchange and Funding Source Section */}
+            <Box>
+              {/* <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
+                {t('trading.form.exchangeFunding')}
+              </ResponsiveTypography> */}
+              <Grid container spacing={2} sx={{ px: 1, mt: 2 }}>
                 {/* Exchange */}
-                <Grid item xs={12} md={4}>
-                  <Controller
-                    name="exchange"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Exchange/Platform"
-                        fullWidth
-                        error={!!errors.exchange}
-                        disabled={isLoading}
-                        placeholder="Enter exchange or platform name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2
-                          }
-                        }}
-                        inputProps={{
-                          style: { textTransform: 'uppercase' }
-                        }}
-                        onChange={(e) => {
-                          // Auto UPPERCASE on input
-                          field.onChange(e.target.value.toUpperCase());
-                        }}
-                      />
-                    )}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    value={formData.exchange}
+                    onChange={(e) => handleFieldChange('exchange', e.target.value.toUpperCase())}
+                    label={t('trading.form.exchangePlatform')}
+                    fullWidth
+                    error={!!errors.exchange}
+                    disabled={isLoading}
+                    placeholder={t('trading.form.enterExchangePlatform')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2
+                      }
+                    }}
+                    inputProps={{
+                      style: { textTransform: 'uppercase' }
+                    }}
                   />
                 </Grid>
 
                 {/* Funding Source */}
-                <Grid item xs={12} md={4}>
-                  <Controller
-                    name="fundingSource"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Funding Source"
-                        fullWidth
-                        error={!!errors.fundingSource}
-                        disabled={isLoading}
-                        placeholder="Enter funding source"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2
-                          }
-                        }}
-                        inputProps={{
-                          style: { textTransform: 'uppercase' }
-                        }}
-                        onChange={(e) => {
-                          // Auto UPPERCASE on input
-                          field.onChange(e.target.value.toUpperCase());
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-
-                {/* Notes */}
-                <Grid item xs={12} md={4}>
-                  <Controller
-                    name="notes"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Notes"
-                        multiline
-                        rows={3}
-                        fullWidth
-                        error={!!errors.notes}
-                        disabled={isLoading}
-                        placeholder="Enter any additional notes about this trade"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2
-                          }
-                        }}
-                      />
-                    )}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    value={formData.fundingSource}
+                    onChange={(e) => handleFieldChange('fundingSource', e.target.value.toUpperCase())}
+                    label={t('trading.form.fundingSource')}
+                    fullWidth
+                    error={!!errors.fundingSource}
+                    disabled={isLoading}
+                    placeholder={t('trading.form.enterFundingSource')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2
+                      }
+                    }}
+                    inputProps={{
+                      style: { textTransform: 'uppercase' }
+                    }}
                   />
                 </Grid>
               </Grid>
             </Box>
 
             {/* Summary Section */}
-            <Box mb={isModal ? 1 : 2} p={isModal ? 1 : 1.5} sx={{ bgcolor: 'grey.50', borderRadius: 2, border: 1, borderColor: 'grey.200' }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={isModal ? 1 : 1.5}>
-                <Typography variant="h6" color="primary" fontWeight="bold">
-                  Trade Summary
-                </Typography>
-                <Tooltip title={`Currency source: ${currencyInfo.source} (priority ${currencyInfo.priority})`}>
-                  <Chip
-                    size="small"
-                    label={`${baseCurrency} ${getCurrencySymbol(baseCurrency)}`}
-                    color={currencyInfo.source === 'portfolio' ? 'primary' : currencyInfo.source === 'account' ? 'secondary' : 'default'}
-                    variant="outlined"
-                    sx={{ fontSize: '0.75rem' }}
-                  />
-                </Tooltip>
+            <Box >
+              <Box display="flex" justifyContent="space-between" alignItems="center" >
+                <ResponsiveTypography variant="cardTitle" color="primary" sx={{ mb: 1, mt: 4 }}>
+                  {t('trading.form.tradeSummary')}
+                </ResponsiveTypography>
               </Box>
-              <Grid container spacing={isModal ? 1 : 1.5}>
+              <Grid container spacing={2} sx={{ px: 1 }}>
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={2} sx={{ 
                     bgcolor: 'white', 
@@ -777,17 +597,17 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   }}>
                     <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
                       <MonetizationOnIcon sx={{ fontSize: 20, color: 'info.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Total Value
-                      </Typography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('trading.form.totalValue')}
+                      </ResponsiveTypography>
                     </Box>
-                    <Typography variant="h6" fontWeight="bold" color="info.main">
+                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="info.main">
                       {formatCurrency(calculatedValues.value, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ 
+                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
                     borderRadius: 1, 
                     border: 1, 
@@ -799,17 +619,17 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   }}>
                     <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
                       <AssessmentIcon sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Fees & Taxes
-                      </Typography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('trading.form.feesTaxes')}
+                      </ResponsiveTypography>
                     </Box>
-                    <Typography variant="h6" fontWeight="bold" color="warning.main">
+                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="warning.main">
                       {formatCurrency(calculatedValues.fee + calculatedValues.tax, baseCurrency)}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ 
+                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
                     borderRadius: 1, 
                     border: 1, 
@@ -819,21 +639,21 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     flexDirection: 'column',
                     justifyContent: 'center'
                   }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      {watch('side') === TradeSide.SELL ? 'Amount Received' : 'Amount Paid'}
-                    </Typography>
-                    <Typography variant="h6" fontWeight="bold" color="primary.main">
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
+                      {watchedSide === TradeSide.SELL ? t('trading.form.amountReceived') : t('trading.form.amountPaid')}
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="primary.main">
                       {formatCurrency(calculatedValues.cost, baseCurrency)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: 0.5 }}>
-                      {watch('side') === TradeSide.SELL 
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="labelXSmall" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {watchedSide === TradeSide.SELL 
                         ? '(Value - Fees - Taxes)' 
                         : '(Value + Fees + Taxes)'}
-                    </Typography>
+                    </ResponsiveTypography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ 
+                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
                     borderRadius: 1, 
                     border: 1, 
@@ -844,18 +664,18 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     justifyContent: 'center'
                   }}>
                     <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
-                      {watch('side') === TradeSide.BUY ? 
+                      {watchedSide === TradeSide.BUY ? 
                         <TrendingUpIcon sx={{ fontSize: 20, color: 'success.main', mr: 1 }} /> :
                         <TrendingDownIcon sx={{ fontSize: 20, color: 'error.main', mr: 1 }} />
                       }
-                      <Typography variant="body2" color="text.secondary">
-                        Trade Side
-                      </Typography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('trading.form.tradeSide')}
+                      </ResponsiveTypography>
                     </Box>
                     <Chip
-                      label={watch('side')}
-                      color={getSideColor(watch('side'))}
-                      icon={watch('side') === TradeSide.BUY ? 
+                      label={watchedSide}
+                      color={getSideColor(watchedSide)}
+                      icon={watchedSide === TradeSide.BUY ? 
                         <TrendingUpIcon sx={{ fontSize: 16 }} /> :
                         <TrendingDownIcon sx={{ fontSize: 16 }} />
                       }
@@ -868,21 +688,21 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             </Box>
 
             {/* Submit Button */}
-            {showSubmitButton && (
+            {/* {showSubmitButton && (
               <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
                 <ResponsiveButton
                   type="submit"
                   variant="contained"
                   disabled={!isValid || isLoading}
                   icon={isLoading ? <CircularProgress size={20} /> : mode === 'create' ? <AddIcon /> : <EditIcon />}
-                  mobileText={isLoading ? 'Processing...' : mode === 'create' ? 'Create' : 'Update'}
-                  desktopText={isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
+                  mobileText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.create') : t('trading.form.update')}
+                  desktopText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
                 >
-                  {isLoading ? 'Processing...' : mode === 'create' ? 'Create Trade' : 'Update Trade'}
+                  {isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
                 </ResponsiveButton>
               </Box>
-            )}
+            )} */}
           </form>
 
           {/* Asset Creation Modal */}
@@ -896,7 +716,87 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             accountId={accountId}
           />
         </LocalizationProvider>
-  );
+  ), [
+    error, 
+    formData, 
+    errors, 
+    isLoading, 
+    mode, 
+    t, 
+    baseCurrency, 
+    assetKey, 
+    handleFieldChange, 
+    handleCreateAsset, 
+    calculatedValues, 
+    watchedSide, 
+    getSideColor,
+    showAssetForm,
+    handleCloseAssetForm,
+    handleAssetFormSubmit,
+    isSubmittingAsset,
+    assetFormError,
+    accountId,
+    portfoliosLoading,
+    portfoliosError
+  ]);
+
+  // Show loading state
+  if (portfoliosLoading) {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" gap={isModal ? 1 : 2} mb={3}>
+              <CircularProgress size={20} />
+              <Typography variant="h5">{t('trading.form.loadingTradeForm')}</Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </LocalizationProvider>
+    );
+  }
+
+  // Show error state if no portfolios or assets available (only if not loading)
+  if (!portfolios?.length && !portfoliosLoading) {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <Card>
+          <CardContent>
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {t('trading.form.noPortfoliosAvailable')}
+            </Alert>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              {portfoliosError ? `${t('trading.form.error')}: ${portfoliosError}` : t('trading.form.noPortfoliosFoundError')}
+            </Typography>
+          </CardContent>
+        </Card>
+      </LocalizationProvider>
+    );
+  }
+
+  // If modal props are provided, wrap with ModalWrapper
+  if (open !== undefined && onClose) {
+    const defaultTitle = mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade');
+    const defaultIcon = mode === 'create' ? <AddIcon /> : <EditIcon />;
+
+    return (
+      <ModalWrapper
+        open={open}
+        onClose={onClose}
+        title={title || defaultTitle}
+        icon={icon || defaultIcon}
+        maxWidth={maxWidth}
+        size={size}
+        loading={isLoading}
+        actions={actions || defaultActions}
+      >
+        {FormContent}
+      </ModalWrapper>
+    );
+  }
+
+  // Return form directly if not in modal mode
+  return FormContent;
 };
 
 export default TradeForm;

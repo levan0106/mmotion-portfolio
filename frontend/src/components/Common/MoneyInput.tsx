@@ -77,7 +77,10 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     // If input is empty, allow clearing
     if (inputValue === '') {
       setDisplayValue('');
-      onChange(0);
+      // Only call onChange if not focused to avoid losing focus
+      if (!isFocused) {
+        onChange(0);
+      }
       return;
     }
     
@@ -85,8 +88,10 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     const rawValue = inputValue.replace(/[^\d.-]/g, '');
     const numericValue = parseFloat(rawValue) || 0;
     
-    // Update the numeric value
-    onChange(numericValue);
+    // Only call onChange when not focused to avoid losing focus during typing
+    if (!isFocused) {
+      onChange(numericValue);
+    }
     
     // When focused, show formatted number (without currency)
     // When not focused, show formatted currency
@@ -117,7 +122,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     
     // Auto-select all text when focusing (especially useful for Tab navigation)
     setTimeout(() => {
-      if (inputRef.current) {
+      if (inputRef.current && typeof inputRef.current.select === 'function') {
         inputRef.current.select();
       }
     }, 0);
@@ -127,9 +132,29 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
 
   const handleBlur = () => {
     setIsFocused(false);
+    
+    // Get the current display value and parse it
+    const cleanedValue = displayValue.replace(/[^\d.-]/g, '');
+    const currentValue = parseFloat(cleanedValue);
+    
+    // If displayValue is empty, don't change the value
+    if (cleanedValue.trim() === '') {
+      return;
+    }
+    
+    // If displayValue is invalid, don't change the value
+    if (isNaN(currentValue)) {
+      return;
+    }
+    
+    // Only call onChange if the value actually changed to prevent unnecessary re-renders
+    if (currentValue !== value) {
+      onChange(currentValue);
+    }
+    
     // When blurring, format the value
-    if (value >= 0) {
-      setDisplayValue(formatCurrency(value));
+    if (currentValue >= 0) {
+      setDisplayValue(formatCurrency(currentValue));
     } else {
       setDisplayValue('');
     }

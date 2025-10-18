@@ -391,8 +391,8 @@ const SummaryMetrics = memo(({
 
 SummaryMetrics.displayName = 'SummaryMetrics';
 
-// Memoized assets list component
-const AssetsList = memo(({ 
+// Memoized assets with trades list component
+const AssetsWithTradesList = memo(({ 
   assets, 
   baseCurrency, 
   theme, 
@@ -411,57 +411,48 @@ const AssetsList = memo(({
   isLoadingDeleteInfo: boolean;
   t: (key: string) => string;
 }) => {
-  // Removed unused summaryMetrics
-
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <TrendingUp sx={{ color: 'success.main', fontSize: 28 }} />
         <Box>
-          <ResponsiveTypography variant="pageTitle" sx={{ mb: 1 }}>
-            {t('assets.title')}
+          <ResponsiveTypography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+            {t('assets.withTrades.title')} ({assets.length})
           </ResponsiveTypography>
-          <ResponsiveTypography variant="pageSubtitle">
-            {t('assets.subtitle')}
+          <ResponsiveTypography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('assets.withTrades.subtitle')}
           </ResponsiveTypography>
         </Box>
       </Box>
       
       {assets.length === 0 ? (
         <Card sx={{ 
-          p: 6, 
+          p: 4, 
           textAlign: 'center',
-          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          borderRadius: 3
+          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.05)} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+          borderRadius: 2
         }}>
-          <Box sx={{ 
-            p: 3,
-            borderRadius: '50%',
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-            display: 'inline-flex',
-            mb: 3
-          }}>
-            <AccountBalanceWallet sx={{ fontSize: 80, color: 'primary.main' }} />
-          </Box>
-          <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
-            {t('assets.noAssets.title')}
+          <TrendingUp sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
+          <ResponsiveTypography variant="h6" sx={{ mb: 1, color: 'success.main' }}>
+            {t('assets.withTrades.noAssets.title')}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-            {t('assets.noAssets.description')}
+          <ResponsiveTypography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('assets.withTrades.noAssets.description')}
           </ResponsiveTypography>
         </Card>
       ) : (
         <Card sx={{ 
-          borderRadius: 3,
+          borderRadius: 2,
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-          border: `0.5px solid ${alpha(theme.palette.divider, 0.08)}`,
+          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
           backdropFilter: 'blur(10px)'
         }}>
           <CardContent sx={{ p: 0 }}>
             <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 0 }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
+                  <TableRow sx={{ backgroundColor: alpha(theme.palette.success.main, 0.05) }}>
                     <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.asset')}</ResponsiveTypography></TableCell>
                     <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography></TableCell>
                     <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography></TableCell>
@@ -494,7 +485,102 @@ const AssetsList = memo(({
   );
 });
 
-AssetsList.displayName = 'AssetsList';
+// Memoized assets without trades list component
+const AssetsWithoutTradesList = memo(({ 
+  assets, 
+  baseCurrency, 
+  theme, 
+  onViewDetail, 
+  onEdit, 
+  onDelete, 
+  isLoadingDeleteInfo,
+  t
+}: { 
+  assets: Asset[]; 
+  baseCurrency: string; 
+  theme: any; 
+  onViewDetail: (asset: Asset) => void; 
+  onEdit: (asset: Asset) => void; 
+  onDelete: (asset: Asset) => void; 
+  isLoadingDeleteInfo: boolean;
+  t: (key: string) => string;
+}) => {
+  return (
+    <Box sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <AccountBalanceWallet sx={{ color: 'warning.main', fontSize: 28 }} />
+        <Box>
+          <ResponsiveTypography variant="h6" sx={{ fontWeight: 600, color: 'warning.main' }}>
+            {t('assets.withoutTrades.title')} ({assets.length})
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('assets.withoutTrades.subtitle')}
+          </ResponsiveTypography>
+        </Box>
+      </Box>
+      
+      {assets.length === 0 ? (
+        <Card sx={{ 
+          p: 4, 
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.05)} 0%, ${alpha(theme.palette.warning.main, 0.02)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+          borderRadius: 2
+        }}>
+          <AccountBalanceWallet sx={{ fontSize: 48, color: 'warning.main', mb: 2 }} />
+          <ResponsiveTypography variant="h6" sx={{ mb: 1, color: 'warning.main' }}>
+            {t('assets.withoutTrades.noAssets.title')}
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('assets.withoutTrades.noAssets.description')}
+          </ResponsiveTypography>
+        </Card>
+      ) : (
+        <Card sx={{ 
+          borderRadius: 2,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+          backdropFilter: 'blur(10px)'
+        }}>
+          <CardContent sx={{ p: 0 }}>
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 0 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: alpha(theme.palette.warning.main, 0.05) }}>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.asset')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography></TableCell>
+                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {assets.map((asset) => (
+                    <AssetTableRow
+                      key={asset.id}
+                      asset={asset}
+                      baseCurrency={baseCurrency}
+                      theme={theme}
+                      onViewDetail={onViewDetail}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      isLoadingDeleteInfo={isLoadingDeleteInfo}
+                      t={t}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
+  );
+});
+
+AssetsWithTradesList.displayName = 'AssetsWithTradesList';
+AssetsWithoutTradesList.displayName = 'AssetsWithoutTradesList';
 
 const Assets: React.FC = () => {
   const { t } = useTranslation();
@@ -816,17 +902,40 @@ const Assets: React.FC = () => {
           </Box>
         )}
 
-        {/* Assets List - Memoized Component */}
-        <AssetsList 
-          assets={assets}
-          baseCurrency={baseCurrency}
-          theme={theme}
-          onViewDetail={handleViewAssetDetail}
-          onEdit={handleEditAsset}
-          onDelete={handleDeleteAsset}
-          isLoadingDeleteInfo={isLoadingDeleteInfo}
-          t={t}
-        />
+        {/* Assets Lists - Separated by trades status */}
+        {(() => {
+          // Separate assets by trades status
+          const assetsWithTrades = assets.filter(asset => asset.hasTrades);
+          const assetsWithoutTrades = assets.filter(asset => !asset.hasTrades);
+          
+          return (
+            <Box>
+              {/* Assets with trades */}
+              <AssetsWithTradesList 
+                assets={assetsWithTrades}
+                baseCurrency={baseCurrency}
+                theme={theme}
+                onViewDetail={handleViewAssetDetail}
+                onEdit={handleEditAsset}
+                onDelete={handleDeleteAsset}
+                isLoadingDeleteInfo={isLoadingDeleteInfo}
+                t={t}
+              />
+              
+              {/* Assets without trades */}
+              <AssetsWithoutTradesList 
+                assets={assetsWithoutTrades}
+                baseCurrency={baseCurrency}
+                theme={theme}
+                onViewDetail={handleViewAssetDetail}
+                onEdit={handleEditAsset}
+                onDelete={handleDeleteAsset}
+                isLoadingDeleteInfo={isLoadingDeleteInfo}
+                t={t}
+              />
+            </Box>
+          );
+        })()}
 
         {/* Asset Details Modal */}
         <AssetDetailsModal

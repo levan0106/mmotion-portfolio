@@ -320,7 +320,7 @@
     "expandAll": "Mở rộng tất cả",
     "collapseAll": "Thu gọn tất cả",
     "total": "Tổng",
-    "fundingSource": "Nguồn tài tiền",
+    "fundingSource": "Nguồn tiền",
     "totalValue": "Tổng giá trị",
     "totalCost": "Tổng chi phí",
     "loadingTrades": "Đang tải giao dịch...",
@@ -330,6 +330,10 @@
     "viewDetails": "Xem chi tiết",
     "editTrade": "Chỉnh sửa giao dịch",
     "deleteTrade": "Xóa giao dịch",
+    "modal": {
+      "editTrade": "Chỉnh sửa giao dịch",
+      "createTrade": "Tạo giao dịch"
+    },
     "deleteTradeConfirm": "Bạn có chắc chắn muốn xóa giao dịch này cho {{asset}}? Hành động này không thể hoàn tác.",
     "failedToLoadTrades": "Không thể tải giao dịch",
     "asset": "Tài sản",
@@ -339,7 +343,52 @@
     "quantity": "Số lượng",
     "price": "Giá",
     "date": "Ngày",
-    "symbol": "Mã"
+    "symbol": "Mã",
+    "form": {
+      "basicInformation": "Thông tin cơ bản",
+      "portfolio": "Danh mục",
+      "loadingPortfolios": "Đang tải danh mục...",
+      "noPortfoliosFound": "Không tìm thấy danh mục",
+      "asset": "Tài sản",
+      "searchAsset": "Tìm kiếm và chọn tài sản...",
+      "tradeDate": "Ngày giao dịch",
+      "tradeDetails": "Chi tiết giao dịch",
+      "tradeSide": "Loại giao dịch",
+      "buy": "MUA",
+      "sell": "BÁN",
+      "quantity": "Số lượng",
+      "pricePerUnit": "Giá mỗi đơn vị",
+      "refreshMarketPrice": "Làm mới giá thị trường",
+      "additionalInformation": "Thông tin bổ sung",
+      "tradingFee": "Phí giao dịch",
+      "tax": "Thuế",
+      "tradeType": "Loại giao dịch",
+      "marketOrder": "Lệnh thị trường",
+      "limitOrder": "Lệnh giới hạn",
+      "stopOrder": "Lệnh dừng",
+      "exchangeFundingNotes": "Sàn giao dịch & Nguồn tiền",
+      "exchangeFunding": "Sàn giao dịch & Nguồn tiền",
+      "exchangePlatform": "Sàn giao dịch/Nền tảng",
+      "enterExchangePlatform": "Nhập tên sàn giao dịch hoặc nền tảng",
+      "fundingSource": "Nguồn tiền",
+      "enterFundingSource": "Nhập nguồn tiền",
+      "notes": "Ghi chú",
+      "enterNotes": "Nhập ghi chú bổ sung về giao dịch này",
+      "tradeSummary": "Tóm tắt giao dịch",
+      "totalValue": "Tổng giá trị",
+      "feesTaxes": "Phí & Thuế",
+      "amountReceived": "Số tiền nhận được",
+      "amountPaid": "Số tiền đã trả",
+      "processing": "Đang xử lý...",
+      "create": "Tạo",
+      "update": "Cập nhật",
+      "createTrade": "Tạo giao dịch",
+      "updateTrade": "Cập nhật giao dịch",
+      "loadingTradeForm": "Đang tải biểu mẫu giao dịch...",
+      "noPortfoliosAvailable": "Không có danh mục nào. Vui lòng tạo danh mục trước.",
+      "error": "Lỗi",
+      "noPortfoliosFoundError": "Không tìm thấy danh mục. Vui lòng kiểm tra xem backend có đang chạy và thử lại."
+    }
   },
   "assets": {
     "title": "Danh mục tài sản",
@@ -392,6 +441,22 @@
     "noAssets": {
       "title": "Không tìm thấy tài sản",
       "description": "Bạn chưa có tài sản nào trong danh mục. Hãy bắt đầu bằng cách thêm tài sản để theo dõi các khoản đầu tư của bạn."
+    },
+    "withTrades": {
+      "title": "Tài sản có giao dịch",
+      "subtitle": "Tài sản đã được giao dịch (mua/bán)",
+      "noAssets": {
+        "title": "Không có tài sản hoạt động",
+        "description": "Bạn chưa có tài sản nào có hoạt động giao dịch."
+      }
+    },
+    "withoutTrades": {
+      "title": "Tài sản chưa giao dịch",
+      "subtitle": "Tài sản chưa được giao dịch",
+      "noAssets": {
+        "title": "Không có tài sản không hoạt động",
+        "description": "Tất cả tài sản của bạn đều có hoạt động giao dịch."
+      }
     },
     "errors": {
       "loadingError": "Lỗi tải tài sản"
@@ -960,7 +1025,7 @@
       "totalDeposits": "Tổng tiền vào",
       "totalWithdrawals": "Tổng tiền ra",
       "totalDividends": "Tổng cổ tức",
-      "netCashFlow": "Tiền hiện tại",
+      "netCashFlow": "Tiền hiện có",
       "deposits": "Tiền vào",
       "withdrawals": "Tiền ra",
       "dividends": "Cổ tức",
@@ -1051,10 +1116,10 @@
       "pending": "Đang chờ",
       "cancelled": "Đã hủy",
       "originalStatus": "Trạng thái gốc",
-      "fundingSource": "Nguồn tài tiền",
-      "fundingSourceOptional": "Nguồn tài tiền",
+      "fundingSource": "Nguồn tiền",
+      "fundingSourceOptional": "Nguồn tiền",
       "fundingSourcePlaceholder": "VD: VIETCOMBANK, BANK_ACCOUNT_001",
-      "fundingSourceHelper": "Nguồn tài tiền",
+      "fundingSourceHelper": "Nguồn tiền",
       "flowDate": "Ngày dòng tiền",
       "flowDateHelper": "Ngày xảy ra dòng tiền",
       "reference": "Tham chiếu",
@@ -1157,7 +1222,7 @@
       "list": "Danh sách",
       "listView": "Xem danh sách",
       "fundingSource": "Nguồn tiền",
-      "netAmount": "Tiền hiện tại",
+      "netAmount": "Tiền hiện có",
       "inflow": "Tiền vào",
       "outflow": "Tiền ra",
       "transactions": "Giao dịch",

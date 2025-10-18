@@ -71,20 +71,17 @@ const NumberInput: React.FC<NumberInputProps> = ({
     if (numericValue === null || numericValue === undefined || isNaN(numericValue)) return '';
     if (numericValue === 0) return '0';
     
-    let formatted = numericValue.toFixed(decimalPlaces);
+    let formatted;
     
-    if (showThousandsSeparator && decimalPlaces === 0) {
-      // Add thousands separator for integers
+    if (showThousandsSeparator) {
+      // Add thousands separator with flexible decimal places
       formatted = numericValue.toLocaleString('en-US', {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      });
-    } else if (showThousandsSeparator && decimalPlaces > 0) {
-      // Add thousands separator for decimals
-      formatted = numericValue.toLocaleString('en-US', {
-        minimumFractionDigits: decimalPlaces,
         maximumFractionDigits: decimalPlaces
       });
+    } else {
+      // No thousands separator, but still respect max decimal places
+      formatted = numericValue.toFixed(Math.min(decimalPlaces, 10)); // Cap at 10 to avoid issues
     }
     
     return formatted;
@@ -122,12 +119,17 @@ const NumberInput: React.FC<NumberInputProps> = ({
       rawValue = rawValue.replace(/[^\d.]/g, '');
     }
     
-    // Remove trailing zeros but keep decimal point if user is typing
+    // Validate decimal places - don't allow more than decimalPlaces
     if (rawValue.includes('.')) {
-      // Only remove trailing zeros, not the decimal point
-      rawValue = rawValue.replace(/0+$/, '');
-      // Don't remove the decimal point as user might be typing
+      const parts = rawValue.split('.');
+      if (parts[1] && parts[1].length > decimalPlaces) {
+        // Truncate to max decimal places
+        rawValue = parts[0] + '.' + parts[1].substring(0, decimalPlaces);
+      }
     }
+    
+    // Don't remove trailing zeros - preserve user input exactly
+    // User might be typing "1.00" and we should show "1.00"
     
     const numericValue = parseFloat(rawValue) || 0;
     
@@ -140,22 +142,17 @@ const NumberInput: React.FC<NumberInputProps> = ({
       constrainedValue = max;
     }
     
-    // When focused, don't round to preserve user input
-    // When not focused, round to specified decimal places
-    let finalValue = constrainedValue;
+    // Only call onChange when not focused to avoid losing focus during typing
     if (!isFocused) {
-      finalValue = Math.round(constrainedValue * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+      onChange(constrainedValue);
     }
     
-    // Update the numeric value
-    onChange(finalValue);
-    
-    // When focused, show raw value for easy editing
+    // When focused, show exactly what user typed
     // When not focused, show formatted value
     if (isFocused) {
       setDisplayValue(rawValue);
     } else {
-      setDisplayValue(formatNumber(finalValue));
+      setDisplayValue(formatNumber(constrainedValue));
     }
   };
 
@@ -171,7 +168,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     
     // Auto-select all text when focusing (especially useful for Tab navigation)
     setTimeout(() => {
-      if (inputRef.current) {
+      if (inputRef.current && typeof inputRef.current.select === 'function') {
         inputRef.current.select();
       }
     }, 0);
@@ -181,10 +178,43 @@ const NumberInput: React.FC<NumberInputProps> = ({
 
   const handleBlur = () => {
     setIsFocused(false);
-    // When blurring, format the value
+    
+    // Get the current display value and parse it
+    const currentValue = parseFloat(displayValue);
+    
+    // If displayValue is empty, don't change the value
+    if (displayValue.trim() === '') {
+      return;
+    }
+    
+    // If displayValue is invalid, don't change the value
+    if (isNaN(currentValue)) {
+      return;
+    }
+    
+    // Apply min/max constraints only if user entered a valid number
+    let constrainedValue = currentValue;
+    
+    // Only apply min constraint if user entered a positive number that's too small
+    // Allow 0 to remain as 0 (don't force it to min value)
+    if (min !== undefined && currentValue > 0 && currentValue < min) {
+      constrainedValue = min;
+    }
+    
+    // Apply max constraint normally
+    if (max !== undefined && currentValue > max) {
+      constrainedValue = max;
+    }
+    
+    // Only call onChange if the value actually changed to prevent unnecessary re-renders
     const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (numericValue !== null && numericValue !== undefined && !isNaN(numericValue)) {
-      setDisplayValue(formatNumber(numericValue));
+    if (constrainedValue !== numericValue) {
+      onChange(constrainedValue);
+    }
+    
+    // When blurring, format the value but preserve decimal places
+    if (constrainedValue !== null && constrainedValue !== undefined && !isNaN(constrainedValue)) {
+      setDisplayValue(formatNumber(constrainedValue));
     } else {
       setDisplayValue('');
     }

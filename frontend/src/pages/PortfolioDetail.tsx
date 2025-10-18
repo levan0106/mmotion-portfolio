@@ -36,7 +36,6 @@ import {
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { TradeForm } from '../components/Trading/TradeForm';
-import { ModalWrapper } from '../components/Common/ModalWrapper';
 import { 
   PerformanceTab,
   AllocationTab,
@@ -846,19 +845,17 @@ const PortfolioDetail: React.FC = () => {
 
       </Box>
       {/* Create Trade Modal */}
-      <ModalWrapper
+      <TradeForm
         open={showCreateForm}
         onClose={() => setShowCreateForm(false)}
-        title={t('portfolio.createNewTrade')}
-        icon={<TrendingUpIcon />}
-        maxWidth="lg"
-        loading={createTradeMutation.isLoading}
-      >
-        <TradeForm
-          onSubmit={handleCreateTrade}
-          defaultPortfolioId={portfolioId!}
-        />
-      </ModalWrapper>
+        onSubmit={handleCreateTrade}
+        defaultPortfolioId={portfolioId!}
+        isLoading={createTradeMutation.isLoading}
+        error={createTradeMutation.error?.message}
+        mode="create"
+        isModal={true}
+        showSubmitButton={false}
+      />
 
       {/* Floating Action Button for Quick Create Trade */}
       <Tooltip 

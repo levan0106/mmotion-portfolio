@@ -1823,7 +1823,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
                 />
                 
-                <FormControl fullWidth margin="normal">
+                {/* <FormControl fullWidth margin="normal">
                   <InputLabel>{t('cashflow.form.currency')}</InputLabel>
                   <Select
                     value={formData.currency}
@@ -1836,22 +1836,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                     <MenuItem value="GBP">GBP</MenuItem>
                     <MenuItem value="JPY">JPY</MenuItem>
                   </Select>
-                  {/* <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    {t('cashflow.form.currencyHelper')}
-                  </ResponsiveTypography> */}
-                </FormControl>
-                
-                {/* <FormControl fullWidth margin="normal">
-                  <InputLabel>{t('cashflow.form.status')}</InputLabel>
-                  <Select
-                    value={formData.status}
-                    label={t('cashflow.form.status')}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <MenuItem value="COMPLETED">{t('cashflow.status.completed')}</MenuItem>
-                    <MenuItem value="PENDING">{t('cashflow.status.pending')}</MenuItem>
-                    <MenuItem value="CANCELLED">{t('cashflow.status.cancelled')}</MenuItem>
-                  </Select>
                 </FormControl> */}
                 
                 <TextField
@@ -1861,7 +1845,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
                   margin="normal"
                   placeholder={t('cashflow.form.fundingSourcePlaceholder')}
-                  //helperText={t('cashflow.form.fundingSourceHelper')}
                   inputProps={{
                     style: { textTransform: 'uppercase' }
                   }}
@@ -1882,16 +1865,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   InputLabelProps={{ shrink: true }}
                   helperText={t('cashflow.form.flowDateHelper')}
                 />
-                
-                {/* <TextField
-                  fullWidth
-                  label={t('cashflow.form.reference')}
-                  value={formData.reference}
-                  onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                  margin="normal"
-                  //helperText={t('cashflow.form.referenceHelper')}
-                /> */}
-                
+                                
                 <TextField
                   fullWidth
                   label={t('cashflow.form.description')}
@@ -1899,7 +1873,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   margin="normal"
                   multiline
-                  rows={3}
+                  rows={1}
                   helperText={
                     editingCashFlow 
                       ? `${t('cashflow.form.original')}: "${editingCashFlow.description}"`

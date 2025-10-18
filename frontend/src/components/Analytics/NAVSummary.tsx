@@ -243,7 +243,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
           </Grid>
 
           {/* NAV Growth (for regular portfolios) */}
-          {!actualIsFund && summaryData && (
+          {!actualIsFund && (
             <Grid item xs={12} md={6}>
               <Box sx={{
                 p: getUltraSpacing(2, 1.5),

@@ -1,11 +1,7 @@
-import React, { useRef } from 'react';
-import {
-  Box,
-} from '@mui/material';
-import { Edit as EditIcon, Close as CloseIcon } from '@mui/icons-material';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Edit as EditIcon } from '@mui/icons-material';
 import TradeForm, { TradeFormData } from './TradeForm';
-import { ModalWrapper } from '../Common/ModalWrapper';
-import { ResponsiveButton } from '../Common';
 
 export interface EditTradeModalProps {
   open: boolean;
@@ -18,7 +14,7 @@ export interface EditTradeModalProps {
 
 /**
  * EditTradeModal component for editing existing trades.
- * Wraps TradeForm in a modal dialog with proper actions.
+ * Uses TradeForm's built-in modal functionality.
  */
 export const EditTradeModal: React.FC<EditTradeModalProps> = ({
   open,
@@ -28,7 +24,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
   isLoading = false,
   error,
 }) => {
-  const formRef = useRef<HTMLFormElement>(null);
+  const { t } = useTranslation();
 
   const handleSubmit = async (data: TradeFormData) => {
     try {
@@ -39,61 +35,23 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
     }
   };
 
-  const handleUpdateClick = () => {
-    if (formRef.current) {
-      formRef.current.requestSubmit();
-    }
-  };
-
   return (
-    <ModalWrapper
+    <TradeForm
+      onSubmit={handleSubmit}
+      initialData={initialData}
+      isLoading={isLoading}
+      error={error}
+      mode="edit"
+      showSubmitButton={false}
+      isModal={true}
+      // Modal props
       open={open}
       onClose={onClose}
-      title="Edit Trade"
+      title={t('trading.modal.editTrade')}
       icon={<EditIcon />}
-      maxWidth="lg"
-      loading={isLoading}
-      actions={
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <ResponsiveButton 
-            onClick={onClose} 
-            disabled={isLoading}
-            icon={<CloseIcon />}
-            mobileText="Cancel"
-            desktopText="Cancel"
-            sx={{ textTransform: 'none' }}
-          >
-            Cancel
-          </ResponsiveButton>
-          <ResponsiveButton
-            onClick={handleUpdateClick}
-            variant="contained"
-            disabled={isLoading}
-            icon={<EditIcon />}
-            mobileText="Update"
-            desktopText="Update Trade"
-            sx={{ 
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3
-            }}
-          >
-            {isLoading ? 'Updating...' : 'Update Trade'}
-          </ResponsiveButton>
-        </Box>
-      }
-    >
-      <TradeForm
-        onSubmit={handleSubmit}
-        initialData={initialData}
-        isLoading={isLoading}
-        error={error}
-        mode="edit"
-        showSubmitButton={false}
-        formRef={formRef}
-        isModal={true}
-      />
-    </ModalWrapper>
+      maxWidth="md"
+      size="medium"
+    />
   );
 };
 

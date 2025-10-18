@@ -359,58 +359,18 @@ const Trading: React.FC = () => {
       </Fab>
 
       {/* Create Trade Modal */}
-      {showCreateForm && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1300,
-            backdropFilter: 'blur(4px)',
-          }}
-          onClick={handleCloseForm}
-        >
-          <Box
-            sx={{
-              bgcolor: 'white',
-              borderRadius: 3,
-              p: 4,
-              maxWidth: 900,
-              width: '95%',
-              maxHeight: '95%',
-              overflow: 'auto',
-              boxShadow: 24,
-              animation: 'modalSlideIn 0.3s ease-out',
-              '@keyframes modalSlideIn': {
-                from: {
-                  opacity: 0,
-                  transform: 'translateY(-20px) scale(0.95)',
-                },
-                to: {
-                  opacity: 1,
-                  transform: 'translateY(0) scale(1)',
-                },
-              },
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TradeForm
-              onSubmit={handleCreateTradeFromForm}
-              isLoading={createTradeMutation.isLoading}
-              error={createTradeMutation.error?.message}
-              mode="create"
-              defaultPortfolioId={portfolioId}
-              onAssetCreated={handleAssetCreated}
-            />
-          </Box>
-        </Box>
-      )}
+      <TradeForm
+        open={showCreateForm}
+        onClose={handleCloseForm}
+        onSubmit={handleCreateTradeFromForm}
+        defaultPortfolioId={portfolioId}
+        isLoading={createTradeMutation.isLoading}
+        error={createTradeMutation.error?.message}
+        onAssetCreated={handleAssetCreated}
+        mode="create"
+        isModal={true}
+        showSubmitButton={false}
+      />
     </Box>
   );
 };

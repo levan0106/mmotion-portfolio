@@ -15,12 +15,13 @@ export const usePortfolios = (accountId?: string) => {
   
   // Use context accountId if provided, otherwise use passed accountId
   const currentAccountId = contextAccountId || accountId;
-  // Invalidate all queries when account changes
+  // Invalidate all queries when account changes (only if account actually changed)
   useEffect(() => {
     if (currentAccountId) {
-      queryClient.invalidateQueries(['portfolios']);
-      queryClient.invalidateQueries(['trades']);
-      queryClient.invalidateQueries(['portfolio-analytics']);
+      // Use a more targeted invalidation to prevent unnecessary API calls
+      queryClient.invalidateQueries(['portfolios', currentAccountId]);
+      queryClient.invalidateQueries(['trades', currentAccountId]);
+      queryClient.invalidateQueries(['portfolio-analytics', currentAccountId]);
     }
   }, [currentAccountId, queryClient]);
 

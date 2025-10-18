@@ -83,24 +83,28 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
           titlePadding: 2,
           contentPadding: 2,
           actionsPadding: 2,
+          maxWidth: 'sm' as const,
         };
       case 'medium':
         return {
           titlePadding: 3,
           contentPadding: 3,
           actionsPadding: 3,
+          maxWidth: 'md' as const,
         };
       case 'large':
         return {
           titlePadding: 4,
           contentPadding: 4,
           actionsPadding: 4,
+          maxWidth: 'lg' as const,
         };
       default:
         return {
           titlePadding: 3,
           contentPadding: 3,
           actionsPadding: 3,
+          maxWidth: 'md' as const,
         };
     }
   };
