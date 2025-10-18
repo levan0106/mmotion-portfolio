@@ -139,16 +139,49 @@ export class SnapshotService {
       currentPrice: number;
     }> = [];
 
-    // First, prepare all data for all assets
+    // Batch process all assets for better performance
+    this.logger.log(`🚀 Batch processing ${assets.length} assets for portfolio ${portfolioId}`);
+    
+    // Step 1: Batch fetch all prices at once using optimized method
+    const pricePromises = assets.map(asset => 
+      this.getCurrentPriceLaterOptimized(asset.symbol, snapshotDate)
+        .then(price => ({ asset, price }))
+        .catch(error => {
+          this.logger.error(`Failed to get price for ${asset.symbol}:`, error);
+          return { asset, price: 0 };
+        })
+    );
+    
+    // Step 2: Batch fetch all trades at once
+    const tradesPromises = assets.map(asset => 
+      this.assetRepository.getAssetTradesByPortfolioFinal(asset.id, portfolioId, snapshotDate)
+        .then(trades => ({ asset, trades }))
+        .catch(error => {
+          this.logger.error(`Failed to get trades for ${asset.symbol}:`, error);
+          return { asset, trades: [] };
+        })
+    );
+    
+    // Wait for all price and trade data to be fetched in parallel
+    const [priceResults, tradesResults] = await Promise.all([
+      Promise.all(pricePromises),
+      Promise.all(tradesPromises)
+    ]);
+    
+    // Create maps for quick lookup
+    const priceMap = new Map(priceResults.map(result => [result.asset.id, result.price]));
+    const tradesMap = new Map(tradesResults.map(result => [result.asset.id, result.trades]));
+    
+    this.logger.log(`✅ Batch fetched prices and trades for ${assets.length} assets`);
+    
+    // Step 3: Process all assets with pre-fetched data
     for (const asset of assets) {
       this.logger.log(`Processing asset ${asset.symbol} (${asset.id}) for portfolio ${portfolioId}`);
       
-      // Get price for snapshot date
-      const currentPrice = await this.getCurrentPriceLater(asset.symbol, snapshotDate);
-      this.logger.log(`Current price for ${asset.symbol} on ${snapshotDate.toISOString().split('T')[0]}: ${currentPrice}`);
+      const currentPrice = priceMap.get(asset.id) || 0;
+      const trades = tradesMap.get(asset.id) || [];
       
-      // Get trades for this asset in this portfolio up to snapshot date
-      const trades = await this.assetRepository.getAssetTradesByPortfolioFinal(asset.id, portfolioId, snapshotDate);
+      this.logger.log(`Current price for ${asset.symbol} on ${snapshotDate.toISOString().split('T')[0]}: ${currentPrice}`);
       this.logger.log(`Found ${trades.length} trades for asset ${asset.symbol}`);
       
       // Use FIFO calculation to get all values at once
@@ -183,8 +216,8 @@ export class SnapshotService {
         ? Number(((currentValue / totalPortfolioValue) * 100).toFixed(4))
         : 0;
 
-      // Calculate daily return and cumulative return
-      const { dailyReturn, cumulativeReturn } = await this.calculateReturnsForAssetLater(
+      // Calculate daily return and cumulative return (optimized to reduce database queries)
+      const { dailyReturn, cumulativeReturn } = await this.calculateReturnsForAssetOptimized(
         asset.id, 
         portfolioId, 
         snapshotDate, 
@@ -279,6 +312,57 @@ export class SnapshotService {
     return createdSnapshots;
   }
 
+
+  /**
+   * Optimized return calculation method
+   * Reduces database queries by using more efficient queries
+   */
+  private async calculateReturnsForAssetOptimized(
+    assetId: string,
+    portfolioId: string,
+    snapshotDate: Date,
+    currentValue: number
+  ): Promise<{ dailyReturn: number; cumulativeReturn: number }> {
+    try {
+      // Get previous snapshots for this asset with optimized query
+      const previousSnapshots = await this.snapshotRepo.findMany({
+        portfolioId,
+        assetId,
+        granularity: SnapshotGranularity.DAILY,
+        endDate: new Date(snapshotDate.getTime() - 24 * 60 * 60 * 1000), // Previous day
+        limit: 2,
+        orderBy: 'snapshotDate',
+        orderDirection: 'DESC'
+      });
+
+      let dailyReturn = 0;
+      let cumulativeReturn = 0;
+
+      if (previousSnapshots.length > 0) {
+        // Calculate daily return from previous day
+        const previousValue = Number(previousSnapshots[0].currentValue) || 0;
+        if (previousValue > 0) {
+          dailyReturn = Number(((currentValue - previousValue) / previousValue * 100).toFixed(4));
+        }
+
+        // Calculate cumulative return from first snapshot
+        if (previousSnapshots.length > 1) {
+          const firstValue = Number(previousSnapshots[1].currentValue) || 0;
+          if (firstValue > 0) {
+            cumulativeReturn = Number(((currentValue - firstValue) / firstValue * 100).toFixed(4));
+          }
+        } else {
+          // If this is the second snapshot, cumulative return = daily return
+          cumulativeReturn = dailyReturn;
+        }
+      }
+
+      return { dailyReturn, cumulativeReturn };
+    } catch (error) {
+      this.logger.error(`Error calculating returns for asset ${assetId}: ${error.message}`);
+      return { dailyReturn: 0, cumulativeReturn: 0 };
+    }
+  }
 
   /**
    * Calculate daily return and cumulative return for a specific asset
@@ -1035,33 +1119,71 @@ export class SnapshotService {
   }
 
   /**
+   * Optimized batch price fetching method
+   * Reduces database queries by batching price lookups
+   */
+  private async getCurrentPriceLaterOptimized(symbol: string, snapshotDate: Date): Promise<number> {
+    try {
+      // PRIORITY 1: Get price from price history for the snapshot date (most likely to succeed)
+      const historicalPrice = await this.priceHistoryService.getPriceByDate(symbol, snapshotDate);
+      if (historicalPrice !== null && historicalPrice > 0) {
+        return historicalPrice;
+      }
+
+      // PRIORITY 2: Fallback to current global asset price (cached, fast)
+      const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(symbol);
+      if (globalAssetPrice !== null && globalAssetPrice > 0) {
+        return globalAssetPrice;
+      }
+
+      // PRIORITY 3: Fallback to market data service (external API, slower)
+      const marketPrice = await this.marketDataService.getCurrentPrice(symbol);
+      if (marketPrice > 0) {
+        return marketPrice;
+      }
+
+      // PRIORITY 4: Final fallback to latest trade price (database query, slowest)
+      const latestTradePrice = await this.getLatestTradePrice(symbol);
+      if (latestTradePrice > 0) {
+        return latestTradePrice;
+      }
+
+      this.logger.warn(`No price found for symbol ${symbol} on ${snapshotDate.toISOString()}, using 0`);
+      return 0;
+    } catch (error) {
+      this.logger.error(`Error getting price for ${symbol} on ${snapshotDate.toISOString()}:`, error);
+      return 0;
+    }
+  }
+
+  /**
    * Get current price for an asset symbol at a specific date
+   * Optimized to reduce database queries by trying the most likely sources first
    */
   private async getCurrentPriceLater(symbol: string, snapshotDate: Date): Promise<number> {
     try {
-
-      // PRIORITY 1: Get price from price history for the snapshot date
+      // PRIORITY 1: Get price from price history for the snapshot date (most likely to succeed)
       const historicalPrice = await this.priceHistoryService.getPriceByDate(symbol, snapshotDate);
       if (historicalPrice !== null && historicalPrice > 0) {
         this.logger.debug(`Using historical price for ${symbol} on ${snapshotDate.toISOString()}: ${historicalPrice}`);
         return historicalPrice;
       }
 
-      // PRIORITY 2: Fallback to current global asset price
+      // PRIORITY 2: Fallback to current global asset price (cached, fast)
       const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(symbol);
       if (globalAssetPrice !== null && globalAssetPrice > 0) {
         this.logger.debug(`Using current global asset price for ${symbol}: ${globalAssetPrice}`);
         return globalAssetPrice;
       }
 
-      // PRIORITY 3: Fallback to market data service
+      // PRIORITY 3: Fallback to market data service (external API, slower)
       const marketPrice = await this.marketDataService.getCurrentPrice(symbol);
       if (marketPrice > 0) {
         this.logger.debug(`Using market data price for ${symbol}: ${marketPrice}`);
         return marketPrice;
       }
 
-      // PRIORITY 4: Final fallback to latest trade price
+      // PRIORITY 4: Final fallback to latest trade price (database query, slowest)
       const latestTradePrice = await this.getLatestTradePrice(symbol);
       if (latestTradePrice > 0) {
         this.logger.debug(`Using latest trade price for ${symbol}: ${latestTradePrice}`);

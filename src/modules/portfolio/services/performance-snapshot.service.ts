@@ -89,20 +89,12 @@ export class PerformanceSnapshotService {
     this.logger.log(`Creating performance snapshots for portfolio ${portfolioId} on ${date.toISOString().split('T')[0]}`);
 
     return await this.dataSource.transaction(async manager => {
-      // 1. Create Portfolio Performance Snapshot
-      const portfolioSnapshot = await this.createPortfolioPerformanceSnapshot(
-        portfolioId, date, granularity, manager
-      );
-
-      // 2. Create Asset Performance Snapshots
-      const assetSnapshots = await this.createAssetPerformanceSnapshots(
-        portfolioId, date, granularity, manager
-      );
-
-      // 3. Create Asset Group Performance Snapshots
-      const groupSnapshots = await this.createAssetGroupPerformanceSnapshots(
-        portfolioId, date, granularity, manager
-      );
+      // Run all three snapshot creation operations in parallel for better performance
+      const [portfolioSnapshot, assetSnapshots, groupSnapshots] = await Promise.all([
+        this.createPortfolioPerformanceSnapshot(portfolioId, date, granularity, manager),
+        this.createAssetPerformanceSnapshots(portfolioId, date, granularity, manager),
+        this.createAssetGroupPerformanceSnapshots(portfolioId, date, granularity, manager)
+      ]);
 
       this.logger.log(`Successfully created performance snapshots: 1 portfolio, ${assetSnapshots.length} assets, ${groupSnapshots.length} groups`);
 

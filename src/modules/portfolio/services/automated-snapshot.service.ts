@@ -161,15 +161,36 @@ export class AutomatedSnapshotService {
         });
       }
 
-      // Process each portfolio
-      for (const portfolio of portfolios) {
-        try {
-          await this.createSnapshotsForPortfolio(portfolio, executionId);
-          this.executionStats.successfulPortfolios++;
-        } catch (error) {
-          this.executionStats.failedPortfolios++;
-          this.logger.error(`❌ Failed to create snapshots for portfolio ${portfolio.portfolioId} (${portfolio.name}):`, error);
-        }
+      // Process portfolios in parallel batches for better performance
+      const BATCH_SIZE = this.configService.get<number>('AUTOMATED_SNAPSHOT_BATCH_SIZE', 3); // Configurable batch size
+      const portfolioBatches = [];
+      
+      for (let i = 0; i < portfolios.length; i += BATCH_SIZE) {
+        portfolioBatches.push(portfolios.slice(i, i + BATCH_SIZE));
+      }
+
+      this.logger.log(`📦 Processing ${portfolios.length} portfolios in ${portfolioBatches.length} batches of ${BATCH_SIZE}`);
+
+      for (const batch of portfolioBatches) {
+        const batchPromises = batch.map(async (portfolio) => {
+          try {
+            await this.createSnapshotsForPortfolio(portfolio, executionId);
+            this.executionStats.successfulPortfolios++;
+            return { success: true, portfolioId: portfolio.portfolioId };
+          } catch (error) {
+            this.executionStats.failedPortfolios++;
+            this.logger.error(`❌ Failed to create snapshots for portfolio ${portfolio.portfolioId} (${portfolio.name}):`, error);
+            return { success: false, portfolioId: portfolio.portfolioId, error: error.message };
+          }
+        });
+
+        // Wait for all portfolios in this batch to complete
+        const batchResults = await Promise.allSettled(batchPromises);
+        
+        const successful = batchResults.filter(result => result.status === 'fulfilled' && result.value.success).length;
+        const failed = batchResults.filter(result => result.status === 'rejected' || (result.status === 'fulfilled' && !result.value.success)).length;
+        
+        this.logger.log(`✅ Batch completed: ${successful} successful, ${failed} failed`);
       }
 
       // Calculate execution time
