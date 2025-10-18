@@ -43,8 +43,8 @@ export class AssetMapper {
       createdBy: asset.createdBy,
       updatedBy: asset.updatedBy,
       totalValue: currentValue, // Use calculated currentValue as totalValue
-      totalQuantity: asset.getTotalQuantity(),
-      hasTrades: asset.hasTrades(),
+      totalQuantity: currentQuantity || 0,
+      hasTrades: (currentQuantity || 0) > 0,
       displayName: asset.getDisplayName(),
       canModifySymbol: asset.canModifySymbol(),
       primaryIdentifier: asset.getPrimaryIdentifier(),

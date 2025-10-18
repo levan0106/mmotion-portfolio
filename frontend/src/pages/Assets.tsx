@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import { useAssets } from '../hooks/useAssets';
 import { useAccount } from '../contexts/AccountContext';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDateTime, formatNumber } from '../utils/format';
 import { AssetDetailsModal } from '../components/Asset/AssetDetailsModal';
 import { AssetFormModal } from '../components/Asset/AssetFormModal';
 import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarningDialog';
@@ -154,7 +154,7 @@ const AssetTableRow = memo(({
       </TableCell>
       <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '80px', sm: '100px' }, minWidth: '60px' }}>
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
-          {Number(asset.totalQuantity) || 0}
+          {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '120px', sm: '150px' }, minWidth: '100px' }}>

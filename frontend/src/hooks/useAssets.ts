@@ -131,15 +131,11 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           // Preserve backend computed fields
           hasTrades: asset.hasTrades,
           displayName: asset.displayName,
-          // For assets without trades, use initial values as total values
-          totalValue: asset.hasTrades 
-            ? (asset.currentQuantity && asset.currentPrice 
-                ? asset.currentQuantity * asset.currentPrice 
-                : 0)
-            : (asset.initialValue || 0),
-          totalQuantity: asset.hasTrades 
-            ? (asset.totalQuantity || asset.currentQuantity || 0)
-            : (asset.initialQuantity || 0),
+          // Use backend computed values directly
+          totalValue: asset.totalValue || (asset.currentQuantity && asset.currentPrice 
+            ? asset.currentQuantity * asset.currentPrice 
+            : 0),
+          totalQuantity: asset.totalQuantity || asset.currentQuantity || 0,
           // Add additional computed properties for frontend
           currentPrice: asset.currentPrice || 0, // Use backend currentPrice
           avgCost: asset.avgCost || 0, // Use backend avgCost
@@ -306,15 +302,11 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       // Map backend response to frontend format
       const frontendAsset: Asset = {
         ...updatedAsset,
-        // For assets without trades, use initial values as total values
-        totalValue: (updatedAsset as any).hasTrades 
-          ? ((updatedAsset as any).currentQuantity && (updatedAsset as any).currentPrice 
-              ? (updatedAsset as any).currentQuantity * (updatedAsset as any).currentPrice 
-              : 0)
-          : ((updatedAsset as any).initialValue || 0),
-        totalQuantity: (updatedAsset as any).hasTrades 
-          ? ((updatedAsset as any).totalQuantity || (updatedAsset as any).currentQuantity || 0)
-          : ((updatedAsset as any).initialQuantity || 0),
+        // Use backend computed values directly
+        totalValue: (updatedAsset as any).totalValue || ((updatedAsset as any).currentQuantity && (updatedAsset as any).currentPrice 
+          ? (updatedAsset as any).currentQuantity * (updatedAsset as any).currentPrice 
+          : 0),
+        totalQuantity: (updatedAsset as any).totalQuantity || (updatedAsset as any).currentQuantity || 0,
         quantity: (updatedAsset as any).hasTrades 
           ? ((updatedAsset as any).currentQuantity || 0)
           : ((updatedAsset as any).initialQuantity || 0),
@@ -372,15 +364,11 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
       // Add performance to new asset
       const assetWithPerformance: Asset = {
         ...newAsset,
-        // For assets without trades, use initial values as total values
-        totalValue: (newAsset as any).hasTrades 
-          ? ((newAsset as any).currentQuantity && (newAsset as any).currentPrice 
-              ? (newAsset as any).currentQuantity * (newAsset as any).currentPrice 
-              : 0)
-          : ((newAsset as any).initialValue || 0),
-        totalQuantity: (newAsset as any).hasTrades 
-          ? ((newAsset as any).totalQuantity || (newAsset as any).currentQuantity || 0)
-          : ((newAsset as any).initialQuantity || 0),
+        // Use backend computed values directly
+        totalValue: (newAsset as any).totalValue || ((newAsset as any).currentQuantity && (newAsset as any).currentPrice 
+          ? (newAsset as any).currentQuantity * (newAsset as any).currentPrice 
+          : 0),
+        totalQuantity: (newAsset as any).totalQuantity || (newAsset as any).currentQuantity || 0,
         quantity: (newAsset as any).hasTrades 
           ? ((newAsset as any).currentQuantity || 0)
           : ((newAsset as any).initialQuantity || 0),
@@ -471,15 +459,11 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           
           return {
             ...asset,
-            // For assets without trades, use initial values as total values
-            totalValue: (asset as any).hasTrades 
-              ? ((asset as any).currentQuantity && (asset as any).currentPrice 
-                  ? (asset as any).currentQuantity * (asset as any).currentPrice 
-                  : 0)
-              : ((asset as any).initialValue || 0),
-            totalQuantity: (asset as any).hasTrades 
-              ? ((asset as any).totalQuantity || (asset as any).currentQuantity || 0)
-              : ((asset as any).initialQuantity || 0),
+            // Use backend computed values directly
+            totalValue: (asset as any).totalValue || ((asset as any).currentQuantity && (asset as any).currentPrice 
+              ? (asset as any).currentQuantity * (asset as any).currentPrice 
+              : 0),
+            totalQuantity: (asset as any).totalQuantity || (asset as any).currentQuantity || 0,
             quantity: (asset as any).hasTrades 
               ? ((asset as any).currentQuantity || 0)
               : ((asset as any).initialQuantity || 0),
