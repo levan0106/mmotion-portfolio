@@ -30,21 +30,13 @@
     "typeorm:migration:revert": "npm run typeorm -- migration:revert -d dist/src/config/database.config.js",
     "typeorm:seed": "npm run typeorm -- seed:run -d dist/src/config/database.config.js",
     "seed:dev": "npx ts-node scripts/seed-database.ts",
-    "update-realized-pl": "npx ts-node scripts/update-all-portfolio-realized-pl.ts",
-    "check-realized-pl": "npx ts-node scripts/check-portfolio-realized-pl.ts",
-    "migration:create-test-data": "npx ts-node scripts/create-migration-test-data.ts",
-    "migration:test": "npx ts-node scripts/run-migration-test.ts",
-    "migration:test:full": "npm run migration:create-test-data && npm run migration:test",
-    "migration:run-schema": "npx ts-node scripts/run-typeorm-migrations.ts",
-    "migration:run:full": "npm run migration:run-schema && npm run migration:run-data",
-    "migration:verify": "npx ts-node scripts/verify-migration-status.ts",
-    "migration:verify:simple": "powershell -ExecutionPolicy Bypass -File scripts/verify-migration-simple.ps1",
     "cleanup:fund-data": "npx ts-node scripts/cleanup-fund-data.ts",
     "portfolio:list": "npx ts-node scripts/list-portfolios.ts",
     "portfolio:cleanup": "npx ts-node scripts/portfolio-cleanup-wrapper.ts",
     "portfolio:cleanup:help": "npx ts-node -e \"console.log('Usage: npm run portfolio:cleanup <portfolioId>'); console.log('Example: npm run portfolio:cleanup 550e8400-e29b-41d4-a716-446655440001'); console.log(''); console.log('To list all portfolios first:'); console.log('  npm run portfolio:list');\"",
     "backup:database": "powershell -ExecutionPolicy Bypass -File scripts/backup-restore-database.ps1",
-    "backup:database:transfer": "cmd /c \"powershell -ExecutionPolicy Bypass -File ./scripts/backup-restore-database.ps1 -TargetServer ec2-34-228-198-131.compute-1.amazonaws.com -TargetUser ec2-user -TargetPath /home/ec2-user/mmotion-portfolio/backups/\""
+    "backup:database:transfer": "cmd /c \"powershell -ExecutionPolicy Bypass -File ./scripts/backup-restore-database.ps1 -TargetServer ec2-34-228-198-131.compute-1.amazonaws.com -TargetUser ec2-user -TargetPath /home/ec2-user/mmotion-portfolio/backups/\"",
+    "backup:database:production": "cmd /c \"powershell -ExecutionPolicy Bypass -File ./scripts/backup-production-main.ps1 -TargetServer ec2-34-228-198-131.compute-1.amazonaws.com -TargetUser ec2-user -BackupType full\""
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
