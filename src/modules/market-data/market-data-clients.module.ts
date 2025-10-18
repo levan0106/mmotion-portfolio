@@ -8,6 +8,7 @@ import {
   CryptoPriceAPIClient
 } from './clients';
 import { ExternalMarketDataService } from './services/external-market-data.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
@@ -15,9 +16,10 @@ import { ExternalMarketDataService } from './services/external-market-data.servi
       timeout: 10000, // 10 seconds
       maxRedirects: 3,
       headers: {
-        'User-Agent': 'MMotion-Portfolio/1.0'
+        'User-Agent': 'Portfolio/1.0'
       }
-    })
+    }),
+    SharedModule // Import SharedModule to get CircuitBreakerService
   ],
   providers: [
     FundPriceAPIClient,

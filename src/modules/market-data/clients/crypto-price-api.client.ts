@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { BaseMarketData, MarketDataType, MarketDataSource } from '../types/market-data.types';
+import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 
 export interface CryptoData extends BaseMarketData {
   name: string;
@@ -19,50 +20,61 @@ export class CryptoPriceAPIClient {
   private readonly baseUrl = 'https://api.coingecko.com/api/v3';
   private readonly timeout = 10000;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly circuitBreakerService: CircuitBreakerService
+  ) {}
 
   /**
-   * Get all crypto prices
+   * Get all crypto prices with circuit breaker protection
    */
   async getAllCryptoPrices(): Promise<CryptoData[]> {
-    try {
-      this.logger.log('Fetching crypto prices from CoinGecko API...');
-      
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/coins/markets`, {
-          params: {
-            vs_currency: 'vnd',
-            order: 'market_cap_desc',
-            per_page: 100,
-            page: 1,
-            sparkline: false,
-            price_change_percentage: '24h'
-          },
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Referer': 'https://www.coingecko.com/',
-            'Origin': 'https://www.coingecko.com',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin'
-          },
-          timeout: this.timeout
-        })
-      );
+    return this.circuitBreakerService.execute(
+      'crypto-price-api',
+      async () => {
+        this.logger.log('Fetching crypto prices from CoinGecko API...');
+        
+        const response = await firstValueFrom(
+          this.httpService.get(`${this.baseUrl}/coins/markets`, {
+            params: {
+              vs_currency: 'vnd',
+              order: 'market_cap_desc',
+              per_page: 100,
+              page: 1,
+              sparkline: false,
+              price_change_percentage: '24h'
+            },
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive',
+              'Referer': 'https://www.coingecko.com/',
+              'Origin': 'https://www.coingecko.com',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin'
+            },
+            timeout: this.timeout
+          })
+        );
 
-      const cryptoPrices = this.parseCryptoData(response.data);
-      this.logger.log(`Successfully fetched ${cryptoPrices.length} crypto prices from CoinGecko`);
-      
-      return cryptoPrices;
-
-    } catch (error) {
+        const cryptoPrices = this.parseCryptoData(response.data);
+        this.logger.log(`Successfully fetched ${cryptoPrices.length} crypto prices from CoinGecko`);
+        
+        return cryptoPrices;
+      },
+      {
+        failureThreshold: 3, // Open circuit after 3 failures
+        timeout: 30000, // Wait 30 seconds before trying again
+        successThreshold: 2, // Need 2 successes to close circuit
+        monitoringPeriod: 300000 // 5 minutes monitoring window
+      }
+    ).catch(error => {
       this.logger.error('Failed to fetch crypto prices from CoinGecko:', error.message);
       throw new Error(`CoinGecko API call failed: ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -173,5 +185,32 @@ export class CryptoPriceAPIClient {
       this.logger.error('Failed to parse CoinGecko crypto data:', error.message);
       return [];
     }
+  }
+
+  /**
+   * Test API connectivity with circuit breaker protection
+   */
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.getAllCryptoPrices();
+      return true;
+    } catch (error) {
+      this.logger.error('CoinGecko API connection test failed:', error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Get circuit breaker statistics for crypto price API
+   */
+  getCircuitBreakerStats() {
+    return this.circuitBreakerService.getStats('crypto-price-api');
+  }
+
+  /**
+   * Reset circuit breaker for crypto price API
+   */
+  resetCircuitBreaker(): void {
+    this.circuitBreakerService.reset('crypto-price-api');
   }
 }

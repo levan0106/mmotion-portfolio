@@ -101,7 +101,7 @@ const customTypography = {
   // Title variants
   title: {
     xs: '1.1rem',    // 17.6px (increased for mobile readability)
-    sm: '1.1rem',      // 16px (increased from 13.3px)
+    sm: '1.1rem',    // 16px (increased from 13.3px)
     md: '1.1rem',    // 17.6px (increased from 14.7px)
     lg: '1.2rem',    // 19.2px (increased from 16px)
     xl: '1.3rem',    // 20.8px (increased from 17.3px)
@@ -110,7 +110,7 @@ const customTypography = {
   // Subtitle variants
   subtitle: {
     xs: '0.8rem',    // 12.8px (increased for mobile readability)
-    sm: '0.8rem',    // 12.8px (increased from 10.7px)
+    sm: '0.8rem',    // 12px (increased from 10.7px)
     md: '0.8rem',    // 14.4px (increased from 12px)
     lg: '0.9rem',      // 16px (increased from 13.3px)
     xl: '1.0rem',    // 17.6px (increased from 14.7px)
@@ -119,7 +119,7 @@ const customTypography = {
   // Body text variants
   body: {
     xs: '1rem',      // 16px (increased for mobile readability)
-    sm: '1rem',    // 14.4px
+    sm: '1rem',      // 16px
     md: '1rem',      // 16px (desktop standard)
     lg: '1.1rem',    // 17.6px
     xl: '1.2rem',    // 19.2px
@@ -128,7 +128,7 @@ const customTypography = {
   // Small text variants
   small: {
     xs: '0.875rem',  // 14px (increased for mobile readability)
-    sm: '0.875rem',    // 12.8px
+    sm: '0.875rem',   // 14px
     md: '0.875rem',  // 14px
     lg: '0.9rem',    // 14.4px
     xl: '1rem',      // 16px
@@ -137,7 +137,7 @@ const customTypography = {
   // XSmall text variants
   xSmall: {
     xs: '0.75rem',   // 12px (increased for mobile readability)
-    sm: '0.75rem',    // 10.4px
+    sm: '0.75rem',   // 12px
     md: '0.7rem',    // 11.2px
     lg: '0.7rem',     // 12px
     xl: '0.75rem',   // 12.8px
@@ -146,7 +146,7 @@ const customTypography = {
   // Caption variants
   caption: {
     xs: '0.75rem',   // 12px (increased for mobile readability)
-    sm: '0.75rem',    // 11.2px
+    sm: '0.75rem',   // 12px
     md: '0.75rem',   // 12px
     lg: '0.8rem',    // 12.8px
     xl: '0.875rem',  // 14px
@@ -155,7 +155,7 @@ const customTypography = {
   // Chart title variants
   chartTitle: {
     xs: '0.875rem', // 14px (increased for mobile readability)
-    sm: '0.875rem',   // 12.8px
+    sm: '0.875rem', // 14px
     md: '0.875rem', // 14px
     lg: '0.9rem',   // 14.4px
     xl: '1rem',     // 16px
@@ -164,7 +164,7 @@ const customTypography = {
   // Chart subtitle variants
   chartSubtitle: {
     xs: '0.75rem',  // 12px (increased for mobile readability)
-    sm: '0.75rem',   // 11.2px
+    sm: '0.75rem',  // 12px
     md: '0.75rem',  // 12px
     lg: '0.8rem',   // 12.8px
     xl: '0.875rem', // 14px
@@ -216,8 +216,8 @@ const customTypography = {
 
   cardValueMedium: {
     xs: '1rem',     // 16px (increased for mobile readability)
-    sm: '0.1rem',   // 12.8px
-    md: '0.875rem', // 14px
+    sm: '1.1rem',   // 16px
+    md: '1.1rem',   // 14px
     lg: '0.9rem',   // 14.4px
     xl: '1rem',     // 16px
   },

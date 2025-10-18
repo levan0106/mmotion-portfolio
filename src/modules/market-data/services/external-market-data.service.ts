@@ -174,7 +174,8 @@ export class ExternalMarketDataService {
   }
 
   /**
-   * Get price for a specific symbol
+   * Get price for a specific symbol - NO CIRCUIT BREAKER HERE
+   * Let individual clients handle their own circuit breakers
    */
   async getPriceBySymbol(symbol: string): Promise<PriceUpdateResult | null> {
     try {
@@ -184,7 +185,7 @@ export class ExternalMarketDataService {
         return {
           symbol: fundPrice.symbol,
           price: fundPrice.buyPrice,
-          type: 'FUND',
+          type: 'FUND' as const,
           source: 'fmarket.vn',
           success: true
         };
@@ -196,7 +197,7 @@ export class ExternalMarketDataService {
         return {
           symbol: symbol,
           price: goldPrice.buyPrice, // Use buy price as default
-          type: 'GOLD',
+          type: 'GOLD' as const,
           source: 'doji.vn',
           success: true
         };
@@ -208,7 +209,7 @@ export class ExternalMarketDataService {
         return {
           symbol: symbol,
           price: exchangeRate.buyPrice, // Use buy price as default
-          type: 'EXCHANGE_RATE',
+          type: 'EXCHANGE_RATE' as const,
           source: 'tygiausd.org',
           success: true
         };
@@ -220,7 +221,7 @@ export class ExternalMarketDataService {
         return {
           symbol: stockPrice.symbol,
           price: stockPrice.buyPrice,
-          type: 'STOCK',
+          type: 'STOCK' as const,
           source: stockPrice.source,
           success: true
         };
@@ -240,6 +241,7 @@ export class ExternalMarketDataService {
     }
   }
 
+
   /**
    * Test connectivity to all external APIs
    */
@@ -248,6 +250,7 @@ export class ExternalMarketDataService {
     gold: boolean;
     exchangeRates: boolean;
     stocks: boolean;
+    crypto: boolean;
   }> {
     this.logger.log('Testing connectivity to all external APIs...');
 
@@ -255,35 +258,28 @@ export class ExternalMarketDataService {
       funds: false,
       gold: false,
       exchangeRates: false,
-      stocks: false
+      stocks: false,
+      crypto: false
     };
 
-    // Test fund API
     try {
-      results.funds = await this.fundPriceAPIClient.testConnection();
-    } catch (error) {
-      this.logger.error('Fund API connection test failed:', error.message);
-    }
+      // Test all connections in parallel
+      const [fundsTest, goldTest, exchangeRatesTest, stocksTest, cryptoTest] = await Promise.allSettled([
+        this.fundPriceAPIClient.testConnection(),
+        this.goldPriceAPIClient.testConnection(),
+        this.exchangeRateAPIClient.testConnection(),
+        this.stockPriceAPIClient.testAllConnections(),
+        this.cryptoPriceAPIClient.testConnection()
+      ]);
 
-    // Test gold API
-    try {
-      results.gold = await this.goldPriceAPIClient.testConnection();
-    } catch (error) {
-      this.logger.error('Gold API connection test failed:', error.message);
-    }
+      results.funds = fundsTest.status === 'fulfilled' && fundsTest.value;
+      results.gold = goldTest.status === 'fulfilled' && goldTest.value;
+      results.exchangeRates = exchangeRatesTest.status === 'fulfilled' && exchangeRatesTest.value;
+      results.stocks = stocksTest.status === 'fulfilled' && (stocksTest.value.HOSE || stocksTest.value.HNX || stocksTest.value.ETF);
+      results.crypto = cryptoTest.status === 'fulfilled' && cryptoTest.value;
 
-    // Test exchange rate API
-    try {
-      results.exchangeRates = await this.exchangeRateAPIClient.testConnection();
     } catch (error) {
-      this.logger.error('Exchange rate API connection test failed:', error.message);
-    }
-
-    // Test stock API
-    try {
-      results.stocks = await this.stockPriceAPIClient.testConnection();
-    } catch (error) {
-      this.logger.error('Stock API connection test failed:', error.message);
+      this.logger.error('Connection test failed:', error.message);
     }
 
     this.logger.log('API connectivity test results:', results);

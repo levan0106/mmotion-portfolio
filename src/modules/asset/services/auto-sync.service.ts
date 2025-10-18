@@ -8,6 +8,7 @@ import { AssetPrice } from '../entities/asset-price.entity';
 import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
+import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 import * as cron from 'node-cron';
 
 export interface AutoSyncConfig {
@@ -19,7 +20,7 @@ export interface AutoSyncConfig {
 @Injectable()
 export class AutoSyncService {
   private readonly logger = new Logger(AutoSyncService.name);
-  private autoSyncEnabled = false;
+  private autoSyncEnabled: boolean;
   private lastSyncTime: Date | null = null;
   private syncInterval = 15; // 15 minutes - now configurable
   private cronExpression = '0 */15 * * * *'; // Default: every 15 minutes
@@ -34,6 +35,7 @@ export class AutoSyncService {
     private readonly assetPriceHistoryRepository: Repository<AssetPriceHistory>,
     private readonly externalMarketDataService: ExternalMarketDataService,
     private readonly configService: ConfigService,
+    private readonly circuitBreakerService: CircuitBreakerService,
   ) {
     // Load auto sync status from environment or database
     this.loadAutoSyncStatus();
@@ -191,12 +193,12 @@ export class AutoSyncService {
    */
   async triggerManualSync(): Promise<string> {
     const syncId = `manual_${Date.now()}`;
-    this.logger.log(`[AutoSyncService] Manual sync triggered: ${syncId}`);
+    // this.logger.log(`[AutoSyncService] Manual sync triggered: ${syncId}`);
     
     try {
       // Step 1: Fetch all market data from external APIs
       const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
-      this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
+      // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
       // Step 2: Sync to database
       await this.performSync(syncId, marketDataResult, true); // true = manual sync
@@ -214,7 +216,7 @@ export class AutoSyncService {
    * Note: Cron expression is configurable via updateConfig()
    */
   async handleAutoSync(): Promise<void> {
-    this.logger.log(`[AutoSyncService] Auto sync enabled: ${this.autoSyncEnabled}`);
+    // this.logger.log(`[AutoSyncService] Auto sync enabled: ${this.autoSyncEnabled}`);
     // Check if auto sync is enabled
     if (!this.autoSyncEnabled) {
       this.logger.debug('[AutoSyncService] Auto sync is disabled, skipping scheduled sync');
@@ -222,18 +224,18 @@ export class AutoSyncService {
     }
 
     const syncId = `auto_${Date.now()}`;
-    this.logger.log(`[AutoSyncService] Auto sync triggered: ${syncId}`);
+    // this.logger.log(`[AutoSyncService] Auto sync triggered: ${syncId}`);
     
     try {
       // Step 1: Fetch all market data from external APIs
       const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
-      this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
+      // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
       // Step 2: Sync to database
       await this.performSync(syncId, marketDataResult, false); // false = auto sync
       
       this.lastSyncTime = new Date();
-      this.logger.log(`[AutoSyncService] Auto sync completed: ${syncId}`);
+      // this.logger.log(`[AutoSyncService] Auto sync completed: ${syncId}`);
     } catch (error) {
       this.logger.error(`[AutoSyncService] Auto sync failed: ${syncId}`, error);
       // Don't throw error for scheduled sync to prevent cron job failure
@@ -241,40 +243,42 @@ export class AutoSyncService {
   }
 
   /**
-   * Perform the actual sync operation
+   * Perform the actual sync operation with circuit breaker protection
    */
   private async performSync(syncId: string, marketDataResult?: any, isManual: boolean = false): Promise<void> {
-    this.logger.log(`[AutoSyncService] Starting sync operation: ${syncId}`);
-    
-    try {
-      // Get all active global assets
-      const globalAssets = await this.globalAssetRepository.find({
-        where: { isActive: true },
-        relations: ['assetPrice']
-      });
-
-      this.logger.log(`[AutoSyncService] Found ${globalAssets.length} active global assets to sync`);
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      // Create a map of all market data for quick lookup
-      const marketDataMap = new Map<string, any>();
-      
-      if (marketDataResult) {
-        // Map all market data by symbol
-        [...marketDataResult.funds, ...marketDataResult.gold, ...marketDataResult.exchangeRates, ...marketDataResult.stocks, ...marketDataResult.crypto].forEach(item => {
-          marketDataMap.set(item.symbol, item);
+    return this.circuitBreakerService.execute(
+      'auto-sync-operation',
+      async () => {
+        this.logger.log(`[AutoSyncService] Starting sync operation: ${syncId}`);
+        
+        // Get all active global assets
+        const globalAssets = await this.globalAssetRepository.find({
+          where: { isActive: true },
+          relations: ['assetPrice']
         });
-        this.logger.log(`[AutoSyncService] Created market data map with ${marketDataMap.size} symbols: ${Array.from(marketDataMap.keys()).slice(0, 10).join(', ')}...`);
-      }
+
+        // this.logger.log(`[AutoSyncService] Found ${globalAssets.length} active global assets to sync`);
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Create a map of all market data for quick lookup
+        const marketDataMap = new Map<string, any>();
+        
+        if (marketDataResult) {
+          // Map all market data by symbol
+          [...marketDataResult.funds, ...marketDataResult.gold, ...marketDataResult.exchangeRates, ...marketDataResult.stocks, ...marketDataResult.crypto].forEach(item => {
+            marketDataMap.set(item.symbol, item);
+          });
+          // this.logger.log(`[AutoSyncService] Created market data map with ${marketDataMap.size} symbols: ${Array.from(marketDataMap.keys()).slice(0, 10).join(', ')}...`);
+        }
 
       // Update prices for each asset
       for (const asset of globalAssets) {
         try {
           // Try exact match first
           let marketData = marketDataMap.get(asset.symbol);
-          this.logger.debug(`[AutoSyncService] Looking for ${asset.symbol}, exact match: ${marketData ? 'found' : 'not found'}`);
+          // this.logger.debug(`[AutoSyncService] Looking for ${asset.symbol}, exact match: ${marketData ? 'found' : 'not found'}`);
           
           // If no exact match, try fuzzy matching for common cases
           if (!marketData) {
@@ -301,11 +305,11 @@ export class AutoSyncService {
             for (const variation of symbolVariations) {
               if (marketDataMap.has(variation)) {
                 marketData = marketDataMap.get(variation);
-                this.logger.debug(`[AutoSyncService] Found match for ${asset.symbol} using variation: ${variation}`);
+                // this.logger.debug(`[AutoSyncService] Found match for ${asset.symbol} using variation: ${variation}`);
                 break;
               }
             }
-            this.logger.debug(`[AutoSyncService] Tried variations for ${asset.symbol}: ${symbolVariations.join(', ')}, found: ${marketData ? 'yes' : 'no'}`);
+            // this.logger.debug(`[AutoSyncService] Tried variations for ${asset.symbol}: ${symbolVariations.join(', ')}, found: ${marketData ? 'yes' : 'no'}`);
           }
           
           const currentPrice = marketData?.buyPrice || marketData?.sellPrice;
@@ -352,7 +356,7 @@ export class AutoSyncService {
             await this.assetPriceHistoryRepository.save(priceHistory);
             
             successCount++;
-            this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
+            // this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
           } else {
             this.logger.warn(`[AutoSyncService] No valid price found for ${asset.symbol}`);
           }
@@ -362,11 +366,18 @@ export class AutoSyncService {
         }
       }
 
-      this.logger.log(`[AutoSyncService] Sync operation ${syncId} completed: ${successCount} successful, ${errorCount} errors`);
-    } catch (error) {
+        // this.logger.log(`[AutoSyncService] Sync operation ${syncId} completed: ${successCount} successful, ${errorCount} errors`);
+      },
+      {
+        failureThreshold: 3, // Open circuit after 3 sync failures
+        timeout: 120000, // Wait 2 minutes before trying again
+        successThreshold: 2, // Need 2 successes to close circuit
+        monitoringPeriod: 600000 // 10 minutes monitoring window
+      }
+    ).catch(error => {
       this.logger.error(`[AutoSyncService] Sync operation ${syncId} failed:`, error);
       throw error;
-    }
+    });
   }
 
   /**
@@ -374,11 +385,11 @@ export class AutoSyncService {
    */
   private loadAutoSyncStatus(): void {
     // Use the same config as scheduled-price-update.service.ts for consistency
-    this.autoSyncEnabled = this.configService.get<string>('AUTO_SYNC_ENABLED', 'false') === 'true';
-    this.syncInterval = parseInt(this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60'), 10);
+    this.autoSyncEnabled = this.configService.get<boolean>('AUTO_SYNC_ENABLED', false);
+    this.syncInterval = parseInt(this.configService.get<string>('AUTO_SYNC_INTERVAL_MINUTES', '60'), 10);
     this.cronExpression = this.generateCronExpression(this.syncInterval);
     
-    this.logger.log(`[AutoSyncService] Auto sync status loaded: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, interval: ${this.syncInterval} minutes (using PRICE_UPDATE_INTERVAL_MINUTES config)`);
+    this.logger.log(`[AutoSyncService] Auto sync status loaded from config: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, interval: ${this.syncInterval} minutes`);
   }
 
   /**
@@ -392,6 +403,20 @@ export class AutoSyncService {
     const nextSync = new Date(this.lastSyncTime);
     nextSync.setMinutes(nextSync.getMinutes() + this.syncInterval);
     return nextSync;
+  }
+
+  /**
+   * Get circuit breaker statistics for auto sync
+   */
+  getCircuitBreakerStats() {
+    return this.circuitBreakerService.getStats('auto-sync-operation');
+  }
+
+  /**
+   * Reset circuit breaker for auto sync
+   */
+  resetCircuitBreaker(): void {
+    this.circuitBreakerService.reset('auto-sync-operation');
   }
 
   /**

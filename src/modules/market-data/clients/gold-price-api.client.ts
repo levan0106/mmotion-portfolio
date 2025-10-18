@@ -6,6 +6,7 @@ import {
   MarketDataType, 
   MarketDataSource 
 } from '../types/market-data.types';
+import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 // Using regex parsing instead of external HTML parser
 
 @Injectable()
@@ -14,55 +15,66 @@ export class GoldPriceAPIClient {
   private readonly baseUrl = 'https://giavang.doji.vn';
   private readonly timeout = 10000; // 10 seconds
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly circuitBreakerService: CircuitBreakerService
+  ) {}
 
   /**
-   * Get all gold prices from Gold API
+   * Get all gold prices from Gold API with circuit breaker protection
    */
   async getAllGoldPrices(): Promise<GoldData[]> {
-    try {
-      this.logger.log('Fetching gold prices from Doji API...');
+    return this.circuitBreakerService.execute(
+      'gold-price-api',
+      async () => {
+        this.logger.log('Fetching gold prices from Doji API...');
 
-      const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.baseUrl}/sites/default/files/data/hienthi/vungmien_109.dat`,
-          {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'Connection': 'keep-alive',
-              'Referer': 'https://giavang.doji.vn/',
-              'Origin': 'https://giavang.doji.vn',
-              'Sec-Fetch-Dest': 'document',
-              'Sec-Fetch-Mode': 'navigate',
-              'Sec-Fetch-Site': 'same-origin'
-            },
-            timeout: this.timeout,
-            responseType: 'arraybuffer' // Get binary data
-          }
-        )
-      );
+        const response = await firstValueFrom(
+          this.httpService.get(
+            `${this.baseUrl}/sites/default/files/data/hienthi/vungmien_109.dat`,
+            {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Referer': 'https://giavang.doji.vn/',
+                'Origin': 'https://giavang.doji.vn',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'same-origin'
+              },
+              timeout: this.timeout,
+              responseType: 'arraybuffer' // Get binary data
+            }
+          )
+        );
 
-      // Convert binary to text
-      const htmlText = Buffer.from(response.data).toString('utf-8');
-      
-      // Clean HTML entities
-      const cleanText = htmlText
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&');
+        // Convert binary to text
+        const htmlText = Buffer.from(response.data).toString('utf-8');
+        
+        // Clean HTML entities
+        const cleanText = htmlText
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&');
 
-      const goldPrices = this.parseGoldData(cleanText);
-      this.logger.log(`Successfully fetched ${goldPrices.length} gold prices from Doji`);
-      
-      return goldPrices;
-
-    } catch (error) {
+        const goldPrices = this.parseGoldData(cleanText);
+        this.logger.log(`Successfully fetched ${goldPrices.length} gold prices from Doji`);
+        
+        return goldPrices;
+      },
+      {
+        failureThreshold: 3, // Open circuit after 3 failures
+        timeout: 30000, // Wait 30 seconds before trying again
+        successThreshold: 2, // Need 2 successes to close circuit
+        monitoringPeriod: 300000 // 5 minutes monitoring window
+      }
+    ).catch(error => {
       this.logger.error('Failed to fetch gold prices from Doji:', error.message);
       throw new Error(`Doji API call failed: ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -88,8 +100,8 @@ export class GoldPriceAPIClient {
       const goldPrices: GoldData[] = [];
 
       // Debug: Log HTML content length and first 500 chars
-      this.logger.debug(`HTML content length: ${htmlContent.length}`);
-      this.logger.debug(`HTML content preview: ${htmlContent.substring(0, 500)}`);
+      //this.logger.debug(`HTML content length: ${htmlContent.length}`);
+      //this.logger.debug(`HTML content preview: ${htmlContent.substring(0, 500)}`);
 
       // Based on market price.md, we need to look for table with class "goldprice-view"
       // The Power Query uses: table.goldprice-view tbody tr td.label
@@ -105,14 +117,14 @@ export class GoldPriceAPIClient {
         tableContent = htmlContent.match(tablePattern)?.[0] || htmlContent;
         this.logger.debug('Using fallback table parsing');
       } else {
-        this.logger.debug('Found goldprice-view table');
+        // this.logger.debug('Found goldprice-view table');
       }
 
       // Parse table rows
       const rowPattern = /<tr[^>]*>.*?<\/tr>/gs;
       const rows = tableContent.match(rowPattern) || [];
       
-      this.logger.debug(`Found ${rows.length} table rows`);
+      // this.logger.debug(`Found ${rows.length} table rows`);
 
       for (const row of rows) {
         // Extract text content from table cells
@@ -127,9 +139,9 @@ export class GoldPriceAPIClient {
         }
 
         // Debug: Log cells found
-        if (cells.length > 0) {
-          this.logger.debug(`Row with ${cells.length} cells: ${cells.join(' | ')}`);
-        }
+        // if (cells.length > 0) {
+        //   this.logger.debug(`Row with ${cells.length} cells: ${cells.join(' | ')}`);
+        // }
 
         // Check if this row has gold price data (should have at least 3 cells)
         if (cells.length >= 3) {
@@ -140,7 +152,7 @@ export class GoldPriceAPIClient {
           const buyPrice = parseFloat(buyPriceText);
           const sellPrice = parseFloat(sellPriceText);
 
-          this.logger.debug(`Parsed: ${type} | ${buyPrice} | ${sellPrice}`);
+          // this.logger.debug(`Parsed: ${type} | ${buyPrice} | ${sellPrice}`);
 
           // Validate that we have valid gold price data
           if (type && !isNaN(buyPrice) && !isNaN(sellPrice) && buyPrice > 0 && sellPrice > 0) {
@@ -239,7 +251,7 @@ export class GoldPriceAPIClient {
   }
 
   /**
-   * Test API connectivity
+   * Test API connectivity with circuit breaker protection
    */
   async testConnection(): Promise<boolean> {
     try {
@@ -249,5 +261,19 @@ export class GoldPriceAPIClient {
       this.logger.error('Doji API connection test failed:', error.message);
       return false;
     }
+  }
+
+  /**
+   * Get circuit breaker statistics for gold price API
+   */
+  getCircuitBreakerStats() {
+    return this.circuitBreakerService.getStats('gold-price-api');
+  }
+
+  /**
+   * Reset circuit breaker for gold price API
+   */
+  resetCircuitBreaker(): void {
+    this.circuitBreakerService.reset('gold-price-api');
   }
 }

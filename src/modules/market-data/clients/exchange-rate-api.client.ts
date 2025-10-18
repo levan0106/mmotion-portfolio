@@ -6,6 +6,7 @@ import {
   MarketDataType, 
   MarketDataSource 
 } from '../types/market-data.types';
+import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 // Using regex parsing instead of external HTML parser
 
 @Injectable()
@@ -14,45 +15,56 @@ export class ExchangeRateAPIClient {
   private readonly baseUrl = 'https://tygiausd.org';
   private readonly timeout = 10000; // 10 seconds
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly circuitBreakerService: CircuitBreakerService
+  ) {}
 
   /**
-   * Get exchange rates from Exchange Rate API
+   * Get exchange rates from Exchange Rate API with circuit breaker protection
    */
   async getExchangeRates(bank: string = 'vietcombank'): Promise<ExchangeRateData[]> {
-    try {
-      this.logger.log(`Fetching exchange rates from Tygia API for bank: ${bank}...`);
+    return this.circuitBreakerService.execute(
+      'exchange-rate-api',
+      async () => {
+        this.logger.log(`Fetching exchange rates from Tygia API for bank: ${bank}...`);
 
-      const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.baseUrl}/nganhang/${bank}`,
-          {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'Connection': 'keep-alive',
-              'Referer': 'https://tygiausd.org/',
-              'Origin': 'https://tygiausd.org',
-              'Sec-Fetch-Dest': 'document',
-              'Sec-Fetch-Mode': 'navigate',
-              'Sec-Fetch-Site': 'same-origin'
-            },
-            timeout: this.timeout
-          }
-        )
-      );
+        const response = await firstValueFrom(
+          this.httpService.get(
+            `${this.baseUrl}/nganhang/${bank}`,
+            {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Referer': 'https://tygiausd.org/',
+                'Origin': 'https://tygiausd.org',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'same-origin'
+              },
+              timeout: this.timeout
+            }
+          )
+        );
 
-      const exchangeRates = this.parseExchangeRateData(response.data, bank);
-      this.logger.log(`Successfully fetched ${exchangeRates.length} exchange rates from Tygia`);
-      
-      return exchangeRates;
-
-    } catch (error) {
+        const exchangeRates = this.parseExchangeRateData(response.data, bank);
+        // this.logger.log(`Successfully fetched ${exchangeRates.length} exchange rates from Tygia`);
+        
+        return exchangeRates;
+      },
+      {
+        failureThreshold: 3, // Open circuit after 3 failures
+        timeout: 30000, // Wait 30 seconds before trying again
+        successThreshold: 2, // Need 2 successes to close circuit
+        monitoringPeriod: 300000 // 5 minutes monitoring window
+      }
+    ).catch(error => {
       this.logger.error(`Failed to fetch exchange rates from Tygia for bank ${bank}:`, error.message);
       throw new Error(`Tygia API call failed: ${error.message}`);
-    }
+    });
   }
 
 
@@ -278,12 +290,12 @@ export class ExchangeRateAPIClient {
 
       
       // If we only have USD, create mock data for other currencies based on USD
-      if (exchangeRates.length === 1 && exchangeRates[0].currency === 'USD') {
-        const usdRate = exchangeRates[0];
-        const mockRates = this.generateMockExchangeRates(usdRate);
-        exchangeRates.push(...mockRates);
-        this.logger.log(`Generated ${mockRates.length} mock exchange rates based on USD`);
-      }
+      // if (exchangeRates.length === 1 && exchangeRates[0].currency === 'USD') {
+      //   const usdRate = exchangeRates[0];
+      //   const mockRates = this.generateMockExchangeRates(usdRate);
+      //   exchangeRates.push(...mockRates);
+      //   // this.logger.log(`Generated ${mockRates.length} mock exchange rates based on USD`);
+      // }
       
       return exchangeRates;
     } catch (error) {
@@ -404,7 +416,7 @@ export class ExchangeRateAPIClient {
   }
 
   /**
-   * Test API connectivity
+   * Test API connectivity with circuit breaker protection
    */
   async testConnection(bank: string = 'vietcombank'): Promise<boolean> {
     try {
@@ -414,5 +426,19 @@ export class ExchangeRateAPIClient {
       this.logger.error(`Tygia API connection test failed for bank ${bank}:`, error.message);
       return false;
     }
+  }
+
+  /**
+   * Get circuit breaker statistics for exchange rate API
+   */
+  getCircuitBreakerStats() {
+    return this.circuitBreakerService.getStats('exchange-rate-api');
+  }
+
+  /**
+   * Reset circuit breaker for exchange rate API
+   */
+  resetCircuitBreaker(): void {
+    this.circuitBreakerService.reset('exchange-rate-api');
   }
 }

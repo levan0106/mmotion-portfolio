@@ -23,8 +23,10 @@ import { UserRoleController } from './controllers/user-role.controller';
 import { UserController } from './controllers/user.controller';
 import { SettingsController } from './controllers/settings.controller';
 import { CurrentUserController } from './controllers/current-user.controller';
+import { CircuitBreakerController } from './controllers/circuit-breaker.controller';
 import { DepositCalculationService } from './services/deposit-calculation.service';
 import { AccountValidationService } from './services/account-validation.service';
+import { CircuitBreakerService } from './services/circuit-breaker.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PermissionGuard } from './guards/permission.guard';
 import { RoleGuard } from './guards/role.guard';
@@ -54,7 +56,8 @@ import { NotificationModule } from '../../notification/notification.module';
     UserRoleController,
     UserController,
     SettingsController,
-    CurrentUserController
+    CurrentUserController,
+    CircuitBreakerController
   ],
   providers: [
     AccountService, 
@@ -66,7 +69,8 @@ import { NotificationModule } from '../../notification/notification.module';
     SettingsService,
     AutoRoleAssignmentService,
     DepositCalculationService, 
-    AccountValidationService, 
+    AccountValidationService,
+    CircuitBreakerService,
     JwtStrategy,
     PermissionGuard,
     RoleGuard
@@ -82,6 +86,7 @@ import { NotificationModule } from '../../notification/notification.module';
     AutoRoleAssignmentService,
     DepositCalculationService, 
     AccountValidationService,
+    CircuitBreakerService,
     PermissionGuard,
     RoleGuard
   ],

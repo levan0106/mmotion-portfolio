@@ -307,6 +307,7 @@ export class BasicPriceService {
           priceType: updateDto.priceType || 'MANUAL',
           priceSource: updateDto.priceSource || 'USER',
           changeReason: `Price update ${new Date().toLocaleDateString('vi-VN')}`,
+          createdAt: new Date(), // Add the required createdAt field
           metadata: {
             source: 'manual_update',
             updateType: 'manual',

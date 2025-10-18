@@ -447,22 +447,22 @@ export class MarketDataService {
   private parseFundListResponse(response: any): any[] {
     // Check if response.data.data.rows is an array (nested structure) - CORRECT STRUCTURE
     if (response.data && response.data.data && response.data.data.rows && Array.isArray(response.data.data.rows)) {
-      this.logger.log(`Found ${response.data.data.rows.length} funds from FMarket`);
+      // this.logger.log(`Found ${response.data.data.rows.length} funds from FMarket`);
       return response.data.data.rows;
     } 
     // Check if response.data.rows is an array (alternative structure)
     else if (response.data && response.data.rows && Array.isArray(response.data.rows)) {
-      this.logger.log(`Found ${response.data.rows.length} funds from FMarket`);
+      // this.logger.log(`Found ${response.data.rows.length} funds from FMarket`);
       return response.data.rows;
     } 
     // Check if response.data is directly an array
     else if (response.data && Array.isArray(response.data)) {
-      this.logger.log(`Found ${response.data.length} funds from FMarket`);
+      // this.logger.log(`Found ${response.data.length} funds from FMarket`);
       return response.data;
     } 
     // Check if response.data.data is an array
     else if (response.data && response.data.data && Array.isArray(response.data.data)) {
-      this.logger.log(`Found ${response.data.data.length} funds from FMarket`);
+      // this.logger.log(`Found ${response.data.data.length} funds from FMarket`);
       return response.data.data;
     } else {
       this.logger.warn(`Invalid response format from FMarket fund list API. Response: ${JSON.stringify(response.data)}`);

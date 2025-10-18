@@ -7,6 +7,7 @@ import {
   MarketDataType, 
   MarketDataSource 
 } from '../types/market-data.types';
+import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 
 export interface StockAPIResponse {
   data: StockData[];
@@ -22,57 +23,68 @@ export class StockPriceAPIClient {
   private readonly baseUrl =  'https://stock-price-ssi-proxy.lvttung0106.workers.dev/'; //'https://iboard-query.ssi.com.vn'; SSI blocked requests on aws ec2
   private readonly timeout = 10000; // 10 seconds
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly circuitBreakerService: CircuitBreakerService
+  ) {}
 
   /**
-   * Get all stock prices from a specific exchange
+   * Get all stock prices from a specific exchange with circuit breaker protection
    */
   async getStockPrices(exchange: ExchangeType = 'HOSE'): Promise<StockData[]> {
-    try {
-      this.logger.log(`Fetching stock prices from SSI API for exchange: ${exchange}...`);
+    return this.circuitBreakerService.execute(
+      'stock-price-api',
+      async () => {
+        this.logger.log(`Fetching stock prices from SSI API for exchange: ${exchange}...`);
 
-      let url: string;
-      switch (exchange) {
-        case 'HOSE':
-          url = `${this.baseUrl}/stock/exchange/hose?boardId=MAIN`;
-          break;
-        case 'HNX':
-          url = `${this.baseUrl}/stock/exchange/hnx?boardId=MAIN`;
-          break;
-        case 'ETF':
-          url = `${this.baseUrl}/stock/type/e/hose`;
-          break;
-        default:
-          throw new Error(`Unsupported exchange: ${exchange}`);
+        let url: string;
+        switch (exchange) {
+          case 'HOSE':
+            url = `${this.baseUrl}/stock/exchange/hose?boardId=MAIN`;
+            break;
+          case 'HNX':
+            url = `${this.baseUrl}/stock/exchange/hnx?boardId=MAIN`;
+            break;
+          case 'ETF':
+            url = `${this.baseUrl}/stock/type/e/hose`;
+            break;
+          default:
+            throw new Error(`Unsupported exchange: ${exchange}`);
+        }
+
+        const response: AxiosResponse<StockAPIResponse> = await firstValueFrom(
+          this.httpService.get(url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive',
+              'Referer': 'https://iboard.ssi.com.vn/',
+              'Origin': 'https://iboard.ssi.com.vn',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin'
+            },
+            timeout: this.timeout
+          })
+        );
+
+        const stockPrices = this.parseStockData(response.data, exchange ==="ETF" ? "HOSE" : exchange);
+        // this.logger.log(`Successfully fetched ${stockPrices.length} stock prices from SSI for ${exchange}`);
+        
+        return stockPrices;
+      },
+      {
+        failureThreshold: 3, // Open circuit after 3 failures
+        timeout: 30000, // Wait 30 seconds before trying again
+        successThreshold: 2, // Need 2 successes to close circuit
+        monitoringPeriod: 300000 // 5 minutes monitoring window
       }
-
-      const response: AxiosResponse<StockAPIResponse> = await firstValueFrom(
-        this.httpService.get(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Referer': 'https://iboard.ssi.com.vn/',
-            'Origin': 'https://iboard.ssi.com.vn',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin'
-          },
-          timeout: this.timeout
-        })
-      );
-
-      const stockPrices = this.parseStockData(response.data, exchange ==="ETF" ? "HOSE" : exchange);
-      this.logger.log(`Successfully fetched ${stockPrices.length} stock prices from SSI for ${exchange}`);
-      
-      return stockPrices;
-
-    } catch (error) {
+    ).catch(error => {
       this.logger.error(`Failed to fetch stock prices from SSI for exchange ${exchange}:`, error.message);
       throw new Error(`SSI API call failed: ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -95,7 +107,7 @@ export class StockPriceAPIClient {
         }
       }
 
-      this.logger.log(`Successfully fetched ${allPrices.length} total stock prices from all exchanges`);
+      // this.logger.log(`Successfully fetched ${allPrices.length} total stock prices from all exchanges`);
       return allPrices;
 
     } catch (error) {
@@ -250,5 +262,19 @@ export class StockPriceAPIClient {
     }
 
     return results;
+  }
+
+  /**
+   * Get circuit breaker statistics for stock price API
+   */
+  getCircuitBreakerStats() {
+    return this.circuitBreakerService.getStats('stock-price-api');
+  }
+
+  /**
+   * Reset circuit breaker for stock price API
+   */
+  resetCircuitBreaker(): void {
+    this.circuitBreakerService.reset('stock-price-api');
   }
 }
