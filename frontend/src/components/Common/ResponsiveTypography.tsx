@@ -8,6 +8,8 @@ interface ResponsiveTypographyProps extends Omit<TypographyProps, 'variant'> {
   overrides?: any;
   ellipsis?: boolean;
   maxLines?: number;
+  desktopOnly?: boolean;
+  mobileOnly?: boolean;
 }
 
 /**
@@ -20,6 +22,8 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
   sx = {},
   ellipsis = true,
   maxLines,
+  desktopOnly = false,
+  mobileOnly = false,
   children,
   ...restProps
 }) => {
@@ -37,6 +41,19 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
       baseSx = overrides;
     }
     
+    // Add responsive display logic
+    if (desktopOnly) {
+      baseSx = {
+        ...baseSx,
+        display: { xs: 'none', md: 'block' }
+      };
+    } else if (mobileOnly) {
+      baseSx = {
+        ...baseSx,
+        display: { xs: 'block', md: 'none' }
+      };
+    }
+
     // Add ellipsis styles if requested
     if (ellipsis) {
       if (maxLines && maxLines > 1) {

@@ -264,17 +264,21 @@ export class DepositService {
    * Map Deposit entity to DepositResponseDto
    */
   private mapToResponseDto(deposit: Deposit): DepositResponseDto {
+    const principal = typeof deposit.principal === 'string' ? parseFloat(deposit.principal) : deposit.principal;
+    const interestRate = typeof deposit.interestRate === 'string' ? parseFloat(deposit.interestRate) : deposit.interestRate;
+    const actualInterest = deposit.actualInterest ? (typeof deposit.actualInterest === 'string' ? parseFloat(deposit.actualInterest) : deposit.actualInterest) : undefined;
+    
     return {
       depositId: deposit.depositId,
       portfolioId: deposit.portfolioId,
       bankName: deposit.bankName,
       accountNumber: deposit.accountNumber,
-      principal: deposit.principal,
-      interestRate: deposit.interestRate,
+      principal: principal,
+      interestRate: interestRate,
       startDate: deposit.startDate instanceof Date ? deposit.startDate.toISOString().split('T')[0] : deposit.startDate,
       endDate: deposit.endDate instanceof Date ? deposit.endDate.toISOString().split('T')[0] : deposit.endDate,
       status: deposit.status,
-      actualInterest: deposit.actualInterest,
+      actualInterest: actualInterest,
       notes: deposit.notes,
       accruedInterest: Math.round((deposit.calculateAccruedInterest() || 0) * 100) / 100,
       totalValue: Math.round((deposit.calculateTotalValue() || 0) * 100) / 100,

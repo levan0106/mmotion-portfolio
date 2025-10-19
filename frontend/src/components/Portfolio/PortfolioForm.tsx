@@ -109,11 +109,11 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
       
       // Load visibility data when editing
       if (isEditing && initialData) {
-        console.log('Loading visibility data:', {
-          visibility: initialData.visibility,
-          description: initialData.description,
-          templateName: initialData.templateName
-        });
+        // console.log('Loading visibility data:', {
+        //   visibility: initialData.visibility,
+        //   description: initialData.description,
+        //   templateName: initialData.templateName
+        // });
         setVisibility(initialData.visibility || 'PRIVATE');
         setDescription(initialData.description || '');
         setTemplateName(initialData.templateName || '');

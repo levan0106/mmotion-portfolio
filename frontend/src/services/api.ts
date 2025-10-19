@@ -1130,6 +1130,17 @@ class ApiService {
 
     return response.data;
   }
+
+  // Investor Report endpoints
+  async getInvestorReport(portfolioId: string, accountId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/investor-report/${portfolioId}?accountId=${accountId}`);
+    return response.data;
+  }
+
+  async getInvestorPortfolios(accountId: string): Promise<any[]> {
+    const response = await this.api.get(`/api/v1/investor-report/portfolios?accountId=${accountId}`);
+    return response.data;
+  }
 }
 
 // Create and export singleton instance

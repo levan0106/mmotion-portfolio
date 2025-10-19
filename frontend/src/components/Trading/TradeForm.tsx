@@ -93,7 +93,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   error,
   mode = 'create',
   defaultPortfolioId,
-  showSubmitButton = true, // eslint-disable-line @typescript-eslint/no-unused-vars
+  showSubmitButton = true,
   formRef,
   isModal = false,
   onAssetCreated,
@@ -134,7 +134,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   // Validation state - only show errors after user interaction
   const [errors, setErrors] = useState<any>({});
-  const [isValid, setIsValid] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [isValid, setIsValid] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   // Force re-render of AssetAutocomplete when assetId changes in edit mode
@@ -688,7 +688,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             </Box>
 
             {/* Submit Button */}
-            {/* {showSubmitButton && (
+            {showSubmitButton && (
               <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
                 <ResponsiveButton
                   type="submit"
@@ -702,7 +702,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   {isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
                 </ResponsiveButton>
               </Box>
-            )} */}
+            )}
           </form>
 
           {/* Asset Creation Modal */}

@@ -67,7 +67,7 @@ export const useTypography = () => {
     }),
     
     cardValue: (overrides: any = {}) => getTypographySx('cardValue', {
-      fontWeight: 700,
+      fontWeight: 600,
       lineHeight: 1.2,
       ...overrides,
     }),
@@ -169,7 +169,7 @@ export const useTypography = () => {
     
     // Table typography
     tableHeader: (overrides: any = {}) => getTypographySx('small', {
-      fontWeight: 600,
+      fontWeight: 500,
       lineHeight: 1.4,
       color: '#333333',
       ...overrides,

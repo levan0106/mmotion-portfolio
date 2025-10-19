@@ -32,6 +32,8 @@ import {
   AccountBalance as DepositIcon,
   AttachMoney as CashFlowIcon,
   Inventory as HoldingsIcon,
+  Person as InvestorIcon,
+  Business as FundManagerIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
@@ -44,13 +46,13 @@ import {
   CashFlowTab,
   NAVHoldingsTab
 } from '../components/PortfolioTabs';
+import InvestorReportWrapper from '../components/Reports/InvestorReportWrapper';
 import { 
   formatCurrency, 
   formatPercentage, 
   formatNumberWithSeparators 
 } from '../utils/format';
 import { CreateTradeDto } from '../types';
-import { useTypography } from '../theme/useTypography';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 import './PortfolioDetail.styles.css';
@@ -86,49 +88,58 @@ const PortfolioDetail: React.FC = () => {
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [tabValue, setTabValue] = useState(1);
+  const [tabValue, setTabValue] = useState(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  const [viewMode, setViewMode] = useState<'investor' | 'fund-manager'>('fund-manager');
   
-  // Custom typography hook (for future use)
-  useTypography();
+
+  // Reset tab value when switching view modes (only for fund-manager)
+  useEffect(() => {
+    if (viewMode === 'fund-manager') {
+      setTabValue(0); // Always start with first tab when switching to fund-manager
+    }
+  }, [viewMode]);
 
   // Scroll to top when component mounts or portfolioId changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [portfolioId]);
 
-  // Handle tab parameter from URL
+  // Handle tab parameter from URL (only for fund-manager view)
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam) {
-      // Support both numeric index and tab name
-      let tabIndex: number;
-      
-      if (isNaN(Number(tabParam))) {
-        // Tab name provided
-        const tabNameMap: { [key: string]: number } = {
-          'performance': 0,
-          'allocation': 1,
-          'trading': 2,
-          'deposit': 3,
-          'cash-flow': 4,
-          'holdings': 5
-        };
-        tabIndex = tabNameMap[tabParam] ?? 0;
-      } else {
-        // Numeric index provided
-        tabIndex = parseInt(tabParam, 10);
-      }
-      
-      if (tabIndex >= 0 && tabIndex <= 5) {
-        setTabValue(tabIndex);
-        // Scroll to top when tab is set from URL
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (viewMode === 'fund-manager') {
+      const tabParam = searchParams.get('tab');
+      if (tabParam) {
+        // Support both numeric index and tab name
+        let tabIndex: number;
+        
+        if (isNaN(Number(tabParam))) {
+          // Tab name provided
+          const tabNameMap: { [key: string]: number } = {
+            'performance': 0,
+            'allocation': 1,
+            'trading': 2,
+            'deposit': 3,
+            'cash-flow': 4,
+            'holdings': 5
+          };
+          tabIndex = tabNameMap[tabParam] ?? 0;
+        } else {
+          // Numeric index provided
+          tabIndex = parseInt(tabParam, 10);
+        }
+        
+        // Validate tab index (0-5 for fund-manager)
+        if (tabIndex >= 0 && tabIndex <= 5) {
+          setTabValue(tabIndex);
+          // Scroll to top when tab is set from URL
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     }
-  }, [searchParams]);
+  }, [searchParams, viewMode]);
 
   // Ultra compact mode - gấp đôi compact
   const getUltraSpacing = (normal: number, ultra: number) => 
@@ -145,9 +156,14 @@ const PortfolioDetail: React.FC = () => {
   const trades = tradesQuery.data || [];
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-    // Scroll to top when changing tabs
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Only handle tab changes for fund-manager view
+    if (viewMode === 'fund-manager') {
+      // Validate tab index (0-5 for fund-manager)
+      const validTabIndex = Math.min(Math.max(newValue, 0), 5);
+      setTabValue(validTabIndex);
+      // Scroll to top when changing tabs
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleCreateTrade = async (data: CreateTradeDto) => {
@@ -190,8 +206,18 @@ const PortfolioDetail: React.FC = () => {
 
   if (isPortfolioLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-        <CircularProgress />
+      <Box 
+        display="flex" 
+        flexDirection="column"
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="50vh"
+        gap={2}
+      >
+        <CircularProgress size={60} thickness={4} />
+        <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+          {t('portfolio.loading', 'Đang tải dữ liệu...')}
+        </ResponsiveTypography>
       </Box>
     );
   }
@@ -213,14 +239,14 @@ const PortfolioDetail: React.FC = () => {
         scrollBehavior: 'smooth',
         position: 'relative', // Ensure proper positioning context
         minHeight: '100vh', // Ensure full height
+        // Mobile sticky fixes
+        overflow: 'visible', // Ensure no overflow issues
+        WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
       }}>
 
       {/* Sticky Header */}
       <Box
         sx={{
-          //position: 'sticky',
-          //top: { xs: 10, sm: 45, md: 45 }, // Responsive top position
-          zIndex: 1200, // Above everything
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -657,193 +683,286 @@ const PortfolioDetail: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Sticky Tabs with Toggle */}
+      {/* View Mode Switcher */}
       <Box
         sx={{
-          position: 'sticky',
-          top: { xs: 40, sm: 60, md: 60 }, // Fixed position for sticky to work
-          zIndex: 1200, // Below header
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           borderBottom: '1px solid',
           borderColor: 'divider',
           py: 1,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          px: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           backdropFilter: 'blur(10px)',
         }}
       >
         <Box sx={{ 
           display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          px: { xs: 1, sm: 2 },
-          flexDirection: 'row',
-          gap: { xs: 1, sm: 2 },
-          flexWrap: 'nowrap'
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 1
         }}>
-          {/* Tabs */}
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            aria-label="portfolio tabs"
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            sx={{
-              minHeight: '40px',
-              width: { xs: 'calc(100% - 50px)', sm: 'auto' },
-              overflow: 'auto',
-              flex: 1,
-              '& .MuiTabs-flexContainer': {
-                gap: { xs: 0.5, sm: 1 },
-              },
-              '& .MuiTab-root': {
-                minHeight: '40px',
-                fontWeight: 600,
-                textTransform: 'none',
-                fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
-                minWidth: { xs: '80px', sm: '100px', md: '120px' },
-                px: { xs: 0.75, sm: 1.5, md: 2 },
-                py: { xs: 0.5, sm: 1 },
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-                '& .MuiTab-iconWrapper': {
-                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                  marginRight: { xs: 0.25, sm: 0.5 },
-                },
-              },
-              '& .MuiTabs-scrollButtons': {
-                display: { xs: 'flex', sm: 'flex' },
-                '&.Mui-disabled': {
-                  opacity: 0.3,
-                },
-              },
-              '& .MuiTabs-indicator': {
-                height: 3,
-                borderRadius: '3px 3px 0 0',
-              },
+          <ResponsiveButton
+            variant={viewMode === 'investor' ? 'contained' : 'outlined'}
+            icon={<InvestorIcon />}
+            startIcon={<InvestorIcon />}
+            onClick={() => setViewMode('investor')}
+            mobileText={t('portfolio.investorView')}
+            desktopText={t('portfolio.investorView')}
+            sx={{ 
+              borderRadius: 2,
+              px: 2,
+              py: 1,
+              mt: 0.5,
+              minWidth: { xs: 'auto', sm: '140px' },
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+              }
             }}
           >
-            <Tab 
-              icon={<TrendingUpIcon />} 
-              iconPosition="start" 
-              label={t('portfolio.performance')} 
-              defaultChecked 
-            />
-            <Tab 
-              icon={<AllocationIcon />} 
-              iconPosition="start" 
-              label={t('portfolio.allocation')} 
-            />
-            <Tab 
-              icon={<TradingIcon />} 
-              iconPosition="start" 
-              label={t('portfolio.trading')} 
-            />
-            <Tab 
-              icon={<DepositIcon />} 
-              iconPosition="start" 
-              label={t('portfolio.deposit')} 
-            />
-            <Tab 
-              icon={<CashFlowIcon />} 
-              iconPosition="start" 
-              label={t('portfolio.cashFlow')} 
-            />
-            <Tab 
-              icon={<HoldingsIcon />} 
-              iconPosition="start" 
-              label={t('navigation.holdings')} 
-            />
-          </Tabs>
-          
-          {/* Compact Mode Toggle */}
-          <Tooltip title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}>
-            <IconButton
-              onClick={() => setIsCompactMode(!isCompactMode)}
-              color="primary"
-              size="small"
-              sx={{
-                p: 1,
-                borderRadius: 1,
-                backgroundColor: isCompactMode ? 'primary.main' : 'transparent',
-                color: isCompactMode ? 'primary.contrastText' : 'primary.main',
-                '&:hover': {
-                  backgroundColor: isCompactMode ? 'primary.dark' : 'primary.light',
-                },
-                transition: 'all 0.2s ease-in-out',
-              }}
-            >
-              {isCompactMode ? <ViewListIcon /> : <ViewModuleIcon />}
-            </IconButton>
-          </Tooltip>
+            {t('portfolio.investorView')}
+          </ResponsiveButton>
+          <ResponsiveButton
+            variant={viewMode === 'fund-manager' ? 'contained' : 'outlined'}
+            icon={<FundManagerIcon />}
+            startIcon={<FundManagerIcon />}
+            onClick={() => setViewMode('fund-manager')}
+            mobileText={t('portfolio.fundManagerView')}
+            desktopText={t('portfolio.fundManagerView')}
+            sx={{ 
+              borderRadius: 2,
+              px: 2,
+              py: 1,
+              mt: 0.5,
+              minWidth: { xs: 'auto', sm: '140px' },
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+              }
+            }}
+          >
+            {t('portfolio.fundManagerView')}
+          </ResponsiveButton>
         </Box>
       </Box>
 
-      {/* Tab Content Container */}
-      <Box
-        sx={{
-          backgroundColor: 'background.paper',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          py: 1,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
+      {/* Sticky Tabs with Toggle - Only show for Fund Manager View */}
+      {viewMode === 'fund-manager' && (
+        <Box
+          className="sticky-element"
+          sx={{
+            position: 'sticky',
+            top: { xs: -10, sm: -10, md: -20 },
+            zIndex: 1200,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            py: 1,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(10px)',
+            // Mobile-specific fixes
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)', // Force hardware acceleration
+            willChange: 'transform', // Optimize for mobile
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            px: { xs: 1, sm: 2 },
+            flexDirection: 'row',
+            gap: { xs: 1, sm: 2 },
+            flexWrap: 'nowrap'
+          }}>
+            {/* Tabs */}
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange} 
+              aria-label="portfolio tabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                minHeight: '40px',
+                width: { xs: 'calc(100% - 50px)', sm: 'auto' },
+                overflow: 'auto',
+                flex: 1,
+                '& .MuiTabs-flexContainer': {
+                  gap: { xs: 0.5, sm: 1 },
+                },
+                '& .MuiTab-root': {
+                  minHeight: '40px',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
+                  minWidth: { xs: '80px', sm: '100px', md: '120px' },
+                  px: { xs: 0.75, sm: 1.5, md: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                  '& .MuiTab-iconWrapper': {
+                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    marginRight: { xs: 0.25, sm: 0.5 },
+                  },
+                },
+                '& .MuiTabs-scrollButtons': {
+                  display: { xs: 'flex', sm: 'flex' },
+                  '&.Mui-disabled': {
+                    opacity: 0.3,
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                },
+              }}
+            >
+              {/* Fund Manager View - Show all management tabs */}
+              <Tab 
+                icon={<TrendingUpIcon />} 
+                iconPosition="start" 
+                label={t('portfolio.performance')} 
+              />
+              <Tab 
+                icon={<AllocationIcon />} 
+                iconPosition="start" 
+                label={t('portfolio.allocation')} 
+              />
+              <Tab 
+                icon={<TradingIcon />} 
+                iconPosition="start" 
+                label={t('portfolio.trading')} 
+              />
+              <Tab 
+                icon={<DepositIcon />} 
+                iconPosition="start" 
+                label={t('portfolio.deposit')} 
+              />
+              <Tab 
+                icon={<CashFlowIcon />} 
+                iconPosition="start" 
+                label={t('portfolio.cashFlow')} 
+              />
+              <Tab 
+                icon={<HoldingsIcon />} 
+                iconPosition="start" 
+                label={t('navigation.holdings')} 
+              />
+            </Tabs>
+            
+            {/* Compact Mode Toggle */}
+            <Tooltip title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}>
+              <IconButton
+                onClick={() => setIsCompactMode(!isCompactMode)}
+                color="primary"
+                size="small"
+                sx={{
+                  p: 1,
+                  borderRadius: 1,
+                  backgroundColor: isCompactMode ? 'primary.main' : 'transparent',
+                  color: isCompactMode ? 'primary.contrastText' : 'primary.main',
+                  '&:hover': {
+                    backgroundColor: isCompactMode ? 'primary.dark' : 'primary.light',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                }}
+              >
+                {isCompactMode ? <ViewListIcon /> : <ViewModuleIcon />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+      )}
 
-        <TabPanel value={tabValue} index={0}>
-          <PerformanceTab
-            portfolioId={portfolioId!}
-            portfolio={portfolio}
-            isCompactMode={isCompactMode}
-            getUltraSpacing={getUltraSpacing}
-          />
-        </TabPanel>
+      {/* Content Container */}
+      {viewMode === 'investor' ? (
+        // Investor View - Show report directly without tabs
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            py: 1,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+            <InvestorReportWrapper
+              portfolioId={portfolioId!}
+              accountId={portfolio.accountId}
+            />
+          </Box>
+        </Box>
+      ) : (
+        // Fund Manager View - Show tabs content
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            py: 1,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <TabPanel value={tabValue} index={0}>
+            <PerformanceTab
+              portfolioId={portfolioId!}
+              portfolio={portfolio}
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            />
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
-          <AllocationTab
-            portfolioId={portfolioId!}
-            portfolio={portfolio}
-            isCompactMode={isCompactMode}
-            getUltraSpacing={getUltraSpacing}
-          />
-        </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            <AllocationTab
+              portfolioId={portfolioId!}
+              portfolio={portfolio}
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            />
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={2}>
-          <TradingManagementTab
-            portfolioId={portfolioId!}
-            isCompactMode={isCompactMode}
-            onCreateTrade={() => setShowCreateForm(true)}
-          />
-        </TabPanel>
+          <TabPanel value={tabValue} index={2}>
+            <TradingManagementTab
+              portfolioId={portfolioId!}
+              isCompactMode={isCompactMode}
+              onCreateTrade={() => setShowCreateForm(true)}
+            />
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={3}>
-          <DepositManagementTab
-            portfolioId={portfolioId!}
-            isCompactMode={isCompactMode}
-            getUltraSpacing={getUltraSpacing}
-          />
-        </TabPanel>
+          <TabPanel value={tabValue} index={3}>
+            <DepositManagementTab
+              portfolioId={portfolioId!}
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+            />
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={4}>
-          <CashFlowTab
-            portfolioId={portfolioId!}
-            isCompactMode={isCompactMode}
-            getUltraSpacing={getUltraSpacing}
-            onCashFlowUpdate={refetchPortfolio}
-          />
-        </TabPanel>
+          <TabPanel value={tabValue} index={4}>
+            <CashFlowTab
+              portfolioId={portfolioId!}
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+              onCashFlowUpdate={refetchPortfolio}
+            />
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={5}>
-          <NAVHoldingsTab
-            portfolio={portfolio}
-            isCompactMode={isCompactMode}
-            getUltraSpacing={getUltraSpacing}
-            onPortfolioUpdate={refetchPortfolio}
-          />
-        </TabPanel>
-
-      </Box>
+          <TabPanel value={tabValue} index={5}>
+            <NAVHoldingsTab
+              portfolio={portfolio}
+              isCompactMode={isCompactMode}
+              getUltraSpacing={getUltraSpacing}
+              onPortfolioUpdate={refetchPortfolio}
+            />
+          </TabPanel>
+        </Box>
+      )}
       {/* Create Trade Modal */}
       <TradeForm
         open={showCreateForm}

@@ -32,7 +32,6 @@ import {
   CameraAlt as SnapshotIcon,
   Settings as SettingsIcon,
   Assessment as ReportsIcon,
-  Assessment as AssessmentIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   AccountBalanceWallet as DepositIcon,
@@ -91,7 +90,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
   const { hasAnyPermission, hasAnyRole } = usePermissions();
 
-  // Create menu items with i18n
+  // Create menu items with i18n - filter based on account type
+  const isInvestorAccount = currentAccount?.isInvestor === true;
+  
   const menuItems = [
     { 
       text: t('navigation.dashboard'), 
@@ -100,80 +101,103 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       description: t('navigation.dashboard'),
       badge: null
     },
-    { 
-      text: t('navigation.portfolios'), 
-      icon: <PortfolioIcon />, 
-      path: '/portfolios', 
-      description: t('navigation.portfolios'),
-      badge: null
-    },
+    // Nhà đầu tư - Always show
     {
-      text: t('navigation.holdings'),
-      icon: <HoldingsIcon />,
-      path: '/holdings',
-      description: t('navigation.holdings'),
-      badge: 'NEW'
-    },
-    { 
-      text: t('navigation.assets'), 
-      icon: <AssetIcon />, 
-      path: '/assets', 
-      description: t('navigation.assets'),
-      badge: null
-    },
-    { 
-      text: t('navigation.deposits'), 
-      icon: <DepositIcon />, 
-      path: '/deposits', 
-      description: t('navigation.deposits'),
-      badge: null
-    },
-    { 
-      text: t('navigation.reports'), 
-      icon: <ReportsIcon />, 
-      path: '/reports', 
-      description: t('navigation.reports'),
-      badge: null
-    },
-    { 
-      text: t('navigation.snapshots'), 
-      icon: <SnapshotIcon />, 
-      path: '/snapshots', 
-      description: t('navigation.snapshots'),
+      text: t('navigation.investor.title'),
+      icon: <ReportsIcon />,
+      path: null, // Parent menu
+      description: t('navigation.investor.title'),
       badge: null,
-      permissions: ['financial.snapshots.manage']
+      children: [
+        {
+          text: t('navigation.investor.reports'),
+          icon: <ReportsIcon />,
+          path: '/investor',
+          description: t('navigation.investor.reports'),
+          badge: null
+        },
+        {
+          text: t('navigation.investor.holdings'),
+          icon: <HoldingsIcon />,
+          path: '/holdings',
+          description: t('navigation.investor.holdings'),
+          badge: null
+        }
+      ]
     },
-    { 
-      text: t('navigation.globalAssets'), 
-      icon: <GlobalAssetIcon />, 
-      path: '/global-assets', 
-      description: t('navigation.globalAssets'),
+    // Quản lý quỹ - Only show for non-investor accounts
+    ...(isInvestorAccount ? [] : [{
+      text: t('navigation.fundManagement.title'),
+      icon: <PortfolioIcon />,
+      path: null, // Parent menu
+      description: t('navigation.fundManagement.title'),
       badge: null,
-      roles: ['admin', 'super_admin']
-    },
-    {
-      text: t('navigation.adminManagement'),
-      icon: <SecurityIcon />,
-      path: '/admin-management',
-      description: t('navigation.adminManagement'),
-      badge: null,
-      roles: ['super_admin']
-    },
-    {
-      text: t('navigation.transactions'),
-      icon: <AssessmentIcon />,
-      path: '/transactions',
-      description: t('navigation.transactions'),
-      badge: null,
-      permissions: ['transactions.read']
-    },
+      children: [
+        {
+          text: t('navigation.fundManagement.portfolios'),
+          icon: <PortfolioIcon />,
+          path: '/portfolios',
+          description: t('navigation.fundManagement.portfolios'),
+          badge: null
+        },
+        {
+          text: t('navigation.fundManagement.assets'),
+          icon: <AssetIcon />,
+          path: '/assets',
+          description: t('navigation.fundManagement.assets'),
+          badge: null
+        },
+        {
+          text: t('navigation.fundManagement.deposits'),
+          icon: <DepositIcon />,
+          path: '/deposits',
+          description: t('navigation.fundManagement.deposits'),
+          badge: null
+        },
+        {
+          text: t('navigation.fundManagement.reports'),
+          icon: <ReportsIcon />,
+          path: '/reports',
+          description: t('navigation.fundManagement.reports'),
+          badge: null
+        }
+      ]
+    }]),
+    // Settings - Always show
     { 
       text: t('navigation.settings'), 
       icon: <SettingsIcon />, 
       path: '/settings', 
       description: t('navigation.settings'),
       badge: null
-    }
+    },
+    // Admin menus - Only show for non-investor accounts
+    ...(isInvestorAccount ? [] : [
+      { 
+        text: t('navigation.priceManagement'), 
+        icon: <GlobalAssetIcon />, 
+        path: '/global-assets', 
+        description: t('navigation.priceManagement'),
+        badge: null,
+        roles: ['admin', 'super_admin']
+      },
+      { 
+        text: t('navigation.dataManagement'), 
+        icon: <SnapshotIcon />, 
+        path: '/snapshots', 
+        description: t('navigation.dataManagement'),
+        badge: null,
+        permissions: ['financial.snapshots.manage']
+      },
+      {
+        text: t('navigation.systemAdmin'),
+        icon: <SecurityIcon />,
+        path: '/admin-management',
+        description: t('navigation.systemAdmin'),
+        badge: null,
+        roles: ['super_admin']
+      }
+    ])
   ];
 
   // Auto-collapse on smaller screens
@@ -213,7 +237,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isDrawerCollapsed = isMobile ? false : drawerCollapsed;
 
   const drawer = (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Box sx={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflow: 'hidden',
+      overflowX: 'hidden',
+      maxWidth: '100%'
+    }}>
       {/* Professional Header */}
       <Box
         sx={{
@@ -337,9 +368,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Professional Navigation */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', py: 0.25, minHeight: 0 }}>
+      <Box sx={{ 
+        flexGrow: 1, 
+        overflow: 'auto', 
+        overflowX: 'hidden',
+        py: 0.25, 
+        minHeight: 0,
+        maxWidth: '100%'
+      }}>
         <List sx={{ 
           px: 0.25,
+          overflow: 'hidden',
+          maxWidth: '100%',
           '&::-webkit-scrollbar': {
             width: '6px',
           },
@@ -375,98 +415,305 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               
               return hasPermissionAccess || hasRoleAccess;
             })
-            .map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
-              <Tooltip 
-                title={isDrawerCollapsed ? item.text : ''} 
-                placement="right"
-                arrow
-              >
-                <ListItemButton
-                    selected={location.pathname === item.path}
-                    onClick={() => handleNavigation(item.path)}
-                    sx={{
-                      borderRadius: 1.5,
-                      mx: 0.25,
-                      py: 0.75,
-                      px: isDrawerCollapsed ? 0.5 : 1,
-                      transition: 'all 0.2s ease-in-out',
-                      position: 'relative',
-                      justifyContent: isDrawerCollapsed ? 'center' : 'flex-start',
-                      '&.Mui-selected': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.12),
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.18),
-                        },
-                        '& .MuiListItemIcon-root': {
-                          color: theme.palette.primary.main,
-                          transform: 'scale(1.1)',
-                        },
-                        '& .MuiListItemText-primary': {
-                          color: theme.palette.primary.main,
-                          fontWeight: 500,
-                        },
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          left: 0,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: 4,
-                          height: 24,
-                          bgcolor: theme.palette.primary.main,
-                          borderRadius: '0 2px 2px 0',
-                        }
-                      },
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        transform: isDrawerCollapsed ? 'scale(1.05)' : 'translateX(4px)',
-                        '& .MuiListItemIcon-root': {
-                          transform: 'scale(1.05)',
-                        },
-                      },
-                    }}
-                  >
-                    <ListItemIcon sx={{ 
-                      minWidth: isDrawerCollapsed ? 32 : 44,
-                      transition: 'all 0.2s ease-in-out',
-                    }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    {!isDrawerCollapsed && (
-                      <>
-                        <ListItemText 
-                          primary={item.text}
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            fontWeight: location.pathname === item.path ? 500 : 300,
-                            fontSize: '0.875rem',
+            .map((item) => {
+              // Khi collapsed: hiển thị flat tất cả items (bao gồm children)
+              if (isDrawerCollapsed) {
+                const allItems = [];
+                
+                // Thêm parent item nếu có
+                if (item.path) {
+                  allItems.push(item);
+                }
+                
+                // Thêm tất cả children items
+                if (item.children) {
+                  allItems.push(...item.children);
+                }
+                
+                return allItems.map((menuItem) => (
+                  <ListItem key={menuItem.text} disablePadding sx={{ mb: 0.125 }}>
+                    <Tooltip 
+                      title={menuItem.text} 
+                      placement="right"
+                      arrow
+                    >
+                      <ListItemButton
+                        selected={location.pathname === menuItem.path}
+                        onClick={() => handleNavigation(menuItem.path)}
+                        sx={{
+                          borderRadius: 1.5,
+                          mx: 0.25,
+                          py: 0.75,
+                          px: 0.5,
+                          transition: 'all 0.2s ease-in-out',
+                          position: 'relative',
+                          justifyContent: 'center',
+                          '&.Mui-selected': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.18),
+                            },
+                            '& .MuiListItemIcon-root': {
+                              color: theme.palette.primary.main,
+                              transform: 'scale(1.1)',
+                            },
+                          },
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                            transform: 'scale(1.05)',
+                            '& .MuiListItemIcon-root': {
+                              transform: 'scale(1.05)',
+                            },
+                          },
+                        }}
+                      >
+                        <ListItemIcon sx={{ 
+                          minWidth: 32,
+                          transition: 'all 0.2s ease-in-out',
+                        }}>
+                          {menuItem.icon}
+                        </ListItemIcon>
+                      </ListItemButton>
+                    </Tooltip>
+                  </ListItem>
+                ));
+              }
+              
+              // Khi expanded: hiển thị parent/child structure
+              if (item.children) {
+                return (
+                  <Box key={item.text}>
+                    <ListItem disablePadding sx={{ mb: 0.125 }}>
+                      <Tooltip 
+                        title={item.text} 
+                        placement="right"
+                        arrow
+                      >
+                        <ListItemButton
+                          className="parent-menu"
+                          sx={{
+                            borderRadius: 1.5,
+                            mx: 0.25,
+                            py: 0.75,
+                            px: 1,
+                            transition: 'all 0.2s ease-in-out',
+                            position: 'relative',
+                            justifyContent: 'flex-start',
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                              transform: 'translateX(4px)',
+                              '& .MuiListItemIcon-root': {
+                                transform: 'scale(1.05)',
+                              },
+                            },
                           }}
-                        />
-                        {item.badge && (
-                          <Chip
-                            label={item.badge}
-                            size="small"
-                            color="primary"
-                            sx={{ 
-                              height: 22, 
-                              fontSize: '0.7rem',
-                              fontWeight: 400,
-                              borderRadius: 2,
-                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                              color: 'white',
-                              '& .MuiChip-label': {
-                                px: 1,
-                              }
+                        >
+                          <ListItemIcon sx={{ 
+                            minWidth: 44,
+                            transition: 'all 0.2s ease-in-out',
+                          }}>
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText 
+                            primary={item.text}
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              fontWeight: 500,
+                              fontSize: '0.875rem',
+                              color: theme.palette.primary.main,
                             }}
                           />
+                        </ListItemButton>
+                      </Tooltip>
+                    </ListItem>
+                    {/* Render children */}
+                    {item.children.map((child) => (
+                      <ListItem key={child.text} disablePadding sx={{ mb: 0.125, ml: 2 }}>
+                        <Tooltip 
+                          title={child.text} 
+                          placement="right"
+                          arrow
+                        >
+                          <ListItemButton
+                            selected={location.pathname === child.path}
+                            onClick={() => handleNavigation(child.path)}
+                            sx={{
+                              borderRadius: 1.5,
+                              mx: 0.25,
+                              py: 0.75,
+                              px: 1,
+                              transition: 'all 0.2s ease-in-out',
+                              position: 'relative',
+                              justifyContent: 'flex-start',
+                              '&.Mui-selected': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                '&:hover': {
+                                  bgcolor: alpha(theme.palette.primary.main, 0.18),
+                                },
+                                '& .MuiListItemIcon-root': {
+                                  color: theme.palette.primary.main,
+                                  transform: 'scale(1.1)',
+                                },
+                                '& .MuiListItemText-primary': {
+                                  color: theme.palette.primary.main,
+                                  fontWeight: 500,
+                                },
+                                '&::before': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  width: 4,
+                                  height: 24,
+                                  bgcolor: theme.palette.primary.main,
+                                  borderRadius: '0 2px 2px 0',
+                                }
+                              },
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                transform: 'translateX(4px)',
+                                '& .MuiListItemIcon-root': {
+                                  transform: 'scale(1.05)',
+                                },
+                              },
+                            }}
+                          >
+                            <ListItemIcon sx={{ 
+                              minWidth: 44,
+                              transition: 'all 0.2s ease-in-out',
+                            }}>
+                              {child.icon}
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={child.text}
+                              primaryTypographyProps={{
+                                variant: 'body2',
+                                fontWeight: location.pathname === child.path ? 500 : 300,
+                                fontSize: '0.875rem',
+                              }}
+                            />
+                            {child.badge && (
+                              <Chip
+                                label={child.badge}
+                                size="small"
+                                color="primary"
+                                sx={{ 
+                                  height: 22, 
+                                  fontSize: '0.7rem',
+                                  fontWeight: 400,
+                                  borderRadius: 2,
+                                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                                  color: 'white',
+                                  '& .MuiChip-label': {
+                                    px: 1,
+                                  }
+                                }}
+                              />
+                            )}
+                          </ListItemButton>
+                        </Tooltip>
+                      </ListItem>
+                    ))}
+                  </Box>
+                );
+              }
+              
+              // Render regular menu item
+              return (
+                <ListItem key={item.text} disablePadding sx={{ mb: 0.125 }}>
+                  <Tooltip 
+                    title={isDrawerCollapsed ? item.text : ''} 
+                    placement="right"
+                    arrow
+                  >
+                    <ListItemButton
+                        selected={location.pathname === item.path}
+                        onClick={() => handleNavigation(item.path)}
+                        sx={{
+                          borderRadius: 1.5,
+                          mx: 0.25,
+                          py: 0.75,
+                          px: isDrawerCollapsed ? 0.5 : 1,
+                          transition: 'all 0.2s ease-in-out',
+                          position: 'relative',
+                          justifyContent: isDrawerCollapsed ? 'center' : 'flex-start',
+                          // Regular menu items giữ nguyên cursor pointer mặc định
+                          '&.Mui-selected': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.18),
+                            },
+                            '& .MuiListItemIcon-root': {
+                              color: theme.palette.primary.main,
+                              transform: 'scale(1.1)',
+                            },
+                            '& .MuiListItemText-primary': {
+                              color: theme.palette.primary.main,
+                              fontWeight: 500,
+                            },
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              left: 0,
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              width: 4,
+                              height: 24,
+                              bgcolor: theme.palette.primary.main,
+                              borderRadius: '0 2px 2px 0',
+                            }
+                          },
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                            transform: isDrawerCollapsed ? 'scale(1.05)' : 'translateX(4px)',
+                            '& .MuiListItemIcon-root': {
+                              transform: 'scale(1.05)',
+                            },
+                          },
+                        }}
+                      >
+                        <ListItemIcon sx={{ 
+                          minWidth: isDrawerCollapsed ? 32 : 44,
+                          transition: 'all 0.2s ease-in-out',
+                        }}>
+                          {item.icon}
+                        </ListItemIcon>
+                        {!isDrawerCollapsed && (
+                          <>
+                            <ListItemText 
+                              primary={item.text}
+                              primaryTypographyProps={{
+                                variant: 'body2',
+                                fontWeight: location.pathname === item.path ? 500 : 300,
+                                fontSize: '0.875rem',
+                              }}
+                            />
+                            {item.badge && (
+                              <Chip
+                                label={item.badge}
+                                size="small"
+                                color="primary"
+                                sx={{ 
+                                  height: 22, 
+                                  fontSize: '0.7rem',
+                                  fontWeight: 400,
+                                  borderRadius: 2,
+                                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                                  color: 'white',
+                                  '& .MuiChip-label': {
+                                    px: 1,
+                                  }
+                                }}
+                              />
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                    </ListItemButton>
-              </Tooltip>
-              </ListItem>
-          ))}
+                        </ListItemButton>
+                  </Tooltip>
+                  </ListItem>
+              );
+            })}
         </List>
       </Box>
 
@@ -723,7 +970,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ 
+      display: 'flex',
+      width: '100%',
+      height: '100vh',
+      overflow: 'hidden'
+    }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -902,6 +1154,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
              '& .MuiDrawer-paper': { 
                boxSizing: 'border-box', 
                width: getDrawerWidth(theme, false).xs, // Always expanded on mobile
+               overflow: 'hidden',
+               overflowX: 'hidden',
+               maxWidth: '100%'
              },
           }}
         >
@@ -920,6 +1175,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 xl: isDrawerCollapsed ? getDrawerWidth(theme, true).xl : getDrawerWidth(theme, false).xl,
               },
               transition: 'width 0.3s ease-in-out',
+              overflow: 'hidden',
+              overflowX: 'hidden',
+              maxWidth: '100%'
             },
           }}
           open
@@ -940,6 +1198,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           },
           background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
           minHeight: '100vh',
+          maxHeight: '100vh',
+          overflow: 'hidden',
           position: 'relative',
           transition: 'all 0.3s ease-in-out',
           '&::before': {
@@ -959,6 +1219,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           p: { xs: 1, sm: 2, md: 2.5 },
           position: 'relative',
           zIndex: 1,
+          height: 'calc(100vh - 64px)',
+          overflow: 'auto',
         }}>
           {children}
           {currentUser && <NotificationManager userId={currentUser.userId} />}

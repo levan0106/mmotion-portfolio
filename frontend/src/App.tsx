@@ -8,6 +8,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box, Typography } from '@mui/material';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
+import './global.css';
 
 import AppLayout from './components/Layout/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -23,6 +24,7 @@ import Holdings from './pages/Holdings';
 import Transactions from './pages/Transactions';
 import Assets from './pages/Assets';
 import Report from './pages/Report';
+import InvestorView from './pages/InvestorView';
 import Login from './pages/Login';
 import Welcome from './pages/Welcome';
 import Profile from './pages/Profile';
@@ -106,6 +108,13 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <PortfolioDetail />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/investor" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <InvestorView />
               </Box>
             </AppLayout>
           } />

@@ -236,9 +236,6 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                             <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
                               {metric.value}
                             </ResponsiveTypography>
-                            {/* <ResponsiveTypography variant="labelSmall" color="text.secondary">
-                              {metric.subtitle}
-                            </ResponsiveTypography> */}
                           </Box>
                         </Box>
                       </CardContent>
@@ -277,24 +274,21 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                   <Table>
                     <TableHead>
                       <TableRow sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.02) }}>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.type')}</ResponsiveTypography>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeader">{t('holdings.table.type')}</ResponsiveTypography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.units')}</ResponsiveTypography>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeader">{t('holdings.table.units')}</ResponsiveTypography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.navPerUnit')}</ResponsiveTypography>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeader">{t('holdings.table.navPerUnit')}</ResponsiveTypography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.amount')}</ResponsiveTypography>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeader">{t('holdings.table.amount')}</ResponsiveTypography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.date')}</ResponsiveTypography>
+                        <TableCell>
+                          <ResponsiveTypography variant="tableHeader">{t('holdings.table.date')}</ResponsiveTypography>
                         </TableCell>
-                        {/* <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          <ResponsiveTypography variant="tableHeaderSmall">{t('holdings.table.description')}</ResponsiveTypography>
-                        </TableCell> */}
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -327,12 +321,6 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                                 <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
                                   {getTransactionLabel(item.transaction)}
                                 </ResponsiveTypography>
-                                {/* <Chip
-                                  label={item.transaction.holdingType}
-                                  size="small"
-                                  color={getTransactionColor(item.transaction)}
-                                  sx={{ fontSize: '0.7rem', height: 20 }}
-                                /> */}
                               </Box>
                             </Box>
                           </TableCell>
@@ -361,20 +349,10 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                               {format(parseISO(item.transaction.createdAt), 'MMM dd, yyyy')}
                             </ResponsiveTypography>
-                            <ResponsiveTypography variant="labelSmall" color="text.secondary">
+                            {/* <ResponsiveTypography variant="labelSmall" color="text.secondary">
                               {format(parseISO(item.transaction.createdAt), 'HH:mm')}
-                            </ResponsiveTypography>
+                            </ResponsiveTypography> */}
                           </TableCell>
-                          {/* <TableCell>
-                            <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {item.cashFlow?.description || t('common.noDescription')}
-                            </ResponsiveTypography>
-                            {item.cashFlow?.fundingSource && (
-                              <ResponsiveTypography variant="labelXSmall" color="text.secondary">
-                                {t('holdings.table.source')}: {item.cashFlow.fundingSource}
-                              </ResponsiveTypography>
-                            )}
-                          </TableCell> */}
                         </TableRow>
                       ))}
                     </TableBody>

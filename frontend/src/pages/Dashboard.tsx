@@ -342,7 +342,7 @@ const Dashboard: React.FC = () => {
                       sx={{ 
                         color: 'text.primary',
                         mb: 0.5,
-                        fontWeight: 800
+                        fontWeight: 700
                       }}
                     >
                       {metric.value}
@@ -352,7 +352,8 @@ const Dashboard: React.FC = () => {
                       variant="cardTitle" 
                       color="text.secondary"
                       sx={{ 
-                        mb: 0.5
+                        mb: 0.5,
+                        fontWeight: 500
                       }}
                     >
                       {metric.title}

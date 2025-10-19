@@ -57,18 +57,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to notification server');
+      // console.log('Connected to notification server');
       setIsConnected(true);
       newSocket.emit('join-user-room', { userId });
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Disconnected from notification server');
+      // console.log('Disconnected from notification server');
       setIsConnected(false);
     });
 
     newSocket.on('notification', (notification: Notification) => {
-      console.log('Received new notification:', notification);
+      // console.log('Received new notification:', notification);
       addNotification(notification);
     });
 
@@ -97,11 +97,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         console.warn('No user ID available for fetching notifications');
         return;
       }
-      console.log(`Fetching notifications for user ${targetUserId}`);
+      // console.log(`Fetching notifications for user ${targetUserId}`);
       const data = await apiService.get(`/api/v1/notifications/user/${targetUserId}?limit=50&offset=0`);
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
-      console.log(`Fetched ${data.notifications?.length || 0} notifications for user ${targetUserId}`);
+      // console.log(`Fetched ${data.notifications?.length || 0} notifications for user ${targetUserId}`);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }

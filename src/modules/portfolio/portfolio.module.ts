@@ -45,6 +45,7 @@ import { InvestorHoldingController } from './controllers/investor-holding.contro
 import { PerformanceSnapshotController } from './controllers/performance-snapshot.controller';
 import { AutomatedSnapshotController } from './controllers/automated-snapshot.controller';
 import { SnapshotTrackingController } from './controllers/snapshot-tracking.controller';
+import { InvestorReportController } from './controllers/investor-report.controller';
 import { SnapshotTracking } from './entities/snapshot-tracking.entity';
 import { TradeRepository } from '../trading/repositories/trade.repository';
 import { SnapshotRepository } from './repositories/snapshot.repository';
@@ -102,6 +103,7 @@ import { SharedModule } from '../shared/shared.module';
     PerformanceSnapshotController,
     AutomatedSnapshotController,
     SnapshotTrackingController,
+    InvestorReportController,
   ],
   providers: [
     PortfolioRepository,
