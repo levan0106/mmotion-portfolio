@@ -587,7 +587,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={2} sx={{ 
                     bgcolor: 'white', 
-                    borderRadius: 1, 
+                    borderRadius: 2, 
                     border: 1, 
                     borderColor: 'grey.300',
                     height: '100%',
@@ -609,7 +609,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
-                    borderRadius: 1, 
+                    borderRadius: 2, 
                     border: 1, 
                     borderColor: 'grey.300',
                     height: '100%',
@@ -631,7 +631,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
-                    borderRadius: 1, 
+                    borderRadius: 2, 
                     border: 1, 
                     borderColor: 'grey.300',
                     height: '100%',
@@ -655,7 +655,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
                     bgcolor: 'white', 
-                    borderRadius: 1, 
+                    borderRadius: 2, 
                     border: 1, 
                     borderColor: 'grey.300',
                     height: '100%',
