@@ -19,6 +19,7 @@ import { apiService } from '../services/api';
 import InvestorReportWrapper from '../components/Reports/InvestorReportWrapper';
 import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { PortfolioPermissionType } from '../types';
 
 interface PortfolioSummary {
   id: string;
@@ -33,6 +34,15 @@ interface PortfolioSummary {
     ytdGrowth: number;
   };
   lastUpdated: string;
+  userPermission?: {
+    permissionType: PortfolioPermissionType;
+    isOwner: boolean;
+    accessLevel: 'VIEW_ONLY' | 'FULL_ACCESS';
+    canView: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManagePermissions: boolean;
+  };
 }
 
 const InvestorView: React.FC = () => {
@@ -84,7 +94,7 @@ const InvestorView: React.FC = () => {
         return;
       }
       
-      // Fetch all portfolios with investor data in one request
+      // Fetch all accessible portfolios with investor data in one request
       const portfoliosWithReports = await apiService.getInvestorPortfolios(currentAccount.accountId);
       
       // Transform data to match interface
@@ -97,9 +107,15 @@ const InvestorView: React.FC = () => {
         depositsValue: item.portfolio.depositsValue,
         performance: item.performance,
         lastUpdated: item.portfolio.lastUpdated,
+        userPermission: item.userPermission,
       }));
       
       setPortfolios(portfolioSummaries);
+      
+      // Auto-select if only one portfolio
+      if (portfolioSummaries.length === 1) {
+        setSelectedPortfolio(portfolioSummaries[0].id);
+      }
     } catch (error) {
       console.error('Error fetching portfolios:', error);
       setError(t('investorView.error.loadFailed', 'Không thể tải danh sách portfolio. Vui lòng thử lại sau.'));
@@ -287,13 +303,22 @@ const InvestorView: React.FC = () => {
                     >
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Box sx={{ mb: 1.5 }}>
-                          <ResponsiveTypography 
-                            variant="subtitle1" 
-                            gutterBottom={false}
-                            sx={{ fontSize: '1rem', fontWeight: 600, mb: 1 }}
-                          >
-                            {portfolio.name}
-                          </ResponsiveTypography>
+                          <Box display="flex" alignItems="center" gap={1} mb={1} flexWrap="wrap">
+                            <ResponsiveTypography 
+                              variant="subtitle1" 
+                              gutterBottom={false}
+                              sx={{ fontSize: '1rem', fontWeight: 600 }}
+                            >
+                              {portfolio.name}
+                            </ResponsiveTypography>
+                            {/* {portfolio.userPermission && (
+                              <PermissionBadge 
+                                permission={portfolio.userPermission} 
+                                size="small"
+                                showIcon={true}
+                              />
+                            )} */}
+                          </Box>
                           <Chip 
                             label={t('investorView.clickToView', 'Nhấn để xem chi tiết')}
                             size="small"

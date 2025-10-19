@@ -19,16 +19,15 @@ html, body {
 }
 
 /* Ensure all containers respect width constraints */
-.MuiContainer-root {
+/* .MuiContainer-root {
   max-width: 100% !important;
   
-}
+} */
 
 /* Prevent horizontal scroll in MUI components */
-.MuiBox-root {
+/* .MuiBox-root {
   max-width: 100%;
-  /*  */
-}
+} */
 
 /* Ensure tables don't cause horizontal scroll */
 .MuiTableContainer-root {
@@ -37,10 +36,9 @@ html, body {
 }
 
 /* Prevent horizontal scroll in grid layouts */
-.MuiGrid-container {
+/* .MuiGrid-container {
   max-width: 100%;
-  
-}
+} */
 
 /* Ensure drawer doesn't cause horizontal scroll */
 .MuiDrawer-paper {

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Portfolio } from './entities/portfolio.entity';
+import { PortfolioPermission } from './entities/portfolio-permission.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { NavSnapshot } from './entities/nav-snapshot.entity';
 import { CashFlow } from './entities/cash-flow.entity';
@@ -23,6 +24,7 @@ import { TradeDetail } from '../trading/entities/trade-detail.entity';
 import { PortfolioRepository } from './repositories/portfolio.repository';
 import { PortfolioService } from './services/portfolio.service';
 import { PortfolioAnalyticsService } from './services/portfolio-analytics.service';
+import { PortfolioPermissionService } from './services/portfolio-permission.service';
 import { PositionManagerService } from './services/position-manager.service';
 import { PortfolioCalculationService } from './services/portfolio-calculation.service';
 import { PortfolioValueCalculatorService } from './services/portfolio-value-calculator.service';
@@ -56,6 +58,7 @@ import { AssetModule } from '../asset/asset.module';
 import { DepositModule } from './deposit.module';
 import { PortfolioSnapshotModule } from './portfolio-snapshot.module';
 import { SharedModule } from '../shared/shared.module';
+import { PermissionCheckService } from '../shared/services/permission-check.service';
 
 /**
  * Portfolio module for managing investment portfolios.
@@ -65,6 +68,7 @@ import { SharedModule } from '../shared/shared.module';
   imports: [
     TypeOrmModule.forFeature([
       Portfolio,
+      PortfolioPermission,
       NavSnapshot,
       CashFlow,
       AssetAllocationSnapshot,
@@ -109,6 +113,8 @@ import { SharedModule } from '../shared/shared.module';
     PortfolioRepository,
     PortfolioService,
     PortfolioAnalyticsService,
+    PortfolioPermissionService,
+    PermissionCheckService,
     PositionManagerService,
     PortfolioCalculationService,
     PortfolioValueCalculatorService,
@@ -142,6 +148,8 @@ import { SharedModule } from '../shared/shared.module';
   exports: [
     PortfolioService,
     PortfolioAnalyticsService,
+    PortfolioPermissionService,
+    PermissionCheckService,
     PositionManagerService,
     PortfolioCalculationService,
     PortfolioValueCalculatorService,

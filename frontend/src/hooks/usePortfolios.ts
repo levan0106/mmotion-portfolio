@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useEffect } from 'react';
 import { CreatePortfolioDto, UpdatePortfolioDto } from '../types';
 import apiService from '../services/api';
+import { portfolioPermissionApi } from '../services/api.portfolio-permission';
 import { useAccount } from '../contexts/AccountContext';
 
 export const usePortfolios = (accountId?: string) => {
@@ -25,7 +26,7 @@ export const usePortfolios = (accountId?: string) => {
     }
   }, [currentAccountId, queryClient]);
 
-  // Fetch all portfolios
+  // Fetch all accessible portfolios (owned + shared)
   const {
     data: portfolios,
     isLoading,
@@ -87,6 +88,21 @@ export const usePortfolios = (accountId?: string) => {
     isUpdating: updatePortfolioMutation.isLoading,
     isDeleting: deletePortfolioMutation.isLoading,
   };
+};
+
+// Hook to get permission stats for a portfolio
+export const usePortfolioPermissionStats = (portfolioId: string, isOwner: boolean = false) => {
+  const { accountId } = useAccount();
+  
+  return useQuery(
+    ['portfolio-permission-stats', portfolioId, accountId],
+    () => accountId ? portfolioPermissionApi.getPortfolioPermissionStats(portfolioId, accountId) : Promise.resolve(null),
+    {
+      enabled: !!portfolioId && !!accountId && isOwner, // Only fetch if user is owner
+      staleTime: 2 * 60 * 1000, // 2 minutes
+      cacheTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
 };
 
 export const usePortfolio = (portfolioId: string) => {
@@ -198,12 +214,16 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
   }, [portfolioId, performanceData, allocationData, positionsData, isPerformanceLoading, isAllocationLoading, isPositionsLoading, performanceError, allocationError, positionsError]);
 
   return {
-    
     performanceData,
     allocationData,
     positionsData,
     isLoading: isPerformanceLoading || isAllocationLoading || isPositionsLoading,
     error: performanceError || allocationError || positionsError,
+    refetch: () => {
+      queryClient.invalidateQueries(['portfolio-performance', portfolioId]);
+      queryClient.invalidateQueries(['portfolio-allocation', portfolioId]);
+      queryClient.invalidateQueries(['portfolio-positions', portfolioId]);
+    },
   };
 };
 

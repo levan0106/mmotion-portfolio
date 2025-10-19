@@ -13,6 +13,7 @@ import {
   ParseIntPipe,
   UseGuards,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { PortfolioService } from '../services/portfolio.service';
@@ -21,6 +22,8 @@ import { PositionManagerService } from '../services/position-manager.service';
 import { InvestorHoldingService } from '../services/investor-holding.service';
 import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
+import { PortfolioPermissionService } from '../services/portfolio-permission.service';
+import { PermissionCheckService } from '../../shared/services/permission-check.service';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
@@ -42,15 +45,17 @@ export class PortfolioController {
     private readonly investorHoldingService: InvestorHoldingService,
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
     private readonly accountValidationService: AccountValidationService,
+    private readonly portfolioPermissionService: PortfolioPermissionService,
+    private readonly permissionCheckService: PermissionCheckService,
   ) {}
 
   /**
-   * Get all portfolios for an account.
+   * Get all portfolios for an account (now includes shared portfolios with permission stats).
    */
   @Get()
   @ApiOperation({ 
     summary: 'Get all portfolios for an account',
-    description: 'Retrieves all portfolios associated with a specific account ID. The accountId must be provided as a query parameter.',
+    description: 'Retrieves all portfolios associated with a specific account ID, including owned portfolios and portfolios shared with the account. Now includes permission statistics for each portfolio.',
   })
   @ApiQuery({ 
     name: 'accountId', 
@@ -75,6 +80,15 @@ export class PortfolioController {
           cashBalance: { type: 'number', example: 50000000 },
           unrealizedPl: { type: 'number', example: 150000000 },
           realizedPl: { type: 'number', example: 75000000 },
+          permissionStats: {
+            type: 'object',
+            properties: {
+              totalAccounts: { type: 'number', example: 3 },
+              ownerCount: { type: 'number', example: 1 },
+              updateCount: { type: 'number', example: 1 },
+              viewCount: { type: 'number', example: 1 }
+            }
+          },
           createdAt: { type: 'string', example: '2024-01-15T08:00:00.000Z' },
           updatedAt: { type: 'string', example: '2024-12-19T10:30:00.000Z' }
         }
@@ -93,11 +107,18 @@ export class PortfolioController {
       }
     }
   })
-  async getAllPortfolios(@Query('accountId') accountId: string): Promise<Portfolio[]> {
+  async getAllPortfolios(@Query('accountId') accountId: string): Promise<any[]> {
     if (!accountId) {
       throw new BadRequestException('accountId query parameter is required');
     }
-    return this.portfolioService.getPortfoliosByAccount(accountId);
+    
+    // Get accessible portfolios with permission filtering for 'portfolios' context
+    const { portfolios } = await this.permissionCheckService.getAccessiblePortfoliosWithPermissions(
+      accountId, 
+      'portfolios'
+    );
+    
+    return portfolios;
   }
 
   /**
@@ -420,10 +441,28 @@ export class PortfolioController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Validate portfolio ownership
-    await this.accountValidationService.validatePortfolioOwnership(id, accountId);
+    // Check permission using new permission check service
+    const permission = await this.permissionCheckService.checkPortfolioPermission(id, accountId, 'portfolios');
+    if (!permission.hasAccess) {
+      throw new ForbiddenException('You do not have access to this portfolio');
+    }
     
-    return this.portfolioService.getPortfolioDetails(id);
+    // Get portfolio details and add permission info
+    const portfolio = await this.portfolioService.getPortfolioDetails(id);
+    
+    // Add permission information to response
+    return {
+      ...portfolio,
+      userPermission: {
+        permissionType: permission.permissionType,
+        isOwner: permission.isOwner,
+        accessLevel: permission.accessLevel,
+        canView: true,
+        canUpdate: permission.permissionType === 'OWNER' || permission.permissionType === 'UPDATE',
+        canDelete: permission.isOwner,
+        canManagePermissions: permission.isOwner
+      }
+    } as any;
   }
 
   /**
@@ -1041,8 +1080,11 @@ export class PortfolioController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Validate portfolio ownership
-    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    // Check portfolio permission for converting fund to portfolio (requires update access)
+    const hasUpdateAccess = await this.portfolioService.checkPortfolioAccess(portfolioId, accountId, 'update');
+    if (!hasUpdateAccess) {
+      throw new ForbiddenException('You do not have permission to convert this portfolio');
+    }
     
     await this.portfolioService.convertFundToPortfolio(portfolioId);
     return {
@@ -1050,6 +1092,145 @@ export class PortfolioController {
       message: 'Fund successfully converted to portfolio',
       portfolioId: portfolioId
     };
+  }
+
+  // ==================== PORTFOLIO PERMISSION MANAGEMENT ====================
+
+  /**
+   * Get all permissions for a portfolio
+   */
+  @Get(':portfolioId/permissions')
+  @ApiOperation({ 
+    summary: 'Get portfolio permissions',
+    description: 'Retrieves all permissions for a specific portfolio'
+  })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID', type: 'string' })
+  @ApiQuery({ name: 'accountId', description: 'Account ID', required: true })
+  async getPortfolioPermissions(
+    @Param('portfolioId') portfolioId: string,
+    @Query('accountId') accountId: string
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Only owner can manage permissions
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
+    return this.portfolioPermissionService.getPortfolioPermissions(portfolioId);
+  }
+
+  /**
+   * Create a new portfolio permission
+   */
+  @Post(':portfolioId/permissions')
+  @ApiOperation({ 
+    summary: 'Create portfolio permission',
+    description: 'Creates a new permission for a portfolio'
+  })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID', type: 'string' })
+  @ApiQuery({ name: 'accountId', description: 'Account ID', required: true })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        accountId: { type: 'string', description: 'Account ID to grant permission to' },
+        permissionType: { type: 'string', enum: ['UPDATE', 'VIEW'], description: 'Permission type' }
+      },
+      required: ['accountId', 'permissionType']
+    }
+  })
+  async createPortfolioPermission(
+    @Param('portfolioId') portfolioId: string,
+    @Query('accountId') accountId: string,
+    @Body() body: { accountId: string; permissionType: 'UPDATE' | 'VIEW' }
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Only owner can manage permissions
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
+    return this.portfolioPermissionService.createPermission({
+      portfolioId,
+      accountId: body.accountId,
+      permissionType: body.permissionType as any,
+      grantedBy: accountId
+    });
+  }
+
+
+  /**
+   * Delete a portfolio permission
+   */
+  @Delete(':portfolioId/permissions/:permissionId')
+  @ApiOperation({ 
+    summary: 'Delete portfolio permission',
+    description: 'Deletes a permission for a portfolio'
+  })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID', type: 'string' })
+  @ApiParam({ name: 'permissionId', description: 'Permission ID', type: 'string' })
+  @ApiQuery({ name: 'accountId', description: 'Account ID', required: true })
+  async deletePortfolioPermission(
+    @Param('portfolioId') portfolioId: string,
+    @Param('permissionId') permissionId: string,
+    @Query('accountId') accountId: string
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Only owner can manage permissions
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
+    await this.portfolioPermissionService.deletePermission(permissionId, accountId);
+    return { success: true, message: 'Permission deleted successfully' };
+  }
+
+  /**
+   * Get permission statistics for a portfolio
+   */
+  @Get(':portfolioId/permissions/stats')
+  @ApiOperation({ 
+    summary: 'Get portfolio permission statistics',
+    description: 'Retrieves permission statistics for a portfolio'
+  })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID', type: 'string' })
+  @ApiQuery({ name: 'accountId', description: 'Account ID', required: true })
+  async getPortfolioPermissionStats(
+    @Param('portfolioId') portfolioId: string,
+    @Query('accountId') accountId: string
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    // Only owner can view permission stats
+    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    
+    return this.portfolioPermissionService.getPortfolioPermissionStats(portfolioId);
+  }
+
+  /**
+   * Get available accounts for permission assignment
+   */
+  @Get('permissions/available-accounts')
+  @ApiOperation({ 
+    summary: 'Get available accounts for permission assignment',
+    description: 'Retrieves accounts that can be granted permissions'
+  })
+  @ApiQuery({ name: 'accountId', description: 'Account ID', required: true })
+  @ApiQuery({ name: 'search', description: 'Search term for account name/email', required: false })
+  async getAvailableAccounts(
+    @Query('accountId') accountId: string,
+    @Query('search') search?: string
+  ) {
+    if (!accountId) {
+      throw new BadRequestException('accountId query parameter is required');
+    }
+    
+    return this.portfolioPermissionService.getAvailableAccounts(search);
   }
 
 }

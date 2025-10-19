@@ -8,6 +8,7 @@ import { PortfolioRepository } from '../repositories/portfolio.repository';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { Account } from '../../shared/entities/account.entity';
+import { PortfolioPermissionService } from './portfolio-permission.service';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { Asset } from '../../asset/entities/asset.entity';
 import { PortfolioCalculationService } from './portfolio-calculation.service';
@@ -54,6 +55,7 @@ export class PortfolioService {
     private readonly depositRepository: DepositRepository,
     private readonly navUtilsService: NavUtilsService,
     private readonly investorHoldingService: InvestorHoldingService,
+    private readonly portfolioPermissionService: PortfolioPermissionService,
     // Additional repositories for comprehensive deletion
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
@@ -590,6 +592,112 @@ export class PortfolioService {
     }
 
     return portfoliosWithRealTimePL as Portfolio[];
+  }
+
+  /**
+   * Get all portfolios accessible by an account (owned + shared with permissions).
+   * This includes portfolios owned by the account and portfolios shared with the account.
+   * @param accountId - Account ID
+   * @returns Promise<Portfolio[]>
+   */
+  async getAccessiblePortfoliosByAccount(accountId: string): Promise<any[]> {
+    const cacheKey = `accessible-portfolios:account:${accountId}`;
+    
+    // Try to get from cache first (if enabled)
+    if (this.CACHE_ENABLED) {
+      const cachedPortfolios = await this.cacheManager.get<any[]>(cacheKey);
+      if (cachedPortfolios) {
+        return cachedPortfolios;
+      }
+    }
+
+    // Get owned portfolios
+    const ownedPortfolios = await this.getPortfoliosByAccount(accountId);
+    
+    // Get shared portfolios (portfolios this account has permission to access)
+    const sharedPortfolios = await this.portfolioPermissionService.getAccountAccessiblePortfolios(accountId);
+    
+    // Combine and deduplicate portfolios
+    const allPortfolios = [...ownedPortfolios];
+    const ownedPortfolioIds = new Set(ownedPortfolios.map(p => p.portfolioId));
+    
+    for (const sharedPortfolio of sharedPortfolios) {
+      if (!ownedPortfolioIds.has(sharedPortfolio.portfolioId)) {
+        allPortfolios.push(sharedPortfolio);
+      }
+    }
+
+    // Add permission stats to each portfolio
+    const portfoliosWithStats = await Promise.all(
+      allPortfolios.map(async (portfolio) => {
+        try {
+          const permissionStats = await this.portfolioPermissionService.getPortfolioPermissionStats(portfolio.portfolioId);
+          return {
+            ...portfolio,
+            permissionStats,
+          } as any;
+        } catch (error) {
+          // If permission stats fail to load, return portfolio without stats
+          return portfolio;
+        }
+      })
+    );
+    
+    // Cache the result (if enabled)
+    if (this.CACHE_ENABLED) {
+      await this.cacheManager.set(cacheKey, portfoliosWithStats, this.CACHE_TTL);
+    }
+
+    return portfoliosWithStats as any;
+  }
+
+  /**
+   * Check if an account has permission to access a portfolio.
+   * @param portfolioId - Portfolio ID
+   * @param accountId - Account ID
+   * @param action - Action to check permission for
+   * @returns Promise<boolean>
+   */
+  async checkPortfolioAccess(
+    portfolioId: string,
+    accountId: string,
+    action: 'view' | 'update' | 'delete' | 'manage_permissions' = 'view'
+  ): Promise<boolean> {
+    return await this.portfolioPermissionService.checkPortfolioPermission(
+      portfolioId,
+      accountId,
+      action
+    );
+  }
+
+  /**
+   * Get portfolio with permission check.
+   * @param portfolioId - Portfolio ID
+   * @param accountId - Account ID requesting access
+   * @param action - Action to check permission for
+   * @returns Promise<Portfolio>
+   */
+  async getPortfolioWithPermissionCheck(
+    portfolioId: string,
+    accountId: string,
+    action: 'view' | 'update' | 'delete' | 'manage_permissions' = 'view'
+  ): Promise<Portfolio> {
+    // Check permission first
+    const hasPermission = await this.checkPortfolioAccess(portfolioId, accountId, action);
+    if (!hasPermission) {
+      throw new NotFoundException('Portfolio not found or access denied');
+    }
+
+    // Get portfolio
+    const portfolio = await this.portfolioEntityRepository.findOne({
+      where: { portfolioId },
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException('Portfolio not found');
+    }
+
+    return portfolio;
   }
 
   /**

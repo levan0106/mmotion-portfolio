@@ -34,9 +34,13 @@ import {
   Inventory as HoldingsIcon,
   Person as InvestorIcon,
   Business as FundManagerIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
+import { useAccount } from '../contexts/AccountContext';
+import { useQueryClient } from 'react-query';
+import { invalidatePortfolioQueries, forceRefreshPortfolioData } from '../utils/queryUtils';
 import { TradeForm } from '../components/Trading/TradeForm';
 import { 
   PerformanceTab,
@@ -55,6 +59,8 @@ import {
 import { CreateTradeDto } from '../types';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
+import PermissionBadge from '../components/Common/PermissionBadge';
+import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
 import './PortfolioDetail.styles.css';
 
 interface TabPanelProps {
@@ -93,6 +99,9 @@ const PortfolioDetail: React.FC = () => {
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
   const [viewMode, setViewMode] = useState<'investor' | 'fund-manager'>('fund-manager');
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const { accountId } = useAccount();
+  const queryClient = useQueryClient();
   
 
   // Reset tab value when switching view modes (only for fund-manager)
@@ -151,6 +160,18 @@ const PortfolioDetail: React.FC = () => {
     performanceData,
   } = usePortfolioAnalytics(portfolioId!);
   
+  // Check if current user is the owner
+  const isOwner = portfolio && accountId ? portfolio.accountId === accountId : false;
+  
+  // Debug logging
+  console.log('PortfolioDetail:', {
+    portfolioId,
+    portfolioOwner: portfolio?.accountId,
+    currentUser: accountId,
+    isOwner,
+    hasPermission: !!portfolio?.userPermission
+  });
+  
   const createTradeMutation = useCreateTrade();
   const tradesQuery = useTrades(portfolioId!);
   const trades = tradesQuery.data || [];
@@ -180,15 +201,37 @@ const PortfolioDetail: React.FC = () => {
     
     setIsRefreshingAll(true);
     try {
-      // Refresh all data in parallel
+      console.log('🔄 Starting refresh for portfolio:', portfolioId);
+      
+      // Debug: Log all current queries
+      const allQueries = queryClient.getQueryCache().getAll();
+      console.log('📊 All queries before refresh:', allQueries.map(q => ({
+        queryKey: q.queryKey,
+        state: q.state.status,
+        dataUpdatedAt: q.state.dataUpdatedAt
+      })));
+      
+      // Method 1: Use utility function
+      await invalidatePortfolioQueries(queryClient, portfolioId);
+      
+      // Method 2: Force refresh (nuclear option)
+      await forceRefreshPortfolioData(queryClient, portfolioId);
+      
+      // Method 3: Also manually invalidate specific patterns as backup
       await Promise.all([
-        // Portfolio data
-        refetchPortfolio(),
-        // Trades data
-        tradesQuery.refetch(),
+        queryClient.invalidateQueries(['portfolio', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-performance', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-allocation', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-positions', portfolioId]),
+        queryClient.invalidateQueries(['trades', portfolioId]),
+        queryClient.invalidateQueries(['portfolio-permission-stats', portfolioId]),
+        queryClient.invalidateQueries(['investor-report', portfolioId]),
+        queryClient.invalidateQueries(['cash-flow', portfolioId]),
       ]);
+      
+      console.log('✅ Refresh completed');
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error('❌ Error refreshing data:', error);
     } finally {
       setIsRefreshingAll(false);
     }
@@ -275,9 +318,18 @@ const PortfolioDetail: React.FC = () => {
             width: { xs: '100%', sm: 'auto' },
             flex: { sm: 1 }
           }}>
-            <ResponsiveTypography variant="pageTitle" gutterBottom>
-              {portfolio.name}
-            </ResponsiveTypography>
+            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+              <ResponsiveTypography variant="pageTitle" gutterBottom={false}>
+                {portfolio.name}
+              </ResponsiveTypography>
+              {portfolio.userPermission && (
+                <PermissionBadge 
+                  permission={portfolio.userPermission} 
+                  size="small"
+                  showIcon={true}
+                />
+              )}
+            </Box>
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
               {t('portfolio.managementTrading')}
             </ResponsiveTypography>
@@ -346,6 +398,28 @@ const PortfolioDetail: React.FC = () => {
                 </ResponsiveButton>
               </span>
             </Tooltip>
+            {isOwner && (
+              <Tooltip title="Manage Portfolio Permissions">
+                <IconButton
+                  onClick={() => setPermissionModalOpen(true)}
+                  color="primary"
+                  size="medium"
+                  sx={{
+                    borderRadius: 2,
+                    p: 1.5,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                      backgroundColor: 'primary.light',
+                      color: 'primary.contrastText',
+                    },
+                  }}
+                >
+                  <SecurityIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
         </Box>
       </Box>
@@ -974,6 +1048,18 @@ const PortfolioDetail: React.FC = () => {
         mode="create"
         isModal={true}
         showSubmitButton={false}
+      />
+
+      {/* Portfolio Permission Modal */}
+      <PortfolioPermissionModal
+        open={permissionModalOpen}
+        onClose={() => setPermissionModalOpen(false)}
+        portfolioId={portfolioId!}
+        portfolioName={portfolio.name}
+        onPermissionUpdated={() => {
+          // TODO: Refresh portfolio data or permission stats
+          console.log('Permissions updated');
+        }}
       />
 
       {/* Floating Action Button for Quick Create Trade */}

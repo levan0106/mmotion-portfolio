@@ -9,6 +9,7 @@ import { Box, Alert } from '@mui/material';
 import PortfolioList from '../components/Portfolio/PortfolioList';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import { PublicPortfolioSelector } from '../components/Portfolio/PublicPortfolioSelector';
+import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
 import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
@@ -23,6 +24,8 @@ const Portfolios: React.FC = () => {
   const [editingPortfolio, setEditingPortfolio] = useState<string | null>(null);
   const [formError, setFormError] = useState<string>('');
   const [isPublicTemplateSelectorOpen, setIsPublicTemplateSelectorOpen] = useState(false);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
 
   const { accountId } = useAccount();
 
@@ -193,6 +196,16 @@ const Portfolios: React.FC = () => {
     setIsPublicTemplateSelectorOpen(false);
   };
 
+  const handleManagePermissions = (portfolioId: string) => {
+    setSelectedPortfolioForPermission(portfolioId);
+    setPermissionModalOpen(true);
+  };
+
+  const handlePermissionModalClose = () => {
+    setPermissionModalOpen(false);
+    setSelectedPortfolioForPermission(null);
+  };
+
   // Get the portfolio data for editing
   const getEditingPortfolioData = (): Partial<CreatePortfolioDto> | undefined => {
     if (!editingPortfolio) return undefined;
@@ -229,6 +242,7 @@ const Portfolios: React.FC = () => {
         onEditPortfolio={handleEditPortfolio}
         onDeletePortfolio={handleDeletePortfolio}
         onCreatePortfolio={handleCreatePortfolio}
+        onManagePermissions={handleManagePermissions}
       />
 
       <PortfolioForm
@@ -246,6 +260,17 @@ const Portfolios: React.FC = () => {
         open={isPublicTemplateSelectorOpen}
         onClose={handleClosePublicTemplateSelector}
         onSelect={handleSelectPublicTemplate}
+      />
+
+      <PortfolioPermissionModal
+        open={permissionModalOpen}
+        onClose={handlePermissionModalClose}
+        portfolioId={selectedPortfolioForPermission || ''}
+        portfolioName={selectedPortfolioForPermission ? (portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.name || '') : ''}
+        onPermissionUpdated={() => {
+          // Optionally refetch portfolios to update permission stats
+          refetch();
+        }}
       />
 
       {(isCreating || isUpdating || isDeleting) && (

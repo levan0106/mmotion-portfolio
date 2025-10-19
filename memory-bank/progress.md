@@ -2,37 +2,38 @@
 
 ## What Works
 ### ✅ Completed
-- **PORTFOLIO DETAIL UI/UX ENHANCEMENTS - COMPLETED** (Current Session - October 19, 2025)
-  - **Tab System Simplification for Investor View**: Simplified investor view by removing tab system
-    - **Investor View**: Direct display of InvestorReportWrapper without tabs
-    - **Fund Manager View**: Maintained full tab system with 6 tabs (Performance, Allocation, Trading, Deposit, Cash Flow, Holdings)
-    - **View Mode Logic**: Conditional rendering based on viewMode state
-    - **Tab Validation**: Enhanced tab switching logic with proper validation for both view modes
-    - **URL Parameter Handling**: Improved URL tab parameter handling for fund-manager view only
-    - **Files Updated**: PortfolioDetail.tsx
-  - **Menu Filtering for Investor Accounts**: Implemented role-based menu filtering
-    - **Investor Account Menu**: Only shows Dashboard, Nhà đầu tư, and Settings
-    - **Fund Manager Account Menu**: Shows all menus including Quản lý quỹ, admin menus
-    - **Account Type Detection**: Uses currentAccount?.isInvestor === true for filtering
-    - **Conditional Menu Rendering**: Dynamic menu items based on account type
-    - **Files Updated**: AppLayout.tsx
-  - **InvestorReport Color Coding Enhancement**: Added dynamic color coding for performance metrics
-    - **Positive Values**: Green color (success.main) for positive performance
-    - **Negative Values**: Red color (error.main) for negative performance
-    - **Applied to All Metrics**: Daily Growth, Monthly Growth, YTD Growth
-    - **Desktop and Mobile**: Consistent color coding across all display modes
-    - **Files Updated**: InvestorReport.tsx
-  - **Holdings Table UI Simplification**: Simplified table cell design
-    - **Portfolio Column**: Kept icon for portfolio identification
-    - **Other Columns**: Removed icons for cleaner, simpler design
-    - **Color Coding**: Maintained color coding for P&L values
-    - **Responsive Design**: Maintained responsive layout
-    - **Files Updated**: Holdings.tsx
-  - **Loading UI Enhancement**: Improved loading states with professional design
-    - **Simple Loading**: Clean CircularProgress with descriptive text
-    - **Responsive Design**: Proper spacing and typography
-    - **User Experience**: Clear loading indication with appropriate messaging
-    - **Files Updated**: PortfolioDetail.tsx
+- **MULTI-ACCOUNT PORTFOLIO MANAGEMENT SYSTEM - COMPLETED** (Current Session - October 19, 2025)
+  - **Permission-Based Access Control**: Implemented comprehensive permission system
+    - **Permission Levels**: OWNER (full access), UPDATE (modify data), VIEW (read-only)
+    - **Database Schema**: Created portfolio_permissions table with proper relationships
+    - **Migration Script**: Populated existing portfolios with OWNER permissions
+    - **Unique Constraints**: Prevent duplicate permissions per portfolio-account pair
+    - **Files Updated**: portfolio-permission.entity.ts, AddPortfolioPermissions migration
+  - **Centralized Permission Service**: Created PermissionCheckService for consistent logic
+    - **Context-Aware Permissions**: Different access levels for different pages
+    - **API Integration**: All portfolio-related APIs use permission checks
+    - **Trading API Fix**: Fixed 403 errors for non-owner accounts
+    - **Cash Flow API Fix**: Fixed 403 errors for non-owner accounts
+    - **Convert-to-Portfolio Fix**: Fixed 403 errors for non-owner accounts
+    - **Files Updated**: permission-check.service.ts, trading.controller.ts, cash-flow.controller.ts
+  - **Frontend Permission Management**: Complete UI for permission management
+    - **Permission Modal**: PortfolioPermissionModal for managing permissions
+    - **Permission Badge**: Visual indicator of user permission level
+    - **Owner-Only Actions**: Manage permissions button only visible to owners
+    - **Permission Stats**: Display number of accounts with access
+    - **Files Updated**: PortfolioPermissionModal.tsx, PermissionBadge.tsx, PortfolioCard.tsx
+  - **ResponsiveTable Component System**: Created reusable table components
+    - **ResponsiveTable**: Base table with consistent styling and light borders
+    - **ResponsiveTableWithActions**: Table with action menus and buttons
+    - **TypeScript Types**: Comprehensive type definitions for table components
+    - **CSS Styling**: Light borders for better text visibility
+    - **Files Updated**: ResponsiveTable.tsx, ResponsiveTableWithActions.tsx, table.types.ts
+  - **Investor Report Table Enhancement**: Migrated all tables to ResponsiveTable
+    - **Consistent Styling**: All tables use ResponsiveTable component
+    - **Header Visibility**: Fixed table header text color issues
+    - **Light Borders**: Better text contrast with subtle borders
+    - **Responsive Design**: Mobile-optimized layouts
+    - **Files Updated**: InvestorReport.tsx, ResponsiveTable.styles.css
 
 - **DATABASE RESTORE & MIGRATION FIX - COMPLETED** (Previous Session - October 18, 2025)
   - **Database Restore Issue Resolution**: Fixed production database restore to local development environment
@@ -89,45 +90,52 @@
 
 ## Current Status
 ### 🎯 Active Development
-- **Portfolio Management System**: Fully functional with enhanced UI/UX
-- **Multi-User Support**: Complete account switching and role-based access
-- **Investor vs Fund Manager Views**: Distinct user experiences based on account type
-- **Responsive Design**: Optimized for all device types
-- **Multi-Language Support**: Complete English and Vietnamese translations
+- **Multi-Account Portfolio Management**: Fully functional permission-based system
+- **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels implemented
+- **ResponsiveTable System**: Consistent table styling across the application
+- **Permission Management UI**: Complete UI for managing portfolio permissions
+- **API Permission Integration**: All APIs use centralized permission checks
 
 ### 🔧 Technical Architecture
 - **Frontend**: React 18 + TypeScript + Material-UI + Vite
 - **Backend**: NestJS + TypeScript + PostgreSQL
-- **Authentication**: JWT-based with role-based access control
-- **Database**: PostgreSQL with proper foreign key relationships
+- **Authentication**: JWT-based with permission-based access control
+- **Database**: PostgreSQL with portfolio_permissions table and relationships
 - **Deployment**: Docker containerization with production-ready configuration
 
 ### 📊 System Capabilities
-- **Portfolio Management**: Create, view, edit portfolios with comprehensive analytics
-- **Trading Management**: Complete trading workflow with P&L tracking
-- **Investor Reporting**: Professional investor reports with performance metrics
-- **Multi-Account Support**: Seamless account switching with data isolation
-- **Role-Based Access**: Different interfaces for investors vs fund managers
-- **Real-Time Updates**: Live data updates and notifications
+- **Multi-Account Portfolio Access**: Share portfolios with multiple accounts
+- **Permission-Based UI**: Different interfaces based on permission level
+- **Portfolio Management**: Create, view, edit portfolios with permission checks
+- **Trading Management**: Complete trading workflow with permission validation
+- **Investor Reporting**: Professional investor reports with permission filtering
+- **Table System**: Consistent table styling with ResponsiveTable components
+- **Permission Management**: Easy permission management for portfolio owners
 
 ## Next Steps
 ### 🚀 Planned Enhancements
-- **Advanced Analytics**: Enhanced portfolio analytics and reporting
+- **Advanced Permission Features**: More granular permission levels
+- **Bulk Permission Management**: Manage multiple portfolios at once
+- **Permission History**: Track permission changes over time
 - **Mobile App**: React Native mobile application
 - **API Documentation**: Comprehensive API documentation with Swagger
-- **Testing**: Unit and integration test coverage
-- **Performance**: Optimization for large datasets
-- **Security**: Enhanced security measures and audit logging
+- **Testing**: Unit and integration test coverage for permission system
+- **Performance**: Optimization for large datasets with permission checks
 
 ## Key Files Modified in Current Session
-- `frontend/src/pages/PortfolioDetail.tsx` - Enhanced tab system and loading UI
-- `frontend/src/components/Layout/AppLayout.tsx` - Menu filtering for investor accounts
-- `frontend/src/components/Reports/InvestorReport.tsx` - Color coding for performance metrics
-- `frontend/src/pages/Holdings.tsx` - Simplified table design
+- `src/modules/portfolio/entities/portfolio-permission.entity.ts` - Permission entity
+- `src/modules/portfolio/services/portfolio-permission.service.ts` - Permission service
+- `src/modules/shared/services/permission-check.service.ts` - Centralized permission logic
+- `frontend/src/components/Common/ResponsiveTable.tsx` - Reusable table component
+- `frontend/src/components/Common/ResponsiveTableWithActions.tsx` - Table with actions
+- `frontend/src/components/Common/PermissionBadge.tsx` - Permission display component
+- `frontend/src/components/Portfolio/PortfolioPermissionModal.tsx` - Permission management UI
+- `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ## System Health
-- ✅ **Database**: Fully operational with proper relationships
-- ✅ **Authentication**: Working with role-based access
-- ✅ **Frontend**: Responsive and user-friendly
-- ✅ **Backend**: Stable API endpoints
+- ✅ **Database**: Fully operational with permission relationships
+- ✅ **Authentication**: Working with permission-based access control
+- ✅ **Frontend**: Responsive with consistent table styling
+- ✅ **Backend**: Stable API endpoints with permission checks
 - ✅ **Deployment**: Production-ready configuration
+- ✅ **Permission System**: Multi-account portfolio management operational

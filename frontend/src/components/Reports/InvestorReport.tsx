@@ -3,13 +3,6 @@ import {
   Box,
   Card,
   CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Grid,
   Chip,
   Alert,
@@ -27,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import { formatCurrency, formatNumber, formatPercentage, formatPercentageValue } from '../../utils/format';
 import { InvestorReportData } from '../../types/investor-report.types';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import ResponsiveTable from '../Common/ResponsiveTable';
+import './InvestorReport.styles.css';
 
 interface InvestorReportProps {
   data: InvestorReportData;
@@ -396,58 +391,66 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
             {t('investorReport.assetAllocation', 'Phân bổ tài sản theo loại')}
           </ResponsiveTypography>
-          <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ py: 1 }}><ResponsiveTypography variant='tableHeader'>{t('investorReport.assetType', 'Loại tài sản')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant='tableHeader'>{t('investorReport.value', 'Giá trị')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant='tableHeader'>{t('investorReport.percentage', 'Tỷ lệ')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant='tableHeader'>{t('investorReport.count', 'Số lượng')}</ResponsiveTypography></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.assetAllocation.map((allocation, index) => (
-                  <TableRow key={index}>
-                    <TableCell sx={{ py: 1 }}>
-                      <Box display="flex" alignItems="center">
-                        <Box
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            backgroundColor: getAssetTypeColor(allocation.assetType),
-                            mr: 1,
-                          }}
-                        />
-                        {getAssetTypeVietnamese(allocation.assetType)}
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}>
-                      <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                        {formatCurrency(allocation.value)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}>
-                      <Chip
-                        label={formatPercentage(allocation.percentage)}
-                        size="small"
-                        sx={{
-                          backgroundColor: alpha(getAssetTypeColor(allocation.assetType), 0.1),
-                          color: getAssetTypeColor(allocation.assetType),
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {allocation.count} {t('investorReport.positions', 'vị thế')}
-                      </ResponsiveTypography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'assetType',
+                header: t('investorReport.assetType', 'Loại tài sản'),
+                render: (allocation: any) => (
+                  <Box display="flex" alignItems="center">
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        backgroundColor: getAssetTypeColor(allocation.assetType),
+                        mr: 1,
+                      }}
+                    />
+                    {getAssetTypeVietnamese(allocation.assetType)}
+                  </Box>
+                ),
+              },
+              {
+                key: 'value',
+                header: t('investorReport.value', 'Giá trị'),
+                align: 'right',
+                render: (allocation: any) => (
+                  <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                    {formatCurrency(allocation.value)}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'percentage',
+                header: t('investorReport.percentage', 'Tỷ lệ'),
+                align: 'right',
+                render: (allocation: any) => (
+                  <Chip
+                    label={formatPercentage(allocation.percentage)}
+                    size="small"
+                    sx={{
+                      backgroundColor: alpha(getAssetTypeColor(allocation.assetType), 0.1),
+                      color: getAssetTypeColor(allocation.assetType),
+                    }}
+                  />
+                ),
+              },
+              {
+                key: 'count',
+                header: t('investorReport.count', 'Số lượng'),
+                align: 'right',
+                cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                render: (allocation: any) => (
+                  <ResponsiveTypography variant="tableCell">
+                    {allocation.count} {t('investorReport.positions', 'vị thế')}
+                  </ResponsiveTypography>
+                ),
+              },
+            ]}
+            data={data.assetAllocation}
+            size="small"
+          />
         </CardContent>
       </Card>
 
@@ -457,73 +460,94 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
           <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
             {t('investorReport.assetDetails', 'Chi tiết tài sản')}
           </ResponsiveTypography>
-          <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.symbol', 'Mã')}</ResponsiveTypography></TableCell>
-                  <TableCell sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.type', 'Loại')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.quantity', 'Số lượng')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.price', 'Giá hiện tại')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.value', 'Giá trị')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.percentage', 'Tỷ lệ')}</ResponsiveTypography></TableCell>
-                  <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.unrealizedPl', 'Lãi/Lỗ chưa thực hiện')}</ResponsiveTypography></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.assetDetails.map((asset, index) => (
-                  <TableRow key={index}>
-                    <TableCell sx={{ py: 1 }}>
-                      <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                        {asset.symbol}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Chip 
-                        label={getAssetTypeVietnamese(asset.assetType)}
-                        size="small"
-                        sx={{
-                          fontSize: {xs: '0.6rem', sm: '0.9rem'},
-                          height: 24,
-                          padding: '0 4px',
-                          backgroundColor: alpha(getAssetTypeColor(asset.assetType), 0.1),
-                          color: getAssetTypeColor(asset.assetType),
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {formatNumber(asset.quantity, asset.assetType === 'CRYPTO' ? 5 : 1)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {formatCurrency(asset.currentPrice)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}>
-                      <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                        {formatCurrency(asset.currentValue)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {formatPercentage(asset.percentage)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography
-                        variant="tableCell"
-                        sx={{ color: asset.unrealizedPl >= 0 ? 'success.main' : 'error.main' }}
-                      >
-                        {asset.unrealizedPl >= 0 ? '+' : ''}{formatCurrency(asset.unrealizedPl)}
-                      </ResponsiveTypography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'symbol',
+                header: t('investorReport.symbol', 'Mã'),
+                render: (asset: any) => (
+                  <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                    {asset.symbol}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'type',
+                header: t('investorReport.type', 'Loại'),
+                render: (asset: any) => (
+                  <Chip 
+                    label={getAssetTypeVietnamese(asset.assetType)}
+                    size="small"
+                    sx={{
+                      fontSize: {xs: '0.6rem', sm: '0.9rem'},
+                      height: 24,
+                      padding: '0 4px',
+                      backgroundColor: alpha(getAssetTypeColor(asset.assetType), 0.1),
+                      color: getAssetTypeColor(asset.assetType),
+                    }}
+                  />
+                ),
+              },
+              {
+                key: 'quantity',
+                header: t('investorReport.quantity', 'Số lượng'),
+                align: 'right',
+                render: (asset: any) => (
+                  <ResponsiveTypography variant="tableCell">
+                    {formatNumber(asset.quantity, asset.assetType === 'CRYPTO' ? 5 : 1)}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'price',
+                header: t('investorReport.price', 'Giá hiện tại'),
+                align: 'right',
+                cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                render: (asset: any) => (
+                  <ResponsiveTypography variant="tableCell">
+                    {formatCurrency(asset.currentPrice)}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'value',
+                header: t('investorReport.value', 'Giá trị'),
+                align: 'right',
+                render: (asset: any) => (
+                  <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                    {formatCurrency(asset.currentValue)}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'percentage',
+                header: t('investorReport.percentage', 'Tỷ lệ'),
+                align: 'right',
+                cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                render: (asset: any) => (
+                  <ResponsiveTypography variant="tableCell">
+                    {formatPercentage(asset.percentage)}
+                  </ResponsiveTypography>
+                ),
+              },
+              {
+                key: 'unrealizedPl',
+                header: t('investorReport.unrealizedPl', 'Lãi/Lỗ chưa thực hiện'),
+                align: 'right',
+                cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                render: (asset: any) => (
+                  <ResponsiveTypography
+                    variant="tableCell"
+                    sx={{ color: asset.unrealizedPl >= 0 ? 'success.main' : 'error.main' }}
+                  >
+                    {asset.unrealizedPl >= 0 ? '+' : ''}{formatCurrency(asset.unrealizedPl)}
+                  </ResponsiveTypography>
+                ),
+              },
+            ]}
+            data={data.assetDetails}
+            size="small"
+          />
         </CardContent>
       </Card>
 
@@ -533,65 +557,84 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
             <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
               {t('investorReport.depositsDetails', 'Chi tiết tiền gửi')}
             </ResponsiveTypography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.bankName', 'Ngân hàng')}</ResponsiveTypography>  </TableCell>
-                    <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.principal', 'Số tiền gốc')}</ResponsiveTypography></TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.interestRate', 'Lãi suất (%)')}</ResponsiveTypography></TableCell>
-                    <TableCell align="right" sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.totalValue', 'Tổng giá trị')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.status', 'Trạng thái')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}><ResponsiveTypography variant="tableHeader">{t('investorReport.startDate', 'Ngày bắt đầu')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ py: 1 }}><ResponsiveTypography variant="tableHeader">{t('investorReport.endDate', 'Ngày kết thúc')}</ResponsiveTypography></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.deposits?.map((deposit, index) => (
-                    <TableRow key={index}>
-                      <TableCell sx={{ py: 1 }}>
-                        <ResponsiveTypography variant="tableCell">
-                          {deposit.bankName}
-                        </ResponsiveTypography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                        <ResponsiveTypography variant="tableCell" fontWeight="medium">
-                          {formatCurrency(deposit.principal)}
-                        </ResponsiveTypography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ py: 1 }}>
-                        <ResponsiveTypography variant="tableCell" color="success.main">
-                          {typeof deposit.interestRate === 'number' ? deposit.interestRate.toFixed(2) : (parseFloat(deposit.interestRate) || 0).toFixed(2)}%
-                        </ResponsiveTypography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ py: 1 }}>
-                        <ResponsiveTypography variant="tableCell" fontWeight="medium" color="primary.main">
-                          {formatCurrency(deposit.totalValue)}
-                        </ResponsiveTypography>
-                      </TableCell>
-                      <TableCell sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                        <Chip
-                          label={deposit.status}
-                          size="small"
-                          color={deposit.status === 'ACTIVE' ? 'success' : 'default'}
-                          variant={deposit.status === 'ACTIVE' ? 'filled' : 'outlined'}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 1, display: { xs: 'none', sm: 'table-cell' } }}>
-                        <ResponsiveTypography variant="tableCell">
-                          {new Date(deposit.startDate).toLocaleDateString('vi-VN')}
-                        </ResponsiveTypography>
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <ResponsiveTypography variant="tableCell">
-                          {deposit.endDate ? new Date(deposit.endDate).toLocaleDateString('vi-VN') : 'Không xác định'}
-                        </ResponsiveTypography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <ResponsiveTable
+              columns={[
+                {
+                  key: 'bankName',
+                  header: t('investorReport.bankName', 'Ngân hàng'),
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell">
+                      {deposit.bankName}
+                    </ResponsiveTypography>
+                  ),
+                },
+                {
+                  key: 'principal',
+                  header: t('investorReport.principal', 'Số tiền gốc'),
+                  align: 'right',
+                  cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                      {formatCurrency(deposit.principal)}
+                    </ResponsiveTypography>
+                  ),
+                },
+                {
+                  key: 'interestRate',
+                  header: t('investorReport.interestRate', 'Lãi suất (%)'),
+                  align: 'right',
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell" color="success.main">
+                      {typeof deposit.interestRate === 'number' ? deposit.interestRate.toFixed(2) : (parseFloat(deposit.interestRate) || 0).toFixed(2)}%
+                    </ResponsiveTypography>
+                  ),
+                },
+                {
+                  key: 'totalValue',
+                  header: t('investorReport.totalValue', 'Tổng giá trị'),
+                  align: 'right',
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell" fontWeight="medium" color="primary.main">
+                      {formatCurrency(deposit.totalValue)}
+                    </ResponsiveTypography>
+                  ),
+                },
+                {
+                  key: 'status',
+                  header: t('investorReport.status', 'Trạng thái'),
+                  cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                  render: (deposit: any) => (
+                    <Chip
+                      label={deposit.status}
+                      size="small"
+                      color={deposit.status === 'ACTIVE' ? 'success' : 'default'}
+                      variant={deposit.status === 'ACTIVE' ? 'filled' : 'outlined'}
+                    />
+                  ),
+                },
+                {
+                  key: 'startDate',
+                  header: t('investorReport.startDate', 'Ngày bắt đầu'),
+                  cellSx: { display: { xs: 'none', sm: 'table-cell' } },
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell">
+                      {new Date(deposit.startDate).toLocaleDateString('vi-VN')}
+                    </ResponsiveTypography>
+                  ),
+                },
+                {
+                  key: 'endDate',
+                  header: t('investorReport.endDate', 'Ngày kết thúc'),
+                  render: (deposit: any) => (
+                    <ResponsiveTypography variant="tableCell">
+                      {deposit.endDate ? new Date(deposit.endDate).toLocaleDateString('vi-VN') : 'Không xác định'}
+                    </ResponsiveTypography>
+                  ),
+                },
+              ]}
+              data={data.deposits}
+              size="small"
+            />
           </CardContent>
         </Card>
       )}

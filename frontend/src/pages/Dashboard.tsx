@@ -42,7 +42,8 @@ import { usePortfolioChangeForAllPortfolios } from '../hooks/usePortfolioChange'
 import { useAccount } from '../contexts/AccountContext';
 import { useLastUpdateTime } from '../hooks/useSystemStatus';
 import { formatCurrency, formatPercentage } from '../utils/format';
-import PortfolioCard from '../components/Portfolio/PortfolioCard';
+import PortfolioCardWithPermissions from '../components/Portfolio/PortfolioCardWithPermissions';
+import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 
@@ -57,6 +58,8 @@ const Dashboard: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -135,6 +138,16 @@ const Dashboard: React.FC = () => {
   const handlePortfolioCopied = (newPortfolio: any) => {
     // Navigate to the new portfolio detail page
     navigate(`/portfolios/${newPortfolio.portfolioId}`);
+  };
+
+  const handleManagePermissions = (portfolioId: string) => {
+    setSelectedPortfolioForPermission(portfolioId);
+    setPermissionModalOpen(true);
+  };
+
+  const handlePermissionModalClose = () => {
+    setPermissionModalOpen(false);
+    setSelectedPortfolioForPermission(null);
   };
 
   const handleRefresh = async () => {
@@ -583,12 +596,12 @@ const Dashboard: React.FC = () => {
                 <Grid item xs={12} sm={6} lg={4} xl={3} key={portfolio.portfolioId}>
                   <Slide direction="up" in timeout={800 + index * 100}>
                     <Box>
-                      <PortfolioCard
+                      <PortfolioCardWithPermissions
                         portfolio={portfolio}
                         onView={handlePortfolioView}
                         onEdit={handlePortfolioEdit}
                         onPortfolioCopied={handlePortfolioCopied}
-                        hideActions={true}
+                        onManagePermissions={handleManagePermissions}
                       />
                     </Box>
                   </Slide>
@@ -597,6 +610,20 @@ const Dashboard: React.FC = () => {
             </Grid>
           )}
         </Box>
+
+        {/* Portfolio Permission Modal */}
+        {selectedPortfolioForPermission && (
+          <PortfolioPermissionModal
+            open={permissionModalOpen}
+            onClose={handlePermissionModalClose}
+            portfolioId={selectedPortfolioForPermission}
+            portfolioName={portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.name || ''}
+            onPermissionUpdated={() => {
+              // Refresh portfolios when permissions are updated
+              refetchPortfolios();
+            }}
+          />
+        )}
       </Box>
     </Fade>
   );

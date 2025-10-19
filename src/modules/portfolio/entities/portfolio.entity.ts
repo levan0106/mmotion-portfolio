@@ -15,6 +15,7 @@ import { CashFlow } from './cash-flow.entity';
 import { Trade } from '../../trading/entities/trade.entity';
 import { Deposit } from './deposit.entity';
 import { InvestorHolding } from './investor-holding.entity';
+import { PortfolioPermission } from './portfolio-permission.entity';
 
 /**
  * Portfolio entity representing investment portfolios.
@@ -248,6 +249,12 @@ export class Portfolio {
    */
   @OneToMany(() => InvestorHolding, (holding) => holding.portfolio)
   investorHoldings: InvestorHolding[];
+
+  /**
+   * Permissions for this portfolio (who can access and with what level)
+   */
+  @OneToMany(() => PortfolioPermission, (permission) => permission.portfolio)
+  permissions: PortfolioPermission[];
 
   // Computed properties for fund management
   /**

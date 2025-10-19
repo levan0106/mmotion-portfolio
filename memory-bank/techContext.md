@@ -186,6 +186,11 @@
 - **Input Component Validation**: Enhanced form validation to support zero values in financial inputs ✅
 - **Memory Bank Documentation System**: Complete memory bank system for project state tracking and documentation consistency ✅
 - **Git Status Monitoring**: Repository status tracking with modified .github/workflows/deploy.yml ✅
+- **Multi-Account Portfolio Management**: Permission-based access control with OWNER, UPDATE, VIEW levels ✅
+- **ResponsiveTable Component System**: Reusable table components with consistent styling and light borders ✅
+- **Permission Management UI**: Complete UI for managing portfolio permissions with modal and badge components ✅
+- **API Permission Integration**: All portfolio-related APIs use centralized permission checks ✅
+- **Table Header Visibility**: Fixed table header text color issues with maximum CSS specificity ✅
 
 ### Infrastructure & DevOps
 - **Docker**: Containerization cho all services - **PROJECT RUNS WITH DOCKER** ✅

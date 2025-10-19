@@ -12,6 +12,7 @@ import { PositionManagerService } from '../services/position-manager.service';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { DepositService } from '../services/deposit.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
+import { PermissionCheckService } from '../../shared/services/permission-check.service';
 
 /**
  * Controller for Investor Report - provides fund asset reports for investors
@@ -27,6 +28,7 @@ export class InvestorReportController {
     private readonly portfolioAnalyticsService: PortfolioAnalyticsService,
     private readonly depositService: DepositService,
     private readonly performanceSnapshotService: PerformanceSnapshotService,
+    private readonly permissionCheckService: PermissionCheckService,
   ) {}
 
   /**
@@ -76,14 +78,20 @@ export class InvestorReportController {
     try {
       this.logger.log(`Fetching investor portfolios for account ${accountId}`);
       
-      // Get all portfolios for the account
-      const portfolios = await this.portfolioService.getPortfoliosByAccount(accountId);
+      // Get all accessible portfolios for the account with permission filtering for 'investor' context
+      const { portfolios, permissions } = await this.permissionCheckService.getAccessiblePortfoliosWithPermissions(
+        accountId, 
+        'investor'
+      );
       
       // Get investor report data for each portfolio
       const portfoliosWithReports = await Promise.all(
         portfolios.map(async (portfolio) => {
           try {
             const reportData = await this.getInvestorReportData(portfolio.portfolioId, accountId);
+            // Get permission info for this portfolio
+            const permission = permissions[portfolio.portfolioId];
+            
             return {
               portfolio: {
                 id: portfolio.portfolioId,
@@ -95,6 +103,15 @@ export class InvestorReportController {
                 lastUpdated: reportData.portfolio.lastUpdated,
               },
               performance: reportData.performance,
+              userPermission: {
+                permissionType: permission.permissionType,
+                isOwner: permission.isOwner,
+                accessLevel: permission.accessLevel,
+                canView: true,
+                canUpdate: permission.permissionType === 'OWNER' || permission.permissionType === 'UPDATE',
+                canDelete: permission.isOwner,
+                canManagePermissions: permission.isOwner
+              }
             };
           } catch (error) {
             this.logger.warn(`Failed to get report for portfolio ${portfolio.portfolioId}: ${error.message}`);

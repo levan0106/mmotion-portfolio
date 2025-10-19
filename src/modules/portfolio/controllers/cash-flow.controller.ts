@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, HttpCode, HttpStatus, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CashFlowService } from '../services/cash-flow.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
+import { PortfolioService } from '../services/portfolio.service';
 import { 
   CreateCashFlowDto, 
   UpdateCashBalanceDto, 
@@ -20,6 +21,7 @@ export class CashFlowController {
   constructor(
     private readonly cashFlowService: CashFlowService,
     private readonly accountValidationService: AccountValidationService,
+    private readonly portfolioService: PortfolioService,
   ) {}
 
   /**
@@ -107,8 +109,11 @@ export class CashFlowController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Validate portfolio ownership
-    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    // Check portfolio permission for viewing cash flow history
+    const hasAccess = await this.portfolioService.checkPortfolioAccess(portfolioId, accountId, 'view');
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this portfolio');
+    }
     
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;

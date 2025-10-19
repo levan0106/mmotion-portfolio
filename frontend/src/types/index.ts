@@ -9,6 +9,24 @@ export interface BaseEntity {
   updatedAt: string;
 }
 
+// Portfolio Permission types
+export enum PortfolioPermissionType {
+  OWNER = 'OWNER',
+  UPDATE = 'UPDATE',
+  VIEW = 'VIEW',
+}
+
+// User Permission interface
+export interface UserPermission {
+  permissionType: PortfolioPermissionType;
+  isOwner: boolean;
+  accessLevel: 'VIEW_ONLY' | 'FULL_ACCESS';
+  canView: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManagePermissions: boolean;
+}
+
 // Account types
 export interface Account extends BaseEntity {
   accountId: string;
@@ -41,6 +59,14 @@ export interface Portfolio extends BaseEntity {
   cashBalance: number;
   unrealizedPl: number; // Keep for backward compatibility
   realizedPl: number; // Keep for backward compatibility
+  // Permission stats (optional, added by permission system)
+  permissionStats?: {
+    totalAccounts: number;
+    ownerCount: number;
+    updateCount: number;
+    viewCount: number;
+  };
+  userPermission?: UserPermission;
   // Creator information for public portfolios
   creatorName?: string;
   creatorEmail?: string;

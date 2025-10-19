@@ -9,6 +9,7 @@ import {
   Query,
   HttpStatus,
   BadRequestException,
+  ForbiddenException,
   HttpCode,
   ParseUUIDPipe,
   ValidationPipe,
@@ -28,6 +29,7 @@ import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 import { TradeResponseDto } from '../dto/trade-response.dto';
 import { Trade, TradeSide } from '../entities/trade.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PortfolioService } from '../../portfolio/services/portfolio.service';
 import { Repository } from 'typeorm';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 import { Asset } from '../../asset/entities/asset.entity';
@@ -87,6 +89,7 @@ export class TradingController {
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
     private readonly accountValidationService: AccountValidationService,
+    private readonly portfolioService: PortfolioService,
   ) {}
 
   /**
@@ -128,8 +131,11 @@ export class TradingController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Validate portfolio ownership
-    await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
+    // Check portfolio permission using new permission system
+    const hasAccess = await this.portfolioService.checkPortfolioAccess(portfolioId, accountId, 'view');
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this portfolio');
+    }
     
     const startDateObj = startDate ? new Date(startDate) : undefined;
     const endDateObj = endDate ? new Date(endDate) : undefined;
@@ -176,7 +182,11 @@ export class TradingController {
     }
     
     // Validate portfolio ownership for the portfolioId in the DTO
-    await this.accountValidationService.validatePortfolioOwnership(createTradeDto.portfolioId, accountId);
+    // Check portfolio permission for creating trades (requires update access)
+    const hasUpdateAccess = await this.portfolioService.checkPortfolioAccess(createTradeDto.portfolioId, accountId, 'update');
+    if (!hasUpdateAccess) {
+      throw new ForbiddenException('You do not have permission to create trades for this portfolio');
+    }
     
     return this.tradingService.createTrade(createTradeDto);
   }
@@ -432,9 +442,12 @@ export class TradingController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Get trade first to validate portfolio ownership
+    // Get trade first to validate portfolio access
     const trade = await this.tradingService.getTradeDetails(id);
-    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    const hasAccess = await this.portfolioService.checkPortfolioAccess(trade.portfolioId, accountId, 'view');
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this portfolio');
+    }
     
     return trade;
   }
@@ -505,9 +518,12 @@ export class TradingController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Get trade first to validate portfolio ownership
+    // Get trade first to validate portfolio access
     const trade = await this.tradingService.getTradeDetails(id);
-    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    const hasUpdateAccess = await this.portfolioService.checkPortfolioAccess(trade.portfolioId, accountId, 'update');
+    if (!hasUpdateAccess) {
+      throw new ForbiddenException('You do not have permission to update trades for this portfolio');
+    }
     
     return this.tradingService.updateTrade(id, updateTradeDto);
   }
@@ -539,9 +555,12 @@ export class TradingController {
       throw new BadRequestException('accountId query parameter is required');
     }
     
-    // Get trade first to validate portfolio ownership
+    // Get trade first to validate portfolio access
     const trade = await this.tradingService.getTradeDetails(id);
-    await this.accountValidationService.validatePortfolioOwnership(trade.portfolioId, accountId);
+    const hasUpdateAccess = await this.portfolioService.checkPortfolioAccess(trade.portfolioId, accountId, 'update');
+    if (!hasUpdateAccess) {
+      throw new ForbiddenException('You do not have permission to delete trades for this portfolio');
+    }
     
     return this.tradingService.deleteTrade(id);
   }

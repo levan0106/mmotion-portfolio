@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 import { InvestorHolding } from '../../portfolio/entities/investor-holding.entity';
+import { PortfolioPermission } from '../../portfolio/entities/portfolio-permission.entity';
 import { User } from './user.entity';
 
 /**
@@ -83,6 +84,12 @@ export class Account {
    */
   @OneToMany(() => InvestorHolding, (holding) => holding.account)
   investorHoldings: InvestorHolding[];
+
+  /**
+   * Portfolio permissions for this account (portfolios this account has access to)
+   */
+  @OneToMany(() => PortfolioPermission, (permission) => permission.account)
+  portfolioPermissions: PortfolioPermission[];
 
   /**
    * User who owns this account.

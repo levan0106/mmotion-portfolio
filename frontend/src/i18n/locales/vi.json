@@ -702,8 +702,8 @@
     "summary": {
       "totalInvestment": "Tổng đầu tư",
       "currentValue": "Giá trị hiện tại",
-      "totalPnL": "Tổng P&L",
-      "totalReturn": "Tổng lợi nhuận",
+      "totalPnL": "Tổng lợi nhuận",
+      "totalReturn": "Tăng trưởng",
       "holdingsCount": "{{count}} Danh mục",
       "holdingsCount_other": "{{count}} Danh mục",
       "marketValue": "Giá trị thị trường",
@@ -1657,10 +1657,10 @@
     "assetTypes": "Loại tài sản",
     "diversified": "Đa dạng hóa",
     "totalAssets": "Tổng tài sản",
-    "positions": "Vị thế đầu tư",
+    "positions": "vị thế đầu tư",
     "assetAllocation": "Phân bổ tài sản theo loại",
     "assetType": "Loại tài sản",
-    "value": "Giá trị",
+    "value": "Tổng giá trị",
     "percentage": "Tỷ lệ",
     "count": "Số lượng",
     "assetDetails": "Chi tiết tài sản",
@@ -1668,8 +1668,8 @@
     "name": "Tên tài sản",
     "type": "Loại",
     "quantity": "Số lượng",
-    "price": "Giá hiện tại",
-    "unrealizedPl": "Lãi/Lỗ chưa thực hiện",
+    "price": "Giá thị trường",
+    "unrealizedPl": "Lãi/Lỗ",
     "depositsSummary": "Tổng quan tiền gửi",
     "totalDeposits": "Tổng tiền gửi",
     "depositCount": "Số khoản gửi",
@@ -1806,10 +1806,10 @@
     "fields": {
       "name": "Tên chủ tài khoản",
       "nameHelper": "Nhập tên đầy đủ của chủ tài khoản",
-      "email": "Địa chỉ email (Tùy chọn)",
-      "emailHelper": "Nhập địa chỉ email để có thể nhận thông báo từ hệ thống",
+      "email": "Địa chỉ email",
+      "emailHelper": "Địa chỉ này sẽ được sử dụng nhận email từ hệ thống",
       "baseCurrency": "Tiền tệ cơ sở",
-      "canInvest": "Có thể đầu tư vào quỹ",
+      "canInvest": "Nhà đầu tư",
       "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"
     }
   },
@@ -2015,7 +2015,7 @@
       "email": "Địa chỉ email",
       "emailHelper": "Địa chỉ này sẽ được sử dụng nhận email từ hệ thống",
       "baseCurrency": "Tiền tệ cơ sở",
-      "canInvest": "Có thể đầu tư vào quỹ",
+      "canInvest": "Nhà đầu tư",
       "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"
     }
   },

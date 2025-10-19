@@ -2,40 +2,47 @@
 
 ## Current Session Focus
 **Date**: October 19, 2025  
-**Session Type**: UI/UX Enhancement  
-**Primary Goal**: Portfolio Detail UI/UX improvements and user experience optimization
+**Session Type**: Multi-Account Portfolio Management & UI Enhancement  
+**Primary Goal**: Implement multi-account portfolio management system with consistent table styling
 
 ## Recent Achievements
 
-### ✅ Portfolio Detail UI/UX Enhancements (Current Session)
-1. **Tab System Simplification for Investor View**
-   - Removed complex tab system for investor accounts
-   - Direct display of InvestorReportWrapper
-   - Maintained full tab system for fund-manager accounts
-   - Enhanced conditional rendering logic
+### ✅ Multi-Account Portfolio Management System (Current Session)
+1. **Permission-Based Access Control**
+   - Implemented OWNER, UPDATE, VIEW permission levels
+   - Created PortfolioPermission entity with proper relationships
+   - Added PermissionCheckService for centralized permission logic
+   - Context-aware permissions (investor vs portfolios pages)
 
-2. **Menu Filtering for Investor Accounts**
-   - Implemented role-based menu filtering
-   - Investor accounts see only: Dashboard, Nhà đầu tư, Settings
-   - Fund manager accounts see all menus including admin features
-   - Uses `currentAccount?.isInvestor === true` for filtering
+2. **Database Schema Updates**
+   - Created portfolio_permissions table with proper indexes
+   - Added foreign key relationships between Portfolio, Account, and PortfolioPermission
+   - Migration script to populate existing portfolios with OWNER permissions
+   - Unique constraint on (portfolio_id, account_id) combination
 
-3. **InvestorReport Color Coding Enhancement**
-   - Added dynamic color coding for performance metrics
-   - Positive values: Green (success.main)
-   - Negative values: Red (error.main)
-   - Applied to dailyGrowth, monthlyGrowth, ytdGrowth
+3. **API Integration & Permission Checks**
+   - Updated all portfolio-related APIs to use permission system
+   - Fixed Trading, Cash Flow, and Convert-to-Portfolio APIs
+   - Added userPermission to API responses
+   - Implemented proper 403 handling for unauthorized access
 
-4. **Holdings Table UI Simplification**
-   - Kept icon only for Portfolio column
-   - Removed icons from other columns for cleaner design
-   - Maintained color coding for P&L values
-   - Preserved responsive design
+4. **Frontend Permission Management**
+   - Created PortfolioPermissionModal for managing permissions
+   - Added PermissionBadge component to display user permissions
+   - Updated PortfolioCard to show permission stats for owners
+   - Implemented owner-only permission management UI
 
-5. **Loading UI Enhancement**
-   - Simple, clean loading state
-   - CircularProgress with descriptive text
-   - Responsive design with proper spacing
+5. **ResponsiveTable Component System**
+   - Created reusable ResponsiveTable component with consistent styling
+   - Added ResponsiveTableWithActions for tables with action menus
+   - Implemented light borders for better text visibility
+   - Created comprehensive TypeScript types for table components
+
+6. **Investor Report Table Enhancement**
+   - Migrated all InvestorReport tables to use ResponsiveTable
+   - Fixed table header visibility issues
+   - Implemented consistent styling across all tables
+   - Added responsive design for mobile devices
 
 ## Technical Context
 
@@ -47,41 +54,55 @@
 - **Deployment**: Docker containerization
 
 ### Key Components Modified
-- `frontend/src/pages/PortfolioDetail.tsx` - Enhanced tab system and loading UI
-- `frontend/src/components/Layout/AppLayout.tsx` - Menu filtering for investor accounts
-- `frontend/src/components/Reports/InvestorReport.tsx` - Color coding for performance metrics
-- `frontend/src/pages/Holdings.tsx` - Simplified table design
+- `src/modules/portfolio/entities/portfolio-permission.entity.ts` - New permission entity
+- `src/modules/portfolio/services/portfolio-permission.service.ts` - Permission management service
+- `src/modules/shared/services/permission-check.service.ts` - Centralized permission logic
+- `frontend/src/components/Common/ResponsiveTable.tsx` - Reusable table component
+- `frontend/src/components/Common/ResponsiveTableWithActions.tsx` - Table with actions
+- `frontend/src/components/Common/PermissionBadge.tsx` - Permission display component
+- `frontend/src/components/Portfolio/PortfolioPermissionModal.tsx` - Permission management UI
+- `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements
-- **Investor View**: Simplified, focused interface
-- **Fund Manager View**: Full functionality with comprehensive tabs
-- **Role-Based Navigation**: Appropriate menu items based on account type
-- **Visual Clarity**: Color-coded performance metrics
-- **Cleaner Design**: Simplified table layouts
-- **Better Loading States**: Professional loading indicators
+- **Multi-Account Access**: Users can access portfolios they have permissions for
+- **Permission-Based UI**: Different interface based on permission level (OWNER/UPDATE/VIEW)
+- **Consistent Table Styling**: All tables use ResponsiveTable with light borders
+- **Permission Management**: Easy permission management for portfolio owners
+- **Visual Permission Indicators**: Clear badges showing user permission level
+- **Responsive Design**: Optimized for all devices with consistent styling
 
 ## System Architecture
 
-### Account Types
-- **Investor Accounts**: Simplified interface with basic reporting
-- **Fund Manager Accounts**: Full management interface with all features
-- **Admin Accounts**: System administration capabilities
+### Permission System
+- **OWNER**: Full access to portfolio, can manage permissions
+- **UPDATE**: Can view and modify portfolio data, cannot manage permissions
+- **VIEW**: Can only view portfolio data via investor page
 
-### Navigation Structure
-- **Dashboard**: Overview and summary information
-- **Nhà đầu tư**: Investor-specific features (reports, holdings)
-- **Quản lý quỹ**: Fund management features (portfolios, trading, analytics)
-- **Settings**: User preferences and account management
-- **Admin**: System administration (users, roles, permissions)
+### Database Schema
+- **portfolios**: Main portfolio table with account_id (owner)
+- **portfolio_permissions**: Permission relationships with unique constraint
+- **accounts**: User accounts with portfolio relationships
 
-### Data Flow
-1. **Authentication**: User login with role detection
-2. **Menu Filtering**: Dynamic menu based on account type
-3. **View Mode**: Investor vs Fund Manager interface
-4. **Data Fetching**: Role-appropriate data queries
-5. **UI Rendering**: Conditional component rendering
+### API Permission Flow
+1. **Authentication**: User login with account validation
+2. **Permission Check**: PermissionCheckService validates access
+3. **Context-Aware**: Different permissions for different pages
+4. **Data Filtering**: Return only accessible portfolios
+5. **UI Rendering**: Show appropriate actions based on permissions
+
+### Table Component System
+- **ResponsiveTable**: Base table with consistent styling
+- **ResponsiveTableWithActions**: Table with action menus
+- **Light Borders**: Better text visibility with subtle borders
+- **Responsive Design**: Mobile-optimized layouts
 
 ## Current Capabilities
+
+### Multi-Account Portfolio Management
+- **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels
+- **Portfolio Sharing**: Share portfolios with other accounts
+- **Permission Management**: Easy permission management for owners
+- **Context-Aware Access**: Different permissions for different pages
 
 ### Portfolio Management
 - **Portfolio Creation**: Create and manage investment portfolios
@@ -90,67 +111,90 @@
 - **Reporting**: Professional investor reports
 
 ### Trading Management
-- **Trade Execution**: Buy/sell transactions
+- **Trade Execution**: Buy/sell transactions with permission checks
 - **P&L Tracking**: Realized and unrealized P&L
 - **Position Management**: Portfolio position tracking
 - **Cash Flow**: Deposit and withdrawal management
 
+### Table System
+- **ResponsiveTable**: Consistent table styling across the app
+- **Action Menus**: Tables with action buttons and menus
+- **Light Borders**: Better text visibility with subtle borders
+- **Mobile Optimization**: Responsive design for all devices
+
 ### User Management
 - **Account Switching**: Seamless account switching
-- **Role-Based Access**: Different interfaces for different user types
+- **Permission-Based Access**: Different interfaces based on permissions
 - **Multi-Language Support**: English and Vietnamese translations
 - **Responsive Design**: Optimized for all devices
 
 ## Next Steps
 
 ### Immediate Priorities
-1. **Testing**: Verify all UI/UX enhancements work correctly
-2. **User Feedback**: Gather feedback on new interface design
-3. **Performance**: Ensure optimal performance across all features
-4. **Documentation**: Update user guides for new interface
+1. **Testing**: Verify multi-account permission system works correctly
+2. **User Feedback**: Gather feedback on permission management UI
+3. **Performance**: Ensure optimal performance with permission checks
+4. **Documentation**: Update user guides for permission system
 
 ### Future Enhancements
-1. **Advanced Analytics**: Enhanced reporting capabilities
-2. **Mobile App**: React Native mobile application
-3. **API Documentation**: Comprehensive API documentation
-4. **Testing Coverage**: Unit and integration tests
-5. **Security**: Enhanced security measures
+1. **Advanced Permissions**: More granular permission levels
+2. **Bulk Permission Management**: Manage multiple portfolios at once
+3. **Permission History**: Track permission changes over time
+4. **Mobile App**: React Native mobile application
+5. **API Documentation**: Comprehensive API documentation
+6. **Testing Coverage**: Unit and integration tests for permission system
 
 ## Key Files and Components
 
 ### Frontend Structure
 ```
 frontend/src/
-├── pages/
-│   ├── PortfolioDetail.tsx (Enhanced tab system)
-│   └── Holdings.tsx (Simplified table design)
 ├── components/
-│   ├── Layout/AppLayout.tsx (Menu filtering)
-│   └── Reports/InvestorReport.tsx (Color coding)
-└── types/
-    └── index.ts (Account interface with isInvestor)
+│   ├── Common/
+│   │   ├── ResponsiveTable.tsx (Reusable table component)
+│   │   ├── ResponsiveTableWithActions.tsx (Table with actions)
+│   │   ├── PermissionBadge.tsx (Permission display)
+│   │   └── ResponsiveTable.styles.css (Table styling)
+│   ├── Portfolio/
+│   │   ├── PortfolioPermissionModal.tsx (Permission management)
+│   │   └── PortfolioCardWithPermissions.tsx (Card with permissions)
+│   └── Reports/
+│       └── InvestorReport.tsx (Updated to use ResponsiveTable)
+├── types/
+│   └── table.types.ts (Table component types)
+└── utils/
+    └── queryUtils.ts (React Query utilities)
 ```
 
 ### Backend Structure
 ```
 src/
 ├── modules/
-│   ├── portfolio/ (Portfolio management)
-│   ├── trading/ (Trading operations)
-│   └── user/ (User management)
-└── common/ (Shared utilities)
+│   ├── portfolio/
+│   │   ├── entities/
+│   │   │   └── portfolio-permission.entity.ts (Permission entity)
+│   │   └── services/
+│   │       └── portfolio-permission.service.ts (Permission service)
+│   ├── shared/
+│   │   └── services/
+│   │       └── permission-check.service.ts (Centralized permissions)
+│   └── trading/ (Updated with permission checks)
+└── migrations/
+    └── AddPortfolioPermissions.ts (Database migration)
 ```
 
 ## System Health
-- ✅ **Database**: Fully operational with proper relationships
-- ✅ **Authentication**: Working with role-based access
-- ✅ **Frontend**: Responsive and user-friendly
-- ✅ **Backend**: Stable API endpoints
+- ✅ **Database**: Fully operational with permission relationships
+- ✅ **Authentication**: Working with permission-based access control
+- ✅ **Frontend**: Responsive with consistent table styling
+- ✅ **Backend**: Stable API endpoints with permission checks
 - ✅ **Deployment**: Production-ready configuration
+- ✅ **Permission System**: Multi-account portfolio management operational
 
 ## Notes
-- All recent changes focus on user experience improvements
-- Role-based access control is now fully implemented
-- UI/UX enhancements maintain backward compatibility
-- System is ready for production deployment
-- Future development should focus on advanced analytics and mobile support
+- Multi-account portfolio management system is fully implemented
+- Permission-based access control is working across all APIs
+- ResponsiveTable component system provides consistent styling
+- All tables now use light borders for better text visibility
+- System is ready for production deployment with permission management
+- Future development should focus on advanced permission features and mobile support

@@ -32,6 +32,7 @@ import { MarketDataModule } from '../market-data/market-data.module';
 import { AssetModule } from '../asset/asset.module';
 import { SharedModule } from '../shared/shared.module';
 import { NotificationModule } from '../../notification/notification.module';
+import { PortfolioModule } from '../portfolio/portfolio.module';
 
 /**
  * Trading module for managing trades, positions, and risk management.
@@ -55,6 +56,7 @@ import { NotificationModule } from '../../notification/notification.module';
     forwardRef(() => AssetModule),
     SharedModule,
     NotificationModule,
+    forwardRef(() => PortfolioModule),
     // Import CacheModule conditionally
     ...(process.env.CACHE_ENABLED === 'true' ? [CacheModule.register({
       ttl: parseInt(process.env.CACHE_TTL) || 300000,

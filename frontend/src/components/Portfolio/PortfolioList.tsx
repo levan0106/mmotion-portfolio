@@ -17,7 +17,7 @@ import {
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
-import PortfolioCard from './PortfolioCard';
+import PortfolioCardWithPermissions from './PortfolioCardWithPermissions';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 import './PortfolioList.styles.css';
@@ -28,6 +28,7 @@ interface PortfolioListProps {
   onEditPortfolio?: (portfolioId: string) => void;
   onDeletePortfolio?: (portfolioId: string) => void;
   onCreatePortfolio?: () => void;
+  onManagePermissions?: (portfolioId: string) => void;
 }
 
 const PortfolioList: React.FC<PortfolioListProps> = ({
@@ -35,6 +36,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
   onEditPortfolio,
   onDeletePortfolio,
   onCreatePortfolio,
+  onManagePermissions,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -201,12 +203,13 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
       ) : (
         <div className="portfolio-list__grid">
           {filteredPortfolios.map((portfolio) => (
-            <PortfolioCard
+            <PortfolioCardWithPermissions
               key={portfolio.portfolioId}
               portfolio={portfolio}
               onView={onViewPortfolio}
               onEdit={onEditPortfolio}
               onDelete={onDeletePortfolio}
+              onManagePermissions={onManagePermissions}
             />
           ))}
         </div>

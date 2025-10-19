@@ -948,6 +948,28 @@ erDiagram
        - **User Experience**: Consistent and readable chart labels and legends - **COMPLETED**
        - **Code Quality**: Clean, maintainable code with proper responsive design - **COMPLETED**
 
+### 48. Multi-Account Portfolio Management Pattern - **IMPLEMENTED ✅**
+       - **Permission-Based Access Control**: Comprehensive permission system with OWNER, UPDATE, VIEW levels - **COMPLETED**
+       - **Database Schema**: Created portfolio_permissions table with proper relationships and constraints - **COMPLETED**
+       - **Migration System**: Database migration to populate existing portfolios with OWNER permissions - **COMPLETED**
+       - **Centralized Permission Service**: PermissionCheckService for consistent permission logic across all APIs - **COMPLETED**
+       - **Context-Aware Permissions**: Different access levels for different pages (investor vs portfolios) - **COMPLETED**
+       - **API Integration**: All portfolio-related APIs use permission checks for security - **COMPLETED**
+       - **Frontend Permission Management**: Complete UI for managing portfolio permissions - **COMPLETED**
+       - **Permission Badge System**: Visual indicators of user permission level - **COMPLETED**
+       - **Owner-Only Actions**: Permission management restricted to portfolio owners - **COMPLETED**
+       - **Code Quality**: Clean, maintainable code with comprehensive error handling - **COMPLETED**
+
+### 49. ResponsiveTable Component System Pattern - **IMPLEMENTED ✅**
+       - **Reusable Table Components**: ResponsiveTable and ResponsiveTableWithActions for consistent styling - **COMPLETED**
+       - **TypeScript Type System**: Comprehensive type definitions for table components - **COMPLETED**
+       - **Light Border Styling**: Better text visibility with subtle borders - **COMPLETED**
+       - **Responsive Design**: Mobile-optimized layouts with proper breakpoints - **COMPLETED**
+       - **Header Visibility**: Fixed table header text color issues with maximum CSS specificity - **COMPLETED**
+       - **CSS Override Protection**: Multiple CSS rules to prevent other styles from overriding header colors - **COMPLETED**
+       - **Component Integration**: All tables use ResponsiveTable for consistency - **COMPLETED**
+       - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
+
 ## MarketDataService Architecture Patterns - **IMPLEMENTED** ✅
 
 ### Service Refactoring Patterns - **COMPLETED**

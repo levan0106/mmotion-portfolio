@@ -279,7 +279,7 @@
 
 .portfolio-card__actions {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
   background: #f8fafc;
