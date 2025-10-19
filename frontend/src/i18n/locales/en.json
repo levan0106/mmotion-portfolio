@@ -2341,5 +2341,31 @@
         }
       }
     }
+  },
+  "permissions": {
+    "title": "Manage Portfolio Permissions",
+    "addNewPermission": "Add New Permission",
+    "accountId": "Account ID",
+    "accountIdPlaceholder": "Enter account ID (UUID format)",
+    "permission": "Permission",
+    "addPermission": "Add Permission",
+    "currentPermissions": "Current Permissions",
+    "account": "Account",
+    "granted": "Granted",
+    "actions": "Actions",
+    "removePermission": "Remove Permission",
+    "confirmRemove": "Are you sure you want to remove this permission?",
+    "noPermissions": "No permissions set for this portfolio",
+    "noPermissionsDescription": "Add accounts to share access to this portfolio",
+    "permissionTypes": {
+      "owner": "Owner",
+      "update": "Update",
+      "view": "View"
+    },
+    "errors": {
+      "loadFailed": "Failed to load permissions",
+      "addFailed": "Failed to add permission",
+      "deleteFailed": "Failed to delete permission"
+    }
   }
 }

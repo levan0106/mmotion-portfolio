@@ -5,13 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
-  Typography,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -32,7 +26,6 @@ import {
   Avatar,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
   Person as PersonIcon,
@@ -45,6 +38,10 @@ import {
 import { PortfolioPermissionType } from '../../types';
 import { portfolioPermissionApi, PortfolioPermission, CreatePortfolioPermissionDto } from '../../services/api.portfolio-permission';
 import { useAccount } from '../../contexts/AccountContext';
+import { useTranslation } from 'react-i18next';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
+import ModalWrapper from '../Common/ModalWrapper';
+import { ResponsiveButton } from '../Common';
 
 
 // PortfolioPermission interface is now imported from API service
@@ -64,6 +61,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
   portfolioName,
   onPermissionUpdated,
 }) => {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const [permissions, setPermissions] = useState<PortfolioPermission[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,7 +87,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
       const permissions = await portfolioPermissionApi.getPortfolioPermissions(portfolioId, accountId);
       setPermissions(permissions);
     } catch (err) {
-      setError('Failed to load permissions');
+      setError(t('permissions.errors.loadFailed'));
       console.error('Error loading permissions:', err);
     } finally {
       setLoading(false);
@@ -118,7 +116,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         onPermissionUpdated();
       }
     } catch (err) {
-      setError('Failed to add permission');
+      setError(t('permissions.errors.addFailed'));
       console.error('Error adding permission:', err);
     } finally {
       setIsAddingPermission(false);
@@ -127,7 +125,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
 
 
   const handleDeletePermission = async (permissionId: string) => {
-    if (!window.confirm('Are you sure you want to remove this permission?') || !accountId) return;
+    if (!window.confirm(t('permissions.confirmRemove')) || !accountId) return;
 
     try {
       await portfolioPermissionApi.deletePermission(permissionId, portfolioId, accountId);
@@ -171,11 +169,11 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
   const getPermissionLabel = (permissionType: PortfolioPermissionType) => {
     switch (permissionType) {
       case PortfolioPermissionType.OWNER:
-        return 'Owner';
+        return t('permissions.permissionTypes.owner');
       case PortfolioPermissionType.UPDATE:
-        return 'Update';
+        return t('permissions.permissionTypes.update');
       case PortfolioPermissionType.VIEW:
-        return 'View';
+        return t('permissions.permissionTypes.view');
       default:
         return 'Unknown';
     }
@@ -183,33 +181,29 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
 
 
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={onClose}
+      title={t('permissions.title')}
+      icon={<SecurityIcon color="primary" />}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 }
-      }}
+      size="large"
+      actions={
+        <ResponsiveButton
+          onClick={onClose}
+          variant="outlined"
+          mobileText={t('common.close')}
+          desktopText={t('common.close')}
+        >
+          {t('common.close')}
+        </ResponsiveButton>
+      }
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Box display="flex" alignItems="center" gap={1}>
-            <SecurityIcon color="primary" />
-            <Typography variant="h6">
-              Manage Portfolio Permissions
-            </Typography>
-          </Box>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
           {portfolioName}
-        </Typography>
-      </DialogTitle>
+        </ResponsiveTypography>
 
-      <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -218,50 +212,52 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
 
         {/* Add Permission Section */}
         <Paper sx={{ p: 2, mb: 3, backgroundColor: 'grey.50' }}>
-          <Typography variant="subtitle1" gutterBottom>
+          <ResponsiveTypography variant="cardLabel" gutterBottom>
             <PersonAddIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Add New Permission
-          </Typography>
+            {t('permissions.addNewPermission')}
+          </ResponsiveTypography>
           
           <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
             <TextField
-              label="Account ID"
+              label={t('permissions.accountId')}
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
-              size="small"
-              placeholder="Enter account ID (UUID format)"
-              sx={{ minWidth: 400 }}
+              size="medium"
+              placeholder={t('permissions.accountIdPlaceholder')}
+              sx={{ width: '100%' }}
               // helperText="Enter the account ID to grant permission to"
             />
             
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Permission</InputLabel>
+              <InputLabel>{t('permissions.permission')}</InputLabel>
               <Select
                 value={selectedPermissionType}
                 onChange={(e) => setSelectedPermissionType(e.target.value as PortfolioPermissionType)}
-                label="Permission"
+                label={t('permissions.permission')}
               >
-                <MenuItem value={PortfolioPermissionType.VIEW}>View</MenuItem>
-                <MenuItem value={PortfolioPermissionType.UPDATE}>Update</MenuItem>
-                <MenuItem value={PortfolioPermissionType.OWNER}>Owner</MenuItem>
+                <MenuItem value={PortfolioPermissionType.VIEW}>{t('permissions.permissionTypes.view')}</MenuItem>
+                <MenuItem value={PortfolioPermissionType.UPDATE}>{t('permissions.permissionTypes.update')}</MenuItem>
+                <MenuItem value={PortfolioPermissionType.OWNER}>{t('permissions.permissionTypes.owner')}</MenuItem>
               </Select>
             </FormControl>
             
-            <Button
+            <ResponsiveButton
               variant="contained"
               onClick={handleAddPermission}
               disabled={!selectedAccountId || isAddingPermission}
               startIcon={isAddingPermission ? <CircularProgress size={16} /> : <AddIcon />}
+              mobileText={t('permissions.addPermission')}
+              desktopText={t('permissions.addPermission')}
             >
-              Add Permission
-            </Button>
+              {t('permissions.addPermission')}
+            </ResponsiveButton>
           </Box>
         </Paper>
 
         {/* Permissions List */}
-        <Typography variant="subtitle1" gutterBottom>
-          Current Permissions ({permissions.length})
-        </Typography>
+        <ResponsiveTypography variant="cardTitle" gutterBottom>
+          {t('permissions.currentPermissions')} ({permissions.length})
+        </ResponsiveTypography>
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={4}>
@@ -272,10 +268,10 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Account</TableCell>
-                  <TableCell>Permission</TableCell>
-                  <TableCell>Granted</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell>{t('permissions.account')}</TableCell>
+                  <TableCell>{t('permissions.permission')}</TableCell>
+                  <TableCell>{t('permissions.granted')}</TableCell>
+                  <TableCell align="center">{t('permissions.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -287,12 +283,12 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                           <PersonIcon />
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {permission.accountName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {permission.accountEmail}
-                          </Typography>
+                          <ResponsiveTypography variant="tableCell" fontWeight="medium">
+                            {permission.accountName || permission.accountId}
+                          </ResponsiveTypography>
+                          <ResponsiveTypography variant="formHelper" color="text.secondary">
+                            {permission.accountEmail || `ID: ${permission.accountId.substring(0, 8)}...`}
+                          </ResponsiveTypography>
                         </Box>
                       </Box>
                     </TableCell>
@@ -305,27 +301,14 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption">
+                      <ResponsiveTypography variant="formHelper">
                         {new Date(permission.grantedAt).toLocaleDateString()}
-                      </Typography>
+                      </ResponsiveTypography>
                     </TableCell>
-                    <TableCell align="right">
-                      <Box display="flex" gap={1}>
-                        {/* <Tooltip title="Update Permission">
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              const newType = permission.permissionType === PortfolioPermissionType.VIEW 
-                                ? PortfolioPermissionType.UPDATE 
-                                : PortfolioPermissionType.VIEW;
-                              handleUpdatePermission(permission.permissionId, newType);
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip> */}
+                    <TableCell align="center">
+                      <Box display="flex" gap={1} justifyContent="center">
                         {permission.permissionType !== PortfolioPermissionType.OWNER && (
-                          <Tooltip title="Remove Permission">
+                          <Tooltip title={t('permissions.removePermission')}>
                             <IconButton
                               size="small"
                               color="error"
@@ -347,22 +330,15 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         {permissions.length === 0 && !loading && (
           <Box textAlign="center" py={4}>
             <SecurityIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="body1" color="text.secondary">
-              No permissions set for this portfolio
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Add accounts to share access to this portfolio
-            </Typography>
+            <ResponsiveTypography variant="cardValue" color="text.secondary">
+              {t('permissions.noPermissions')}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="formHelper" color="text.secondary">
+              {t('permissions.noPermissionsDescription')}
+            </ResponsiveTypography>
           </Box>
         )}
-      </DialogContent>
-
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} variant="outlined">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+    </ModalWrapper>
   );
 };
 

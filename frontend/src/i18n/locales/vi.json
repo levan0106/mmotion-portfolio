@@ -2268,5 +2268,31 @@
         }
       }
     }
+  },
+  "permissions": {
+    "title": "Quản lý Quyền Truy cập Danh mục",
+    "addNewPermission": "Thêm Quyền Mới",
+    "accountId": "ID Tài khoản",
+    "accountIdPlaceholder": "Nhập ID tài khoản (định dạng UUID)",
+    "permission": "Quyền",
+    "addPermission": "Thêm Quyền",
+    "currentPermissions": "Quyền Hiện tại",
+    "account": "Tài khoản",
+    "granted": "Được cấp",
+    "actions": "Hành động",
+    "removePermission": "Xóa Quyền",
+    "confirmRemove": "Bạn có chắc chắn muốn xóa quyền này không?",
+    "noPermissions": "Chưa có quyền nào được thiết lập cho danh mục này",
+    "noPermissionsDescription": "Thêm tài khoản để chia sẻ quyền truy cập danh mục này",
+    "permissionTypes": {
+      "owner": "Chủ sở hữu",
+      "update": "Chỉnh sửa",
+      "view": "Chỉ xem"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải quyền",
+      "addFailed": "Không thể thêm quyền",
+      "deleteFailed": "Không thể xóa quyền"
+    }
   }
 }

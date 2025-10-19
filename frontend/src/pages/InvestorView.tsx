@@ -19,6 +19,7 @@ import { apiService } from '../services/api';
 import InvestorReportWrapper from '../components/Reports/InvestorReportWrapper';
 import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import PermissionBadge from '../components/Common/PermissionBadge';
 import { PortfolioPermissionType } from '../types';
 
 interface PortfolioSummary {
@@ -229,16 +230,26 @@ const InvestorView: React.FC = () => {
                   >
                     <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <ResponsiveTypography 
-                          variant="body2" 
-                          sx={{ 
-                            fontSize: '0.85rem', 
-                            fontWeight: 500,
-                            color: selectedPortfolio === portfolio.id ? 'primary.main' : 'text.primary'
-                          }}
-                        >
-                          {portfolio.name}
-                        </ResponsiveTypography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                          <ResponsiveTypography 
+                            variant="body2" 
+                            sx={{ 
+                              fontSize: '0.85rem', 
+                              fontWeight: 500,
+                              color: selectedPortfolio === portfolio.id ? 'primary.main' : 'text.primary'
+                            }}
+                          >
+                            {portfolio.name}
+                          </ResponsiveTypography>
+                          {portfolio.userPermission && !currentAccount?.isInvestor && (
+                            <PermissionBadge 
+                              permission={portfolio.userPermission} 
+                              size="small"
+                              showIcon={false}
+                              variant="outlined"
+                            />
+                          )}
+                        </Box>
                         {selectedPortfolio === portfolio.id && (
                           <Box 
                             sx={{ 
@@ -311,13 +322,13 @@ const InvestorView: React.FC = () => {
                             >
                               {portfolio.name}
                             </ResponsiveTypography>
-                            {/* {portfolio.userPermission && (
+                            {portfolio.userPermission && !currentAccount?.isInvestor && (
                               <PermissionBadge 
                                 permission={portfolio.userPermission} 
                                 size="small"
                                 showIcon={true}
                               />
-                            )} */}
+                            )}
                           </Box>
                           <Chip 
                             label={t('investorView.clickToView', 'Nhấn để xem chi tiết')}

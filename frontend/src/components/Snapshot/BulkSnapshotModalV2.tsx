@@ -282,21 +282,24 @@ export const BulkSnapshotModalV2: React.FC<BulkSnapshotModalV2Props> = ({
           { timeout: timeoutMs }
         );
       } else {
-        // Use single portfolio endpoint
+        // Use bulk endpoint with single portfolio
         response = await apiService.api.post(
-          `/api/v1/snapshots/portfolio/${selectedPortfolioIdState}`,
-          useDateRange 
-            ? {
-                startDate: startDate,
-                endDate: endDate,
-                granularity: granularity,
-                createdBy: accountId
-              }
-            : {
-                startDate: startDate,
-                granularity: granularity,
-                createdBy: accountId
-              },
+          '/api/v1/snapshots/portfolio/bulk',
+          {
+            portfolioIds: [selectedPortfolioIdState],
+            ...(useDateRange 
+              ? {
+                  startDate: startDate,
+                  endDate: endDate,
+                  granularity: granularity,
+                  createdBy: accountId
+                }
+              : {
+                  startDate: startDate,
+                  granularity: granularity,
+                  createdBy: accountId
+                })
+          },
           { timeout: timeoutMs }
         );
       }

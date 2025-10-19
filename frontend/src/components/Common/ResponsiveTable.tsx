@@ -37,8 +37,24 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
   const defaultSx = {
     border: showBorders ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: 'auto',
+    maxWidth: '100%',
+    '&::-webkit-scrollbar': {
+      height: 8,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      borderRadius: 4,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      borderRadius: 4,
+      '&:hover': {
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      },
+    },
     '& .MuiTable-root': {
+      minWidth: 'max-content',
       '& .MuiTableRow-root': {
         '&:not(:last-child)': {
           borderBottom: showBorders ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
@@ -62,6 +78,9 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
         color: 'rgba(0, 0, 0, 0.87)',
         fontSize: size === 'small' ? '0.875rem' : '1rem',
         padding: size === 'small' ? '8px 12px' : '12px 16px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
       },
       '& .MuiTableHead-root .MuiTableCell-root': {
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
@@ -87,13 +106,14 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
   };
 
   return (
-    <TableContainer 
-      component={Paper} 
-      variant={variant}
-      className={`responsive-table ${className}`}
-      sx={defaultSx}
-      {...props}
-    >
+    <Box sx={{ position: 'relative' }}>
+      <TableContainer 
+        component={Paper} 
+        variant={variant}
+        className={`responsive-table ${className}`}
+        sx={defaultSx}
+        {...props}
+      >
       <Table size={size}>
         <TableHead>
           <TableRow>
@@ -102,11 +122,13 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                 key={column.key || index}
                 align={column.align || 'left'}
                 sx={{
-                  ...column.headerSx,
-                  minWidth: column.minWidth,
-                  maxWidth: column.maxWidth,
-                  width: column.width,
-                }}
+                  ...(column.headerSx || {}),
+                  // Apply cellSx to header for responsive behavior
+                  ...(column.cellSx || {}),
+                  ...(column.minWidth && { minWidth: column.minWidth }),
+                  ...(column.maxWidth && { maxWidth: column.maxWidth }),
+                  ...(column.width && { width: column.width }),
+                } as any}
               >
                 {column.header}
               </TableCell>
@@ -162,7 +184,25 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
           )}
         </TableBody>
       </Table>
-    </TableContainer>
+      </TableContainer>
+      
+      {/* Scroll indicator */}
+      <Box
+        sx={{
+          position: 'absolute',
+          right: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 20,
+          height: 40,
+          background: 'linear-gradient(to left, rgba(0,0,0,0.1), transparent)',
+          pointerEvents: 'none',
+          opacity: 0.6,
+          display: { xs: 'block', sm: 'none' },
+          zIndex: 1,
+        }}
+      />
+    </Box>
   );
 };
 

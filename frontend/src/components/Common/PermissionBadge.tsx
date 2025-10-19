@@ -6,15 +6,15 @@ import { UserPermission, PortfolioPermissionType } from '../../types';
 interface PermissionBadgeProps {
   permission: UserPermission;
   size?: 'small' | 'medium';
-  showIcon?: boolean;
   variant?: 'outlined' | 'filled';
+  showIcon?: boolean;
 }
 
 const PermissionBadge: React.FC<PermissionBadgeProps> = ({
   permission,
   size = 'small',
-  showIcon = true,
-  variant = 'outlined'
+  variant = 'outlined',
+  showIcon = true
 }) => {
   const getPermissionConfig = (permissionType: PortfolioPermissionType) => {
     switch (permissionType) {
@@ -34,7 +34,7 @@ const PermissionBadge: React.FC<PermissionBadgeProps> = ({
         };
       case PortfolioPermissionType.VIEW:
         return {
-          label: 'View Only',
+          label: 'View',
           color: 'default' as const,
           icon: <Visibility fontSize="small" />,
           tooltip: 'You can only view this portfolio.'
@@ -60,9 +60,12 @@ const PermissionBadge: React.FC<PermissionBadgeProps> = ({
         size={size}
         variant={variant}
         sx={{
-          fontWeight: 600,
-          '& .MuiChip-icon': {
-            fontSize: '1rem'
+          fontWeight: 500,
+          // Completely remove chip styling on mobile/tablet
+          border: { xs: 'none!important', sm: 'none!important', md: 'none!important', lg: '0.5px solid!important' },
+          '& .MuiChip-label': {
+            // Hide text on mobile and tablet, show on desktop (lg and up)
+            display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' }
           }
         }}
       />

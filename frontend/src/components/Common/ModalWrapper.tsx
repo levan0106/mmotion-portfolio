@@ -128,7 +128,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       <DialogTitle
         sx={{
           p: sizeStyles.titlePadding,
-          pb: 1,
+          py: 1,
           borderBottom: '1px solid',
           borderColor: 'divider',
           backgroundColor: 'background.paper',
@@ -177,7 +177,8 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       <DialogContent
         sx={{
           p: sizeStyles.contentPadding,
-          pt: 2,
+          py: 2,
+          mt: 2,
           backgroundColor: 'background.default',
         }}
       >
@@ -188,7 +189,8 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         <DialogActions
           sx={{
             p: sizeStyles.actionsPadding,
-            pt: 1,
+            py: 1,
+            mt: 1,
             borderTop: '1px solid',
             borderColor: 'divider',
             backgroundColor: 'background.paper',

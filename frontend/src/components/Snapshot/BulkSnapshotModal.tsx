@@ -196,19 +196,22 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       }
       
       const response = await apiService.api.post(
-        `/api/v1/snapshots/portfolio/${selectedPortfolioIdState}`,
-        useDateRange 
-          ? {
-              startDate: startDate,
-              endDate: endDate,
-              granularity: granularity,
-              createdBy: accountId
-            }
-          : {
-              startDate: startDate,
-              granularity: granularity,
-              createdBy: accountId
-            },
+        '/api/v1/snapshots/portfolio/bulk',
+        {
+          portfolioIds: [selectedPortfolioIdState],
+          ...(useDateRange 
+            ? {
+                startDate: startDate,
+                endDate: endDate,
+                granularity: granularity,
+                createdBy: accountId
+              }
+            : {
+                startDate: startDate,
+                granularity: granularity,
+                createdBy: accountId
+              })
+        },
         { timeout: timeoutMs }
       );
       // Only show success if we get a valid response

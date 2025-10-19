@@ -808,7 +808,10 @@ class ApiService {
     portfolioId: string,
     options: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string } = {}
   ): Promise<any> {
-    const response = await this.api.post(`/api/v1/snapshots/portfolio/${portfolioId}`, options);
+    const response = await this.api.post('/api/v1/snapshots/portfolio/bulk', {
+      portfolioIds: [portfolioId],
+      ...options
+    });
     return response.data;
   }
 
