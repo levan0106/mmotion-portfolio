@@ -51,6 +51,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import DataDisplayToggle from '../Common/DataDisplayToggle';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -1090,7 +1091,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 )}
               </Box>
               <Box sx={{ 
-                display: { xs: 'none', sm: 'flex' }, // Hide text info on mobile, show only on desktop
+                display: { xs: 'flex', sm: 'flex' }, // Hide text info on mobile, show only on desktop
                 flexDirection: 'column', 
                 alignItems: 'flex-start' 
               }}>
@@ -1121,6 +1122,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </Box>
 
             <NotificationBell />
+
+            <DataDisplayToggle size="small" />
 
             <LanguageSwitcher variant="select" size="small" showLabel={false} />
 

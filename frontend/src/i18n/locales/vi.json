@@ -56,6 +56,19 @@
     "currentDate": "Ngày hiện tại",
     "processing": "Đang xử lý..."
   },
+  "dataDisplay": {
+    "toggle": {
+      "title": "Chuyển đổi định dạng hiển thị dữ liệu",
+      "masked": "Dữ liệu bị ẩn - Nhấn để hiển thị giá trị đầy đủ",
+      "full": "Đang hiển thị giá trị đầy đủ - Nhấn để ẩn dữ liệu",
+      "compact": "Đang hiển thị định dạng rút gọn - Nhấn để hiển thị giá trị đầy đủ",
+      "modes": {
+        "mask": "Ẩn Dữ Liệu",
+        "full": "Hiển Thị Đầy Đủ",
+        "compact": "Định Dạng Rút Gọn"
+      }
+    }
+  },
   "navigation": {
     "dashboard": "Tổng quan",
     "investor": {

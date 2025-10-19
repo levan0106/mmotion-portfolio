@@ -82,11 +82,18 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
         overflow: 'hidden',
         textOverflow: 'ellipsis',
       },
+      '& .MuiTableHead-root .MuiTableRow-root': {
+        borderBottom: showBorders ? '2px solid rgba(0, 0, 0, 0.08)' : 'none',
+      },
       '& .MuiTableHead-root .MuiTableCell-root': {
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
-        borderBottom: showBorders ? '1px solid rgba(0, 0, 0, 0.12)' : 'none',
+        borderBottom: showBorders ? '1px solid rgba(0, 0, 0, 0.08)' : 'none', /* Same as other cells */
+        borderRight: showBorders ? '1px solid rgba(0, 0, 0, 0.05)' : 'none',
         fontWeight: 600,
         fontSize: size === 'small' ? '0.8rem' : '0.9rem',
+        '&:last-child': {
+          borderRight: 'none',
+        },
       },
     },
     ...sx,

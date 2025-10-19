@@ -166,23 +166,27 @@ const InvestorView: React.FC = () => {
   } 
   return (
     <Box>
-      <Box sx={{ mb: 2 }}>
-        <ResponsiveTypography variant="pageHeader"
-        sx={{ 
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          mb: 1
-        }}
-        >
-          {t('investorView.title', 'Góc nhìn nhà đầu tư')}
-        </ResponsiveTypography>
-        <ResponsiveTypography variant="pageSubtitle" desktopOnly={true}>
-          {t('investorView.subtitle', 'Tổng quan tất cả danh mục đầu tư của bạn')}
-        </ResponsiveTypography>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box>
+            <ResponsiveTypography 
+              variant="pageHeader" 
+              sx={{ 
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1
+              }}
+            >
+              {t('investorView.title', 'Góc nhìn nhà đầu tư')}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle">
+              {t('investorView.subtitle', 'Tổng quan tất cả danh mục đầu tư của bạn')}
+            </ResponsiveTypography>
+          </Box>
+        </Box>
       </Box>
-
       {portfolios.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <ResponsiveTypography variant="cardTitle" color="text.secondary">
@@ -230,7 +234,7 @@ const InvestorView: React.FC = () => {
                   >
                     <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
                           <ResponsiveTypography 
                             variant="body2" 
                             sx={{ 
@@ -245,22 +249,12 @@ const InvestorView: React.FC = () => {
                             <PermissionBadge 
                               permission={portfolio.userPermission} 
                               size="small"
-                              showIcon={false}
+                              showIcon={true}
+                              showLabel={false}
                               variant="outlined"
                             />
                           )}
                         </Box>
-                        {selectedPortfolio === portfolio.id && (
-                          <Box 
-                            sx={{ 
-                              width: 6, 
-                              height: 6, 
-                              borderRadius: '50%', 
-                              backgroundColor: theme.palette.primary.main,
-                              animation: 'pulse 2s infinite'
-                            }} 
-                          />
-                        )}
                       </Box>
                       
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -314,7 +308,7 @@ const InvestorView: React.FC = () => {
                     >
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Box sx={{ mb: 1.5 }}>
-                          <Box display="flex" alignItems="center" gap={1} mb={1} flexWrap="wrap">
+                          <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                             <ResponsiveTypography 
                               variant="subtitle1" 
                               gutterBottom={false}

@@ -7,8 +7,17 @@
 }
 
 /* Table row styling */
-.responsive-table .MuiTableRow-root {
+.responsive-table.show-borders .MuiTableRow-root {
   transition: all 0.2s ease-in-out;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important; /* Add border for each row */
+}
+
+.responsive-table.show-borders .MuiTableRow-root:last-child {
+  border-bottom: none !important; /* Remove border from last row */
+}
+
+.responsive-table.no-borders .MuiTableRow-root {
+  border-bottom: none !important; /* No borders when showBorders is false */
 }
 
 .responsive-table .MuiTableRow-root:hover {
@@ -16,9 +25,16 @@
 }
 
 /* Table cell styling */
-.responsive-table .MuiTableCell-root {
+.responsive-table.show-borders .MuiTableCell-root {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
   border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.responsive-table.no-borders .MuiTableCell-root {
+  border-bottom: none !important;
+  border-right: none !important;
   color: rgba(0, 0, 0, 0.87) !important;
   transition: all 0.2s ease-in-out;
 }
@@ -84,13 +100,29 @@
 /* Table container styling */
 .responsive-table .MuiTableContainer-root {
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  border-radius: 8px !important;
+  /* border-radius: 8px !important; */
   overflow: hidden;
+}
+.MuiTableCell-root {
+  border-bottom: none !important; /* Disable border-bottom */
 }
 
 /* Striped rows */
 .responsive-table.striped .MuiTableBody-root .MuiTableRow-root:nth-of-type(even) {
   background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Enhanced row borders for better visibility */
+.responsive-table.show-borders .MuiTableBody-root .MuiTableRow-root {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important; /* Slightly darker border for body rows */
+}
+
+.responsive-table.show-borders .MuiTableBody-root .MuiTableRow-root:last-child {
+  border-bottom: none !important; /* Remove border from last body row */
+}
+
+.responsive-table.no-borders .MuiTableBody-root .MuiTableRow-root {
+  border-bottom: none !important; /* No borders when showBorders is false */
 }
 
 /* Hover effects */
@@ -140,9 +172,26 @@
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .responsive-table .MuiTableCell-root {
+  .responsive-table.show-borders .MuiTableRow-root {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; /* Add border for each row in dark mode */
+  }
+  
+  .responsive-table.show-borders .MuiTableRow-root:last-child {
+    border-bottom: none !important; /* Remove border from last row in dark mode */
+  }
+  
+  .responsive-table.no-borders .MuiTableRow-root {
+    border-bottom: none !important; /* No borders when showBorders is false in dark mode */
+  }
+  
+  .responsive-table.show-borders .MuiTableCell-root {
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  .responsive-table.no-borders .MuiTableCell-root {
+    border-bottom: none !important;
+    border-right: none !important;
     color: rgba(255, 255, 255, 0.87) !important;
   }
   
@@ -158,6 +207,19 @@
   
   .responsive-table.striped .MuiTableBody-root .MuiTableRow-root:nth-of-type(even) {
     background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  /* Enhanced row borders for dark mode */
+  .responsive-table.show-borders .MuiTableBody-root .MuiTableRow-root {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; /* Slightly brighter border for body rows in dark mode */
+  }
+  
+  .responsive-table.show-borders .MuiTableBody-root .MuiTableRow-root:last-child {
+    border-bottom: none !important; /* Remove border from last body row in dark mode */
+  }
+  
+  .responsive-table.no-borders .MuiTableBody-root .MuiTableRow-root {
+    border-bottom: none !important; /* No borders when showBorders is false in dark mode */
   }
   
   .responsive-table.hoverable .MuiTableRow-root:hover {

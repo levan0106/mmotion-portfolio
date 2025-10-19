@@ -32,6 +32,81 @@ interface CurrencyOptions {
   showSymbol?: boolean;
 }
 
+// Data display preferences
+export interface DataDisplayPreferences {
+  showFull: boolean;
+  maskData: boolean;
+}
+
+/**
+ * Get current data display preferences from localStorage
+ */
+export const getDataDisplayPreferences = (): DataDisplayPreferences => {
+  const showFull = localStorage.getItem('currency-show-full');
+  const maskData = localStorage.getItem('currency-mask-data');
+  
+  // Default to show full for new users (when no preference is set)
+  const defaultShowFull = showFull === null ? true : showFull === 'true';
+  const defaultMaskData = maskData === null ? false : maskData === 'true';
+  
+  return {
+    showFull: defaultShowFull,
+    maskData: defaultMaskData,
+  };
+};
+
+/**
+ * Set data display preferences
+ */
+export const setDataDisplayPreferences = (preferences: Partial<DataDisplayPreferences>): void => {
+  if (preferences.showFull !== undefined) {
+    localStorage.setItem('currency-show-full', preferences.showFull.toString());
+  }
+  if (preferences.maskData !== undefined) {
+    localStorage.setItem('currency-mask-data', preferences.maskData.toString());
+  }
+};
+
+/**
+ * Toggle show full mode
+ */
+export const toggleShowFull = (): boolean => {
+  const current = localStorage.getItem('currency-show-full') === 'true';
+  const newValue = !current;
+  localStorage.setItem('currency-show-full', newValue.toString());
+  return newValue;
+};
+
+/**
+ * Toggle mask data mode
+ */
+export const toggleMaskData = (): boolean => {
+  const current = localStorage.getItem('currency-mask-data') === 'true';
+  const newValue = !current;
+  localStorage.setItem('currency-mask-data', newValue.toString());
+  return newValue;
+};
+
+/**
+ * Format a number with display preferences (show full or mask)
+ */
+export const formatNumberWithPreferences = (
+  amount: string | number | undefined | null,
+  options: CurrencyOptions = {}
+): string => {
+  const preferences = getDataDisplayPreferences();
+  
+  if (preferences.maskData) {
+    return '***';
+  }
+  
+  if (preferences.showFull) {
+    return formatCurrency(amount, 'VND', { ...options, compact: false });
+  }
+  
+  return formatCurrency(amount, 'VND', options);
+};
+
 /**
  * Format a number or string as currency (handles API string values)
  * @param amount - The amount to format (can be string or number)
@@ -63,21 +138,97 @@ export const formatCurrency = (
     }).format(0);
   }
   
-  // Check if user wants full format (from localStorage)
-  const showFull = localStorage.getItem('currency-show-full') === 'true';
+  // Check if user wants full format (from localStorage with default)
+  const showFullStorage = localStorage.getItem('currency-show-full');
+  const showFull = showFullStorage === null ? true : showFullStorage === 'true';
   
-  // Special formatting for VND with "tr" suffix for millions (only if not showing full)
-  if (currency === 'VND' && Math.abs(numAmount) >= 1000000 && !showFull) {
-    const trAmount = numAmount / 1000000;
-    const formattedTr = new Intl.NumberFormat(locale, {
+  // Check if user wants to mask data (from localStorage with default)
+  const maskDataStorage = localStorage.getItem('currency-mask-data');
+  const maskData = maskDataStorage === null ? false : maskDataStorage === 'true';
+  
+  // If user wants to mask data, return masked value
+  if (maskData) {
+    if (showSymbol) {
+      return `*** ${CURRENCY_SYMBOLS[currency] || currency}`;
+    }
+    return '***';
+  }
+  
+  // Special formatting for millions with appropriate suffixes (only if not showing full)
+  if (Math.abs(numAmount) >= 1000000 && !showFull) {
+    const millionsAmount = numAmount / 1000000;
+    const formattedMillions = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 1,
-    }).format(trAmount);
+    }).format(millionsAmount);
+    
+    // Currency-specific suffixes
+    let suffix = '';
+    let symbol = '';
+    
+    switch (currency) {
+      case 'VND':
+        suffix = 'tr';
+        symbol = '₫';
+        break;
+      case 'USD':
+        suffix = 'M';
+        symbol = '$';
+        break;
+      case 'EUR':
+        suffix = 'M';
+        symbol = '€';
+        break;
+      case 'GBP':
+        suffix = 'M';
+        symbol = '£';
+        break;
+      case 'JPY':
+        suffix = 'M';
+        symbol = '¥';
+        break;
+      case 'CNY':
+        suffix = 'M';
+        symbol = '¥';
+        break;
+      case 'KRW':
+        suffix = 'M';
+        symbol = '₩';
+        break;
+      case 'SGD':
+        suffix = 'M';
+        symbol = 'S$';
+        break;
+      case 'THB':
+        suffix = 'M';
+        symbol = '฿';
+        break;
+      case 'IDR':
+        suffix = 'M';
+        symbol = 'Rp';
+        break;
+      case 'MYR':
+        suffix = 'M';
+        symbol = 'RM';
+        break;
+      case 'PHP':
+        suffix = 'M';
+        symbol = '₱';
+        break;
+      case 'INR':
+        suffix = 'M';
+        symbol = '₹';
+        break;
+      default:
+        suffix = 'M';
+        symbol = currency;
+        break;
+    }
     
     if (showSymbol) {
-      return `${formattedTr}tr ₫`;
+      return `${formattedMillions}${suffix} ${symbol}`;
     }
-    return `${formattedTr}tr`;
+    return `${formattedMillions}${suffix}`;
   }
   
   // Format the number

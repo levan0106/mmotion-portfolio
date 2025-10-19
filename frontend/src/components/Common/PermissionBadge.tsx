@@ -8,13 +8,15 @@ interface PermissionBadgeProps {
   size?: 'small' | 'medium';
   variant?: 'outlined' | 'filled';
   showIcon?: boolean;
+  showLabel?: boolean;
 }
 
 const PermissionBadge: React.FC<PermissionBadgeProps> = ({
   permission,
   size = 'small',
   variant = 'outlined',
-  showIcon = true
+  showIcon = true,
+  showLabel = true
 }) => {
   const getPermissionConfig = (permissionType: PortfolioPermissionType) => {
     switch (permissionType) {
@@ -55,14 +57,19 @@ const PermissionBadge: React.FC<PermissionBadgeProps> = ({
     <Tooltip title={config.tooltip} arrow>
       <Chip
         icon={showIcon ? config.icon : undefined}
-        label={config.label}
+        label={showLabel ? config.label : undefined}
         color={config.color}
         size={size}
         variant={variant}
         sx={{
           fontWeight: 500,
           // Completely remove chip styling on mobile/tablet
-          border: { xs: 'none!important', sm: 'none!important', md: 'none!important', lg: '0.5px solid!important' },
+          border: showLabel ? { 
+            xs: 'none!important',   
+            sm: 'none!important', 
+            md: 'none!important', 
+            lg: '0.5px solid!important' } 
+            : 'none!important',
           '& .MuiChip-label': {
             // Hide text on mobile and tablet, show on desktop (lg and up)
             display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' }

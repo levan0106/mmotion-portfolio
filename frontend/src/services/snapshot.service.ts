@@ -1,7 +1,6 @@
 // Unified Snapshot Service - Merged from snapshot.service.ts and performance-snapshot.service.ts
 // Handles both basic snapshots and performance snapshots
 
-import axios, { AxiosResponse } from 'axios';
 import { apiService } from './api';
 
 // Import types from unified snapshot system
@@ -35,8 +34,6 @@ import {
 } from '../types/snapshot.types';
 
 export class UnifiedSnapshotService {
-  private readonly basicSnapshotUrl = `/api/v1/snapshots`;
-  private readonly performanceSnapshotUrl = `/api/v1/performance-snapshots`;
 
   // ============================================================================
   // BASIC SNAPSHOT OPERATIONS (from original snapshot.service.ts)
@@ -185,8 +182,7 @@ export class UnifiedSnapshotService {
    * Recalculate snapshot
    */
   async recalculateSnapshot(id: string): Promise<SnapshotResponse> {
-    const response = await apiService.api.put(`${this.basicSnapshotUrl}/${id}/recalculate`);
-    return response.data;
+    return await apiService.recalculateSnapshot(id);
   }
 
   /**
@@ -211,22 +207,14 @@ export class UnifiedSnapshotService {
    * Hard delete snapshot
    */
   async hardDeleteSnapshot(id: string): Promise<void> {
-    await apiService.api.delete(`${this.basicSnapshotUrl}/${id}/hard`);
+    await apiService.hardDeleteSnapshot(id);
   }
 
   /**
    * Get timeline data
    */
   async getTimelineData(query: SnapshotTimelineQuery): Promise<SnapshotResponse[]> {
-    const queryParams = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, value.toString());
-      }
-    });
-
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/timeline?${queryParams.toString()}`);
-    return response.data;
+    return await apiService.getSnapshotTimeline(query);
   }
 
   /**
@@ -238,14 +226,7 @@ export class UnifiedSnapshotService {
     endDate: string,
     granularity?: string
   ): Promise<SnapshotAggregation[]> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('portfolioId', portfolioId);
-    queryParams.append('startDate', startDate);
-    queryParams.append('endDate', endDate);
-    if (granularity) queryParams.append('granularity', granularity);
-
-    const response = await apiService.api.get(`${this.basicSnapshotUrl}/timeline/aggregated?${queryParams.toString()}`);
-    return response.data;
+    return await apiService.getAggregatedTimelineData(portfolioId, startDate, endDate, granularity);
   }
 
   /**
@@ -256,14 +237,7 @@ export class UnifiedSnapshotService {
     assetId?: string,
     granularity?: string
   ): Promise<SnapshotResponse | null> {
-    const queryParams = new URLSearchParams();
-    if (assetId) queryParams.append('assetId', assetId);
-    if (granularity) queryParams.append('granularity', granularity);
-
-    const response = await apiService.api.get(
-      `${this.basicSnapshotUrl}/latest/${portfolioId}?${queryParams.toString()}`
-    );
-    return response.data;
+    return await apiService.getLatestSnapshot(portfolioId, assetId, granularity);
   }
 
   /**
@@ -277,11 +251,7 @@ export class UnifiedSnapshotService {
    * Cleanup old snapshots
    */
   async cleanupOldSnapshots(portfolioId?: string): Promise<CleanupResponse> {
-    const queryParams = new URLSearchParams();
-    if (portfolioId) queryParams.append('portfolioId', portfolioId);
-
-    const response = await apiService.api.post(`${this.basicSnapshotUrl}/cleanup?${queryParams.toString()}`);
-    return response.data;
+    return await apiService.cleanupOldSnapshots(portfolioId);
   }
 
   /**
@@ -323,10 +293,7 @@ export class UnifiedSnapshotService {
     portfolioId: string,
     granularity: string
   ): Promise<{ deletedCount: number; message: string }> {
-    const response = await apiService.api.delete(
-      `${this.basicSnapshotUrl}/portfolio/${portfolioId}/granularity/${granularity}`
-    );
-    return response.data;
+    return await apiService.deleteSnapshotsByGranularity(portfolioId, granularity);
   }
 
   /**
@@ -466,25 +433,7 @@ export class UnifiedSnapshotService {
     portfolioId: string,
     query?: PerformanceSnapshotQueryDto
   ): Promise<AssetGroupPerformanceSnapshot[]> {
-    const params = new URLSearchParams();
-    
-    if (query?.assetType) {
-      params.append('assetType', query.assetType);
-    }
-    if (query?.startDate) {
-      params.append('startDate', query.startDate);
-    }
-    if (query?.endDate) {
-      params.append('endDate', query.endDate);
-    }
-    if (query?.granularity) {
-      params.append('granularity', query.granularity);
-    }
-
-    const response: AxiosResponse<AssetGroupPerformanceSnapshot[]> = await axios.get(
-      `${this.performanceSnapshotUrl}/group/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetGroupPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -494,31 +443,7 @@ export class UnifiedSnapshotService {
     portfolioId: string,
     query?: PerformanceSnapshotQueryDto & { page?: number; limit?: number }
   ): Promise<{ data: AssetGroupPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
-    const params = new URLSearchParams();
-    
-    if (query?.assetType) {
-      params.append('assetType', query.assetType);
-    }
-    if (query?.startDate) {
-      params.append('startDate', query.startDate);
-    }
-    if (query?.endDate) {
-      params.append('endDate', query.endDate);
-    }
-    if (query?.granularity) {
-      params.append('granularity', query.granularity);
-    }
-    if (query?.page) {
-      params.append('page', query.page.toString());
-    }
-    if (query?.limit) {
-      params.append('limit', query.limit.toString());
-    }
-
-    const response: AxiosResponse<{ data: AssetGroupPerformanceSnapshot[]; page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> = await axios.get(
-      `${this.performanceSnapshotUrl}/group/${portfolioId}?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetGroupPerformanceSnapshots(portfolioId, query);
   }
 
   /**
@@ -560,19 +485,7 @@ export class UnifiedSnapshotService {
     portfolioId: string,
     query?: { assetType?: string; period?: string }
   ): Promise<AssetGroupPerformanceSummary> {
-    const params = new URLSearchParams();
-    
-    if (query?.assetType) {
-      params.append('assetType', query.assetType);
-    }
-    if (query?.period) {
-      params.append('period', query.period);
-    }
-
-    const response: AxiosResponse<AssetGroupPerformanceSummary> = await axios.get(
-      `${this.performanceSnapshotUrl}/group/${portfolioId}/summary?${params.toString()}`
-    );
-    return response.data;
+    return await apiService.getAssetGroupPerformanceSummary(portfolioId, query);
   }
 
   /**

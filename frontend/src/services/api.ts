@@ -956,6 +956,91 @@ class ApiService {
     return response.data;
   }
 
+  async getAssetGroupPerformanceSnapshots(
+    portfolioId: string,
+    query?: { assetType?: string; startDate?: string; endDate?: string; granularity?: string; page?: number; limit?: number }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetType) params.append('assetType', query.assetType);
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    if (query?.granularity) params.append('granularity', query.granularity);
+    if (query?.page) params.append('page', query.page.toString());
+    if (query?.limit) params.append('limit', query.limit.toString());
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/group/${portfolioId}?${params.toString()}`);
+    return response.data;
+  }
+
+  async getAssetGroupPerformanceSummary(
+    portfolioId: string,
+    query?: { assetType?: string; period?: string }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    
+    if (query?.assetType) params.append('assetType', query.assetType);
+    if (query?.period) params.append('period', query.period);
+
+    const response = await this.api.get(`/api/v1/performance-snapshots/group/${portfolioId}/summary?${params.toString()}`);
+    return response.data;
+  }
+
+  // Additional snapshot methods
+  async recalculateSnapshot(id: string): Promise<any> {
+    const response = await this.api.put(`/api/v1/snapshots/${id}/recalculate`);
+    return response.data;
+  }
+
+  async hardDeleteSnapshot(id: string): Promise<void> {
+    await this.api.delete(`/api/v1/snapshots/${id}/hard`);
+  }
+
+  async getSnapshotTimeline(query: any): Promise<any[]> {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await this.api.get(`/api/v1/snapshots/timeline?${params.toString()}`);
+    return response.data;
+  }
+
+  async getAggregatedTimelineData(
+    portfolioId: string,
+    startDate: string,
+    endDate: string,
+    granularity?: string
+  ): Promise<any[]> {
+    const params = new URLSearchParams();
+    params.append('portfolioId', portfolioId);
+    params.append('startDate', startDate);
+    params.append('endDate', endDate);
+    if (granularity) params.append('granularity', granularity);
+
+    const response = await this.api.get(`/api/v1/snapshots/timeline/aggregated?${params.toString()}`);
+    return response.data;
+  }
+
+
+  async cleanupOldSnapshots(portfolioId?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (portfolioId) params.append('portfolioId', portfolioId);
+
+    const response = await this.api.post(`/api/v1/snapshots/cleanup?${params.toString()}`);
+    return response.data;
+  }
+
+  async deleteSnapshotsByGranularity(
+    portfolioId: string,
+    granularity: string
+  ): Promise<any> {
+    const response = await this.api.delete(`/api/v1/snapshots/portfolio/${portfolioId}/granularity/${granularity}`);
+    return response.data;
+  }
+
   async deletePerformanceSnapshotsByDateRange(
     portfolioId: string,
     startDate: string,

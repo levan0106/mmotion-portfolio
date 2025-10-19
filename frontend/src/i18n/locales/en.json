@@ -56,6 +56,19 @@
     "currentDate": "Current date",
     "processing": "Processing..."
   },
+  "dataDisplay": {
+    "toggle": {
+      "title": "Toggle data display format",
+      "masked": "Data is masked - Click to show full values",
+      "full": "Showing full values - Click to mask data",
+      "compact": "Showing compact format - Click to show full values",
+      "modes": {
+        "mask": "Mask Data",
+        "full": "Show Full",
+        "compact": "Compact Format"
+      }
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "investor": {

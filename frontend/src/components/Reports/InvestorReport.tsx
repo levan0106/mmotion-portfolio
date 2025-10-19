@@ -21,7 +21,6 @@ import { formatCurrency, formatNumber, formatPercentage, formatPercentageValue }
 import { InvestorReportData } from '../../types/investor-report.types';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import ResponsiveTable from '../Common/ResponsiveTable';
-import './InvestorReport.styles.css';
 
 interface InvestorReportProps {
   data: InvestorReportData;
