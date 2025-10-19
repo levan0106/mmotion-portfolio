@@ -141,9 +141,21 @@ const InvestorView: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box 
+          display="flex" 
+          flexDirection="column"
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="400px"
+          gap={2}
+        >
+          <CircularProgress size={60} thickness={4} />
+          <ResponsiveTypography variant="body1" color="text.secondary">
+            {t('investorView.loading', 'Đang tải danh sách portfolio...')}
+          </ResponsiveTypography>
+        </Box>
+      </Container>
     );
   }
 

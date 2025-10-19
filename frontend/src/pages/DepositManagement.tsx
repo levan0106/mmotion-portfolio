@@ -79,6 +79,7 @@ const DepositManagement: React.FC = () => {
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [showFilters, setShowFilters] = useState(false);
 
   const queryClient = useQueryClient();
   const { accountId } = useAccount();
@@ -267,6 +268,16 @@ const DepositManagement: React.FC = () => {
         <Box display="flex" gap={2} sx={{ ml: 2 }}>
           <ResponsiveButton
             variant="outlined"
+            icon={<FilterIcon />}
+            onClick={() => setShowFilters(!showFilters)}
+            mobileText={t('deposit.filters')}
+            desktopText={t('deposit.filters')}
+            color={showFilters ? 'primary' : 'inherit'}
+          >
+            {t('deposit.filters')}
+          </ResponsiveButton>
+          <ResponsiveButton
+            variant="outlined"
             icon={<RefreshIcon />}
             onClick={() => {
               queryClient.invalidateQueries(['deposits']);
@@ -291,8 +302,9 @@ const DepositManagement: React.FC = () => {
       </Box>
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
+      {showFilters && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
@@ -357,6 +369,7 @@ const DepositManagement: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
+      )}
 
       {/* Analytics Cards */}
       {analytics && (

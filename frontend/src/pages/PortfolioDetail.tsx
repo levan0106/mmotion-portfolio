@@ -163,15 +163,6 @@ const PortfolioDetail: React.FC = () => {
   // Check if current user is the owner
   const isOwner = portfolio && accountId ? portfolio.accountId === accountId : false;
   
-  // Debug logging
-  console.log('PortfolioDetail:', {
-    portfolioId,
-    portfolioOwner: portfolio?.accountId,
-    currentUser: accountId,
-    isOwner,
-    hasPermission: !!portfolio?.userPermission
-  });
-  
   const createTradeMutation = useCreateTrade();
   const tradesQuery = useTrades(portfolioId!);
   const trades = tradesQuery.data || [];
@@ -376,15 +367,14 @@ const PortfolioDetail: React.FC = () => {
                   startIcon={<RefreshIcon />}
                   onClick={handleRefreshAll}
                   disabled={isRefreshingAll}
-                  mobileText={t('common.refresh')}
-                  desktopText={t('portfolio.refreshAll')}
+                  forceIconOnly={true}
                   sx={{ 
                     display: { xs: 'none', sm: 'flex' },
                     borderRadius: 2, 
                     px: { xs: 2, sm: 3 },
                     py: { xs: 0.75, sm: 1 },
-                    width: { xs: '100%', sm: 'auto' },
-                    minWidth: { xs: 'auto', sm: '120px' },
+                    width: 'auto',
+                    minWidth: 'auto',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-1px)',

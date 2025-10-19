@@ -902,6 +902,7 @@
     "allPortfolios": "Tất cả portfolios",
     "searchByBank": "Tìm kiếm theo ngân hàng",
     "clearFilters": "Xóa bộ lọc",
+    "filters": "Bộ lọc",
     "refresh": "Làm mới",
     "overview": "Tổng quan",
     "totalDeposits": "Tổng số tiền gửi",
@@ -1708,6 +1709,7 @@
   "investorView": {
     "title": "Danh mục đầu tư",
     "subtitle": "Tổng quan tất cả danh mục đầu tư của bạn",
+    "loading": "Đang tải danh sách portfolio...",
     "detailedReport": "Báo cáo chi tiết",
     "backToList": "Quay lại danh sách",
     "clickToView": "Nhấn để xem chi tiết",

@@ -92,13 +92,13 @@ const DataDisplayToggle: React.FC<DataDisplayToggleProps> = ({
     const mode = getCurrentMode();
     switch (mode) {
       case 'mask':
-        return theme.palette.warning.main;
+        return theme.palette.warning?.main || '#ed6c02';
       case 'full':
-        return theme.palette.success.main;
+        return theme.palette.success?.main || '#2e7d32';
       case 'compact':
-        return theme.palette.primary.main;
+        return theme.palette.primary?.main || '#1976d2';
       default:
-        return theme.palette.text.secondary;
+        return theme.palette.text?.secondary || '#666666';
     }
   };
 

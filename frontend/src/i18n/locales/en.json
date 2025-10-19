@@ -902,6 +902,7 @@
     "allPortfolios": "All Portfolios",
     "searchByBank": "Search by Bank",
     "clearFilters": "Clear Filters",
+    "filters": "Filters",
     "refresh": "Refresh",
     "overview": "Overview",
     "totalDeposits": "Total Deposits",
@@ -1710,6 +1711,7 @@
   "investorView": {
     "title": "Investor View",
     "subtitle": "Overview of all your investment portfolios",
+    "loading": "Loading portfolio list...",
     "detailedReport": "Detailed Report",
     "backToList": "Back to List",
     "clickToView": "Click to view details",
