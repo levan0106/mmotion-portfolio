@@ -337,8 +337,8 @@ const Holdings: React.FC = () => {
                         <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.avgCostPerUnit')}</ResponsiveTypography></TableCell>
                         <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.totalInvestment')}</ResponsiveTypography></TableCell>
                         <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.currentValue')}</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.unrealizedPnL')}</ResponsiveTypography></TableCell>
-                        <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.realizedPnL')}</ResponsiveTypography></TableCell>
+                        <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.totalPnL')}</ResponsiveTypography></TableCell>
+                        {/* <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.realizedPnL')}</ResponsiveTypography></TableCell> */}
                         <TableCell><ResponsiveTypography variant="tableHeader" >{t('holdings.table.returnPercent')}</ResponsiveTypography></TableCell>
                         <TableCell><ResponsiveTypography variant="tableHeader" >{t('common.actions')}</ResponsiveTypography></TableCell>
                       </TableRow>
@@ -415,10 +415,10 @@ const Holdings: React.FC = () => {
                                     color: Number(holding.unrealizedPnL) >= 0 ? 'success.main' : 'error.main'
                                   }}
                                 >
-                                  {formatCurrency(Number(holding.unrealizedPnL), displayCurrency)}
+                                  {formatCurrency(Number(holding.unrealizedPnL)+Number(holding.realizedPnL), displayCurrency)}
                                 </ResponsiveTypography>
                               </TableCell>
-                              <TableCell>
+                              {/* <TableCell>
                                 <ResponsiveTypography 
                                   variant="tableCell" 
                                   sx={{ 
@@ -428,7 +428,7 @@ const Holdings: React.FC = () => {
                                 >
                                   {formatCurrency(Number(holding.realizedPnL), displayCurrency)}
                                 </ResponsiveTypography>
-                              </TableCell>
+                              </TableCell> */}
                               <TableCell>
                                 <Chip
                                   label={formatPercentage(totalReturn)}

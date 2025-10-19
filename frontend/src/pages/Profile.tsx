@@ -11,6 +11,7 @@ import {
   Divider,
   Collapse,
   Grid,
+  Breakpoint,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { ResponsiveButton, ResponsiveTypography } from '../components/Common';
@@ -31,7 +32,12 @@ import { authService, User, UpdateProfileRequest, SetPasswordRequest, ChangePass
 import { useAccount } from '../contexts/AccountContext';
 import { userHistoryService } from '../services/userHistoryService';
 
-export const Profile: React.FC = () => {
+interface ProfileProps {
+  embedded?: boolean;
+  maxWidth?: string;
+}
+
+export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = 'md' }) => {
   const { t } = useTranslation();
   const { updateAuthState } = useAccount();
   const [user, setUser] = useState<User | null>(null);
@@ -305,32 +311,27 @@ export const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (!user) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error">{t('profile.userNotFound')}</Alert>
-      </Container>
+      <Alert severity="error">{t('profile.userNotFound')}</Alert>
     );
   }
 
-  return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 3 } }}>
-      <Card>
-        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+  const content = (
+    <Card sx={embedded ? { boxShadow: 'none!important', border: 'none!important' } : { '&:hover': { boxShadow: 1 } }}>
+        <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
           {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar
               sx={{
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 mr: 3,
                 bgcolor: 'primary.main',
                 fontSize: '2rem',
@@ -339,24 +340,9 @@ export const Profile: React.FC = () => {
               {user.avatarText || getInitials(user.username)}
             </Avatar>
             <Box sx={{ flex: 1 }}>
-              <ResponsiveTypography variant="h4" component="h1" gutterBottom>
+              <ResponsiveTypography variant="cardTitle" gutterBottom>
                 {user.fullName || user.username}
               </ResponsiveTypography>
-              {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Chip
-                  label={getAuthStateText(user.authState)}
-                  color={getAuthStateColor(user.authState)}
-                  size="small"
-                />
-                {user.isEmailVerified && (
-                  <Chip
-                    icon={<CheckCircleIcon />}
-                    label={t('profile.emailVerified')}
-                    color="success"
-                    size="small"
-                  />
-                )}
-              </Box> */}
               <ResponsiveTypography variant="body2" color="text.secondary">
                 @{user.username}
               </ResponsiveTypography>
@@ -389,7 +375,7 @@ export const Profile: React.FC = () => {
           {/* Incomplete Profile Notice */}
           {!user.isProfileComplete && isEditing && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              <ResponsiveTypography variant="cardTitle" ellipsis={false}>
+              <ResponsiveTypography variant="cardLabel" ellipsis={false} sx={{ color: 'error.secondary' }}>
                 <strong>{t('profile.completeProfileNotice')}</strong> - {t('profile.completeProfileDescription')}
               </ResponsiveTypography>
             </Alert>
@@ -406,7 +392,7 @@ export const Profile: React.FC = () => {
                 label={t('profile.username')}
                 value={user.username}
                 disabled
-                helperText={t('profile.usernameHelper')}
+                // helperText={t('profile.usernameHelper')}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -437,7 +423,7 @@ export const Profile: React.FC = () => {
           </Grid>
 
           {/* Advanced Information */}
-          <Box sx={{ mt: 3 }}>
+          <Box sx={{ mt: 2 }}>
             <ResponsiveButton
               onClick={() => setShowAdvanced(!showAdvanced)}
               icon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -495,7 +481,7 @@ export const Profile: React.FC = () => {
 
           {/* Action Buttons */}
           {isEditing && (
-            <Box sx={{ display: 'flex', gap: 2, mt: 4, mb: 4 }}>
+            <Box sx={{ display: 'flex', gap: 2, my: 0 }}>
               <ResponsiveButton
                 variant="contained"
                 onClick={handleSave}
@@ -641,6 +627,16 @@ export const Profile: React.FC = () => {
 
         </CardContent>
       </Card>
+  );
+
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <Container maxWidth={maxWidth as Breakpoint} sx={{ py: { xs: 2, sm: 3 } }} >
+     {content} 
     </Container>
   );
 };

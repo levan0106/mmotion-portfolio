@@ -734,6 +734,7 @@
       "currentValue": "Giá trị hiện tại",
       "unrealizedPnL": "P&L chưa thực hiện",
       "realizedPnL": "P&L đã thực hiện",
+      "totalPnL": "Lợi nhuận",
       "returnPercent": "Lợi nhuận %",
       "date": "Ngày",
       "type": "Loại",
@@ -1760,6 +1761,7 @@
     "tabs": {
       "accountManagement": "Quản lý tài khoản",
       "security": "Bảo mật",
+      "profile": "Hồ sơ",
       "notifications": "Thông báo",
       "appearance": "Giao diện",
       "adminMessages": "Tin nhắn quản trị"

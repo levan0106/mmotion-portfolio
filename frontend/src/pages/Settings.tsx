@@ -7,6 +7,7 @@ import {
   Paper,
   Grid,
   Card,
+  Container,
 } from '@mui/material';
 import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import {
@@ -19,6 +20,7 @@ import {
 import { AccountManagement } from '../components/Account';
 import { AdminMessageSender } from '../components/Admin/AdminMessageSender';
 import { usePermissions } from '../hooks/usePermissions';
+import { Profile } from './Profile';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -64,17 +66,18 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Box sx={{ mb: 4 }}>
-        <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
-          {t('settings.title')}
-        </ResponsiveTypography>
-        <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-          {t('settings.subtitle')}
-        </ResponsiveTypography>
-      </Box>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 } }}>
+      <Box>
+        <Box sx={{ mb: 4 }}>
+          <ResponsiveTypography variant="pageHeader" gutterBottom>
+            {t('settings.title')}
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+            {t('settings.subtitle')}
+          </ResponsiveTypography>
+        </Box>
 
-      <Paper sx={{ width: '100%' }}>
+        <Paper sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs
             value={value}
@@ -91,7 +94,7 @@ const Settings: React.FC = () => {
             />
             <Tab
               icon={<SecurityIcon />}
-              label={t('settings.tabs.security')}
+              label={t('settings.tabs.profile')}
               iconPosition="start"
               {...a11yProps(1)}
             />
@@ -131,37 +134,7 @@ const Settings: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={value} index={1}>
-          <Box sx={{ mb: 3 }}>
-            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
-              {t('settings.security.title')}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
-              {t('settings.security.subtitle')}
-            </ResponsiveTypography>
-          </Box>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', p: 3 }}>
-                <ResponsiveTypography variant="cardTitle" component="h3" gutterBottom>
-                  {t('settings.security.password.title')}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="cardSubtitle" sx={{ mb: 3 ,color:"text.secondary"}}>
-                  {t('settings.security.password.subtitle')}
-                </ResponsiveTypography>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', p: 3 }}>
-                <ResponsiveTypography variant="cardTitle" component="h3" gutterBottom>
-                  {t('settings.security.twoFactor.title')}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="cardSubtitle" sx={{ mb: 3 ,color:"text.secondary"}}>
-                  {t('settings.security.twoFactor.subtitle')}
-                </ResponsiveTypography>
-              </Card>
-            </Grid>
-          </Grid>
+          <Profile embedded={true} maxWidth="md" />
         </TabPanel>
 
         <TabPanel value={value} index={2}>
@@ -241,7 +214,8 @@ const Settings: React.FC = () => {
           </TabPanel>
         )}
       </Paper>
-    </Box>
+      </Box>
+    </Container>
   );
 };
 

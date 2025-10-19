@@ -141,8 +141,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
           backdropFilter: 'blur(10px)',
           border: `0.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-          maxHeight: '90vh',
-          height: '90vh'
+          maxHeight: '90vh'
         }
       }}
     >

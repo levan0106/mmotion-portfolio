@@ -734,6 +734,7 @@
       "currentValue": "Current Value",
       "unrealizedPnL": "Unrealized P&L",
       "realizedPnL": "Realized P&L",
+      "totalPnL": "Total P&L",
       "returnPercent": "Return %",
       "date": "Date",
       "type": "Type",
@@ -1762,6 +1763,7 @@
     "tabs": {
       "accountManagement": "Account Management",
       "security": "Security",
+      "profile": "Profile",
       "notifications": "Notifications",
       "appearance": "Appearance",
       "adminMessages": "Admin Messages"
