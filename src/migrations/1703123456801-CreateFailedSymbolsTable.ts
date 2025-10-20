@@ -95,8 +95,18 @@ export class CreateFailedSymbolsTable1703123456801 implements MigrationInterface
     await queryRunner.query(`CREATE INDEX "IDX_failed_symbols_provider" ON "failed_symbols" ("provider")`);
     await queryRunner.query(`CREATE INDEX "IDX_failed_symbols_created_at" ON "failed_symbols" ("created_at")`);
 
-    // Add foreign key constraint
-    await queryRunner.query(`ALTER TABLE "failed_symbols" ADD CONSTRAINT "FK_failed_symbols_execution_id" FOREIGN KEY ("execution_id") REFERENCES "global_asset_tracking"("execution_id") ON DELETE CASCADE`);
+    // Add foreign key constraint only if global_asset_tracking table exists
+    const globalAssetTrackingExists = await queryRunner.hasTable('global_asset_tracking');
+    if (globalAssetTrackingExists) {
+      try {
+        await queryRunner.query(`ALTER TABLE "failed_symbols" ADD CONSTRAINT "FK_failed_symbols_execution_id" FOREIGN KEY ("execution_id") REFERENCES "global_asset_tracking"("execution_id") ON DELETE CASCADE`);
+        console.log('Created foreign key constraint FK_failed_symbols_execution_id');
+      } catch (error) {
+        console.log('Failed to create foreign key constraint FK_failed_symbols_execution_id:', error.message);
+      }
+    } else {
+      console.log('Table global_asset_tracking does not exist yet, skipping foreign key constraint creation');
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
