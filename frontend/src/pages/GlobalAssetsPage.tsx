@@ -1,12 +1,13 @@
 import React from 'react';
-import { Box, Paper, Typography, Stack } from '@mui/material';
+import { Box, Paper, Stack } from '@mui/material';
+import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import GlobalAssetManagement from '../components/GlobalAssetManagement';
 import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
 import { UpdatePriceByDateButton } from '../components/AssetPrice';
 import { HistoricalPricesButton } from '../components/HistoricalPrices';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
-import { useMarketDataStats, useMarketDataProviders, useRecentUpdates } from '../hooks/useMarketData';
+import { useSystemStatus } from '../hooks/useSystemStatus';
 import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
 import { apiService } from '../services/api';
 
@@ -33,23 +34,6 @@ const GlobalAssetsContent: React.FC = () => {
     totalPages
   } = useGlobalAssets({ limit: 50 }); // Increase limit to 50
 
-  const { 
-    data: marketDataStats, 
-    isLoading: statsLoading, 
-    error: statsError 
-  } = useMarketDataStats();
-
-  const { 
-    data: providers = [], 
-    isLoading: providersLoading, 
-    error: providersError 
-  } = useMarketDataProviders();
-
-  const { 
-    data: recentUpdates = [], 
-    isLoading: updatesLoading, 
-    error: updatesError 
-  } = useRecentUpdates(50);
 
   // Price update hooks
   const updateAssetPriceMutation = useUpdateAssetPrice();
@@ -57,6 +41,9 @@ const GlobalAssetsContent: React.FC = () => {
   
   // Auto sync hook
   const { } = useAutoSync();
+
+  // System status (auto-sync status, last update, next run)
+  const { lastDataUpdate, nextUpdate, isAutoSyncEnabled, isLoading: statusLoading } = useSystemStatus();
 
   // API handlers using real hooks
   const handleRefresh = async () => {
@@ -102,10 +89,6 @@ const GlobalAssetsContent: React.FC = () => {
     }
   };
 
-  const handleMarketDataRefresh = async () => {
-    await refetchAssets();
-  };
-
   const handleUpdateAllPrices = async () => {
     try {
       // Trigger manual sync
@@ -118,28 +101,11 @@ const GlobalAssetsContent: React.FC = () => {
     }
   };
 
-  const handleUpdateByNation = async (_nation: string) => {
-    // This will be handled by the MarketDataDashboard component
-  };
-
-  const handleUpdateByMarket = async (_marketCode: string) => {
-    // This will be handled by the MarketDataDashboard component
-  };
-
-  const handleTestProvider = async (_providerName: string) => {
-    // This will be handled by the MarketDataDashboard component
-  };
-
-  const handleUpdateConfig = async (_config: any) => {
-    // This will be handled by the MarketDataDashboard component
-  };
-
   // Combine loading states
-  const isLoading = assetsLoading || statsLoading || providersLoading || updatesLoading || 
-                   updateAssetPriceMutation.isLoading || updateAssetPriceFromMarketMutation.isLoading;
+  const isLoading = assetsLoading || updateAssetPriceMutation.isLoading || updateAssetPriceFromMarketMutation.isLoading;
   
   // Combine error states
-  const error = assetsError || statsError || providersError || updatesError;
+  const error = assetsError;
   const errorMessage = error ? (error as Error)?.message || String(error) : undefined;
 
   return (
@@ -147,9 +113,9 @@ const GlobalAssetsContent: React.FC = () => {
       {/* Auto Sync Toggle Section */}
       <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" component="h2">
+          <ResponsiveTypography variant="pageHeader">
             Market Price Auto Sync
-          </Typography>
+          </ResponsiveTypography>
           <Stack direction="row" spacing={1}>
             <UpdatePriceByDateButton
               onUpdateSuccess={(_result: BulkUpdateResult) => {
@@ -170,10 +136,23 @@ const GlobalAssetsContent: React.FC = () => {
             />
           </Stack>
         </Box>
-        <AutoSyncToggle
-          onToggle={(_enabled) => {
-          }}
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Stack direction="row" spacing={3}>
+            <ResponsiveTypography variant="cardLabel">
+              Status: <strong>{isAutoSyncEnabled ? 'Enabled' : 'Disabled'}</strong>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="cardLabel">
+              Last update: <strong>{lastDataUpdate ? new Date(lastDataUpdate).toLocaleString() : (statusLoading ? 'Loading...' : 'N/A')}</strong>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="cardLabel">
+              Next run: <strong>{nextUpdate ? new Date(nextUpdate).toLocaleString() : (statusLoading ? 'Loading...' : 'N/A')}</strong>
+            </ResponsiveTypography>
+          </Stack>
+          <AutoSyncToggle
+            onToggle={(_enabled) => {
+            }}
+          />
+        </Box>
       </Paper>
 
       <GlobalAssetManagement
@@ -188,15 +167,7 @@ const GlobalAssetsContent: React.FC = () => {
         totalPages={totalPages}
         onPriceUpdate={handlePriceUpdate}
         onPriceHistoryRefresh={handlePriceHistoryRefresh}
-        marketDataStats={marketDataStats}
-        marketDataProviders={providers}
-        recentUpdates={recentUpdates}
-        onMarketDataRefresh={handleMarketDataRefresh}
         onUpdateAllPrices={handleUpdateAllPrices}
-        onUpdateByNation={handleUpdateByNation}
-        onUpdateByMarket={handleUpdateByMarket}
-        onTestProvider={handleTestProvider}
-        onUpdateConfig={handleUpdateConfig}
       />
     </Box>
   );

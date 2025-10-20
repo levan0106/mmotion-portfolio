@@ -19,8 +19,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
-  Tab,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -115,7 +113,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   loading = false,
   error,
 }) => {
-  const [tabValue, setTabValue] = useState(0);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -226,14 +223,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
     }
   };
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-    // If switching to Price History tab, refetch data
-    if (newValue === 1) {
-      queryClient.invalidateQueries(['priceHistory', asset.id]);
-      refetchPriceHistory();
-    }
-  };
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
@@ -267,6 +256,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
     return 'error';
   };
 
+  // Determine last update time and a simple next run estimate (last update + 24h)
+  const lastUpdateAt: string | null = asset.assetPrice?.lastPriceUpdate
+    || (priceHistory.length > 0 ? priceHistory[0].createdAt : null);
+  const nextRunAt: string | null = lastUpdateAt
+    ? new Date(new Date(lastUpdateAt).getTime() + 24 * 60 * 60 * 1000).toISOString()
+    : null;
+
   if (error) {
     return (
       <Alert severity="error">
@@ -279,7 +275,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ 
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         p: 2
       }}>
         {/* Enhanced Current Price Display */}
@@ -375,103 +370,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
           </CardContent>
         </Card>
 
-        {/* Enhanced Tabs */}
-        <Card sx={{ 
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          overflow: 'hidden'
-        }}>
-          <Box sx={{ 
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-            borderBottom: '1px solid rgba(0,0,0,0.1)'
-          }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange}
-              sx={{
-                '& .MuiTab-root': {
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  py: 2,
-                  px: 4,
-                  textTransform: 'none',
-                  minHeight: 64,
-                  '&.Mui-selected': {
-                    color: '#667eea',
-                    fontWeight: 700,
-                  }
-                },
-                '& .MuiTabs-indicator': {
-                  height: 4,
-                  borderRadius: '2px 2px 0 0',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                }
-              }}
-            >
-              <Tab 
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                      width: 8, 
-                      height: 8, 
-                      borderRadius: '50%', 
-                      backgroundColor: tabValue === 0 ? '#667eea' : '#6c757d' 
-                    }} />
-                    Price History
-                  </Box>
-                } 
-              />
-            </Tabs>
-          </Box>
-
-          <CardContent sx={{ p: 4 }}>
-            {tabValue === 0 && (
-              <Box>
-                {/* Price History Header */}
+        {/* Price History Section */}
+        <Box sx={{ p: 2 }}>
+            <Box>
+                {/* Controls Row (no header) */}
                 <Box sx={{ 
-                  mb: 4,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start'
-                }}>
-                  <Box>
-                    <Typography variant="h4" sx={{ 
-                      fontWeight: 700, 
-                      mb: 1,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      Price History
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Track all price changes and updates for this asset
-                    </Typography>
-                  </Box>
-                  <ResponsiveButton
-                    onClick={() => setUpdateDialogOpen(true)}
-                    variant="contained"
-                    icon={<EditIcon />}
-                    disabled={loading}
-                    mobileText="Update"
-                    desktopText="Update Price"
-                    sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      fontWeight: 600,
-                      px: 3,
-                      py: 1.5,
-                      borderRadius: 2,
-                      boxShadow: '0 4px 16px rgba(102,126,234,0.3)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 6px 20px rgba(102,126,234,0.4)',
-                      }
-                    }}
-                  >
-                    Update Price
-                  </ResponsiveButton>
-                </Box>
+                  mb: 2
+                }} />
 
                 {/* Stats Bar */}
                 <Box sx={{ 
@@ -484,28 +389,62 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                   borderRadius: 2,
                   border: '1px solid rgba(102,126,234,0.1)'
                 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
-                    {priceHistory.length} Price Records
-                  </Typography>
-                  <ResponsiveButton
-                    variant="outlined"
-                    icon={<RefreshIcon />}
-                    onClick={handlePriceHistoryRefresh}
-                    disabled={historyLoading}
-                    mobileText="Refresh"
-                    desktopText="Refresh"
-                    sx={{
-                      borderColor: '#667eea',
-                      color: '#667eea',
-                      fontWeight: 600,
-                      '&:hover': {
-                        borderColor: '#5a6fd8',
-                        backgroundColor: 'rgba(102,126,234,0.05)'
-                      }
-                    }}
-                  >
-                    Refresh
-                  </ResponsiveButton>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
+                      {priceHistory.length} Price Records
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 3, mt: 0.5, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Last update: {lastUpdateAt ? formatDate(lastUpdateAt) : 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Next run: {nextRunAt ? formatDate(nextRunAt) : 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <ResponsiveButton
+                      variant="outlined"
+                      icon={<RefreshIcon />}
+                      onClick={handlePriceHistoryRefresh}
+                      disabled={historyLoading}
+                      mobileText="Refresh"
+                      desktopText="Refresh"
+                      sx={{
+                        borderColor: '#667eea',
+                        color: '#667eea',
+                        fontWeight: 600,
+                        '&:hover': {
+                          borderColor: '#5a6fd8',
+                          backgroundColor: 'rgba(102,126,234,0.05)'
+                        }
+                      }}
+                    >
+                      Refresh
+                    </ResponsiveButton>
+                    <ResponsiveButton
+                      onClick={() => setUpdateDialogOpen(true)}
+                      variant="contained"
+                      icon={<EditIcon />}
+                      disabled={loading}
+                      mobileText="Update"
+                      desktopText="Update Price"
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        fontWeight: 600,
+                        px: 3,
+                        py: 1.5,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 16px rgba(102,126,234,0.3)',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 6px 20px rgba(102,126,234,0.4)',
+                        }
+                      }}
+                    >
+                      Update Price
+                    </ResponsiveButton>
+                  </Box>
                 </Box>
 
                 {historyError ? (
@@ -706,9 +645,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                   </Card>
                 )}
               </Box>
-            )}
-          </CardContent>
-        </Card>
+        </Box>
 
         {/* Enhanced Price Update Dialog */}
         <Dialog 
@@ -739,19 +676,19 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
             <ResponsiveButton
               onClick={() => setUpdateDialogOpen(false)}
               icon={<CloseIcon />}
+              forceIconOnly={true}
               mobileText=""
               desktopText=""
               sx={{
                 color: 'white',
                 minWidth: 'auto',
                 p: 1,
-                borderRadius: '50%',
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.1)',
                 }
               }}
             >
-              <CloseIcon />
+              Close
             </ResponsiveButton>
           </DialogTitle>
           <form onSubmit={handleSubmit(handlePriceUpdate)}>

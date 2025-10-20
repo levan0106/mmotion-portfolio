@@ -41,6 +41,7 @@ import {
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from './Common';
+import { formatDate } from '@/utils/format';
 
 // Types
 interface GlobalAsset {
@@ -99,25 +100,25 @@ const NATION_NAMES: Record<string, string> = {
   CN: 'China',
 };
 
-// Market code display names
-const MARKET_NAMES: Record<string, string> = {
-  HOSE: 'Ho Chi Minh Stock Exchange',
-  HNX: 'Hanoi Stock Exchange',
-  UPCOM: 'Unlisted Public Company Market',
-  NYSE: 'New York Stock Exchange',
-  NASDAQ: 'NASDAQ',
-  AMEX: 'American Stock Exchange',
-  LSE: 'London Stock Exchange',
-  AIM: 'Alternative Investment Market',
-  TSE: 'Tokyo Stock Exchange',
-  SGX: 'Singapore Exchange',
-  ASX: 'Australian Securities Exchange',
-  TSX: 'Toronto Stock Exchange',
-  XETRA: 'XETRA',
-  EPA: 'Euronext Paris',
-  SSE: 'Shanghai Stock Exchange',
-  SZSE: 'Shenzhen Stock Exchange',
-};
+// Market code display names (unused currently)
+// const MARKET_NAMES: Record<string, string> = {
+//   HOSE: 'Ho Chi Minh Stock Exchange',
+//   HNX: 'Hanoi Stock Exchange',
+//   UPCOM: 'Unlisted Public Company Market',
+//   NYSE: 'New York Stock Exchange',
+//   NASDAQ: 'NASDAQ',
+//   AMEX: 'American Stock Exchange',
+//   LSE: 'London Stock Exchange',
+//   AIM: 'Alternative Investment Market',
+//   TSE: 'Tokyo Stock Exchange',
+//   SGX: 'Singapore Exchange',
+//   ASX: 'Australian Securities Exchange',
+//   TSX: 'Toronto Stock Exchange',
+//   XETRA: 'XETRA',
+//   EPA: 'Euronext Paris',
+//   SSE: 'Shanghai Stock Exchange',
+//   SZSE: 'Shenzhen Stock Exchange',
+// };
 
 type SortField = 'symbol' | 'name' | 'type' | 'nation' | 'marketCode' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
@@ -265,9 +266,9 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
     return NATION_NAMES[code] || code;
   };
 
-  const getMarketDisplayName = (code: string) => {
-    return MARKET_NAMES[code] || code;
-  };
+  // const getMarketDisplayName = (code: string) => {
+  //   return MARKET_NAMES[code] || code;
+  // };
 
   if (error) {
     return (
@@ -384,15 +385,15 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     Type
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortField === 'nation'}
-                    direction={sortField === 'nation' ? sortDirection : 'asc'}
-                    onClick={() => handleSort('nation')}
-                  >
-                    Nation
-                  </TableSortLabel>
-                </TableCell>
+                  {/* <TableCell>
+                    <TableSortLabel
+                      active={sortField === 'nation'}
+                      direction={sortField === 'nation' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('nation')}
+                    >
+                      Nation
+                    </TableSortLabel>
+                  </TableCell> */}
                 <TableCell>
                   <TableSortLabel
                     active={sortField === 'marketCode'}
@@ -477,11 +478,11 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                         {getNationDisplayName(asset.nation)}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Typography variant="body2">
                         {getMarketDisplayName(asset.marketCode)}
                       </Typography>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getPriceChangeIcon(asset)}
@@ -494,7 +495,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                       </Box>
                       {asset.assetPrice && (
                         <Typography variant="caption" color="text.secondary">
-                          {asset.assetPrice.priceSource} • {new Date(asset.assetPrice.lastPriceUpdate).toLocaleDateString()}
+                          {asset.assetPrice.priceSource} • {formatDate(asset.assetPrice.lastPriceUpdate, 'medium')}
                         </Typography>
                       )}
                     </TableCell>

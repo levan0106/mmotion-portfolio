@@ -34,7 +34,7 @@ export const useSystemStatus = (): SystemStatus => {
     async () => {
       try {
         const response = await apiService.get('/api/v1/global-assets/auto-sync/status');
-        return response.data;
+        return response as AutoSyncStatus;
       } catch (error) {
         return { enabled: false, interval: 15, cronExpression: '0 */15 * * * *' };
       }

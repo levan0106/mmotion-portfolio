@@ -338,6 +338,24 @@ export class GlobalAssetTrackingService {
   }
 
   /**
+   * Get the most recent finished (COMPLETED or FAILED) tracking execution time
+   */
+  async getLatestFinishedExecutionTime(): Promise<Date | null> {
+    const record = await this.globalAssetTrackingRepository.findOne({
+      where: [
+        { status: GlobalAssetSyncStatus.COMPLETED },
+        { status: GlobalAssetSyncStatus.FAILED },
+      ],
+      order: { completedAt: 'DESC' },
+    });
+
+    if (!record) {
+      return null;
+    }
+    return record.completedAt || record.startedAt || null;
+  }
+
+  /**
    * Clean up old tracking records
    */
   async cleanupOldRecords(days: number = 90): Promise<{ deletedRecords: number; message: string }> {

@@ -27,19 +27,14 @@ import {
   Close as CloseIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
-  Storage as StorageIcon,
-  TrendingUp as TrendingUpIcon,
-  Analytics as AnalyticsIcon,
   Sync as SyncIcon,
 } from '@mui/icons-material';
 
 // Import our new components
 import GlobalAssetForm from './GlobalAssetForm';
 import GlobalAssetList from './GlobalAssetList';
-import AssetPriceManagement from './AssetPriceManagement';
-import MarketDataDashboard from './MarketDataDashboard';
-import GlobalAssetAnalyticsDashboard from './GlobalAssetManagement/GlobalAssetAnalyticsDashboard';
 import GlobalAssetTrackingDashboard from './GlobalAssetTrackingDashboard';
+import GlobalAssetPriceManagementModal from './GlobalAssetManagement/GlobalAssetPriceManagementModal';
 import { ResponsiveButton } from './Common';
 
 // Import hooks
@@ -88,16 +83,8 @@ interface GlobalAssetManagementProps {
   onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string) => Promise<void>;
   onPriceHistoryRefresh: (assetId: string) => Promise<void>;
   
-  // Props for market data
-  marketDataStats: any;
-  marketDataProviders: any[];
-  recentUpdates: any[];
-  onMarketDataRefresh: () => void;
+  // Props for price updates
   onUpdateAllPrices: () => void;
-  onUpdateByNation: (nation: string) => void;
-  onUpdateByMarket: (marketCode: string) => void;
-  onTestProvider: (providerName: string) => void;
-  onUpdateConfig: (config: any) => void;
 }
 
 const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
@@ -112,15 +99,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   totalPages = 1,
   onPriceUpdate,
   onPriceHistoryRefresh,
-  marketDataStats,
-  marketDataProviders,
-  recentUpdates,
-  onMarketDataRefresh,
   onUpdateAllPrices,
-  onUpdateByNation,
-  onUpdateByMarket,
-  onTestProvider,
-  onUpdateConfig,
 }) => {
   
   const [tabValue, setTabValue] = useState(0);
@@ -284,15 +263,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   const getNationDisplayName = (code: string) => {
     const names: Record<string, string> = {
       VN: 'Vietnam',
-      US: 'United States',
-      UK: 'United Kingdom',
-      JP: 'Japan',
-      SG: 'Singapore',
-      AU: 'Australia',
-      CA: 'Canada',
-      DE: 'Germany',
-      FR: 'France',
-      CN: 'China',
+      US: 'United States'
     };
     return names[code] || code;
   };
@@ -312,7 +283,6 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
       p: { xs: 1.5, sm: 2 }
     }}>
       {/* Header Section */}
@@ -476,7 +446,6 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             <Tab 
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <StorageIcon sx={{ fontSize: 20 }} />
                   <Box sx={{ 
                     width: 8, 
                     height: 8, 
@@ -490,40 +459,11 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             <Tab 
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <TrendingUpIcon sx={{ fontSize: 20 }} />
                   <Box sx={{ 
                     width: 8, 
                     height: 8, 
                     borderRadius: '50%', 
                     backgroundColor: tabValue === 1 ? '#667eea' : '#6c757d' 
-                  }} />
-                  Market Data
-                </Box>
-              } 
-            />
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <AnalyticsIcon sx={{ fontSize: 20 }} />
-                  <Box sx={{ 
-                    width: 8, 
-                    height: 8, 
-                    borderRadius: '50%', 
-                    backgroundColor: tabValue === 2 ? '#667eea' : '#6c757d' 
-                  }} />
-                  Analytics
-                </Box>
-              } 
-            />
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <SyncIcon sx={{ fontSize: 20 }} />
-                  <Box sx={{ 
-                    width: 8, 
-                    height: 8, 
-                    borderRadius: '50%', 
-                    backgroundColor: tabValue === 3 ? '#667eea' : '#6c757d' 
                   }} />
                   Auto Sync Tracking
                 </Box>
@@ -550,27 +490,6 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
 
           {tabValue === 1 && (
             <Box>
-              <MarketDataDashboard
-                stats={marketDataStats}
-                providers={marketDataProviders}
-                recentUpdates={recentUpdates}
-                onRefresh={onMarketDataRefresh}
-                onUpdateByNation={onUpdateByNation}
-                onUpdateByMarket={onUpdateByMarket}
-                onTestProvider={onTestProvider}
-                onUpdateConfig={onUpdateConfig}
-                loading={loading}
-                error={error}
-              />
-            </Box>
-          )}
-
-          {tabValue === 2 && (
-            <GlobalAssetAnalyticsDashboard assets={assets} />
-          )}
-
-          {tabValue === 3 && (
-            <Box>
               <GlobalAssetTrackingDashboard />
             </Box>
           )}
@@ -587,46 +506,16 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
         loading={formLoading}
       />
 
-      {/* Price Management Dialog */}
-      {selectedAsset && (
-        <Dialog
-          open={priceManagementOpen}
-          onClose={handlePriceManagementClose}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            Price Management - {selectedAsset.symbol}
-          </DialogTitle>
-          <DialogContent>
-            <AssetPriceManagement
-              asset={{
-                id: selectedAsset.id,
-                symbol: selectedAsset.symbol,
-                name: selectedAsset.name,
-                currency: selectedAsset.currency,
-                assetPrice: selectedAsset.assetPrice ? {
-                  id: '',
-                  assetId: selectedAsset.id,
-                  currentPrice: selectedAsset.assetPrice.currentPrice,
-                  priceType: selectedAsset.assetPrice.priceType,
-                  priceSource: selectedAsset.assetPrice.priceSource,
-                  lastPriceUpdate: selectedAsset.assetPrice.lastPriceUpdate,
-                } : undefined
-              }}
-              onPriceUpdate={onPriceUpdate}
-              onPriceHistoryRefresh={onPriceHistoryRefresh}
-              loading={loading}
-              error={error}
-            />
-          </DialogContent>
-          <DialogActions>
-            <ResponsiveButton onClick={handlePriceManagementClose} mobileText="Close" desktopText="Close">
-              Close
-            </ResponsiveButton>
-          </DialogActions>
-        </Dialog>
-      )}
+      {/* Global Asset Price Management Modal */}
+      <GlobalAssetPriceManagementModal
+        open={priceManagementOpen}
+        onClose={handlePriceManagementClose}
+        asset={selectedAsset}
+        onPriceUpdate={onPriceUpdate}
+        onPriceHistoryRefresh={onPriceHistoryRefresh}
+        loading={loading}
+        error={error}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -777,7 +666,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                               {formatCurrency(assetToDelete.assetPrice.currentPrice, assetToDelete.currency)}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Last updated: {formatDate(assetToDelete.assetPrice.lastPriceUpdate)}
+                              Last updated: {formatDate(assetToDelete.assetPrice.lastPriceUpdate, 'full')}
                             </Typography>
                           </Box>
                         </>

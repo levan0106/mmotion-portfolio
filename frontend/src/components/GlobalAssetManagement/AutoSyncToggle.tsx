@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Switch, FormControlLabel, Box, Typography, Chip, Tooltip } from '@mui/material';
-import { Sync, SyncDisabled, Settings } from '@mui/icons-material';
+import { Switch, FormControlLabel, Box, Typography, Chip } from '@mui/material';
+import { Sync, SyncDisabled } from '@mui/icons-material';
 import { useAutoSync } from '../../hooks/useGlobalAssets';
 
 interface AutoSyncToggleProps {
@@ -76,13 +76,13 @@ export const AutoSyncToggle: React.FC<AutoSyncToggleProps> = ({
         }
       />
       
-      <Chip
+      {/* <Chip
         icon={<Settings fontSize="small" />}
         label={autoSyncEnabled ? 'Enabled' : 'Disabled'}
         color={autoSyncEnabled ? 'success' : 'default'}
         size="small"
         variant={autoSyncEnabled ? 'filled' : 'outlined'}
-      />
+      /> */}
       
       {isLoading && (
         <Chip
@@ -93,15 +93,6 @@ export const AutoSyncToggle: React.FC<AutoSyncToggleProps> = ({
         />
       )}
       
-      <Tooltip title={
-        autoSyncEnabled 
-          ? "Market prices will be automatically synced from external sources every 15 minutes"
-          : "Market prices will only be updated manually"
-      }>
-        <Typography variant="caption" color="text.secondary" sx={{ cursor: 'help' }}>
-          ℹ️
-        </Typography>
-      </Tooltip>
     </Box>
   );
 };

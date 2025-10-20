@@ -57,11 +57,26 @@ export class AutoSyncService {
     interval: number;
     cronExpression: string;
   }> {
-    const nextSync = this.getNextSyncTime();
+    // Determine last sync from in-memory or tracking history as fallback
+    let lastSyncDate: Date | null = this.lastSyncTime;
+    if (!lastSyncDate) {
+      try {
+        const latestFinished = await this.globalAssetTrackingService.getLatestFinishedExecutionTime();
+        if (latestFinished) {
+          lastSyncDate = latestFinished;
+        }
+      } catch (err) {
+        this.logger.warn(`[AutoSyncService] Failed to fetch latest finished execution time: ${err?.message || err}`);
+      }
+    }
+
+    const nextSync = this.autoSyncEnabled && lastSyncDate
+      ? new Date(lastSyncDate.getTime() + this.syncInterval * 60 * 1000)
+      : null;
     
     return {
       enabled: this.autoSyncEnabled,
-      lastSync: this.lastSyncTime?.toISOString(),
+      lastSync: lastSyncDate?.toISOString(),
       nextSync: nextSync?.toISOString(),
       interval: this.syncInterval,
       cronExpression: this.cronExpression,
@@ -84,7 +99,7 @@ export class AutoSyncService {
    */
   updateConfig(config: Partial<AutoSyncConfig>): void {
     if (config.enabled !== undefined) {
-      this.autoSyncEnabled = config.enabled;
+      this.autoSyncEnabled = this.normalizeBoolean(config.enabled);
     }
     
     if (config.intervalMinutes !== undefined) {
@@ -134,8 +149,10 @@ export class AutoSyncService {
     
     if (minutes === 1) {
       return '0 * * * * *'; // Every minute
-    } else if (minutes > 1 && minutes <= 60) {
+    } else if (minutes > 1 && minutes < 60) {
       return `0 */${minutes} * * * *`; // Every X minutes
+    } else if (minutes === 60) {
+      return '0 0 * * * *'; // Every hour on minute 0
     } else if (minutes > 60 && minutes < 1440) {
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
@@ -172,6 +189,10 @@ export class AutoSyncService {
     const match = cronExpression.match(/^\d+\s+\*\/(\d+)\s+/);
     if (match) {
       return parseInt(match[1]);
+    }
+    // Common presets
+    if (cronExpression.trim() === '0 0 * * * *') {
+      return 60; // hourly
     }
     return 0; // Could not extract interval
   }
@@ -635,7 +656,8 @@ export class AutoSyncService {
    */
   private loadAutoSyncStatus(): void {
     // Use the same config as scheduled-price-update.service.ts for consistency
-    this.autoSyncEnabled = this.configService.get<boolean>('AUTO_SYNC_ENABLED', false);
+    const enabledRaw = this.configService.get<any>('AUTO_SYNC_ENABLED', 'false');
+    this.autoSyncEnabled = this.normalizeBoolean(enabledRaw);
     this.syncInterval = parseInt(this.configService.get<string>('AUTO_SYNC_INTERVAL_MINUTES', '60'), 10);
     this.cronExpression = this.generateCronExpression(this.syncInterval);
     
@@ -645,15 +667,15 @@ export class AutoSyncService {
   /**
    * Get next sync time based on interval
    */
-  private getNextSyncTime(): Date | null {
-    if (!this.autoSyncEnabled || !this.lastSyncTime) {
-      return null;
-    }
+  // private getNextSyncTime(): Date | null {
+  //   if (!this.autoSyncEnabled || !this.lastSyncTime) {
+  //     return null;
+  //   }
 
-    const nextSync = new Date(this.lastSyncTime);
-    nextSync.setMinutes(nextSync.getMinutes() + this.syncInterval);
-    return nextSync;
-  }
+  //   const nextSync = new Date(this.lastSyncTime);
+  //   nextSync.setMinutes(nextSync.getMinutes() + this.syncInterval);
+  //   return nextSync;
+  // }
 
   /**
    * Get circuit breaker statistics for auto sync
@@ -678,5 +700,18 @@ export class AutoSyncService {
       this.cronJob = null;
       this.logger.log('[AutoSyncService] Auto sync cron job stopped and cleaned up');
     }
+  }
+
+  /**
+   * Normalize various truthy/falsey representations to boolean
+   */
+  private normalizeBoolean(value: any): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+    if (typeof value === 'string') {
+      const v = value.trim().toLowerCase();
+      return v === 'true' || v === '1' || v === 'yes' || v === 'on';
+    }
+    return false;
   }
 }
