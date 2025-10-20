@@ -19,6 +19,8 @@ import {
   Grid,
   CircularProgress,
   Button,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import ResponsiveTypography from './Common/ResponsiveTypography';
 import GlobalAssetCleanupModal from './GlobalAssetTrackingDashboard/GlobalAssetCleanupModal';
@@ -33,6 +35,7 @@ import {
   Storage as Database,
   Warning as AlertTriangle,
   Delete as DeleteIcon,
+  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 
 interface GlobalAssetTrackingDashboardProps {
@@ -60,6 +63,7 @@ export default function GlobalAssetTrackingDashboard({ className }: GlobalAssetT
     sortBy: 'createdAt',
     sortOrder: 'DESC',
   });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchTrackingRecords();
@@ -271,92 +275,102 @@ export default function GlobalAssetTrackingDashboard({ className }: GlobalAssetT
         </Grid>
       </Grid>
 
+      {/* Filter Toggle */}
+      <Box display="flex" justifyContent="flex-end" alignItems="center" gap={1} sx={{ mb: 1 }}>
+        <Tooltip title={showFilters ? 'Hide filters' : 'Show filters'}>
+          <IconButton size="medium" onClick={() => setShowFilters(prev => !prev)}>
+            <FilterListIcon />
+          </IconButton>
+        </Tooltip>
+        <Button
+          variant="outlined"
+          color="warning"
+          startIcon={<DeleteIcon />}
+          onClick={() => setShowCleanupDialog(true)}
+        >
+          Cleanup Old Data
+        </Button>
+      </Box>
+
       {/* Filters & Actions */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-            <ResponsiveTypography variant="h6">
-            Filters
-            </ResponsiveTypography>
-            <Button
-              variant="outlined"
-              color="warning"
-              startIcon={<DeleteIcon />}
-              onClick={() => setShowCleanupDialog(true)}
-              sx={{ ml: 2 }}
-            >
-              Cleanup Old Data
-            </Button>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  label="Status"
-                >
-                  <MenuItem value="">All statuses</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="failed">Failed</MenuItem>
-                  <MenuItem value="running">Running</MenuItem>
-                  <MenuItem value="started">Started</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+      {showFilters && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <ResponsiveTypography variant="h6">
+                Filters
+              </ResponsiveTypography>
+            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={filters.status}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                    label="Status"
+                  >
+                    <MenuItem value="">All statuses</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="failed">Failed</MenuItem>
+                    <MenuItem value="running">Running</MenuItem>
+                    <MenuItem value="started">Started</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Type</InputLabel>
-                <Select
-                  value={filters.type}
-                  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                  label="Type"
-                >
-                  <MenuItem value="">All types</MenuItem>
-                  <MenuItem value="scheduled">Scheduled</MenuItem>
-                  <MenuItem value="manual">Manual</MenuItem>
-                  <MenuItem value="triggered">Triggered</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    value={filters.type}
+                    onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                    label="Type"
+                  >
+                    <MenuItem value="">All types</MenuItem>
+                    <MenuItem value="scheduled">Scheduled</MenuItem>
+                    <MenuItem value="manual">Manual</MenuItem>
+                    <MenuItem value="triggered">Triggered</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Source</InputLabel>
-                <Select
-                  value={filters.source}
-                  onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                  label="Source"
-                >
-                  <MenuItem value="">All sources</MenuItem>
-                  <MenuItem value="cron_job">Cron Job</MenuItem>
-                  <MenuItem value="api_trigger">API Trigger</MenuItem>
-                  <MenuItem value="manual_trigger">Manual Trigger</MenuItem>
-                  <MenuItem value="system_recovery">System Recovery</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Source</InputLabel>
+                  <Select
+                    value={filters.source}
+                    onChange={(e) => setFilters({ ...filters, source: e.target.value })}
+                    label="Source"
+                  >
+                    <MenuItem value="">All sources</MenuItem>
+                    <MenuItem value="cron_job">Cron Job</MenuItem>
+                    <MenuItem value="api_trigger">API Trigger</MenuItem>
+                    <MenuItem value="manual_trigger">Manual Trigger</MenuItem>
+                    <MenuItem value="system_recovery">System Recovery</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Limit</InputLabel>
-                <Select
-                  value={filters.limit?.toString() || '50'}
-                  onChange={(e) => setFilters({ ...filters, limit: parseInt(e.target.value) })}
-                  label="Limit"
-                >
-                  <MenuItem value="10">10</MenuItem>
-                  <MenuItem value="25">25</MenuItem>
-                  <MenuItem value="50">50</MenuItem>
-                  <MenuItem value="100">100</MenuItem>
-                </Select>
-              </FormControl>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Limit</InputLabel>
+                  <Select
+                    value={filters.limit?.toString() || '50'}
+                    onChange={(e) => setFilters({ ...filters, limit: parseInt(e.target.value) })}
+                    label="Limit"
+                  >
+                    <MenuItem value="10">10</MenuItem>
+                    <MenuItem value="25">25</MenuItem>
+                    <MenuItem value="50">50</MenuItem>
+                    <MenuItem value="100">100</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tracking Records Table */}
       <Card>

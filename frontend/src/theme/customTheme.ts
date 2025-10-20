@@ -644,6 +644,46 @@ const themeOptions: ThemeOptions = {
         },
       },
     },
+    
+    // Global light row borders for tables
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08) !important',
+        },
+        head: {
+          borderBottom: '1px solid rgba(0, 0, 0, 0.12) !important',
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+        },
+        hover: {
+          // keep hover minimal; border remains
+        }
+      },
+    },
+    MuiTableBody: {
+      styleOverrides: {
+        root: {
+          '& .MuiTableRow-root:last-child td, & .MuiTableRow-root:last-child th': {
+            borderBottom: '0 none !important',
+          },
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          '& .MuiTableCell-root': {
+            borderBottom: '1px solid rgba(0, 0, 0, 0.12) !important',
+          },
+        },
+      },
+    },
   },
 };
 

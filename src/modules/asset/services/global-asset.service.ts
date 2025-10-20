@@ -163,6 +163,7 @@ export class GlobalAssetService {
       },
       skip: (page - 1) * limit,
       take: limit,
+      relations: ['assetPrice'],
     };
 
     try {
@@ -174,11 +175,52 @@ export class GlobalAssetService {
         filteredAssets = assets.filter(asset => asset.hasTrades());
       }
 
-      const responseData = filteredAssets.map(asset => this.mapToResponseDto(asset));
+      // Compute price change percent using current price vs last price of previous calendar day
+      const assetIds = filteredAssets.map(a => a.id);
+      let previousDayPriceByAsset = new Map<string, number | null>();
+      if (assetIds.length > 0) {
+        try {
+          for (const assetId of assetIds) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const prevLast = await this.priceHistoryService.getLastPriceOfDay(assetId, yesterday);
+            previousDayPriceByAsset.set(assetId, prevLast);
+          }
+        } catch (e) {
+          this.logger.warn(`Failed batch history fetch for priceChangePercent: ${e?.message || e}`);
+        }
+      }
+
+      const responseData = filteredAssets.map(asset => {
+        const dto = this.mapToResponseDto(asset);
+        const prev = previousDayPriceByAsset.get(asset.id);
+        const rawCurrent = (dto.assetPrice as any)?.currentPrice as any;
+        const currentNum = rawCurrent !== undefined && rawCurrent !== null ? parseFloat(String(rawCurrent)) : NaN;
+        const prevNum = prev !== undefined && prev !== null ? parseFloat(String(prev)) : NaN;
+        const change = isFinite(currentNum) && isFinite(prevNum) && prevNum > 0
+          ? ((currentNum - prevNum) / prevNum) * 100
+          : 0;
+        // Optional: debug trace if always zero
+        if (!(isFinite(currentNum) && isFinite(prevNum) && prevNum > 0)) {
+          this.logger.debug(`[priceChangePercent] asset=${asset.id} current=${rawCurrent} prev=${prev}`);
+        }
+        if (dto.assetPrice) {
+          dto.assetPrice.priceChangePercent = change;
+        } else {
+          dto.assetPrice = {
+            currentPrice: undefined as any,
+            priceType: undefined as any,
+            priceSource: undefined as any,
+            lastPriceUpdate: undefined as any,
+            priceChangePercent: change,
+          };
+        }
+        return dto;
+      });
 
       return {
         data: responseData,
-        total: filteredAssets.length,
+        total: total,
         page,
         limit,
         totalPages: Math.ceil(total / limit),
@@ -463,7 +505,7 @@ export class GlobalAssetService {
    * @private
    */
   private mapToResponseDto(asset: GlobalAsset): GlobalAssetResponseDto {
-    return {
+    const dto: GlobalAssetResponseDto = {
       id: asset.id,
       symbol: asset.symbol,
       name: asset.name,
@@ -484,6 +526,20 @@ export class GlobalAssetService {
       marketInfo: asset.getMarketInfo(),
       canModify: asset.canModify(),
     };
+
+    // Attach latest price if relation is loaded
+    const anyAsset = asset as any;
+    if (anyAsset.assetPrice) {
+      dto.assetPrice = {
+        currentPrice: anyAsset.assetPrice.currentPrice,
+        priceType: anyAsset.assetPrice.priceType,
+        priceSource: anyAsset.assetPrice.priceSource,
+        lastPriceUpdate: anyAsset.assetPrice.lastPriceUpdate,
+        priceChangePercent: dto.assetPrice?.priceChangePercent,
+      };
+    }
+
+    return dto;
   }
 
   /**

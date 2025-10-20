@@ -24,15 +24,17 @@ const GlobalAssetsPage: React.FC = () => {
 
 const GlobalAssetsContent: React.FC = () => {
   // Use real API hooks with higher limit to show more assets
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(50);
   const { 
     data: assets = [], 
     isLoading: assetsLoading, 
     error: assetsError,
     refetch: refetchAssets,
     total,
-    page,
+    page: currentPage,
     totalPages
-  } = useGlobalAssets({ limit: 50 }); // Increase limit to 50
+  } = useGlobalAssets({ limit, page });
 
 
   // Price update hooks
@@ -47,6 +49,19 @@ const GlobalAssetsContent: React.FC = () => {
 
   // API handlers using real hooks
   const handleRefresh = async () => {
+    await refetchAssets();
+  };
+
+  const handleChangePage = async (_event: unknown, newPage: number) => {
+    // MUI TablePagination is zero-based; convert to 1-based for API
+    setPage(newPage + 1);
+    await refetchAssets();
+  };
+
+  const handleChangeRowsPerPage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newLimit = parseInt(event.target.value, 10);
+    setLimit(newLimit);
+    setPage(1);
     await refetchAssets();
   };
 
@@ -163,11 +178,14 @@ const GlobalAssetsContent: React.FC = () => {
         onCreateAsset={handleCreateAsset}
         onUpdateAsset={handleUpdateAsset}
         total={total}
-        page={page}
+        page={currentPage || page}
         totalPages={totalPages}
         onPriceUpdate={handlePriceUpdate}
         onPriceHistoryRefresh={handlePriceHistoryRefresh}
         onUpdateAllPrices={handleUpdateAllPrices}
+        onChangePage={handleChangePage}
+        onChangeRowsPerPage={handleChangeRowsPerPage}
+        rowsPerPage={limit}
       />
     </Box>
   );

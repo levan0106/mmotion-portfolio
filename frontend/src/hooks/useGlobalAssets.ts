@@ -86,6 +86,8 @@ const fetchGlobalAssets = async (query: GlobalAssetQueryDto = {}): Promise<Globa
   if (query.nation) params.append('nation', query.nation);
   if (query.marketCode) params.append('marketCode', query.marketCode);
   if (query.isActive !== undefined) params.append('isActive', query.isActive.toString());
+  // Hint backend to include price data if supported
+  params.append('includePrice', 'true');
   
   const response = await apiService.api.get(`/api/v1/global-assets?${params.toString()}`);
   return response.data;
@@ -96,26 +98,10 @@ const fetchAllGlobalAssets = async (): Promise<GlobalAsset[]> => {
   const params = new URLSearchParams();
   params.append('limit', '1000'); // Set to max allowed limit
   params.append('isActive', 'true'); // Only get active assets
+  params.append('includePrice', 'true');
   
   const response = await apiService.api.get(`/api/v1/global-assets?${params.toString()}`);
-  
-  // Fetch prices for each asset
-  const assetsWithPrices = await Promise.all(
-    response.data.data.map(async (asset: GlobalAsset) => {
-      try {
-        const priceResponse = await apiService.api.get(`/api/v1/asset-prices/asset/${asset.id}`);
-        return {
-          ...asset,
-          assetPrice: priceResponse.data,
-        };
-      } catch (error) {
-        // If no price found, return asset without price
-        return asset;
-      }
-    })
-  );
-  
-  return assetsWithPrices;
+  return response.data.data;
 };
 
 const fetchGlobalAssetById = async (id: string): Promise<GlobalAsset> => {
@@ -156,63 +142,8 @@ const validateSymbolFormat = async (symbol: string, nation: string, type: string
 export const useGlobalAssets = (query: GlobalAssetQueryDto = {}) => {
   const result = useQuery(['globalAssets', query], async () => {
     const response = await fetchGlobalAssets(query);
-    
-    // Optimize: Batch fetch all prices in one API call instead of N+1 queries
-    const assetIds = response.data.map(asset => asset.id);
-    
-    let pricesMap = new Map();
-    if (assetIds.length > 0) {
-      try {
-        // Try to fetch all prices in batch
-        const batchPriceResponse = await apiService.api.post('/api/v1/asset-prices/batch', {
-          assetIds: assetIds
-        });
-        
-        // Create a map for O(1) lookup
-        batchPriceResponse.data.forEach((price: any) => {
-          pricesMap.set(price.assetId, price);
-        });
-      } catch (error) {
-        console.warn('Batch price fetch failed, falling back to individual calls:', error);
-        
-        // Fallback: Fetch prices in parallel batches (not sequential)
-        const batchSize = 10; // Process 10 assets at a time
-        const pricePromises = [];
-        
-        for (let i = 0; i < assetIds.length; i += batchSize) {
-          const batch = assetIds.slice(i, i + batchSize);
-          const batchPromise = Promise.allSettled(
-            batch.map(async (assetId) => {
-              try {
-                const priceResponse = await apiService.api.get(`/api/v1/asset-prices/asset/${assetId}`);
-                return { assetId, price: priceResponse.data };
-              } catch (error) {
-                return { assetId, price: null };
-              }
-            })
-          );
-          pricePromises.push(batchPromise);
-        }
-        
-        const allResults = await Promise.all(pricePromises);
-        allResults.flat().forEach((result) => {
-          if (result.status === 'fulfilled' && result.value.price) {
-            pricesMap.set(result.value.assetId, result.value.price);
-          }
-        });
-      }
-    }
-    
-    // Map prices to assets
-    const assetsWithPrices = response.data.map(asset => ({
-      ...asset,
-      assetPrice: pricesMap.get(asset.id) || null,
-    }));
-    
-    return {
-      ...response,
-      data: assetsWithPrices,
-    };
+    // Assume backend embeds assetPrice; return data directly without extra calls
+    return response;
   }, {
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes cache

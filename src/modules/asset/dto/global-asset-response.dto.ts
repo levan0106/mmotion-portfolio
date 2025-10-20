@@ -194,4 +194,25 @@ export class GlobalAssetResponseDto {
     example: true,
   })
   canModify: boolean;
+
+  /**
+   * Latest price information for the asset, if available.
+   */
+  @ApiPropertyOptional({
+    description: 'Latest price information for the asset',
+    example: {
+      currentPrice: 12345.67,
+      priceType: 'EXTERNAL',
+      priceSource: 'EXTERNAL_API',
+      lastPriceUpdate: '2025-10-20T10:00:08.850Z',
+      priceChangePercent: 1.23,
+    },
+  })
+  assetPrice?: {
+    currentPrice: number;
+    priceType: string;
+    priceSource: string;
+    lastPriceUpdate: Date | string;
+    priceChangePercent?: number;
+  };
 }

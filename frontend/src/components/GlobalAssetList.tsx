@@ -34,11 +34,9 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Remove as RemoveIcon,
   Refresh as RefreshIcon,
   OpenInNew as OpenInNewIcon,
+  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from './Common';
 import { formatDate } from '@/utils/format';
@@ -62,7 +60,9 @@ interface GlobalAsset {
     priceType: string;
     priceSource: string;
     lastPriceUpdate: string;
+    priceChangePercent?: number;
   };
+  priceChangePercent?: number;
 }
 
 interface GlobalAssetListProps {
@@ -73,6 +73,11 @@ interface GlobalAssetListProps {
   onView: (asset: GlobalAsset) => void;
   onRefresh: () => void;
   error?: string;
+  total?: number;
+  page?: number; // 1-based page from server
+  rowsPerPage?: number;
+  onChangePage?: (event: unknown, newPage: number) => void;
+  onChangeRowsPerPage?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 // Asset type colors
@@ -131,9 +136,14 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
   onView,
   onRefresh,
   error,
+  total = 0,
+  page = 1,
+  rowsPerPage = 10,
+  onChangePage,
+  onChangeRowsPerPage,
 }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [localPage, setLocalPage] = useState(0);
+  const [localRowsPerPage, setLocalRowsPerPage] = useState(rowsPerPage);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [nationFilter, setNationFilter] = useState<string>('');
@@ -141,6 +151,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedAsset, setSelectedAsset] = useState<GlobalAsset | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Get unique values for filters
   const uniqueTypes = useMemo(() => {
@@ -190,17 +201,20 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
 
   // Pagination
   const paginatedAssets = useMemo(() => {
-    const start = page * rowsPerPage;
-    return filteredAndSortedAssets.slice(start, start + rowsPerPage);
-  }, [filteredAndSortedAssets, page, rowsPerPage]);
+    const start = localPage * localRowsPerPage;
+    return filteredAndSortedAssets.slice(start, start + localRowsPerPage);
+  }, [filteredAndSortedAssets, localPage, localRowsPerPage]);
 
   const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
+    setLocalPage(newPage);
+    onChangePage?.(_event, newPage);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newSize = parseInt(event.target.value, 10);
+    setLocalRowsPerPage(newSize);
+    setLocalPage(0);
+    onChangeRowsPerPage?.(event);
   };
 
   const handleSort = (field: SortField) => {
@@ -248,14 +262,15 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
     }).format(price);
   };
 
-  const getPriceChangeIcon = (asset: GlobalAsset) => {
-    if (!asset.assetPrice) return <RemoveIcon color="disabled" />;
-    
-    // Mock price change logic - in real app, this would come from price history
-    const change = Math.random() - 0.5;
-    if (change > 0.1) return <TrendingUpIcon color="success" />;
-    if (change < -0.1) return <TrendingDownIcon color="error" />;
-    return <RemoveIcon color="disabled" />;
+  const renderChangePercent = (value?: number) => {
+    if (value === undefined || value === null) return <Typography variant="caption" color="text.secondary">N/A</Typography>;
+    const color = value > 0 ? 'success.main' : value < 0 ? 'error.main' : 'text.secondary';
+    const prefix = value > 0 ? '+' : '';
+    return (
+      <Typography variant="body2" sx={{ color, fontWeight: 600 }}>
+        {prefix}{value.toFixed(2)}%
+      </Typography>
+    );
   };
 
   const getAssetTypeColor = (type: string) => {
@@ -284,7 +299,17 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
 
   return (
     <Box>
+      {/* Filter Toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <Tooltip title={showFilters ? 'Hide filters' : 'Show filters'}>
+          <IconButton size="medium" onClick={() => setShowFilters(prev => !prev)}>
+            <FilterListIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       {/* Filters */}
+      {showFilters && (
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={4}>
@@ -351,6 +376,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
           </Grid>
         </Grid>
       </Paper>
+      )}
 
       {/* Table */}
       <Card>
@@ -385,15 +411,6 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     Type
                   </TableSortLabel>
                 </TableCell>
-                  {/* <TableCell>
-                    <TableSortLabel
-                      active={sortField === 'nation'}
-                      direction={sortField === 'nation' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('nation')}
-                    >
-                      Nation
-                    </TableSortLabel>
-                  </TableCell> */}
                 <TableCell>
                   <TableSortLabel
                     active={sortField === 'marketCode'}
@@ -404,6 +421,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>Price</TableCell>
+                <TableCell>Change %</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -478,26 +496,23 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                         {getNationDisplayName(asset.nation)}
                       </Typography>
                     </TableCell>
-                    {/* <TableCell>
-                      <Typography variant="body2">
-                        {getMarketDisplayName(asset.marketCode)}
-                      </Typography>
-                    </TableCell> */}
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getPriceChangeIcon(asset)}
-                        <Typography variant="body2">
-                          {asset.assetPrice
-                            ? formatPrice(asset.assetPrice.currentPrice, asset.currency)
-                            : 'No price data'
-                          }
-                        </Typography>
-                      </Box>
+                      <Typography variant="body2">
+                        {asset.assetPrice
+                          ? formatPrice(asset.assetPrice.currentPrice, asset.currency)
+                          : 'No price data'
+                        }
+                      </Typography>
                       {asset.assetPrice && (
                         <Typography variant="caption" color="text.secondary">
                           {asset.assetPrice.priceSource} • {formatDate(asset.assetPrice.lastPriceUpdate, 'medium')}
                         </Typography>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {renderChangePercent(asset.assetPrice?.priceChangePercent)}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -526,11 +541,11 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
         </TableContainer>
 
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50]}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={filteredAndSortedAssets.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          count={total || filteredAndSortedAssets.length}
+          rowsPerPage={rowsPerPage ?? localRowsPerPage}
+          page={(page ? page - 1 : localPage)}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />

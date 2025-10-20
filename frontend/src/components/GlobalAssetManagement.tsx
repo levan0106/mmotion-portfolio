@@ -78,6 +78,9 @@ interface GlobalAssetManagementProps {
   total?: number;
   page?: number;
   totalPages?: number;
+  rowsPerPage?: number;
+  onChangePage?: (event: unknown, newPage: number) => void;
+  onChangeRowsPerPage?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   
   // Props for price management
   onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string) => Promise<void>;
@@ -97,6 +100,9 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   total = 0,
   page = 1,
   totalPages = 1,
+  rowsPerPage,
+  onChangePage,
+  onChangeRowsPerPage,
   onPriceUpdate,
   onPriceHistoryRefresh,
   onUpdateAllPrices,
@@ -484,6 +490,11 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 onView={handleViewAsset}
                 onRefresh={onRefresh}
                 error={error}
+                total={total}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onChangePage={onChangePage}
+                onChangeRowsPerPage={onChangeRowsPerPage}
               />
             </Box>
           )}

@@ -28,7 +28,6 @@ import {
   AccountBalanceWallet,
   TrendingUp,
   Refresh,
-  Visibility,
   MonetizationOn,
   AccountBalance,
   Add,
@@ -200,7 +199,7 @@ const AssetTableRow = memo(({
       </TableCell>
       <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Tooltip title={t('assets.actions.viewDetails')}>
+          {/* <Tooltip title={t('assets.actions.viewDetails')}>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -216,7 +215,7 @@ const AssetTableRow = memo(({
             >
               <Visibility />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip title={t('assets.actions.editAsset')}>
             <IconButton
               size="small"

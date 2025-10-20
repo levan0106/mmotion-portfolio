@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between, LessThan, MoreThan, LessThanOrEqual } from 'typeorm';
 import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { LoggingService } from '../../logging/services/logging.service';
@@ -235,6 +235,25 @@ export class PriceHistoryService {
       sortOrder: 'DESC',
     });
     return result.records;
+  }
+
+  /**
+   * Get the last (latest) price within a specific calendar day for an asset.
+   * If no record exists on that day, returns null (no fallback to earlier days).
+   */
+  async getLastPriceOfDay(assetId: string, day: Date): Promise<number | null> {
+    const endOfDay = new Date(day);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const record = await this.priceHistoryRepository.findOne({
+      where: {
+        assetId,
+        createdAt: LessThanOrEqual(endOfDay),
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    return record ? record.price : null;
   }
 
   /**
