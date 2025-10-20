@@ -189,9 +189,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               {isFund ? t('portfolio.fund') : t('portfolio.individual')}
             </div>
           </div>
-          <span className={`portfolio-card__currency ${portfolio.baseCurrency === 'USD' ? 'portfolio-card__currency--primary' : ''}`}>
+          {/* <span className={`portfolio-card__currency ${portfolio.baseCurrency === 'USD' ? 'portfolio-card__currency--primary' : ''}`}>
             {portfolio.baseCurrency}
-          </span>
+          </span> */}
         </div>
 
         <div className="portfolio-card__metrics">

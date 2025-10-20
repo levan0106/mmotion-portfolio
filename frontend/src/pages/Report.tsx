@@ -5,13 +5,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Chip,
   CircularProgress,
   Alert,
@@ -34,6 +27,7 @@ import { useAccount } from '../contexts/AccountContext';
 import { apiService } from '../services/api';
 import { formatCurrency, formatNumber, formatPercentageValue } from '../utils/format';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import ResponsiveTable from '../components/Common/ResponsiveTable';
 
 interface ReportData {
   cashBalance: {
@@ -198,211 +192,7 @@ const Report: React.FC = () => {
     );
   };
 
-  const DataTable = ({ 
-    title, 
-    data, 
-    columns,
-    customRender
-  }: {
-    title: string;
-    data: any[];
-    columns: Array<{ key: string; label: string; align?: 'left' | 'right' | 'center' }>;
-    customRender?: Record<string, (value: any, row: any) => React.ReactNode>;
-  }) => (
-    <Paper sx={{ mb: 3 }}>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <ResponsiveTypography variant="chartTitle">
-          {title}
-        </ResponsiveTypography>
-      </Box>
-      <TableContainer sx={{ 
-        overflowX: 'auto',
-        '&::-webkit-scrollbar': {
-          height: '6px',
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: '#f1f1f1',
-          borderRadius: '3px',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#c1c1c1',
-          borderRadius: '3px',
-          '&:hover': {
-            backgroundColor: '#a8a8a8',
-          },
-        },
-      }}>
-        <Table sx={{ 
-          width: '100%',
-          tableLayout: 'auto'
-        }}>
-          <TableHead>
-            <TableRow>
-              {columns.map((column, colIndex) => (
-                <TableCell 
-                  key={`header-${colIndex}-${column.key}`} 
-                  align={column.align || 'left'}
-                  sx={{
-                    padding: { xs: '4px 8px', sm: '8px 12px', md: '12px 16px' },
-                    whiteSpace: 'nowrap',
-                    width: 'auto',
-                    minWidth: 'fit-content',
-                    // Flexible width based on content
-                    ...(column.key === 'percentage' ? {
-                      minWidth: '50px',
-                      maxWidth: '80px'
-                    } : {}),
-                    ...(column.key === 'count' ? {
-                      minWidth: '50px',
-                      maxWidth: '80px'
-                    } : {}),
-                    ...(column.key.includes('value') || column.key.includes('total') ? {
-                      minWidth: '50px',
-                      maxWidth: '200px'
-                    } : {}),
-                    ...(column.key === 'source' || column.key === 'exchange' || column.key === 'group' ? {
-                      minWidth: '50px',
-                      maxWidth: '80px'
-                    } : {})
-                  }}
-                >
-                  <ResponsiveTypography 
-                    variant="tableHeaderSmall" 
-                    sx={{ 
-                      fontWeight: 600,
-                      // Use extra small on very small screens
-                      '@media (max-width: 600px)': {
-                        fontSize: '0.55rem !important',
-                        lineHeight: '1.1 !important'
-                      }
-                    }}
-                  >
-                    {column.label}
-                  </ResponsiveTypography>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.length > 0 ? (
-              data.map((row, index) => (
-                <TableRow key={index} hover>
-                  {columns.map((column, colIndex) => (
-                    <TableCell 
-                      key={`${index}-${colIndex}-${column.key}`} 
-                      align={column.align || 'left'}
-                      sx={{
-                        padding: { xs: '4px 8px', sm: '8px 12px', md: '12px 16px' },
-                        whiteSpace: 'nowrap',
-                        width: 'auto',
-                        minWidth: 'fit-content',
-                        // Flexible width based on content
-                        ...(column.key === 'percentage' ? {
-                          minWidth: '50px',
-                          maxWidth: '80px'
-                        } : {}),
-                        ...(column.key === 'count' ? {
-                          minWidth: '50px',
-                          maxWidth: '80px'
-                        } : {}),
-                        ...(column.key.includes('value') || column.key.includes('total') ? {
-                          minWidth: '50px',
-                          maxWidth: '200px'
-                        } : {}),
-                        ...(column.key === 'source' || column.key === 'exchange' || column.key === 'group' ? {
-                          minWidth: '50px',
-                          maxWidth: '80px'
-                        } : {})
-                      }}
-                    >
-                      {customRender && customRender[column.key] ? (
-                        customRender[column.key](row[column.key], row)
-                      ) : column.key === 'percentage' ? (
-                        <Chip
-                          label={formatPercentageValue(row[column.key], 1)}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                          sx={{
-                            fontSize: '0.65rem'
-                          }}
-                        />
-                      ) : column.key === 'pnl' ? (
-                        <ResponsiveTypography 
-                          variant="tableCell" 
-                          sx={{ 
-                            fontWeight: 400,
-                            color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
-                            // Use extra small on very small screens
-                            '@media (max-width: 600px)': {
-                              fontSize: '0.55rem !important',
-                              lineHeight: '1.1 !important'
-                            }
-                          }}
-                        >
-                          {formatCurrency(row.total - row.capitalValue, baseCurrency)}
-                        </ResponsiveTypography>
-                      ) : column.key.includes('value') || column.key.includes('total') || column.key === 'capitalValue' ? (
-                        <ResponsiveTypography 
-                          variant="tableCell" 
-                          sx={{ 
-                            fontWeight: 400,
-                            color: Number(row[column.key]) >= 0 ? 'success.main' : 'error.main',
-                            // Use extra small on very small screens
-                            '@media (max-width: 600px)': {
-                              fontSize: '0.55rem !important',
-                              lineHeight: '1.1 !important'
-                            }
-                          }}
-                        >
-                          {formatCurrency(row[column.key], baseCurrency)}
-                        </ResponsiveTypography>
-                      ) : column.key === 'count' ? (
-                        <ResponsiveTypography 
-                          variant="tableCell" 
-                          sx={{ 
-                            fontWeight: 400,
-                            // Use extra small on very small screens
-                            '@media (max-width: 600px)': {
-                              fontSize: '0.55rem !important',
-                              lineHeight: '1.1 !important'
-                            }
-                          }}
-                        >
-                          {formatNumber(row[column.key], 0)}
-                        </ResponsiveTypography>
-                      ) : (
-                        <ResponsiveTypography 
-                          variant="tableCellSmall"
-                          sx={{
-                            // Use extra small on very small screens
-                            '@media (max-width: 600px)': {
-                              fontSize: '0.55rem !important',
-                              lineHeight: '1.1 !important'
-                            }
-                          }}
-                        >
-                          {row[column.key]}
-                        </ResponsiveTypography>
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} align="center">
-                  <ResponsiveTypography variant="formHelper">
-                    {t('report.noData')}
-                  </ResponsiveTypography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-  );
+  // Removed inline DataTable in favor of shared ResponsiveTable
 
   if (loading) {
     return (
@@ -560,15 +350,54 @@ const Report: React.FC = () => {
             </Box>
 
             <Box sx={{ flex: 1 }}>
-              <DataTable
-                title={t('report.cashBalance.byFundingSource')}
-                data={reportData.cashBalance.byFundingSource}
-                columns={[
-                  { key: 'source', label: t('report.columns.fundingSource') },
-                  { key: 'total', label: t('report.columns.totalAmount'), align: 'right' },
-                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
-                ]}
-              />
+              <Box sx={{background: 'white', borderRadius:2}}>
+                <Box sx={{ p: 2}}>
+                  <ResponsiveTypography variant="chartTitle">
+                    {t('report.cashBalance.byFundingSource')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTable
+                  data={reportData.cashBalance.byFundingSource}
+                  columns={[
+                    {
+                      key: 'source',
+                      header: t('report.columns.fundingSource'),
+                    },
+                    {
+                      key: 'total',
+                      header: t('report.columns.totalAmount'),
+                      align: 'right',
+                      render: (row: any) => (
+                        <ResponsiveTypography 
+                          variant="tableCell" 
+                          sx={{ 
+                            color: Number(row.total) >= 0 ? 'success.main' : 'error.main',
+                            '@media (max-width: 600px)': {
+                              lineHeight: '1.1 !important'
+                            }
+                          }}
+                        >
+                          {formatCurrency(row.total, baseCurrency)}
+                        </ResponsiveTypography>
+                      )
+                    },
+                    {
+                      key: 'percentage',
+                      header: t('report.columns.share'),
+                      align: 'right',
+                      render: (row: any) => (
+                        <Chip
+                          label={formatPercentageValue(row.percentage, 1)}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          sx={{ fontSize: '0.65rem' }}
+                        />
+                      )
+                    },
+                  ]}
+                />
+              </Box>
             </Box>
           </Box>
         </Grid>
@@ -577,7 +406,7 @@ const Report: React.FC = () => {
         <Grid item xs={12} md={4}>
           <Box sx={{ p: 0.2, height: '100%', display: 'flex', flexDirection: 'column' }}>
             
-            <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch' }}>
+            <Box sx={{ mb: 3, height: '180px', display: 'flex', alignItems: 'stretch'}}>
               <Box sx={{ width: '100%' }}>
                 <SummaryCard
                   title={t('report.deposits.title')}
@@ -591,27 +420,131 @@ const Report: React.FC = () => {
             </Box>
 
             <Box sx={{ flex: 1 }}>
-              <DataTable
-                title={t('report.deposits.byBank')}
+              <Box sx={{background: 'white', borderRadius:2}}>
+                <Box sx={{ p: 2}}>
+                  <ResponsiveTypography variant="chartTitle">
+                    {t('report.deposits.byBank')}
+                  </ResponsiveTypography>
+                </Box>
+              <ResponsiveTable
                 data={reportData.deposits.byExchange}
                 columns={[
-                  { key: 'exchange', label: t('report.columns.bank') },
-                  { key: 'count', label: t('report.columns.count'), align: 'right' },
-                  { key: 'total', label: t('report.columns.value'), align: 'right' },
-                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
+                  { key: 'exchange', header: t('report.columns.bank') },
+                  { 
+                    key: 'count', 
+                    header: t('report.columns.count'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <ResponsiveTypography 
+                        variant="tableCell" 
+                        sx={{ 
+                          '@media (max-width: 600px)': {
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
+                        {formatNumber(row.count, 0)}
+                      </ResponsiveTypography>
+                    )
+                  },
+                  { 
+                    key: 'total', 
+                    header: t('report.columns.value'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <ResponsiveTypography 
+                        variant="tableCell" 
+                        sx={{ 
+                          color: Number(row.total) >= 0 ? 'success.main' : 'error.main',
+                          '@media (max-width: 600px)': {
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
+                        {formatCurrency(row.total, baseCurrency)}
+                      </ResponsiveTypography>
+                    )
+                  },
+                  { 
+                    key: 'percentage', 
+                    header: t('report.columns.share'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <Chip
+                        label={formatPercentageValue(row.percentage, 1)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.7rem' }}
+                      />
+                    )
+                  },
                 ]}
               />
-              
-              <DataTable
-                title={t('report.deposits.byTerm')}
+              </Box>
+
+              <Box sx={{background: 'white', borderRadius:2, mt: 3}}>
+                <Box sx={{ p: 2}}>
+                  <ResponsiveTypography variant="chartTitle">
+                    {t('report.deposits.byTerm')}
+                  </ResponsiveTypography>
+                </Box>
+              <ResponsiveTable
                 data={reportData.deposits.byFundingSource}
                 columns={[
-                  { key: 'source', label: t('report.columns.term') },
-                  { key: 'count', label: t('report.columns.count'), align: 'right' },
-                  { key: 'total', label: t('report.columns.value'), align: 'right' },
-                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
+                  { key: 'source', header: t('report.columns.term') },
+                  { 
+                    key: 'count', 
+                    header: t('report.columns.count'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <ResponsiveTypography 
+                        variant="tableCell" 
+                        sx={{ 
+                          '@media (max-width: 600px)': {
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
+                        {formatNumber(row.count, 0)}
+                      </ResponsiveTypography>
+                    )
+                  },
+                  { 
+                    key: 'total', 
+                    header: t('report.columns.value'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <ResponsiveTypography 
+                        variant="tableCell" 
+                        sx={{ 
+                          color: Number(row.total) >= 0 ? 'success.main' : 'error.main',
+                          '@media (max-width: 600px)': {
+                            lineHeight: '1.1 !important'
+                          }
+                        }}
+                      >
+                        {formatCurrency(row.total, baseCurrency)}
+                      </ResponsiveTypography>
+                    )
+                  },
+                  { 
+                    key: 'percentage', 
+                    header: t('report.columns.share'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <Chip
+                        label={formatPercentageValue(row.percentage, 1)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.7rem' }}
+                      />
+                    )
+                  },
                 ]}
               />
+              </Box>
             </Box>
           </Box>
         </Grid>
@@ -634,26 +567,27 @@ const Report: React.FC = () => {
             </Box>
 
             <Box sx={{ flex: 1 }}>
-              <DataTable
-                title={t('report.assets.byExchange')}
+              <Box sx={{background: 'white', borderRadius:2}}>
+                <Box sx={{ p: 2}}>
+                  <ResponsiveTypography variant="chartTitle">
+                    {t('report.assets.byExchange')}
+                  </ResponsiveTypography>
+                </Box>
+              <ResponsiveTable
                 data={reportData.assets.byExchange}
                 columns={[
-                  { key: 'exchange', label: t('report.columns.exchange') },
-                  { key: 'count', label: t('report.columns.capitalValue'), align: 'right' },
-                  { key: 'total', label: t('report.columns.currentValue'), align: 'right' },
-                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
-                ]}
-                customRender={{
-                  count: (value, row) => (
+                  { key: 'exchange', header: t('report.columns.exchange') },
+                  { 
+                    key: 'count', 
+                    header: t('report.columns.capitalValue'), 
+                    align: 'right',
+                    render: (row: any) => (
                     <Box>
                       <ResponsiveTypography 
-                        variant="tableCellSmall" 
+                        variant="tableCell" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
                           '@media (max-width: 600px)': {
-                            fontSize: '0.55rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
@@ -664,71 +598,86 @@ const Report: React.FC = () => {
                         variant="tableCellSmall"
                         sx={{
                           color: 'text.secondary',
-                          // Use extra small on very small screens
                           '@media (max-width: 600px)': {
-                            fontSize: '0.5rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {t('report.columns.count')}: {formatNumber(value, 0)}
+                          {t('report.columns.count')}: {formatNumber(row.count, 0)}
                       </ResponsiveTypography>
                     </Box>
-                  ),
-                  total: (value, row) => (
+                    )
+                  },
+                  { 
+                    key: 'total', 
+                    header: t('report.columns.currentValue'), 
+                    align: 'right',
+                    render: (row: any) => (
                     <Box>
                       <ResponsiveTypography 
-                        variant="tableCellSmall" 
+                        variant="tableCell" 
                         sx={{ 
-                          fontWeight: 600, 
-                          color: Number(value) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
+                            color: Number(row.total) >= 0 ? 'success.main' : 'error.main',
                           '@media (max-width: 600px)': {
-                            fontSize: '0.55rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {formatCurrency(value, baseCurrency)}
+                          {formatCurrency(row.total, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="tableCellSmall" 
                         sx={{ 
-                          color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
+                            color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
                           '@media (max-width: 600px)': {
-                            fontSize: '0.5rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {t('report.columns.pnl')}: {formatCurrency(value - row.capitalValue, baseCurrency)}
+                          {t('report.columns.pnl')}: {formatCurrency(row.total - row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
                   )
-                }}
+                  },
+                  { 
+                    key: 'percentage', 
+                    header: t('report.columns.share'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <Chip
+                        label={formatPercentageValue(row.percentage, 1)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.7rem' }}
+                      />
+                    )
+                  },
+                ]}
               />
-              
-              <DataTable
-                title={t('report.assets.byGroup')}
+              </Box>
+
+              <Box sx={{background: 'white', borderRadius:2, mt: 3}}>
+                <Box sx={{ p: 2}}>
+                  <ResponsiveTypography variant="chartTitle">
+                    {t('report.assets.byGroup')}
+                  </ResponsiveTypography>
+                </Box>
+              <ResponsiveTable
                 data={reportData.assets.byAssetGroup}
                 columns={[
-                  { key: 'group', label: t('report.columns.assetGroup') },
-                  { key: 'count', label: t('report.columns.capitalValue'), align: 'right' },
-                  { key: 'total', label: t('report.columns.currentValue'), align: 'right' },
-                  { key: 'percentage', label: t('report.columns.share'), align: 'right' },
-                ]}
-                customRender={{
-                  count: (value, row) => (
+                  { key: 'group', header: t('report.columns.assetGroup') },
+                  { 
+                    key: 'count', 
+                    header: t('report.columns.capitalValue'), 
+                    align: 'right',
+                    render: (row: any) => (
                     <Box>
                       <ResponsiveTypography 
-                        variant="tableCellSmall" 
+                        variant="tableCell" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: Number(row.capitalValue) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
                           '@media (max-width: 600px)': {
-                            fontSize: '0.55rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
@@ -739,50 +688,64 @@ const Report: React.FC = () => {
                         variant="tableCellSmall"
                         sx={{
                           color: 'text.secondary',
-                          // Use extra small on very small screens
                           '@media (max-width: 600px)': {
-                            fontSize: '0.5rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {t('report.columns.count')}: {formatNumber(value, 0)}
+                          {t('report.columns.count')}: {formatNumber(row.count, 0)}
                       </ResponsiveTypography>
                     </Box>
-                  ),
-                  total: (value, row) => (
+                    )
+                  },
+                  { 
+                    key: 'total', 
+                    header: t('report.columns.currentValue'), 
+                    align: 'right',
+                    render: (row: any) => (
                     <Box>
                       <ResponsiveTypography 
-                        variant="tableCellSmall" 
+                        variant="tableCell" 
                         sx={{ 
-                          fontWeight: 600, 
-                          color: Number(value) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
+                            color: Number(row.total) >= 0 ? 'success.main' : 'error.main',
                           '@media (max-width: 600px)': {
-                            fontSize: '0.55rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {formatCurrency(value, baseCurrency)}
+                          {formatCurrency(row.total, baseCurrency)}
                       </ResponsiveTypography>
                       <ResponsiveTypography 
                         variant="tableCellSmall" 
                         sx={{ 
-                          color: Number(value - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
-                          // Use extra small on very small screens
+                            color: Number(row.total - row.capitalValue) >= 0 ? 'success.main' : 'error.main',
                           '@media (max-width: 600px)': {
-                            fontSize: '0.5rem !important',
                             lineHeight: '1.1 !important'
                           }
                         }}
                       >
-                        {t('report.columns.pnl')}: {formatCurrency(value - row.capitalValue, baseCurrency)}
+                          {t('report.columns.pnl')}: {formatCurrency(row.total - row.capitalValue, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
                   )
-                }}
+                  },
+                  { 
+                    key: 'percentage', 
+                    header: t('report.columns.share'), 
+                    align: 'right',
+                    render: (row: any) => (
+                      <Chip
+                        label={formatPercentageValue(row.percentage, 1)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.7rem' }}
+                      />
+                    )
+                  },
+                ]}
               />
+              </Box>
             </Box>
           </Box>
         </Grid>

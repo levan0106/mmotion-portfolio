@@ -818,7 +818,7 @@ const PortfolioDetail: React.FC = () => {
           className="sticky-element"
           sx={{
             position: 'sticky',
-            top: { xs: -10, sm: -10, md: -20 },
+            top: { xs: -15, sm: -15, md: -20 },
             zIndex: 1200,
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             borderBottom: '1px solid',
