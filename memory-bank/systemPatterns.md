@@ -970,6 +970,18 @@ erDiagram
        - **Component Integration**: All tables use ResponsiveTable for consistency - **COMPLETED**
        - **Code Quality**: Clean, maintainable code with proper error handling - **COMPLETED**
 
+### 50. Global Asset Tracking System Pattern - **IMPLEMENTED ✅**
+       - **Comprehensive Tracking System**: Complete Global Asset Tracking system with sync operation monitoring - **COMPLETED**
+       - **Entity Architecture**: GlobalAssetTracking, ApiCallDetail, FailedSymbol entities with proper relationships - **COMPLETED**
+       - **API Endpoint Implementation**: Fixed successRate to return as number, added missing API call details endpoint - **COMPLETED**
+       - **Service Layer Enhancement**: Enhanced tracking service with number conversion and helper methods - **COMPLETED**
+       - **Migration Management**: Consolidated 10 separate migrations into 2 comprehensive migrations - **COMPLETED**
+       - **Smart Migration Logic**: Implemented existence checks and foreign key constraint handling - **COMPLETED**
+       - **Frontend Integration**: Updated dashboard to handle number successRate and API call details - **COMPLETED**
+       - **Error Handling**: Comprehensive error handling and logging throughout the system - **COMPLETED**
+       - **Database Schema**: Complete schema with proper indexes and foreign key constraints - **COMPLETED**
+       - **Code Quality**: Clean, maintainable code with proper error handling and transaction management - **COMPLETED**
+
 ## MarketDataService Architecture Patterns - **IMPLEMENTED** ✅
 
 ### Service Refactoring Patterns - **COMPLETED**

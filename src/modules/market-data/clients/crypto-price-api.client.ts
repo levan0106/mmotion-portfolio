@@ -3,6 +3,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { BaseMarketData, MarketDataType, MarketDataSource } from '../types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
+import { ApiTrackingBase } from '../base/api-tracking.base';
+import { ApiResult } from '../interfaces/api-tracking.interface';
 
 export interface CryptoData extends BaseMarketData {
   name: string;
@@ -15,20 +17,67 @@ export interface CryptoData extends BaseMarketData {
 }
 
 @Injectable()
-export class CryptoPriceAPIClient {
-  private readonly logger = new Logger(CryptoPriceAPIClient.name);
+export class CryptoPriceAPIClient extends ApiTrackingBase {
   private readonly baseUrl = 'https://api.coingecko.com/api/v3';
   private readonly timeout = 10000;
 
   constructor(
     private readonly httpService: HttpService,
     private readonly circuitBreakerService: CircuitBreakerService
-  ) {}
+  ) {
+    super(CryptoPriceAPIClient.name);
+  }
 
   /**
    * Get all crypto prices with circuit breaker protection
    */
-  async getAllCryptoPrices(): Promise<CryptoData[]> {
+  async getAllCryptoPrices(): Promise<ApiResult<CryptoData[]>> {
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Referer': 'https://www.coingecko.com/',
+      'Origin': 'https://www.coingecko.com',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin'
+    };
+
+    const apiCall = {
+      options: {
+        provider: 'CoinGecko',
+        endpoint: `${this.baseUrl}/coins/markets`,
+        method: 'GET',
+      },
+      apiCall: () => this.fetchCryptoPrices(headers),
+      dataProcessor: (data: CryptoData[]) => ({
+        symbolsProcessed: data.length,
+        successfulSymbols: data.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
+        failedSymbols: data.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length,
+      }),
+    };
+
+    const result = await this.executeWithTracking(
+      apiCall.options,
+      apiCall.apiCall,
+      apiCall.dataProcessor
+    );
+
+    return {
+      data: result.statusCode === 200 ? await apiCall.apiCall() : [],
+      apiCalls: [result],
+      totalSymbols: result.symbolsProcessed,
+      successfulSymbols: result.successfulSymbols,
+      failedSymbols: result.failedSymbols,
+    };
+  }
+
+  /**
+   * Private method to fetch crypto prices
+   */
+  private async fetchCryptoPrices(headers: any): Promise<CryptoData[]> {
     return this.circuitBreakerService.execute(
       'crypto-price-api',
       async () => {
@@ -44,18 +93,7 @@ export class CryptoPriceAPIClient {
               sparkline: false,
               price_change_percentage: '24h'
             },
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'application/json, text/plain, */*',
-              'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'Connection': 'keep-alive',
-              'Referer': 'https://www.coingecko.com/',
-              'Origin': 'https://www.coingecko.com',
-              'Sec-Fetch-Dest': 'empty',
-              'Sec-Fetch-Mode': 'cors',
-              'Sec-Fetch-Site': 'same-origin'
-            },
+            headers,
             timeout: this.timeout
           })
         );
@@ -66,10 +104,10 @@ export class CryptoPriceAPIClient {
         return cryptoPrices;
       },
       {
-        failureThreshold: 3, // Open circuit after 3 failures
-        timeout: 30000, // Wait 30 seconds before trying again
-        successThreshold: 2, // Need 2 successes to close circuit
-        monitoringPeriod: 300000 // 5 minutes monitoring window
+        failureThreshold: 3,
+        timeout: 30000,
+        successThreshold: 2,
+        monitoringPeriod: 300000
       }
     ).catch(error => {
       this.logger.error('Failed to fetch crypto prices from CoinGecko:', error.message);
@@ -82,7 +120,8 @@ export class CryptoPriceAPIClient {
    */
   async getCryptoPriceBySymbol(symbol: string): Promise<CryptoData | null> {
     try {
-      const allPrices = await this.getAllCryptoPrices();
+      const allPricesResult = await this.getAllCryptoPrices();
+      const allPrices = allPricesResult.data;
       
       // Try exact match first
       let crypto = allPrices.find(c => c.symbol.toLowerCase() === symbol.toLowerCase());

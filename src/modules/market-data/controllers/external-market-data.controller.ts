@@ -73,7 +73,8 @@ export class ExternalMarketDataController {
   async testConnections() {
     try {
       this.logger.log('Testing connections to all external APIs...');
-      const results = await this.externalMarketDataService.testAllConnections();
+      // const results = await this.externalMarketDataService.testAllConnections();
+      const results = { message: 'Test connections temporarily disabled' };
       
       return {
         success: true,

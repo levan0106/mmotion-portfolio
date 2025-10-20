@@ -38,7 +38,6 @@ import {
 import { ResponsiveButton } from './Common';
 import {
   Refresh as RefreshIcon,
-  PlayArrow as PlayIcon,
   Settings as SettingsIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
@@ -88,7 +87,6 @@ interface MarketDataDashboardProps {
   providers: MarketDataProvider[];
   recentUpdates: PriceUpdateResult[];
   onRefresh: () => void;
-  onUpdateAll: () => void;
   onUpdateByNation: (nation: string) => void;
   onUpdateByMarket: (marketCode: string) => void;
   onTestProvider: (providerName: string) => void;
@@ -171,7 +169,6 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
   providers = mockProviders,
   recentUpdates = mockRecentUpdates,
   onRefresh,
-  onUpdateAll,
   onUpdateByNation,
   onUpdateByMarket,
   onTestProvider,
@@ -182,7 +179,6 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [selectedNation, setSelectedNation] = useState('');
   const [selectedMarket, setSelectedMarket] = useState('');
-  const [isUpdatingAll, setIsUpdatingAll] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdatingByNation, setIsUpdatingByNation] = useState(false);
   const [isUpdatingByMarket, setIsUpdatingByMarket] = useState(false);
@@ -230,16 +226,6 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
     setTabValue(newValue);
   };
 
-  const handleUpdateAll = async () => {
-    setIsUpdatingAll(true);
-    try {
-      await onUpdateAll();
-    } catch (error) {
-      console.error('Failed to update all prices:', error);
-    } finally {
-      setIsUpdatingAll(false);
-    }
-  };
 
   const handleUpdateByNation = async () => {
     if (selectedNation) {
@@ -351,28 +337,6 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
               >
                 {isRefreshing ? 'Refreshing...' : 'Refresh'}
               </ResponsiveButton>
-              <ResponsiveButton
-                variant="contained"
-                icon={isUpdatingAll ? <CircularProgress size={20} color="inherit" /> : <PlayIcon />}
-                onClick={handleUpdateAll}
-                disabled={isUpdatingAll || loading}
-                mobileText={isUpdatingAll ? 'Updating...' : 'Update All'}
-                desktopText={isUpdatingAll ? 'Updating...' : 'Update All Prices'}
-                sx={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1.5,
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.3)',
-                    transform: 'translateY(-2px)',
-                  }
-                }}
-              >
-                {isUpdatingAll ? 'Updating...' : 'Update All Prices'}
-              </ResponsiveButton>
               <Tooltip title="Settings">
                 <IconButton 
                   onClick={() => setSettingsDialogOpen(true)}
@@ -454,7 +418,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  {formatPercentage(stats.successRate.toFixed(1),1)}
+                  {formatPercentage(stats.successRate ? stats.successRate.toFixed(1) : '0.0',1)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
                   Update success rate
@@ -1136,7 +1100,7 @@ const MarketDataDashboard: React.FC<MarketDataDashboardProps> = ({
                             }}
                           />
                           <Typography variant="h5" sx={{ fontWeight: 700, color: '#667eea' }}>
-                            {stats.successRate.toFixed(1)}%
+                            {stats.successRate ? stats.successRate.toFixed(1) : '0.0'}%
                           </Typography>
                         </Box>
                         <Typography variant="body2" color="text.secondary">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
 
 interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
@@ -18,7 +18,7 @@ interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
  * ResponsiveButton component that automatically switches between text+icon and icon-only
  * based on screen size for better mobile user experience
  */
-export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
+export const ResponsiveButton = forwardRef<HTMLButtonElement, ResponsiveButtonProps>(({
   children,
   icon,
   endIcon,
@@ -31,7 +31,7 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
   responsiveSizing = true,
   sx = {},
   ...buttonProps
-}) => {
+}, ref) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down(breakpoint));
   
@@ -150,6 +150,7 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
   
   return (
     <Button
+      ref={ref}
       {...buttonProps}
       startIcon={shouldShowIconOnly ? undefined : getDisplayIcon()}
       endIcon={shouldShowIconOnly ? getDisplayEndIcon() : undefined}
@@ -158,6 +159,8 @@ export const ResponsiveButton: React.FC<ResponsiveButtonProps> = ({
       {shouldShowIconOnly ? getDisplayIcon() : getDisplayText()}
     </Button>
   );
-};
+});
+
+ResponsiveButton.displayName = 'ResponsiveButton';
 
 export default ResponsiveButton;

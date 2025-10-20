@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GlobalAsset } from './entities/global-asset.entity';
 import { AssetPrice } from './entities/asset-price.entity';
 import { AssetPriceHistory } from './entities/asset-price-history.entity';
+import { GlobalAssetTracking } from './entities/global-asset-tracking.entity';
+import { ApiCallDetail } from './entities/api-call-detail.entity';
 import { Asset } from './entities/asset.entity';
 import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
@@ -13,6 +15,7 @@ import { PriceHistoryController } from './controllers/price-history.controller';
 import { MarketDataController } from './controllers/market-data.controller';
 import { AssetController } from './controllers/asset.controller';
 import { AutoSyncController } from './controllers/auto-sync.controller';
+import { GlobalAssetTrackingController } from './controllers/global-asset-tracking.controller';
 import { GlobalAssetService } from './services/global-asset.service';
 import { BasicPriceService } from './services/basic-price.service';
 import { NationConfigService } from './services/nation-config.service';
@@ -26,6 +29,8 @@ import { AssetAnalyticsService } from './services/asset-analytics.service';
 import { AssetCacheService } from './services/asset-cache.service';
 import { AssetValueCalculatorService } from './services/asset-value-calculator.service';
 import { AutoSyncService } from './services/auto-sync.service';
+import { GlobalAssetTrackingService } from './services/global-asset-tracking.service';
+import { ApiCallDetailService } from './services/api-call-detail.service';
 import { AssetRepository } from './repositories/asset.repository';
 import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -56,12 +61,14 @@ import { SharedModule } from '../shared/shared.module';
       GlobalAsset,
       AssetPrice,
       AssetPriceHistory,
+      GlobalAssetTracking,
+      ApiCallDetail,
       Asset,
       Trade,
       TradeDetail,
       Portfolio,
     ]),
-    MarketDataModule,
+    forwardRef(() => MarketDataModule),
     forwardRef(() => TradingModule),
     LoggingModule,
     SharedModule,
@@ -73,6 +80,7 @@ import { SharedModule } from '../shared/shared.module';
     MarketDataController,
     AssetController,
     AutoSyncController,
+    GlobalAssetTrackingController,
   ],
   providers: [
     // New Global Assets System services
@@ -91,6 +99,8 @@ import { SharedModule } from '../shared/shared.module';
     AssetCacheService,
     AssetValueCalculatorService,
     AutoSyncService,
+    GlobalAssetTrackingService,
+    ApiCallDetailService,
     AssetRepository,
     {
       provide: 'IAssetRepository',
@@ -114,6 +124,8 @@ import { SharedModule } from '../shared/shared.module';
     AssetCacheService,
     AssetValueCalculatorService,
     AutoSyncService,
+    GlobalAssetTrackingService,
+    ApiCallDetailService,
     AssetRepository,
     TypeOrmModule,
   ],

@@ -9,6 +9,8 @@ import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
+import { GlobalAssetTrackingService } from './global-asset-tracking.service';
+import { GlobalAssetSyncType, GlobalAssetSyncSource } from '../entities/global-asset-tracking.entity';
 import * as cron from 'node-cron';
 
 export interface AutoSyncConfig {
@@ -36,6 +38,7 @@ export class AutoSyncService {
     private readonly externalMarketDataService: ExternalMarketDataService,
     private readonly configService: ConfigService,
     private readonly circuitBreakerService: CircuitBreakerService,
+    private readonly globalAssetTrackingService: GlobalAssetTrackingService,
   ) {
     // Load auto sync status from environment or database
     this.loadAutoSyncStatus();
@@ -195,17 +198,103 @@ export class AutoSyncService {
     const syncId = `manual_${Date.now()}`;
     // this.logger.log(`[AutoSyncService] Manual sync triggered: ${syncId}`);
     
+    // Get total assets in database for proper success rate calculation
+    const totalAssetsInDatabase = await this.globalAssetRepository.count({
+      where: { isActive: true }
+    });
+    
+    // Create tracking record
+    let tracking = await this.globalAssetTrackingService.createTracking(
+      syncId,
+      GlobalAssetSyncType.MANUAL,
+      GlobalAssetSyncSource.MANUAL_TRIGGER,
+      undefined, // triggeredBy
+      undefined, // triggerIp
+      {
+        cronExpression: this.cronExpression,
+        timezone: 'Asia/Ho_Chi_Minh',
+        autoSyncEnabled: this.autoSyncEnabled,
+      }
+    );
+    
     try {
+      // Update tracking status to in progress
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        'in_progress' as any,
+        0, // totalSymbols
+        0, // successfulUpdates
+        0, // failedUpdates
+        0, // totalApis
+        0, // successfulApis
+        0, // failedApis
+      );
+
       // Step 1: Fetch all market data from external APIs
-      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
+      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData(syncId);
       // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
+      // Update tracking with API statistics
+      const totalApis = Object.keys(marketDataResult.summary.sources).length;
+      // Count successful APIs based on whether they have data (non-zero count)
+      const successfulApis = Object.values(marketDataResult.summary.sources).filter((source: any) => source > 0).length;
+      const failedApis = totalApis - successfulApis;
+      
+      this.logger.log(`[AutoSyncService] Initial API Statistics (sources) - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
+      this.logger.log(`[AutoSyncService] Sources data: ${JSON.stringify(marketDataResult.summary.sources)}`);
+
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        'in_progress' as any,
+        totalAssetsInDatabase, // Use database assets count, not API symbols
+        0, // successfulUpdates - will be updated after sync
+        0, // failedUpdates - will be updated after sync
+        totalApis,
+        successfulApis,
+        failedApis,
+      );
+      
       // Step 2: Sync to database
-      await this.performSync(syncId, marketDataResult, true); // true = manual sync
+      const syncResult = await this.performSync(syncId, marketDataResult, true); // true = manual sync
+      
+      // Step 3: Update API statistics based on actual API call details
+      // Add small delay to ensure all API call details are saved
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await this.updateApiStatisticsFromCallDetails(syncId);
+      
+      // Calculate final success rate
+      const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
+      
+      // Determine final status based on success rate
+      const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
+      
+      this.logger.log(`[AutoSyncService] Manual sync results: ${syncResult.successfulUpdates}/${totalAssetsInDatabase} assets updated (${finalSuccessRate.toFixed(2)}% success rate) - Status: ${finalStatus}`);
+      
+      // Update tracking with final results
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        finalStatus as any,
+        totalAssetsInDatabase, // Use database assets count, not API symbols
+        syncResult.successfulUpdates || 0,
+        syncResult.failedUpdates || 0,
+        totalApis,
+        successfulApis,
+        failedApis,
+      );
+      
       this.lastSyncTime = new Date();
       return syncId;
     } catch (error) {
       this.logger.error(`[AutoSyncService] Manual sync failed: ${syncId}`, error);
+      
+      // Update tracking with error information
+      await this.globalAssetTrackingService.updateError(
+        syncId,
+        error.message,
+        error.code || 'UNKNOWN_ERROR',
+        error.stack,
+      );
+      
       throw error;
     }
   }
@@ -226,18 +315,104 @@ export class AutoSyncService {
     const syncId = `auto_${Date.now()}`;
     // this.logger.log(`[AutoSyncService] Auto sync triggered: ${syncId}`);
     
+    // Get total assets in database for proper success rate calculation
+    const totalAssetsInDatabase = await this.globalAssetRepository.count({
+      where: { isActive: true }
+    });
+    
+    // Create tracking record
+    let tracking = await this.globalAssetTrackingService.createTracking(
+      syncId,
+      GlobalAssetSyncType.SCHEDULED,
+      GlobalAssetSyncSource.CRON_JOB,
+      undefined, // triggeredBy
+      undefined, // triggerIp
+      {
+        cronExpression: this.cronExpression,
+        timezone: 'Asia/Ho_Chi_Minh',
+        autoSyncEnabled: this.autoSyncEnabled,
+      }
+    );
+    
     try {
+      // Update tracking status to in progress
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        'in_progress' as any,
+        0, // totalSymbols
+        0, // successfulUpdates
+        0, // failedUpdates
+        0, // totalApis
+        0, // successfulApis
+        0, // failedApis
+      );
+
       // Step 1: Fetch all market data from external APIs
-      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData();
+      const marketDataResult = await this.externalMarketDataService.fetchAllMarketData(syncId);
       // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
+      // Update tracking with API statistics
+      const totalApis = Object.keys(marketDataResult.summary.sources).length;
+      // Count successful APIs based on whether they have data (non-zero count)
+      const successfulApis = Object.values(marketDataResult.summary.sources).filter((source: any) => source > 0).length;
+      const failedApis = totalApis - successfulApis;
+      
+      this.logger.log(`[AutoSyncService] Initial API Statistics (sources) - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
+      this.logger.log(`[AutoSyncService] Sources data: ${JSON.stringify(marketDataResult.summary.sources)}`);
+
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        'in_progress' as any,
+        totalAssetsInDatabase, // Use database assets count, not API symbols
+        0, // successfulUpdates - will be updated after sync
+        0, // failedUpdates - will be updated after sync
+        totalApis,
+        successfulApis,
+        failedApis,
+      );
+      
       // Step 2: Sync to database
-      await this.performSync(syncId, marketDataResult, false); // false = auto sync
+      const syncResult = await this.performSync(syncId, marketDataResult, false); // false = auto sync
+      
+      // Step 3: Update API statistics based on actual API call details
+      // Add small delay to ensure all API call details are saved
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await this.updateApiStatisticsFromCallDetails(syncId);
+      
+      // Calculate final success rate
+      const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
+      
+      // Determine final status based on success rate
+      const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
+      
+      this.logger.log(`[AutoSyncService] Auto sync results: ${syncResult.successfulUpdates}/${totalAssetsInDatabase} assets updated (${finalSuccessRate.toFixed(2)}% success rate) - Status: ${finalStatus}`);
+      
+      // Update tracking with final results including failed symbols
+      tracking = await this.globalAssetTrackingService.updateProgress(
+        syncId,
+        finalStatus as any,
+        totalAssetsInDatabase, // Use database assets count, not API symbols
+        syncResult.successfulUpdates || 0,
+        syncResult.failedUpdates || 0,
+        totalApis,
+        successfulApis,
+        failedApis,
+        syncResult.failedSymbols || [],
+      );
       
       this.lastSyncTime = new Date();
       // this.logger.log(`[AutoSyncService] Auto sync completed: ${syncId}`);
     } catch (error) {
       this.logger.error(`[AutoSyncService] Auto sync failed: ${syncId}`, error);
+      
+      // Update tracking with error information
+      await this.globalAssetTrackingService.updateError(
+        syncId,
+        error.message,
+        error.code || 'UNKNOWN_ERROR',
+        error.stack,
+      );
+      
       // Don't throw error for scheduled sync to prevent cron job failure
     }
   }
@@ -245,7 +420,11 @@ export class AutoSyncService {
   /**
    * Perform the actual sync operation with circuit breaker protection
    */
-  private async performSync(syncId: string, marketDataResult?: any, isManual: boolean = false): Promise<void> {
+  private async performSync(syncId: string, marketDataResult?: any, isManual: boolean = false): Promise<{
+    successfulUpdates: number;
+    failedUpdates: number;
+    failedSymbols: string[];
+  }> {
     return this.circuitBreakerService.execute(
       'auto-sync-operation',
       async () => {
@@ -261,6 +440,7 @@ export class AutoSyncService {
 
         let successCount = 0;
         let errorCount = 0;
+        const totalAssetsInDatabase = globalAssets.length; // Tổng số assets trong database
 
         // Create a map of all market data for quick lookup
         const marketDataMap = new Map<string, any>();
@@ -272,6 +452,9 @@ export class AutoSyncService {
           });
           // this.logger.log(`[AutoSyncService] Created market data map with ${marketDataMap.size} symbols: ${Array.from(marketDataMap.keys()).slice(0, 10).join(', ')}...`);
         }
+
+      // Track failed symbols
+      const failedSymbols: string[] = [];
 
       // Update prices for each asset
       for (const asset of globalAssets) {
@@ -315,58 +498,90 @@ export class AutoSyncService {
           const currentPrice = marketData?.buyPrice || marketData?.sellPrice;
           
           if (currentPrice && currentPrice > 0) {
-            const now = new Date();
-            const changeReason = isManual 
-              ? `Market manual trigger sync ${now.toLocaleDateString('vi-VN')}`
-              : `Market auto sync ${now.toLocaleDateString('vi-VN')}`;
+            // Check price validity: biến động không quá 50% so với lần trước
+            let isPriceValid = true;
+            const previousPrice = asset.assetPrice?.currentPrice;
             
-            // Update or create asset price
-            if (asset.assetPrice) {
-              await this.assetPriceRepository.update(asset.assetPrice.id, {
-                currentPrice: currentPrice,
-                priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
-                priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
-                lastPriceUpdate: now,
-              });
-            } else {
-              const newAssetPrice = this.assetPriceRepository.create({
-                assetId: asset.id,
-                currentPrice: currentPrice,
-                priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
-                priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
-                lastPriceUpdate: now,
-              });
-              await this.assetPriceRepository.save(newAssetPrice);
+            if (previousPrice && previousPrice > 0) {
+              const priceChangePercent = Math.abs((currentPrice - previousPrice) / previousPrice) * 100;
+              if (priceChangePercent > 50) {
+                isPriceValid = false;
+                this.logger.warn(`[AutoSyncService] Price change too large for ${asset.symbol}: ${priceChangePercent.toFixed(2)}% (${previousPrice} → ${currentPrice})`);
+              }
             }
             
-            // Save to price history for tracking
-            const priceHistory = this.assetPriceHistoryRepository.create({
-              assetId: asset.id,
-              price: currentPrice,
-              priceType: PriceType.EXTERNAL,
-              priceSource: PriceSource.EXTERNAL_API,
-              changeReason: changeReason,
-              createdAt: now,
-              metadata: {
-                source: marketData?.source || 'unknown',
-                type: marketData?.type || 'unknown',
-                syncId: syncId
+            if (isPriceValid) {
+              const now = new Date();
+              const changeReason = isManual 
+                ? `Market manual trigger sync ${now.toLocaleDateString('vi-VN')}`
+                : `Market auto sync ${now.toLocaleDateString('vi-VN')}`;
+              
+              // Update or create asset price
+              if (asset.assetPrice) {
+                await this.assetPriceRepository.update(asset.assetPrice.id, {
+                  currentPrice: currentPrice,
+                  priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
+                  priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
+                  lastPriceUpdate: now,
+                });
+              } else {
+                const newAssetPrice = this.assetPriceRepository.create({
+                  assetId: asset.id,
+                  currentPrice: currentPrice,
+                  priceType: PriceType.EXTERNAL, // Use EXTERNAL for external API data
+                  priceSource: PriceSource.EXTERNAL_API, // Use EXTERNAL_API for external sources
+                  lastPriceUpdate: now,
+                });
+                await this.assetPriceRepository.save(newAssetPrice);
               }
-            });
-            await this.assetPriceHistoryRepository.save(priceHistory);
-            
-            successCount++;
-            // this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
+              
+              // Save to price history for tracking
+              const priceHistory = this.assetPriceHistoryRepository.create({
+                assetId: asset.id,
+                price: currentPrice,
+                priceType: PriceType.EXTERNAL,
+                priceSource: PriceSource.EXTERNAL_API,
+                changeReason: changeReason,
+                createdAt: now,
+                metadata: {
+                  source: marketData?.source || 'unknown',
+                  type: marketData?.type || 'unknown',
+                  syncId: syncId
+                }
+              });
+              await this.assetPriceHistoryRepository.save(priceHistory);
+              
+              successCount++;
+              // this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
+            } else {
+              failedSymbols.push(asset.symbol);
+              errorCount++; // Count as failed update
+              this.logger.warn(`[AutoSyncService] Price change too large for ${asset.symbol}, skipping update`);
+            }
           } else {
+            failedSymbols.push(asset.symbol);
+            errorCount++; // Count as failed update
             this.logger.warn(`[AutoSyncService] No valid price found for ${asset.symbol}`);
           }
         } catch (error) {
+          failedSymbols.push(asset.symbol);
           errorCount++;
           this.logger.error(`[AutoSyncService] Failed to update price for ${asset.symbol}:`, error);
         }
       }
 
         // this.logger.log(`[AutoSyncService] Sync operation ${syncId} completed: ${successCount} successful, ${errorCount} errors`);
+        
+        // Calculate success rate based on database assets, not API symbols
+        const successRate = totalAssetsInDatabase > 0 ? (successCount / totalAssetsInDatabase) * 100 : 0;
+        this.logger.log(`[AutoSyncService] Success rate: ${successRate.toFixed(2)}% (${successCount}/${totalAssetsInDatabase} database assets updated)`);
+        
+        // Return sync results
+        return {
+          successfulUpdates: successCount,
+          failedUpdates: errorCount,
+          failedSymbols: failedSymbols,
+        };
       },
       {
         failureThreshold: 3, // Open circuit after 3 sync failures
@@ -378,6 +593,41 @@ export class AutoSyncService {
       this.logger.error(`[AutoSyncService] Sync operation ${syncId} failed:`, error);
       throw error;
     });
+  }
+
+  /**
+   * Update API statistics based on actual API call details
+   */
+  private async updateApiStatisticsFromCallDetails(syncId: string): Promise<void> {
+    try {
+      // Get API call details from the tracking service
+      const apiCallDetails = await this.globalAssetTrackingService.getApiCallDetailsByExecutionId(syncId);
+      
+      if (apiCallDetails.length > 0) {
+        const totalApis = apiCallDetails.length;
+        const successfulApis = apiCallDetails.filter(detail => detail.status === 'success').length;
+        const failedApis = totalApis - successfulApis;
+        
+        this.logger.log(`[AutoSyncService] Updated API Statistics from call details - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
+        this.logger.log(`[AutoSyncService] API call details: ${JSON.stringify(apiCallDetails.map(d => ({ provider: d.provider, status: d.status, endpoint: d.endpoint })))}`);
+        
+        // Update tracking record with correct API statistics
+        await this.globalAssetTrackingService.updateProgress(
+          syncId,
+          'in_progress' as any,
+          undefined, // totalSymbols
+          undefined, // successfulUpdates
+          undefined, // failedUpdates
+          totalApis,
+          successfulApis,
+          failedApis,
+        );
+      } else {
+        this.logger.warn(`[AutoSyncService] No API call details found for execution: ${syncId}`);
+      }
+    } catch (error) {
+      this.logger.error(`[AutoSyncService] Failed to update API statistics from call details:`, error);
+    }
   }
 
   /**

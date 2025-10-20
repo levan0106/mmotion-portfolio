@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,8 @@ import { ExternalMarketDataController } from './controllers/external-market-data
 import { MarketDataClientsModule } from './market-data-clients.module';
 import { AssetPriceHistory } from '../asset/entities/asset-price-history.entity';
 import { GlobalAsset } from '../asset/entities/global-asset.entity';
+import { AssetModule } from '../asset/asset.module';
+import { ApiTrackingHelper } from './utils/api-tracking.helper';
 
 /**
  * Market Data Module
@@ -20,6 +22,7 @@ import { GlobalAsset } from '../asset/entities/global-asset.entity';
     HttpModule, // Enable HTTP requests
     MarketDataClientsModule, // Import external API clients
     TypeOrmModule.forFeature([AssetPriceHistory, GlobalAsset]), // Import AssetPriceHistory and GlobalAsset entities
+    forwardRef(() => AssetModule), // Import AssetModule to get ApiCallDetailService
   ],
   controllers: [
     MarketDataController,
@@ -28,6 +31,7 @@ import { GlobalAsset } from '../asset/entities/global-asset.entity';
   providers: [
     MarketDataService,
     ExternalMarketDataService,
+    ApiTrackingHelper,
   ],
   exports: [
     MarketDataService,

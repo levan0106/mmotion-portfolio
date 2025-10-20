@@ -27,6 +27,10 @@ import {
   Close as CloseIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
+  Storage as StorageIcon,
+  TrendingUp as TrendingUpIcon,
+  Analytics as AnalyticsIcon,
+  Sync as SyncIcon,
 } from '@mui/icons-material';
 
 // Import our new components
@@ -34,6 +38,8 @@ import GlobalAssetForm from './GlobalAssetForm';
 import GlobalAssetList from './GlobalAssetList';
 import AssetPriceManagement from './AssetPriceManagement';
 import MarketDataDashboard from './MarketDataDashboard';
+import GlobalAssetAnalyticsDashboard from './GlobalAssetManagement/GlobalAssetAnalyticsDashboard';
+import GlobalAssetTrackingDashboard from './GlobalAssetTrackingDashboard';
 import { ResponsiveButton } from './Common';
 
 // Import hooks
@@ -135,6 +141,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
     message: '',
     severity: 'info',
   });
+  const [isUpdatingAllPrices, setIsUpdatingAllPrices] = useState(false);
 
   // Use the delete hook
   const deleteGlobalAssetMutation = useDeleteGlobalAsset();
@@ -233,6 +240,32 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
   const handlePriceManagementClose = () => {
     setPriceManagementOpen(false);
     setSelectedAsset(null);
+  };
+
+  const handleUpdateAllPrices = async () => {
+    setIsUpdatingAllPrices(true);
+    try {
+      await onUpdateAllPrices();
+      
+      // Show success notification
+      setSnackbar({
+        open: true,
+        message: 'All prices have been updated successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Update all prices error:', error);
+      
+      // Show error notification
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update all prices';
+      setSnackbar({
+        open: true,
+        message: `Failed to update all prices: ${errorMessage}`,
+        severity: 'error',
+      });
+    } finally {
+      setIsUpdatingAllPrices(false);
+    }
   };
 
   const getAssetTypeColor = (type: string) => {
@@ -347,6 +380,29 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 Refresh
               </ResponsiveButton>
               <ResponsiveButton
+                variant="outlined"
+                icon={isUpdatingAllPrices ? <CircularProgress size={20} color="inherit" /> : <SyncIcon />}
+                onClick={handleUpdateAllPrices}
+                disabled={isUpdatingAllPrices || loading}
+                mobileText={isUpdatingAllPrices ? 'Updating...' : 'Update All'}
+                desktopText={isUpdatingAllPrices ? 'Updating...' : 'Update All Prices'}
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  color: 'white',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    borderColor: 'rgba(255,255,255,0.5)',
+                  }
+                }}
+              >
+                {isUpdatingAllPrices ? 'Updating...' : 'Update All Prices'}
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="contained"
                 icon={<AddIcon />}
                 onClick={handleCreateAsset}
@@ -389,14 +445,17 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
           <Tabs 
             value={tabValue} 
             onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
             sx={{
               '& .MuiTab-root': {
                 fontWeight: 600,
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
                 py: 2,
-                px: 4,
+                px: { xs: 2, sm: 4 },
                 textTransform: 'none',
                 minHeight: 64,
+                minWidth: { xs: 'auto', sm: 120 },
                 '&.Mui-selected': {
                   color: '#667eea',
                   fontWeight: 700,
@@ -406,12 +465,18 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 height: 4,
                 borderRadius: '2px 2px 0 0',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              },
+              '& .MuiTabs-scrollButtons': {
+                '&.Mui-disabled': {
+                  opacity: 0.3,
+                }
               }
             }}
           >
             <Tab 
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <StorageIcon sx={{ fontSize: 20 }} />
                   <Box sx={{ 
                     width: 8, 
                     height: 8, 
@@ -424,7 +489,8 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             />
             <Tab 
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <TrendingUpIcon sx={{ fontSize: 20 }} />
                   <Box sx={{ 
                     width: 8, 
                     height: 8, 
@@ -437,7 +503,8 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             />
             <Tab 
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <AnalyticsIcon sx={{ fontSize: 20 }} />
                   <Box sx={{ 
                     width: 8, 
                     height: 8, 
@@ -445,6 +512,20 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                     backgroundColor: tabValue === 2 ? '#667eea' : '#6c757d' 
                   }} />
                   Analytics
+                </Box>
+              } 
+            />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <SyncIcon sx={{ fontSize: 20 }} />
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    backgroundColor: tabValue === 3 ? '#667eea' : '#6c757d' 
+                  }} />
+                  Auto Sync Tracking
                 </Box>
               } 
             />
@@ -474,7 +555,6 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 providers={marketDataProviders}
                 recentUpdates={recentUpdates}
                 onRefresh={onMarketDataRefresh}
-                onUpdateAll={onUpdateAllPrices}
                 onUpdateByNation={onUpdateByNation}
                 onUpdateByMarket={onUpdateByMarket}
                 onTestProvider={onTestProvider}
@@ -486,253 +566,12 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
           )}
 
           {tabValue === 2 && (
+            <GlobalAssetAnalyticsDashboard assets={assets} />
+          )}
+
+          {tabValue === 3 && (
             <Box>
-              {/* Analytics Header */}
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" sx={{ 
-                  fontWeight: 700, 
-                  mb: 1,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Asset Analytics Dashboard
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Comprehensive insights into your asset portfolio
-                </Typography>
-              </Box>
-
-              {/* Key Metrics */}
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={4}>
-                  <Card sx={{ 
-                    borderRadius: 3,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Box sx={{ 
-                          width: 48, 
-                          height: 48, 
-                          borderRadius: 2, 
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2
-                        }}>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            {assets.length}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                            Total Assets
-                          </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            Portfolio Size
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Card sx={{ 
-                    borderRadius: 3,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    color: 'white',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Box sx={{ 
-                          width: 48, 
-                          height: 48, 
-                          borderRadius: 2, 
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2
-                        }}>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            {assets.filter(asset => asset.isActive).length}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                            Active Assets
-                          </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            Currently Trading
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Card sx={{ 
-                    borderRadius: 3,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                    color: 'white',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Box sx={{ 
-                          width: 48, 
-                          height: 48, 
-                          borderRadius: 2, 
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2
-                        }}>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            {new Set(assets.map(asset => asset.nation)).size}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                            Nations
-                          </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            Global Coverage
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
-
-              {/* Asset Distribution by Type */}
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="h5" sx={{ 
-                  fontWeight: 600, 
-                  mb: 3,
-                  color: 'text.primary'
-                }}>
-                  Asset Distribution by Type
-                </Typography>
-                <Grid container spacing={3}>
-                  {Object.entries(
-                    assets.reduce((acc, asset) => {
-                      acc[asset.type] = (acc[asset.type] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  ).map(([type, count]) => (
-                    <Grid item xs={12} sm={6} md={3} key={type}>
-                      <Card sx={{ 
-                        borderRadius: 3,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                        border: '1px solid rgba(0,0,0,0.05)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-                        }
-                      }}>
-                        <CardContent sx={{ p: 3 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              <Box sx={{ 
-                                width: 12, 
-                                height: 12, 
-                                borderRadius: '50%', 
-                                backgroundColor: getAssetTypeColor(type) 
-                              }} />
-                              <Typography variant="body1" fontWeight="600">
-                                {type}
-                              </Typography>
-                            </Box>
-                            <Typography variant="h4" sx={{ 
-                              fontWeight: 700,
-                              color: getAssetTypeColor(type)
-                            }}>
-                              {count}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {((count / assets.length) * 100).toFixed(1)}% of portfolio
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-
-              {/* Asset Distribution by Nation */}
-              <Box>
-                <Typography variant="h5" sx={{ 
-                  fontWeight: 600, 
-                  mb: 3,
-                  color: 'text.primary'
-                }}>
-                  Global Coverage by Nation
-                </Typography>
-                <Grid container spacing={3}>
-                  {Object.entries(
-                    assets.reduce((acc, asset) => {
-                      acc[asset.nation] = (acc[asset.nation] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  ).map(([nation, count]) => (
-                    <Grid item xs={12} sm={6} md={3} key={nation}>
-                      <Card sx={{ 
-                        borderRadius: 3,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                        border: '1px solid rgba(0,0,0,0.05)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-                        }
-                      }}>
-                        <CardContent sx={{ p: 3 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                              <Typography variant="body1" fontWeight="600" sx={{ mb: 0.5 }}>
-                                {getNationDisplayName(nation)}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {nation}
-                              </Typography>
-                            </Box>
-                            <Typography variant="h4" sx={{ 
-                              fontWeight: 700,
-                              color: '#667eea'
-                            }}>
-                              {count}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {((count / assets.length) * 100).toFixed(1)}% of portfolio
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
+              <GlobalAssetTrackingDashboard />
             </Box>
           )}
         </Box>

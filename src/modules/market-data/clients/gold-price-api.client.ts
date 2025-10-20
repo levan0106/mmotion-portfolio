@@ -7,23 +7,72 @@ import {
   MarketDataSource 
 } from '../types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
+import { ApiTrackingBase } from '../base/api-tracking.base';
+import { ApiResult } from '../interfaces/api-tracking.interface';
 // Using regex parsing instead of external HTML parser
 
 @Injectable()
-export class GoldPriceAPIClient {
-  private readonly logger = new Logger(GoldPriceAPIClient.name);
+export class GoldPriceAPIClient extends ApiTrackingBase {
   private readonly baseUrl = 'https://giavang.doji.vn';
   private readonly timeout = 10000; // 10 seconds
 
   constructor(
     private readonly httpService: HttpService,
     private readonly circuitBreakerService: CircuitBreakerService
-  ) {}
+  ) {
+    super(GoldPriceAPIClient.name);
+  }
 
   /**
    * Get all gold prices from Gold API with circuit breaker protection
    */
-  async getAllGoldPrices(): Promise<GoldData[]> {
+  async getAllGoldPrices(): Promise<ApiResult<GoldData[]>> {
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Referer': 'https://giavang.doji.vn/',
+      'Origin': 'https://giavang.doji.vn',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'same-origin'
+    };
+
+    const apiCall = {
+      options: {
+        provider: 'Doji',
+        endpoint: `${this.baseUrl}/sites/default/files/data/hienthi/vungmien_109.dat`,
+        method: 'GET',
+      },
+      apiCall: () => this.fetchGoldPrices(headers),
+      dataProcessor: (data: GoldData[]) => ({
+        symbolsProcessed: data.length,
+        successfulSymbols: data.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
+        failedSymbols: data.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length,
+      }),
+    };
+
+    const result = await this.executeWithTracking(
+      apiCall.options,
+      apiCall.apiCall,
+      apiCall.dataProcessor
+    );
+
+    return {
+      data: result.statusCode === 200 ? await apiCall.apiCall() : [],
+      apiCalls: [result],
+      totalSymbols: result.symbolsProcessed,
+      successfulSymbols: result.successfulSymbols,
+      failedSymbols: result.failedSymbols,
+    };
+  }
+
+  /**
+   * Private method to fetch gold prices
+   */
+  private async fetchGoldPrices(headers: any): Promise<GoldData[]> {
     return this.circuitBreakerService.execute(
       'gold-price-api',
       async () => {
@@ -33,28 +82,14 @@ export class GoldPriceAPIClient {
           this.httpService.get(
             `${this.baseUrl}/sites/default/files/data/hienthi/vungmien_109.dat`,
             {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Referer': 'https://giavang.doji.vn/',
-                'Origin': 'https://giavang.doji.vn',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'same-origin'
-              },
+              headers,
               timeout: this.timeout,
-              responseType: 'arraybuffer' // Get binary data
+              responseType: 'arraybuffer'
             }
           )
         );
 
-        // Convert binary to text
         const htmlText = Buffer.from(response.data).toString('utf-8');
-        
-        // Clean HTML entities
         const cleanText = htmlText
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>')
@@ -66,10 +101,10 @@ export class GoldPriceAPIClient {
         return goldPrices;
       },
       {
-        failureThreshold: 3, // Open circuit after 3 failures
-        timeout: 30000, // Wait 30 seconds before trying again
-        successThreshold: 2, // Need 2 successes to close circuit
-        monitoringPeriod: 300000 // 5 minutes monitoring window
+        failureThreshold: 3,
+        timeout: 30000,
+        successThreshold: 2,
+        monitoringPeriod: 300000
       }
     ).catch(error => {
       this.logger.error('Failed to fetch gold prices from Doji:', error.message);
@@ -82,7 +117,8 @@ export class GoldPriceAPIClient {
    */
   async getGoldPrice(type: string): Promise<GoldData | null> {
     try {
-      const allPrices = await this.getAllGoldPrices();
+      const allPricesResult = await this.getAllGoldPrices();
+      const allPrices = allPricesResult.data;
       return allPrices.find(price => 
         price.type.toLowerCase().includes(type.toLowerCase())
       ) || null;
@@ -221,7 +257,8 @@ export class GoldPriceAPIClient {
    */
   async getGoldPriceBySymbol(symbol: string): Promise<GoldData | null> {
     try {
-      const allPrices = await this.getAllGoldPrices();
+      const allPricesResult = await this.getAllGoldPrices();
+      const allPrices = allPricesResult.data;
       
       // Map common symbols to gold types
       const symbolMap: { [key: string]: string[] } = {

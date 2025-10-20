@@ -21,7 +21,8 @@ export const AutoSyncToggle: React.FC<AutoSyncToggleProps> = ({
     const loadAutoSyncStatus = async () => {
       try {
         const status = await getAutoSyncStatus();
-        setAutoSyncEnabled(status.enabled);
+        // Ensure enabled is always a boolean
+        setAutoSyncEnabled(Boolean(status.enabled));
       } catch (error) {
         console.error('Failed to load auto sync status:', error);
       }
@@ -31,7 +32,7 @@ export const AutoSyncToggle: React.FC<AutoSyncToggleProps> = ({
   }, [getAutoSyncStatus]);
 
   const handleToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const enabled = event.target.checked;
+    const enabled = Boolean(event.target.checked);
     setIsLoading(true);
 
     try {

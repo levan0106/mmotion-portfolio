@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { 
   FundPriceAPIClient, 
@@ -8,7 +8,9 @@ import {
   CryptoPriceAPIClient
 } from './clients';
 import { ExternalMarketDataService } from './services/external-market-data.service';
+import { ApiTrackingHelper } from './utils/api-tracking.helper';
 import { SharedModule } from '../shared/shared.module';
+import { AssetModule } from '../asset/asset.module';
 
 @Module({
   imports: [
@@ -19,7 +21,8 @@ import { SharedModule } from '../shared/shared.module';
         'User-Agent': 'Portfolio/1.0'
       }
     }),
-    SharedModule // Import SharedModule to get CircuitBreakerService
+    SharedModule, // Import SharedModule to get CircuitBreakerService
+    forwardRef(() => AssetModule) // Import AssetModule to get ApiCallDetailService
   ],
   providers: [
     FundPriceAPIClient,
@@ -27,7 +30,8 @@ import { SharedModule } from '../shared/shared.module';
     ExchangeRateAPIClient,
     StockPriceAPIClient,
     CryptoPriceAPIClient,
-    ExternalMarketDataService
+    ExternalMarketDataService,
+    ApiTrackingHelper
   ],
   exports: [
     FundPriceAPIClient,
@@ -35,7 +39,8 @@ import { SharedModule } from '../shared/shared.module';
     ExchangeRateAPIClient,
     StockPriceAPIClient,
     CryptoPriceAPIClient,
-    ExternalMarketDataService
+    ExternalMarketDataService,
+    ApiTrackingHelper
   ]
 })
 export class MarketDataClientsModule {}

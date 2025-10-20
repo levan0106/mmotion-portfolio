@@ -52,7 +52,7 @@ import { PortfolioModule } from '../portfolio/portfolio.module';
       GlobalAsset,
       AssetPrice,
     ]),
-    MarketDataModule,
+    forwardRef(() => MarketDataModule),
     forwardRef(() => AssetModule),
     SharedModule,
     NotificationModule,

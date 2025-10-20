@@ -9,22 +9,88 @@ import {
   MarketDataSource 
 } from '../types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
+import { ApiTrackingBase } from '../base/api-tracking.base';
+import { ApiResult } from '../interfaces/api-tracking.interface';
 
 @Injectable()
-export class FundPriceAPIClient {
-  private readonly logger = new Logger(FundPriceAPIClient.name);
+export class FundPriceAPIClient extends ApiTrackingBase {
   private readonly baseUrl = 'https://api.fmarket.vn';
   private readonly timeout = 10000; // 10 seconds
 
   constructor(
     private readonly httpService: HttpService,
     private readonly circuitBreakerService: CircuitBreakerService
-  ) {}
+  ) {
+    super(FundPriceAPIClient.name);
+  }
 
   /**
    * Get all fund prices from Fund API with circuit breaker protection
    */
-  async getAllFundPrices(): Promise<FundData[]> {
+  async getAllFundPrices(): Promise<ApiResult<FundData[]>> {
+    const requestBody = {
+      types: ['NEW_FUND', 'TRADING_FUND'],
+      issuerIds: [],
+      sortOrder: 'DESC',
+      sortField: 'annualizedReturn36Months',
+      page: 1,
+      pageSize: 100,
+      isIpo: false,
+      fundAssetTypes: [],
+      bondRemainPeriods: [],
+      searchField: '',
+      isBuyByReward: false,
+      thirdAppIds: []
+    };
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Referer': 'https://fmarket.vn/',
+      'Origin': 'https://fmarket.vn',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin'
+    };
+
+    const apiCall = {
+      options: {
+        provider: 'FMarket',
+        endpoint: `${this.baseUrl}/res/products/filter`,
+        method: 'POST',
+        requestData: requestBody,
+      },
+      apiCall: () => this.fetchFundPrices(requestBody, headers),
+      dataProcessor: (data: FundData[]) => ({
+        symbolsProcessed: data.length,
+        successfulSymbols: data.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
+        failedSymbols: data.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length,
+      }),
+    };
+
+    const result = await this.executeWithTracking(
+      apiCall.options,
+      apiCall.apiCall,
+      apiCall.dataProcessor
+    );
+
+    return {
+      data: result.statusCode === 200 ? await apiCall.apiCall() : [],
+      apiCalls: [result],
+      totalSymbols: result.symbolsProcessed,
+      successfulSymbols: result.successfulSymbols,
+      failedSymbols: result.failedSymbols,
+    };
+  }
+
+  /**
+   * Private method to fetch fund prices
+   */
+  private async fetchFundPrices(requestBody: any, headers: any): Promise<FundData[]> {
     return this.circuitBreakerService.execute(
       'fund-price-api',
       async () => {
@@ -104,7 +170,8 @@ export class FundPriceAPIClient {
    */
   async getFundPrice(symbol: string): Promise<FundData | null> {
     try {
-      const allFunds = await this.getAllFundPrices();
+      const allFundsResult = await this.getAllFundPrices();
+      const allFunds = allFundsResult.data;
       return allFunds.find(fund => 
         fund.symbol === symbol ||
         fund.name.toLowerCase().includes(symbol.toLowerCase())

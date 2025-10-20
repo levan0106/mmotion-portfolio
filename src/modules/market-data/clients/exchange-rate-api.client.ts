@@ -7,23 +7,72 @@ import {
   MarketDataSource 
 } from '../types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
+import { ApiTrackingBase } from '../base/api-tracking.base';
+import { ApiResult } from '../interfaces/api-tracking.interface';
 // Using regex parsing instead of external HTML parser
 
 @Injectable()
-export class ExchangeRateAPIClient {
-  private readonly logger = new Logger(ExchangeRateAPIClient.name);
+export class ExchangeRateAPIClient extends ApiTrackingBase {
   private readonly baseUrl = 'https://tygiausd.org';
   private readonly timeout = 10000; // 10 seconds
 
   constructor(
     private readonly httpService: HttpService,
     private readonly circuitBreakerService: CircuitBreakerService
-  ) {}
+  ) {
+    super(ExchangeRateAPIClient.name);
+  }
 
   /**
    * Get exchange rates from Exchange Rate API with circuit breaker protection
    */
-  async getExchangeRates(bank: string = 'vietcombank'): Promise<ExchangeRateData[]> {
+  async getExchangeRates(bank: string = 'vietcombank'): Promise<ApiResult<ExchangeRateData[]>> {
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Referer': 'https://tygiausd.org/',
+      'Origin': 'https://tygiausd.org',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'same-origin'
+    };
+
+    const apiCall = {
+      options: {
+        provider: 'Tygia',
+        endpoint: `${this.baseUrl}/nganhang/${bank}`,
+        method: 'GET',
+      },
+      apiCall: () => this.fetchExchangeRates(bank, headers),
+      dataProcessor: (data: ExchangeRateData[]) => ({
+        symbolsProcessed: data.length,
+        successfulSymbols: data.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
+        failedSymbols: data.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length,
+      }),
+    };
+
+    const result = await this.executeWithTracking(
+      apiCall.options,
+      apiCall.apiCall,
+      apiCall.dataProcessor
+    );
+
+    return {
+      data: result.statusCode === 200 ? await apiCall.apiCall() : [],
+      apiCalls: [result],
+      totalSymbols: result.symbolsProcessed,
+      successfulSymbols: result.successfulSymbols,
+      failedSymbols: result.failedSymbols,
+    };
+  }
+
+  /**
+   * Private method to fetch exchange rates
+   */
+  private async fetchExchangeRates(bank: string, headers: any): Promise<ExchangeRateData[]> {
     return this.circuitBreakerService.execute(
       'exchange-rate-api',
       async () => {
@@ -33,33 +82,22 @@ export class ExchangeRateAPIClient {
           this.httpService.get(
             `${this.baseUrl}/nganhang/${bank}`,
             {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Referer': 'https://tygiausd.org/',
-                'Origin': 'https://tygiausd.org',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'same-origin'
-              },
+              headers,
               timeout: this.timeout
             }
           )
         );
 
         const exchangeRates = this.parseExchangeRateData(response.data, bank);
-        // this.logger.log(`Successfully fetched ${exchangeRates.length} exchange rates from Tygia`);
+        this.logger.log(`Successfully fetched ${exchangeRates.length} exchange rates from Tygia`);
         
         return exchangeRates;
       },
       {
-        failureThreshold: 3, // Open circuit after 3 failures
-        timeout: 30000, // Wait 30 seconds before trying again
-        successThreshold: 2, // Need 2 successes to close circuit
-        monitoringPeriod: 300000 // 5 minutes monitoring window
+        failureThreshold: 3,
+        timeout: 30000,
+        successThreshold: 2,
+        monitoringPeriod: 300000
       }
     ).catch(error => {
       this.logger.error(`Failed to fetch exchange rates from Tygia for bank ${bank}:`, error.message);
@@ -73,7 +111,8 @@ export class ExchangeRateAPIClient {
    */
   async getUSDExchangeRate(bank: string = 'vietcombank'): Promise<ExchangeRateData | null> {
     try {
-      const rates = await this.getExchangeRates(bank);
+      const ratesResult = await this.getExchangeRates(bank);
+      const rates = ratesResult.data;
       return rates.find(rate => 
         rate.currency.toUpperCase() === 'USD' || 
         rate.currency.toUpperCase() === 'USD/VND'
@@ -89,7 +128,8 @@ export class ExchangeRateAPIClient {
    */
   async getExchangeRateByCurrency(currency: string, bank: string = 'vietcombank'): Promise<ExchangeRateData | null> {
     try {
-      const rates = await this.getExchangeRates(bank);
+      const ratesResult = await this.getExchangeRates(bank);
+      const rates = ratesResult.data;
       return rates.find(rate => 
         rate.currency.toUpperCase().includes(currency.toUpperCase())
       ) || null;
@@ -383,7 +423,8 @@ export class ExchangeRateAPIClient {
    */
   async getExchangeRateBySymbol(symbol: string, bank: string = 'vietcombank'): Promise<ExchangeRateData | null> {
     try {
-      const rates = await this.getExchangeRates(bank);
+      const ratesResult = await this.getExchangeRates(bank);
+      const rates = ratesResult.data;
       
       // Map common symbols to currencies
       const symbolMap: { [key: string]: string[] } = {
