@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, Min, Max, IsArray, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { AutoSyncService, AutoSyncConfig } from '../services/auto-sync.service';
 
@@ -28,7 +28,13 @@ export class UpdateConfigDto {
   })
   enabled?: boolean;
 
-  @ApiProperty({ description: 'Sync interval in minutes', example: 15, minimum: 1, maximum: 1440, required: false })
+  @ApiProperty({ description: 'Schedule type: interval or fixed_times', example: 'fixed_times', required: false })
+  @IsOptional()
+  @IsString()
+  @IsIn(['interval', 'fixed_times'])
+  scheduleType?: 'interval' | 'fixed_times';
+
+  @ApiProperty({ description: 'Sync interval in minutes (for interval type)', example: 15, minimum: 1, maximum: 1440, required: false })
   @IsOptional()
   @IsNumber()
   @Min(1)
@@ -39,7 +45,18 @@ export class UpdateConfigDto {
   })
   intervalMinutes?: number;
 
-  @ApiProperty({ description: 'Custom cron expression (overrides intervalMinutes)', example: '0 */30 * * * *', required: false })
+  @ApiProperty({ description: 'Fixed times for execution (for fixed_times type)', example: ['09:01', '15:01', '18:50'], required: false })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  fixedTimes?: string[];
+
+  @ApiProperty({ description: 'Timezone for fixed times', example: 'Asia/Ho_Chi_Minh', required: false })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @ApiProperty({ description: 'Custom cron expression (overrides other settings)', example: '0 */30 * * * *', required: false })
   @IsOptional()
   @IsString()
   cronExpression?: string;
@@ -49,13 +66,19 @@ export class AutoSyncStatusDto {
   enabled: boolean;
   lastSync?: string;
   nextSync?: string;
-  interval: number; // in minutes
+  scheduleType: string;
+  interval?: number; // in minutes (for interval type)
+  fixedTimes?: string[]; // for fixed_times type
+  timezone?: string; // for fixed_times type
   cronExpression: string;
 }
 
 export class AutoSyncConfigDto {
   enabled: boolean;
-  intervalMinutes: number;
+  scheduleType: 'interval' | 'fixed_times';
+  intervalMinutes?: number; // for interval type
+  fixedTimes?: string[]; // for fixed_times type
+  timezone?: string; // for fixed_times type
   cronExpression?: string; // Make optional to match AutoSyncConfig
 }
 

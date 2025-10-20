@@ -2,36 +2,37 @@
 
 ## What Works
 ### ✅ Completed
-- **GLOBAL ASSET TRACKING SYSTEM - COMPLETED** (Current Session - October 20, 2025)
-  - **Comprehensive Tracking System**: Implemented complete Global Asset Tracking system
-    - **GlobalAssetTracking Entity**: Main entity tracking sync operations with execution details
-    - **ApiCallDetail Entity**: Detailed API call monitoring with performance metrics
-    - **FailedSymbol Entity**: Failed symbol tracking with retry logic and error details
-    - **Database Schema**: Complete schema with proper relationships and foreign key constraints
-    - **Files Created**: global-asset-tracking.entity.ts, api-call-detail.entity.ts, failed-symbol.entity.ts
-  - **API Endpoint Implementation**: Fixed and enhanced API endpoints
-    - **Success Rate Fix**: Fixed successRate to return as number instead of string
-    - **Missing Endpoint**: Added `/api/v1/global-asset-tracking/{executionId}/api-calls` endpoint
-    - **Error Handling**: Implemented proper error handling and response formatting
-    - **API Documentation**: Created comprehensive Swagger documentation
-    - **Files Updated**: global-asset-tracking.controller.ts, global-asset-tracking.service.ts
-  - **Migration Management**: Consolidated and optimized database migrations
-    - **Migration Consolidation**: Merged 10 separate migration files into 2 comprehensive migrations
-    - **Smart Migration Logic**: Implemented existence checks to prevent errors
-    - **Foreign Key Handling**: Fixed foreign key constraint handling to prevent transaction aborts
-    - **Migration Files**: CreateGlobalAssetTrackingSystem.ts, CreateFailedSymbolsTable.ts
-  - **Service Layer Enhancements**: Enhanced tracking service with proper data handling
-    - **Number Conversion**: Updated service to convert successRate from string to number
-    - **Helper Methods**: Added helper methods for data type conversion
-    - **Error Handling**: Implemented comprehensive error handling and logging
-    - **Statistics**: Created comprehensive tracking statistics and analytics
-    - **Files Updated**: global-asset-tracking.service.ts
-  - **Frontend Integration**: Updated frontend to work with enhanced tracking system
-    - **Dashboard Updates**: Updated GlobalAssetTrackingDashboard for number successRate
-    - **API Integration**: Fixed API call details modal to work with new endpoint
-    - **Error Handling**: Enhanced error handling for missing endpoints
-    - **User Experience**: Improved user experience with better data display
-    - **Files Updated**: GlobalAssetTrackingDashboard.tsx, api.global-asset-tracking.ts
+- **PRICE UPDATE CONFIGURATION & AUTO SYNC SERVICE ENHANCEMENT - COMPLETED** (Current Session - October 20, 2025)
+  - **Fixed-Time Price Update Scheduling**: Implemented comprehensive fixed-time scheduling system
+    - **Schedule Type Support**: Added support for both interval and fixed-time scheduling
+    - **Fixed Times Configuration**: Support for multiple daily execution times (9:01 AM, 3:01 PM, 6:50 PM)
+    - **Timezone Integration**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
+    - **Cron Expression Generation**: Dynamic cron expression generation for fixed times
+    - **Files Updated**: scheduled-price-update.service.ts, production.env, .env
+  - **Auto Sync Service Enhancement**: Enhanced service to support dual scheduling
+    - **Configuration Interface**: Updated AutoSyncConfig interface with new fields
+    - **Schedule Type Detection**: Automatic detection and handling of schedule types
+    - **Fixed Time Validation**: Added shouldRunAtFixedTime() method for execution validation
+    - **Next Execution Calculation**: Enhanced getNextFixedTimeSync() for accurate timing
+    - **Files Updated**: auto-sync.service.ts, auto-sync.controller.ts
+  - **API Controller Updates**: Enhanced DTOs and validation for new configuration
+    - **UpdateConfigDto**: Added scheduleType, fixedTimes, timezone fields
+    - **AutoSyncStatusDto**: Updated to display fixed-time configuration information
+    - **Validation**: Added proper validation for new configuration parameters
+    - **API Response**: Fixed API to return correct scheduleType: "fixed_times"
+    - **Files Updated**: auto-sync.controller.ts
+  - **Configuration Management**: Resolved Docker container configuration issues
+    - **Environment Variables**: Updated .env file with new price update configuration
+    - **Dependency Management**: Added moment-timezone and @types/moment-timezone packages
+    - **TypeScript Compilation**: Fixed compilation errors with proper type declarations
+    - **Container Restart**: Resolved configuration loading issues with container restart
+    - **Files Updated**: package.json, .env, docker-compose.yml
+  - **Service Integration**: Enhanced service methods for dual scheduling support
+    - **loadConfiguration()**: Updated to handle both schedule types from environment
+    - **updateConfig()**: Enhanced to support dynamic configuration updates
+    - **getStatus()**: Improved to return appropriate configuration details
+    - **generateFixedTimesCronExpression()**: Added method for fixed-time cron generation
+    - **Files Updated**: auto-sync.service.ts
 
 - **MULTI-ACCOUNT PORTFOLIO MANAGEMENT SYSTEM - COMPLETED** (Previous Session - October 19, 2025)
   - **Permission-Based Access Control**: Implemented comprehensive permission system
@@ -121,11 +122,11 @@
 
 ## Current Status
 ### 🎯 Active Development
-- **Global Asset Tracking System**: Fully functional comprehensive tracking system
-- **Sync Operation Monitoring**: Complete monitoring of global asset sync operations
-- **API Call Details**: Detailed monitoring of individual API calls with performance metrics
-- **Error Tracking**: Failed symbol tracking with retry logic and error details
-- **Migration Management**: Consolidated and optimized database migrations
+- **Fixed-Time Price Update System**: Fully functional fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM)
+- **Dual Scheduling Support**: Both interval and fixed-time scheduling operational
+- **Timezone Integration**: Proper Vietnam timezone handling (Asia/Ho_Chi_Minh)
+- **Configuration Management**: Dynamic configuration loading and updates
+- **API Status Display**: Real-time status showing correct scheduleType: "fixed_times"
 - **Multi-Account Portfolio Management**: Fully functional permission-based system
 - **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels implemented
 - **ResponsiveTable System**: Consistent table styling across the application
@@ -136,17 +137,18 @@
 - **Frontend**: React 18 + TypeScript + Material-UI + Vite
 - **Backend**: NestJS + TypeScript + PostgreSQL
 - **Authentication**: JWT-based with permission-based access control
-- **Database**: PostgreSQL with Global Asset Tracking system and portfolio_permissions table
+- **Database**: PostgreSQL with price update and auto sync systems
 - **Deployment**: Docker containerization with production-ready configuration
-- **Global Asset Tracking**: Comprehensive sync operation monitoring system
-- **Migration Management**: Consolidated and optimized database migrations
+- **Price Update System**: Fixed-time scheduling with timezone support
+- **Auto Sync Service**: Dual scheduling support (interval + fixed-time)
+- **Configuration Management**: Dynamic environment variable loading
 
 ### 📊 System Capabilities
-- **Global Asset Tracking**: Comprehensive monitoring of sync operations
-- **API Call Monitoring**: Detailed tracking of individual API calls with performance metrics
-- **Error Tracking**: Failed symbol tracking with retry logic and error details
-- **Performance Analytics**: Real-time success rates and execution time monitoring
-- **Migration Management**: Consolidated and optimized database migrations
+- **Fixed-Time Price Updates**: Price updates run at specific times (9:01 AM, 3:01 PM, 6:50 PM)
+- **Interval-Based Scheduling**: Backward compatible interval-based scheduling (every N minutes)
+- **Timezone Support**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
+- **Configuration Management**: Dynamic configuration loading and updates
+- **API Status Display**: Real-time status showing current schedule type and next execution time
 - **Multi-Account Portfolio Access**: Share portfolios with multiple accounts
 - **Permission-Based UI**: Different interfaces based on permission level
 - **Portfolio Management**: Create, view, edit portfolios with permission checks
@@ -157,12 +159,12 @@
 
 ## Next Steps
 ### 🚀 Planned Enhancements (Current Session)
-- **Advanced Analytics**: More detailed performance analytics and reporting
-- **Real-time Monitoring**: Live dashboard for sync operations
-- **Alert System**: Automated alerts for failed sync operations
-- **Performance Optimization**: Optimize tracking system performance
-- **API Documentation**: Comprehensive API documentation for tracking system
-- **Testing Coverage**: Unit and integration tests for tracking system
+- **Advanced Scheduling Options**: Support for more complex scheduling patterns
+- **Real-time Configuration Updates**: Dynamic configuration changes without restart
+- **Scheduling Analytics**: Detailed analytics on execution timing and performance
+- **Multi-Timezone Support**: Support for multiple timezones in fixed-time scheduling
+- **Scheduling Validation**: Enhanced validation for fixed times and intervals
+- **Testing Coverage**: Unit and integration tests for scheduling system
 
 ### 🚀 Planned Enhancements (Previous Session)
 - **Advanced Permission Features**: More granular permission levels
@@ -195,11 +197,11 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ## System Health
-- ✅ **Database**: Fully operational with Global Asset Tracking system and permission relationships
+- ✅ **Database**: Fully operational with price update and auto sync systems
 - ✅ **Authentication**: Working with permission-based access control
-- ✅ **Frontend**: Responsive with Global Asset Tracking dashboard and consistent table styling
-- ✅ **Backend**: Stable API endpoints with tracking system and permission checks
+- ✅ **Frontend**: Responsive with updated configuration management
+- ✅ **Backend**: Stable API endpoints with enhanced scheduling system
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Global Asset Tracking**: Comprehensive sync operation monitoring operational
-- ✅ **Migration Management**: Consolidated and optimized migrations
-- ✅ **Permission System**: Multi-account portfolio management operational
+- ✅ **Price Update System**: Fixed-time scheduling operational (9:01 AM, 3:01 PM, 6:50 PM)
+- ✅ **Auto Sync Service**: Dual scheduling support (interval + fixed-time)
+- ✅ **Configuration Management**: Dynamic configuration loading and updates

@@ -12,10 +12,14 @@ import { CircuitBreakerService } from '../../shared/services/circuit-breaker.ser
 import { GlobalAssetTrackingService } from './global-asset-tracking.service';
 import { GlobalAssetSyncType, GlobalAssetSyncSource } from '../entities/global-asset-tracking.entity';
 import * as cron from 'node-cron';
+import * as moment from 'moment-timezone';
 
 export interface AutoSyncConfig {
   enabled: boolean;
-  intervalMinutes: number; // Sync interval in minutes
+  scheduleType: 'interval' | 'fixed_times';
+  intervalMinutes?: number; // Sync interval in minutes (for interval type)
+  fixedTimes?: string[]; // Fixed times for execution (for fixed_times type)
+  timezone?: string; // Timezone for fixed times
   cronExpression?: string; // Custom cron expression
 }
 
@@ -24,7 +28,10 @@ export class AutoSyncService {
   private readonly logger = new Logger(AutoSyncService.name);
   private autoSyncEnabled: boolean;
   private lastSyncTime: Date | null = null;
+  private scheduleType: 'interval' | 'fixed_times';
   private syncInterval = 15; // 15 minutes - now configurable
+  private fixedTimes: string[] = ['09:01', '15:01', '18:50']; // Default fixed times
+  private timezone = 'Asia/Ho_Chi_Minh'; // Default timezone
   private cronExpression = '0 */15 * * * *'; // Default: every 15 minutes
   private cronJob: cron.ScheduledTask | null = null;
 
@@ -40,8 +47,8 @@ export class AutoSyncService {
     private readonly circuitBreakerService: CircuitBreakerService,
     private readonly globalAssetTrackingService: GlobalAssetTrackingService,
   ) {
-    // Load auto sync status from environment or database
-    this.loadAutoSyncStatus();
+    // Load configuration from environment
+    this.loadConfiguration();
     
     // Setup dynamic cron job 
     this.setupDynamicCronJob();
@@ -54,7 +61,10 @@ export class AutoSyncService {
     enabled: boolean;
     lastSync?: string;
     nextSync?: string;
-    interval: number;
+    scheduleType: string;
+    interval?: number;
+    fixedTimes?: string[];
+    timezone?: string;
     cronExpression: string;
   }> {
     // Determine last sync from in-memory or tracking history as fallback
@@ -70,28 +80,51 @@ export class AutoSyncService {
       }
     }
 
-    const nextSync = this.autoSyncEnabled && lastSyncDate
-      ? new Date(lastSyncDate.getTime() + this.syncInterval * 60 * 1000)
-      : null;
+    let nextSync: Date | null = null;
+    if (this.autoSyncEnabled) {
+      if (this.scheduleType === 'fixed_times') {
+        nextSync = this.getNextFixedTimeSync();
+      } else if (lastSyncDate) {
+        nextSync = new Date(lastSyncDate.getTime() + this.syncInterval * 60 * 1000);
+      }
+    }
     
-    return {
+    const status: any = {
       enabled: this.autoSyncEnabled,
       lastSync: lastSyncDate?.toISOString(),
       nextSync: nextSync?.toISOString(),
-      interval: this.syncInterval,
+      scheduleType: this.scheduleType,
       cronExpression: this.cronExpression,
     };
+
+    if (this.scheduleType === 'fixed_times') {
+      status.fixedTimes = this.fixedTimes;
+      status.timezone = this.timezone;
+    } else {
+      status.interval = this.syncInterval;
+    }
+
+    return status;
   }
 
   /**
    * Get current configuration
    */
   getConfig(): AutoSyncConfig {
-    return {
+    const config: AutoSyncConfig = {
       enabled: this.autoSyncEnabled,
-      intervalMinutes: this.syncInterval,
+      scheduleType: this.scheduleType,
       cronExpression: this.cronExpression,
     };
+
+    if (this.scheduleType === 'fixed_times') {
+      config.fixedTimes = this.fixedTimes;
+      config.timezone = this.timezone;
+    } else {
+      config.intervalMinutes = this.syncInterval;
+    }
+
+    return config;
   }
 
   /**
@@ -102,9 +135,24 @@ export class AutoSyncService {
       this.autoSyncEnabled = this.normalizeBoolean(config.enabled);
     }
     
+    if (config.scheduleType !== undefined) {
+      this.scheduleType = config.scheduleType;
+    }
+    
     if (config.intervalMinutes !== undefined) {
       this.syncInterval = config.intervalMinutes;
       this.cronExpression = this.generateCronExpression(config.intervalMinutes);
+    }
+    
+    if (config.fixedTimes !== undefined) {
+      this.fixedTimes = config.fixedTimes;
+      if (this.scheduleType === 'fixed_times') {
+        this.cronExpression = this.generateFixedTimesCronExpression();
+      }
+    }
+    
+    if (config.timezone !== undefined) {
+      this.timezone = config.timezone;
     }
     
     if (config.cronExpression !== undefined) {
@@ -137,6 +185,8 @@ export class AutoSyncService {
     }, {
       scheduled: true,
     });
+    
+    this.logger.log(`[AutoSyncService] Dynamic cron job created with expression: ${this.cronExpression} (schedule type: ${this.scheduleType})`);
   }
 
   /**
@@ -331,6 +381,14 @@ export class AutoSyncService {
     if (!this.autoSyncEnabled) {
       this.logger.debug('[AutoSyncService] Auto sync is disabled, skipping scheduled sync');
       return;
+    }
+
+    // For fixed times, check if current time matches any of the fixed times
+    if (this.scheduleType === 'fixed_times') {
+      if (!this.shouldRunAtFixedTime()) {
+        this.logger.debug('[AutoSyncService] Current time does not match any fixed times, skipping sync');
+        return;
+      }
     }
 
     const syncId = `auto_${Date.now()}`;
@@ -652,16 +710,81 @@ export class AutoSyncService {
   }
 
   /**
-   * Load auto sync status from configuration
+   * Load configuration from environment
    */
-  private loadAutoSyncStatus(): void {
-    // Use the same config as scheduled-price-update.service.ts for consistency
-    const enabledRaw = this.configService.get<any>('AUTO_SYNC_ENABLED', 'false');
-    this.autoSyncEnabled = this.normalizeBoolean(enabledRaw);
-    this.syncInterval = parseInt(this.configService.get<string>('AUTO_SYNC_INTERVAL_MINUTES', '60'), 10);
-    this.cronExpression = this.generateCronExpression(this.syncInterval);
+  private loadConfiguration(): void {
+    // Load schedule type and configuration
+    this.scheduleType = this.configService.get<string>('PRICE_UPDATE_SCHEDULE_TYPE', 'interval') as 'interval' | 'fixed_times';
+    this.autoSyncEnabled = this.configService.get<string>('AUTO_SYNC_ENABLED', 'false') === 'true';
     
-    this.logger.log(`[AutoSyncService] Auto sync status loaded from config: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, interval: ${this.syncInterval} minutes`);
+    if (this.scheduleType === 'fixed_times') {
+      // Load fixed times configuration
+      this.fixedTimes = this.configService.get<string>('PRICE_UPDATE_FIXED_TIMES', '09:01,15:01,18:50').split(',');
+      this.timezone = this.configService.get<string>('PRICE_UPDATE_TIMEZONE', 'Asia/Ho_Chi_Minh');
+      this.cronExpression = this.generateFixedTimesCronExpression();
+      
+      this.logger.log(`[AutoSyncService] Fixed times configuration loaded: ${this.fixedTimes.join(', ')} (${this.timezone})`);
+    } else {
+      // Load interval configuration
+      this.syncInterval = parseInt(this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60'), 10);
+      this.cronExpression = this.generateCronExpression(this.syncInterval);
+      
+      this.logger.log(`[AutoSyncService] Interval configuration loaded: ${this.syncInterval} minutes`);
+    }
+    
+    this.logger.log(`[AutoSyncService] Auto sync status: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, schedule type: ${this.scheduleType}`);
+  }
+
+  /**
+   * Generate cron expression for fixed times
+   */
+  private generateFixedTimesCronExpression(): string {
+    // Use the first fixed time for the cron expression
+    const firstTime = this.fixedTimes[0];
+    const [hour, minute] = firstTime.split(':').map(Number);
+    return `${minute} ${hour} * * *`;
+  }
+
+  /**
+   * Get next fixed time sync
+   */
+  private getNextFixedTimeSync(): Date | null {
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    
+    // Find the next fixed time today
+    for (const fixedTime of this.fixedTimes) {
+      if (currentTime < fixedTime) {
+        const [hour, minute] = fixedTime.split(':').map(Number);
+        const nextUpdate = now.clone().hour(hour).minute(minute).second(0);
+        return nextUpdate.toDate();
+      }
+    }
+    
+    // If no more times today, use the first time tomorrow
+    const firstTime = this.fixedTimes[0];
+    const [hour, minute] = firstTime.split(':').map(Number);
+    const nextUpdate = now.clone().add(1, 'day').hour(hour).minute(minute).second(0);
+    return nextUpdate.toDate();
+  }
+
+  /**
+   * Check if current time matches any of the fixed times
+   */
+  private shouldRunAtFixedTime(): boolean {
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    
+    // Check if current time matches any of the fixed times
+    for (const fixedTime of this.fixedTimes) {
+      if (currentTime === fixedTime) {
+        this.logger.log(`[AutoSyncService] Current time ${currentTime} matches fixed time ${fixedTime}`);
+        return true;
+      }
+    }
+    
+    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match any fixed times: ${this.fixedTimes.join(', ')}`);
+    return false;
   }
 
   /**

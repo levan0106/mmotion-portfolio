@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { MarketDataService } from './market-data.service';
 import { LoggingService } from '../../logging/services/logging.service';
 import * as cron from 'node-cron';
+import * as moment from 'moment-timezone';
 
 /**
  * Service for managing scheduled price updates.
@@ -14,6 +15,9 @@ export class ScheduledPriceUpdateService {
   private readonly logger = new Logger(ScheduledPriceUpdateService.name);
   private isRunning = false;
   private readonly updateIntervalMinutes: number;
+  private readonly scheduleType: string;
+  private readonly fixedTimes: string[];
+  private readonly timezone: string;
   private cronJob: cron.ScheduledTask | null = null;
   private lastExecutionTime: Date | null = null;
   private autoSyncEnabled: boolean = false;
@@ -25,9 +29,16 @@ export class ScheduledPriceUpdateService {
   ) {
     const configValue = this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60');
     this.updateIntervalMinutes = parseInt(configValue, 10);
+    this.scheduleType = this.configService.get<string>('PRICE_UPDATE_SCHEDULE_TYPE', 'interval');
+    this.fixedTimes = this.configService.get<string>('PRICE_UPDATE_FIXED_TIMES', '09:00,15:00').split(',');
+    this.timezone = this.configService.get<string>('PRICE_UPDATE_TIMEZONE', 'Asia/Ho_Chi_Minh');
     this.autoSyncEnabled = this.configService.get<string>('AUTO_SYNC_ENABLED', 'false') === 'true';
     
-    this.logger.log(`ScheduledPriceUpdateService initialized with ${this.updateIntervalMinutes} minute interval (config: ${configValue})`);
+    if (this.scheduleType === 'fixed_times') {
+      this.logger.log(`ScheduledPriceUpdateService initialized with fixed times: ${this.fixedTimes.join(', ')} (${this.timezone})`);
+    } else {
+      this.logger.log(`ScheduledPriceUpdateService initialized with ${this.updateIntervalMinutes} minute interval (config: ${configValue})`);
+    }
     this.logger.log(`Auto sync status: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}`);
     
     // Setup dynamic cron job
@@ -77,45 +88,56 @@ export class ScheduledPriceUpdateService {
   }
 
   /**
-   * Generate cron expression based on configured interval.
+   * Generate cron expression based on configured schedule type.
    * @returns Cron expression string
    */
   private generateCronExpression(): string {
-    if (this.updateIntervalMinutes === 1) {
-      return '0 * * * * *'; // Every minute
-    } else if (this.updateIntervalMinutes > 1 && this.updateIntervalMinutes <= 60) {
-      // For any interval from 2-60 minutes, use minute-based cron
-      return `0 */${this.updateIntervalMinutes} * * * *`;
-    } else if (this.updateIntervalMinutes > 60 && this.updateIntervalMinutes < 1440) {
-      // For intervals > 1 hour but < 24 hours, use hourly with custom logic
-      const hours = Math.floor(this.updateIntervalMinutes / 60);
-      const minutes = this.updateIntervalMinutes % 60;
+    if (this.scheduleType === 'fixed_times') {
+      // For fixed times, we need to create a cron expression that runs at specific times
+      // Since we can only have one cron expression, we'll use the first time and handle others in the job
+      const firstTime = this.fixedTimes[0];
+      const [hour, minute] = firstTime.split(':').map(Number);
       
-      if (minutes === 0) {
-        // Exact hours: every N hours
-        return `0 0 */${hours} * * *`;
-      } else {
-        // Mixed hours and minutes: every hour, but we'll handle the custom logic in the job
-        this.logger.warn(`[ScheduledPriceUpdateService] Mixed interval ${this.updateIntervalMinutes} minutes (${hours}h ${minutes}m) - using hourly schedule with custom logic`);
-        return '0 0 * * * *'; // Every hour, custom logic will handle the actual interval
-      }
-    } else if (this.updateIntervalMinutes >= 1440) {
-      // For intervals >= 24 hours, use daily schedule
-      const days = Math.floor(this.updateIntervalMinutes / 1440);
-      const remainingMinutes = this.updateIntervalMinutes % 1440;
-      
-      if (remainingMinutes === 0) {
-        // Exact days: every N days
-        return `0 0 0 */${days} * *`;
-      } else {
-        // Mixed days and hours/minutes: daily with custom logic
-        this.logger.warn(`[ScheduledPriceUpdateService] Large interval ${this.updateIntervalMinutes} minutes (${days}d ${Math.floor(remainingMinutes/60)}h ${remainingMinutes%60}m) - using daily schedule with custom logic`);
-        return '0 0 0 * * *'; // Every day, custom logic will handle the actual interval
-      }
+      this.logger.log(`[ScheduledPriceUpdateService] Using fixed time schedule: ${this.fixedTimes.join(', ')} (${this.timezone})`);
+      return `${minute} ${hour} * * *`; // Run at the first fixed time daily
     } else {
-      // Fallback for any other cases
-      this.logger.warn(`[ScheduledPriceUpdateService] Invalid interval ${this.updateIntervalMinutes} minutes, falling back to 15 minutes`);
-      return '0 */15 * * * *';
+      // Original interval-based logic
+      if (this.updateIntervalMinutes === 1) {
+        return '0 * * * * *'; // Every minute
+      } else if (this.updateIntervalMinutes > 1 && this.updateIntervalMinutes <= 60) {
+        // For any interval from 2-60 minutes, use minute-based cron
+        return `0 */${this.updateIntervalMinutes} * * * *`;
+      } else if (this.updateIntervalMinutes > 60 && this.updateIntervalMinutes < 1440) {
+        // For intervals > 1 hour but < 24 hours, use hourly with custom logic
+        const hours = Math.floor(this.updateIntervalMinutes / 60);
+        const minutes = this.updateIntervalMinutes % 60;
+        
+        if (minutes === 0) {
+          // Exact hours: every N hours
+          return `0 0 */${hours} * * *`;
+        } else {
+          // Mixed hours and minutes: every hour, but we'll handle the custom logic in the job
+          this.logger.warn(`[ScheduledPriceUpdateService] Mixed interval ${this.updateIntervalMinutes} minutes (${hours}h ${minutes}m) - using hourly schedule with custom logic`);
+          return '0 0 * * * *'; // Every hour, custom logic will handle the actual interval
+        }
+      } else if (this.updateIntervalMinutes >= 1440) {
+        // For intervals >= 24 hours, use daily schedule
+        const days = Math.floor(this.updateIntervalMinutes / 1440);
+        const remainingMinutes = this.updateIntervalMinutes % 1440;
+        
+        if (remainingMinutes === 0) {
+          // Exact days: every N days
+          return `0 0 0 */${days} * *`;
+        } else {
+          // Mixed days and hours/minutes: daily with custom logic
+          this.logger.warn(`[ScheduledPriceUpdateService] Large interval ${this.updateIntervalMinutes} minutes (${days}d ${Math.floor(remainingMinutes/60)}h ${remainingMinutes%60}m) - using daily schedule with custom logic`);
+          return '0 0 0 * * *'; // Every day, custom logic will handle the actual interval
+        }
+      } else {
+        // Fallback for any other cases
+        this.logger.warn(`[ScheduledPriceUpdateService] Invalid interval ${this.updateIntervalMinutes} minutes, falling back to 15 minutes`);
+        return '0 */15 * * * *';
+      }
     }
   }
 
@@ -177,10 +199,61 @@ export class ScheduledPriceUpdateService {
   }
 
   /**
-   * Check if the update should run based on the configured interval
+   * Check if the update should run based on the configured schedule
    * @returns true if update should run, false otherwise
    */
   private shouldRunUpdate(): boolean {
+    if (this.scheduleType === 'fixed_times') {
+      return this.shouldRunUpdateFixedTimes();
+    } else {
+      return this.shouldRunUpdateInterval();
+    }
+  }
+
+  /**
+   * Check if the update should run based on fixed times
+   * @returns true if update should run, false otherwise
+   */
+  private shouldRunUpdateFixedTimes(): boolean {
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    
+    // Check if current time matches any of the fixed times
+    for (const fixedTime of this.fixedTimes) {
+      if (currentTime === fixedTime) {
+        this.logger.log(`[ScheduledPriceUpdateService] Current time ${currentTime} matches fixed time ${fixedTime}`);
+        return true;
+      }
+    }
+    
+    // If no previous execution today, check if we should run at the next available time
+    if (!this.lastExecutionTime) {
+      const today = now.format('YYYY-MM-DD');
+      const lastExecutionDate = this.lastExecutionTime ? moment(this.lastExecutionTime).tz(this.timezone).format('YYYY-MM-DD') : null;
+      
+      if (lastExecutionDate !== today) {
+        // Check if current time is past any of the fixed times today
+        for (const fixedTime of this.fixedTimes) {
+          const [hour, minute] = fixedTime.split(':').map(Number);
+          const fixedDateTime = now.clone().hour(hour).minute(minute).second(0);
+          
+          if (now.isAfter(fixedDateTime)) {
+            this.logger.log(`[ScheduledPriceUpdateService] Current time ${currentTime} is past fixed time ${fixedTime} today, running update`);
+            return true;
+          }
+        }
+      }
+    }
+    
+    this.logger.debug(`[ScheduledPriceUpdateService] Current time ${currentTime} does not match any fixed times: ${this.fixedTimes.join(', ')}`);
+    return false;
+  }
+
+  /**
+   * Check if the update should run based on the configured interval
+   * @returns true if update should run, false otherwise
+   */
+  private shouldRunUpdateInterval(): boolean {
     // If no previous execution, always run
     if (!this.lastExecutionTime) {
       return true;
@@ -269,6 +342,44 @@ export class ScheduledPriceUpdateService {
    * @returns Next scheduled update time
    */
   getNextScheduledUpdate(): Date {
+    if (this.scheduleType === 'fixed_times') {
+      return this.getNextScheduledUpdateFixedTimes();
+    } else {
+      return this.getNextScheduledUpdateInterval();
+    }
+  }
+
+  /**
+   * Get the next scheduled update time for fixed times
+   * @returns Next scheduled update time
+   */
+  private getNextScheduledUpdateFixedTimes(): Date {
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    
+    // Find the next fixed time today
+    for (const fixedTime of this.fixedTimes) {
+      if (currentTime < fixedTime) {
+        const [hour, minute] = fixedTime.split(':').map(Number);
+        const nextUpdate = now.clone().hour(hour).minute(minute).second(0);
+        this.logger.log(`[ScheduledPriceUpdateService] Next update scheduled for today at ${fixedTime} (${this.timezone})`);
+        return nextUpdate.toDate();
+      }
+    }
+    
+    // If no more times today, use the first time tomorrow
+    const firstTime = this.fixedTimes[0];
+    const [hour, minute] = firstTime.split(':').map(Number);
+    const nextUpdate = now.clone().add(1, 'day').hour(hour).minute(minute).second(0);
+    this.logger.log(`[ScheduledPriceUpdateService] Next update scheduled for tomorrow at ${firstTime} (${this.timezone})`);
+    return nextUpdate.toDate();
+  }
+
+  /**
+   * Get the next scheduled update time for interval-based scheduling
+   * @returns Next scheduled update time
+   */
+  private getNextScheduledUpdateInterval(): Date {
     const now = new Date();
     
     // If we have a last execution time, calculate from there

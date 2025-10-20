@@ -1724,7 +1724,7 @@
     "lastUpdated": "Cập nhật lần cuối",
     "noPortfolios": "Chưa có danh mục nào",
     "error": {
-      "loadFailed": "Không thể tải danh sách portfolio. Vui lòng thử lại sau."
+      "loadFailed": "Đang tải dữ liệu ..."
     }
   },
   "accountManagement": {
