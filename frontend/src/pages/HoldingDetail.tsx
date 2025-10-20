@@ -26,6 +26,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from '@mui/material';
 import { ResponsiveButton } from '../components/Common';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
@@ -596,41 +597,40 @@ const HoldingDetail: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
-                        <ResponsiveButton
-                          variant="outlined"
+                        <IconButton
                           size="small"
-                          icon={<EditIcon />}
                           onClick={() => handleEditTransaction({ transaction, cashFlow })}
-                          mobileText={t('common.edit')}
-                          desktopText={t('common.edit')}
                           sx={{ 
-                            minWidth: 'auto',
-                            px: 1,
-                            py: 0.5,
-                            textTransform: 'none',
-                            fontSize: '0.75rem!important'
+                            width: 50, 
+                            height: 50,
+                            border: '1px solid',
+                            borderColor: 'primary.main',
+                            color: 'primary.main',
+                            '&:hover': {
+                              backgroundColor: 'primary.light',
+                              color: 'white'
+                            }
                           }}
                         >
-                          {t('common.edit')}
-                        </ResponsiveButton>
-                        <ResponsiveButton
-                          variant="outlined"
-                          color="error"
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
                           size="small"
-                          icon={<DeleteIcon />}
                           onClick={() => handleDeleteTransaction({ transaction, cashFlow })}
-                          mobileText={t('common.delete')}
-                          desktopText={t('common.delete')}
                           sx={{ 
-                            minWidth: 'auto',
-                            px: 1,
-                            py: 0.5,
-                            textTransform: 'none',
-                            fontSize: '0.75rem!important'
+                            width: 50, 
+                            height: 50,
+                            border: '1px solid',
+                            borderColor: 'error.main',
+                            color: 'error.main',
+                            '&:hover': {
+                              backgroundColor: 'error.light',
+                              color: 'white'
+                            }
                           }}
                         >
-                          {t('common.delete')}
-                        </ResponsiveButton>
+                          <DeleteIcon />
+                        </IconButton>
                       </Stack>
                     </TableCell>
                   </TableRow>

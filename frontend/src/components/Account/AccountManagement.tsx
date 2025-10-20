@@ -127,10 +127,7 @@ export const AccountManagement: React.FC = () => {
   const getCurrencySymbol = (currency: string) => {
     const symbols: Record<string, string> = {
       'VND': '₫',
-      'USD': '$',
-      'EUR': '€',
-      'GBP': '£',
-      'JPY': '¥',
+      'USD': '$'
     };
     return symbols[currency] || currency;
   };
@@ -153,9 +150,9 @@ export const AccountManagement: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: { xs: 0, sm: 2 } }}>
       <Card>
-        <CardContent sx={{ p: 2 }}>
+        <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
             <ResponsiveButton
               variant="contained"

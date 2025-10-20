@@ -34,10 +34,7 @@ interface EditAccountFormData {
 
 const CURRENCY_OPTIONS = [
   { value: 'VND', label: 'Vietnamese Dong (VND)' },
-  { value: 'USD', label: 'US Dollar (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'GBP', label: 'British Pound (GBP)' },
-  { value: 'JPY', label: 'Japanese Yen (JPY)' },
+  { value: 'USD', label: 'US Dollar (USD)' }
 ];
 
 export const EditAccountModal: React.FC<EditAccountModalProps> = ({
@@ -188,7 +185,7 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
           helperText={t('editAccountModal.fields.emailHelper')}
         />
 
-        <FormControl fullWidth margin="normal" required>
+        {/* <FormControl fullWidth margin="normal" required>
           <InputLabel>{t('editAccountModal.fields.baseCurrency')}</InputLabel>
           <Select
             value={formData.baseCurrency}
@@ -202,7 +199,7 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <FormControlLabel
           control={

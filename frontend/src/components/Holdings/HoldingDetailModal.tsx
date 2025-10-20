@@ -28,6 +28,7 @@ import {
   Grid,
   Card,
   CardContent,
+  useMediaQuery,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
@@ -60,6 +61,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [holdingDetail, setHoldingDetail] = useState<HoldingDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,20 +100,14 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
     return transaction.holdingType === 'SUBSCRIBE' ? t('holdings.transaction.subscription') : t('holdings.transaction.redemption');
   };
 
-  const summaryMetrics = holdingDetail ? [
-    {
-      title: t('holdings.modal.totalTransactions'),
-      value: holdingDetail.summary.totalTransactions,
-      subtitle: t('holdings.modal.allTransactions'),
-      icon: <Assessment />,
-      color: 'primary' as const,
-    },
+  const allSummaryMetrics = holdingDetail ? [
     {
       title: t('holdings.modal.totalSubscriptions'),
       value: holdingDetail.summary.totalSubscriptions,
       subtitle: t('holdings.modal.subscriptionCount'),
       icon: <TrendingUp />,
       color: 'success' as const,
+      hideOnMobile: true,
     },
     {
       title: t('holdings.modal.totalRedemptions'),
@@ -119,6 +115,18 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       subtitle: t('holdings.modal.redemptionCount'),
       icon: <TrendingDown />,
       color: 'error' as const,
+      hideOnMobile: true,
+    },
+    {
+      title: t('holdings.modal.totalFundUnits'),
+      value: formatNumberWithSeparators(
+        (holdingDetail.summary.totalUnitsSubscribed || 0) - (holdingDetail.summary.totalUnitsRedeemed || 0), 
+        2
+      ),
+      subtitle: t('holdings.modal.totalUnitsHeld'),
+      icon: <Assessment />,
+      color: 'primary' as const,
+      hideOnMobile: false,
     },
     {
       title: t('holdings.modal.totalInvested'),
@@ -126,8 +134,14 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       subtitle: t('holdings.modal.amountInvested'),
       icon: <MonetizationOn />,
       color: 'info' as const,
+      hideOnMobile: false,
     },
   ] : [];
+
+  // Filter metrics based on screen size
+  const summaryMetrics = allSummaryMetrics.filter(metric => 
+    !isMobile || !metric.hideOnMobile
+  );
 
   return (
     <Dialog

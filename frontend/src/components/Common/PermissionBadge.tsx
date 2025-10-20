@@ -1,6 +1,6 @@
 import React from 'react';
 import { Chip, Tooltip } from '@mui/material';
-import { Security, Edit, Visibility, AdminPanelSettings } from '@mui/icons-material';
+import { Security, Edit, Visibility, Star } from '@mui/icons-material';
 import { UserPermission, PortfolioPermissionType } from '../../types';
 
 interface PermissionBadgeProps {
@@ -24,7 +24,7 @@ const PermissionBadge: React.FC<PermissionBadgeProps> = ({
         return {
           label: 'Owner',
           color: 'primary' as const,
-          icon: <AdminPanelSettings fontSize="small" />,
+          icon: <Star fontSize="small" />,
           tooltip: 'You are the owner of this portfolio. You have full control.'
         };
       case PortfolioPermissionType.UPDATE:

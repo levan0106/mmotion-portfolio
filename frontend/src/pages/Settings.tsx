@@ -122,11 +122,11 @@ const Settings: React.FC = () => {
         </Box>
 
         <TabPanel value={value} index={0}>
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ m: 0, p: 0 }}>
             <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               {t('accountManagement.title')}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }} desktopOnly>
               {t('accountManagement.subtitle')}
             </ResponsiveTypography>
           </Box>

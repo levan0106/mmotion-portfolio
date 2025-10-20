@@ -194,7 +194,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           helperText={t('createAccountModal.fields.emailHelper')}
         />
 
-        <FormControl fullWidth margin="normal" required>
+        {/* <FormControl fullWidth margin="normal" required>
           <InputLabel>{t('createAccountModal.fields.baseCurrency')}</InputLabel>
           <Select
             value={formData.baseCurrency}
@@ -208,7 +208,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <Box sx={{ mt: 2 }}>
           <FormControlLabel

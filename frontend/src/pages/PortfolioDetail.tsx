@@ -305,9 +305,14 @@ const PortfolioDetail: React.FC = () => {
           }}
         >
           <Box sx={{ 
-            textAlign: { xs: 'center', sm: 'left' },
+            textAlign: 'left',
             width: { xs: '100%', sm: 'auto' },
-            flex: { sm: 1 }
+            flex: { sm: 1 },
+            display: 'flex',
+            alignItems: 'left',
+            justifyContent: 'space-between',
+            flexDirection: { xs: 'row', sm: 'column' },
+            gap: { xs: 1, sm: 0 }
           }}>
             <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
               <ResponsiveTypography variant="pageTitle" gutterBottom={false}>
@@ -324,69 +329,152 @@ const PortfolioDetail: React.FC = () => {
             <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
               {t('portfolio.managementTrading')}
             </ResponsiveTypography>
-          </Box>
-          <Box 
-            display="flex" 
-            gap={{ xs: 1.5, sm: 2 }}
-            sx={{
-              flexDirection: { xs: 'column', sm: 'row' },
-              width: { xs: '100%', sm: 'auto' },
-              flexShrink: 0,
-            }}
-          >
-            <ResponsiveButton
-              variant="outlined"
-              icon={<ArrowBackIcon />}
-              startIcon={<ArrowBackIcon />}
-              onClick={handleBack}
-              mobileText={t('common.back')}
-              desktopText={t('portfolio.backToPortfolios')}
-              sx={{ 
-                display: { xs: 'none', sm: 'flex' },
-                borderRadius: 2, 
-                px: { xs: 2, sm: 3 },
-                py: { xs: 0.75, sm: 1 },
-                width: { xs: '100%', sm: 'auto' },
-                minWidth: { xs: 'auto', sm: '120px' },
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                }
+            
+            {/* Buttons on mobile - same row as title */}
+            <Box 
+              display={{ xs: 'flex', sm: 'none' }}
+              gap={1}
+              sx={{
+                flexDirection: 'row',
+                flexShrink: 0,
+                flexWrap: 'nowrap',
+                overflow: 'hidden',
               }}
             >
-              <ResponsiveTypography variant="buttonText">
-                {t('portfolio.backToPortfolios')}
-              </ResponsiveTypography>
-            </ResponsiveButton>
-            <Tooltip title={t('portfolio.refreshAllData')}>
-              <span>
-                <ResponsiveButton
-                  variant="outlined"
-                  icon={<RefreshIcon />}
-                  startIcon={<RefreshIcon />}
-                  onClick={handleRefreshAll}
-                  disabled={isRefreshingAll}
-                  forceIconOnly={true}
-                  sx={{ 
-                    display: { xs: 'none', sm: 'flex' },
-                    borderRadius: 2, 
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 0.75, sm: 1 },
-                    width: 'auto',
-                    minWidth: 'auto',
+              <Tooltip title={t('portfolio.backToPortfolios')}>
+                <IconButton
+                  onClick={handleBack}
+                  color="primary"
+                  size="medium"
+                  sx={{
+                    borderRadius: 2,
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
+                    border: '1px solid',
+                    borderColor: 'primary.main',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-1px)',
                       boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    }
+                      backgroundColor: 'primary.light',
+                      color: 'primary.contrastText',
+                    },
                   }}
                 >
-                  <ResponsiveTypography variant="buttonText">
-                    {isRefreshingAll ? t('portfolio.refreshing') : t('portfolio.refreshAll')}
-                  </ResponsiveTypography>
-                </ResponsiveButton>
-              </span>
+                  <ArrowBackIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('portfolio.refreshAllData')}>
+                <IconButton
+                  onClick={handleRefreshAll}
+                  disabled={isRefreshingAll}
+                  color="primary"
+                  size="medium"
+                  sx={{
+                    borderRadius: 2,
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
+                    border: '1px solid',
+                    borderColor: 'primary.main',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                      backgroundColor: 'primary.light',
+                      color: 'primary.contrastText',
+                    },
+                  }}
+                >
+                  {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
+                </IconButton>
+              </Tooltip>
+              {isOwner && (
+                <Tooltip title="Manage Portfolio Permissions">
+                  <IconButton
+                    onClick={() => setPermissionModalOpen(true)}
+                    color="primary"
+                    size="medium"
+                    sx={{
+                      borderRadius: 2,
+                      width: 40,
+                      height: 40,
+                      flexShrink: 0,
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                        backgroundColor: 'primary.light',
+                        color: 'primary.contrastText',
+                      },
+                    }}
+                  >
+                    <SecurityIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
+          <Box 
+            display={{ xs: 'none', sm: 'flex' }}
+            gap={2}
+            sx={{
+              flexDirection: 'row',
+              width: 'auto',
+              flexShrink: 0,
+              flexWrap: 'nowrap',
+              overflow: 'hidden',
+            }}
+          >
+            <Tooltip title={t('portfolio.backToPortfolios')}>
+              <IconButton
+                onClick={handleBack}
+                color="primary"
+                size="medium"
+                sx={{
+                  borderRadius: 2,
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  border: '1px solid',
+                  borderColor: 'primary.main',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                  },
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('portfolio.refreshAllData')}>
+              <IconButton
+                onClick={handleRefreshAll}
+                disabled={isRefreshingAll}
+                color="primary"
+                size="medium"
+                sx={{
+                  borderRadius: 2,
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  border: '1px solid',
+                  borderColor: 'primary.main',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                  },
+                }}
+              >
+                {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
+              </IconButton>
             </Tooltip>
             {isOwner && (
               <Tooltip title="Manage Portfolio Permissions">
@@ -396,7 +484,9 @@ const PortfolioDetail: React.FC = () => {
                   size="medium"
                   sx={{
                     borderRadius: 2,
-                    p: 1.5,
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-1px)',

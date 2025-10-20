@@ -174,14 +174,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     },
     // Admin menus - Only show for non-investor accounts
     ...(isInvestorAccount ? [] : [
-      { 
-        text: t('navigation.priceManagement'), 
-        icon: <GlobalAssetIcon />, 
-        path: '/global-assets', 
-        description: t('navigation.priceManagement'),
-        badge: null,
-        roles: ['admin', 'super_admin']
-      },
+      
       { 
         text: t('navigation.dataManagement'), 
         icon: <SnapshotIcon />, 
@@ -189,6 +182,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         description: t('navigation.dataManagement'),
         badge: null,
         permissions: ['financial.snapshots.manage']
+      },{ 
+        text: t('navigation.priceManagement'), 
+        icon: <GlobalAssetIcon />, 
+        path: '/global-assets', 
+        description: t('navigation.priceManagement'),
+        badge: null,
+        roles: ['admin', 'super_admin']
       },
       {
         text: t('navigation.systemAdmin'),

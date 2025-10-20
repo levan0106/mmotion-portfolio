@@ -388,7 +388,19 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                       : 0;
                     
                     return (
-                      <TableRow key={holding.holdingId}>
+                      <TableRow 
+                        key={holding.holdingId}
+                        onClick={() => navigate(`/holdings/${holding.holdingId}?from=nav`)}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            backgroundColor: 'action.hover',
+                          },
+                          '&:active': {
+                            backgroundColor: 'action.selected',
+                          }
+                        }}
+                      >
                         <TableCell>
                           <Box>
                             <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
@@ -448,7 +460,10 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                           <Tooltip title={t('nav.holdings.viewDetails')}>
                             <IconButton 
                               size="small"
-                              onClick={() => navigate(`/holdings/${holding.holdingId}?from=nav`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/holdings/${holding.holdingId}?from=nav`);
+                              }}
                             >
                               <VisibilityIcon />
                             </IconButton>

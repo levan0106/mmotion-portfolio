@@ -414,8 +414,17 @@ export class CashFlowController {
     // Override portfolioId from URL parameter
     transferCashDto.portfolioId = portfolioId;
 
-    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-    const transferDate = transferCashDto.transferDate ? new Date(transferCashDto.transferDate + 'T00:00:00') : new Date();
+    // Fix timezone issue: handle both ISO string and date string formats
+    const transferDate = transferCashDto.transferDate ? (() => {
+      let dateStr = transferCashDto.transferDate;
+      if (dateStr.includes('T')) {
+        // If it's already an ISO string, use it directly
+        return new Date(dateStr);
+      } else {
+        // If it's just a date string, append 'T00:00:00' to ensure local time interpretation
+        return new Date(dateStr + 'T00:00:00');
+      }
+    })() : new Date();
 
     return await this.cashFlowService.transferCash(
       portfolioId,
