@@ -420,7 +420,19 @@ jobs:
 
           # Setup Nginx HTTPS proxy for API
           echo "🔧 Setting up Nginx HTTPS proxy..."
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ubuntu@34.228.198.131 << 'EOF'
+          
+          # Create SSH key file
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/portfolio-key.pem
+          chmod 600 /tmp/portfolio-key.pem
+          
+          # Test SSH connection first
+          ssh -o StrictHostKeyChecking=no -i /tmp/portfolio-key.pem ubuntu@34.228.198.131 "echo 'SSH connection successful'" || {
+            echo "❌ SSH connection failed"
+            exit 1
+          }
+          
+          # Setup nginx via SSH
+          ssh -o StrictHostKeyChecking=no -i /tmp/portfolio-key.pem ubuntu@34.228.198.131 << 'EOF'
           # Update system
           sudo apt update
           
@@ -547,6 +559,9 @@ jobs:
           EOF || {
             echo "⚠️ Nginx setup failed, but continuing..."
           }
+          
+          # Clean up SSH key file
+          rm -f /tmp/portfolio-key.pem
 
   # Frontend is now deployed in separate build-frontend and deploy-frontend jobs
 
