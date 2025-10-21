@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   FormControlLabel,
   Switch,
   Box,
@@ -32,10 +28,6 @@ interface EditAccountFormData {
   isInvestor: boolean;
 }
 
-const CURRENCY_OPTIONS = [
-  { value: 'VND', label: 'Vietnamese Dong (VND)' },
-  { value: 'USD', label: 'US Dollar (USD)' }
-];
 
 export const EditAccountModal: React.FC<EditAccountModalProps> = ({
   open,

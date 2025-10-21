@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   FormControlLabel,
   Switch,
   Box,
@@ -32,13 +28,6 @@ interface CreateAccountFormData {
   isInvestor: boolean;
 }
 
-const CURRENCY_OPTIONS = [
-  { value: 'VND', label: 'Vietnamese Dong (VND)' },
-  { value: 'USD', label: 'US Dollar (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'GBP', label: 'British Pound (GBP)' },
-  { value: 'JPY', label: 'Japanese Yen (JPY)' },
-];
 
 export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   open,
