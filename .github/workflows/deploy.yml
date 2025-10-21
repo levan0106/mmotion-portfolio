@@ -101,23 +101,29 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+        # Disable cache to avoid rollup native module issues
 
     - name: Install frontend dependencies
       run: |
         cd frontend
-        # Use npm ci for faster installs, fallback to npm install if needed
-        npm ci || {
-          echo "npm ci failed, trying npm install..."
-          npm install
-        }
+        # Force clean install to fix rollup native module issues
+        echo "🧹 Cleaning node_modules and package-lock.json..."
+        rm -rf node_modules package-lock.json
         
-        # Check if rollup works, rebuild if needed
-        if ! npx rollup --version >/dev/null 2>&1; then
-          echo "Rollup issue detected, rebuilding..."
-          npm rebuild rollup
-        fi
+        echo "📦 Installing dependencies..."
+        npm install
+        
+        echo "🔧 Fixing rollup native modules..."
+        # Force reinstall rollup and its native dependencies
+        npm uninstall rollup @rollup/rollup-linux-x64-gnu
+        npm install rollup@latest
+        
+        # Alternative fix: install specific rollup native module
+        npm install @rollup/rollup-linux-x64-gnu --save-optional
+        
+        # Verify rollup works
+        echo "✅ Verifying rollup installation..."
+        npx rollup --version
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
