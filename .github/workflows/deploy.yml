@@ -101,17 +101,23 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        # Disable cache to avoid rollup issues
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
 
     - name: Install frontend dependencies
       run: |
         cd frontend
-        # Remove lock file and node_modules to fix rollup issue
-        rm -rf node_modules package-lock.json
-        # Install dependencies fresh
-        npm install
-        # Rebuild rollup to fix native module issues
-        npm rebuild rollup
+        # Use npm ci for faster installs, fallback to npm install if needed
+        npm ci || {
+          echo "npm ci failed, trying npm install..."
+          npm install
+        }
+        
+        # Check if rollup works, rebuild if needed
+        if ! npx rollup --version >/dev/null 2>&1; then
+          echo "Rollup issue detected, rebuilding..."
+          npm rebuild rollup
+        fi
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -134,14 +140,31 @@ jobs:
       run: |
         set -e  # Exit on any error
         
-        # Get S3 bucket name from CDK output or use default
-        BUCKET_NAME="portfolio-frontend-production-${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text)}"
+        # Get S3 bucket name from CDK output (pattern: portfolio-frontend-{account}-{region})
+        AWS_REGION=$(aws configure get region || echo "us-east-1")
+        BUCKET_NAME="portfolio-frontend-${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text)}-${AWS_REGION}"
+        
+        echo "🔍 Debug information:"
+        echo "  AWS Account ID: ${AWS_ACCOUNT_ID}"
+        echo "  AWS Region: ${AWS_REGION}"
+        echo "  S3 Bucket Name: ${BUCKET_NAME}"
+        
+        # Check if S3 bucket exists
+        if aws s3 ls "s3://${BUCKET_NAME}" 2>/dev/null; then
+          echo "✅ S3 bucket exists: ${BUCKET_NAME}"
+        else
+          echo "❌ S3 bucket not found: ${BUCKET_NAME}"
+          echo "Available buckets:"
+          aws s3 ls | grep portfolio-frontend || echo "No portfolio-frontend buckets found"
+        fi
         
         # Get CloudFront distribution ID from CDK output or use default
         DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${BUCKET_NAME}.s3.amazonaws.com'].Id" --output text)
         
         if [ -z "$DISTRIBUTION_ID" ]; then
           echo "❌ CloudFront distribution not found for bucket: $BUCKET_NAME"
+          echo "Available CloudFront distributions:"
+          aws cloudfront list-distributions --query "DistributionList.Items[].{Id:Id,DomainName:Origins.Items[0].DomainName}" --output table || echo "Failed to list distributions"
           exit 1
         fi
         
