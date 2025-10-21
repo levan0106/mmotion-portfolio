@@ -43,6 +43,7 @@ import {
   Security as SecurityIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Help as HelpIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -171,6 +172,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       icon: <SettingsIcon />, 
       path: '/settings', 
       description: t('navigation.settings'),
+      badge: null
+    },
+    // System Explanation - Always show
+    { 
+      text: t('navigation.systemExplanation'), 
+      icon: <HelpIcon />, 
+      path: '/system-guide', 
+      description: t('navigation.systemExplanation'),
       badge: null
     },
     // Admin menus - Only show for non-investor accounts

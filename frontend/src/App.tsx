@@ -27,6 +27,7 @@ import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
 import Login from './pages/Login';
 import Welcome from './pages/Welcome';
+import SystemGuide from './pages/SystemGuide';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { AdminManagement } from './pages/AdminManagement';
@@ -214,6 +215,13 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <AdminManagement />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/system-guide" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <SystemGuide />
               </Box>
             </AppLayout>
           } />

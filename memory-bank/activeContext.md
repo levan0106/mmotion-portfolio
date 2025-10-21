@@ -1,13 +1,45 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 20, 2025  
-**Session Type**: Price Update Configuration & Auto Sync Service Enhancement  
-**Primary Goal**: Implement fixed-time price update scheduling and enhance auto sync service configuration
+**Date**: October 21, 2025  
+**Session Type**: SystemGuide Component Enhancement & Navigation System  
+**Primary Goal**: Fix SystemGuide table of contents navigation and scroll detection issues
 
 ## Recent Achievements
 
-### ✅ Price Update Configuration & Auto Sync Service Enhancement (Current Session)
+### ✅ SystemGuide Component Enhancement & Navigation System (Current Session)
+1. **Table of Contents Navigation Fixes**
+   - Fixed expand/collapse functionality for parent sections
+   - Implemented accordion behavior (only one section expanded at a time)
+   - Added proper state management with `expandedSections` Set
+   - Created `handleSectionClick` function for manual expand/collapse control
+
+2. **Active Highlighting Improvements**
+   - Fixed active section highlighting to work correctly with manual clicks
+   - Added immediate active section update for better UX
+   - Implemented conflict prevention between manual clicks and scroll detection
+   - Added `isManualClick` state to prevent scroll detection conflicts
+
+3. **Scroll Detection Enhancement**
+   - Improved scroll detection algorithm to find closest section to viewport top
+   - Added preference for main sections over subsections when distances are similar
+   - Implemented debounced scroll detection (50ms) for better performance
+   - Added manual click protection to prevent scroll detection conflicts
+
+4. **Navigation System Architecture**
+   - Enhanced `handleSectionClick` with immediate active section setting
+   - Updated `handleSubsectionClick` with proper active section management
+   - Improved scroll detection logic with distance-based section selection
+   - Added auto-expand functionality for subsections with accordion behavior
+
+5. **User Experience Improvements**
+   - Smooth accordion behavior with proper expand/collapse
+   - Immediate visual feedback on section clicks
+   - Accurate scroll-based highlighting
+   - Conflict-free navigation between manual clicks and scroll detection
+   - Responsive design for both desktop and mobile TOC
+
+### ✅ Price Update Configuration & Auto Sync Service Enhancement (Previous Session)
 1. **Fixed-Time Price Update Scheduling**
    - Modified `PRICE_UPDATE_INTERVAL_MINUTES=180` to support fixed-time scheduling
    - Implemented `PRICE_UPDATE_SCHEDULE_TYPE=fixed_times` configuration
@@ -89,13 +121,14 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `src/modules/asset/services/scheduled-price-update.service.ts` - Enhanced with fixed-time scheduling support
-- `src/modules/asset/services/auto-sync.service.ts` - Updated to support both interval and fixed-time scheduling
-- `src/modules/asset/controllers/auto-sync.controller.ts` - Enhanced DTOs for new configuration options
-- `production.env` - Updated with fixed-time price update configuration
-- `env.development.example` - Added examples for both scheduling types
-- `.env` - Updated with new price update configuration for Docker container
-- `package.json` - Added moment-timezone and @types/moment-timezone dependencies
+- `frontend/src/pages/SystemGuide.tsx` - Enhanced with improved navigation and scroll detection
+- `frontend/src/components/SystemGuide/OverviewSection.tsx` - Contains overview section with proper IDs
+- `frontend/src/components/SystemGuide/FeaturesSection.tsx` - Contains features section with proper IDs
+- `frontend/src/components/SystemGuide/UseCasesSection.tsx` - Contains use cases section with proper IDs
+- `frontend/src/components/SystemGuide/PermissionsSection.tsx` - Contains permissions section with proper IDs
+- `frontend/src/components/SystemGuide/DetailedGuideSection.tsx` - Contains detailed guide sections with proper IDs
+- `frontend/src/components/SystemGuide/AdvancedFeaturesSection.tsx` - Contains advanced features with proper IDs
+- `frontend/src/components/SystemGuide/GettingStartedSection.tsx` - Contains getting started sections with proper IDs
 
 ### Key Components Modified (Previous Session)
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - New permission entity
@@ -108,12 +141,12 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Fixed-Time Price Updates**: Price updates now run at specific times (9:01 AM, 3:01 PM, 6:50 PM) instead of every 3 hours
-- **Timezone Support**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
-- **Flexible Scheduling**: Support for both interval-based and fixed-time scheduling
-- **Configuration Management**: Easy switching between scheduling types via environment variables
-- **API Status Display**: Auto sync status API now correctly shows fixed-time configuration
-- **Backward Compatibility**: Existing interval-based configuration still works
+- **Accordion Navigation**: Table of contents now works as proper accordion (only one section expanded at a time)
+- **Immediate Visual Feedback**: Active section highlighting updates immediately on click
+- **Smooth Scroll Detection**: Accurate scroll-based highlighting without conflicts
+- **Mobile-Friendly TOC**: Responsive table of contents for both desktop and mobile
+- **Conflict-Free Navigation**: Manual clicks and scroll detection work together seamlessly
+- **Auto-Expand Subsections**: Parent sections automatically expand when subsections are active
 
 ### User Experience Improvements (Previous Session)
 - **Multi-Account Access**: Users can access portfolios they have permissions for
@@ -204,20 +237,20 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
-1. ✅ **Fixed-Time Price Update Configuration**: Successfully implemented fixed-time scheduling
-2. ✅ **Auto Sync Service Enhancement**: Updated service to support both scheduling types
-3. ✅ **API Controller Updates**: Enhanced DTOs and validation for new configuration
-4. ✅ **Configuration Management**: Fixed Docker container configuration loading
-5. ✅ **TypeScript Compilation**: Resolved moment-timezone dependency issues
-6. ✅ **API Status Verification**: Confirmed API returns correct scheduleType: "fixed_times"
+1. ✅ **Table of Contents Navigation**: Fixed expand/collapse functionality for parent sections
+2. ✅ **Accordion Behavior**: Implemented proper accordion behavior (only one section expanded at a time)
+3. ✅ **Active Highlighting**: Fixed active section highlighting to work correctly with manual clicks
+4. ✅ **Scroll Detection**: Enhanced scroll detection algorithm with distance-based section selection
+5. ✅ **Conflict Prevention**: Added manual click protection to prevent scroll detection conflicts
+6. ✅ **ID Verification**: Verified all navigation IDs match between TOC and components
 
 ### Future Enhancements (Current Session)
-1. **Advanced Scheduling Options**: Support for more complex scheduling patterns
-2. **Real-time Configuration Updates**: Dynamic configuration changes without restart
-3. **Scheduling Analytics**: Detailed analytics on execution timing and performance
-4. **Multi-Timezone Support**: Support for multiple timezones in fixed-time scheduling
-5. **Scheduling Validation**: Enhanced validation for fixed times and intervals
-6. **Testing Coverage**: Unit and integration tests for scheduling system
+1. **Advanced Navigation Features**: Search functionality in table of contents
+2. **Smooth Animations**: Add smooth expand/collapse animations for better UX
+3. **Keyboard Navigation**: Support for keyboard navigation in table of contents
+4. **Breadcrumb Navigation**: Add breadcrumb navigation for better context
+5. **Section Progress**: Show reading progress for each section
+6. **Mobile Gestures**: Support for swipe gestures on mobile devices
 
 ### Future Enhancements (Previous Session)
 1. **Advanced Permissions**: More granular permission levels
@@ -232,7 +265,17 @@
 ### Frontend Structure
 ```
 frontend/src/
+├── pages/
+│   └── SystemGuide.tsx (Enhanced navigation and scroll detection)
 ├── components/
+│   ├── SystemGuide/
+│   │   ├── OverviewSection.tsx (Overview with workflow, features, use-cases, permissions)
+│   │   ├── FeaturesSection.tsx (Main features section)
+│   │   ├── UseCasesSection.tsx (Use cases section)
+│   │   ├── PermissionsSection.tsx (Permissions section)
+│   │   ├── DetailedGuideSection.tsx (Portfolio creation, transactions, trading, cash flow)
+│   │   ├── AdvancedFeaturesSection.tsx (Performance analysis, risk management, sharing)
+│   │   └── GettingStartedSection.tsx (For managers, for customers)
 │   ├── Common/
 │   │   ├── ResponsiveTable.tsx (Reusable table component)
 │   │   ├── ResponsiveTableWithActions.tsx (Table with actions)
@@ -271,25 +314,27 @@ src/
 ## System Health
 - ✅ **Database**: Fully operational with price update and auto sync systems
 - ✅ **Authentication**: Working with permission-based access control
-- ✅ **Frontend**: Responsive with updated configuration management
+- ✅ **Frontend**: Responsive with enhanced SystemGuide navigation
 - ✅ **Backend**: Stable API endpoints with enhanced scheduling system
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Price Update System**: Fixed-time scheduling operational (9:01 AM, 3:01 PM, 6:50 PM)
-- ✅ **Auto Sync Service**: Dual scheduling support (interval + fixed-time)
-- ✅ **Configuration Management**: Dynamic configuration loading and updates
+- ✅ **SystemGuide Navigation**: Accordion behavior and scroll detection working perfectly
+- ✅ **Table of Contents**: All IDs verified and navigation working correctly
+- ✅ **Mobile Responsiveness**: TOC works on both desktop and mobile devices
 
 ## Notes
-- Price update system now supports fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM Vietnam time)
+- SystemGuide component now has fully functional accordion navigation
+- Table of contents expand/collapse works correctly with proper state management
+- Active section highlighting works immediately on click and accurately on scroll
+- Scroll detection algorithm improved with distance-based section selection
+- Manual click conflicts resolved with proper state management
+- All navigation IDs verified and working correctly across all sections
+- Mobile table of contents drawer works seamlessly with desktop sidebar
+- Accordion behavior ensures only one section expanded at a time
+- Auto-expand functionality works when scrolling to subsections
+- SystemGuide navigation system is production-ready and user-friendly
+- Price update system continues to support fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM Vietnam time)
 - Auto sync service enhanced to support both interval and fixed-time scheduling
-- Configuration management improved with dynamic loading from environment variables
-- Docker container configuration issues resolved with proper .env file updates
-- TypeScript compilation issues fixed with moment-timezone dependency installation
-- API status now correctly returns scheduleType: "fixed_times" instead of "interval"
-- Backward compatibility maintained for existing interval-based configuration
-- System is ready for production deployment with enhanced scheduling capabilities
-- Future development should focus on advanced scheduling options and real-time configuration updates
 - Multi-account portfolio management system remains fully operational
 - Permission-based access control continues to work across all APIs
 - ResponsiveTable component system provides consistent styling
-- All tables use light borders for better text visibility
-- System is ready for production deployment with enhanced scheduling and permission management
+- System is ready for production deployment with enhanced navigation and scheduling capabilities

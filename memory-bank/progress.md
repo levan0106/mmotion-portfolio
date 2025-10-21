@@ -2,7 +2,38 @@
 
 ## What Works
 ### ✅ Completed
-- **PRICE UPDATE CONFIGURATION & AUTO SYNC SERVICE ENHANCEMENT - COMPLETED** (Current Session - October 20, 2025)
+- **SYSTEMGUIDE COMPONENT ENHANCEMENT & NAVIGATION SYSTEM - COMPLETED** (Current Session - October 21, 2025)
+  - **Table of Contents Navigation**: Fixed expand/collapse functionality for parent sections
+    - **Accordion Behavior**: Implemented proper accordion behavior (only one section expanded at a time)
+    - **State Management**: Added expandedSections Set for proper state management
+    - **Manual Control**: Created handleSectionClick function for manual expand/collapse control
+    - **Files Updated**: SystemGuide.tsx
+  - **Active Highlighting System**: Fixed active section highlighting to work correctly
+    - **Immediate Feedback**: Active section highlighting updates immediately on click
+    - **Conflict Prevention**: Added isManualClick state to prevent scroll detection conflicts
+    - **Manual Click Handling**: Enhanced handleSectionClick and handleSubsectionClick functions
+    - **Files Updated**: SystemGuide.tsx
+  - **Scroll Detection Enhancement**: Improved scroll detection algorithm for accurate highlighting
+    - **Distance-Based Selection**: Find section closest to viewport top for better accuracy
+    - **Main Section Preference**: Prefer main sections over subsections when distances are similar
+    - **Debounced Detection**: Implemented 50ms debounce for better performance
+    - **Conflict Prevention**: Added manual click protection to prevent scroll detection conflicts
+    - **Files Updated**: SystemGuide.tsx
+  - **Navigation System Architecture**: Enhanced navigation system with proper state management
+    - **Auto-Expand Functionality**: Parent sections automatically expand when subsections are active
+    - **ID Verification**: Verified all navigation IDs match between TOC and components
+    - **Mobile Responsiveness**: TOC works on both desktop and mobile devices
+    - **Smooth Navigation**: Conflict-free navigation between manual clicks and scroll detection
+    - **Files Updated**: SystemGuide.tsx, all SystemGuide component files
+  - **User Experience Improvements**: Enhanced user experience with smooth navigation
+    - **Accordion Navigation**: Table of contents now works as proper accordion
+    - **Immediate Visual Feedback**: Active section highlighting updates immediately on click
+    - **Smooth Scroll Detection**: Accurate scroll-based highlighting without conflicts
+    - **Mobile-Friendly TOC**: Responsive table of contents for both desktop and mobile
+    - **Auto-Expand Subsections**: Parent sections automatically expand when subsections are active
+    - **Files Updated**: SystemGuide.tsx
+
+- **PRICE UPDATE CONFIGURATION & AUTO SYNC SERVICE ENHANCEMENT - COMPLETED** (Previous Session - October 20, 2025)
   - **Fixed-Time Price Update Scheduling**: Implemented comprehensive fixed-time scheduling system
     - **Schedule Type Support**: Added support for both interval and fixed-time scheduling
     - **Fixed Times Configuration**: Support for multiple daily execution times (9:01 AM, 3:01 PM, 6:50 PM)
@@ -159,12 +190,12 @@
 
 ## Next Steps
 ### 🚀 Planned Enhancements (Current Session)
-- **Advanced Scheduling Options**: Support for more complex scheduling patterns
-- **Real-time Configuration Updates**: Dynamic configuration changes without restart
-- **Scheduling Analytics**: Detailed analytics on execution timing and performance
-- **Multi-Timezone Support**: Support for multiple timezones in fixed-time scheduling
-- **Scheduling Validation**: Enhanced validation for fixed times and intervals
-- **Testing Coverage**: Unit and integration tests for scheduling system
+- **Advanced Navigation Features**: Search functionality in table of contents
+- **Smooth Animations**: Add smooth expand/collapse animations for better UX
+- **Keyboard Navigation**: Support for keyboard navigation in table of contents
+- **Breadcrumb Navigation**: Add breadcrumb navigation for better context
+- **Section Progress**: Show reading progress for each section
+- **Mobile Gestures**: Support for swipe gestures on mobile devices
 
 ### 🚀 Planned Enhancements (Previous Session)
 - **Advanced Permission Features**: More granular permission levels
@@ -176,15 +207,14 @@
 - **Performance**: Optimization for large datasets with permission checks
 
 ## Key Files Modified in Current Session
-- `src/modules/asset/entities/global-asset-tracking.entity.ts` - Main tracking entity
-- `src/modules/asset/entities/api-call-detail.entity.ts` - API call details entity
-- `src/modules/asset/entities/failed-symbol.entity.ts` - Failed symbols entity
-- `src/modules/asset/services/global-asset-tracking.service.ts` - Enhanced with number conversion
-- `src/modules/asset/controllers/global-asset-tracking.controller.ts` - Added API call details endpoint
-- `src/migrations/1703123456802-CreateGlobalAssetTrackingSystem.ts` - Consolidated migration
-- `src/migrations/1703123456801-CreateFailedSymbolsTable.ts` - Failed symbols migration
-- `frontend/src/components/GlobalAssetTrackingDashboard.tsx` - Updated for number successRate
-- `frontend/src/services/api.global-asset-tracking.ts` - API service integration
+- `frontend/src/pages/SystemGuide.tsx` - Enhanced with improved navigation and scroll detection
+- `frontend/src/components/SystemGuide/OverviewSection.tsx` - Contains overview section with proper IDs
+- `frontend/src/components/SystemGuide/FeaturesSection.tsx` - Contains features section with proper IDs
+- `frontend/src/components/SystemGuide/UseCasesSection.tsx` - Contains use cases section with proper IDs
+- `frontend/src/components/SystemGuide/PermissionsSection.tsx` - Contains permissions section with proper IDs
+- `frontend/src/components/SystemGuide/DetailedGuideSection.tsx` - Contains detailed guide sections with proper IDs
+- `frontend/src/components/SystemGuide/AdvancedFeaturesSection.tsx` - Contains advanced features with proper IDs
+- `frontend/src/components/SystemGuide/GettingStartedSection.tsx` - Contains getting started sections with proper IDs
 
 ## Key Files Modified in Previous Session
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - Permission entity
@@ -199,9 +229,9 @@
 ## System Health
 - ✅ **Database**: Fully operational with price update and auto sync systems
 - ✅ **Authentication**: Working with permission-based access control
-- ✅ **Frontend**: Responsive with updated configuration management
+- ✅ **Frontend**: Responsive with enhanced SystemGuide navigation
 - ✅ **Backend**: Stable API endpoints with enhanced scheduling system
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Price Update System**: Fixed-time scheduling operational (9:01 AM, 3:01 PM, 6:50 PM)
-- ✅ **Auto Sync Service**: Dual scheduling support (interval + fixed-time)
-- ✅ **Configuration Management**: Dynamic configuration loading and updates
+- ✅ **SystemGuide Navigation**: Accordion behavior and scroll detection working perfectly
+- ✅ **Table of Contents**: All IDs verified and navigation working correctly
+- ✅ **Mobile Responsiveness**: TOC works on both desktop and mobile devices
