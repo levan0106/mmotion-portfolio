@@ -135,6 +135,11 @@ jobs:
     - name: Build frontend for production
       run: |
         cd frontend
+        # Load production environment variables
+        echo "📝 Loading production environment variables..."
+        cp production.env .env
+        echo "✅ Environment variables loaded from production.env"
+        
         # Verify rollup is working
         npx rollup --version
         # Build frontend
