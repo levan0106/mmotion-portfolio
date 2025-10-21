@@ -1,4 +1,4 @@
-name: Deploy Portfolio Application
+name: Deploy Portfolio Application (Docker on EC2 and S3/CloudFront)
 
 on:
   push:
@@ -488,7 +488,7 @@ jobs:
                 }
                 
                 location /api/ {
-                    proxy_pass http://localhost:3000/api/;
+                    proxy_pass http://127.0.0.1:3000/api/;
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection 'upgrade';
@@ -502,7 +502,7 @@ jobs:
                 }
                 
                 location /ws {
-                    proxy_pass http://localhost:3000/ws;
+                    proxy_pass http://127.0.0.1:3000/ws;
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection "upgrade";
@@ -513,7 +513,7 @@ jobs:
                 }
                 
                 location /health {
-                    proxy_pass http://localhost:3000/health;
+                    proxy_pass http://127.0.0.1:3000/health;
                     proxy_http_version 1.1;
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
@@ -522,7 +522,7 @@ jobs:
                 }
                 
                 location /api/docs {
-                    proxy_pass http://localhost:3000/api/docs;
+                    proxy_pass http://127.0.0.1:3000/api/docs;
                     proxy_http_version 1.1;
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
