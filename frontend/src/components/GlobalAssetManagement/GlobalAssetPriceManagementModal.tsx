@@ -61,9 +61,6 @@ const GlobalAssetPriceManagementModal: React.FC<GlobalAssetPriceManagementModalP
         </ResponsiveButton>
       }
     >
-      <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 2 }}>
-        Manage price information for {asset.name} ({asset.symbol})
-      </ResponsiveTypography>
       <AssetPriceManagement
         asset={{
           id: asset.id,

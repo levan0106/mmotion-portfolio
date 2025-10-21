@@ -472,14 +472,16 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">
-                        {asset.name}
-                      </Typography>
-                      {asset.description && (
-                        <Typography variant="caption" color="text.secondary">
-                          {asset.description}
+                      <Box>
+                        <Typography variant="body2">
+                          {asset.name}
                         </Typography>
-                      )}
+                        {asset.description && (
+                          <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+                            {asset.description}
+                          </Box>
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -510,9 +512,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">
-                        {renderChangePercent(asset.assetPrice?.priceChangePercent)}
-                      </Typography>
+                      {renderChangePercent(asset.assetPrice?.priceChangePercent)}
                     </TableCell>
                     <TableCell>
                       <Chip
