@@ -34,7 +34,7 @@ env:
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND != 'false'))
+    if: false  # Temporarily disabled - only deploy frontend
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -87,14 +87,27 @@ jobs:
         echo "✅ Backend images built and pushed successfully"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  build-and-push-frontend:
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND != 'false'))
     outputs:
-      image-tag: ${{ steps.build.outputs.image-tag }}
+      bucket-name: ${{ steps.deploy.outputs.bucket-name }}
+      distribution-id: ${{ steps.deploy.outputs.distribution-id }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -103,49 +116,52 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+    - name: Build frontend for production
+      run: |
+        cd frontend
+        npm run build
+        echo "✅ Frontend build completed successfully"
 
-    - name: Build, tag, and push frontend image
-      id: build
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
+    - name: Deploy to S3 and CloudFront
+      id: deploy
       run: |
         set -e  # Exit on any error
         
-        # Build frontend image
-        echo "🔨 Building frontend image..."
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG ./frontend || {
-          echo "❌ Frontend image build failed"
+        # Get S3 bucket name from CDK output or use default
+        BUCKET_NAME="portfolio-frontend-production-${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text)}"
+        
+        # Get CloudFront distribution ID from CDK output or use default
+        DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${BUCKET_NAME}.s3.amazonaws.com'].Id" --output text)
+        
+        if [ -z "$DISTRIBUTION_ID" ]; then
+          echo "❌ CloudFront distribution not found for bucket: $BUCKET_NAME"
+          exit 1
+        fi
+        
+        echo "📦 Deploying to S3 bucket: $BUCKET_NAME"
+        echo "🌐 CloudFront distribution: $DISTRIBUTION_ID"
+        
+        # Sync files to S3
+        aws s3 sync frontend/build/ s3://$BUCKET_NAME/ --delete || {
+          echo "❌ S3 sync failed"
           exit 1
         }
         
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest ./frontend || {
-          echo "❌ Frontend latest image build failed"
+        # Invalidate CloudFront cache
+        echo "🔄 Invalidating CloudFront cache..."
+        aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" || {
+          echo "❌ CloudFront invalidation failed"
           exit 1
         }
         
-        # Push frontend images
-        echo "📤 Pushing frontend images..."
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG || {
-          echo "❌ Frontend image push failed"
-          exit 1
-        }
-        
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest || {
-          echo "❌ Frontend latest image push failed"
-          exit 1
-        }
-        
-        echo "✅ Frontend images built and pushed successfully"
-        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "✅ Frontend deployed to S3 and CloudFront successfully"
+        echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+        echo "distribution-id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
 
   deploy-backend:
     needs: build-and-push-backend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND != 'false'))
+    if: false  # Temporarily disabled - only deploy frontend
     
     steps:
     - name: Checkout code
@@ -286,133 +302,13 @@ jobs:
           
           echo "✅ Backend deployment completed successfully"
 
-  deploy-frontend:
-    needs: build-and-push-frontend
-    runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND != 'false'))
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Upload frontend deployment files to EC2
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.frontend.yml"
-        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
-
-    - name: Deploy Frontend to EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          set -e  # Exit on any error
-          
-          # Update environment variables
-          export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
-          export ECR_REPOSITORY_FRONTEND=${{ env.ECR_REPOSITORY_FRONTEND }}
-          export IMAGE_TAG=${{ github.sha }}
-          
-          # Test ECR access first
-          echo "🔐 Testing ECR access..."
-          aws sts get-caller-identity || {
-            echo "❌ AWS credentials test failed"
-            exit 1
-          }
-          
-          # Login to ECR with retry
-          echo "🔑 Logging into ECR..."
-          ECR_LOGIN_SUCCESS=false
-          for i in {1..3}; do
-            if aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; then
-              echo "✅ ECR login successful"
-              ECR_LOGIN_SUCCESS=true
-              break
-            else
-              echo "❌ ECR login attempt $i failed, retrying..."
-              sleep 5
-            fi
-          done
-          
-          if [ "$ECR_LOGIN_SUCCESS" = false ]; then
-            echo "❌ ECR login failed after 3 attempts"
-            exit 1
-          fi
-          
-          # Pull latest frontend image with retry
-          echo "📥 Pulling frontend image..."
-          IMAGE_PULL_SUCCESS=false
-          for i in {1..3}; do
-            if docker pull $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest; then
-              echo "✅ Frontend image pulled successfully"
-              IMAGE_PULL_SUCCESS=true
-              break
-            else
-              echo "❌ Frontend image pull attempt $i failed, retrying..."
-              sleep 10
-            fi
-          done
-          
-          if [ "$IMAGE_PULL_SUCCESS" = false ]; then
-            echo "❌ Frontend image pull failed after 3 attempts"
-            exit 1
-          fi
-          
-          # Ensure project directory exists
-          echo "📁 Setting up project directory..."
-          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
-          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
-          
-          # Stop existing frontend containers
-          echo "🛑 Stopping existing frontend containers..."
-          docker-compose -f docker-compose.frontend.yml down || echo "⚠️ No existing containers to stop"
-          
-          # Start frontend service
-          echo "🌐 Starting frontend service..."
-          docker-compose -f docker-compose.frontend.yml up -d || {
-            echo "❌ Failed to start frontend service"
-            exit 1
-          }
-          
-          # Wait for frontend to be healthy
-          echo "⏳ Waiting for frontend to be healthy..."
-          sleep 30
-          
-          # Check frontend health
-          echo "🏥 Checking frontend health..."
-          if curl -f http://localhost; then
-            echo "✅ Frontend health check passed"
-          else
-            echo "❌ Frontend health check failed"
-            exit 1
-          fi
-          
-          # Clean up old images
-          echo "🧹 Cleaning up old images..."
-          docker image prune -f || echo "⚠️ Image cleanup failed, but continuing..."
-          
-          echo "✅ Frontend deployment completed successfully"
+  # Frontend is now deployed directly to S3/CloudFront in build-and-deploy-frontend job
+  # No separate deployment step needed
 
   health-check:
-    needs: [deploy-backend, deploy-frontend]
+    needs: [build-and-deploy-frontend]
     runs-on: ubuntu-latest
-    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-frontend.result == 'success')
+    if: always() && needs.build-and-deploy-frontend.result == 'success'
     
     steps:
     - name: Health Check
@@ -422,22 +318,14 @@ jobs:
         echo "🏥 Starting health check..."
         sleep 30
         
-        # Check backend health
-        echo "🔍 Checking backend health..."
-        if curl -f http://${{ secrets.EC2_HOST }}:3000/health; then
-          echo "✅ Backend health check passed"
-        else
-          echo "❌ Backend health check failed"
-          exit 1
-        fi
-        
-        # Check frontend health
+        # Check frontend health (CloudFront only - backend disabled)
         echo "🔍 Checking frontend health..."
-        if curl -f http://${{ secrets.EC2_HOST }}; then
+        FRONTEND_URL="https://${{ needs.build-and-deploy-frontend.outputs.distribution-id }}.cloudfront.net"
+        if curl -f $FRONTEND_URL; then
           echo "✅ Frontend health check passed"
         else
           echo "❌ Frontend health check failed"
           exit 1
         fi
         
-        echo "✅ All health checks passed successfully"
+        echo "✅ Frontend health check passed successfully"
