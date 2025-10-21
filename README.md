@@ -392,25 +392,28 @@ The system uses PostgreSQL with the following key tables:
 
 ## 🚀 Deployment
 
-### Docker
+### Architecture
+- **Frontend**: S3 + CloudFront CDN (Static hosting)
+- **Backend**: EC2 + Docker (Containerized)
+- **Database**: RDS PostgreSQL
+- **Cache**: ElastiCache Redis
+
+### Docker (Local Development)
 ```bash
-# Build backend image
-docker build -t mmotion-portfolio-backend .
+# Start all services
+docker-compose up -d
 
-# Build frontend image
-cd frontend
-docker build -t mmotion-portfolio-frontend .
-
-# Run containers
-docker run -p 3000:3000 mmotion-portfolio-backend
-docker run -p 5173:5173 mmotion-portfolio-frontend
+# Check status
+docker-compose ps
 ```
 
-### Production
+### Production Deployment
 ```bash
-# Backend
-npm run build
-npm run start:prod
+# Backend (EC2)
+docker-compose -f docker-compose.backend.yml up -d
+
+# Frontend (S3 + CloudFront)
+./scripts/deploy-frontend-s3.sh
 
 # Frontend
 cd frontend

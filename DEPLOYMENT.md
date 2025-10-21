@@ -7,11 +7,17 @@ This guide covers the complete deployment setup for the Portfolio Management Sys
 ## 🏗️ Architecture
 
 ```
-GitHub → GitHub Actions → AWS ECR → EC2 Instance
+GitHub → GitHub Actions → AWS ECR → EC2 Instance (Backend)
                            ↓
                     Docker Compose
                            ↓
-              [Backend] [Frontend] [Postgres] [Redis]
+              [Backend] [Postgres] [Redis]
+
+GitHub → GitHub Actions → S3 + CloudFront (Frontend)
+                           ↓
+                    Static Files
+                           ↓
+              [S3 Bucket] [CloudFront CDN]
 ```
 
 ## 🛠️ Prerequisites
@@ -129,14 +135,20 @@ docker-compose -f docker-compose.prod.yml up -d
 | `NODE_ENV` | Environment | `production` |
 | `PORT` | Backend port | `3000` |
 
-### Docker Services
+### Docker Services (Backend Only)
 
 | Service | Port | Description |
 |---------|------|-------------|
 | Backend | 3000 | NestJS API |
-| Frontend | 80 | React + Nginx |
 | PostgreSQL | 5432 | Database |
 | Redis | 6379 | Cache & Sessions |
+
+### Frontend Services (S3 + CloudFront)
+
+| Service | Type | Description |
+|---------|------|-------------|
+| Frontend | S3 + CloudFront | React Static Files |
+| CDN | CloudFront | Global Content Delivery |
 
 ## 🔄 CI/CD Pipeline
 
@@ -147,37 +159,50 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ### Pipeline Steps
 1. **Test**: Run unit tests and linting
-2. **Build**: Build Docker images
-3. **Push**: Push to AWS ECR
-4. **Deploy**: Deploy to EC2
-5. **Health Check**: Verify deployment
+2. **Build Backend**: Build Docker image for backend
+3. **Build Frontend**: Build static files for frontend
+4. **Push Backend**: Push backend image to AWS ECR
+5. **Deploy Backend**: Deploy backend to EC2
+6. **Deploy Frontend**: Deploy frontend to S3 + CloudFront
+7. **Health Check**: Verify both deployments
 
 ## 📊 Monitoring
 
 ### Health Checks
-- Backend: `http://your-ec2-ip/health`
-- Frontend: `http://your-ec2-ip/`
+- Backend: `http://your-ec2-ip:3000/health`
+- Frontend: `https://your-cloudfront-domain.cloudfront.net/`
 - Database: Internal health checks
 
 ### Logs
 ```bash
-# View all logs
-docker-compose logs
-
-# View specific service logs
+# View backend logs (EC2)
 docker-compose logs backend
-docker-compose logs frontend
 docker-compose logs postgres
 docker-compose logs redis
+
+# View frontend logs (CloudFront)
+aws logs describe-log-groups --log-group-name-prefix /aws/cloudfront
 ```
 
-### Container Status
+### Container Status (Backend Only)
 ```bash
 # Check running containers
 docker-compose ps
 
 # Check resource usage
 docker stats
+```
+
+### Frontend Status (S3 + CloudFront)
+```bash
+# Check S3 bucket contents
+aws s3 ls s3://your-bucket-name/
+
+# Check CloudFront distribution status
+aws cloudfront get-distribution --id YOUR_DISTRIBUTION_ID
+
+# Check CloudFront cache invalidation status
+aws cloudfront get-invalidation --distribution-id YOUR_DISTRIBUTION_ID --id YOUR_INVALIDATION_ID
 ```
 
 ## 🚨 Troubleshooting
@@ -215,6 +240,33 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 sudo chmod 666 /var/run/docker.sock
 # Or add user to docker group
 sudo usermod -aG docker $USER
+```
+
+#### 5. S3 Deployment Issues
+```bash
+# Check S3 bucket permissions
+aws s3api get-bucket-policy --bucket your-bucket-name
+
+# Check CloudFront distribution
+aws cloudfront get-distribution --id YOUR_DISTRIBUTION_ID
+
+# Test S3 access
+aws s3 ls s3://your-bucket-name/
+
+# Check CloudFront cache
+aws cloudfront get-invalidation --distribution-id YOUR_DISTRIBUTION_ID --id YOUR_INVALIDATION_ID
+```
+
+#### 6. Frontend Not Loading
+```bash
+# Check if files are in S3
+aws s3 ls s3://your-bucket-name/ --recursive
+
+# Check CloudFront distribution status
+aws cloudfront get-distribution --id YOUR_DISTRIBUTION_ID --query 'Distribution.Status'
+
+# Force CloudFront cache invalidation
+aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
 ```
 
 ### Reset Everything
@@ -297,6 +349,20 @@ docker-compose exec -T postgres psql -U portfolio_user portfolio_db < backup.sql
 
 Your Portfolio Management System is now deployed and running! 
 
-- **Frontend**: http://your-ec2-ip/
-- **Backend API**: http://your-ec2-ip/api/
-- **Health Check**: http://your-ec2-ip/health
+- **Frontend**: https://your-cloudfront-domain.cloudfront.net/
+- **Backend API**: http://your-ec2-ip:3000/api/
+- **Health Check**: http://your-ec2-ip:3000/health
+
+### Architecture Benefits
+
+✅ **Frontend on S3 + CloudFront**:
+- Global CDN for faster loading
+- Automatic scaling
+- Cost-effective static hosting
+- SSL/HTTPS by default
+
+✅ **Backend on EC2**:
+- Full control over server environment
+- Database and Redis on same network
+- Easy debugging and monitoring
+- Docker containerization for consistency

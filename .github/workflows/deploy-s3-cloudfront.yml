@@ -2,9 +2,9 @@ name: Deploy Portfolio Application
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [ develop ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ develop ]
   workflow_dispatch:
     inputs:
       environment:
@@ -34,7 +34,7 @@ env:
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND != 'false'))
+    if: false  # Temporarily disabled - only deploy frontend
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
     steps:
@@ -277,7 +277,7 @@ jobs:
   deploy-backend:
     needs: build-and-push-backend
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_backend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_BACKEND != 'false'))
+    if: false  # Temporarily disabled - only deploy frontend
     
     steps:
     - name: Checkout code
@@ -417,7 +417,7 @@ jobs:
           docker image prune -f || echo "⚠️ Image cleanup failed, but continuing..."
           
           echo "✅ Backend deployment completed successfully"
-
+          
           # Setup Nginx HTTPS proxy for API
           echo "🔧 Setting up Nginx HTTPS proxy..."
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/portfolio-key.pem ubuntu@34.228.198.131 << 'EOF'
@@ -551,9 +551,9 @@ jobs:
   # Frontend is now deployed in separate build-frontend and deploy-frontend jobs
 
   health-check:
-    needs: [deploy-backend, deploy-frontend]
+    needs: [deploy-frontend]
     runs-on: ubuntu-latest
-    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-frontend.result == 'success')
+    if: always() && needs.deploy-frontend.result == 'success'
     
     steps:
     - name: Health Check
@@ -563,38 +563,17 @@ jobs:
         echo "🏥 Starting health check..."
         sleep 30
         
-        # Check backend health (if deployed)
-        if [ "${{ needs.deploy-backend.result }}" == "success" ]; then
-        echo "🔍 Checking backend health..."
-          BACKEND_URL="https://34.228.198.131/health"
-          echo "🌐 Testing backend URL: $BACKEND_URL"
-          if curl -f -L --max-time 30 -k $BACKEND_URL; then
-          echo "✅ Backend health check passed"
-        else
-          echo "❌ Backend health check failed"
-            echo "🔍 Debug: Trying to get more info about the backend URL..."
-            curl -I -k $BACKEND_URL || echo "Failed to get backend headers"
-            # Don't exit on backend failure if frontend is working
-          fi
-        else
-          echo "⏭️ Backend deployment skipped, skipping backend health check"
-        fi
-        
-        # Check frontend health (if deployed)
-        if [ "${{ needs.deploy-frontend.result }}" == "success" ]; then
+        # Check frontend health (CloudFront only - backend disabled)
         echo "🔍 Checking frontend health..."
-          FRONTEND_URL="https://${{ needs.deploy-frontend.outputs.cloudfront-domain }}"
-          echo "🌐 Testing frontend URL: $FRONTEND_URL"
-          if curl -f -L --max-time 30 $FRONTEND_URL; then
+        FRONTEND_URL="https://${{ needs.deploy-frontend.outputs.cloudfront-domain }}"
+        echo "🌐 Testing URL: $FRONTEND_URL"
+        if curl -f -L --max-time 30 $FRONTEND_URL; then
           echo "✅ Frontend health check passed"
         else
           echo "❌ Frontend health check failed"
-            echo "🔍 Debug: Trying to get more info about the frontend URL..."
-            curl -I $FRONTEND_URL || echo "Failed to get frontend headers"
+          echo "🔍 Debug: Trying to get more info about the URL..."
+          curl -I $FRONTEND_URL || echo "Failed to get headers"
           exit 1
-          fi
-        else
-          echo "⏭️ Frontend deployment skipped, skipping frontend health check"
         fi
         
-        echo "✅ Health check completed successfully"
+        echo "✅ Frontend health check passed successfully"
