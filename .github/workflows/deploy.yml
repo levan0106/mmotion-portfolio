@@ -165,7 +165,15 @@ jobs:
         fi
         
         # Get CloudFront distribution ID from CDK output or use default
-        DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${BUCKET_NAME}.s3.amazonaws.com'].Id" --output text)
+        # Try both S3 domain formats: s3.amazonaws.com and s3-website-{region}.amazonaws.com
+        S3_DOMAIN_1="${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com"
+        S3_DOMAIN_2="${BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
+        
+        echo "🔍 Looking for CloudFront distributions with origins:"
+        echo "  - ${S3_DOMAIN_1}"
+        echo "  - ${S3_DOMAIN_2}"
+        
+        DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${S3_DOMAIN_1}' || Origins.Items[0].DomainName=='${S3_DOMAIN_2}'].Id" --output text)
         
         if [ -z "$DISTRIBUTION_ID" ]; then
           echo "❌ CloudFront distribution not found for bucket: $BUCKET_NAME"
