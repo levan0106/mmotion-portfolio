@@ -87,12 +87,11 @@ jobs:
         echo "✅ Backend images built and pushed successfully"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  build-and-deploy-frontend:
+  build-frontend:
     runs-on: ubuntu-latest
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND != 'false'))
     outputs:
-      bucket-name: ${{ steps.deploy.outputs.bucket-name }}
-      distribution-id: ${{ steps.deploy.outputs.distribution-id }}
+      build-completed: ${{ steps.build.outputs.build-completed }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -133,6 +132,62 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Build frontend for production
+      id: build
+      run: |
+        cd frontend
+        # Load production environment variables
+        echo "📝 Loading production environment variables..."
+        cp production.env .env
+        echo "✅ Environment variables loaded from production.env"
+        
+        # Verify rollup is working
+        npx rollup --version
+        # Build frontend
+        npm run build
+        echo "✅ Frontend build completed successfully"
+        echo "build-completed=true" >> $GITHUB_OUTPUT
+
+  deploy-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.deploy_frontend == 'true' || (github.event_name != 'workflow_dispatch' && vars.DEFAULT_DEPLOY_FRONTEND != 'false'))
+    outputs:
+      bucket-name: ${{ steps.deploy.outputs.bucket-name }}
+      distribution-id: ${{ steps.deploy.outputs.distribution-id }}
+      cloudfront-domain: ${{ steps.deploy.outputs.cloudfront-domain }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        # Disable cache to avoid rollup native module issues
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        # Force clean install to fix rollup native module issues
+        echo "🧹 Cleaning node_modules and package-lock.json..."
+        rm -rf node_modules package-lock.json
+        
+        echo "📦 Installing dependencies..."
+        npm install
+        
+        echo "🔧 Fixing rollup native modules..."
+        # Force reinstall rollup and its native dependencies
+        npm uninstall rollup @rollup/rollup-linux-x64-gnu
+        npm install rollup@latest
+        
+        # Alternative fix: install specific rollup native module
+        npm install @rollup/rollup-linux-x64-gnu --save-optional
+        
+        # Verify rollup works
+        echo "✅ Verifying rollup installation..."
+        npx rollup --version
+
+    - name: Build frontend for production
       run: |
         cd frontend
         # Load production environment variables
@@ -146,7 +201,14 @@ jobs:
         npm run build
         echo "✅ Frontend build completed successfully"
 
-    - name: Deploy to S3 and CloudFront
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Deploy frontend to S3 and CloudFront
       id: deploy
       run: |
         set -e  # Exit on any error
@@ -190,6 +252,10 @@ jobs:
         echo "📦 Deploying to S3 bucket: $BUCKET_NAME"
         echo "🌐 CloudFront distribution: $DISTRIBUTION_ID"
         
+        # Get CloudFront domain name
+        CLOUDFRONT_DOMAIN=$(aws cloudfront get-distribution --id $DISTRIBUTION_ID --query 'Distribution.DomainName' --output text)
+        echo "🌐 CloudFront domain: $CLOUDFRONT_DOMAIN"
+        
         # Sync files to S3
         aws s3 sync frontend/build/ s3://$BUCKET_NAME/ --delete || {
           echo "❌ S3 sync failed"
@@ -206,6 +272,7 @@ jobs:
         echo "✅ Frontend deployed to S3 and CloudFront successfully"
         echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
         echo "distribution-id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+        echo "cloudfront-domain=$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
 
   deploy-backend:
     needs: build-and-push-backend
@@ -351,13 +418,12 @@ jobs:
           
           echo "✅ Backend deployment completed successfully"
 
-  # Frontend is now deployed directly to S3/CloudFront in build-and-deploy-frontend job
-  # No separate deployment step needed
+  # Frontend is now deployed in separate build-frontend and deploy-frontend jobs
 
   health-check:
-    needs: [build-and-deploy-frontend]
+    needs: [deploy-frontend]
     runs-on: ubuntu-latest
-    if: always() && needs.build-and-deploy-frontend.result == 'success'
+    if: always() && needs.deploy-frontend.result == 'success'
     
     steps:
     - name: Health Check
@@ -369,11 +435,14 @@ jobs:
         
         # Check frontend health (CloudFront only - backend disabled)
         echo "🔍 Checking frontend health..."
-        FRONTEND_URL="https://${{ needs.build-and-deploy-frontend.outputs.distribution-id }}.cloudfront.net"
-        if curl -f $FRONTEND_URL; then
+        FRONTEND_URL="https://${{ needs.deploy-frontend.outputs.cloudfront-domain }}"
+        echo "🌐 Testing URL: $FRONTEND_URL"
+        if curl -f -L --max-time 30 $FRONTEND_URL; then
           echo "✅ Frontend health check passed"
         else
           echo "❌ Frontend health check failed"
+          echo "🔍 Debug: Trying to get more info about the URL..."
+          curl -I $FRONTEND_URL || echo "Failed to get headers"
           exit 1
         fi
         
