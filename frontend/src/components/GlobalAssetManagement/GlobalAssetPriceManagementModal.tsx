@@ -2,7 +2,6 @@ import React from 'react';
 import AssetPriceManagement from '../AssetPriceManagement';
 import { ResponsiveButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
-import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 
 interface GlobalAsset {
   id: string;
