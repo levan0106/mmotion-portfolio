@@ -118,7 +118,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                     fontWeight="bold" 
                     sx={{ fontSize: '0.7rem' }}
                   >
-                    {formatPercentageValue(data.performance.dailyGrowth || 0)}
+                    {formatPercentageValue(data.performance.dailyGrowth || 0, 2)} 
                   </ResponsiveTypography>
                 </Box>
                 
@@ -132,7 +132,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                     fontWeight="bold" 
                     sx={{ fontSize: '0.7rem' }}
                   >
-                    {formatPercentageValue(data.performance.monthlyGrowth || 0)}
+                    {formatPercentageValue(data.performance.monthlyGrowth || 0, 2)}
                   </ResponsiveTypography>
                 </Box>
                 
@@ -146,7 +146,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                     fontWeight="bold" 
                     sx={{ fontSize: '0.7rem' }}
                   >
-                    {formatPercentageValue(data.performance.ytdGrowth || 0)}
+                    {formatPercentageValue(data.performance.ytdGrowth || 0, 2)}
                   </ResponsiveTypography>
                 </Box>
               </Box>

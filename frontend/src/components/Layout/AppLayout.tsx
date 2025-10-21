@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
   Drawer,
   IconButton,
@@ -943,10 +944,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </IconButton>
             </Tooltip>
             
-            <Tooltip title="Sign Out" placement="top">
-              <IconButton 
+            <Tooltip title={t('navigation.logout')} placement="top">
+              <Button 
                 size="small" 
                 onClick={logout}
+                startIcon={<LogoutIcon fontSize="small" />}
                 sx={{ 
                   color: 'error.main',
                   background: alpha(theme.palette.error.main, 0.1),
@@ -957,12 +959,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   },
                   transition: 'all 0.2s ease-in-out',
                   borderRadius: 2,
-                  width: 36,
-                  height: 36,
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: '0.75rem!important',
+                  fontWeight: 500,
+                  textTransform: 'none',
                 }}
               >
-                <LogoutIcon fontSize="small" />
-              </IconButton>
+                {t('navigation.logout')}
+              </Button>
             </Tooltip>
           </Box>
         )}
@@ -1019,7 +1024,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </IconButton>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-                Portfolio Management System
+                Financial Ledger
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {new Date().toLocaleDateString('en-US', { 

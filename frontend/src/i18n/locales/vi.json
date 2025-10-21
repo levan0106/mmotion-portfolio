@@ -92,7 +92,8 @@
     "holdings": "Cổ phần",
     "globalAssets": "Quản lý giá",
     "adminManagement": "Quản trị hệ thống",
-    "transactions": "Giao dịch"
+    "transactions": "Giao dịch",
+    "logout": "Thoát"
   },
   "portfolio": {
     "title": "Danh mục của bạn",
@@ -438,7 +439,7 @@
       "lastUpdated": "Cập nhật cuối"
     },
     "metrics": {
-      "totalAssets": "Tổng tài sản",
+      "totalAssets": "Số lượng tài sản",
       "assetsInPortfolio": "Tài sản trong danh mục",
       "totalValue": "Tổng giá trị",
       "combinedAssetValue": "Giá trị tài sản kết hợp",
@@ -2093,9 +2094,9 @@
     }
   },
   "login": {
-    "title": "Hệ thống Quản lý Danh mục Đầu tư",
+    "title": "Sổ tài chính",
     "subtitle": {
-      "enterUsername": "Nhập tên người dùng để bắt đầu",
+      "enterUsername": "Ghi chú, phân tích và quản lý các giao dịch",
       "welcomeBack": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)",
       "signIn": "Nhập tên người dùng và mật khẩu để đăng nhập",
       "continue": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)"
@@ -2148,8 +2149,8 @@
     }
   },
   "welcome": {
-    "title": "Chào mừng đến với Hệ thống Quản lý Danh mục Đầu tư",
-    "subtitle": "Quản lý danh mục đầu tư toàn diện với phân tích thời gian thực, công cụ giao dịch và báo cáo nâng cao",
+    "title": "Chào mừng đến với Sổ tài chính",
+    "subtitle": "Quản lý toàn diện với phân tích thời gian thực và báo cáo nâng cao",
     "buttons": {
       "getStarted": "Bắt đầu",
       "viewDashboard": "Xem Tổng quan"
@@ -2158,19 +2159,19 @@
       "title": "Tính năng chính",
       "portfolio": {
         "title": "Quản lý Danh mục",
-        "description": "Tạo và quản lý nhiều danh mục đầu tư với theo dõi thời gian thực",
+        "description": "Tạo và quản lý nhiều danh mục đầu tư với theo dõi hiệu suất",
         "feature1": "Hỗ trợ đa danh mục",
         "feature2": "Theo dõi hiệu suất thời gian thực",
         "feature3": "Trực quan hóa phân bổ tài sản",
         "feature4": "Phân tích hiệu suất lịch sử"
       },
       "trading": {
-        "title": "Hệ thống Giao dịch",
-        "description": "Công cụ giao dịch nâng cao với khớp lệnh FIFO/LIFO và quản lý rủi ro",
+        "title": "Quản lý Giao dịch",
+        "description": "Công cụ quản lý nâng cao với khớp lệnh FIFO/LIFO và quản lý rủi ro",
         "feature1": "Khớp lệnh FIFO/LIFO",
         "feature2": "Quản lý vị thế",
         "feature3": "Công cụ quản lý rủi ro",
-        "feature4": "Cắt lỗ và chốt lời"
+        "feature4": "Thiết lập cắt lỗ và chốt lời"
       },
       "analytics": {
         "title": "Phân tích & Báo cáo",

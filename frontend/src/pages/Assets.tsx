@@ -99,7 +99,7 @@ const AssetTableRow = memo(({
       }}
       onClick={() => onViewDetail(asset)}
     >
-      <TableCell sx={{ maxWidth: { xs: '200px', sm: '250px', md: '300px' }, minWidth: '150px' }}>
+      <TableCell sx={{ maxWidth: { xs: '200px', sm: '250px', md: '300px' }, minWidth: 'auto' }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
             {asset.symbol && (
@@ -124,7 +124,8 @@ const AssetTableRow = memo(({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 minWidth: 0,
-                flex: 1
+                flex: 1,
+                display: { xs: 'none', sm: 'block' }
               }}
             >
               {asset.name}
@@ -151,7 +152,11 @@ const AssetTableRow = memo(({
           </Box>
         </Box>
       </TableCell>
-      <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '80px', sm: '100px' }, minWidth: '60px' }}>
+      <TableCell sx={{ textAlign: 'right', 
+        maxWidth: { xs: '80px', sm: '100px' }, 
+        minWidth: '60px',
+        display: { xs: 'none', sm: 'table-cell' }
+        }}>
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
           {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
         </ResponsiveTypography>
@@ -191,6 +196,12 @@ const AssetTableRow = memo(({
         <ResponsiveTypography variant="tableCell" sx={{ color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
         </ResponsiveTypography>
+        <ResponsiveTypography variant="formHelper" sx={{ 
+          color: 'text.secondary', fontSize: { xs: '0.65rem', sm: '0.7rem' },
+          marginTop: 0.5
+          }}>
+          {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
+        </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
@@ -198,24 +209,7 @@ const AssetTableRow = memo(({
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {/* <Tooltip title={t('assets.actions.viewDetails')}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetail(asset);
-              }}
-              sx={{ 
-                color: 'primary.main',
-                '&:hover': { 
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1) 
-                }
-              }}
-            >
-              <Visibility />
-            </IconButton>
-          </Tooltip> */}
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
           <Tooltip title={t('assets.actions.editAsset')}>
             <IconButton
               size="small"
@@ -296,6 +290,7 @@ const SummaryMetrics = memo(({
       icon: <AccountBalanceWallet sx={{ fontSize: 24, color: 'primary.main' }} />,
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+      mobileHidden: true,
     },
     {
       title: t('assets.metrics.totalValue'),
@@ -312,6 +307,7 @@ const SummaryMetrics = memo(({
       icon: <AccountBalance sx={{ fontSize: 24, color: 'info.main' }} />,
       color: 'info' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+      mobileHidden: true,
     },
     {
       title: t('assets.metrics.assetTypes'),
@@ -320,13 +316,14 @@ const SummaryMetrics = memo(({
       icon: <TrendingUp sx={{ fontSize: 24, color: 'secondary.main' }} />,
       color: 'secondary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+      mobileHidden: true,
     },
   ], [summaryMetrics, baseCurrency, theme.palette, t]);
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       {summaryMetricsCards.map((metric, index) => (
-        <Grid item xs={12} sm={6} lg={3} key={index}>
+        <Grid item xs={12} sm={6} lg={3} key={index} sx={{ display: metric.mobileHidden ? { xs: 'none', sm: 'block' } : 'block' }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -452,11 +449,31 @@ const AssetsWithTradesList = memo(({
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: alpha(theme.palette.success.main, 0.05) }}>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.asset')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography></TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                      {t('assets.table.asset')}
+                      </ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.quantity')}
+                      </ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right'}}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.priceComparison')}
+                      </ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right'}}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.totalValue')}
+                      </ResponsiveTypography>
+                    </TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.lastUpdated')}
+                      </ResponsiveTypography>
+                    </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>
@@ -546,11 +563,23 @@ const AssetsWithoutTradesList = memo(({
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: alpha(theme.palette.warning.main, 0.05) }}>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.asset')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography></TableCell>
-                    <TableCell sx={{ textAlign: 'right' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography></TableCell>
-                    <TableCell><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography></TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.asset')}
+                        </ResponsiveTypography>
+                      </TableCell>
+                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right'}}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography>
+                    </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>

@@ -149,7 +149,8 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     authService.logout();
     setCurrentUser(null);
     setIsAuthenticated(false);
-    // The App.tsx will handle redirect to login based on isAuthenticated state
+    // Force redirect to login page after logout
+    window.location.href = '/login';
   };
 
   // Method to update authentication state after login

@@ -92,7 +92,8 @@
     "holdings": "Holdings",
     "globalAssets": "Global Assets",
     "adminManagement": "System Administration",
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "logout": "Sign Out"
   },
   "portfolio": {
     "title": "Portfolio Management",

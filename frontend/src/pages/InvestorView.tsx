@@ -288,7 +288,7 @@ const InvestorView: React.FC = () => {
                               color={getPerformanceColor(portfolio.performance.ytdGrowth)}
                               sx={{ fontSize: '0.8rem', fontWeight: 600 }}
                             >
-                              {formatPercentageValue(portfolio.performance.ytdGrowth)}
+                              {formatPercentageValue(portfolio.performance.ytdGrowth, 2)}
                             </ResponsiveTypography>
                           </Box>
                         )}
@@ -406,7 +406,7 @@ const InvestorView: React.FC = () => {
                                     fontWeight="bold"
                                     sx={{ fontSize: '0.8rem' }}
                                   >
-                                    {formatPercentageValue(portfolio.performance.dailyGrowth)}
+                                    {formatPercentageValue(portfolio.performance.dailyGrowth, 2)}
                                   </ResponsiveTypography>
                                   <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
                                     {t('investorView.daily', 'Hôm nay')}
@@ -421,7 +421,7 @@ const InvestorView: React.FC = () => {
                                     fontWeight="bold"
                                     sx={{ fontSize: '0.8rem' }}
                                   >
-                                    {formatPercentageValue(portfolio.performance.monthlyGrowth)}
+                                    {formatPercentageValue(portfolio.performance.monthlyGrowth, 2)}
                                   </ResponsiveTypography>
                                   <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
                                     {t('investorView.monthly', 'Tháng này')}
@@ -436,7 +436,7 @@ const InvestorView: React.FC = () => {
                                     fontWeight="bold"
                                     sx={{ fontSize: '0.8rem' }}
                                   >
-                                    {formatPercentageValue(portfolio.performance.ytdGrowth)}
+                                    {formatPercentageValue(portfolio.performance.ytdGrowth, 2)}
                                   </ResponsiveTypography>
                                   <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
                                     {t('investorView.ytd', 'Từ đầu năm')}
