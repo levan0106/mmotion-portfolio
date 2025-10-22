@@ -343,7 +343,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                         fontWeight="600" 
                         sx={{ fontSize: '0.9rem' }}
                       >
-                        {formatPercentageValue(data.performance.dailyGrowth || 0)}
+                        {formatPercentageValue(data.performance.dailyGrowth || 0, 2)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         {t('investorReport.dailyGrowth', 'Hôm nay')}
@@ -356,7 +356,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                         fontWeight="600" 
                         sx={{ fontSize: '0.9rem' }}
                       >
-                        {formatPercentageValue(data.performance.monthlyGrowth || 0)}
+                        {formatPercentageValue(data.performance.monthlyGrowth || 0, 2)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         {t('investorReport.monthlyGrowth', 'Tháng này')}
@@ -369,7 +369,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                         fontWeight="600" 
                         sx={{ fontSize: '0.9rem' }}
                       >
-                        {formatPercentageValue(data.performance.ytdGrowth || 0)}
+                        {formatPercentageValue(data.performance.ytdGrowth || 0, 2)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         {t('investorReport.ytdGrowth', 'Từ đầu năm')}

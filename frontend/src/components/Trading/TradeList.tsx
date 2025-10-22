@@ -236,20 +236,20 @@ export const TradeList: React.FC<TradeListProps> = ({
       <TrendingDownIcon sx={{ fontSize: 14, color: 'error.main' }} />;
   };
 
-  // Column width configuration for consistency
+  // Column width configuration for auto width
   const columnWidths = {
-    date: { minWidth: 120, width: 120 },
-    asset: { minWidth: 120 }, // Auto width for asset column
-    side: { minWidth: 80, width: 80 },
-    exchange: { minWidth: 100, width: 100 },
-    fundingSource: { minWidth: 120, width: 120 },
-    quantity: { minWidth: 100, width: 100 },
-    price: { minWidth: 100, width: 100 },
-    totalValue: { minWidth: 120, width: 120 },
-    fees: { minWidth: 100, width: 100 },
-    totalCost: { minWidth: 120, width: 120 },
-    pl: { minWidth: 100, width: 100 },
-    actions: { minWidth: 80, width: 80 }
+    date: { minWidth: 120 },
+    asset: { minWidth: 120, flex: 1, maxWidth: 200 }, // Auto width for asset column
+    side: { minWidth: 80 },
+    exchange: { minWidth: 100 },
+    fundingSource: { minWidth: 120 },
+    quantity: { minWidth: 100 },
+    price: { minWidth: 100 },
+    totalValue: { minWidth: 120 },
+    fees: { minWidth: 100 },
+    totalCost: { minWidth: 120 },
+    pl: { minWidth: 100 },
+    actions: { minWidth: 80 }
   };
 
   return (
@@ -265,13 +265,12 @@ export const TradeList: React.FC<TradeListProps> = ({
         maxWidth: '100% !important'
       },
       '& .MuiTable-root': {
-        minWidth: '1200px !important',
+        width: '100% !important',
         tableLayout: 'auto !important'
       },
       '& .MuiTableCell-root': {
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
+        whiteSpace: 'normal',
+        wordWrap: 'break-word'
       }
     }}>
       {/* Header */}
@@ -703,8 +702,8 @@ export const TradeList: React.FC<TradeListProps> = ({
                   </ResponsiveTypography>
                 </Card>
               ) : (
-                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, minWidth: 800 }}>
-                  <Table size={isCompactMode ? "small" : "medium"} sx={{ minWidth: 800 }}>
+                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, width: 'auto' }}>
+                  <Table size={isCompactMode ? "small" : "medium"} sx={{ width: 'auto', maxWidth: '100%' }}>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
                         <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 0.5 : 1 }}>{t('trading.exchange')}</TableCell>
@@ -989,9 +988,8 @@ export const TradeList: React.FC<TradeListProps> = ({
         }}
       >
         <Table sx={{ 
-          minWidth: 1200,
-          tableLayout: 'auto',
-          width: '100%'
+          width: '100%',
+          tableLayout: 'auto'
         }}>
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
@@ -1000,13 +998,17 @@ export const TradeList: React.FC<TradeListProps> = ({
                 fontWeight: 600, 
                 color: 'text.primary', 
                 py: isCompactMode ? 1 : 2, 
-                ...columnWidths.asset,
-                width: 'auto',
-                maxWidth: '200px'
+                ...columnWidths.asset
               }}>{t('trading.asset')}</TableCell>
               <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.side }}>{t('trading.side')}</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.exchange }}>{t('trading.exchange')}</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.fundingSource }}>{t('trading.fundingSource')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', 
+                py: isCompactMode ? 1 : 2, ...columnWidths.exchange,
+                display: {'xs': 'none', 'sm': 'table-cell'}
+               }}>{t('trading.exchange')}</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'text.primary', 
+                py: isCompactMode ? 1 : 2, ...columnWidths.fundingSource,
+                display: {'xs': 'none', 'sm': 'table-cell'}
+               }}>{t('trading.fundingSource')}</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.quantity }}>{t('common.quantity')}</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.price }}>{t('common.price')}</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: 'text.primary', py: isCompactMode ? 1 : 2, ...columnWidths.totalValue }}>{t('trading.totalValue')}</TableCell>
@@ -1116,24 +1118,14 @@ export const TradeList: React.FC<TradeListProps> = ({
                     </TableCell>
                     <TableCell sx={{ 
                       py: isCompactMode ? 1 : 2, 
-                      ...columnWidths.asset,
-                      width: 'auto',
-                      maxWidth: '200px'
+                      ...columnWidths.asset
                     }}>
                       <Box>
-                        <ResponsiveTypography variant={"tableCell"} fontWeight="medium" sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          display: 'block'
-                        }}>
+                        <ResponsiveTypography variant={"tableCell"} fontWeight="medium">
                           {trade.assetSymbol || trade.asset?.symbol || 'N/A'}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="labelXSmall" color="text.secondary" sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          display: 'block'
+                          display: {'xs': 'none', 'sm': 'block'}
                         }}>
                           {trade.assetName || trade.asset?.name || 'N/A'}
                         </ResponsiveTypography>
@@ -1153,12 +1145,16 @@ export const TradeList: React.FC<TradeListProps> = ({
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ py: isCompactMode ? 1 : 2, ...columnWidths.exchange }}>
+                    <TableCell sx={{ py: isCompactMode ? 1 : 2, ...columnWidths.exchange,
+                      display: {'xs': 'none', 'sm': 'table-cell'}
+                     }}>
                       <ResponsiveTypography variant={"tableCell"} color="text.secondary">
                         {trade.exchange || '-'}
                       </ResponsiveTypography>
                     </TableCell>
-                    <TableCell sx={{ py: isCompactMode ? 1 : 2, ...columnWidths.fundingSource }}>
+                    <TableCell sx={{ py: isCompactMode ? 1 : 2, ...columnWidths.fundingSource,
+                      display: {'xs': 'none', 'sm': 'table-cell'}
+                     }}>
                       <ResponsiveTypography variant={"tableCell"} color="text.secondary">
                         {trade.fundingSource || '-'}
                       </ResponsiveTypography>

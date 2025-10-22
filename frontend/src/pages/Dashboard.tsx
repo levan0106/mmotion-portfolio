@@ -212,6 +212,7 @@ const Dashboard: React.FC = () => {
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
       trend: 'neutral',
       change: t('dashboard.balanced'),
+      display: isMobile ? false : true,
     },
   ];
 
@@ -300,7 +301,7 @@ const Dashboard: React.FC = () => {
 
         {/* Professional Financial Metrics Grid */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {financialMetrics.map((metric, index) => (
+          {financialMetrics.filter(metric => metric.display !== false).map((metric, index) => (
             <Grid item xs={12} sm={6} lg={3} key={index}>
               <Slide direction="up" in timeout={600 + index * 100}>
                 <Card 
@@ -458,7 +459,7 @@ const Dashboard: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} lg={4}>
-              <Card sx={{ 
+              { !isMobile && (<Card sx={{ 
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
                 border: `0.5px solid ${alpha(theme.palette.divider, 0.08)}`,
@@ -510,7 +511,7 @@ const Dashboard: React.FC = () => {
                     </Box>
                   </Box>
                 </CardContent>
-              </Card>
+              </Card>)}
             </Grid>
           </Grid>
         )}

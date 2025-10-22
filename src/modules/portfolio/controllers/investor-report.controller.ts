@@ -13,6 +13,7 @@ import { PortfolioAnalyticsService } from '../services/portfolio-analytics.servi
 import { DepositService } from '../services/deposit.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { PermissionCheckService } from '../../shared/services/permission-check.service';
+import { AccountService } from '../../shared/services/account.service';
 
 /**
  * Controller for Investor Report - provides fund asset reports for investors
@@ -29,6 +30,7 @@ export class InvestorReportController {
     private readonly depositService: DepositService,
     private readonly performanceSnapshotService: PerformanceSnapshotService,
     private readonly permissionCheckService: PermissionCheckService,
+    private readonly accountService: AccountService,
   ) {}
 
   /**
@@ -92,6 +94,19 @@ export class InvestorReportController {
             // Get permission info for this portfolio
             const permission = permissions[portfolio.portfolioId];
             
+            // Get owner account information
+            let ownerInfo = null;
+            try {
+              const ownerAccount = await this.accountService.getAccountById(portfolio.accountId);
+              ownerInfo = {
+                accountId: ownerAccount.accountId,
+                name: ownerAccount.name,
+                email: ownerAccount.email,
+              };
+            } catch (error) {
+              this.logger.warn(`Failed to get owner info for portfolio ${portfolio.portfolioId}: ${error.message}`);
+            }
+            
             return {
               portfolio: {
                 id: portfolio.portfolioId,
@@ -101,6 +116,7 @@ export class InvestorReportController {
                 assetValue: reportData.portfolio.assetValue,
                 depositsValue: reportData.portfolio.depositsValue,
                 lastUpdated: reportData.portfolio.lastUpdated,
+                owner: ownerInfo,
               },
               performance: reportData.performance,
               userPermission: {
@@ -115,6 +131,20 @@ export class InvestorReportController {
             };
           } catch (error) {
             this.logger.warn(`Failed to get report for portfolio ${portfolio.portfolioId}: ${error.message}`);
+            
+            // Get owner account information even for failed portfolios
+            let ownerInfo = null;
+            try {
+              const ownerAccount = await this.accountService.getAccountById(portfolio.accountId);
+              ownerInfo = {
+                accountId: ownerAccount.accountId,
+                name: ownerAccount.name,
+                email: ownerAccount.email,
+              };
+            } catch (ownerError) {
+              this.logger.warn(`Failed to get owner info for portfolio ${portfolio.portfolioId}: ${ownerError.message}`);
+            }
+            
             return {
               portfolio: {
                 id: portfolio.portfolioId,
@@ -124,6 +154,7 @@ export class InvestorReportController {
                 assetValue: 0,
                 depositsValue: 0,
                 lastUpdated: new Date().toISOString(),
+                owner: ownerInfo,
               },
               performance: {
                 dailyGrowth: 0,

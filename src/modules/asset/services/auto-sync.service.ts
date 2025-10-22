@@ -176,18 +176,14 @@ export class AutoSyncService {
    * Ultra-optimized: Only run at exact scheduled times
    */
   private setupDynamicCronJob(): void {
-    this.logger.log(`[AutoSyncService] Setting up dynamic cron job - schedule type: ${this.scheduleType}, fixed times: ${this.fixedTimes.join(', ')}`);
-    
     // Stop existing cron jobs if they exist
     if (this.cronJob) {
       this.cronJob.stop();
       this.cronJob = null;
-      this.logger.log('[AutoSyncService] Single cron job stopped');
     }
     
     // Stop all existing multiple cron jobs
     if (this.cronJobs.length > 0) {
-      this.logger.log(`[AutoSyncService] Stopping ${this.cronJobs.length} existing cron jobs`);
       this.cronJobs.forEach(job => job.stop());
       this.cronJobs = [];
     }
@@ -203,7 +199,6 @@ export class AutoSyncService {
         scheduled: true,
       });
       
-      this.logger.log(`[AutoSyncService] Single cron job created with expression: ${this.cronExpression} (schedule type: ${this.scheduleType})`);
     }
   }
 
@@ -212,16 +207,12 @@ export class AutoSyncService {
    * More reliable than multiple cron jobs
    */
   private setupFixedTimesCronJob(): void {
-    this.logger.log(`[AutoSyncService] Setting up single cron job for fixed times: ${this.fixedTimes.join(', ')} (${this.timezone})`);
-    
     // Use a cron job that runs every minute and check if current time matches any fixed time
     this.cronJob = cron.schedule('* * * * *', () => {
       this.checkAndExecuteFixedTimeSync();
     }, {
       scheduled: true,
     });
-    
-    this.logger.log(`[AutoSyncService] Single cron job created for fixed times - runs every minute and checks against: ${this.fixedTimes.join(', ')}`);
   }
 
   /**
@@ -234,13 +225,10 @@ export class AutoSyncService {
     // Check if current time matches any of the fixed times
     for (const fixedTime of this.fixedTimes) {
       if (currentTime === fixedTime) {
-        this.logger.log(`[AutoSyncService] Current time ${currentTime} matches fixed time ${fixedTime} - executing sync`);
         this.handleAutoSync();
         return;
       }
     }
-    
-    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match any fixed times: ${this.fixedTimes.join(', ')}`);
   }
 
   /**
@@ -248,8 +236,6 @@ export class AutoSyncService {
    * Ultra-optimized: Each time gets its own cron job
    */
   private setupMultipleCronJobs(): void {
-    this.logger.log(`[AutoSyncService] Setting up ${this.fixedTimes.length} individual cron jobs for fixed times: ${this.fixedTimes.join(', ')} (${this.timezone})`);
-    
     // Create individual cron jobs for each fixed time
     this.fixedTimes.forEach((fixedTime, index) => {
       const [hour, minute] = fixedTime.split(':').map(Number);
@@ -264,7 +250,6 @@ export class AutoSyncService {
       const cronExpression = `${utcMinute} ${utcHour} * * *`;
       
       const job = cron.schedule(cronExpression, () => {
-        this.logger.log(`[AutoSyncService] Executing sync for fixed time: ${fixedTime} (${this.timezone})`);
         this.handleAutoSync();
       }, {
         scheduled: true,
@@ -272,11 +257,7 @@ export class AutoSyncService {
       
       // Store the job for management
       this.cronJobs.push(job);
-      
-      this.logger.log(`[AutoSyncService] Cron job ${index + 1} created for ${fixedTime} (${this.timezone}) -> UTC ${utcHour}:${utcMinute.toString().padStart(2, '0')} with expression: ${cronExpression}`);
     });
-    
-    this.logger.log(`[AutoSyncService] All ${this.fixedTimes.length} cron jobs created successfully. Total stored: ${this.cronJobs.length}`);
   }
 
   /**
@@ -301,7 +282,6 @@ export class AutoSyncService {
         return `0 0 */${hours} * * *`; // Every X hours
       } else {
         // Mixed hours and minutes - use hourly with custom logic
-        this.logger.warn(`[AutoSyncService] Mixed interval ${minutes} minutes (${hours}h ${remainingMinutes}m) - using hourly schedule with custom logic`);
         return '0 0 * * * *'; // Every hour, custom logic will handle the actual interval
       }
     } else if (minutes >= 1440) {
@@ -312,11 +292,9 @@ export class AutoSyncService {
         return `0 0 0 */${days} * *`; // Every X days
       } else {
         // Mixed days and hours/minutes - use daily with custom logic
-        this.logger.warn(`[AutoSyncService] Large interval ${minutes} minutes (${days}d ${Math.floor(remainingMinutes/60)}h ${remainingMinutes%60}m) - using daily schedule with custom logic`);
         return '0 0 0 * * *'; // Every day, custom logic will handle the actual interval
       }
     } else {
-      this.logger.warn(`[AutoSyncService] Invalid interval ${minutes} minutes, falling back to 15 minutes`);
       return '0 */15 * * * *';
     }
   }
@@ -343,7 +321,6 @@ export class AutoSyncService {
    */
   async toggle(enabled: boolean): Promise<void> {
     this.autoSyncEnabled = enabled;
-    this.logger.log(`[AutoSyncService] Auto sync ${enabled ? 'enabled' : 'disabled'}`);
     
     if (enabled) {
       // Trigger immediate update when enabling
@@ -401,8 +378,6 @@ export class AutoSyncService {
       const successfulApis = Object.values(marketDataResult.summary.sources).filter((source: any) => source > 0).length;
       const failedApis = totalApis - successfulApis;
       
-      this.logger.log(`[AutoSyncService] Initial API Statistics (sources) - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
-      this.logger.log(`[AutoSyncService] Sources data: ${JSON.stringify(marketDataResult.summary.sources)}`);
 
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
@@ -429,7 +404,6 @@ export class AutoSyncService {
       // Determine final status based on success rate
       const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
       
-      this.logger.log(`[AutoSyncService] Manual sync results: ${syncResult.successfulUpdates}/${totalAssetsInDatabase} assets updated (${finalSuccessRate.toFixed(2)}% success rate) - Status: ${finalStatus}`);
       
       // Update tracking with final results
       tracking = await this.globalAssetTrackingService.updateProgress(
@@ -469,14 +443,12 @@ export class AutoSyncService {
     // this.logger.log(`[AutoSyncService] Auto sync enabled: ${this.autoSyncEnabled}`);
     // Check if auto sync is enabled
     if (!this.autoSyncEnabled) {
-      this.logger.debug('[AutoSyncService] Auto sync is disabled, skipping scheduled sync');
       return;
     }
 
     // For fixed times, check if current time matches any of the fixed times
     if (this.scheduleType === 'fixed_times') {
       if (!this.shouldRunAtFixedTime()) {
-        this.logger.debug('[AutoSyncService] Current time does not match any fixed times, skipping sync');
         return;
       }
     }
@@ -526,8 +498,6 @@ export class AutoSyncService {
       const successfulApis = Object.values(marketDataResult.summary.sources).filter((source: any) => source > 0).length;
       const failedApis = totalApis - successfulApis;
       
-      this.logger.log(`[AutoSyncService] Initial API Statistics (sources) - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
-      this.logger.log(`[AutoSyncService] Sources data: ${JSON.stringify(marketDataResult.summary.sources)}`);
 
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
@@ -554,7 +524,6 @@ export class AutoSyncService {
       // Determine final status based on success rate
       const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
       
-      this.logger.log(`[AutoSyncService] Auto sync results: ${syncResult.successfulUpdates}/${totalAssetsInDatabase} assets updated (${finalSuccessRate.toFixed(2)}% success rate) - Status: ${finalStatus}`);
       
       // Update tracking with final results including failed symbols
       tracking = await this.globalAssetTrackingService.updateProgress(
@@ -597,7 +566,6 @@ export class AutoSyncService {
     return this.circuitBreakerService.execute(
       'auto-sync-operation',
       async () => {
-        this.logger.log(`[AutoSyncService] Starting sync operation: ${syncId}`);
         
         // Get all active global assets
         const globalAssets = await this.globalAssetRepository.find({
@@ -675,7 +643,6 @@ export class AutoSyncService {
               const priceChangePercent = Math.abs((currentPrice - previousPrice) / previousPrice) * 100;
               if (priceChangePercent > 50) {
                 isPriceValid = false;
-                this.logger.warn(`[AutoSyncService] Price change too large for ${asset.symbol}: ${priceChangePercent.toFixed(2)}% (${previousPrice} → ${currentPrice})`);
               }
             }
             
@@ -725,12 +692,10 @@ export class AutoSyncService {
             } else {
               failedSymbols.push(asset.symbol);
               errorCount++; // Count as failed update
-              this.logger.warn(`[AutoSyncService] Price change too large for ${asset.symbol}, skipping update`);
             }
           } else {
             failedSymbols.push(asset.symbol);
             errorCount++; // Count as failed update
-            this.logger.warn(`[AutoSyncService] No valid price found for ${asset.symbol}`);
           }
         } catch (error) {
           failedSymbols.push(asset.symbol);
@@ -743,7 +708,6 @@ export class AutoSyncService {
         
         // Calculate success rate based on database assets, not API symbols
         const successRate = totalAssetsInDatabase > 0 ? (successCount / totalAssetsInDatabase) * 100 : 0;
-        this.logger.log(`[AutoSyncService] Success rate: ${successRate.toFixed(2)}% (${successCount}/${totalAssetsInDatabase} database assets updated)`);
         
         // Return sync results
         return {
@@ -777,8 +741,6 @@ export class AutoSyncService {
         const successfulApis = apiCallDetails.filter(detail => detail.status === 'success').length;
         const failedApis = totalApis - successfulApis;
         
-        this.logger.log(`[AutoSyncService] Updated API Statistics from call details - Total: ${totalApis}, Successful: ${successfulApis}, Failed: ${failedApis}`);
-        this.logger.log(`[AutoSyncService] API call details: ${JSON.stringify(apiCallDetails.map(d => ({ provider: d.provider, status: d.status, endpoint: d.endpoint })))}`);
         
         // Update tracking record with correct API statistics
         await this.globalAssetTrackingService.updateProgress(
@@ -792,7 +754,6 @@ export class AutoSyncService {
           failedApis,
         );
       } else {
-        this.logger.warn(`[AutoSyncService] No API call details found for execution: ${syncId}`);
       }
     } catch (error) {
       this.logger.error(`[AutoSyncService] Failed to update API statistics from call details:`, error);
@@ -813,16 +774,13 @@ export class AutoSyncService {
       this.timezone = this.configService.get<string>('PRICE_UPDATE_TIMEZONE', 'Asia/Ho_Chi_Minh');
       this.cronExpression = this.generateFixedTimesCronExpression();
       
-      this.logger.log(`[AutoSyncService] Fixed times configuration loaded: ${this.fixedTimes.join(', ')} (${this.timezone})`);
     } else {
       // Load interval configuration
       this.syncInterval = parseInt(this.configService.get<string>('PRICE_UPDATE_INTERVAL_MINUTES', '60'), 10);
       this.cronExpression = this.generateCronExpression(this.syncInterval);
       
-      this.logger.log(`[AutoSyncService] Interval configuration loaded: ${this.syncInterval} minutes`);
     }
     
-    this.logger.log(`[AutoSyncService] Auto sync status: ${this.autoSyncEnabled ? 'enabled' : 'disabled'}, schedule type: ${this.scheduleType}`);
   }
 
   /**
@@ -889,7 +847,6 @@ export class AutoSyncService {
     // For multiple fixed times with individual cron jobs, this method is not needed
     // Each cron job runs at its exact time
     if (this.fixedTimes.length > 1) {
-      this.logger.debug(`[AutoSyncService] Multiple fixed times with individual cron jobs - no need to check time`);
       return true; // Always run since individual cron jobs handle timing
     }
     
@@ -904,11 +861,9 @@ export class AutoSyncService {
     
     // Exact match
     if (currentHour === hour && currentMinute === minute) {
-      this.logger.log(`[AutoSyncService] Current time ${currentTime} exactly matches fixed time ${fixedTime}`);
       return true;
     }
     
-    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match fixed time ${fixedTime}`);
     return false;
   }
 
@@ -946,13 +901,11 @@ export class AutoSyncService {
     if (this.cronJob) {
       this.cronJob.stop();
       this.cronJob = null;
-      this.logger.log('[AutoSyncService] Auto sync cron job stopped and cleaned up');
     }
     
     // Stop all multiple cron jobs
     this.cronJobs.forEach(job => job.stop());
     this.cronJobs = [];
-    this.logger.log(`[AutoSyncService] All ${this.cronJobs.length} cron jobs stopped and cleaned up`);
   }
 
   /**

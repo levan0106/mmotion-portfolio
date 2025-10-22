@@ -36,6 +36,11 @@ interface PortfolioSummary {
     ytdGrowth: number;
   };
   lastUpdated: string;
+  owner?: {
+    accountId: string;
+    name: string;
+    email: string;
+  };
   userPermission?: {
     permissionType: PortfolioPermissionType;
     isOwner: boolean;
@@ -110,6 +115,7 @@ const InvestorView: React.FC = () => {
         depositsValue: item.portfolio.depositsValue,
         performance: item.performance,
         lastUpdated: item.portfolio.lastUpdated,
+        owner: item.portfolio.owner,
         userPermission: item.userPermission,
       }));
       
@@ -299,6 +305,15 @@ const InvestorView: React.FC = () => {
                         </Box>
                       </Box>
                       
+                      {/* Owner information */}
+                      {/* {portfolio.owner && (
+                        <Box sx={{ mb: 1 }}>
+                          <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                            {portfolio.owner.name}
+                          </ResponsiveTypography>
+                        </Box>
+                      )} */}
+                      
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                           <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
@@ -339,17 +354,23 @@ const InvestorView: React.FC = () => {
                         transition: 'all 0.2s ease-in-out',
                         border: '1px solid',
                         borderColor: theme.palette.grey[300],
+                        backgroundColor: theme.palette.background.paper,
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.1)',
                         m: 0.5, // Add margin between full grid cards
                         '&:hover': {
                           transform: 'translateY(-2px)',
-                          boxShadow: `0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px ${theme.palette.primary.main}`,
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15), 0 0 0 1px rgba(59, 130, 246, 0.3)',
                           borderColor: theme.palette.primary.main,
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
                         }
                       }}
                       onClick={() => handlePortfolioClick(portfolio.id)}
                     >
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Box sx={{ mb: 1.5 }}>
+                          {/* Portfolio Name and Permission Badge */}
                           <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                             <ResponsiveTypography 
                               variant="subtitle1" 
@@ -367,6 +388,8 @@ const InvestorView: React.FC = () => {
                             >
                               {portfolio.name}
                             </ResponsiveTypography>
+                            
+                            {/* Permission Badge */}
                             {portfolio.userPermission && !currentAccount?.isInvestor && (
                               <PermissionBadge 
                                 permission={portfolio.userPermission} 
@@ -375,6 +398,20 @@ const InvestorView: React.FC = () => {
                               />
                             )}
                           </Box>
+
+                          {/* Owner Information */}
+                          {portfolio.owner && (
+                            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                {t('investorView.owner', 'Chủ sở hữu')}:
+                              </ResponsiveTypography>
+                              <ResponsiveTypography variant="caption" color="text.primary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                                {portfolio.owner.name}
+                              </ResponsiveTypography>
+                            </Box>
+                          )}
+
+                          {/* Action Chip */}
                           <Chip 
                             label={t('investorView.clickToView', 'Nhấn để xem chi tiết')}
                             size="small"
@@ -387,43 +424,108 @@ const InvestorView: React.FC = () => {
                         <Divider sx={{ my: 1.5 }} />
 
                         {/* Summary Cards */}
-                        <Grid container spacing={2} sx={{ mb: 1 }}>
+                        <Grid container spacing={1.5} sx={{ mb: 1 }}>
                           <Grid item xs={6}>
-                            <Paper sx={{ p: 1, textAlign: 'center', backgroundColor: alpha(theme.palette.primary.main, 0.1) }}>
-                              <ResponsiveTypography variant="cardValue" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                            <Paper sx={{ 
+                              p: 1, 
+                              textAlign: 'center', 
+                              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(59, 130, 246, 0.06) 100%)',
+                              border: '1px solid rgba(59, 130, 246, 0.1)',
+                              borderRadius: 2,
+                              boxShadow: '0 2px 4px rgba(59, 130, 246, 0.1)',
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 8px rgba(59, 130, 246, 0.15)',
+                              }
+                            }}>
+                              <ResponsiveTypography variant="cardValue" color="primary.main" 
+                              sx={{ fontSize: '0.9rem', fontWeight: 700, mb: 0.5 }}>
                                 {formatCurrency(portfolio.totalValue)}
                               </ResponsiveTypography>
-                              <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              <ResponsiveTypography variant="labelXSmall"
+                              sx={{ fontWeight: 500, 
+                                textTransform: 'uppercase',
+                                color: 'text.primary'
+                               }}>
                                 {t('investorView.totalValue', 'Tổng giá trị')}
                               </ResponsiveTypography>
                             </Paper>
                           </Grid>
                           <Grid item xs={6}>
-                            <Paper sx={{ p: 1, textAlign: 'center', backgroundColor: alpha(theme.palette.success.main, 0.1) }}>
-                              <ResponsiveTypography variant="cardValue" color="success.main" sx={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                            <Paper sx={{ 
+                              p: 1, 
+                              textAlign: 'center', 
+                              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.03) 0%, rgba(34, 197, 94, 0.06) 100%)',
+                              border: '1px solid rgba(34, 197, 94, 0.1)',
+                              borderRadius: 2,
+                              boxShadow: '0 2px 4px rgba(34, 197, 94, 0.1)',
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 8px rgba(34, 197, 94, 0.15)',
+                              }
+                            }}>
+                              <ResponsiveTypography variant="cardValue" color="success.main" sx={{ fontSize: '0.9rem', fontWeight: 700, mb: 0.5 }}>
                                 {formatCurrency(portfolio.cashBalance)}
                               </ResponsiveTypography>
-                              <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              <ResponsiveTypography variant="labelXSmall"
+                              sx={{ fontWeight: 500, 
+                                textTransform: 'uppercase',
+                                color: 'text.primary'
+                               }}>
                                 {t('investorView.cash', 'Tiền mặt')}
                               </ResponsiveTypography>
                             </Paper>
                           </Grid>
-                          <Grid item xs={6} sx={{ mb: 1 }}>
-                            <Paper sx={{ p: 1, textAlign: 'center', backgroundColor: alpha(theme.palette.info.main, 0.1) }}>
-                              <ResponsiveTypography variant="cardValue" color="info.main" sx={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                          <Grid item xs={6} sx={{ mt: 1 }}>
+                            <Paper sx={{ 
+                              p: 1, 
+                              textAlign: 'center', 
+                              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.03) 0%, rgba(6, 182, 212, 0.06) 100%)',
+                              border: '1px solid rgba(6, 182, 212, 0.1)',
+                              borderRadius: 2,
+                              boxShadow: '0 2px 4px rgba(6, 182, 212, 0.1)',
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 8px rgba(6, 182, 212, 0.15)',
+                              }
+                            }}>
+                              <ResponsiveTypography variant="cardValue" color="info.main" sx={{ fontSize: '0.9rem', fontWeight: 700, mb: 0.5 }}>
                                 {formatCurrency(portfolio.assetValue)}
                               </ResponsiveTypography>
-                              <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              <ResponsiveTypography variant="labelXSmall"
+                              sx={{ fontWeight: 500, 
+                                textTransform: 'uppercase',
+                                color: 'text.primary'
+                               }}>
                                 {t('investorView.investments', 'Tiền đầu tư')}
                               </ResponsiveTypography>
                             </Paper>
                           </Grid>
-                          <Grid item xs={6} sx={{ mb: 1 }}>
-                            <Paper sx={{ p: 1, textAlign: 'center', backgroundColor: alpha(theme.palette.warning.main, 0.1) }}>
-                              <ResponsiveTypography variant="cardValue" color="warning.main" sx={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                          <Grid item xs={6} sx={{ mt: 1 }}>
+                            <Paper sx={{ 
+                              p: 1, 
+                              textAlign: 'center', 
+                              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, rgba(245, 158, 11, 0.06) 100%)',
+                              border: '1px solid rgba(245, 158, 11, 0.1)',
+                              borderRadius: 2,
+                              boxShadow: '0 2px 4px rgba(245, 158, 11, 0.1)',
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 8px rgba(245, 158, 11, 0.15)',
+                              }
+                            }}>
+                              <ResponsiveTypography variant="cardValue" color="warning.main" sx={{ fontSize: '0.9rem', fontWeight: 700, mb: 0.5 }}>
                                 {formatCurrency(portfolio.depositsValue)}
                               </ResponsiveTypography>
-                              <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                <ResponsiveTypography variant="labelXSmall"
+                              sx={{ fontWeight: 500, 
+                                textTransform: 'uppercase',
+                                color: 'text.primary'
+                               }}>
                                 {t('investorView.deposits', 'Tiền gửi')}
                               </ResponsiveTypography>
                             </Paper>

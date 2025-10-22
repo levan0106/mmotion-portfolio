@@ -726,7 +726,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     onClick={() => setPnlLines(prev => ({ ...prev, total: !prev.total }))}
                     sx={{ 
                       cursor: 'pointer',
-                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                      //fontSize: isCompactMode ? '0.65rem' : '0.75rem'
                     }}
                   />
                   <Chip
@@ -736,7 +736,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     onClick={() => setPnlLines(prev => ({ ...prev, realized: !prev.realized }))}
                     sx={{ 
                       cursor: 'pointer',
-                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                      //fontSize: isCompactMode ? '0.65rem' : '0.75rem'
                     }}
                   />
                   <Chip
@@ -746,7 +746,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     onClick={() => setPnlLines(prev => ({ ...prev, unrealized: !prev.unrealized }))}
                     sx={{ 
                       cursor: 'pointer',
-                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                      //fontSize: isCompactMode ? '0.65rem' : '0.75rem'
                     }}
                   />
                 </Box>
@@ -850,7 +850,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     onClick={() => setChartView('pie')}
                     sx={{ 
                       cursor: 'pointer',
-                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                      //fontSize: isCompactMode ? '0.65rem' : '0.75rem'
                     }}
                   />
                   <Chip
@@ -860,7 +860,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     onClick={() => setChartView('compact')}
                     sx={{ 
                       cursor: 'pointer',
-                      fontSize: isCompactMode ? '0.65rem' : '0.75rem'
+                      //fontSize: isCompactMode ? '0.65rem' : '0.75rem'
                     }}
                   />
                 </Box>
@@ -1076,14 +1076,14 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.date')}
@@ -1104,6 +1104,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
+                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
                             >
                               {trade.assetName}
                             </ResponsiveTypography>
@@ -1120,7 +1121,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         <TableCell 
                           sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                             color: trade.realizedPl >= 0 ? 'success.main' : 'error.main'
                           }}
                         >
@@ -1128,7 +1129,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                         </TableCell>
                         <TableCell sx={{ 
                           py: isCompactMode ? 0.5 : 1,
-                          fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                          // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                         }}>
                           {new Date(trade.tradeDate).toLocaleDateString()}
                         </TableCell>
@@ -1194,28 +1195,28 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.side')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.date')}
@@ -1236,6 +1237,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
+                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
                             >
                               {trade.assetName}
                             </ResponsiveTypography>
@@ -1304,49 +1306,49 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.quantity')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.avgCost')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.marketValue')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.pnl')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.trades')}
                       </TableCell>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.winRate')}
@@ -1368,6 +1370,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
+                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
                             >
                               {asset.fullName}
                             </ResponsiveTypography>
@@ -1375,7 +1378,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
                             <ResponsiveTypography variant="tableCell">
                               {formatNumber(asset.quantity, 2, locale)}
@@ -1383,7 +1386,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
                             <ResponsiveTypography variant="tableCell">
                               {formatCurrency(asset.avgCost, currency, {}, locale)}
@@ -1391,7 +1394,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
                             <ResponsiveTypography variant="tableCell">
                               {formatCurrency(asset.marketValue, currency, {}, locale)}
@@ -1399,7 +1402,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
                             <ResponsiveTypography 
                               variant="tableCell" 
@@ -1425,7 +1428,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                           </TableCell>
                           <TableCell sx={{ 
                             py: isCompactMode ? 0.5 : 1,
-                            fontSize: isCompactMode ? '0.7rem' : '0.875rem'
+                            // fontSize: isCompactMode ? '0.7rem' : '0.875rem'
                           }}>
                             <ResponsiveTypography 
                               variant="tableCell" 

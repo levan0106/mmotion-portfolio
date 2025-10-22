@@ -493,7 +493,7 @@
 
   .portfolio-detail .MuiTableCell-root {
     padding: 0.5rem 0.25rem !important;
-    font-size: 0.7rem !important;
+    /* font-size: 0.7rem !important; */
   }
 }
 
