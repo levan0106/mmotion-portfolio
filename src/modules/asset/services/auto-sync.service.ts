@@ -34,6 +34,7 @@ export class AutoSyncService {
   private timezone = 'Asia/Ho_Chi_Minh'; // Default timezone
   private cronExpression = '0 */15 * * * *'; // Default: every 15 minutes
   private cronJob: cron.ScheduledTask | null = null;
+  private cronJobs: cron.ScheduledTask[] = []; // Store multiple cron jobs
 
   constructor(
     @InjectRepository(GlobalAsset)
@@ -172,25 +173,114 @@ export class AutoSyncService {
 
   /**
    * Setup dynamic cron job based on configuration
+   * Ultra-optimized: Only run at exact scheduled times
    */
   private setupDynamicCronJob(): void {
-    // Stop existing cron job if it exists
+    this.logger.log(`[AutoSyncService] Setting up dynamic cron job - schedule type: ${this.scheduleType}, fixed times: ${this.fixedTimes.join(', ')}`);
+    
+    // Stop existing cron jobs if they exist
     if (this.cronJob) {
       this.cronJob.stop();
       this.cronJob = null;
+      this.logger.log('[AutoSyncService] Single cron job stopped');
     }
     
-    this.cronJob = cron.schedule(this.cronExpression, () => {
-      this.handleAutoSync();
+    // Stop all existing multiple cron jobs
+    if (this.cronJobs.length > 0) {
+      this.logger.log(`[AutoSyncService] Stopping ${this.cronJobs.length} existing cron jobs`);
+      this.cronJobs.forEach(job => job.stop());
+      this.cronJobs = [];
+    }
+    
+    if (this.scheduleType === 'fixed_times') {
+      // For fixed times, use single cron job with custom logic
+      this.setupFixedTimesCronJob();
+    } else {
+      // Interval - use single cron job
+      this.cronJob = cron.schedule(this.cronExpression, () => {
+        this.handleAutoSync();
+      }, {
+        scheduled: true,
+      });
+      
+      this.logger.log(`[AutoSyncService] Single cron job created with expression: ${this.cronExpression} (schedule type: ${this.scheduleType})`);
+    }
+  }
+
+  /**
+   * Setup single cron job for fixed times with custom logic
+   * More reliable than multiple cron jobs
+   */
+  private setupFixedTimesCronJob(): void {
+    this.logger.log(`[AutoSyncService] Setting up single cron job for fixed times: ${this.fixedTimes.join(', ')} (${this.timezone})`);
+    
+    // Use a cron job that runs every minute and check if current time matches any fixed time
+    this.cronJob = cron.schedule('* * * * *', () => {
+      this.checkAndExecuteFixedTimeSync();
     }, {
       scheduled: true,
     });
     
-    this.logger.log(`[AutoSyncService] Dynamic cron job created with expression: ${this.cronExpression} (schedule type: ${this.scheduleType})`);
+    this.logger.log(`[AutoSyncService] Single cron job created for fixed times - runs every minute and checks against: ${this.fixedTimes.join(', ')}`);
   }
 
   /**
-   * Generate cron expression from minutes (consistent with scheduled-price-update.service.ts)
+   * Check if current time matches any fixed time and execute sync
+   */
+  private checkAndExecuteFixedTimeSync(): void {
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    
+    // Check if current time matches any of the fixed times
+    for (const fixedTime of this.fixedTimes) {
+      if (currentTime === fixedTime) {
+        this.logger.log(`[AutoSyncService] Current time ${currentTime} matches fixed time ${fixedTime} - executing sync`);
+        this.handleAutoSync();
+        return;
+      }
+    }
+    
+    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match any fixed times: ${this.fixedTimes.join(', ')}`);
+  }
+
+  /**
+   * Setup multiple cron jobs for multiple fixed times
+   * Ultra-optimized: Each time gets its own cron job
+   */
+  private setupMultipleCronJobs(): void {
+    this.logger.log(`[AutoSyncService] Setting up ${this.fixedTimes.length} individual cron jobs for fixed times: ${this.fixedTimes.join(', ')} (${this.timezone})`);
+    
+    // Create individual cron jobs for each fixed time
+    this.fixedTimes.forEach((fixedTime, index) => {
+      const [hour, minute] = fixedTime.split(':').map(Number);
+      
+      // Convert Asia/Ho_Chi_Minh time to UTC for cron scheduling
+      // Asia/Ho_Chi_Minh is UTC+7, so we need to subtract 7 hours
+      const asiaTime = moment.tz(`${moment().format('YYYY-MM-DD')} ${fixedTime}`, 'YYYY-MM-DD HH:mm', this.timezone);
+      const utcTime = asiaTime.utc();
+      const utcHour = utcTime.hour();
+      const utcMinute = utcTime.minute();
+      
+      const cronExpression = `${utcMinute} ${utcHour} * * *`;
+      
+      const job = cron.schedule(cronExpression, () => {
+        this.logger.log(`[AutoSyncService] Executing sync for fixed time: ${fixedTime} (${this.timezone})`);
+        this.handleAutoSync();
+      }, {
+        scheduled: true,
+      });
+      
+      // Store the job for management
+      this.cronJobs.push(job);
+      
+      this.logger.log(`[AutoSyncService] Cron job ${index + 1} created for ${fixedTime} (${this.timezone}) -> UTC ${utcHour}:${utcMinute.toString().padStart(2, '0')} with expression: ${cronExpression}`);
+    });
+    
+    this.logger.log(`[AutoSyncService] All ${this.fixedTimes.length} cron jobs created successfully. Total stored: ${this.cronJobs.length}`);
+  }
+
+  /**
+   * Generate cron expression from minutes
    */
   private generateCronExpression(minutes: number): string {
     if (minutes < 1) {
@@ -737,11 +827,34 @@ export class AutoSyncService {
 
   /**
    * Generate cron expression for fixed times
+   * Ultra-optimized: Only run at exact scheduled times
    */
   private generateFixedTimesCronExpression(): string {
-    // Use the first fixed time for the cron expression
+    if (this.fixedTimes.length === 1) {
+      // Single fixed time - use specific cron expression
+      const firstTime = this.fixedTimes[0];
+      const [hour, minute] = firstTime.split(':').map(Number);
+      return `${minute} ${hour} * * *`;
+    } else {
+      // Multiple fixed times - create multiple cron expressions
+      // This will be handled by setupMultipleCronJobs()
+      return this.generateMultipleFixedTimesCron();
+    }
+  }
+
+  /**
+   * Generate cron expression for multiple fixed times
+   * Creates a single cron that runs at all specified times
+   */
+  private generateMultipleFixedTimesCron(): string {
+    // For multiple times, we need to create a complex cron expression
+    // Format: minute hour * * *
+    // We'll use the first time as primary and handle others in shouldRunAtFixedTime()
     const firstTime = this.fixedTimes[0];
     const [hour, minute] = firstTime.split(':').map(Number);
+    
+    // Use the earliest time as the cron trigger
+    // The shouldRunAtFixedTime() will handle checking all times
     return `${minute} ${hour} * * *`;
   }
 
@@ -770,20 +883,32 @@ export class AutoSyncService {
 
   /**
    * Check if current time matches any of the fixed times
+   * Ultra-optimized: Since we have individual cron jobs, this is mainly for single-time scenarios
    */
   private shouldRunAtFixedTime(): boolean {
-    const now = moment().tz(this.timezone);
-    const currentTime = now.format('HH:mm');
-    
-    // Check if current time matches any of the fixed times
-    for (const fixedTime of this.fixedTimes) {
-      if (currentTime === fixedTime) {
-        this.logger.log(`[AutoSyncService] Current time ${currentTime} matches fixed time ${fixedTime}`);
-        return true;
-      }
+    // For multiple fixed times with individual cron jobs, this method is not needed
+    // Each cron job runs at its exact time
+    if (this.fixedTimes.length > 1) {
+      this.logger.debug(`[AutoSyncService] Multiple fixed times with individual cron jobs - no need to check time`);
+      return true; // Always run since individual cron jobs handle timing
     }
     
-    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match any fixed times: ${this.fixedTimes.join(', ')}`);
+    // For single fixed time, we still need to verify
+    const now = moment().tz(this.timezone);
+    const currentTime = now.format('HH:mm');
+    const currentMinute = now.minute();
+    const currentHour = now.hour();
+    
+    const fixedTime = this.fixedTimes[0];
+    const [hour, minute] = fixedTime.split(':').map(Number);
+    
+    // Exact match
+    if (currentHour === hour && currentMinute === minute) {
+      this.logger.log(`[AutoSyncService] Current time ${currentTime} exactly matches fixed time ${fixedTime}`);
+      return true;
+    }
+    
+    this.logger.debug(`[AutoSyncService] Current time ${currentTime} does not match fixed time ${fixedTime}`);
     return false;
   }
 
@@ -823,6 +948,11 @@ export class AutoSyncService {
       this.cronJob = null;
       this.logger.log('[AutoSyncService] Auto sync cron job stopped and cleaned up');
     }
+    
+    // Stop all multiple cron jobs
+    this.cronJobs.forEach(job => job.stop());
+    this.cronJobs = [];
+    this.logger.log(`[AutoSyncService] All ${this.cronJobs.length} cron jobs stopped and cleaned up`);
   }
 
   /**

@@ -21,7 +21,7 @@ import { BasicPriceService } from './services/basic-price.service';
 import { NationConfigService } from './services/nation-config.service';
 import { PriceHistoryService } from './services/price-history.service';
 import { MarketDataService } from './services/market-data.service';
-import { ScheduledPriceUpdateService } from './services/scheduled-price-update.service';
+// import { ScheduledPriceUpdateService } from './services/scheduled-price-update.service'; // REMOVED: No longer used
 import { AssetService } from './services/asset.service';
 import { AssetGlobalSyncService } from './services/asset-global-sync.service';
 import { AssetValidationService } from './services/asset-validation.service';
@@ -89,7 +89,7 @@ import { SharedModule } from '../shared/shared.module';
     NationConfigService,
     PriceHistoryService,
     MarketDataService,
-    ScheduledPriceUpdateService,
+    // ScheduledPriceUpdateService, // DISABLED: Using AutoSyncService instead to avoid duplicate execution
     
     // Legacy Asset System services (for backward compatibility)
     AssetService,
@@ -98,7 +98,7 @@ import { SharedModule } from '../shared/shared.module';
     AssetAnalyticsService,
     AssetCacheService,
     AssetValueCalculatorService,
-    AutoSyncService,
+    AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
     AssetRepository,
@@ -114,7 +114,7 @@ import { SharedModule } from '../shared/shared.module';
     NationConfigService,
     PriceHistoryService,
     MarketDataService,
-    ScheduledPriceUpdateService,
+    // ScheduledPriceUpdateService, // DISABLED: Using AutoSyncService instead
     
     // Legacy Asset System exports (for backward compatibility)
     AssetService,
@@ -123,7 +123,7 @@ import { SharedModule } from '../shared/shared.module';
     AssetAnalyticsService,
     AssetCacheService,
     AssetValueCalculatorService,
-    AutoSyncService,
+    AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
     AssetRepository,

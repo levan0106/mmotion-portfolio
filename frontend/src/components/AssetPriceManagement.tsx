@@ -274,7 +274,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ 
-        minHeight: '100vh',
+        overflow: 'auto',
         p: 2
       }}>
         {/* Enhanced Current Price Display */}

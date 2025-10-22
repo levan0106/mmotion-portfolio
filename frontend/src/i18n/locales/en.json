@@ -20,6 +20,7 @@
     "export": "Export",
     "import": "Import",
     "back": "Back",
+    "thisAsset": "this asset",
     "groupByDate": "Group by Date",
     "grid": "Grid",
     "list": "List",
@@ -115,6 +116,7 @@
     "deposits": "Deposit Management",
     "cashFlow": "Cash Flow",
     "navHoldings": "NAV Holdings",
+    "loading": "Loading data...",
     "creating": "Creating portfolio...",
     "updating": "Updating portfolio...",
     "deleting": "Deleting portfolio...",
@@ -1622,6 +1624,7 @@
     "cashBalance": "Cash",
     "ofTotal": "of total assets",
     "assetTypes": "Asset Types",
+    "performance": "Performance",
     "diversified": "Diversified",
     "totalAssets": "Total Assets",
     "positions": "Investment Positions",
@@ -1675,6 +1678,9 @@
     "ytd": "YTD",
     "lastUpdated": "Last Updated",
     "noPortfolios": "No portfolios available",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close",
     "error": {
       "loadFailed": "Unable to load portfolio list. Please try again later."
     }

@@ -39,47 +39,116 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - env.example
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/portfolio_db
+      # Timezone Configuration
+      - TZ=Asia/Ho_Chi_Minh
+      # Database Configuration
+      - DATABASE_URL=postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-postgres}@postgres:${DB_PORT:-5432}/${DB_NAME:-portfolio_db}
       - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
-      - DB_DATABASE=portfolio_db
-      - REDIS_URL=redis://redis:6379
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-portfolio_db}
+      # Redis Configuration
+      - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - CACHE_ENABLED=false
-      - PORT=3000
-      # Logging Configuration
-      - LOG_LEVEL=info
-      - LOG_FORMAT=json
-      - LOG_CONSOLE_ENABLED=true
-      - LOG_FILE_ENABLED=true
-      - LOG_FILE_PATH=/app/logs/application.log
-      - LOG_MAX_FILE_SIZE=10485760
-      - LOG_MAX_FILES=5
-      - LOG_DATABASE_ENABLED=true
-      - LOG_RETENTION_DAYS=30
-      - LOG_CLEANUP_ENABLED=true
-      - LOG_CLEANUP_SCHEDULE=0 2 * * *
-      - LOG_PERFORMANCE_ENABLED=true
-      - LOG_PERFORMANCE_THRESHOLD=1000
-      - LOG_SECURITY_ENABLED=true
-      - LOG_REQUEST_ENABLED=true
-      - LOG_BUSINESS_EVENTS_ENABLED=true
-      - PRICE_UPDATE_INTERVAL_MINUTES=120
-      - AUTO_SYNC_ENABLED=false
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      # Application Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-3000}
+      # CORS Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3001}
+      # JWT Configuration
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       # Risk Metrics Configuration
       - RISK_FREE_RATE=${RISK_FREE_RATE:-0.05}
       - TRADING_DAYS_PER_YEAR=${TRADING_DAYS_PER_YEAR:-252}
       - MIN_RISK_DATA_POINTS=${MIN_RISK_DATA_POINTS:-2}
+      # External API Configuration
+      - CAFEF_API_URL=${CAFEF_API_URL:-https://s.cafef.vn}
+      - VNDIRECT_API_URL=${VNDIRECT_API_URL:-https://api.vndirect.com.vn}
+      - VIETCOMBANK_API_URL=${VIETCOMBANK_API_URL:-https://api.vietcombank.com.vn}
+      # Cache Configuration
+      - CACHE_TTL=${CACHE_TTL:-300000}
+      - CACHE_MAX_ITEMS=${CACHE_MAX_ITEMS:-1000}
+      - CACHE_ENABLED=${CACHE_ENABLED:-false}
+      # Logging Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - LOG_CONSOLE_ENABLED=${LOG_CONSOLE_ENABLED:-true}
+      - LOG_FILE_ENABLED=${LOG_FILE_ENABLED:-true}
+      - LOG_FILE_PATH=${LOG_FILE_PATH:-/app/logs/application.log}
+      - LOG_MAX_FILE_SIZE=${LOG_MAX_FILE_SIZE:-10485760}
+      - LOG_MAX_FILES=${LOG_MAX_FILES:-5}
+      - LOG_DATABASE_ENABLED=${LOG_DATABASE_ENABLED:-true}
+      - LOG_RETENTION_DAYS=${LOG_RETENTION_DAYS:-30}
+      - LOG_CLEANUP_ENABLED=${LOG_CLEANUP_ENABLED:-true}
+      - LOG_CLEANUP_SCHEDULE=${LOG_CLEANUP_SCHEDULE:-0 2 * * *}
+      - LOG_PERFORMANCE_ENABLED=${LOG_PERFORMANCE_ENABLED:-true}
+      - LOG_PERFORMANCE_THRESHOLD=${LOG_PERFORMANCE_THRESHOLD:-1000}
+      - LOG_SECURITY_ENABLED=${LOG_SECURITY_ENABLED:-true}
+      - LOG_REQUEST_ENABLED=${LOG_REQUEST_ENABLED:-true}
+      - LOG_BUSINESS_EVENTS_ENABLED=${LOG_BUSINESS_EVENTS_ENABLED:-true}
+      # ELK Stack Configuration
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      - LOGSTASH_URL=${LOGSTASH_URL:-http://logstash:9600}
+      - KIBANA_URL=${KIBANA_URL:-http://kibana:5601}
+      # Monitoring Configuration
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      # Log Sanitization Configuration
+      - LOG_SANITIZATION_ENABLED=${LOG_SANITIZATION_ENABLED:-true}
+      - LOG_SANITIZATION_PATTERNS=${LOG_SANITIZATION_PATTERNS:-password,secret,token}
+      - LOG_SANITIZATION_REPLACEMENT=${LOG_SANITIZATION_REPLACEMENT:-***}
+      # Log Access Control Configuration
+      - LOG_ACCESS_CONTROL_ENABLED=${LOG_ACCESS_CONTROL_ENABLED:-false}
+      - LOG_ACCESS_CONTROL_ROLES=${LOG_ACCESS_CONTROL_ROLES:-admin,user}
+      - LOG_ACCESS_CONTROL_IP_WHITELIST=${LOG_ACCESS_CONTROL_IP_WHITELIST:-127.0.0.1,::1}
+      - LOG_ACCESS_CONTROL_RATE_LIMIT=${LOG_ACCESS_CONTROL_RATE_LIMIT:-100}
+      - LOG_ACCESS_CONTROL_RATE_WINDOW=${LOG_ACCESS_CONTROL_RATE_WINDOW:-60000}
+      # Log Caching Configuration
+      - LOG_CACHING_ENABLED=${LOG_CACHING_ENABLED:-true}
+      - LOG_CACHING_TTL=${LOG_CACHING_TTL:-300000}
+      - LOG_CACHING_MAX_SIZE=${LOG_CACHING_MAX_SIZE:-1000}
+      - LOG_CACHING_STRATEGY=${LOG_CACHING_STRATEGY:-lru}
+      # Log Health Check Configuration
+      - LOG_HEALTH_CHECK_ENABLED=${LOG_HEALTH_CHECK_ENABLED:-true}
+      - LOG_HEALTH_CHECK_INTERVAL=${LOG_HEALTH_CHECK_INTERVAL:-30000}
+      - LOG_HEALTH_CHECK_TIMEOUT=${LOG_HEALTH_CHECK_TIMEOUT:-5000}
+      # Log Metrics Configuration
+      - LOG_METRICS_ENABLED=${LOG_METRICS_ENABLED:-true}
+      - LOG_METRICS_INTERVAL=${LOG_METRICS_INTERVAL:-60000}
+      - LOG_METRICS_PROVIDERS=${LOG_METRICS_PROVIDERS:-console,file}
+      # Log Alerting Configuration
+      - LOG_ALERTING_ENABLED=${LOG_ALERTING_ENABLED:-false}
+      - LOG_ALERTING_CHANNELS=${LOG_ALERTING_CHANNELS:-email,slack}
+      - LOG_ALERTING_RECIPIENTS=${LOG_ALERTING_RECIPIENTS:-admin@example.com}
+      - LOG_ALERTING_THRESHOLDS_ERROR_RATE=${LOG_ALERTING_THRESHOLDS_ERROR_RATE:-0.1}
+      - LOG_ALERTING_THRESHOLDS_RESPONSE_TIME=${LOG_ALERTING_THRESHOLDS_RESPONSE_TIME:-5000}
+      - LOG_ALERTING_THRESHOLDS_DISK_USAGE=${LOG_ALERTING_THRESHOLDS_DISK_USAGE:-0.8}
+      # Price Update Configuration
+      - PRICE_UPDATE_SCHEDULE_TYPE=${PRICE_UPDATE_SCHEDULE_TYPE:-fixed_times}
+      - PRICE_UPDATE_INTERVAL_MINUTES=${PRICE_UPDATE_INTERVAL_MINUTES:-5}
+      - PRICE_UPDATE_FIXED_TIMES=${PRICE_UPDATE_FIXED_TIMES:-09:03,12:03,15:03,19:03}
+      - PRICE_UPDATE_TIMEZONE=${PRICE_UPDATE_TIMEZONE:-Asia/Ho_Chi_Minh}
+      - AUTO_SYNC_ENABLED=${AUTO_SYNC_ENABLED:-true}
+      # Automated Snapshot Configuration
+      - AUTOMATED_SNAPSHOT_CRON=${AUTOMATED_SNAPSHOT_CRON:-10 19 * * *}
+      - AUTOMATED_SNAPSHOT_TIMEZONE=${AUTOMATED_SNAPSHOT_TIMEZONE:-Asia/Ho_Chi_Minh}
+      - AUTOMATED_SNAPSHOT_DESCRIPTION=${AUTOMATED_SNAPSHOT_DESCRIPTION:-Daily at 7:00 PM (Vietnam time)}
+      - AUTOMATED_SNAPSHOT_BATCH_SIZE=${AUTOMATED_SNAPSHOT_BATCH_SIZE:-3}
+      - AUTOMATED_SNAPSHOT_ENABLED=${AUTOMATED_SNAPSHOT_ENABLED:-true}
+      - AUTOMATED_SNAPSHOT_TIMEOUT_MINUTES=${AUTOMATED_SNAPSHOT_TIMEOUT_MINUTES:-60}
+      - AUTOMATED_SNAPSHOT_MAX_RETRIES=${AUTOMATED_SNAPSHOT_MAX_RETRIES:-3}
+      - AUTOMATED_SNAPSHOT_RETRY_DELAY_SECONDS=${AUTOMATED_SNAPSHOT_RETRY_DELAY_SECONDS:-5}
     volumes:
       - .:/app
       - /app/node_modules
       - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       postgres:
         condition: service_healthy

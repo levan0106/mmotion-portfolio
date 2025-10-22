@@ -20,6 +20,7 @@
     "export": "Xuất",
     "import": "Nhập",
     "back": "Quay lại",
+    "thisAsset": "tài sản này",
     "groupByDate": "Nhóm theo ngày",
     "grid": "Lưới",
     "list": "Danh sách",
@@ -115,6 +116,7 @@
     "deposits": "Quản lý Tiền gửi",
     "cashFlow": "Dòng tiền",
     "navHoldings": "NAV Holdings",
+    "loading": "Đang tải dữ liệu...",
     "creating": "Đang tạo danh mục...",
     "updating": "Đang cập nhật danh mục...",
     "deleting": "Đang xóa danh mục...",
@@ -1673,6 +1675,7 @@
     "cashBalance": "Tiền mặt",
     "ofTotal": "tổng tài sản",
     "assetTypes": "Loại tài sản",
+    "performance": "Hiệu suất",
     "diversified": "Đa dạng hóa",
     "totalAssets": "Tổng tài sản",
     "positions": "vị thế đầu tư",
@@ -1726,6 +1729,9 @@
     "ytd": "Từ đầu năm",
     "lastUpdated": "Cập nhật lần cuối",
     "noPortfolios": "Chưa có danh mục nào",
+    "previous": "Trước",
+    "next": "Tiếp",
+    "close": "Đóng",
     "error": {
       "loadFailed": "Đang tải dữ liệu ..."
     }

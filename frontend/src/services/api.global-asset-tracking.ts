@@ -151,7 +151,7 @@ export class GlobalAssetTrackingService {
    * Clean up old tracking records
    */
   static async cleanupOldData(days: number = 90): Promise<{ deletedRecords: number; message: string }> {
-    const response = await apiService.get(`/api/v1/global-asset-tracking/cleanup/execute?days=${days}`);
+    const response = await apiService.post(`/api/v1/global-asset-tracking/cleanup/execute`, { days });
     return response;
   }
 }
