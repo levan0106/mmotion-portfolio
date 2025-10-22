@@ -36,6 +36,7 @@ import SnapshotTrackingDashboard from '../components/SnapshotTracking/SnapshotTr
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { ToastService } from '../services/toast';
 import { useRoles } from '../hooks/useRoles';
+import { useUsers } from '../hooks/useUsers';
 import { Role } from '../services/api.role';
 import { User, UserApi } from '../services/api.user';
 import { UserRoleApi } from '../services/api.role';
@@ -75,8 +76,24 @@ export const AdminManagement: React.FC = () => {
 
 const AdminManagementContent: React.FC = () => {
   const theme = useTheme();
-  const { roles, isLoading, error, assignPermissions, isAssigningPermissions } = useRoles();
-  // const { users, isLoading: isLoadingUsers, error: usersError } = useUsers();
+  
+  // Pagination state for roles
+  const [rolePage, setRolePage] = useState(0);
+  const [roleRowsPerPage, setRoleRowsPerPage] = useState(10);
+  
+  // Pagination state for users
+  const [userPage, setUserPage] = useState(0);
+  const [userRowsPerPage, setUserRowsPerPage] = useState(10);
+  
+  const { roles, isLoading, error, assignPermissions, isAssigningPermissions, total: totalRoles, deleteRole, isDeleting } = useRoles({
+    page: rolePage + 1, // Convert to 1-based for API
+    limit: roleRowsPerPage
+  });
+  const { users, total: totalUsers, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useUsers({
+    page: userPage + 1, // Convert to 1-based for API
+    limit: userRowsPerPage
+  });
+  
   const [tabValue, setTabValue] = useState(0);
   const [roleFormOpen, setRoleFormOpen] = useState(false);
   const [roleDetailsOpen, setRoleDetailsOpen] = useState(false);
@@ -91,6 +108,26 @@ const AdminManagementContent: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  // Pagination handlers for roles
+  const handleRolePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setRolePage(newPage);
+  };
+
+  const handleRoleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRoleRowsPerPage(parseInt(event.target.value, 10));
+    setRolePage(0);
+  };
+
+  // Pagination handlers for users
+  const handleUserPageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setUserPage(newPage);
+  };
+
+  const handleUserRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUserRowsPerPage(parseInt(event.target.value, 10));
+    setUserPage(0);
   };
 
   const handleCreateRole = () => {
@@ -341,6 +378,16 @@ const AdminManagementContent: React.FC = () => {
                   onDeleteRole={handleDeleteRole}
                   onManagePermissions={handleManagePermissions}
                   onManageUsers={handleManageUsers}
+                  page={rolePage}
+                  rowsPerPage={roleRowsPerPage}
+                  total={totalRoles}
+                  onPageChange={handleRolePageChange}
+                  onRowsPerPageChange={handleRoleRowsPerPageChange}
+                  roles={roles}
+                  isLoading={isLoading}
+                  error={error}
+                  deleteRole={deleteRole}
+                  isDeleting={isDeleting}
                 />
               </CardContent>
             </Card>
@@ -372,6 +419,15 @@ const AdminManagementContent: React.FC = () => {
                   onViewUser={handleViewUser}
                   onDeleteUser={handleDeleteUser}
                   onManageRoles={handleManageUserRoles}
+                  page={userPage}
+                  rowsPerPage={userRowsPerPage}
+                  total={totalUsers}
+                  onPageChange={handleUserPageChange}
+                  onRowsPerPageChange={handleUserRowsPerPageChange}
+                  users={users}
+                  isLoading={isLoadingUsers}
+                  error={usersError}
+                  refetch={refetchUsers}
                 />
               </CardContent>
             </Card>

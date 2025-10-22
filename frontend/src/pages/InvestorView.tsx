@@ -14,6 +14,7 @@ import {
   Divider,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrency, formatPercentageValue } from '../utils/format';
 import { apiService } from '../services/api';
 import InvestorReportWrapper from '../components/Reports/InvestorReportWrapper';
@@ -49,6 +50,7 @@ interface PortfolioSummary {
 const InvestorView: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigate = useNavigate();
   const { currentAccount } = useAccount();
   const [portfolios, setPortfolios] = useState<PortfolioSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,6 +133,29 @@ const InvestorView: React.FC = () => {
 
   const handleBackToList = () => {
     setSelectedPortfolio(null);
+  };
+
+  const handlePortfolioNameClick = (portfolioId: string, event: React.MouseEvent) => {
+    // Prevent the card click event from firing
+    event.stopPropagation();
+    
+    // Find the portfolio to check permissions
+    const portfolio = portfolios.find(p => p.id === portfolioId);
+    
+    // Check if user has permission to access portfolio detail
+    if (!portfolio?.userPermission) {
+      console.warn('No permission data available for portfolio:', portfolioId);
+      return;
+    }
+    
+    // Only allow navigation if user has owner or update permission
+    if (portfolio.userPermission.isOwner || portfolio.userPermission.canUpdate) {
+      navigate(`/portfolios/${portfolioId}`);
+    } else {
+      console.warn('Insufficient permissions to access portfolio detail:', portfolioId);
+      // Optionally show a toast or alert to user
+      // You could add a toast notification here if you have a toast system
+    }
   };
 
   const getPerformanceColor = (value: number) => {
@@ -249,10 +274,15 @@ const InvestorView: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
                           <ResponsiveTypography 
                             variant="body2" 
+                            onClick={(e) => handlePortfolioNameClick(portfolio.id, e)}
                             sx={{ 
                               fontSize: '0.85rem', 
                               fontWeight: 500,
-                              color: selectedPortfolio === portfolio.id ? 'primary.main' : 'text.primary'
+                              color: selectedPortfolio === portfolio.id ? 'primary.main' : 'text.primary',
+                              cursor: (portfolio.userPermission?.isOwner || portfolio.userPermission?.canUpdate) ? 'pointer' : 'default',
+                              '&:hover': {
+                                textDecoration: (portfolio.userPermission?.isOwner || portfolio.userPermission?.canUpdate) ? 'underline' : 'none'
+                              }
                             }}
                           >
                             {portfolio.name}
@@ -324,7 +354,16 @@ const InvestorView: React.FC = () => {
                             <ResponsiveTypography 
                               variant="subtitle1" 
                               gutterBottom={false}
-                              sx={{ fontSize: '1rem', fontWeight: 600 }}
+                              onClick={(e) => handlePortfolioNameClick(portfolio.id, e)}
+                              sx={{ 
+                                fontSize: '1rem', 
+                                fontWeight: 600,
+                                cursor: (portfolio.userPermission?.isOwner || portfolio.userPermission?.canUpdate) ? 'pointer' : 'default',
+                                '&:hover': {
+                                  textDecoration: (portfolio.userPermission?.isOwner || portfolio.userPermission?.canUpdate) ? 'underline' : 'none',
+                                  color: (portfolio.userPermission?.isOwner || portfolio.userPermission?.canUpdate) ? 'primary.main' : 'inherit'
+                                }
+                              }}
                             >
                               {portfolio.name}
                             </ResponsiveTypography>
@@ -485,7 +524,24 @@ const InvestorView: React.FC = () => {
                       animation: 'pulse 2s infinite'
                     }} 
                   />
-                  <ResponsiveTypography variant="body1" fontWeight="600" color="primary.main">
+                  <ResponsiveTypography 
+                    variant="body1" 
+                    fontWeight="600" 
+                    color="primary.main"
+                    onClick={(e) => handlePortfolioNameClick(selectedPortfolio!, e)}
+                    sx={{
+                      cursor: (() => {
+                        const portfolio = portfolios.find(p => p.id === selectedPortfolio);
+                        return (portfolio?.userPermission?.isOwner || portfolio?.userPermission?.canUpdate) ? 'pointer' : 'default';
+                      })(),
+                      '&:hover': {
+                        textDecoration: (() => {
+                          const portfolio = portfolios.find(p => p.id === selectedPortfolio);
+                          return (portfolio?.userPermission?.isOwner || portfolio?.userPermission?.canUpdate) ? 'underline' : 'none';
+                        })()
+                      }
+                    }}
+                  >
                     {portfolios.find(p => p.id === selectedPortfolio)?.name}
                   </ResponsiveTypography>
                 </Box>

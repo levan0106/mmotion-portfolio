@@ -10,6 +10,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   Chip,
   IconButton,
@@ -31,7 +32,7 @@ import {
   Security as SecurityIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import { useRoles } from '../../hooks/useRoles';
+// import { useRoles } from '../../hooks/useRoles'; // Removed - using props instead
 import { Role } from '../../services/api.role';
 
 interface RoleListProps {
@@ -40,6 +41,16 @@ interface RoleListProps {
   onDeleteRole?: (role: Role) => void;
   onManagePermissions?: (role: Role) => void;
   onManageUsers?: (role: Role) => void;
+  page?: number;
+  rowsPerPage?: number;
+  total?: number;
+  onPageChange?: (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  roles?: Role[];
+  isLoading?: boolean;
+  error?: any;
+  deleteRole?: (roleId: string) => void;
+  isDeleting?: boolean;
 }
 
 export const RoleList: React.FC<RoleListProps> = ({
@@ -47,8 +58,17 @@ export const RoleList: React.FC<RoleListProps> = ({
   onViewRole,
   onManagePermissions,
   onManageUsers,
+  page = 0,
+  rowsPerPage = 10,
+  total = 0,
+  onPageChange,
+  onRowsPerPageChange,
+  roles = [],
+  isLoading = false,
+  error = null,
+  deleteRole = () => {},
+  isDeleting = false,
 }) => {
-  const { roles, isLoading, error, deleteRole, isDeleting } = useRoles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -208,6 +228,17 @@ export const RoleList: React.FC<RoleListProps> = ({
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component="div"
+            count={total || roles?.length || 0}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={onPageChange || (() => {})}
+            onRowsPerPageChange={onRowsPerPageChange || (() => {})}
+          />
         </CardContent>
       </Card>
 

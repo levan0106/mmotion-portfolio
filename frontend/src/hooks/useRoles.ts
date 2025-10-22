@@ -1,15 +1,24 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { RoleApi, CreateRoleRequest, UpdateRoleRequest } from '../services/api.role';
+
+export interface RoleSearchParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
 
 /**
  * Hook for role management
  */
-export const useRoles = () => {
+export const useRoles = (params?: RoleSearchParams) => {
   const queryClient = useQueryClient();
 
   // Get all roles
   const {
-    data: roles,
+    data: allRoles,
     isLoading,
     error,
     refetch
@@ -18,6 +27,56 @@ export const useRoles = () => {
     queryFn: RoleApi.getRoles,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Client-side pagination and filtering
+  const roles = React.useMemo(() => {
+    if (!allRoles) return [];
+    
+    let filteredRoles = [...allRoles];
+    
+    // Apply search filter
+    if (params?.search) {
+      const searchTerm = params.search.toLowerCase();
+      filteredRoles = filteredRoles.filter(role => 
+        role.name.toLowerCase().includes(searchTerm) ||
+        role.displayName.toLowerCase().includes(searchTerm) ||
+        role.description?.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Apply sorting
+    if (params?.sortBy) {
+      filteredRoles.sort((a, b) => {
+        const aValue = a[params.sortBy as keyof typeof a];
+        const bValue = b[params.sortBy as keyof typeof b];
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return params.sortOrder === 'desc' 
+            ? bValue.localeCompare(aValue)
+            : aValue.localeCompare(bValue);
+        }
+        
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return params.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+        }
+        
+        return 0;
+      });
+    }
+    
+    return filteredRoles;
+  }, [allRoles, params?.search, params?.sortBy, params?.sortOrder, params?.page, params?.limit]);
+
+  // Calculate pagination
+  const { total, totalPages, paginatedRoles } = React.useMemo(() => {
+    const total = roles.length;
+    const totalPages = Math.ceil(total / (params?.limit || 10));
+    const startIndex = ((params?.page || 1) - 1) * (params?.limit || 10);
+    const endIndex = startIndex + (params?.limit || 10);
+    const paginatedRoles = roles.slice(startIndex, endIndex);
+    
+    return { total, totalPages, paginatedRoles };
+  }, [roles, params?.page, params?.limit]);
 
   // Create role mutation
   const createRoleMutation = useMutation({
@@ -66,7 +125,11 @@ export const useRoles = () => {
 
   return {
     // Data
-    roles,
+    roles: paginatedRoles,
+    total,
+    page: params?.page || 1,
+    limit: params?.limit || 10,
+    totalPages,
     isLoading,
     error,
     

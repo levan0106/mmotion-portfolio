@@ -6,6 +6,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   Avatar,
   Chip,
@@ -31,7 +32,7 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { useUsers } from '../../hooks/useUsers';
+// import { useUsers } from '../../hooks/useUsers'; // Removed - using props instead
 import { User } from '../../services/api.user';
 import { DeleteUserDialog } from './DeleteUserDialog';
 import { ToastService } from '../../services/toast';
@@ -41,6 +42,15 @@ interface UserListProps {
   onViewUser?: (user: User) => void;
   onDeleteUser?: (user: User) => void;
   onManageRoles?: (user: User) => void;
+  page?: number;
+  rowsPerPage?: number;
+  total?: number;
+  onPageChange?: (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  users?: User[];
+  isLoading?: boolean;
+  error?: any;
+  refetch?: () => void;
 }
 
 export const UserList: React.FC<UserListProps> = ({
@@ -48,8 +58,16 @@ export const UserList: React.FC<UserListProps> = ({
   onViewUser,
   onDeleteUser,
   onManageRoles,
+  page = 0,
+  rowsPerPage = 10,
+  total = 0,
+  onPageChange,
+  onRowsPerPageChange,
+  users = [],
+  isLoading = false,
+  error = null,
+  refetch = () => {},
 }) => {
-  const { users, isLoading, error, refetch } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -323,6 +341,17 @@ export const UserList: React.FC<UserListProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        component="div"
+        count={total || users?.length || 0}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={onPageChange || (() => {})}
+        onRowsPerPageChange={onRowsPerPageChange || (() => {})}
+      />
 
       {/* Empty State */}
       {filteredUsers.length === 0 && (
