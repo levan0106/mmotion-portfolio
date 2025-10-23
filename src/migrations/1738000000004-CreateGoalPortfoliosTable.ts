@@ -35,7 +35,7 @@ export class CreateGoalPortfoliosTable1738000000004 implements MigrationInterfac
     await queryRunner.query(`
       ALTER TABLE "goal_portfolios" 
       ADD CONSTRAINT "FK_goal_portfolios_portfolio_id" 
-      FOREIGN KEY ("portfolio_id") REFERENCES "portfolios"("id") ON DELETE CASCADE
+      FOREIGN KEY ("portfolio_id") REFERENCES "portfolios"("portfolio_id") ON DELETE CASCADE
     `);
   }
 
