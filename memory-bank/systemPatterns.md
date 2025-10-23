@@ -24,6 +24,16 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Goals Management System Pattern - **IMPLEMENTED** ✅
+- **Navigation Integration**: Goals menu integrated into investor section for universal access
+- **Portfolio Linking**: Multiple portfolios can be linked to single goals with permission-based access
+- **Database Schema**: Portfolio-goal relationships with removed unique constraints for flexibility
+- **API Endpoints**: Permission-aware portfolio selection with UPDATE/VIEW permission checks
+- **UI/UX Design**: Professional progress display with priority sliders and color coding
+- **Data Management**: Priority-based sorting with enhanced form validation
+- **Files**: AppLayout.tsx, goal.service.ts, GoalCard.tsx, GoalForm.tsx, GoalsList.tsx
+- **Migration**: RemovePortfolioUniqueConstraint migration for database schema updates
+
 ### Timezone Handling Pattern - **IMPLEMENTED** ✅
 - **Problem**: JavaScript `new Date(dateString)` interprets "YYYY-MM-DD" as UTC midnight, causing timezone shifts
 - **Solution Pattern**: `new Date(dateString + 'T00:00:00')` to force local time interpretation

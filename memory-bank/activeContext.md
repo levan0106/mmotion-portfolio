@@ -1,13 +1,41 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 22, 2025  
-**Session Type**: Global Asset Tracking Cleanup Endpoint Fix  
-**Primary Goal**: Fix 404 error for global asset tracking cleanup endpoint by correcting HTTP method mismatch
+**Date**: October 23, 2025  
+**Session Type**: Goals Management System Implementation & Enhancement  
+**Primary Goal**: Implement comprehensive goals management system with portfolio linking, UI improvements, and navigation integration
 
 ## Recent Achievements
 
-### ✅ Global Asset Tracking Cleanup Endpoint Fix (Current Session)
+### ✅ Goals Management System Implementation & Enhancement (Current Session)
+1. **Goals Navigation Integration**
+   - **Menu Restructuring**: Moved Goals menu from "Quản lý quỹ" to "Nhà đầu tư" section
+   - **Translation Updates**: Updated vi.json with navigation.investor.goals key
+   - **User Experience**: Goals now accessible to all users under investor section
+   - **Files Updated**: AppLayout.tsx, vi.json
+
+2. **Portfolio Linking System Enhancement**
+   - **Multiple Portfolio Support**: Removed unique constraint allowing portfolios to link to multiple goals
+   - **Database Migration**: Created migration to remove UQ_goal_portfolios_portfolio_id constraint
+   - **API Endpoint Fix**: Updated /api/v1/goals/portfolios/available to return portfolios with UPDATE/VIEW permissions
+   - **Permission-Based Access**: Endpoint now respects portfolio permissions for proper access control
+   - **Files Updated**: goal.service.ts, RemovePortfolioUniqueConstraint migration
+
+3. **UI/UX Improvements**
+   - **Progress Display Enhancement**: Simplified progress UI for better readability
+   - **Priority Display**: Added priority slider with color coding and tooltips
+   - **Status Integration**: Harmonized status and priority display in single row
+   - **Date Input Enhancement**: Replaced DatePicker with TextField type="date" for better cursor control
+   - **Portfolio Selection Fix**: Fixed portfolio filtering logic in GoalForm
+   - **Files Updated**: GoalCard.tsx, GoalForm.tsx, GoalsList.tsx
+
+4. **Data Management & Sorting**
+   - **Priority-Based Sorting**: Goals sorted by priority (highest first) then by creation date
+   - **Portfolio Filtering**: Fixed available portfolios loading in GoalForm
+   - **Form Validation**: Enhanced form validation for portfolio selection
+   - **Files Updated**: GoalsList.tsx, GoalForm.tsx
+
+### ✅ Global Asset Tracking Cleanup Endpoint Fix (Previous Session)
 1. **HTTP Method Mismatch Resolution**
    - **Root Cause Analysis**: Backend controller used POST method with @Body('days') while frontend service used GET method with query parameter
    - **Solution Implementation**: Updated backend controller to use POST method with @Body('days') parameter
@@ -143,9 +171,13 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `src/modules/asset/controllers/global-asset-tracking.controller.ts` - Fixed HTTP method from GET to POST with @Body parameter
-- `frontend/src/services/api.global-asset-tracking.ts` - Updated service to use POST method with body parameter
-- `docker-compose.yml` - Backend container restart to apply changes
+- `frontend/src/components/Layout/AppLayout.tsx` - Moved Goals menu to investor section
+- `frontend/src/i18n/locales/vi.json` - Added navigation.investor.goals translation
+- `src/modules/goal/services/goal.service.ts` - Enhanced getAvailablePortfolios with permission checks
+- `src/migrations/1738000000003-RemovePortfolioUniqueConstraint.ts` - Removed portfolio unique constraint
+- `frontend/src/components/Goals/GoalCard.tsx` - Enhanced UI with priority slider and simplified progress
+- `frontend/src/components/Goals/GoalForm.tsx` - Fixed portfolio filtering and date input
+- `frontend/src/components/Goals/GoalsList.tsx` - Added priority-based sorting
 
 ### Key Components Modified (Previous Session)
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - New permission entity
@@ -158,12 +190,14 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **API Endpoint Functionality**: Global asset tracking cleanup endpoint now works correctly
-- **Error Resolution**: Fixed 404 NotFoundException error for cleanup operations
-- **HTTP Method Standards**: Proper POST method usage for cleanup/delete operations
-- **Security Enhancement**: Body parameters provide better security than query parameters
-- **RESTful Compliance**: Endpoint follows RESTful design principles for operations with side effects
-- **Production Ready**: Endpoint is now fully functional and ready for production use
+- **Goals Navigation**: Goals menu now accessible under investor section for all users
+- **Portfolio Linking**: Multiple portfolios can now be linked to single goals
+- **Permission-Based Access**: Portfolio selection respects user permissions
+- **Priority Visualization**: Clear priority display with color-coded sliders and tooltips
+- **Progress Display**: Simplified and professional progress UI
+- **Date Input**: Better date input experience with native HTML5 date picker
+- **Goal Sorting**: Goals automatically sorted by priority (highest first)
+- **Form Validation**: Enhanced form validation for better user guidance
 
 ### User Experience Improvements (Previous Session)
 - **Multi-Account Access**: Users can access portfolios they have permissions for

@@ -2,7 +2,32 @@
 
 ## What Works
 ### ✅ Completed
-- **GLOBAL ASSET TRACKING CLEANUP ENDPOINT FIX - COMPLETED** (Current Session - October 22, 2025)
+- **GOALS MANAGEMENT SYSTEM IMPLEMENTATION & ENHANCEMENT - COMPLETED** (Current Session - October 23, 2025)
+  - **Goals Navigation Integration**: Complete navigation system integration for goals management
+    - **Menu Restructuring**: Moved Goals menu from "Quản lý quỹ" to "Nhà đầu tư" section for better accessibility
+    - **Translation Updates**: Updated vi.json with navigation.investor.goals key for proper localization
+    - **User Experience**: Goals now accessible to all users under investor section
+    - **Files Updated**: AppLayout.tsx, vi.json
+  - **Portfolio Linking System Enhancement**: Enhanced portfolio linking capabilities
+    - **Multiple Portfolio Support**: Removed unique constraint allowing portfolios to link to multiple goals
+    - **Database Migration**: Created migration to remove UQ_goal_portfolios_portfolio_id constraint
+    - **API Endpoint Fix**: Updated /api/v1/goals/portfolios/available to return portfolios with UPDATE/VIEW permissions
+    - **Permission-Based Access**: Endpoint now respects portfolio permissions for proper access control
+    - **Files Updated**: goal.service.ts, RemovePortfolioUniqueConstraint migration
+  - **UI/UX Improvements**: Comprehensive UI/UX enhancements for goals management
+    - **Progress Display Enhancement**: Simplified progress UI for better readability and professional appearance
+    - **Priority Display**: Added priority slider with color coding and tooltips for clear visualization
+    - **Status Integration**: Harmonized status and priority display in single row for space efficiency
+    - **Date Input Enhancement**: Replaced DatePicker with TextField type="date" for better cursor control
+    - **Portfolio Selection Fix**: Fixed portfolio filtering logic in GoalForm to show available portfolios
+    - **Files Updated**: GoalCard.tsx, GoalForm.tsx, GoalsList.tsx
+  - **Data Management & Sorting**: Enhanced data management capabilities
+    - **Priority-Based Sorting**: Goals sorted by priority (highest first) then by creation date
+    - **Portfolio Filtering**: Fixed available portfolios loading in GoalForm with proper API integration
+    - **Form Validation**: Enhanced form validation for portfolio selection and goal creation
+    - **Files Updated**: GoalsList.tsx, GoalForm.tsx
+
+- **GLOBAL ASSET TRACKING CLEANUP ENDPOINT FIX - COMPLETED** (Previous Session - October 22, 2025)
   - **HTTP Method Mismatch Resolution**: Fixed critical mismatch between frontend GET and backend POST methods
     - **Root Cause Analysis**: Backend controller used POST method with @Body('days') while frontend service used GET method with query parameter
     - **Solution Implementation**: Updated backend controller to use POST method with @Body('days') parameter
@@ -174,10 +199,12 @@
 
 ## Current Status
 ### 🎯 Active Development
-- **Global Asset Tracking System**: Cleanup endpoint now fully functional with POST method
-- **API Endpoint Functionality**: All endpoints operational including cleanup functionality
-- **HTTP Method Standards**: Proper RESTful design for all operations
-- **Security Enhancement**: Body parameters provide better security than query parameters
+- **Goals Management System**: Complete goals management system with portfolio linking
+- **Navigation Integration**: Goals menu integrated into investor section for all users
+- **Portfolio Linking**: Multiple portfolios can be linked to single goals
+- **Permission-Based Access**: Portfolio selection respects user permissions
+- **UI/UX Enhancement**: Professional progress display with priority sliders and tooltips
+- **Data Management**: Priority-based sorting and enhanced form validation
 - **Fixed-Time Price Update System**: Fully functional fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM)
 - **Dual Scheduling Support**: Both interval and fixed-time scheduling operational
 - **Timezone Integration**: Proper Vietnam timezone handling (Asia/Ho_Chi_Minh)
@@ -232,9 +259,13 @@
 - **Performance**: Optimization for large datasets with permission checks
 
 ## Key Files Modified in Current Session
-- `src/modules/asset/controllers/global-asset-tracking.controller.ts` - Fixed HTTP method from GET to POST with @Body parameter
-- `frontend/src/services/api.global-asset-tracking.ts` - Updated service to use POST method with body parameter
-- `docker-compose.yml` - Backend container restart to apply changes
+- `frontend/src/components/Layout/AppLayout.tsx` - Moved Goals menu to investor section
+- `frontend/src/i18n/locales/vi.json` - Added navigation.investor.goals translation
+- `src/modules/goal/services/goal.service.ts` - Enhanced getAvailablePortfolios with permission checks
+- `src/migrations/1738000000003-RemovePortfolioUniqueConstraint.ts` - Removed portfolio unique constraint
+- `frontend/src/components/Goals/GoalCard.tsx` - Enhanced UI with priority slider and simplified progress
+- `frontend/src/components/Goals/GoalForm.tsx` - Fixed portfolio filtering and date input
+- `frontend/src/components/Goals/GoalsList.tsx` - Added priority-based sorting
 
 ## Key Files Modified in Previous Session
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - Permission entity
@@ -247,15 +278,15 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ## System Health
-- ✅ **Database**: Fully operational with price update and auto sync systems
+- ✅ **Database**: Fully operational with goals management and portfolio linking
 - ✅ **Authentication**: Working with permission-based access control
-- ✅ **Frontend**: Responsive with enhanced SystemGuide navigation
-- ✅ **Backend**: Stable API endpoints with enhanced scheduling system
+- ✅ **Frontend**: Responsive with enhanced goals management system
+- ✅ **Backend**: Stable API endpoints with goals management functionality
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Global Asset Tracking**: Cleanup endpoint now working correctly with POST method
-- ✅ **API Endpoints**: All endpoints operational including cleanup functionality
-- ✅ **HTTP Method Standards**: Proper RESTful design for all operations
-- ✅ **Security**: Enhanced security with body parameters for sensitive operations
-- ✅ **SystemGuide Navigation**: Accordion behavior and scroll detection working perfectly
-- ✅ **Table of Contents**: All IDs verified and navigation working correctly
-- ✅ **Mobile Responsiveness**: TOC works on both desktop and mobile devices
+- ✅ **Goals Management**: Complete goals system with portfolio linking and UI enhancements
+- ✅ **Portfolio Linking**: Multiple portfolios can be linked to single goals
+- ✅ **Permission-Based Access**: Portfolio selection respects user permissions
+- ✅ **UI/UX**: Professional progress display with priority sliders and tooltips
+- ✅ **Navigation**: Goals menu integrated into investor section for all users
+- ✅ **Data Management**: Priority-based sorting and enhanced form validation
+- ✅ **Mobile Responsiveness**: Goals system works on both desktop and mobile devices
