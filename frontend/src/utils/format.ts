@@ -44,6 +44,14 @@ export interface DataDisplayPreferences {
 export const getDataDisplayPreferences = (): DataDisplayPreferences => {
   const showFull = localStorage.getItem('currency-show-full');
   const maskData = localStorage.getItem('currency-mask-data');
+
+  if (showFull === null) {
+    localStorage.setItem('currency-show-full', 'true');
+  }
+
+  if (maskData === null) {
+    localStorage.setItem('currency-mask-data', 'false');
+  }
   
   // Default to show full for new users (when no preference is set)
   const defaultShowFull = showFull === null ? true : showFull === 'true';

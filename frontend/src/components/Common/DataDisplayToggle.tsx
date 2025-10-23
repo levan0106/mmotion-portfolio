@@ -36,16 +36,16 @@ const DataDisplayToggle: React.FC<DataDisplayToggleProps> = ({
 
 
   const handleToggle = () => {
-    if (preferences.maskData) {
-      // Currently masked -> turn off mask, go to compact
-      toggleMaskData(); // This will set maskData to false
-    } else if (preferences.showFull) {
-      // Currently show full -> turn off show full, turn on mask
+    if (preferences.showFull) {
+      // Currently show full -> turn off show full, go to compact
       toggleShowFull(); // This will set showFull to false
-      toggleMaskData(); // This will set maskData to true
-    } else {
-      // Currently compact -> turn on show full
+    } else if (preferences.maskData) {
+      // Currently masked -> turn off mask, go to full
+      toggleMaskData(); // This will set maskData to false
       toggleShowFull(); // This will set showFull to true
+    } else {
+      // Currently compact -> turn on mask
+      toggleMaskData(); // This will set maskData to true
     }
     
     // Refresh page to update all components with new preferences
