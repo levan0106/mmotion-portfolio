@@ -4,7 +4,6 @@ import {
   Box,
   Card,
   CardContent,
-  Alert,
   CircularProgress,
   Container,
   Avatar,
@@ -36,6 +35,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAccount } from '../contexts/AccountContext';
 import { userHistoryService, UserHistory } from '../services/userHistoryService';
+import { deviceTrustService } from '../services/deviceTrustService';
 
 export const Login: React.FC = () => {
   const { t } = useTranslation();
@@ -92,83 +92,39 @@ export const Login: React.FC = () => {
     setError(null);
 
     try {
-      // If we're in username step, check user status first
-      if (currentStep === 'username') {
-        const userStatus = await authService.checkUserStatus(normalizedUsername);
-        
-        if (!userStatus.exists) {
-          // User doesn't exist, try to create new user
-          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
-          authService.saveUserSession(authResponse);
-          await updateAuthState();
-          navigate('/welcome');
-          return;
-        }
-        
-        if (userStatus.requiresPassword) {
-          // User exists and needs password, move to password step
-          setCurrentStep('password');
-          //setError('Please enter your password to continue');
-          setLoading(false);
-          return;
-        } else {
-          // User exists but doesn't need password, login directly
-          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
-          authService.saveUserSession(authResponse);
-          await updateAuthState();
-          navigate(getRedirectUrl());
-          return;
-        }
-      }
+      // Get device information for device trust
+      const deviceInfo = await deviceTrustService.getDeviceInfo();
       
-      // If we're in password step, try to login with password
-      if (currentStep === 'password') {
-        if (!password.trim()) {
-          setError(t('login.errors.passwordRequired'));
-          setLoading(false);
-          return;
-        }
-        
-        try {
-          const authResponse = await authService.loginOrRegister(normalizedUsername, password);
-          
-          // Double check: if user requires password but we got here, something is wrong
-          if (authResponse.user?.isPasswordSet && !password) {
-            setError(t('login.errors.passwordRequired'));
-            setLoading(false);
-            return;
-          }
-          
-          authService.saveUserSession(authResponse);
-          await updateAuthState();
-          navigate(getRedirectUrl());
-        } catch (passwordError: any) {
-          const errorMessage = passwordError.response?.data?.message || passwordError.message || t('login.errors.loginFailed');
-          
-          if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('unauthorized')) {
-            setError(t('login.errors.incorrectPassword'));
-            setPassword(''); // Clear password field for retry
-          } else {
-            setError(errorMessage);
-          }
-          setLoading(false);
-          return;
-        }
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      const errorMessage = err.response?.data?.message || t('login.errors.loginFailed');
+      // Step 1: Gọi API login-or-register với device info
+      // Backend sẽ tự động kiểm tra device trust và xử lý logic
+      const authResponse = await authService.loginOrRegister(
+        normalizedUsername, 
+        currentStep === 'password' ? password : undefined, 
+        deviceInfo
+      );
       
-      // If we're in password step and there's an error, provide more specific feedback
-      if (currentStep === 'password') {
-        if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid')) {
-          setError(t('login.errors.incorrectPassword'));
-          setPassword(''); // Clear password field for retry
-        } else {
-          setError(errorMessage);
-        }
+      // Step 2: Nếu API trả về thành công, login thành công
+      authService.saveUserSession(authResponse);
+      await updateAuthState();
+      
+      // Redirect based on user state
+      if (authResponse.user?.authState === 'DEMO') {
+        navigate('/welcome');
       } else {
-        setError(errorMessage);
+        navigate(getRedirectUrl());
+      }
+      
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || t('login.errors.loginFailed');
+      const statusCode = err.response?.status;
+      
+      // Step 3: Nếu lỗi 400 (Bad Request) yêu cầu password, chuyển sang step password (không hiển thị lỗi)
+      if (statusCode === 400 && (errorMessage.toLowerCase().includes('password') || 
+          errorMessage.toLowerCase().includes('required'))) {
+        setCurrentStep('password');
+        setError(null); // Không hiển thị lỗi cho 400, tạo cảm giác mượt mà
+      } else {
+        setError(errorMessage); // Hiển thị lỗi cho 401 và các lỗi khác
       }
     } finally {
       setLoading(false);
@@ -199,54 +155,39 @@ export const Login: React.FC = () => {
     const normalizedUsername = user.username.toLowerCase().trim().replace(/\s+/g, '');
     
     try {
-      // Check user status first
-      const userStatus = await authService.checkUserStatus(normalizedUsername);
+      // Get device information for device trust
+      const deviceInfo = await deviceTrustService.getDeviceInfo();
       
-      if (!userStatus.exists) {
-        // User doesn't exist, try to create new user
-        const authResponse = await authService.loginOrRegister(normalizedUsername, '');
-        authService.saveUserSession(authResponse);
-        await updateAuthState();
+      // Step 1: Gọi API login-or-register với device info
+      // Backend sẽ tự động kiểm tra device trust và xử lý logic
+      const authResponse = await authService.loginOrRegister(
+        normalizedUsername, 
+        '', // No password for quick login
+        deviceInfo
+      );
+      
+      // Step 2: Nếu API trả về thành công, login thành công
+      authService.saveUserSession(authResponse);
+      await updateAuthState();
+      
+      // Redirect based on user state
+      if (authResponse.user?.authState === 'DEMO') {
         navigate('/welcome');
-        return;
+      } else {
+        navigate(getRedirectUrl());
       }
       
-      if (userStatus.requiresPassword) {
-        // User exists and needs password, move to password step
-        setCurrentStep('password');
-        //setError('Please enter your password to continue');
-        setLoading(false);
-        return;
-      } else {
-        // User exists but doesn't need password, login directly
-        try {
-          const authResponse = await authService.loginOrRegister(normalizedUsername, '');
-          authService.saveUserSession(authResponse);
-          await updateAuthState();
-          navigate(getRedirectUrl());
-          return;
-        } catch (loginError: any) {
-          console.error('Quick login error:', loginError);
-          const errorMessage = loginError.response?.data?.message || 'Login failed. Please try again.';
-          setError(errorMessage);
-          setLoading(false);
-          return;
-        }
-      }
     } catch (err: any) {
-      console.error('Quick login error:', err);
-      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage = err.response?.data?.message || err.message || t('login.errors.loginFailed');
+      const statusCode = err.response?.status;
       
-      // If we're in password step and there's an error, provide more specific feedback
-      if (currentStep === 'password') {
-        if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid')) {
-          setError('Incorrect password. Please try again.');
-          setPassword(''); // Clear password field for retry
-        } else {
-          setError(errorMessage);
-        }
+      // Step 3: Nếu lỗi 400 (Bad Request) yêu cầu password, chuyển sang step password (không hiển thị lỗi)
+      if (statusCode === 400 && (errorMessage.toLowerCase().includes('password') || 
+          errorMessage.toLowerCase().includes('required'))) {
+        setCurrentStep('password');
+        setError(null); // Không hiển thị lỗi cho 400, tạo cảm giác mượt mà
       } else {
-        setError(errorMessage);
+        setError(errorMessage); // Hiển thị lỗi cho 401 và các lỗi khác
       }
     } finally {
       setLoading(false);
@@ -332,11 +273,11 @@ export const Login: React.FC = () => {
               </ResponsiveTypography>
             </Box>
 
-            {error && (
+            {/* {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
               </Alert>
-            )}
+            )} */}
 
             {/* Step 1: Username */}
             {currentStep === 'username' && (

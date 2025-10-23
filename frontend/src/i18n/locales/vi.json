@@ -448,7 +448,7 @@
       "createTrade": "Tạo giao dịch"
     },
     "floatingButton": {
-      "tooltip": "Tạo giao dịch nhanh",
+      "tooltip": "Thêm dữ liệu",
       "ariaLabel": "Tạo giao dịch",
       "createPortfolioFirst": "Tạo danh mục trước",
       "creatingPortfolio": "Đang tạo danh mục..."
@@ -505,7 +505,7 @@
       "processing": "Đang xử lý...",
       "create": "Tạo",
       "update": "Cập nhật",
-      "createTrade": "Tạo giao dịch",
+      "createTrade": "Tạo mới giao dịch",
       "updateTrade": "Cập nhật giao dịch",
       "loadingTradeForm": "Đang tải biểu mẫu giao dịch...",
       "noPortfoliosAvailable": "Không có danh mục nào. Vui lòng tạo danh mục trước.",
@@ -621,7 +621,7 @@
     "liquid": "Thanh khoản",
     "perPortfolio": "Mỗi danh mục",
     "balanced": "Cân bằng",
-    "refreshData": "Làm mới dữ liệu",
+    "refreshData": "Làm mới",
     "systemStatus": "Trạng thái hệ thống: Hoạt động",
     "lastUpdated": "Cập nhật cuối",
     "dataUpdateStatus": {

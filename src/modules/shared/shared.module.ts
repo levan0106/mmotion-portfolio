@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { Permission } from './entities/permission.entity';
 import { UserRole } from './entities/user-role.entity';
+import { TrustedDevice } from './entities/trusted-device.entity';
 import { AccountService } from './services/account.service';
 import { AuthService } from './services/auth.service';
 import { RoleService } from './services/role.service';
@@ -15,6 +16,7 @@ import { UserRoleService } from './services/user-role.service';
 import { UserService } from './services/user.service';
 import { SettingsService } from './services/settings.service';
 import { AutoRoleAssignmentService } from './services/auto-role-assignment.service';
+import { DeviceTrustService } from './services/device-trust.service';
 import { AccountController } from './controllers/account.controller';
 import { AuthController } from './controllers/auth.controller';
 import { RoleController } from './controllers/role.controller';
@@ -24,6 +26,7 @@ import { UserController } from './controllers/user.controller';
 import { SettingsController } from './controllers/settings.controller';
 import { CurrentUserController } from './controllers/current-user.controller';
 import { CircuitBreakerController } from './controllers/circuit-breaker.controller';
+import { DeviceTrustController } from './controllers/device-trust.controller';
 import { DepositCalculationService } from './services/deposit-calculation.service';
 import { AccountValidationService } from './services/account-validation.service';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
@@ -40,7 +43,7 @@ import { NotificationModule } from '../../notification/notification.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User, Role, Permission, UserRole, Deposit, Portfolio]),
+    TypeOrmModule.forFeature([Account, User, Role, Permission, UserRole, Deposit, Portfolio, TrustedDevice]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key',
@@ -57,7 +60,8 @@ import { NotificationModule } from '../../notification/notification.module';
     UserController,
     SettingsController,
     CurrentUserController,
-    CircuitBreakerController
+    CircuitBreakerController,
+    DeviceTrustController
   ],
   providers: [
     AccountService, 
@@ -71,6 +75,7 @@ import { NotificationModule } from '../../notification/notification.module';
     DepositCalculationService, 
     AccountValidationService,
     CircuitBreakerService,
+    DeviceTrustService,
     JwtStrategy,
     PermissionGuard,
     RoleGuard
@@ -87,6 +92,7 @@ import { NotificationModule } from '../../notification/notification.module';
     DepositCalculationService, 
     AccountValidationService,
     CircuitBreakerService,
+    DeviceTrustService,
     PermissionGuard,
     RoleGuard
   ],

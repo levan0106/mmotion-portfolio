@@ -13,12 +13,14 @@ import { ResponsiveTypography } from '../components/Common/ResponsiveTypography'
 import {
   AccountBalance as AccountIcon,
   Security as SecurityIcon,
+  Person as PersonIcon,
   Notifications as NotificationsIcon,
   Palette as ThemeIcon,
   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { AccountManagement } from '../components/Account';
 import { AdminMessageSender } from '../components/Admin/AdminMessageSender';
+import { DeviceManagement } from '../components/Settings/DeviceManagement';
 import { usePermissions } from '../hooks/usePermissions';
 import { Profile } from './Profile';
 
@@ -94,28 +96,34 @@ const Settings: React.FC = () => {
             />
             <Tab
               icon={<SecurityIcon />}
-              label={t('settings.tabs.profile')}
+              label={t('settings.tabs.security')}
               iconPosition="start"
               {...a11yProps(1)}
+            />
+            <Tab
+              icon={<PersonIcon />}
+              label={t('settings.tabs.profile')}
+              iconPosition="start"
+              {...a11yProps(2)}
             />
             <Tab
               icon={<NotificationsIcon />}
               label={t('settings.tabs.notifications')}
               iconPosition="start"
-              {...a11yProps(2)}
+              {...a11yProps(3)}
             />
             <Tab
               icon={<ThemeIcon />}
               label={t('settings.tabs.appearance')}
               iconPosition="start"
-              {...a11yProps(3)}
+              {...a11yProps(4)}
             />
             {isAdmin && (
               <Tab
                 icon={<AdminIcon />}
                 label={t('settings.tabs.adminMessages')}
                 iconPosition="start"
-                {...a11yProps(4)}
+                {...a11yProps(5)}
               />
             )}
           </Tabs>
@@ -134,10 +142,22 @@ const Settings: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={value} index={1}>
-          <Profile embedded={true} maxWidth="md" />
+          <Box sx={{ mb: 3 }}>
+            <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
+              {t('settings.security.title')}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ mb: 3 }}>
+              {t('settings.security.subtitle')}
+            </ResponsiveTypography>
+          </Box>
+          <DeviceManagement />
         </TabPanel>
 
         <TabPanel value={value} index={2}>
+          <Profile embedded={true} maxWidth="md" />
+        </TabPanel>
+
+        <TabPanel value={value} index={3}>
           <Box sx={{ mb: 3 }}> 
             <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               {t('settings.notifications.title')}
@@ -171,7 +191,7 @@ const Settings: React.FC = () => {
           </Grid>
         </TabPanel>
 
-        <TabPanel value={value} index={3}>
+        <TabPanel value={value} index={4}>
           <Box sx={{ mb: 3 }}>
             <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               {t('settings.appearance.title')}
@@ -209,7 +229,7 @@ const Settings: React.FC = () => {
         </TabPanel>
 
         {isAdmin && (
-          <TabPanel value={value} index={4}>
+          <TabPanel value={value} index={5}>
             <AdminMessageSender />
           </TabPanel>
         )}

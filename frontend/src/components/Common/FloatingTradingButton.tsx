@@ -90,8 +90,8 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
     setShowTradeForm(true);
   };
 
-  // Don't show the button if user is not authenticated
-  if (!currentAccount?.accountId) {
+  // Don't show the button if user is not authenticated or is investor
+  if (!currentAccount?.accountId || currentAccount?.isInvestor) {
     return null;
   }
 

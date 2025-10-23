@@ -39,7 +39,8 @@ export class AuthController {
   async loginOrRegister(@Body() loginDto: LoginOrRegisterDto): Promise<AuthResponseDto> {
     const result = await this.authService.loginOrRegister(
       loginDto.username, 
-      loginDto.password
+      loginDto.password,
+      loginDto.deviceInfo
     );
 
     return {

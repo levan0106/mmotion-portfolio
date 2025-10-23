@@ -252,7 +252,7 @@ const Dashboard: React.FC = () => {
               >
                 {isRefreshing ? t('dashboard.refreshing') : t('dashboard.refreshData')}
               </ResponsiveButton>
-              <ResponsiveButton
+              {/* <ResponsiveButton
                 variant="contained"
                 icon={<AddIcon />}
                 startIcon={<AddIcon />}
@@ -268,7 +268,7 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 {t('portfolio.create')}
-              </ResponsiveButton>
+              </ResponsiveButton> */}
             </Box>
           </Box>
           

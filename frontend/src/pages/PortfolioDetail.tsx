@@ -15,13 +15,11 @@ import {
   CardContent,
   Tooltip,
   IconButton,
-  Fab,
 } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
   AccountBalance,
-  Add as AddIcon,
   ArrowBack as ArrowBackIcon,
   Refresh as RefreshIcon,
   ViewModule as ViewModuleIcon,
@@ -1145,7 +1143,7 @@ const PortfolioDetail: React.FC = () => {
       />
 
       {/* Floating Action Button for Quick Create Trade */}
-      <Tooltip 
+      {/* <Tooltip 
         title={t('portfolio.createNewTrade')} 
         placement="left" 
         arrow
@@ -1175,7 +1173,7 @@ const PortfolioDetail: React.FC = () => {
         >
           <AddIcon />
         </Fab>
-      </Tooltip>
+      </Tooltip> */}
     </Box>
   );
 };

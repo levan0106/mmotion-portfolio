@@ -6,6 +6,7 @@ import { User } from '../entities/user.entity';
 import { Account } from '../entities/account.entity';
 import { AutoRoleAssignmentService } from './auto-role-assignment.service';
 import { NotificationGateway } from '../../../notification/notification.gateway';
+import { DeviceTrustService, DeviceInfo } from './device-trust.service';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
@@ -33,12 +34,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly autoRoleAssignmentService: AutoRoleAssignmentService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly deviceTrustService: DeviceTrustService,
   ) {}
 
   /**
    * Login or register user with progressive authentication
    */
-  async loginOrRegister(username: string, password?: string): Promise<LoginResult> {
+  async loginOrRegister(username: string, password?: string, deviceInfo?: DeviceInfo): Promise<LoginResult> {
     // Normalize username: lowercase, trim, and remove all spaces
     const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
     this.logger.log(`Login/Register attempt for username: ${normalizedUsername}`);
@@ -52,11 +54,42 @@ export class AuthService {
       // Create new user
       this.logger.log(`Creating new user: ${normalizedUsername}`);
       const result = await this.createUserWithMainAccount(normalizedUsername);
+      
+      // Add device to trusted devices if device info provided
+      if (deviceInfo) {
+        await this.deviceTrustService.addTrustedDevice(result.user.userId, deviceInfo);
+      }
+      
       return result;
     }
 
-    // Check authentication requirements based on user state
+    // Step 1: Check if device is trusted
+    let isDeviceTrusted = false;
+    if (deviceInfo) {
+      isDeviceTrusted = await this.deviceTrustService.isDeviceTrusted(
+        user.userId, 
+        deviceInfo.deviceFingerprint
+      );
+      
+      if (isDeviceTrusted) {
+        // Trusted device - allow login without password
+        this.logger.log(`Trusted device login for user: ${normalizedUsername}`);
+        user.lastLogin = new Date();
+        await this.userRepository.save(user);
+        
+        const mainAccount = await this.getMainAccount(user.userId);
+        if (!mainAccount) {
+          throw new NotFoundException('Main account not found for user');
+        }
+        
+        const token = this.generateToken(user);
+        return { user, account: mainAccount, token };
+      }
+    }
+
+    // Step 2: Device not trusted - check if user needs password
     if (user.requiresPassword) {
+      // Step 3: User needs password - validate it
       if (!password) {
         throw new BadRequestException('Password required for this user');
       }
@@ -64,10 +97,16 @@ export class AuthService {
         throw new UnauthorizedException('Invalid password');
       }
     }
+    // Step 4: User doesn't need password - allow login
 
     // Update last login
     user.lastLogin = new Date();
     await this.userRepository.save(user);
+
+    // Add device to trusted devices if device info provided and login successful
+    if (deviceInfo) {
+      await this.deviceTrustService.addTrustedDevice(user.userId, deviceInfo);
+    }
 
     // Get main account
     const mainAccount = await this.getMainAccount(user.userId);
@@ -116,7 +155,7 @@ export class AuthService {
     try {
       await this.notificationGateway.sendSystemNotification(
         user.userId,
-        'Chào mừng đến với Hệ thống Quản lý Danh mục!',
+        'Chào mừng đến với MMOTION!',
         `Xin chào ${username}! Chào mừng bạn đến với nền tảng quản lý danh mục đầu tư. Tài khoản của bạn đã sẵn sàng. Hãy cài đặt mật khẩu để bảo vệ tài khoản và tạo danh mục đầu tiên của bạn.`,
         '/welcome',
         {
@@ -359,6 +398,23 @@ export class AuthService {
       .slice(0, 2);
     
     return initials || name.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Check if device is trusted for a user
+   */
+  async checkDeviceTrust(username: string, deviceFingerprint: string): Promise<boolean> {
+    const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
+    
+    const user = await this.userRepository.findOne({
+      where: { username: normalizedUsername },
+    });
+
+    if (!user) {
+      return false;
+    }
+
+    return await this.deviceTrustService.isDeviceTrusted(user.userId, deviceFingerprint);
   }
 
   /**

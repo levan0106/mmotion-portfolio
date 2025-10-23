@@ -61,10 +61,11 @@ class AuthService {
   /**
    * Login or register user with progressive authentication
    */
-  async loginOrRegister(username: string, password?: string): Promise<AuthResponse> {
+  async loginOrRegister(username: string, password?: string, deviceInfo?: any): Promise<AuthResponse> {
     const response = await apiService.api.post('/api/v1/auth/login-or-register', {
       username,
       password,
+      deviceInfo,
     });
     return response.data;
   }

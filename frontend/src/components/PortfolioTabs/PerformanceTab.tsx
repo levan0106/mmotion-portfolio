@@ -327,7 +327,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               </Box>
             ) : mwrBenchmarkError ? (
               <ResponsiveTypography color="error" variant="errorText">{mwrBenchmarkError}</ResponsiveTypography>
-            ) : (
+            ) : !isMobile? (
               <MWRBenchmarkComparison 
                 data={mwrBenchmarkData?.data || []} 
                 title={t('portfolio.portfolioPerformanceMWR')}
@@ -338,7 +338,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                 onTimeframeChange={handleBenchmarkTimeframeChange}
                 currentTimeframe={benchmarkTimeframe}
               />
-            )}
+            ):(<></>)}
           </Grid>
         </Grid>
       </Box>

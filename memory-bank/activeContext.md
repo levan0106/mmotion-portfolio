@@ -2,38 +2,46 @@
 
 ## Current Session Focus
 **Date**: October 23, 2025  
-**Session Type**: Floating Trading Button Implementation & Enhancement  
-**Primary Goal**: Implement global floating trading button with auto-portfolio creation and smart portfolio selection
+**Session Type**: Device Trust System Implementation & Enhancement  
+**Primary Goal**: Implement comprehensive Device Trust system with incognito detection, secure device management, and smooth user experience
 
 ## Recent Achievements
 
-### ✅ Floating Trading Button Implementation & Enhancement (Current Session)
-1. **Global Floating Trading Button**
-   - **Global Availability**: Floating button available on all pages via AppLayout integration
-   - **Fixed Position**: Bottom-right corner with proper z-index (1300) for visibility
-   - **Custom Styling**: Orange gradient design (#ff6b35 to #f7931e) to distinguish from other buttons
-   - **Smooth Animations**: Hover effects with scale transformation and gradient reversal
-   - **Files Updated**: FloatingTradingButton.tsx, AppLayout.tsx
+### ✅ Device Trust System Implementation & Enhancement (Current Session)
+1. **Device Trust Core System**
+   - **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
+   - **Stable Fingerprints**: Removed timestamp to ensure consistent device identification
+   - **Incognito Detection**: Comprehensive incognito/private mode detection with multiple methods
+   - **Security Enhancement**: Incognito sessions generate random fingerprints (never trusted)
+   - **Files Created**: deviceFingerprintService.ts, deviceTrustService.ts, device-trust.service.ts
 
-2. **Auto-Portfolio Creation System**
-   - **Smart Detection**: Automatically detects when user has no portfolios
-   - **Auto-Creation**: Creates default portfolio "Danh mục của tôi" / "My Portfolio" with VND currency
-   - **Loading States**: Shows "Đang tạo danh mục..." tooltip during portfolio creation
-   - **Error Handling**: Graceful error handling with console logging
-   - **Files Updated**: FloatingTradingButton.tsx, en.json, vi.json
+2. **Backend Device Trust Infrastructure**
+   - **TrustedDevice Entity**: Complete database schema with proper relationships and indexes
+   - **Device Trust Service**: Full CRUD operations for trusted devices with expiration management
+   - **Device Trust Controller**: RESTful API endpoints for device management
+   - **Database Migration**: Comprehensive migration with proper foreign keys and indexes
+   - **Files Created**: trusted-device.entity.ts, device-trust.service.ts, device-trust.controller.ts
 
-3. **Smart Portfolio Selection**
-   - **Single Portfolio Auto-Select**: Automatically selects portfolio when user has only one
-   - **Multiple Portfolio Choice**: Shows dropdown for selection when multiple portfolios exist
-   - **Default Portfolio Logic**: Uses portfolioId prop or auto-selects single portfolio
-   - **TradeForm Integration**: Seamless integration with existing TradeForm component
-   - **Files Updated**: FloatingTradingButton.tsx, TradeForm.tsx
+3. **Authentication Integration**
+   - **Login Flow Enhancement**: Integrated device trust into login-or-register API
+   - **Progressive Authentication**: Device trust bypasses password for trusted devices
+   - **Smart Logic**: Backend automatically handles device trust checking and device addition
+   - **Error Handling**: Proper error responses for password requirements vs invalid credentials
+   - **Files Updated**: auth.service.ts, auth.controller.ts, auth.dto.ts
 
-4. **Translation & Localization**
-   - **Multi-Language Support**: Complete translation support for all floating button features
-   - **Dynamic Tooltips**: Tooltip changes based on portfolio creation state
-   - **Auto-Creation Messages**: Localized messages for portfolio auto-creation
-   - **Files Updated**: en.json, vi.json
+4. **Frontend Device Management UI**
+   - **Device Management Component**: Complete UI for viewing and managing trusted devices
+   - **Settings Integration**: Added Security tab to Settings page with device management
+   - **Device Statistics**: Real-time stats showing total, active, expired, and high-trust devices
+   - **Revoke Functionality**: Individual device revocation and bulk device revocation
+   - **Files Created**: DeviceManagement.tsx, updated Settings.tsx
+
+5. **User Experience Enhancements**
+   - **Smooth Login Flow**: No error messages when password is required (400 status)
+   - **Error Display**: Proper error display for invalid credentials (401 status)
+   - **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
+   - **Device Information**: Comprehensive device details with browser info and location
+   - **Files Updated**: Login.tsx, deviceTrustService.ts, device-trust.service.ts
 
 ### ✅ Global Asset Tracking Cleanup Endpoint Fix (Previous Session)
 1. **HTTP Method Mismatch Resolution**
@@ -171,12 +179,16 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `frontend/src/components/Common/FloatingTradingButton.tsx` - Global floating trading button with auto-portfolio creation
-- `frontend/src/components/Layout/AppLayout.tsx` - Integrated FloatingTradingButton for global availability
-- `frontend/src/components/Trading/TradeForm.tsx` - Enhanced to support auto-portfolio selection
-- `frontend/src/components/Common/MoneyInput.tsx` - Fixed TypeScript errors and currency display
-- `frontend/src/i18n/locales/en.json` - Added floating button and auto-creation translations
-- `frontend/src/i18n/locales/vi.json` - Added floating button and auto-creation translations
+- `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
+- `frontend/src/services/deviceTrustService.ts` - Frontend device trust management service
+- `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI
+- `frontend/src/pages/Login.tsx` - Enhanced login flow with device trust integration
+- `frontend/src/pages/Settings.tsx` - Added Security tab with device management
+- `src/modules/shared/entities/trusted-device.entity.ts` - Database entity for trusted devices
+- `src/modules/shared/services/device-trust.service.ts` - Backend device trust service
+- `src/modules/shared/controllers/device-trust.controller.ts` - Device trust API endpoints
+- `src/modules/shared/services/auth.service.ts` - Enhanced authentication with device trust
+- `src/migrations/1735123456789-CreateTrustedDeviceTable.ts` - Database migration for trusted devices
 
 ### Key Components Modified (Previous Session)
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - New permission entity
@@ -189,14 +201,14 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Global Trading Access**: Floating trading button available on all pages for quick trade creation
-- **Auto-Portfolio Creation**: Seamless portfolio creation when user has no portfolios
-- **Smart Portfolio Selection**: Automatic portfolio selection when user has only one portfolio
-- **Visual Distinction**: Orange gradient design distinguishes trading button from other buttons
-- **Loading Feedback**: Clear tooltip feedback during portfolio creation process
-- **Error Handling**: Graceful error handling with user-friendly fallbacks
-- **Multi-Language Support**: Complete translation support for all floating button features
-- **Responsive Design**: Floating button works on all device sizes
+- **Seamless Login Experience**: No error messages when password is required, smooth transition to password step
+- **Device Trust Security**: Trusted devices bypass password requirements for faster login
+- **Incognito Protection**: Incognito/private mode sessions are never trusted for security
+- **Device Management**: Complete UI for viewing and managing trusted devices in Settings
+- **Time Display**: Accurate and user-friendly time display (minutes/hours/days ago)
+- **Error Handling**: Proper error display for invalid credentials while hiding password requirement messages
+- **Device Information**: Comprehensive device details with browser info and trust levels
+- **Revoke Functionality**: Easy device revocation with individual and bulk options
 
 ### User Experience Improvements (Previous Session)
 - **Multi-Account Access**: Users can access portfolios they have permissions for
@@ -247,12 +259,20 @@
 
 ## Current Capabilities
 
-### Price Update & Auto Sync System
-- **Fixed-Time Scheduling**: Price updates run at specific times (9:01 AM, 3:01 PM, 6:50 PM)
-- **Interval Scheduling**: Backward compatible interval-based scheduling (every N minutes)
-- **Timezone Support**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
-- **Configuration Management**: Dynamic configuration loading and updates
-- **API Status Display**: Real-time status showing current schedule type and next execution time
+### Device Trust System
+- **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
+- **Incognito Detection**: Comprehensive detection of incognito/private mode with multiple methods
+- **Trust Management**: Complete CRUD operations for trusted devices
+- **Security Enhancement**: Incognito sessions generate random fingerprints (never trusted)
+- **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
+- **Device Revocation**: Individual and bulk device revocation with proper database cleanup
+
+### Authentication & Security
+- **Progressive Authentication**: Device trust bypasses password for trusted devices
+- **Smart Login Flow**: No error messages for password requirements (400 status)
+- **Error Handling**: Proper error display for invalid credentials (401 status)
+- **Device Management**: Complete UI for viewing and managing trusted devices
+- **Security Protection**: Incognito/private mode sessions are never trusted
 
 ### Multi-Account Portfolio Management
 - **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels
@@ -287,20 +307,22 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
-1. ✅ **Table of Contents Navigation**: Fixed expand/collapse functionality for parent sections
-2. ✅ **Accordion Behavior**: Implemented proper accordion behavior (only one section expanded at a time)
-3. ✅ **Active Highlighting**: Fixed active section highlighting to work correctly with manual clicks
-4. ✅ **Scroll Detection**: Enhanced scroll detection algorithm with distance-based section selection
-5. ✅ **Conflict Prevention**: Added manual click protection to prevent scroll detection conflicts
-6. ✅ **ID Verification**: Verified all navigation IDs match between TOC and components
+1. ✅ **Device Trust System Implementation**: Complete backend and frontend implementation
+2. ✅ **Device Fingerprinting**: Advanced fingerprinting with incognito detection
+3. ✅ **Database Schema**: TrustedDevice entity with proper relationships and indexes
+4. ✅ **Authentication Integration**: Enhanced login flow with device trust
+5. ✅ **Frontend UI**: Complete device management interface in Settings
+6. ✅ **User Experience**: Smooth login flow with proper error handling
+7. ✅ **Security Enhancement**: Incognito mode protection and device revocation
+8. ✅ **Time Display**: Accurate time display for device last used
 
 ### Future Enhancements (Current Session)
-1. **Advanced Navigation Features**: Search functionality in table of contents
-2. **Smooth Animations**: Add smooth expand/collapse animations for better UX
-3. **Keyboard Navigation**: Support for keyboard navigation in table of contents
-4. **Breadcrumb Navigation**: Add breadcrumb navigation for better context
-5. **Section Progress**: Show reading progress for each section
-6. **Mobile Gestures**: Support for swipe gestures on mobile devices
+1. **Advanced Device Trust Features**: Device location tracking and geofencing
+2. **Enhanced Security**: Two-factor authentication integration with device trust
+3. **Device Analytics**: Advanced analytics for device usage patterns
+4. **Bulk Operations**: Enhanced bulk device management operations
+5. **Device Notifications**: Push notifications for new device logins
+6. **Advanced Fingerprinting**: Machine learning-based device fingerprinting
 
 ### Future Enhancements (Previous Session)
 1. **Advanced Permissions**: More granular permission levels
@@ -316,16 +338,11 @@
 ```
 frontend/src/
 ├── pages/
-│   └── SystemGuide.tsx (Enhanced navigation and scroll detection)
+│   ├── Login.tsx (Enhanced with device trust integration)
+│   └── Settings.tsx (Added Security tab with device management)
 ├── components/
-│   ├── SystemGuide/
-│   │   ├── OverviewSection.tsx (Overview with workflow, features, use-cases, permissions)
-│   │   ├── FeaturesSection.tsx (Main features section)
-│   │   ├── UseCasesSection.tsx (Use cases section)
-│   │   ├── PermissionsSection.tsx (Permissions section)
-│   │   ├── DetailedGuideSection.tsx (Portfolio creation, transactions, trading, cash flow)
-│   │   ├── AdvancedFeaturesSection.tsx (Performance analysis, risk management, sharing)
-│   │   └── GettingStartedSection.tsx (For managers, for customers)
+│   ├── Settings/
+│   │   └── DeviceManagement.tsx (Complete device management UI)
 │   ├── Common/
 │   │   ├── ResponsiveTable.tsx (Reusable table component)
 │   │   ├── ResponsiveTableWithActions.tsx (Table with actions)
@@ -336,6 +353,9 @@ frontend/src/
 │   │   └── PortfolioCardWithPermissions.tsx (Card with permissions)
 │   └── Reports/
 │       └── InvestorReport.tsx (Updated to use ResponsiveTable)
+├── services/
+│   ├── deviceFingerprintService.ts (Advanced device fingerprinting)
+│   └── deviceTrustService.ts (Device trust management)
 ├── types/
 │   └── table.types.ts (Table component types)
 └── utils/
@@ -346,14 +366,26 @@ frontend/src/
 ```
 src/
 ├── modules/
+│   ├── shared/
+│   │   ├── entities/
+│   │   │   └── trusted-device.entity.ts (Device trust database entity)
+│   │   ├── services/
+│   │   │   ├── device-trust.service.ts (Device trust management)
+│   │   │   └── auth.service.ts (Enhanced with device trust)
+│   │   ├── controllers/
+│   │   │   ├── device-trust.controller.ts (Device trust API endpoints)
+│   │   │   └── auth.controller.ts (Enhanced authentication)
+│   │   └── decorators/
+│   │       └── current-user.decorator.ts (Current user decorator)
 │   ├── asset/
 │   │   ├── services/
 │   │   │   ├── scheduled-price-update.service.ts (Enhanced with fixed-time support)
 │   │   │   └── auto-sync.service.ts (Updated for dual scheduling)
 │   │   └── controllers/
 │   │       └── auto-sync.controller.ts (Enhanced DTOs)
-│   ├── portfolio/ (Permission system)
-│   └── shared/ (Permission checks)
+│   └── portfolio/ (Permission system)
+├── migrations/
+│   └── 1735123456789-CreateTrustedDeviceTable.ts (Device trust migration)
 ├── config/
 │   ├── production.env (Fixed-time configuration)
 │   ├── env.development.example (Updated examples)
@@ -362,36 +394,30 @@ src/
 ```
 
 ## System Health
-- ✅ **Database**: Fully operational with price update and auto sync systems
-- ✅ **Authentication**: Working with permission-based access control
-- ✅ **Frontend**: Responsive with enhanced SystemGuide navigation
-- ✅ **Backend**: Stable API endpoints with enhanced scheduling system
+- ✅ **Database**: Fully operational with device trust system and trusted_devices table
+- ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
+- ✅ **Frontend**: Responsive with device trust UI and smooth login experience
+- ✅ **Backend**: Stable API endpoints with device trust management
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Global Asset Tracking**: Cleanup endpoint now working correctly with POST method
-- ✅ **API Endpoints**: All endpoints operational including cleanup functionality
-- ✅ **HTTP Method Standards**: Proper RESTful design for all operations
-- ✅ **Security**: Enhanced security with body parameters for sensitive operations
+- ✅ **Device Trust System**: Complete implementation with incognito detection
+- ✅ **Security**: Enhanced security with device fingerprinting and incognito protection
+- ✅ **User Experience**: Smooth login flow with proper error handling
+- ✅ **Device Management**: Complete UI for viewing and managing trusted devices
 
 ## Notes
-- Global asset tracking cleanup endpoint fixed with proper POST method implementation
-- HTTP method mismatch resolved between frontend GET and backend POST
-- Endpoint now works correctly with POST method and body parameters
-- Security enhanced with body parameters instead of query parameters
-- RESTful design principles properly implemented for cleanup operations
-- All API endpoints now operational including cleanup functionality
-- SystemGuide component continues to have fully functional accordion navigation
-- Table of contents expand/collapse works correctly with proper state management
-- Active section highlighting works immediately on click and accurately on scroll
-- Scroll detection algorithm improved with distance-based section selection
-- Manual click conflicts resolved with proper state management
-- All navigation IDs verified and working correctly across all sections
-- Mobile table of contents drawer works seamlessly with desktop sidebar
-- Accordion behavior ensures only one section expanded at a time
-- Auto-expand functionality works when scrolling to subsections
-- SystemGuide navigation system is production-ready and user-friendly
-- Price update system continues to support fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM Vietnam time)
-- Auto sync service enhanced to support both interval and fixed-time scheduling
-- Multi-account portfolio management system remains fully operational
+- Device Trust System fully implemented with comprehensive backend and frontend integration
+- Advanced device fingerprinting using Canvas, WebGL, Audio, Screen, User Agent for unique identification
+- Incognito/private mode detection prevents untrusted sessions from being marked as trusted
+- Database migration successfully created trusted_devices table with proper relationships and indexes
+- Authentication flow enhanced with device trust integration and progressive authentication
+- Frontend UI provides complete device management interface in Settings > Security tab
+- User experience improved with smooth login flow and proper error handling
+- Device revocation functionality properly deletes devices from database instead of just marking as untrusted
+- Time display enhanced to show accurate relative time (minutes/hours/days ago) instead of just "Today"
+- Error handling refined to only hide error messages for 400 status (password required) while showing 401 errors
+- System is production-ready with comprehensive device trust security and user-friendly interface
+- All device trust features working correctly including fingerprinting, incognito detection, and device management
+- Multi-account portfolio management system remains fully operational alongside device trust
 - Permission-based access control continues to work across all APIs
 - ResponsiveTable component system provides consistent styling
-- System is ready for production deployment with enhanced navigation, scheduling, and API functionality
+- System is ready for production deployment with enhanced security, device trust, and user experience

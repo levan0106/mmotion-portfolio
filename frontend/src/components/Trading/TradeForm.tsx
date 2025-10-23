@@ -349,10 +349,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         disabled={isLoading}
         forceTextOnly={true}
         icon={mode === 'create' ? <AddIcon /> : <EditIcon />}
-        mobileText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.create') : t('trading.form.update')}
-        desktopText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
       >
-        {isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
+        {isLoading ? t('trading.form.processing') : mode === 'create' ? t('common.add') : t('common.update')}
       </ResponsiveButton>
     </Box>
   ), [onClose, isLoading, mode, t, handleFormSubmit]);

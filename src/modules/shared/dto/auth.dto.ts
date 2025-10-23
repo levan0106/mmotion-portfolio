@@ -1,6 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsEmail, IsOptional, IsDateString, MinLength, Matches, ValidateIf } from 'class-validator';
 
+export class DeviceInfoDto {
+  @ApiProperty({
+    description: 'Device fingerprint for device trust',
+    example: 'abc123def456',
+  })
+  @IsString()
+  deviceFingerprint: string;
+
+  @ApiProperty({
+    description: 'Human-readable device name',
+    example: 'Chrome on Windows',
+  })
+  @IsString()
+  deviceName: string;
+
+  @ApiProperty({
+    description: 'Browser information',
+    example: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  })
+  @IsString()
+  browserInfo: string;
+
+  @ApiProperty({
+    description: 'IP address',
+    example: '192.168.1.1',
+  })
+  @IsString()
+  ipAddress: string;
+
+  @ApiProperty({
+    description: 'Location',
+    example: 'Ho Chi Minh City, Vietnam',
+  })
+  @IsString()
+  location: string;
+}
+
 export class LoginOrRegisterDto {
   @ApiProperty({
     description: 'Username for login or registration (letters, numbers, hyphens, and underscores only)',
@@ -23,6 +60,14 @@ export class LoginOrRegisterDto {
   @IsOptional()
   @IsString()
   password?: string;
+
+  @ApiProperty({
+    description: 'Device information for device trust',
+    required: false,
+    type: DeviceInfoDto,
+  })
+  @IsOptional()
+  deviceInfo?: DeviceInfoDto;
 }
 
 export class UpdateProfileDto {
