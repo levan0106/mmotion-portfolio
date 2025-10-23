@@ -53,6 +53,7 @@ import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import DataDisplayToggle from '../Common/DataDisplayToggle';
+import FloatingTradingButton from '../Common/FloatingTradingButton';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -73,6 +74,13 @@ const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
     lg: 220,   // Large desktop expanded
     xl: 240,   // Extra large expanded
   };
+};
+
+// Extract portfolio ID from current path
+const getPortfolioIdFromPath = () => {
+  const pathname = window.location.pathname;
+  const match = pathname.match(/^\/portfolios\/([^\/]+)/);
+  return match ? match[1] : undefined;
 };
 
 interface AppLayoutProps {
@@ -1234,6 +1242,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {children}
           {currentUser && <NotificationManager userId={currentUser.userId} />}
         </Box>
+        
+        {/* Global Floating Trading Button */}
+        <FloatingTradingButton portfolioId={getPortfolioIdFromPath()} />
       </Box>
     </Box>
   );

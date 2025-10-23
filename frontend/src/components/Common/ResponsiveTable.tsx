@@ -44,11 +44,11 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
     },
     '&::-webkit-scrollbar-track': {
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
-      borderRadius: 4,
+      borderRadius: 2,
     },
     '&::-webkit-scrollbar-thumb': {
       backgroundColor: 'rgba(0, 0, 0, 0.2)',
-      borderRadius: 4,
+      borderRadius: 2,
       '&:hover': {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
       },

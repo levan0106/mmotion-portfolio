@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   InputAdornment,
-  Typography,
 } from '@mui/material';
 import {
   AccountBalance as BalanceIcon,
@@ -56,7 +55,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
   useEffect(() => {
     if (!isFocused) {
       if (value >= 0) {
-        setDisplayValue(formatCurrency(value));
+        setDisplayValue(formatCurrency(value, currency));
       } else {
         setDisplayValue('');
       }
@@ -104,7 +103,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
       }
     } else {
       if (numericValue >= 0) {
-        setDisplayValue(formatCurrency(numericValue));
+        setDisplayValue(formatCurrency(numericValue, currency));
       } else {
         setDisplayValue('');
       }
@@ -154,7 +153,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     
     // When blurring, format the value
     if (currentValue >= 0) {
-      setDisplayValue(formatCurrency(currentValue));
+      setDisplayValue(formatCurrency(currentValue, currency));
     } else {
       setDisplayValue('');
     }
@@ -194,17 +193,17 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
         ),
         endAdornment: showCurrency && value >= 0 && (
           <InputAdornment position="end">
-            <Typography 
+            {/* <Typography 
               variant="caption" 
               color="text.secondary" 
               sx={{ 
-                minWidth: 60, 
+                // minWidth: 60, 
                 textAlign: 'right',
                 fontWeight: 500
               }}
             >
               {currency}
-            </Typography>
+            </Typography> */}
           </InputAdornment>
         ),
       }}

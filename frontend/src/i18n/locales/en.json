@@ -446,6 +446,15 @@
       "editTrade": "Edit Trade",
       "createTrade": "Create Trade"
     },
+    "floatingButton": {
+      "tooltip": "Quick Create Trade",
+      "ariaLabel": "Create Trade",
+      "createPortfolioFirst": "Create Portfolio First",
+      "creatingPortfolio": "Creating Portfolio..."
+    },
+    "autoCreatePortfolio": {
+      "name": "My Portfolio"
+    },
     "deleteTradeConfirm": "Are you sure you want to delete this trade for {{asset}}? This action cannot be undone.",
     "failedToLoadTrades": "Failed to load trades",
     "asset": "Asset",
@@ -471,7 +480,7 @@
       "quantity": "Quantity",
       "pricePerUnit": "Price per Unit",
       "refreshMarketPrice": "Refresh market price",
-      "additionalInformation": "Additional Information",
+      "additionalInformation": "Additional Information (Fees & Taxes)",
       "tradingFee": "Trading Fee",
       "tax": "Tax",
       "tradeType": "Trade Type",
@@ -498,6 +507,7 @@
       "updateTrade": "Update Trade",
       "loadingTradeForm": "Loading trade form...",
       "noPortfoliosAvailable": "No portfolios available. Please create a portfolio first.",
+      "createPortfolioFirst": "Create Portfolio",
       "error": "Error",
       "noPortfoliosFoundError": "No portfolios found. Please check if the backend is running and try again."
     }

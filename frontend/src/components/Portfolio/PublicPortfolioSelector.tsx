@@ -135,11 +135,11 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
                 primary={portfolio.templateName || portfolio.name}
                 secondary={
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" component="span">
                       {portfolio.description || t('publicPortfolioSelector.noDescription')}
                     </Typography>
                     {portfolio.creatorName && (
-                      <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 0.5, fontWeight: 500 }}>
+                      <Typography variant="caption" color="primary" component="span" sx={{ display: 'block', mt: 0.5, fontWeight: 500 }}>
                         {t('publicPortfolioSelector.createdBy', { name: portfolio.creatorName })}
                       </Typography>
                     )}

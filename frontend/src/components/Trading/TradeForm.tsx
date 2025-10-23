@@ -12,6 +12,11 @@ import {
   Chip,
   Switch,
   FormControlLabel,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
 } from '@mui/material';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
@@ -139,6 +144,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   // Force re-render of AssetAutocomplete when assetId changes in edit mode
   const [assetKey, setAssetKey] = useState(0);
+  
+  // Additional information section collapse state
+  const [isAdditionalInfoExpanded, setIsAdditionalInfoExpanded] = useState(false);
 
   // Form values for calculations
   const watchedQuantity = formData.quantity;
@@ -205,6 +213,27 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       });
     }
   }, [initialData, mode]);
+
+  // Update portfolio when defaultPortfolioId changes
+  useEffect(() => {
+    if (defaultPortfolioId && defaultPortfolioId !== formData.portfolioId) {
+      setFormData(prev => ({ ...prev, portfolioId: defaultPortfolioId }));
+    }
+  }, [defaultPortfolioId]);
+
+  // Ensure portfolio is set when modal opens with defaultPortfolioId
+  useEffect(() => {
+    if (open && defaultPortfolioId && !formData.portfolioId) {
+      setFormData(prev => ({ ...prev, portfolioId: defaultPortfolioId }));
+    }
+  }, [open, defaultPortfolioId, formData.portfolioId]);
+
+  // Auto-fill funding source when portfolio changes
+  useEffect(() => {
+    if (selectedPortfolio && selectedPortfolio.fundingSource) {
+      setFormData(prev => ({ ...prev, fundingSource: selectedPortfolio.fundingSource || '' }));
+    }
+  }, [selectedPortfolio]);
 
   // Validate form only after user interaction - debounced to prevent excessive re-renders
   useEffect(() => {
@@ -318,6 +347,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         onClick={handleFormSubmit}
         variant="contained"
         disabled={isLoading}
+        forceTextOnly={true}
         icon={mode === 'create' ? <AddIcon /> : <EditIcon />}
         mobileText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.create') : t('trading.form.update')}
         desktopText={isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
@@ -370,7 +400,58 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     sx={{ ml: 1 }}
                   />
                 </Box>
+                
                 <Grid container spacing={2} sx={{ px: 1 }}>
+                  {/* Portfolio Selection - Show when defaultPortfolioId is null or empty */}
+                  {(!defaultPortfolioId || defaultPortfolioId === '') && (
+                    <Grid item xs={12} md={12}>
+                      {!portfolios?.length && !portfoliosLoading ? (
+                        // Show message when no portfolios available in modal
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            {t('trading.form.noPortfoliosAvailable')}
+                          </Typography>
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            onClick={() => window.location.href = '/portfolios'}
+                            sx={{ mt: 1 }}
+                          >
+                            {t('trading.form.createPortfolioFirst')}
+                          </Button>
+                        </Alert>
+                      ) : (
+                        <FormControl 
+                          fullWidth 
+                          error={!!errors.portfolioId}
+                          disabled={isLoading}
+                          required
+                        >
+                          <InputLabel id="portfolio-select-label">
+                            {t('trading.form.portfolio')} *
+                          </InputLabel>
+                          <Select
+                            labelId="portfolio-select-label"
+                            value={formData.portfolioId}
+                            onChange={(e) => handleFieldChange('portfolioId', e.target.value)}
+                            label={`${t('trading.form.portfolio')} *`}
+                            sx={{
+                              borderRadius: 2
+                            }}
+                          >
+                            <MenuItem value="">
+                              <em>{t('trading.form.selectPortfolio')}</em>
+                            </MenuItem>
+                            {portfolios?.map((portfolio) => (
+                              <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
+                                {portfolio.name} ({portfolio.baseCurrency})
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    </Grid>
+                  )}
 
                   {/* Asset Selection */}
                   <Grid item xs={12} md={6}>
@@ -494,36 +575,60 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
             {/* Additional Information Section */}
             <Box mb={isModal ? 0.5 : 1.5}>
-                <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
-                {t('trading.form.additionalInformation')}
-              </ResponsiveTypography>
-              <Grid container spacing={2} sx={{ px: 1 }}>
-                {/* Fee */}
-                <Grid item xs={12} md={6}>
-                    <MoneyInput
-                      value={formData.fee || 0}
-                      onChange={(fee) => handleFieldChange('fee', fee)}
-                      label={`${t('trading.form.tradingFee')} (${baseCurrency})`}
-                      error={!!errors.fee}
-                      disabled={isLoading}
-                      currency={baseCurrency}
-                    />
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    cursor: 'pointer',
+                    mb: 2,
+                    mt: 2,
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                      borderRadius: 1
+                    },
+                    p: 1,
+                    borderRadius: 1
+                  }}
+                  onClick={() => setIsAdditionalInfoExpanded(!isAdditionalInfoExpanded)}
+                >
+                  <ResponsiveTypography variant="cardLabel" sx={{ flexGrow: 1 }}>
+                    {t('trading.form.additionalInformation')}
+                  </ResponsiveTypography>
+                  <Box sx={{ 
+                    transform: isAdditionalInfoExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease-in-out'
+                  }}>
+                    ▼
+                  </Box>
+                </Box>
+                
+                {isAdditionalInfoExpanded && (
+                  <Grid container spacing={2} sx={{ px: 1 }}>
+                    {/* Fee */}
+                    <Grid item xs={12} md={6}>
+                        <MoneyInput
+                          value={formData.fee || 0}
+                          onChange={(fee) => handleFieldChange('fee', fee)}
+                          label={`${t('trading.form.tradingFee')} (${baseCurrency})`}
+                          error={!!errors.fee}
+                          disabled={isLoading}
+                          currency={baseCurrency}
+                        />
+                      </Grid>
+
+                      {/* Tax */}
+                      <Grid item xs={12} md={6}>
+                        <MoneyInput
+                          value={formData.tax || 0}
+                          onChange={(tax) => handleFieldChange('tax', tax)}
+                          label={`${t('trading.form.tax')} (${baseCurrency})`}
+                          error={!!errors.tax}
+                          disabled={isLoading}
+                          currency={baseCurrency}
+                        />
+                      </Grid>
                   </Grid>
-
-                  {/* Tax */}
-                  <Grid item xs={12} md={6}>
-                    <MoneyInput
-                      value={formData.tax || 0}
-                      onChange={(tax) => handleFieldChange('tax', tax)}
-                      label={`${t('trading.form.tax')} (${baseCurrency})`}
-                      error={!!errors.tax}
-                      disabled={isLoading}
-                      currency={baseCurrency}
-                    />
-                  </Grid>
-
-
-                </Grid>
+                )}
               </Box>
 
             {/* Exchange and Funding Source Section */}
@@ -756,8 +861,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     );
   }
 
-  // Show error state if no portfolios or assets available (only if not loading)
-  if (!portfolios?.length && !portfoliosLoading) {
+  // Show error state if no portfolios or assets available (only if not loading and not in modal mode)
+  if (!portfolios?.length && !portfoliosLoading && !isModal) {
     return (
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Card>

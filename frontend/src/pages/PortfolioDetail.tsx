@@ -1124,7 +1124,7 @@ const PortfolioDetail: React.FC = () => {
         open={showCreateForm}
         onClose={() => setShowCreateForm(false)}
         onSubmit={handleCreateTrade}
-        defaultPortfolioId={portfolioId!}
+        defaultPortfolioId={portfolioId}
         isLoading={createTradeMutation.isLoading}
         error={createTradeMutation.error?.message}
         mode="create"

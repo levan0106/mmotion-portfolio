@@ -12,6 +12,7 @@ import {
   alpha,
   Paper,
   Divider,
+  Button,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import PermissionBadge from '../components/Common/PermissionBadge';
 import { PortfolioPermissionType } from '../types';
+import { AccountBalance, AccountBalanceWallet } from '@mui/icons-material';
 
 interface PortfolioSummary {
   id: string;
@@ -232,9 +234,74 @@ const InvestorView: React.FC = () => {
       </Box>
       {portfolios.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <ResponsiveTypography variant="cardTitle" color="text.secondary">
-            {t('investorView.noPortfolios', 'Chưa có danh mục đầu tư nào')}
-          </ResponsiveTypography>
+          <Box sx={{ 
+            p: 6,
+            borderRadius: 3,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            backdropFilter: 'blur(10px)',
+            maxWidth: 500,
+            mx: 'auto'
+          }}>
+            <Box sx={{ 
+              p: 3,
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+              display: 'inline-flex',
+              mb: 3
+            }}>
+              <AccountBalance sx={{ fontSize: 80, color: 'primary.main' }} />
+            </Box>
+            <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
+              {t('investorView.noPortfolios', 'Chưa có danh mục đầu tư nào')}
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+              {t('investorView.noPortfoliosDesc', 'Bạn chưa có quyền truy cập vào bất kỳ danh mục đầu tư nào. Hãy xem cổ phần của bạn hoặc liên hệ với quản trị viên để được cấp quyền.')}
+            </ResponsiveTypography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                startIcon={<AccountBalanceWallet />}
+                onClick={() => navigate('/holdings')}
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  '&:hover': {
+                    boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    transform: 'translateY(-1px)'
+                  }
+                }}
+              >
+                {t('investorView.viewHoldings', 'Xem cổ phần')}
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={() => navigate('/portfolios')}
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderWidth: 2,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                  }
+                }}
+              >
+                {t('investorView.managePortfolios', 'Quản lý danh mục')}
+              </Button>
+            </Box>
+          </Box>
         </Box>
       ) : (
         <>
@@ -304,16 +371,7 @@ const InvestorView: React.FC = () => {
                           )}
                         </Box>
                       </Box>
-                      
-                      {/* Owner information */}
-                      {/* {portfolio.owner && (
-                        <Box sx={{ mb: 1 }}>
-                          <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                            {portfolio.owner.name}
-                          </ResponsiveTypography>
-                        </Box>
-                      )} */}
-                      
+                                            
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                           <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>

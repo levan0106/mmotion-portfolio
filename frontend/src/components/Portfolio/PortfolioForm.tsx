@@ -6,10 +6,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Box,
   Alert,
   ToggleButton,
@@ -57,10 +53,10 @@ const schema = yup.object({
   accountId: yup.string().required('Account ID is required'),
 });
 
-const currencies = [
-  { code: 'VND', name: 'Vietnamese Dong' },
-  { code: 'USD', name: 'US Dollar' }
-];
+// const currencies = [
+//   { code: 'VND', name: 'Vietnamese Dong' },
+//   { code: 'USD', name: 'US Dollar' }
+// ];
 
 const PortfolioForm: React.FC<PortfolioFormProps> = ({
   open,
@@ -265,7 +261,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                   </CardContent>
                 </Card>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ textAlign: 'center', pt: 0 }}>
                   <Typography variant="body1" gutterBottom>
                     {t('portfolio.form.templateSelector.selectTemplate')}
                   </Typography>
@@ -317,7 +313,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                   )}
                 />
 
-                <Controller
+                {/* <Controller
                   name="baseCurrency"
                   control={control}
                   render={({ field }) => (
@@ -337,7 +333,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
                       )}
                     </FormControl>
                   )}
-                />
+                /> */}
               </>
             )}
 

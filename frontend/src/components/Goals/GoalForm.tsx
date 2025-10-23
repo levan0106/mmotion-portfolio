@@ -349,7 +349,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({
               </Grid>
 
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={5}>
                 <MoneyInput
                   value={formData.targetValue || 0}
                   onChange={(value) => handleChange('targetValue', value)}
@@ -375,7 +375,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({
                 />
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel>
                     <ResponsiveTypography variant="body2" fontWeight={500}>

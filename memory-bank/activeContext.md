@@ -2,38 +2,38 @@
 
 ## Current Session Focus
 **Date**: October 23, 2025  
-**Session Type**: Goals Management System Implementation & Enhancement  
-**Primary Goal**: Implement comprehensive goals management system with portfolio linking, UI improvements, and navigation integration
+**Session Type**: Floating Trading Button Implementation & Enhancement  
+**Primary Goal**: Implement global floating trading button with auto-portfolio creation and smart portfolio selection
 
 ## Recent Achievements
 
-### ✅ Goals Management System Implementation & Enhancement (Current Session)
-1. **Goals Navigation Integration**
-   - **Menu Restructuring**: Moved Goals menu from "Quản lý quỹ" to "Nhà đầu tư" section
-   - **Translation Updates**: Updated vi.json with navigation.investor.goals key
-   - **User Experience**: Goals now accessible to all users under investor section
-   - **Files Updated**: AppLayout.tsx, vi.json
+### ✅ Floating Trading Button Implementation & Enhancement (Current Session)
+1. **Global Floating Trading Button**
+   - **Global Availability**: Floating button available on all pages via AppLayout integration
+   - **Fixed Position**: Bottom-right corner with proper z-index (1300) for visibility
+   - **Custom Styling**: Orange gradient design (#ff6b35 to #f7931e) to distinguish from other buttons
+   - **Smooth Animations**: Hover effects with scale transformation and gradient reversal
+   - **Files Updated**: FloatingTradingButton.tsx, AppLayout.tsx
 
-2. **Portfolio Linking System Enhancement**
-   - **Multiple Portfolio Support**: Removed unique constraint allowing portfolios to link to multiple goals
-   - **Database Migration**: Created migration to remove UQ_goal_portfolios_portfolio_id constraint
-   - **API Endpoint Fix**: Updated /api/v1/goals/portfolios/available to return portfolios with UPDATE/VIEW permissions
-   - **Permission-Based Access**: Endpoint now respects portfolio permissions for proper access control
-   - **Files Updated**: goal.service.ts, RemovePortfolioUniqueConstraint migration
+2. **Auto-Portfolio Creation System**
+   - **Smart Detection**: Automatically detects when user has no portfolios
+   - **Auto-Creation**: Creates default portfolio "Danh mục của tôi" / "My Portfolio" with VND currency
+   - **Loading States**: Shows "Đang tạo danh mục..." tooltip during portfolio creation
+   - **Error Handling**: Graceful error handling with console logging
+   - **Files Updated**: FloatingTradingButton.tsx, en.json, vi.json
 
-3. **UI/UX Improvements**
-   - **Progress Display Enhancement**: Simplified progress UI for better readability
-   - **Priority Display**: Added priority slider with color coding and tooltips
-   - **Status Integration**: Harmonized status and priority display in single row
-   - **Date Input Enhancement**: Replaced DatePicker with TextField type="date" for better cursor control
-   - **Portfolio Selection Fix**: Fixed portfolio filtering logic in GoalForm
-   - **Files Updated**: GoalCard.tsx, GoalForm.tsx, GoalsList.tsx
+3. **Smart Portfolio Selection**
+   - **Single Portfolio Auto-Select**: Automatically selects portfolio when user has only one
+   - **Multiple Portfolio Choice**: Shows dropdown for selection when multiple portfolios exist
+   - **Default Portfolio Logic**: Uses portfolioId prop or auto-selects single portfolio
+   - **TradeForm Integration**: Seamless integration with existing TradeForm component
+   - **Files Updated**: FloatingTradingButton.tsx, TradeForm.tsx
 
-4. **Data Management & Sorting**
-   - **Priority-Based Sorting**: Goals sorted by priority (highest first) then by creation date
-   - **Portfolio Filtering**: Fixed available portfolios loading in GoalForm
-   - **Form Validation**: Enhanced form validation for portfolio selection
-   - **Files Updated**: GoalsList.tsx, GoalForm.tsx
+4. **Translation & Localization**
+   - **Multi-Language Support**: Complete translation support for all floating button features
+   - **Dynamic Tooltips**: Tooltip changes based on portfolio creation state
+   - **Auto-Creation Messages**: Localized messages for portfolio auto-creation
+   - **Files Updated**: en.json, vi.json
 
 ### ✅ Global Asset Tracking Cleanup Endpoint Fix (Previous Session)
 1. **HTTP Method Mismatch Resolution**
@@ -171,13 +171,12 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `frontend/src/components/Layout/AppLayout.tsx` - Moved Goals menu to investor section
-- `frontend/src/i18n/locales/vi.json` - Added navigation.investor.goals translation
-- `src/modules/goal/services/goal.service.ts` - Enhanced getAvailablePortfolios with permission checks
-- `src/migrations/1738000000003-RemovePortfolioUniqueConstraint.ts` - Removed portfolio unique constraint
-- `frontend/src/components/Goals/GoalCard.tsx` - Enhanced UI with priority slider and simplified progress
-- `frontend/src/components/Goals/GoalForm.tsx` - Fixed portfolio filtering and date input
-- `frontend/src/components/Goals/GoalsList.tsx` - Added priority-based sorting
+- `frontend/src/components/Common/FloatingTradingButton.tsx` - Global floating trading button with auto-portfolio creation
+- `frontend/src/components/Layout/AppLayout.tsx` - Integrated FloatingTradingButton for global availability
+- `frontend/src/components/Trading/TradeForm.tsx` - Enhanced to support auto-portfolio selection
+- `frontend/src/components/Common/MoneyInput.tsx` - Fixed TypeScript errors and currency display
+- `frontend/src/i18n/locales/en.json` - Added floating button and auto-creation translations
+- `frontend/src/i18n/locales/vi.json` - Added floating button and auto-creation translations
 
 ### Key Components Modified (Previous Session)
 - `src/modules/portfolio/entities/portfolio-permission.entity.ts` - New permission entity
@@ -190,14 +189,14 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Goals Navigation**: Goals menu now accessible under investor section for all users
-- **Portfolio Linking**: Multiple portfolios can now be linked to single goals
-- **Permission-Based Access**: Portfolio selection respects user permissions
-- **Priority Visualization**: Clear priority display with color-coded sliders and tooltips
-- **Progress Display**: Simplified and professional progress UI
-- **Date Input**: Better date input experience with native HTML5 date picker
-- **Goal Sorting**: Goals automatically sorted by priority (highest first)
-- **Form Validation**: Enhanced form validation for better user guidance
+- **Global Trading Access**: Floating trading button available on all pages for quick trade creation
+- **Auto-Portfolio Creation**: Seamless portfolio creation when user has no portfolios
+- **Smart Portfolio Selection**: Automatic portfolio selection when user has only one portfolio
+- **Visual Distinction**: Orange gradient design distinguishes trading button from other buttons
+- **Loading Feedback**: Clear tooltip feedback during portfolio creation process
+- **Error Handling**: Graceful error handling with user-friendly fallbacks
+- **Multi-Language Support**: Complete translation support for all floating button features
+- **Responsive Design**: Floating button works on all device sizes
 
 ### User Experience Improvements (Previous Session)
 - **Multi-Account Access**: Users can access portfolios they have permissions for

@@ -167,7 +167,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
         </Box>
         
       </Box>
-      <Box sx={{ px: 4 }}>
+      <Box sx={{ px:{xs: 0, sm: 4} }}>
         {/* Filter Toggle Button */}
         <Stack direction="row" alignItems="center" gap={2} mb={2}>
           <ResponsiveButton
