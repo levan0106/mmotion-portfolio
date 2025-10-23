@@ -70,20 +70,104 @@
       }
     }
   },
+  "goals": {
+    "title": "Mục tiêu đầu tư",
+    "subtitle": "Quản lý và theo dõi các mục tiêu tài chính của bạn",
+    "create": "Tạo mục tiêu mới",
+    "createFirst": "Tạo mục tiêu đầu tiên",
+    "edit": "Chỉnh sửa mục tiêu",
+    "delete": "Xóa mục tiêu",
+    "setPrimary": "Đặt làm mục tiêu chính",
+    "viewDetails": "Xem chi tiết",
+    "options": "Tùy chọn",
+    "form": {
+      "title": "Thiết lập mục tiêu đầu tư mới",
+      "editTitle": "Cập nhật thông tin mục tiêu của bạn",
+      "name": "Tên mục tiêu",
+      "namePlaceholder": "Nhập tên mục tiêu",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Nhập mô tả mục tiêu",
+      "targetValue": "Giá trị mục tiêu",
+      "targetValuePlaceholder": "Nhập giá trị mục tiêu (VND)",
+      "targetDate": "Ngày đạt mục tiêu",
+      "priority": "Độ ưu tiên",
+      "status": "Trạng thái",
+      "isPrimary": "Mục tiêu chính",
+      "autoTrack": "Tự động theo dõi",
+      "linkedPortfolios": "Danh mục liên kết",
+      "noPortfolios": "Bạn chưa có danh mục đầu tư",
+      "noPortfoliosEdit": "Không có danh mục nào",
+      "selectPortfolio": "Vui lòng chọn ít nhất một danh mục",
+      "nameRequired": "Vui lòng nhập tên mục tiêu",
+      "valueRequired": "Vui lòng nhập giá trị mục tiêu lớn hơn 0",
+      "saving": "Đang lưu...",
+      "create": "Tạo",
+      "update": "Cập nhật"
+    },
+    "card": {
+      "progress": "Tiến độ",
+      "currentValue": "Giá trị hiện tại",
+      "target": "Mục tiêu",
+      "primary": "Chính",
+      "daysRemaining": "ngày còn lại",
+      "overdue": "Quá hạn",
+      "priority": {
+        "highest": "Cao nhất",
+        "high": "Cao",
+        "medium": "Trung bình",
+        "low": "Thấp",
+        "lowest": "Rất thấp"
+      }
+    },
+    "list": {
+      "title": "Mục tiêu đầu tư",
+      "subtitle": "Quản lý và theo dõi các mục tiêu tài chính của bạn",
+      "create": "Tạo mục tiêu mới",
+      "createFirst": "Tạo mục tiêu đầu tiên",
+      "filters": "Bộ lọc",
+      "clearFilters": "Xóa bộ lọc",
+      "search": "Tìm kiếm mục tiêu",
+      "searchPlaceholder": "Nhập tên hoặc mô tả mục tiêu...",
+      "status": "Trạng thái",
+      "allStatuses": "Tất cả trạng thái",
+      "overview": "Tổng quan",
+      "noGoals": "Chưa có mục tiêu nào",
+      "noGoalsFiltered": "Không tìm thấy mục tiêu nào phù hợp",
+      "noGoalsMessage": "Bắt đầu tạo mục tiêu đầu tư đầu tiên của bạn",
+      "noGoalsFilteredMessage": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
+      "clearFiltersAction": "Xóa bộ lọc",
+      "createFirstAction": "Tạo mục tiêu đầu tiên",
+      "loading": "Đang tải...",
+      "error": "Không thể tải danh sách mục tiêu. Vui lòng thử lại sau."
+    },
+    "status": {
+      "active": "Đang hoạt động",
+      "achieved": "Đã đạt được",
+      "paused": "Tạm dừng",
+      "cancelled": "Đã hủy"
+    },
+    "priority": {
+      "highest": "Cao nhất",
+      "high": "Cao",
+      "medium": "Trung bình",
+      "low": "Thấp",
+      "lowest": "Rất thấp"
+    }
+  },
   "navigation": {
     "dashboard": "Tổng quan",
     "investor": {
       "title": "Nhà đầu tư",
       "reports": "Báo cáo",
-      "holdings": "Cổ phần"
+      "holdings": "Cổ phần",
+      "goals": "Mục tiêu"
     },
     "fundManagement": {
       "title": "Quản lý quỹ",
       "portfolios": "Danh mục",
       "assets": "Các loại tài sản",
       "deposits": "Tiền gửi",
-      "reports": "Báo cáo",
-      "goals": "Mục tiêu"
+      "reports": "Báo cáo"
     },
     "settings": "Cài đặt",
     "systemExplanation": "Hướng dẫn",

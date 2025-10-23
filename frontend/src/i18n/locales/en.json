@@ -70,20 +70,104 @@
       }
     }
   },
+  "goals": {
+    "title": "Investment Goals",
+    "subtitle": "Manage and track your financial goals",
+    "create": "Create New Goal",
+    "createFirst": "Create First Goal",
+    "edit": "Edit Goal",
+    "delete": "Delete Goal",
+    "setPrimary": "Set as Primary Goal",
+    "viewDetails": "View Details",
+    "options": "Options",
+    "form": {
+      "title": "Set up a new investment goal",
+      "editTitle": "Update your goal information",
+      "name": "Goal Name",
+      "namePlaceholder": "Enter goal name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter goal description",
+      "targetValue": "Target Value",
+      "targetValuePlaceholder": "Enter target value (VND)",
+      "targetDate": "Target Date",
+      "priority": "Priority",
+      "status": "Status",
+      "isPrimary": "Primary Goal",
+      "autoTrack": "Auto Track",
+      "linkedPortfolios": "Linked Portfolios",
+      "noPortfolios": "You don't have any portfolios",
+      "noPortfoliosEdit": "No portfolios available",
+      "selectPortfolio": "Please select at least one portfolio",
+      "nameRequired": "Please enter goal name",
+      "valueRequired": "Please enter target value greater than 0",
+      "saving": "Saving...",
+      "create": "Create",
+      "update": "Update"
+    },
+    "card": {
+      "progress": "Progress",
+      "currentValue": "Current Value",
+      "target": "Target",
+      "primary": "Primary",
+      "daysRemaining": "days remaining",
+      "overdue": "Overdue",
+      "priority": {
+        "highest": "Highest",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low",
+        "lowest": "Lowest"
+      }
+    },
+    "list": {
+      "title": "Investment Goals",
+      "subtitle": "Manage and track your financial goals",
+      "create": "Create New Goal",
+      "createFirst": "Create First Goal",
+      "filters": "Filters",
+      "clearFilters": "Clear Filters",
+      "search": "Search Goals",
+      "searchPlaceholder": "Enter goal name or description...",
+      "status": "Status",
+      "allStatuses": "All Statuses",
+      "overview": "Overview",
+      "noGoals": "No goals yet",
+      "noGoalsFiltered": "No goals found matching criteria",
+      "noGoalsMessage": "Start creating your first investment goal",
+      "noGoalsFilteredMessage": "Try changing filters or search keywords",
+      "clearFiltersAction": "Clear Filters",
+      "createFirstAction": "Create First Goal",
+      "loading": "Loading...",
+      "error": "Unable to load goals list. Please try again later."
+    },
+    "status": {
+      "active": "Active",
+      "achieved": "Achieved",
+      "paused": "Paused",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "highest": "Highest",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "lowest": "Lowest"
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "investor": {
       "title": "Investor",
       "reports": "Reports",
-      "holdings": "Holdings"
+      "holdings": "Holdings",
+      "goals": "Goals"
     },
     "fundManagement": {
       "title": "Fund Management",
       "portfolios": "Portfolios",
       "assets": "Assets",
       "deposits": "Deposits",
-      "reports": "Reports",
-      "goals": "Goals"
+      "reports": "Reports"
     },
     "settings": "Settings",
     "systemExplanation": "System Guide",

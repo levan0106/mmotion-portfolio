@@ -42,7 +42,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Help as HelpIcon,
-  // Flag as GoalsIcon,
+  Flag as GoalsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -124,6 +124,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           path: '/holdings',
           description: t('navigation.investor.holdings'),
           badge: null
+        },
+        {
+          text: t('navigation.investor.goals'),
+          icon: <GoalsIcon />,
+          path: '/goals',
+          description: t('navigation.investor.goals'),
+          badge: null
         }
       ]
     },
@@ -148,15 +155,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           path: '/reports',
           description: t('navigation.fundManagement.reports'),
           badge: null
-        },
-        // {
-        //   text: t('navigation.fundManagement.goals'),
-        //   icon: <GoalsIcon />,
-        //   path: '/goals',
-        //   description: t('navigation.fundManagement.goals'),
-        //   badge: null,
-        //   roles: ['admin', 'super_admin']
-        // }
+        }
       ]
     }]),
     // Settings - Always show

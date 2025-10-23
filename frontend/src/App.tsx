@@ -23,14 +23,13 @@ import Holdings from './pages/Holdings';
 import Transactions from './pages/Transactions';
 import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
-//import Goals from './pages/Goals';
+import Goals from './pages/Goals';
 import Login from './pages/Login';
 import Welcome from './pages/Welcome';
 import SystemGuide from './pages/SystemGuide';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import { AdminManagement } from './pages/AdminManagement';
-// import { I18nTest } from './pages/I18nTest'; // Commented out as not used
 import { customTheme } from './theme/customTheme';
 import { AccountProvider, useAccount } from './contexts/AccountContext';
 import { ToastProvider } from './components/Common/ToastProvider';
@@ -168,13 +167,7 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
-          <Route path="/analytics" element={
-            <AppLayout>
-              <Box sx={{ minHeight: '100vh' }}>
-                <div>Analytics Page - Coming Soon</div>
-              </Box>
-            </AppLayout>
-          } />
+          
           <Route path="/reports" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
@@ -182,13 +175,13 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
-          {/* <Route path="/goals" element={
+          <Route path="/goals" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <Goals />
               </Box>
             </AppLayout>
-          } /> */}
+          } />
           <Route path="/profile" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>

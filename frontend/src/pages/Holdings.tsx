@@ -209,7 +209,7 @@ const Holdings: React.FC = () => {
             </Box>
           </Box>
         </Box>
-
+      <Box sx={{ px: 4 }}>
         {/* Summary Metrics Grid */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {summaryMetrics.map((metric, index) => (
@@ -467,6 +467,7 @@ const Holdings: React.FC = () => {
           holdingName={selectedHoldingName}
         />
       </Box>
+    </Box>
   );
 };
 
