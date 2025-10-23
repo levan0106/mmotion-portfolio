@@ -232,7 +232,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({
       actions={actions}
       loading={loading}
       maxWidth="md"
-      size="large"
+      size="medium"
     >
         <ResponsiveTypography variant="pageTitle" color="text.secondary" mb={3}>
           {goal ? t('goals.form.editTitle') : t('goals.form.title')}

@@ -347,7 +347,7 @@ const InvestorView: React.FC = () => {
               // Full grid when no portfolio is selected
               <Grid container spacing={2} sx={{ p: 1 }}>
                 {portfolios.map((portfolio) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={portfolio.id}>
+                  <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={portfolio.id}>
                     <Card 
                       sx={{ 
                         cursor: 'pointer',
