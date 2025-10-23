@@ -445,7 +445,6 @@ const InvestorView: React.FC = () => {
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall"
                               sx={{ fontWeight: 500, 
-                                textTransform: 'uppercase',
                                 color: 'text.primary'
                                }}>
                                 {t('investorView.totalValue', 'Tổng giá trị')}
@@ -471,7 +470,6 @@ const InvestorView: React.FC = () => {
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall"
                               sx={{ fontWeight: 500, 
-                                textTransform: 'uppercase',
                                 color: 'text.primary'
                                }}>
                                 {t('investorView.cash', 'Tiền mặt')}
@@ -497,7 +495,6 @@ const InvestorView: React.FC = () => {
                               </ResponsiveTypography>
                               <ResponsiveTypography variant="labelXSmall"
                               sx={{ fontWeight: 500, 
-                                textTransform: 'uppercase',
                                 color: 'text.primary'
                                }}>
                                 {t('investorView.investments', 'Tiền đầu tư')}
@@ -523,7 +520,6 @@ const InvestorView: React.FC = () => {
                               </ResponsiveTypography>
                                 <ResponsiveTypography variant="labelXSmall"
                               sx={{ fontWeight: 500, 
-                                textTransform: 'uppercase',
                                 color: 'text.primary'
                                }}>
                                 {t('investorView.deposits', 'Tiền gửi')}

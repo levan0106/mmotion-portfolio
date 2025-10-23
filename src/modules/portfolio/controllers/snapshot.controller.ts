@@ -32,6 +32,7 @@ import { SnapshotService } from '../services/snapshot.service';
 import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service';
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { PortfolioService } from '../services/portfolio.service';
+import { SnapshotTrackingService } from '../services/snapshot-tracking.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
 import {
   CreateSnapshotDto,
@@ -43,7 +44,9 @@ import {
   SnapshotAggregationDto,
 } from '../dto/snapshot.dto';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
+import { SnapshotTrackingType } from '../entities/snapshot-tracking.entity';
 import { normalizeDateToString } from '../utils/date-normalization.util';
+import { randomUUID } from 'crypto';
 
 @ApiTags('Snapshots')
 @Controller('api/v1/snapshots')
@@ -58,6 +61,7 @@ export class SnapshotController {
     private readonly performanceSnapshotService: PerformanceSnapshotService,
     @Inject(forwardRef(() => PortfolioService))
     private readonly portfolioService: PortfolioService,
+    private readonly snapshotTrackingService: SnapshotTrackingService,
     private readonly accountValidationService: AccountValidationService,
   ) {}
 
@@ -171,6 +175,8 @@ export class SnapshotController {
 
     this.logger.log(`Creating snapshots for ${body.portfolioIds.length} portfolios from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
 
+    const executionId = randomUUID();
+    
     // Process each portfolio
     for (const portfolioId of body.portfolioIds) {
       try {
@@ -193,38 +199,32 @@ export class SnapshotController {
 
         // Generate dates between start and end date
         const currentDate = new Date(startDate);
+
         while (currentDate <= endDate) {
           const snapshotDate = normalizeDateToString(currentDate);
           
           try {
-            // Create snapshots for this date
-            const assetSnapshots = await this.snapshotService.createPortfolioSnapshot(
+            // Use centralized tracking service for consistent snapshot creation
+            const result = await this.snapshotTrackingService.createSnapshotsWithTracking(
               portfolioId,
+              portfolioName,
               snapshotDate,
               granularityValue,
-              body.createdBy
+              executionId,
+              body.createdBy || 'api-user',
+              true, // Include performance snapshots
+              SnapshotTrackingType.MANUAL // Manual type for API calls
             );
             
-            // Create performance snapshots if asset snapshots were created
-            if (assetSnapshots.length > 0) {
-              try {
-                await this.performanceSnapshotService.createPerformanceSnapshots(
-                  portfolioId,
-                  snapshotDate,
-                  granularityValue,
-                  body.createdBy,
-                );
-              } catch (error) {
-                this.logger.error(`Failed to create performance snapshots for portfolio ${portfolioName} on ${snapshotDate}:`, error);
-                // Continue with next date even if performance snapshots fail
-              }
-              
-              portfolioSnapshots += assetSnapshots.length;
+            if (result.success && result.assetSnapshots.length > 0) {
+              portfolioSnapshots += result.assetSnapshots.length;
               datesProcessed.push(snapshotDate);
-              allAssetSnapshots.push(...assetSnapshots);
+              allAssetSnapshots.push(...result.assetSnapshots);
+              
+              this.logger.log(`Created ${result.assetSnapshots.length} snapshots for portfolio ${portfolioName} on ${snapshotDate}. Tracking ID: ${result.trackingId}`);
+            } else if (result.error) {
+              this.logger.error(`Failed to create snapshots for portfolio ${portfolioName} on ${snapshotDate}: ${result.error}`);
             }
-            
-            this.logger.log(`Created ${assetSnapshots.length} snapshots for portfolio ${portfolioName} on ${snapshotDate}`);
           } catch (error) {
             this.logger.error(`Failed to create snapshots for portfolio ${portfolioName} on ${snapshotDate}: ${error.message}`);
             // Continue with next date even if one date fails
@@ -539,12 +539,43 @@ export class SnapshotController {
     
     // Validate portfolio ownership
     await this.accountValidationService.validatePortfolioOwnership(portfolioId, accountId);
-    const date = snapshotDate ? new Date(snapshotDate) : undefined;
-    const updatedCount = await this.snapshotService.bulkRecalculateSnapshots(portfolioId, accountId, date);
-    return {
-      message: `Successfully recalculated ${updatedCount} snapshots`,
-      updatedCount,
-    };
+    
+    // Get portfolio info for tracking
+    let portfolioName = 'Unknown Portfolio';
+    try {
+      const portfolio = await this.portfolioService.getPortfolioDetails(portfolioId);
+      if (portfolio) {
+        portfolioName = portfolio.name;
+      }
+    } catch (error) {
+      this.logger.warn(`Could not get portfolio info for ${portfolioId}: ${error.message}`);
+    }
+    
+    const date = snapshotDate ? new Date(snapshotDate) : new Date();
+    
+    // Use centralized tracking service for recalculation
+    const result = await this.snapshotTrackingService.createSnapshotsWithTracking(
+      portfolioId,
+      portfolioName,
+      date,
+      SnapshotGranularity.DAILY, // Default granularity for recalculation
+      randomUUID(), 
+      'api-recalculation',
+      true, // Include performance snapshots
+      SnapshotTrackingType.MANUAL // Manual type for API calls
+    );
+    
+    if (result.success) {
+      this.logger.log(`Successfully recalculated snapshots for portfolio ${portfolioName}. Tracking ID: ${result.trackingId}`);
+      return {
+        message: `Successfully recalculated ${result.assetSnapshots.length} snapshots`,
+        updatedCount: result.assetSnapshots.length,
+        trackingId: result.trackingId,
+      };
+    } else {
+      this.logger.error(`Failed to recalculate snapshots for portfolio ${portfolioName}: ${result.error}`);
+      throw new BadRequestException(`Failed to recalculate snapshots: ${result.error}`);
+    }
   }
 
   /**

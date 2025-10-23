@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Portfolio } from './entities/portfolio.entity';
 import { PortfolioPermission } from './entities/portfolio-permission.entity';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
@@ -93,6 +94,7 @@ import { PermissionCheckService } from '../shared/services/permission-check.serv
       ttl: parseInt(process.env.CACHE_TTL) || 300000,
       max: parseInt(process.env.CACHE_MAX_ITEMS) || 1000,
     })] : []),
+    EventEmitterModule,
     MarketDataModule,
     AssetModule,
     DepositModule,

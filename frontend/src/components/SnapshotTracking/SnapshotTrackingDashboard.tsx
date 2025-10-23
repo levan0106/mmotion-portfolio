@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -29,6 +29,10 @@ import {
   MenuItem,
   Tabs,
   Tab,
+  Pagination,
+  Collapse,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -39,6 +43,10 @@ import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
   FilterList as FilterListIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  AccountTree as AccountTreeIcon,
+  SubdirectoryArrowRight as SubdirectoryArrowRightIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { SnapshotTrackingApiService, SnapshotTrackingRecord } from '../../services/api.snapshot-tracking';
@@ -48,6 +56,15 @@ interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+}
+
+interface GroupedRecord {
+  parentRecord: SnapshotTrackingRecord;
+  childRecords: SnapshotTrackingRecord[];
+}
+
+interface GroupedRecords {
+  [key: string]: GroupedRecord;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -73,29 +90,94 @@ const SnapshotTrackingDashboard: React.FC = () => {
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<SnapshotTrackingRecord | null>(null);
   const [cleanupDays, setCleanupDays] = useState<number | string>(30);
+  const [groupByParent, setGroupByParent] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     status: '',
     type: '',
     portfolioId: '',
     startDate: '',
     endDate: '',
-    limit: 20,
+    limit: 50,
     offset: 0,
+    page: 1,
   });
+  const [pageSize, setPageSize] = useState(50);
 
   const queryClient = useQueryClient();
-
-  // Fetch dashboard data
-  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
-    queryKey: ['snapshot-tracking-dashboard'],
-    queryFn: () => SnapshotTrackingApiService.getDashboardData(),
-    refetchInterval: 30000, // Refresh every 30 seconds
-  });
 
   // Fetch tracking records with filters
   const { data: trackingRecords, isLoading: recordsLoading, error: recordsError } = useQuery({
     queryKey: ['snapshot-tracking-records', filters],
     queryFn: () => SnapshotTrackingApiService.getTrackingRecords(filters),
+  });
+
+  // Grouping logic for records
+  const groupedRecords = useMemo(() => {
+    if (!groupByParent || !trackingRecords?.data) {
+      return null;
+    }
+
+    const groups: GroupedRecords = {};
+    const ungroupedRecords: SnapshotTrackingRecord[] = [];
+
+    trackingRecords.data.forEach((record) => {
+      const parentExecutionId = record.metadata?.parentExecutionId;
+      
+      if (parentExecutionId) {
+        // This is a child record
+        if (!groups[parentExecutionId]) {
+          // Find the parent record
+          const parentRecord = trackingRecords.data.find(r => r.executionId === parentExecutionId);
+          if (parentRecord) {
+            groups[parentExecutionId] = {
+              parentRecord,
+              childRecords: []
+            };
+          } else {
+            // Parent not found, treat as ungrouped
+            ungroupedRecords.push(record);
+            return; // Skip adding to groups
+          }
+        }
+        // Only add to childRecords if the group exists
+        if (groups[parentExecutionId]) {
+          groups[parentExecutionId].childRecords.push(record);
+        }
+      } else {
+        // This is a parent record or standalone record
+        if (!groups[record.executionId]) {
+          groups[record.executionId] = {
+            parentRecord: record,
+            childRecords: []
+          };
+        }
+      }
+    });
+
+    return { groups, ungroupedRecords };
+  }, [trackingRecords?.data, groupByParent, expandedGroups]);
+
+  // Fetch recent tracking records with pagination
+  const { data: recentRecords, isLoading: recentLoading, error: recentError } = useQuery({
+    queryKey: ['snapshot-tracking-recent', filters],
+    queryFn: () => SnapshotTrackingApiService.getTrackingRecords({
+      ...filters,
+      // For recent records, we'll use a different approach - get all records and paginate
+      limit: filters.limit,
+      offset: filters.offset,
+    }),
+  });
+
+  // Fetch failed tracking records with pagination
+  const { data: failedRecords, isLoading: failedLoading, error: failedError } = useQuery({
+    queryKey: ['snapshot-tracking-failed', filters],
+    queryFn: () => SnapshotTrackingApiService.getTrackingRecords({
+      ...filters,
+      status: 'failed', // Filter for failed records only
+      limit: filters.limit,
+      offset: filters.offset,
+    }),
   });
 
   // Fetch statistics
@@ -109,8 +191,9 @@ const SnapshotTrackingDashboard: React.FC = () => {
     mutationFn: (daysToKeep: number) => SnapshotTrackingApiService.cleanupOldRecords(daysToKeep),
     onSuccess: () => {
       // Invalidate all snapshot tracking related queries
-      queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-records'] });
+      queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-recent'] });
+      queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-failed'] });
       queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-stats'] });
     },
   });
@@ -119,20 +202,61 @@ const SnapshotTrackingDashboard: React.FC = () => {
     setTabValue(newValue);
   };
 
+  const handleToggleGroup = (executionId: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(executionId)) {
+        newSet.delete(executionId);
+      } else {
+        newSet.add(executionId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleGrouping = () => {
+    setGroupByParent(!groupByParent);
+    setExpandedGroups(new Set());
+  };
+
   const handleFilterChange = (field: string, value: string | number) => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    const newOffset = (page - 1) * pageSize;
+    setFilters(prev => ({ ...prev, page, offset: newOffset, limit: pageSize }));
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setFilters(prev => ({ 
+      ...prev, 
+      limit: newPageSize, 
+      offset: 0, 
+      page: 1 
+    }));
+    // Invalidate queries to refetch with new page size
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-records'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-recent'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-failed'] });
+  };
+
   const handleApplyFilters = () => {
     setFilterDialogOpen(false);
+    // Reset pagination when filters change
+    setFilters(prev => ({ ...prev, page: 1, offset: 0 }));
     // Trigger refetch with new filters
     queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-records'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-recent'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-failed'] });
   };
 
   const handleRefresh = () => {
     // Invalidate all snapshot tracking related queries
-    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-dashboard'] });
     queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-records'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-recent'] });
+    queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-failed'] });
     queryClient.invalidateQueries({ queryKey: ['snapshot-tracking-stats'] });
   };
 
@@ -218,7 +342,63 @@ const SnapshotTrackingDashboard: React.FC = () => {
     return `${(ms / 60000).toFixed(1)}m`;
   };
 
-  if (dashboardLoading || recordsLoading || statsLoading) {
+  const renderGroupedTableRow = (record: SnapshotTrackingRecord, isChild: boolean = false) => (
+    <TableRow key={record.id} sx={{ bgcolor: isChild ? 'grey.50' : 'inherit' }}>
+      <TableCell>
+        <Box display="flex" alignItems="center" sx={{ pl: isChild ? 4 : 0 }}>
+          {isChild && (
+            <>
+              <SubdirectoryArrowRightIcon sx={{ mr: 1, fontSize: 16, minWidth: 16 }} />
+              <Box sx={{ width: 32, mr: 1 }} />
+            </>
+          )}
+          {!isChild && <Box sx={{ width: 48, mr: 1 }} />}
+          <Typography variant="body2" fontFamily="monospace">
+            {record.executionId.substring(0, 8)}...
+          </Typography>
+        </Box>
+      </TableCell>
+      <TableCell>
+        {record.portfolioName || 'All Portfolios'}
+      </TableCell>
+      <TableCell>
+        <Chip
+          icon={getStatusIcon(record.status)}
+          label={record.status}
+          color={getStatusColor(record.status) as any}
+          size="small"
+        />
+      </TableCell>
+      <TableCell>
+        <Chip
+          label={record.type}
+          color={record.type === 'automated' ? 'primary' : 'secondary'}
+          size="small"
+        />
+      </TableCell>
+      <TableCell>
+        {format(new Date(record.startedAt), 'MMM dd, yyyy HH:mm:ss')}
+      </TableCell>
+      <TableCell>
+        {formatDuration(record.executionTimeMs)}
+      </TableCell>
+      <TableCell>
+        {record.successfulSnapshots}/{record.totalSnapshots}
+      </TableCell>
+      <TableCell>
+        {record.totalPortfolios || 'N/A'}
+      </TableCell>
+      <TableCell>
+        <Tooltip title="View Details">
+          <IconButton size="small" onClick={() => handleViewDetail(record)}>
+            <VisibilityIcon />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+
+  if (recordsLoading || recentLoading || failedLoading || statsLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
@@ -226,7 +406,7 @@ const SnapshotTrackingDashboard: React.FC = () => {
     );
   }
 
-  if (dashboardError || recordsError) {
+  if (recordsError || recentError || failedError) {
     return (
       <Alert severity="error">
         Failed to load tracking data. Please try again.
@@ -241,7 +421,17 @@ const SnapshotTrackingDashboard: React.FC = () => {
         <Typography variant="h4" component="h1">
           Snapshot Tracking Dashboard
         </Typography>
-        <Box>
+        <Box display="flex" alignItems="center" gap={2}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={groupByParent}
+                onChange={handleToggleGrouping}
+                color="primary"
+              />
+            }
+            label="Group by Parent Execution"
+          />
           <Button
             variant="outlined"
             startIcon={<FilterListIcon />}
@@ -371,7 +561,135 @@ const SnapshotTrackingDashboard: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {dashboardData?.data?.recentRecords?.map((record: SnapshotTrackingRecord) => (
+              {groupByParent && recentRecords?.data ? (
+                // Group recent records by parent execution
+                (() => {
+                  const recentGroups: GroupedRecords = {};
+                  const recentUngroupedRecords: SnapshotTrackingRecord[] = [];
+
+                  recentRecords.data.forEach((record) => {
+                    const parentExecutionId = record.metadata?.parentExecutionId;
+                    
+                    if (parentExecutionId) {
+                      // This is a child record
+                      if (!recentGroups[parentExecutionId]) {
+                        // Find the parent record
+                        const parentRecord = recentRecords.data.find(r => r.executionId === parentExecutionId);
+                        if (parentRecord) {
+                          recentGroups[parentExecutionId] = {
+                            parentRecord,
+                            childRecords: []
+                          };
+                        } else {
+                          // Parent not found, treat as ungrouped
+                          recentUngroupedRecords.push(record);
+                          return;
+                        }
+                      }
+                      // Only add to childRecords if the group exists
+                      if (recentGroups[parentExecutionId]) {
+                        recentGroups[parentExecutionId].childRecords.push(record);
+                      }
+                    } else {
+                      // This is a parent record or standalone record
+                      if (!recentGroups[record.executionId]) {
+                        recentGroups[record.executionId] = {
+                          parentRecord: record,
+                          childRecords: []
+                        };
+                      }
+                    }
+                  });
+
+                  return (
+                    <>
+                      {Object.entries(recentGroups).map(([executionId, group]) => (
+                        <React.Fragment key={executionId}>
+                          {/* Parent record */}
+                          <TableRow sx={{ bgcolor: 'primary.50' }}>
+                            <TableCell>
+                              <Box display="flex" alignItems="center">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleToggleGroup(executionId)}
+                                  sx={{ mr: 1, minWidth: 32 }}
+                                >
+                                  {expandedGroups.has(executionId) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                </IconButton>
+                                <AccountTreeIcon sx={{ mr: 1, fontSize: 16, color: 'primary.main', minWidth: 16 }} />
+                                <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
+                                  {group.parentRecord.executionId.substring(0, 8)}...
+                                </Typography>
+                                <Chip
+                                  label={`${group.childRecords.length} children`}
+                                  size="small"
+                                  color="primary"
+                                  sx={{ ml: 1 }}
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              {group.parentRecord.portfolioName || 'All Portfolios'}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                icon={getStatusIcon(group.parentRecord.status)}
+                                label={group.parentRecord.status}
+                                color={getStatusColor(group.parentRecord.status) as any}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={group.parentRecord.type}
+                                color={group.parentRecord.type === 'automated' ? 'primary' : 'secondary'}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {format(new Date(group.parentRecord.startedAt), 'MMM dd, yyyy HH:mm:ss')}
+                            </TableCell>
+                            <TableCell>
+                              {formatDuration(group.parentRecord.executionTimeMs)}
+                            </TableCell>
+                            <TableCell>
+                              {group.parentRecord.successfulSnapshots}/{group.parentRecord.totalSnapshots}
+                            </TableCell>
+                            <TableCell>
+                              {group.parentRecord.totalPortfolios || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <Tooltip title="View Details">
+                                <IconButton size="small" onClick={() => handleViewDetail(group.parentRecord)}>
+                                  <VisibilityIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                          {/* Child records */}
+                          <TableRow>
+                            <TableCell colSpan={9} sx={{ p: 0 }}>
+                              <Collapse in={expandedGroups.has(executionId)}>
+                                <Box sx={{ bgcolor: 'grey.50' }}>
+                                  {group.childRecords.map((childRecord) => 
+                                    renderGroupedTableRow(childRecord, true)
+                                  )}
+                                </Box>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      ))}
+                      {/* Ungrouped records */}
+                      {recentUngroupedRecords.map((record) => 
+                        renderGroupedTableRow(record, false)
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                // Render ungrouped recent records (original behavior)
+                recentRecords?.data?.map((record: SnapshotTrackingRecord) => (
                 <TableRow key={record.id}>
                   <TableCell>
                     <Typography variant="body2" fontFamily="monospace">
@@ -416,10 +734,47 @@ const SnapshotTrackingDashboard: React.FC = () => {
                     </Tooltip>
                   </TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
+        
+        {/* Pagination Controls for Recent Records */}
+        {recentRecords?.pagination && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" color="textSecondary">
+                Rows per page:
+              </Typography>
+              <Select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                size="small"
+                sx={{ minWidth: 80 }}
+              >
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+              </Select>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <Pagination
+                count={Math.ceil(recentRecords.pagination.total / recentRecords.pagination.limit)}
+                page={filters.page}
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+                size="large"
+              />
+              <Typography variant="body2" color="textSecondary">
+                Showing {recentRecords.pagination.offset + 1} to {Math.min(recentRecords.pagination.offset + recentRecords.pagination.limit, recentRecords.pagination.total)} of {recentRecords.pagination.total} records
+              </Typography>
+            </Box>
+          </Box>
+        )}
       </TabPanel>
 
       {/* All Records Tab */}
@@ -440,7 +795,94 @@ const SnapshotTrackingDashboard: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {trackingRecords?.data?.map((record: SnapshotTrackingRecord) => (
+              {groupByParent && groupedRecords ? (
+                // Render grouped records
+                <>
+                  {Object.entries(groupedRecords.groups).map(([executionId, group]) => (
+                    <React.Fragment key={executionId}>
+                      {/* Parent record */}
+                      <TableRow sx={{ bgcolor: 'primary.50' }}>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleToggleGroup(executionId)}
+                              sx={{ mr: 1, minWidth: 32 }}
+                            >
+                              {expandedGroups.has(executionId) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                            </IconButton>
+                            <AccountTreeIcon sx={{ mr: 1, fontSize: 16, color: 'primary.main', minWidth: 16 }} />
+                            <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
+                              {group.parentRecord.executionId.substring(0, 8)}...
+                            </Typography>
+                            <Chip
+                              label={`${group.childRecords.length} children`}
+                              size="small"
+                              color="primary"
+                              sx={{ ml: 1 }}
+                            />
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          {group.parentRecord.portfolioName || 'All Portfolios'}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={getStatusIcon(group.parentRecord.status)}
+                            label={group.parentRecord.status}
+                            color={getStatusColor(group.parentRecord.status) as any}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={group.parentRecord.type}
+                            color={group.parentRecord.type === 'automated' ? 'primary' : 'secondary'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(group.parentRecord.startedAt), 'MMM dd, yyyy HH:mm:ss')}
+                        </TableCell>
+                        <TableCell>
+                          {formatDuration(group.parentRecord.executionTimeMs)}
+                        </TableCell>
+                        <TableCell>
+                          {group.parentRecord.successfulSnapshots}/{group.parentRecord.totalSnapshots}
+                        </TableCell>
+                        <TableCell>
+                          {group.parentRecord.totalPortfolios || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip title="View Details">
+                            <IconButton size="small" onClick={() => handleViewDetail(group.parentRecord)}>
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                      {/* Child records */}
+                      <TableRow>
+                        <TableCell colSpan={9} sx={{ p: 0 }}>
+                          <Collapse in={expandedGroups.has(executionId)}>
+                            <Box sx={{ bgcolor: 'grey.50' }}>
+                              {group.childRecords.map((childRecord) => 
+                                renderGroupedTableRow(childRecord, true)
+                              )}
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    </React.Fragment>
+                  ))}
+                  {/* Ungrouped records */}
+                  {groupedRecords.ungroupedRecords.map((record) => 
+                    renderGroupedTableRow(record, false)
+                  )}
+                </>
+              ) : (
+                // Render ungrouped records (original behavior)
+                trackingRecords?.data?.map((record: SnapshotTrackingRecord) => (
                 <TableRow key={record.id}>
                   <TableCell>
                     <Typography variant="body2" fontFamily="monospace">
@@ -485,10 +927,47 @@ const SnapshotTrackingDashboard: React.FC = () => {
                     </Tooltip>
                   </TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
+        
+        {/* Pagination Controls */}
+        {trackingRecords?.pagination && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" color="textSecondary">
+                Rows per page:
+              </Typography>
+              <Select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                size="small"
+                sx={{ minWidth: 80 }}
+              >
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+              </Select>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <Pagination
+                count={Math.ceil(trackingRecords.pagination.total / trackingRecords.pagination.limit)}
+                page={filters.page}
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+                size="large"
+              />
+              <Typography variant="body2" color="textSecondary">
+                Showing {trackingRecords.pagination.offset + 1} to {Math.min(trackingRecords.pagination.offset + trackingRecords.pagination.limit, trackingRecords.pagination.total)} of {trackingRecords.pagination.total} records
+              </Typography>
+            </Box>
+          </Box>
+        )}
       </TabPanel>
 
       {/* Failed Executions Tab */}
@@ -507,7 +986,7 @@ const SnapshotTrackingDashboard: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {dashboardData?.data?.failedRecords?.map((record: SnapshotTrackingRecord) => (
+              {failedRecords?.data?.map((record: SnapshotTrackingRecord) => (
                 <TableRow key={record.id}>
                   <TableCell>
                     <Typography variant="body2" fontFamily="monospace">
@@ -543,6 +1022,42 @@ const SnapshotTrackingDashboard: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        
+        {/* Pagination Controls for Failed Records */}
+        {failedRecords?.pagination && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" color="textSecondary">
+                Rows per page:
+              </Typography>
+              <Select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                size="small"
+                sx={{ minWidth: 80 }}
+              >
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+                <MenuItem value={100}>100</MenuItem>
+              </Select>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <Pagination
+                count={Math.ceil(failedRecords.pagination.total / failedRecords.pagination.limit)}
+                page={filters.page}
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+                size="large"
+              />
+              <Typography variant="body2" color="textSecondary">
+                Showing {failedRecords.pagination.offset + 1} to {Math.min(failedRecords.pagination.offset + failedRecords.pagination.limit, failedRecords.pagination.total)} of {failedRecords.pagination.total} records
+              </Typography>
+            </Box>
+          </Box>
+        )}
       </TabPanel>
 
       {/* Statistics Tab */}

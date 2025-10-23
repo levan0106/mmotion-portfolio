@@ -1536,7 +1536,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                               </TableCell>
                               <TableCell>
                                 <ResponsiveTypography
-                                  variant="tableCellSmall"
+                                  variant="tableCell"
                                   sx={{
                                     color: cashFlow.type === 'DEPOSIT' || cashFlow.type === 'DIVIDEND' || cashFlow.type === 'SELL_TRADE' || cashFlow.type === 'DEPOSIT_SETTLEMENT' ? 'success.main' : 'error.main'
                                   }}

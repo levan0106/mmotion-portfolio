@@ -1058,7 +1058,7 @@ export class PortfolioService {
    * @param portfolioId - Portfolio ID
    * @returns Promise<object> Calculated values
    */
-  private async calculateNewPortfolioFields(portfolioId: string): Promise<{
+  public async calculateNewPortfolioFields(portfolioId: string): Promise<{
     totalAssetValue: number;
     totalInvestValue: number;
     totalAllValue: number;

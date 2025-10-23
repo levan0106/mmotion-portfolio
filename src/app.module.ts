@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { TradingModule } from './modules/trading/trading.module';
 import { AssetModule } from './modules/asset/asset.module';
@@ -14,6 +15,7 @@ import { SnapshotModule } from './modules/portfolio/snapshot.module';
 import { PortfolioSnapshotModule } from './modules/portfolio/portfolio-snapshot.module';
 import { DepositModule } from './modules/portfolio/deposit.module';
 import { ReportModule } from './modules/report/report.module';
+import { GoalModule } from './modules/goal/goal.module';
 import { NotificationModule } from './notification/notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -60,6 +62,9 @@ import { TestLoggingController } from './test-logging.controller';
     // Schedule module for cron jobs
     ScheduleModule.forRoot(),
 
+    // Event emitter module for event-driven architecture
+    EventEmitterModule.forRoot(),
+
     // Feature modules
       PortfolioModule,
       TradingModule,
@@ -72,6 +77,7 @@ import { TestLoggingController } from './test-logging.controller';
       PortfolioSnapshotModule,
       DepositModule,
       ReportModule,
+      GoalModule,
       NotificationModule,
   ],
   controllers: [AppController, TestLoggingController],

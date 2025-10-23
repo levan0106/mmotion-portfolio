@@ -40,6 +40,7 @@ export interface TrackingFilters {
   endDate?: string;
   limit?: number;
   offset?: number;
+  page?: number;
 }
 
 export interface TrackingResponse {
@@ -84,6 +85,7 @@ export class SnapshotTrackingApiService {
     if (filters.endDate) params.append('endDate', filters.endDate);
     if (filters.limit) params.append('limit', filters.limit.toString());
     if (filters.offset) params.append('offset', filters.offset.toString());
+    if (filters.page) params.append('page', filters.page.toString());
 
     const response = await apiService.api.get(`/api/v1/snapshot-tracking?${params.toString()}`);
     return response.data;
