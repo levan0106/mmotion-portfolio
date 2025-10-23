@@ -18,13 +18,12 @@ import Trading from './pages/Trading';
 import TradingRedirect from './components/Trading/TradingRedirect';
 import GlobalAssetsPage from './pages/GlobalAssetsPage';
 import SnapshotManagementPage from './pages/SnapshotManagement';
-import DepositManagement from './pages/DepositManagement';
 import HoldingDetail from './pages/HoldingDetail';
 import Holdings from './pages/Holdings';
 import Transactions from './pages/Transactions';
-import Assets from './pages/Assets';
 import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
+//import Goals from './pages/Goals';
 import Login from './pages/Login';
 import Welcome from './pages/Welcome';
 import SystemGuide from './pages/SystemGuide';
@@ -141,13 +140,6 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
-          <Route path="/assets" element={
-            <AppLayout>
-              <Box sx={{ minHeight: '100vh' }}>
-                <Assets />
-              </Box>
-            </AppLayout>
-          } />
           <Route path="/global-assets" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
@@ -159,13 +151,6 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <SnapshotManagementPage />
-              </Box>
-            </AppLayout>
-          } />
-          <Route path="/deposits" element={
-            <AppLayout>
-              <Box sx={{ minHeight: '100vh' }}>
-                <DepositManagement />
               </Box>
             </AppLayout>
           } />
@@ -197,6 +182,13 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
+          {/* <Route path="/goals" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Goals />
+              </Box>
+            </AppLayout>
+          } /> */}
           <Route path="/profile" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>

@@ -20,6 +20,7 @@ import {
   Settings as SettingsIcon,
   CameraAlt as SnapshotIcon,
   Assessment as TrackingIcon,
+  AccountBalance as PortfolioIcon,
 } from '@mui/icons-material';
 import { RoleList } from '../components/RoleManagement/RoleList';
 import { RoleForm } from '../components/RoleManagement/RoleForm';
@@ -33,6 +34,7 @@ import { UserForm } from '../components/RoleManagement/UserForm';
 import { Settings } from '../components/RoleManagement/Settings';
 import { AutomatedSnapshotManagement } from '../components/AutomatedSnapshot/AutomatedSnapshotManagement';
 import SnapshotTrackingDashboard from '../components/SnapshotTracking/SnapshotTrackingDashboard';
+import AdminPortfolioList from './AdminPortfolioList';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import { ToastService } from '../services/toast';
 import { useRoles } from '../hooks/useRoles';
@@ -350,6 +352,12 @@ const AdminManagementContent: React.FC = () => {
             id="role-tab-4"
             aria-controls="role-tabpanel-4"
           />
+          <Tab 
+            icon={<PortfolioIcon />}
+            label="Portfolios"
+            id="role-tab-5"
+            aria-controls="role-tabpanel-5"
+          />
         </Tabs>
       </Paper>
 
@@ -445,6 +453,10 @@ const AdminManagementContent: React.FC = () => {
 
       <TabPanel value={tabValue} index={4}>
         <SnapshotTrackingDashboard />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={5}>
+        <AdminPortfolioList />
       </TabPanel>
 
       {/* Role Form Dialog */}

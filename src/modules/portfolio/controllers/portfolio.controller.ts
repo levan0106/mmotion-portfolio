@@ -15,7 +15,8 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { RequireRoles } from '../../shared/decorators/permissions.decorator';
 import { PortfolioService } from '../services/portfolio.service';
 import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
 import { PositionManagerService } from '../services/position-manager.service';
@@ -24,6 +25,8 @@ import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service
 import { AccountValidationService } from '../../shared/services/account-validation.service';
 import { PortfolioPermissionService } from '../services/portfolio-permission.service';
 import { PermissionCheckService } from '../../shared/services/permission-check.service';
+import { RoleGuard } from '../../shared/guards/role.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
@@ -139,6 +142,112 @@ export class PortfolioController {
   })
   async getPublicPortfolios(): Promise<Portfolio[]> {
     return this.portfolioService.getPublicPortfolios();
+  }
+
+  /**
+   * Get all portfolios in the system (Admin only)
+   */
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @RequireRoles(['super_admin'])
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Get all portfolios in the system (Admin only)',
+    description: 'Retrieves all portfolios in the system with portfolio name, ID, and created by information. Only accessible by super admin users.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'All portfolios retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          portfolioId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440000' },
+          name: { type: 'string', example: 'Growth Portfolio' },
+          createdBy: {
+            type: 'object',
+            properties: {
+              accountId: { type: 'string', example: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5' },
+              name: { type: 'string', example: 'John Doe' },
+              email: { type: 'string', example: 'john.doe@example.com' }
+            }
+          },
+          user: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              userId: { type: 'string', example: 'dc9f7a90-814a-4412-8a2d-76c5fa1c9574' },
+              username: { type: 'string', example: 'test1' },
+              email: { type: 'string', example: 'test1@example.com' }
+            }
+          },
+          baseCurrency: { type: 'string', example: 'VND' },
+          totalValue: { type: 'number', example: 1500000000 },
+          createdAt: { type: 'string', example: '2024-01-15T08:00:00.000Z' },
+          updatedAt: { type: 'string', example: '2024-12-19T10:30:00.000Z' }
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Forbidden - Super admin role required',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: 'Insufficient role. Required: super_admin' },
+        error: { type: 'string', example: 'Forbidden' }
+      }
+    }
+  })
+  async getAllPortfoliosAdmin(): Promise<any[]> {
+    return this.portfolioService.getAllPortfoliosForAdmin();
+  }
+
+  /**
+   * Delete portfolio (Admin only)
+   */
+  @Delete('admin/:portfolioId')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @RequireRoles(['super_admin'])
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Delete portfolio (Admin only)',
+    description: 'Deletes a portfolio. Only portfolios without associated users can be deleted.'
+  })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID to delete' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Portfolio deleted successfully'
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Forbidden - Super admin role required or portfolio has associated user',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: 'Cannot delete portfolio with associated user' },
+        error: { type: 'string', example: 'Forbidden' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Portfolio not found',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { type: 'string', example: 'Portfolio not found' },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async deletePortfolioAdmin(@Param('portfolioId') portfolioId: string): Promise<void> {
+    return this.portfolioService.deletePortfolioAdmin(portfolioId);
   }
 
   /**

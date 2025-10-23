@@ -176,6 +176,16 @@ class ApiService {
     return response.data;
   }
 
+  // Admin portfolio methods
+  async getAllPortfoliosAdmin(): Promise<any[]> {
+    const response = await this.api.get('/api/v1/portfolios/admin/all');
+    return response.data;
+  }
+
+  async deletePortfolioAdmin(portfolioId: string): Promise<void> {
+    await this.api.delete(`/api/v1/portfolios/admin/${portfolioId}`);
+  }
+
   // Admin notification methods
   async broadcastNotification(data: {
     title: string;

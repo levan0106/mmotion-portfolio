@@ -28,14 +28,12 @@ import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
   AccountBalance as PortfolioIcon,
-  Inventory as AssetIcon,
   Public as GlobalAssetIcon,
   CameraAlt as SnapshotIcon,
   Settings as SettingsIcon,
   Assessment as ReportsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
-  AccountBalanceWallet as DepositIcon,
   Wallet as HoldingsIcon,
   Warning as WarningIcon,
   Edit as EditIcon,
@@ -44,6 +42,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Help as HelpIcon,
+  // Flag as GoalsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -144,26 +143,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           badge: null
         },
         {
-          text: t('navigation.fundManagement.assets'),
-          icon: <AssetIcon />,
-          path: '/assets',
-          description: t('navigation.fundManagement.assets'),
-          badge: null
-        },
-        {
-          text: t('navigation.fundManagement.deposits'),
-          icon: <DepositIcon />,
-          path: '/deposits',
-          description: t('navigation.fundManagement.deposits'),
-          badge: null
-        },
-        {
           text: t('navigation.fundManagement.reports'),
           icon: <ReportsIcon />,
           path: '/reports',
           description: t('navigation.fundManagement.reports'),
           badge: null
-        }
+        },
+        // {
+        //   text: t('navigation.fundManagement.goals'),
+        //   icon: <GoalsIcon />,
+        //   path: '/goals',
+        //   description: t('navigation.fundManagement.goals'),
+        //   badge: null,
+        //   roles: ['admin', 'super_admin']
+        // }
       ]
     }]),
     // Settings - Always show
@@ -1033,7 +1026,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </IconButton>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-                Financial Ledger
+                Portfolio Management System
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {new Date().toLocaleDateString('en-US', { 

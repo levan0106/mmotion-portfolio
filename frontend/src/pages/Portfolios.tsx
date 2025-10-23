@@ -5,11 +5,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Box, Alert } from '@mui/material';
+import { 
+  Box, 
+  Alert, 
+  Tabs, 
+  Tab, 
+  Paper,
+  Container
+} from '@mui/material';
+import {
+  AccountBalance as PortfolioIcon,
+  Inventory as AssetIcon,
+  AccountBalanceWallet as DepositIcon,
+} from '@mui/icons-material';
 import PortfolioList from '../components/Portfolio/PortfolioList';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import { PublicPortfolioSelector } from '../components/Portfolio/PublicPortfolioSelector';
 import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
+import Assets from './Assets';
+import DepositManagement from './DepositManagement';
 import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
@@ -26,6 +40,7 @@ const Portfolios: React.FC = () => {
   const [isPublicTemplateSelectorOpen, setIsPublicTemplateSelectorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const { accountId } = useAccount();
 
@@ -206,6 +221,10 @@ const Portfolios: React.FC = () => {
     setSelectedPortfolioForPermission(null);
   };
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
   // Get the portfolio data for editing
   const getEditingPortfolioData = (): Partial<CreatePortfolioDto> | undefined => {
     if (!editingPortfolio) return undefined;
@@ -236,14 +255,62 @@ const Portfolios: React.FC = () => {
   // };
 
   return (
-    <Box>
-      <PortfolioList
-        onViewPortfolio={handleViewPortfolio}
-        onEditPortfolio={handleEditPortfolio}
-        onDeletePortfolio={handleDeletePortfolio}
-        onCreatePortfolio={handleCreatePortfolio}
-        onManagePermissions={handleManagePermissions}
-      />
+    <Container maxWidth="xl">
+      {/* Sticky Tabs */}
+      <Paper 
+        sx={{ 
+          position: 'sticky',
+          top: {xs: -18, sm: -25},
+          zIndex: 1200,
+          mb: 3,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        }}
+      >
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab 
+            icon={<PortfolioIcon />} 
+            label={t('navigation.fundManagement.portfolios')}
+            iconPosition="start"
+          />
+          <Tab 
+            icon={<AssetIcon />} 
+            label={t('navigation.fundManagement.assets')}
+            iconPosition="start"
+          />
+          <Tab 
+            icon={<DepositIcon />} 
+            label={t('navigation.fundManagement.deposits')}
+            iconPosition="start"
+          />
+        </Tabs>
+      </Paper>
+
+      {activeTab === 0 && (
+        <Box>
+          <PortfolioList
+            onViewPortfolio={handleViewPortfolio}
+            onEditPortfolio={handleEditPortfolio}
+            onDeletePortfolio={handleDeletePortfolio}
+            onCreatePortfolio={handleCreatePortfolio}
+            onManagePermissions={handleManagePermissions}
+          />
+        </Box>
+      )}
+
+      {activeTab === 1 && (
+        <Assets />
+      )}
+
+      {activeTab === 2 && (
+        <DepositManagement />
+      )}
 
       <PortfolioForm
         open={isFormOpen}
@@ -282,7 +349,7 @@ const Portfolios: React.FC = () => {
           </ResponsiveTypography>
         </Alert>
       )}
-    </Box>
+    </Container>
   );
 };
 

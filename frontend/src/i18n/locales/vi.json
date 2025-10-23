@@ -80,9 +80,10 @@
     "fundManagement": {
       "title": "Quản lý quỹ",
       "portfolios": "Danh mục",
-      "assets": "Loại tài sản",
+      "assets": "Các loại tài sản",
       "deposits": "Tiền gửi",
-      "reports": "Báo cáo"
+      "reports": "Báo cáo",
+      "goals": "Mục tiêu"
     },
     "settings": "Cài đặt",
     "systemExplanation": "Hướng dẫn",
@@ -1674,7 +1675,7 @@
     "deposits": "Tiền gửi",
     "cashBalance": "Tiền mặt",
     "ofTotal": "tổng tài sản",
-    "assetTypes": "Loại tài sản",
+    "assetTypes": "Các loại tài sản",
     "performance": "Hiệu suất",
     "diversified": "Đa dạng hóa",
     "totalAssets": "Tổng tài sản",
@@ -1838,6 +1839,52 @@
       "baseCurrency": "Tiền tệ cơ sở",
       "canInvest": "Nhà đầu tư",
       "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"
+    }
+  },
+  "adminPortfolioList": {
+    "title": "Portfolios",
+    "subtitle": "Xem danh sách portfolio",
+    "columns": {
+      "portfolioName": "Tên Portfolio",
+      "portfolioId": "ID Portfolio",
+      "createdBy": "Người tạo",
+      "createdById": "ID Người tạo",
+      "totalValue": "Tổng giá trị",
+      "createdAt": "Ngày tạo"
+    },
+    "noPortfolios": "Không tìm thấy portfolio nào trong hệ thống",
+    "error": {
+      "loadFailed": "Không thể tải danh sách portfolio"
+    }
+  },
+  "admin": {
+    "portfolioList": {
+      "title": "Portfolios",
+      "subtitle": "Xem portfolio trong hệ thống",
+      "loading": "Đang tải portfolio...",
+      "error": "Không thể tải danh sách portfolio",
+      "totalPortfolios": "Tổng Portfolio",
+      "uniqueUsers": "Người dùng duy nhất",
+      "totalValue": "Tổng giá trị",
+      "lastUpdated": "Cập nhật lần cuối",
+      "searchPlaceholder": "Tìm kiếm portfolio hoặc người dùng...",
+      "refresh": "Làm mới",
+      "noResults": "Không tìm thấy portfolio nào phù hợp với tìm kiếm",
+      "noPortfolios": "Không tìm thấy portfolio nào trong hệ thống",
+      "table": {
+        "portfolioName": "Tên Portfolio",
+        "portfolioId": "ID Portfolio",
+        "createdBy": "Người tạo",
+        "user": "Người dùng",
+        "currency": "Tiền tệ",
+        "createdAt": "Ngày tạo",
+        "actions": "Actions"
+      },
+      "deletePortfolio": "Xóa Portfolio",
+      "deleteDialog": {
+        "title": "Xóa Portfolio",
+        "message": "Bạn có chắc chắn muốn xóa portfolio \"{{portfolioName}}\"? Hành động này không thể hoàn tác."
+      }
     }
   },
   "adminMessage": {
@@ -2102,7 +2149,7 @@
     }
   },
   "login": {
-    "title": "Sổ tài chính",
+    "title": "MMOTION",
     "subtitle": {
       "enterUsername": "Ghi chú, phân tích và quản lý các giao dịch",
       "welcomeBack": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)",
@@ -2144,7 +2191,7 @@
       "newUserWelcomeMessage": "Bạn đã sẵn sàng! Hãy cùng tham quan nhanh để giúp bạn bắt đầu quản lý các khoản đầu tư của mình."
     },
     "history": {
-      "title": "Người Dùng Gần Đây - Đăng Nhập Nhanh",
+      "title": "Đăng Nhập Nhanh",
       "secure": "Bảo mật",
       "removeUser": "Xóa người dùng khỏi lịch sử"
     },
@@ -2157,7 +2204,7 @@
     }
   },
   "welcome": {
-    "title": "Chào mừng đến với Sổ tài chính",
+    "title": "Chào mừng đến với MMOTION",
     "subtitle": "Quản lý toàn diện với phân tích thời gian thực và báo cáo nâng cao",
     "buttons": {
       "getStarted": "Bắt đầu",

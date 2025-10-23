@@ -93,7 +93,7 @@ const DetailedGuideSection: React.FC = () => {
     {
       label: 'Đăng nhập hệ thống',
       description: 'Sử dụng tài khoản quản lý với quyền OWNER',
-      details: 'Truy cập https://mmotion.com và đăng nhập với email/username đã được cấp quyền quản lý'
+      details: 'Truy cập https://mmotion.cloud và đăng nhập với email/username đã được cấp quyền quản lý'
     },
     {
       label: 'Tạo Portfolio mới',

@@ -687,7 +687,8 @@ const PortfolioDetail: React.FC = () => {
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 20px rgba(34, 197, 94, 0.15)',
               transition: 'all 0.3s ease-in-out'
-            }
+            },
+            display: { xs: 'none', sm: 'flex' }
           }}>
             <Box sx={{ 
               position: 'absolute', 
@@ -763,7 +764,8 @@ const PortfolioDetail: React.FC = () => {
                 ? '0 4px 20px rgba(240, 147, 251, 0.15)'
                 : '0 4px 20px rgba(255, 154, 158, 0.15)',
               transition: 'all 0.3s ease-in-out'
-            }
+            },
+            display: { xs: 'none', sm: 'flex' }
           }}>
             <Box sx={{ 
               position: 'absolute', 

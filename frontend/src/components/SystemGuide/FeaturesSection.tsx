@@ -41,7 +41,9 @@ const FeaturesSection: React.FC = () => {
         </ResponsiveTypography>
 
         <TipBox>
+        <Typography variant="body2" color="text.primary">
           Hệ thống được thiết kế với 4 tính năng cốt lõi, mỗi tính năng đều có vai trò quan trọng trong việc quản lý danh mục đầu tư hiệu quả.
+        </Typography>
         </TipBox>
 
         {/* Core Features Grid */}

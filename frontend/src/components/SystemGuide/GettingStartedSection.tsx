@@ -63,7 +63,7 @@ const GettingStartedSection: React.FC = () => {
     {
       label: 'Đăng ký tài khoản quản lý',
       description: 'Tạo tài khoản đăng nhập',
-      details: 'Truy cập https://mmotion.com/register và chọn "Đăng ký làm nhà quản lý"'
+      details: 'Truy cập https://mmotion.cloud và đăng ký tài khoản'
     },
     {
       label: 'Xác thực tài khoản',

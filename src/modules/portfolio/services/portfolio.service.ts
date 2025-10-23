@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -28,6 +28,7 @@ import { NavSnapshot } from '../entities/nav-snapshot.entity';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { PortfolioPerformanceSnapshot } from '../entities/portfolio-performance-snapshot.entity';
 import { AssetAllocationSnapshot } from '../entities/asset-allocation-snapshot.entity';
+import { PortfolioPermission } from '../entities/portfolio-permission.entity';
 
 /**
  * Service class for Portfolio business logic.
@@ -77,6 +78,8 @@ export class PortfolioService {
     private readonly portfolioPerformanceSnapshotRepository: Repository<PortfolioPerformanceSnapshot>,
     @InjectRepository(AssetAllocationSnapshot)
     private readonly assetAllocationSnapshotRepository: Repository<AssetAllocationSnapshot>,
+    @InjectRepository(PortfolioPermission)
+    private readonly portfolioPermissionRepository: Repository<PortfolioPermission>,
   ) {}
 
   /**
@@ -1715,6 +1718,114 @@ export class PortfolioService {
     await this.clearAccountCache(portfolio.accountId);
 
     return updatedPortfolio;
+  }
+
+  /**
+   * Get all portfolios in the system for admin view
+   * Returns portfolio name, ID, and created by information including user details
+   */
+  async getAllPortfoliosForAdmin(): Promise<any[]> {
+    const portfolios = await this.portfolioEntityRepository
+      .createQueryBuilder('portfolio')
+      .leftJoinAndSelect('portfolio.account', 'account')
+      .leftJoinAndSelect('account.user', 'user')
+      .select([
+        'portfolio.portfolioId',
+        'portfolio.name',
+        'portfolio.baseCurrency',
+        'portfolio.totalValue',
+        'portfolio.createdAt',
+        'portfolio.updatedAt',
+        'account.accountId',
+        'account.name',
+        'account.email',
+        'user.userId',
+        'user.username',
+        'user.email'
+      ])
+      .orderBy('portfolio.createdAt', 'DESC')
+      .getMany();
+
+    return portfolios.map(portfolio => ({
+      portfolioId: portfolio.portfolioId,
+      name: portfolio.name,
+      createdBy: {
+        accountId: portfolio.account.accountId,
+        name: portfolio.account.name,
+        email: portfolio.account.email
+      },
+      user: portfolio.account.user ? {
+        userId: portfolio.account.user.userId,
+        username: portfolio.account.user.username,
+        email: portfolio.account.user.email
+      } : null,
+      baseCurrency: portfolio.baseCurrency,
+      totalValue: portfolio.totalValue,
+      createdAt: portfolio.createdAt,
+      updatedAt: portfolio.updatedAt
+    }));
+  }
+
+  /**
+   * Delete portfolio (Admin only)
+   * Only allows deletion of portfolios without associated users
+   */
+  async deletePortfolioAdmin(portfolioId: string): Promise<void> {
+    // Check if portfolio exists
+    const portfolio = await this.portfolioEntityRepository.findOne({
+      where: { portfolioId },
+      relations: ['account', 'account.user']
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException('Portfolio not found');
+    }
+
+    // Check if portfolio has associated user
+    if (portfolio.account.user) {
+      throw new ForbiddenException('Cannot delete portfolio with associated user');
+    }
+
+    // Delete related data first
+    await this.deletePortfolioRelatedData(portfolioId);
+
+    // Delete the portfolio
+    await this.portfolioEntityRepository.remove(portfolio);
+  }
+
+  /**
+   * Delete all data related to a portfolio
+   */
+  private async deletePortfolioRelatedData(portfolioId: string): Promise<void> {
+    // Delete NAV snapshots
+    await this.navSnapshotRepository.delete({ portfolioId });
+    
+    // Delete cash flows
+    await this.cashFlowRepository.delete({ portfolioId });
+    
+    // Delete deposits
+    await this.depositEntityRepository.delete({ portfolioId });
+    
+    // Delete investor holdings
+    await this.investorHoldingRepository.delete({ portfolioId });
+    
+    // Delete portfolio permissions
+    await this.portfolioPermissionRepository.delete({ portfolioId });
+    
+    // Delete trades and related trade details
+    const trades = await this.tradeRepository.find({ where: { portfolioId } });
+    if (trades.length > 0) {
+      const tradeIds = trades.map(trade => trade.tradeId);
+      
+      // Delete trade details first
+      await this.tradeDetailRepository.delete([
+        { sellTradeId: In(tradeIds) },
+        { buyTradeId: In(tradeIds) }
+      ]);
+      
+      // Delete trades
+      await this.tradeRepository.delete({ portfolioId });
+    }
   }
 
 }

@@ -82,7 +82,8 @@
       "portfolios": "Portfolios",
       "assets": "Assets",
       "deposits": "Deposits",
-      "reports": "Reports"
+      "reports": "Reports",
+      "goals": "Goals"
     },
     "settings": "Settings",
     "systemExplanation": "System Guide",
@@ -1787,6 +1788,52 @@
       "baseCurrency": "Base Currency",
       "canInvest": "Can invest in funds",
       "canInvestHelper": "Enable this if this account can invest in fund portfolios"
+    }
+  },
+  "adminPortfolioList": {
+    "title": "All Portfolios",
+    "subtitle": "View all portfolios in the system",
+    "columns": {
+      "portfolioName": "Portfolio Name",
+      "portfolioId": "Portfolio ID",
+      "createdBy": "Created By",
+      "createdById": "Created By ID",
+      "totalValue": "Total Value",
+      "createdAt": "Created At"
+    },
+    "noPortfolios": "No portfolios found in the system",
+    "error": {
+      "loadFailed": "Failed to load portfolios"
+    }
+  },
+  "admin": {
+    "portfolioList": {
+      "title": "All Portfolios",
+      "subtitle": "Manage portfolios in the system",
+      "loading": "Loading portfolios...",
+      "error": "Failed to load portfolios",
+      "totalPortfolios": "Total Portfolios",
+      "uniqueUsers": "Unique Users",
+      "totalValue": "Total Value",
+      "lastUpdated": "Last Updated",
+      "searchPlaceholder": "Search portfolios or users...",
+      "refresh": "Refresh",
+      "noResults": "No portfolios found matching your search",
+      "noPortfolios": "No portfolios found in the system",
+      "table": {
+        "portfolioName": "Portfolio Name",
+        "portfolioId": "Portfolio ID",
+        "createdBy": "Created By",
+        "user": "User",
+        "currency": "Currency",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "deletePortfolio": "Delete Portfolio",
+      "deleteDialog": {
+        "title": "Delete Portfolio",
+        "message": "Are you sure you want to delete portfolio \"{{portfolioName}}\"? This action cannot be undone."
+      }
     }
   },
   "adminMessage": {
