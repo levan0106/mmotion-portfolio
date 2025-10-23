@@ -365,7 +365,7 @@ export class SnapshotTrackingService {
       trackingRecord = await this.createTracking({
         executionId: trackingId,
         portfolioId,
-        portfolioName,
+        portfolioName: portfolioName + ' - ' + date.toISOString().split('T')[0], // add date to portfolio name
         type: trackingType,
         metadata: {
           parentExecutionId: executionId ? executionId : randomUUID(),
@@ -450,7 +450,7 @@ export class SnapshotTrackingService {
           failedSnapshots: trackingRecord.failedSnapshots
         });
       }
-      
+
       return {
         success: true,
         assetSnapshots,
