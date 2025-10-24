@@ -33,6 +33,7 @@ import { PortfolioSnapshotService } from '../services/portfolio-snapshot.service
 import { PerformanceSnapshotService } from '../services/performance-snapshot.service';
 import { PortfolioService } from '../services/portfolio.service';
 import { SnapshotTrackingService } from '../services/snapshot-tracking.service';
+import { CashFlowService } from '../services/cash-flow.service';
 import { AccountValidationService } from '../../shared/services/account-validation.service';
 import {
   CreateSnapshotDto,
@@ -62,6 +63,7 @@ export class SnapshotController {
     @Inject(forwardRef(() => PortfolioService))
     private readonly portfolioService: PortfolioService,
     private readonly snapshotTrackingService: SnapshotTrackingService,
+    private readonly cashFlowService: CashFlowService,
     private readonly accountValidationService: AccountValidationService,
   ) {}
 
@@ -180,9 +182,9 @@ export class SnapshotController {
     // Process each portfolio
     for (const portfolioId of body.portfolioIds) {
       try {
-        const datesProcessed: string[] = [];
+        let datesProcessed: string[] = [];
         let portfolioSnapshots = 0;
-        const allAssetSnapshots: any[] = [];
+        let allAssetSnapshots: any[] = [];
         let assetCount = 0;
 
         // Get portfolio name for response
@@ -197,42 +199,27 @@ export class SnapshotController {
           this.logger.warn(`Could not get portfolio info for ${portfolioId}: ${error.message}`);
         }
 
-        // Generate dates between start and end date
-        const currentDate = new Date(startDate);
-
-        while (currentDate <= endDate) {
-          const snapshotDate = normalizeDateToString(currentDate);
-          
-          try {
-            // Use centralized tracking service for consistent snapshot creation
-            const result = await this.snapshotTrackingService.createSnapshotsWithTracking(
-              portfolioId,
-              portfolioName,
-              snapshotDate,
-              granularityValue,
-              executionId,
-              body.createdBy || 'api-user',
-              true, // Include performance snapshots
-              SnapshotTrackingType.MANUAL // Manual type for API calls
-            );
-            
-            if (result.success && result.assetSnapshots.length > 0) {
-              portfolioSnapshots += result.assetSnapshots.length;
-              datesProcessed.push(snapshotDate);
-              allAssetSnapshots.push(...result.assetSnapshots);
-              
-              this.logger.log(`Created ${result.assetSnapshots.length} snapshots for portfolio ${portfolioName} on ${snapshotDate}. Tracking ID: ${result.trackingId}`);
-            } else if (result.error) {
-              this.logger.error(`Failed to create snapshots for portfolio ${portfolioName} on ${snapshotDate}: ${result.error}`);
-            }
-          } catch (error) {
-            this.logger.error(`Failed to create snapshots for portfolio ${portfolioName} on ${snapshotDate}: ${error.message}`);
-            // Continue with next date even if one date fails
-          }
-          
-          // Move to next date
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
+        // Use common method to create snapshots for date range
+        const snapshotResult = await this.createSnapshotsForDateRange(
+          portfolioId,
+          portfolioName,
+          startDate,
+          endDate,
+          granularityValue,
+          executionId,
+          body.createdBy || 'api-user',
+          SnapshotTrackingType.MANUAL
+        );
+        
+        // Process results from common method
+        portfolioSnapshots = snapshotResult.totalSnapshots;
+        datesProcessed = snapshotResult.results
+          .filter(r => r.success)
+          .map(r => r.date);
+        allAssetSnapshots = []; // Will be populated by individual snapshot creation
+        
+        // Log summary
+        this.logger.log(`Created ${portfolioSnapshots} snapshots for portfolio ${portfolioName} across ${snapshotResult.successfulDates} dates. Tracking ID: ${executionId}`);
 
         totalSnapshots += portfolioSnapshots;
 
@@ -513,10 +500,11 @@ export class SnapshotController {
   }
 
   @Post('bulk-recalculate/:portfolioId')
-  @ApiOperation({ summary: 'Bulk recalculate snapshots for portfolio' })
+  @ApiOperation({ summary: 'Bulk recalculate snapshots for portfolio from first transaction date to current date' })
   @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
   @ApiQuery({ name: 'accountId', required: true, description: 'Account ID for ownership validation' })
-  @ApiQuery({ name: 'snapshotDate', description: 'Specific snapshot date to recalculate', required: false })
+  @ApiQuery({ name: 'snapshotDate', description: 'Specific snapshot date to recalculate (optional)', required: false })
+  @ApiQuery({ name: 'useDateRange', description: 'Calculate from first transaction date to current date (default: true)', required: false })
   @ApiOkResponse({
     description: 'Snapshots recalculated successfully',
     schema: {
@@ -524,6 +512,35 @@ export class SnapshotController {
       properties: {
         message: { type: 'string' },
         updatedCount: { type: 'number' },
+        trackingId: { type: 'string' },
+        summary: {
+          type: 'object',
+          properties: {
+            totalDates: { type: 'number' },
+            successfulDates: { type: 'number' },
+            failedDates: { type: 'number' },
+            totalSnapshots: { type: 'number' }
+          }
+        },
+        results: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              date: { type: 'string' },
+              success: { type: 'boolean' },
+              snapshotsCreated: { type: 'number' },
+              error: { type: 'string' }
+            }
+          }
+        },
+        dateRange: { 
+          type: 'object',
+          properties: {
+            startDate: { type: 'string' },
+            endDate: { type: 'string' }
+          }
+        },
       },
     },
   })
@@ -531,7 +548,7 @@ export class SnapshotController {
   async bulkRecalculateSnapshots(
     @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
     @Query('accountId') accountId: string,
-    @Query('snapshotDate') snapshotDate?: string,
+    @Query('snapshotDate') snapshotDate?: string
   ) {
     if (!accountId) {
       throw new BadRequestException('accountId query parameter is required');
@@ -551,31 +568,171 @@ export class SnapshotController {
       this.logger.warn(`Could not get portfolio info for ${portfolioId}: ${error.message}`);
     }
     
-    const date = snapshotDate ? new Date(snapshotDate) : new Date();
+    let startDate: Date;
+    let endDate: Date;
+    let dateRange: { startDate: string; endDate: string } | undefined;
     
-    // Use centralized tracking service for recalculation
-    const result = await this.snapshotTrackingService.createSnapshotsWithTracking(
+    if (snapshotDate) {
+      // Single date mode
+      startDate = new Date(snapshotDate);
+      endDate = new Date(snapshotDate);
+    } else {
+      // Enhanced mode: from first transaction date to current date
+      try {
+        const firstTransactionDate = await this.cashFlowService.getFirstTransactionDate(portfolioId);
+        
+        if (firstTransactionDate) {
+          startDate = firstTransactionDate;
+          endDate = new Date();
+          dateRange = {
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+          };
+          
+          this.logger.log(`Using date range from first transaction (${startDate.toISOString().split('T')[0]}) to current date for portfolio ${portfolioId}`);
+        } else {
+          // Fallback to current date if no transactions found
+          startDate = new Date();
+          endDate = new Date();
+          this.logger.warn(`No transactions found for portfolio ${portfolioId}, using current date only`);
+        }
+      } catch (error) {
+        this.logger.error(`Error getting first transaction date for portfolio ${portfolioId}:`, error);
+        // Fallback to current date
+        startDate = new Date();
+        endDate = new Date();
+      }
+    }
+    
+    // Use common method to create snapshots for date range
+    const executionId = randomUUID();
+    const snapshotResult = await this.createSnapshotsForDateRange(
       portfolioId,
       portfolioName,
-      date,
-      SnapshotGranularity.DAILY, // Default granularity for recalculation
-      randomUUID(), 
+      startDate,
+      endDate,
+      SnapshotGranularity.DAILY,
+      executionId,
       'api-recalculation',
-      true, // Include performance snapshots
-      SnapshotTrackingType.MANUAL // Manual type for API calls
+      SnapshotTrackingType.MANUAL
     );
     
-    if (result.success) {
-      this.logger.log(`Successfully recalculated snapshots for portfolio ${portfolioName}. Tracking ID: ${result.trackingId}`);
-      return {
-        message: `Successfully recalculated ${result.assetSnapshots.length} snapshots`,
-        updatedCount: result.assetSnapshots.length,
-        trackingId: result.trackingId,
-      };
-    } else {
-      this.logger.error(`Failed to recalculate snapshots for portfolio ${portfolioName}: ${result.error}`);
-      throw new BadRequestException(`Failed to recalculate snapshots: ${result.error}`);
+    return {
+      message: `Successfully recalculated ${snapshotResult.totalSnapshots} snapshots across ${snapshotResult.successfulDates} dates`,
+      updatedCount: snapshotResult.totalSnapshots,
+      trackingId: executionId,
+      summary: {
+        totalDates: snapshotResult.results.length,
+        successfulDates: snapshotResult.successfulDates,
+        failedDates: snapshotResult.failedDates,
+        totalSnapshots: snapshotResult.totalSnapshots
+      },
+      results: snapshotResult.results,
+      ...(dateRange && { dateRange }),
+    };
+  }
+
+  /**
+   * Generate date range from start date to end date (inclusive)
+   */
+  private generateDateRange(startDate: Date, endDate: Date): Date[] {
+    const dates: Date[] = [];
+    const current = new Date(startDate);
+    
+    while (current <= endDate) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
     }
+    
+    return dates;
+  }
+
+  /**
+   * Common method to create snapshots for a portfolio across a date range
+   */
+  private async createSnapshotsForDateRange(
+    portfolioId: string,
+    portfolioName: string,
+    startDate: Date,
+    endDate: Date,
+    granularity: SnapshotGranularity = SnapshotGranularity.DAILY,
+    executionId?: string,
+    createdBy: string = 'api-user',
+    trackingType: SnapshotTrackingType = SnapshotTrackingType.MANUAL
+  ): Promise<{
+    totalSnapshots: number;
+    successfulDates: number;
+    failedDates: number;
+    results: Array<{
+      date: string;
+      success: boolean;
+      snapshotsCreated?: number;
+      error?: string;
+    }>;
+  }> {
+    const datesToProcess = this.generateDateRange(startDate, endDate);
+    const finalExecutionId = executionId || randomUUID();
+    
+    let totalSnapshots = 0;
+    let successfulDates = 0;
+    let failedDates = 0;
+    const results = [];
+    
+    this.logger.log(`Processing ${datesToProcess.length} dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    
+    // Process each date in the range
+    for (const date of datesToProcess) {
+      try {
+        this.logger.log(`Creating snapshots for date: ${date.toISOString().split('T')[0]}`);
+        
+        const result = await this.snapshotTrackingService.createSnapshotsWithTracking(
+          portfolioId,
+          portfolioName,
+          date,
+          granularity,
+          finalExecutionId,
+          createdBy,
+          true, // Include performance snapshots
+          trackingType
+        );
+        
+        if (result.success) {
+          totalSnapshots += result.assetSnapshots.length;
+          successfulDates++;
+          results.push({
+            date: date.toISOString().split('T')[0],
+            success: true,
+            snapshotsCreated: result.assetSnapshots.length
+          });
+          this.logger.log(`✅ Successfully created ${result.assetSnapshots.length} snapshots for ${date.toISOString().split('T')[0]}`);
+        } else {
+          failedDates++;
+          results.push({
+            date: date.toISOString().split('T')[0],
+            success: false,
+            error: result.error
+          });
+          this.logger.error(`❌ Failed to create snapshots for ${date.toISOString().split('T')[0]}: ${result.error}`);
+        }
+      } catch (error) {
+        failedDates++;
+        results.push({
+          date: date.toISOString().split('T')[0],
+          success: false,
+          error: error.message
+        });
+        this.logger.error(`❌ Exception creating snapshots for ${date.toISOString().split('T')[0]}: ${error.message}`);
+      }
+    }
+    
+    this.logger.log(`Completed processing for portfolio ${portfolioId}: ${successfulDates} successful dates, ${failedDates} failed dates, ${totalSnapshots} total snapshots created`);
+    
+    return {
+      totalSnapshots,
+      successfulDates,
+      failedDates,
+      results
+    };
   }
 
   /**

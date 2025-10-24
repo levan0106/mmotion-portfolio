@@ -252,11 +252,11 @@ export const NotificationBell: React.FC = () => {
                             <Box>
                               <Typography 
                                 variant="body2" 
-                                color="text.secondary"
+                                color="text.primary"
                                 sx={{
                                   wordBreak: 'break-word',
                                   lineHeight: 1.4,
-                                  fontSize: '0.8rem',
+                                  fontSize: '0.75rem',
                                   mb: 1,
                                 }}
                               >

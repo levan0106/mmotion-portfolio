@@ -896,4 +896,44 @@ export class CashFlowService {
       };
     });
   }
+
+  /**
+   * Get the first transaction date for a portfolio (from cashflows and trades)
+   * @param portfolioId Portfolio ID
+   * @returns Promise<Date | null>
+   */
+  async getFirstTransactionDate(portfolioId: string): Promise<Date | null> {
+    try {
+      // Get first cashflow date
+      const firstCashFlow = await this.cashFlowRepository
+        .createQueryBuilder('cashFlow')
+        .select('MIN(cashFlow.flowDate)', 'firstCashFlowDate')
+        .where('cashFlow.portfolioId = :portfolioId', { portfolioId })
+        .getRawOne();
+
+      // Get first trade date
+      const firstTrade = await this.tradeRepository
+        .createQueryBuilder('trade')
+        .select('MIN(trade.tradeDate)', 'firstTradeDate')
+        .where('trade.portfolioId = :portfolioId', { portfolioId })
+        .getRawOne();
+
+      const cashFlowDate = firstCashFlow?.firstCashFlowDate ? new Date(firstCashFlow.firstCashFlowDate) : null;
+      const tradeDate = firstTrade?.firstTradeDate ? new Date(firstTrade.firstTradeDate) : null;
+
+      // Return the earliest date between cashflow and trade
+      if (cashFlowDate && tradeDate) {
+        return cashFlowDate < tradeDate ? cashFlowDate : tradeDate;
+      } else if (cashFlowDate) {
+        return cashFlowDate;
+      } else if (tradeDate) {
+        return tradeDate;
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error(`Error getting first transaction date for portfolio ${portfolioId}:`, error);
+      return null;
+    }
+  }
 }

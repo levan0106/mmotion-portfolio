@@ -55,13 +55,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
       maxWidth="md"
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 2,
-          minHeight: isMobile ? '100vh' : 'auto',
-          maxHeight: isMobile ? '100vh' : '90vh',
-        }
-      }}
+      
     >
       <DialogTitle sx={{ 
         display: 'flex', 
@@ -88,17 +82,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
 
       <DialogContent sx={{ 
         p: 3,
-        overflow: 'auto',
-        '&::-webkit-scrollbar': {
-          width: '6px',
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          borderRadius: '3px',
-        },
+        
       }}>
         {/* Error Message */}
         {error && (
@@ -117,45 +101,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
         )}
 
         {/* Asset Form */}
-        <Box sx={{
-          '& .MuiTextField-root': {
-            '& .MuiInputBase-root': {
-              height: '48px',
-              fontSize: '0.875rem',
-            },
-            '& .MuiInputBase-input': {
-              padding: '12px 14px',
-            },
-            '& .MuiInputLabel-root': {
-              fontSize: '0.875rem',
-              fontWeight: 500,
-            },
-            '& .MuiFormHelperText-root': {
-              fontSize: '0.75rem',
-              marginTop: '4px',
-            },
-          },
-          '& .MuiFormControl-root': {
-            '& .MuiInputBase-root': {
-              height: '48px',
-              fontSize: '0.875rem',
-            },
-            '& .MuiInputBase-input': {
-              padding: '12px 14px',
-            },
-            '& .MuiInputLabel-root': {
-              fontSize: '0.875rem',
-              fontWeight: 500,
-            }
-          },
-          '& .MuiGrid-container': {
-            margin: 0,
-            width: '100%',
-          },
-          '& .MuiGrid-item': {
-            padding: '4px',
-          }
-        }}>
+        <Box           >
           <AssetForm
             userId={accountId}
             initialData={editingAsset ? (() => {

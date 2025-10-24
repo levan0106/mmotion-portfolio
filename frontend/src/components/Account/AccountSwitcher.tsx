@@ -20,6 +20,7 @@ import {
   AccountBalance as AccountIcon,
   Star as StarIcon,
   Settings as SettingsIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
@@ -95,13 +96,17 @@ export const AccountSwitcher: React.FC = () => {
     handleClose();
   };
 
-  const getCurrencySymbol = (currency: string) => {
-    const symbols: Record<string, string> = {
-      'VND': '₫',
-      'USD': '$'
-    };
-    return symbols[currency] || currency;
+  const handleRefresh = async () => {
+    await loadAccounts();
   };
+
+  // const getCurrencySymbol = (currency: string) => {
+  //   const symbols: Record<string, string> = {
+  //     'VND': '₫',
+  //     'USD': '$'
+  //   };
+  //   return symbols[currency] || currency;
+  // };
 
   const getAccountInitials = (name: string) => {
     return name
@@ -177,6 +182,26 @@ export const AccountSwitcher: React.FC = () => {
               size="small"
               color="default"
             />
+            {/* Refresh Accounts */}
+            <Tooltip title={t('accountSwitcher.refreshAccounts')}>
+              <IconButton
+                size="small"
+                onClick={handleRefresh}
+                disabled={loading}
+                sx={{ 
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'primary.main',
+                    backgroundColor: 'primary.50',
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 0.6,
+                  }
+                }}
+              >
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             {/* Manage Accounts */}
             <Tooltip title={t('accountSwitcher.manageAccounts')}>
               <IconButton
@@ -306,12 +331,12 @@ export const AccountSwitcher: React.FC = () => {
                     <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {account.email}
                     </Box>
-                    <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    {/* <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       •
                     </Box>
                     <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {account.baseCurrency} {getCurrencySymbol(account.baseCurrency)}
-                    </Box>
+                    </Box> */}
                   </Box>
                 }
               />

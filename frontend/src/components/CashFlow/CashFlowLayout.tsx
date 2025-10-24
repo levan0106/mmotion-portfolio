@@ -1815,11 +1815,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   required
                   currency={formData.currency}
                   margin="normal"
-                  helperText={
-                    editingCashFlow 
-                      ? `${t('cashflow.form.original')}: ${formatCurrency(editingCashFlow.amount)} | ${t('cashflow.form.new')}: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')}`
-                      : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')
-                  }
+                  // helperText={
+                  //   editingCashFlow 
+                  //     ? `${t('cashflow.form.original')}: ${formatCurrency(editingCashFlow.amount)} | ${t('cashflow.form.new')}: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')}`
+                  //     : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')
+                  // }
                   error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
                 />
                 
@@ -1863,7 +1863,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
-                  helperText={t('cashflow.form.flowDateHelper')}
+                  // helperText={t('cashflow.form.flowDateHelper')}
                 />
                                 
                 <TextField
@@ -1874,11 +1874,11 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   margin="normal"
                   multiline
                   rows={1}
-                  helperText={
-                    editingCashFlow 
-                      ? `${t('cashflow.form.original')}: "${editingCashFlow.description}"`
-                      : t('cashflow.form.descriptionHelper')
-                  }
+                  // helperText={
+                  //   editingCashFlow 
+                  //     ? `${t('cashflow.form.original')}: "${editingCashFlow.description}"`
+                  //     : t('cashflow.form.descriptionHelper')
+                  // }
                 />
               </Box>
             </Grid>

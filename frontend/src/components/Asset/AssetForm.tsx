@@ -222,16 +222,6 @@ export const AssetForm: React.FC<AssetFormProps> = ({
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
-            label={t('asset.form.fields.currency')}
-            value="VND"
-            disabled
-            helperText={t('asset.form.fields.currencyHelper')}
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
             label={t('asset.form.fields.description')}
             value={formData.description}
             onChange={handleChange('description')}
@@ -239,12 +229,6 @@ export const AssetForm: React.FC<AssetFormProps> = ({
             rows={2}
             placeholder={t('asset.form.fields.descriptionPlaceholder')}
           />
-        </Grid>
-
-        <Grid item xs={12}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <strong>{t('asset.form.info.computedFields.title')}:</strong> {t('asset.form.info.computedFields.description')}
-          </Alert>
         </Grid>
         </Grid>
         

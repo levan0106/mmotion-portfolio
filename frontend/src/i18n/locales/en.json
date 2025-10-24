@@ -1855,7 +1855,8 @@
     "protectedAccount": "Protected Account",
     "updateAccountInfo": "Update account information",
     "manageAccounts": "Manage Accounts",
-    "manageAccountsDescription": "Create, edit, and manage all accounts"
+    "manageAccountsDescription": "Create, edit, and manage all accounts",
+    "refreshAccounts": "Refresh accounts"
   },
   "settings": {
     "title": "Settings",

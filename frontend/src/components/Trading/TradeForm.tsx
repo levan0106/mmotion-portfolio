@@ -214,6 +214,34 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     }
   }, [initialData, mode]);
 
+  // Reset form when modal closes (for create mode)
+  useEffect(() => {
+    if (isModal && open === false && mode === 'create') {
+      // Reset form to initial state when modal closes
+      setFormData({
+        portfolioId: defaultPortfolioId || '',
+        assetId: '',
+        tradeDate: new Date().toISOString(),
+        side: TradeSide.BUY,
+        quantity: 0,
+        price: 0,
+        fee: 0,
+        tax: 0,
+        tradeType: TradeType.MARKET,
+        source: TradeSource.MANUAL,
+        exchange: '',
+        fundingSource: '',
+        notes: '',
+      });
+      // Reset validation state
+      setErrors({});
+      setIsValid(false);
+      setHasUserInteracted(false);
+      // Reset asset key to force AssetAutocomplete re-render
+      setAssetKey(prev => prev + 1);
+    }
+  }, [open, isModal, mode, defaultPortfolioId]);
+
   // Update portfolio when defaultPortfolioId changes
   useEffect(() => {
     if (defaultPortfolioId && defaultPortfolioId !== formData.portfolioId) {
@@ -228,6 +256,34 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     }
   }, [open, defaultPortfolioId, formData.portfolioId]);
 
+  // Reset form when modal opens (for create mode) to ensure clean state
+  useEffect(() => {
+    if (isModal && open === true && mode === 'create') {
+      // Reset form to initial state when modal opens
+      setFormData({
+        portfolioId: defaultPortfolioId || '',
+        assetId: '',
+        tradeDate: new Date().toISOString(),
+        side: TradeSide.BUY,
+        quantity: 0,
+        price: 0,
+        fee: 0,
+        tax: 0,
+        tradeType: TradeType.MARKET,
+        source: TradeSource.MANUAL,
+        exchange: '',
+        fundingSource: '',
+        notes: '',
+      });
+      // Reset validation state
+      setErrors({});
+      setIsValid(false);
+      setHasUserInteracted(false);
+      // Reset asset key to force AssetAutocomplete re-render
+      setAssetKey(prev => prev + 1);
+    }
+  }, [open, isModal, mode, defaultPortfolioId]);
+
   // Auto-fill funding source when portfolio changes
   useEffect(() => {
     if (selectedPortfolio && selectedPortfolio.fundingSource) {
@@ -239,6 +295,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   useEffect(() => {
     if (!hasUserInteracted) return;
     
+    // Don't validate if only portfolioId or assetId has changed and other required fields are empty
+    const hasRequiredFields = formData.quantity || formData.price;
+    if (!hasRequiredFields) return;
+    
     const timeoutId = setTimeout(() => {
       const validationErrors = validateForm(formData);
       setErrors(validationErrors);
@@ -247,6 +307,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
     return () => clearTimeout(timeoutId);
   }, [formData, hasUserInteracted]);
+
+  // Validate form on submit - always validate when submitting
+  const validateFormOnSubmit = useCallback(() => {
+    const validationErrors = validateForm(formData);
+    setErrors(validationErrors);
+    setIsValid(Object.keys(validationErrors).length === 0);
+    return Object.keys(validationErrors).length === 0;
+  }, [formData]);
 
   // Only update assetKey when necessary in edit mode
   useEffect(() => {
@@ -259,14 +327,25 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   // Track user interaction for validation - memoized to prevent re-render
   const handleFieldChange = useCallback((field: string, value: any) => {
-    setHasUserInteracted(true);
+    // Only mark as user interacted for fields that require manual input
+    // Exclude portfolioId and assetId from triggering validation since they're auto-selected
+    const validationFields = ['tradeDate', 'side', 'quantity', 'price', 'fee', 'tax'];
+    if (validationFields.includes(field)) {
+      setHasUserInteracted(true);
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleFormSubmit = useCallback(async () => {
     try {
-      // Mark as user interacted to show validation errors
-      setHasUserInteracted(true);
+      // Validate form before submitting
+      const isFormValid = validateFormOnSubmit();
+      
+      if (!isFormValid) {
+        // Mark as user interacted to show validation errors
+        setHasUserInteracted(true);
+        return; // Don't submit if form is invalid
+      }
       
       // Use the form data directly
       const submitData: TradeFormData = {
@@ -291,7 +370,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     } catch (err) {
       console.error('Error submitting trade form:', err);
     }
-  }, [formData, onSubmit]);
+  }, [formData, onSubmit, validateFormOnSubmit]);
 
   // Asset creation handlers
   const handleCreateAsset = useCallback(() => {
@@ -442,7 +521,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                             </MenuItem>
                             {portfolios?.map((portfolio) => (
                               <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
-                                {portfolio.name} ({portfolio.baseCurrency})
+                                {portfolio.name}
                               </MenuItem>
                             ))}
                           </Select>

@@ -485,7 +485,7 @@
       "createTrade": "Tạo giao dịch"
     },
     "floatingButton": {
-      "tooltip": "Thêm dữ liệu",
+      "tooltip": "Ghi nhận mua/bán",
       "ariaLabel": "Tạo giao dịch",
       "createPortfolioFirst": "Tạo danh mục trước",
       "creatingPortfolio": "Đang tạo danh mục..."
@@ -1906,7 +1906,8 @@
     "protectedAccount": "Tài khoản được bảo vệ",
     "updateAccountInfo": "Cập nhật thông tin tài khoản",
     "manageAccounts": "Quản lý tài khoản",
-    "manageAccountsDescription": "Tạo, chỉnh sửa và quản lý tất cả tài khoản"
+    "manageAccountsDescription": "Tạo, chỉnh sửa và quản lý tất cả tài khoản",
+    "refreshAccounts": "Làm mới tài khoản"
   },
   "settings": {
     "title": "Cài đặt",

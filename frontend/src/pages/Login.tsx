@@ -268,7 +268,7 @@ export const Login: React.FC = () => {
               <ResponsiveTypography variant="pageTitle" gutterBottom>
                 {t('login.title')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+              <ResponsiveTypography variant="pageSubtitle" color="text.secondary" ellipsis={false}>
                 {getFormDescription()}
               </ResponsiveTypography>
             </Box>
