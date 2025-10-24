@@ -52,55 +52,62 @@ async function bootstrap() {
   const globalExceptionFilter = app.get(GlobalExceptionFilter);
   app.useGlobalFilters(globalExceptionFilter);
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle('Portfolio Management System API')
-    .setDescription(`
-      Comprehensive API for Portfolio Management System with full CRUD operations.
-      
-      ## Features
-      - **Portfolio Management**: Create, update, delete, and manage investment portfolios
-      - **Asset Management**: Complete asset lifecycle management with analytics
-      - **Trading Operations**: Buy/sell transactions with position tracking
-      - **Risk Management**: Risk targets, monitoring, and compliance
-      - **Analytics & Reporting**: Advanced portfolio analytics and performance metrics
-      
-      ## Asset Module Status
-      ✅ All tests passing (173/173)
-      ✅ Full CRUD operations
-      ✅ Advanced analytics and reporting
-      ✅ Risk metrics and performance tracking
-      ✅ Comprehensive validation and error handling
-      
-      ## Authentication
-      All endpoints require Bearer token authentication.
-    `)
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .addTag('Portfolios', 'Portfolio management operations - Create, read, update, delete portfolios')
-    .addTag('Portfolio Analytics', 'Portfolio analytics and reporting - Performance metrics, risk analysis')
-    .addTag('Assets', 'Asset management and analytics operations - Complete asset lifecycle with advanced analytics')
-    .addTag('Trading', 'Trading operations and trade management - Buy/sell transactions, position tracking')
-    .addTag('Positions', 'Position tracking and management - Current holdings and position analysis')
-    .addTag('Risk Management', 'Risk targets and monitoring - Risk assessment and compliance tracking')
-    .addTag('Health', 'Health check endpoints - System status and monitoring')
-    .build();
+  // Swagger documentation - only enable in development or when SWAGGER_ENABLED=true
+  const swaggerEnabled = process.env.SWAGGER_ENABLED === 'true' || process.env.NODE_ENV === 'development';
+  
+  if (swaggerEnabled) {
+    const config = new DocumentBuilder()
+      .setTitle('Portfolio Management System API')
+      .setDescription(`
+        Comprehensive API for Portfolio Management System with full CRUD operations.
+        
+        ## Features
+        - **Portfolio Management**: Create, update, delete, and manage investment portfolios
+        - **Asset Management**: Complete asset lifecycle management with analytics
+        - **Trading Operations**: Buy/sell transactions with position tracking
+        - **Risk Management**: Risk targets, monitoring, and compliance
+        - **Analytics & Reporting**: Advanced portfolio analytics and performance metrics
+        
+        ## Asset Module Status
+        ✅ All tests passing (173/173)
+        ✅ Full CRUD operations
+        ✅ Advanced analytics and reporting
+        ✅ Risk metrics and performance tracking
+        ✅ Comprehensive validation and error handling
+        
+        ## Authentication
+        All endpoints require Bearer token authentication.
+      `)
+      .setVersion('1.0.0')
+      .addBearerAuth()
+      .addTag('Portfolios', 'Portfolio management operations - Create, read, update, delete portfolios')
+      .addTag('Portfolio Analytics', 'Portfolio analytics and reporting - Performance metrics, risk analysis')
+      .addTag('Assets', 'Asset management and analytics operations - Complete asset lifecycle with advanced analytics')
+      .addTag('Trading', 'Trading operations and trade management - Buy/sell transactions, position tracking')
+      .addTag('Positions', 'Position tracking and management - Current holdings and position analysis')
+      .addTag('Risk Management', 'Risk targets and monitoring - Risk assessment and compliance tracking')
+      .addTag('Health', 'Health check endpoints - System status and monitoring')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-      defaultModelsExpandDepth: 1,
-      defaultModelExpandDepth: 1,
-      docExpansion: 'list',
-    },
-  });
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        docExpansion: 'list',
+      },
+    });
+    
+    console.log(`📚 Swagger documentation: http://localhost:${process.env.PORT || 3000}/api/docs`);
+  } else {
+    console.log('🚫 Swagger documentation disabled in production');
+  }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
   console.log(`🏥 Health check: http://localhost:${port}/health`);
 }
 

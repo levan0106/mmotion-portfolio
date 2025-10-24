@@ -183,6 +183,44 @@ export class DeviceTrustService {
     }
   }
 
+
+  /**
+   * Revoke device trust by fingerprint and username (public method - no user context required)
+   * Used when user removes themselves from quick login history
+   */
+  async revokeDeviceByFingerprintAndUsername(deviceFingerprint: string, username: string): Promise<void> {
+    try {
+      // First, find the user by username to get userId
+      const user = await this.trustedDeviceRepository.manager
+        .getRepository('users')
+        .findOne({ where: { username } });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Find device by fingerprint and userId for more precise matching
+      const device = await this.trustedDeviceRepository.findOne({
+        where: { 
+          deviceFingerprint,
+          userId: user.userId
+        }
+      });
+
+      if (!device) {
+        throw new NotFoundException('Device not found for this user');
+      }
+
+      // Delete device from database
+      await this.trustedDeviceRepository.remove(device);
+      
+      this.logger.log(`Device ${deviceFingerprint} (${device.deviceId}) deleted for user ${username} (${user.userId})`);
+    } catch (error) {
+      this.logger.error(`Error revoking device by fingerprint and username: ${error.message}`);
+      throw new BadRequestException('Failed to revoke device');
+    }
+  }
+
   /**
    * Expire all trusted devices for user (mark as expired but keep in database)
    */

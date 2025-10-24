@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { DeviceTrustService, DeviceInfo } from '../services/device-trust.service';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { Public } from '../decorators/public.decorator';
 
 export class AddTrustedDeviceDto {
   deviceFingerprint: string;
@@ -134,6 +135,27 @@ export class DeviceTrustController {
   ) {
     this.logger.log(`Revoking device ${deviceId} for user ${user.userId}`);
     await this.deviceTrustService.revokeDevice(deviceId, user.userId);
+  }
+
+  /**
+   * Revoke device trust by fingerprint and username (public endpoint - no auth required)
+   * Used when user removes themselves from quick login history
+   */
+  @Public()
+  @Delete('devices/fingerprint/:deviceFingerprint/username/:username')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ 
+    summary: 'Revoke device by fingerprint and username',
+    description: 'Revoke trust for a device by fingerprint and username (public endpoint)'
+  })
+  @ApiResponse({ status: 204, description: 'Device revoked successfully' })
+  @ApiResponse({ status: 404, description: 'Device not found' })
+  async revokeDeviceByFingerprintAndUsername(
+    @Param('deviceFingerprint') deviceFingerprint: string,
+    @Param('username') username: string
+  ) {
+    this.logger.log(`Revoking device by fingerprint ${deviceFingerprint} for username ${username}`);
+    await this.deviceTrustService.revokeDeviceByFingerprintAndUsername(deviceFingerprint, username);
   }
 
   /**

@@ -1979,7 +1979,7 @@
       "emailHelper": "Địa chỉ này sẽ được sử dụng nhận email từ hệ thống",
       "baseCurrency": "Tiền tệ cơ sở",
       "canInvest": "Nhà đầu tư",
-      "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"
+      "canInvestHelper": "Bật tùy chọn này nếu là nhà đầu tư cá nhân chỉ đầu tư cổ phần vào các quỹ. Trường hợp tắt tùy chọn này, tài khoản sẽ hoạt động như nhà quản lý quỹ."
     }
   },
   "adminPortfolioList": {
@@ -2231,7 +2231,7 @@
       "emailHelper": "Địa chỉ này sẽ được sử dụng nhận email từ hệ thống",
       "baseCurrency": "Tiền tệ cơ sở",
       "canInvest": "Nhà đầu tư",
-      "canInvestHelper": "Bật tùy chọn này nếu tài khoản này có thể đầu tư vào các danh mục quỹ"
+      "canInvestHelper": "Bật tùy chọn này nếu là nhà đầu tư cá nhân chỉ đầu tư cổ phần vào các quỹ. Trường hợp tắt tùy chọn này, tài khoản sẽ hoạt động như nhà quản lý quỹ."
     }
   },
   "publicPortfolioSelector": {
@@ -2322,7 +2322,7 @@
       "enterPassword": "Nhập mật khẩu để tiếp tục",
       "userHasPassword": "Người dùng này đã có mật khẩu - vui lòng nhập mật khẩu để tiếp tục",
       "userIncomplete": "Người dùng này có hồ sơ chưa hoàn chỉnh - không cần mật khẩu",
-      "easyStart": "Bắt đầu dễ dàng, bảo mật tuyệt đối, trạm để sử dụng",
+      "easyStart": "Chỉ cần nhập tên - bắt đầu dễ dàng, bảo mật tuyệt đối, sử dụng linh hoạt.",
       "usernameRequired": "Vui lòng nhập tên người dùng",
       "passwordRequired": "Mật khẩu là bắt buộc cho người dùng này",
       "incorrectPassword": "Mật khẩu không chính xác. Vui lòng thử lại.",

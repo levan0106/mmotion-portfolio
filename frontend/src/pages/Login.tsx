@@ -194,10 +194,27 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleRemoveUser = (username: string) => {
-    userHistoryService.removeUserFromHistory(username);
-    const updatedHistory = userHistoryService.getUserHistory();
-    setUserHistory(updatedHistory);
+  const handleRemoveUser = async (username: string) => {
+    try {
+      // Remove user from history
+      userHistoryService.removeUserFromHistory(username);
+      
+      // Get current device fingerprint to revoke only current device
+      const deviceInfo = await deviceTrustService.getDeviceInfo();
+      const currentDeviceFingerprint = deviceInfo.deviceFingerprint;
+      
+      // Revoke only the current device using public endpoint with username for precision
+      await deviceTrustService.revokeDeviceByFingerprintAndUsername(currentDeviceFingerprint, username);
+      
+      // Update the history state
+      const updatedHistory = userHistoryService.getUserHistory();
+      setUserHistory(updatedHistory);
+    } catch (error) {
+      console.error('Error removing user and device trust:', error);
+      // Still update the history even if device trust revocation fails
+      const updatedHistory = userHistoryService.getUserHistory();
+      setUserHistory(updatedHistory);
+    }
   };
 
   const toggleHistory = () => {

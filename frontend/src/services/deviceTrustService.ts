@@ -100,6 +100,19 @@ class DeviceTrustService {
     }
   }
 
+
+  /**
+   * Revoke device by fingerprint and username (public endpoint - no auth required)
+   */
+  async revokeDeviceByFingerprintAndUsername(deviceFingerprint: string, username: string): Promise<void> {
+    try {
+      await apiService.api.delete(`/api/v1/device-trust/devices/fingerprint/${deviceFingerprint}/username/${username}`);
+    } catch (error) {
+      console.error('Error revoking device by fingerprint and username:', error);
+      throw error;
+    }
+  }
+
   /**
    * Revoke all devices
    */

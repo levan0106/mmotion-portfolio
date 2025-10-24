@@ -1,13 +1,47 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 23, 2025  
-**Session Type**: Device Trust System Implementation & Enhancement + Password Security Enhancement + Build Error Fix  
-**Primary Goal**: Implement comprehensive Device Trust system with incognito detection, secure device management, smooth user experience, password change security enhancement, and fix build errors
+**Date**: October 24, 2025  
+**Session Type**: Device Trust System Enhancement + Quick Login History Integration + Public API Endpoints  
+**Primary Goal**: Enhance Device Trust system with quick login history integration, implement public API endpoints for device revocation, and improve user experience with seamless device management
 
 ## Recent Achievements
 
-### ✅ Device Trust System Implementation & Enhancement (Current Session)
+### ✅ Device Trust System Enhancement + Quick Login History Integration (Current Session)
+1. **Quick Login History Integration**
+   - **Device Trust Integration**: When user removes themselves from quick login history, also revoke device trust
+   - **Current Device Revocation**: Only revoke the current device, not all devices of the user
+   - **Public API Endpoint**: Created public endpoint for device revocation without authentication
+   - **Precise Device Matching**: Use both device fingerprint and username for accurate device identification
+   - **Files Updated**: Login.tsx, deviceTrustService.ts, device-trust.service.ts, device-trust.controller.ts
+
+2. **Public API Endpoints Implementation**
+   - **Public Decorator**: Used @Public() decorator to bypass JWT authentication for specific endpoints
+   - **Device Revocation Endpoint**: `DELETE /api/v1/device-trust/devices/fingerprint/:deviceFingerprint/username/:username`
+   - **No Authentication Required**: Endpoint works without JWT token for quick login history removal
+   - **User Context Resolution**: Find user by username, then find device by fingerprint and userId
+   - **Files Updated**: device-trust.controller.ts, device-trust.service.ts
+
+3. **Backend Service Enhancement**
+   - **Method Separation**: Separated revokeDevice (authenticated) and revokeDeviceByFingerprintAndUsername (public)
+   - **User Entity Fix**: Fixed user.id to user.userId for proper database field mapping
+   - **Precise Device Matching**: Use both deviceFingerprint and userId for accurate device identification
+   - **Error Handling**: Proper error handling for user not found and device not found scenarios
+   - **Files Updated**: device-trust.service.ts
+
+4. **Frontend Service Enhancement**
+   - **Public Method**: Added revokeDeviceByFingerprintAndUsername method for public API calls
+   - **Device Info Integration**: Get current device fingerprint for precise device identification
+   - **Error Handling**: Graceful error handling if device trust revocation fails
+   - **Files Updated**: deviceTrustService.ts, Login.tsx
+
+5. **Code Cleanup and Optimization**
+   - **Unused Code Removal**: Removed unused revokeDeviceByFingerprint method
+   - **Method Simplification**: Simplified revokeDevice method to only handle deviceId (UUID)
+   - **Clear Separation**: Clear separation between authenticated and public endpoints
+   - **Files Updated**: device-trust.service.ts, deviceTrustService.ts
+
+### ✅ Device Trust System Implementation & Enhancement (Previous Session)
 1. **Device Trust Core System**
    - **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
    - **Stable Fingerprints**: Removed timestamp to ensure consistent device identification
@@ -208,6 +242,13 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
+- `frontend/src/pages/Login.tsx` - Enhanced with quick login history device trust integration
+- `frontend/src/services/deviceTrustService.ts` - Added public API method for device revocation
+- `src/modules/shared/services/device-trust.service.ts` - Enhanced with public device revocation method
+- `src/modules/shared/controllers/device-trust.controller.ts` - Added public endpoint with @Public() decorator
+- `src/modules/shared/decorators/public.decorator.ts` - Public decorator for bypassing authentication
+
+### Key Components Modified (Previous Session)
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
 - `frontend/src/services/deviceTrustService.ts` - Frontend device trust management service
 - `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI with ResponsiveTypography/Button
@@ -230,6 +271,15 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
+- **Quick Login History Integration**: When user removes themselves from quick login history, device trust is also revoked
+- **Current Device Revocation**: Only revoke the current device, not all devices of the user
+- **Seamless Device Management**: No authentication required for device revocation from quick login history
+- **Precise Device Matching**: Use both device fingerprint and username for accurate device identification
+- **Public API Access**: Device revocation works without JWT token for better user experience
+- **Error Handling**: Graceful error handling if device trust revocation fails
+- **Code Cleanup**: Removed unused code and simplified device revocation methods
+
+### User Experience Improvements (Previous Session)
 - **Seamless Login Experience**: No error messages when password is required, smooth transition to password step
 - **Device Trust Security**: Trusted devices bypass password requirements for faster login
 - **Incognito Protection**: Incognito/private mode sessions are never trusted for security
@@ -343,6 +393,18 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
+1. ✅ **Quick Login History Integration**: Device trust revocation when user removes themselves from history
+2. ✅ **Public API Endpoints**: Created public endpoint for device revocation without authentication
+3. ✅ **Device Trust Enhancement**: Enhanced device trust system with precise device matching
+4. ✅ **Backend Service Enhancement**: Separated authenticated and public device revocation methods
+5. ✅ **Frontend Service Enhancement**: Added public API method for device revocation
+6. ✅ **User Entity Fix**: Fixed user.id to user.userId for proper database field mapping
+7. ✅ **Code Cleanup**: Removed unused code and simplified device revocation methods
+8. ✅ **Public Decorator Integration**: Used @Public() decorator to bypass JWT authentication
+9. ✅ **Error Handling**: Proper error handling for user not found and device not found scenarios
+10. ✅ **Current Device Revocation**: Only revoke current device, not all devices of the user
+
+### Completed Tasks (Previous Session)
 1. ✅ **Device Trust System Implementation**: Complete backend and frontend implementation
 2. ✅ **Device Fingerprinting**: Advanced fingerprinting with incognito detection
 3. ✅ **Database Schema**: TrustedDevice entity with proper relationships and indexes
@@ -364,6 +426,10 @@
 4. **Bulk Operations**: Enhanced bulk device management operations
 5. **Device Notifications**: Push notifications for new device logins
 6. **Advanced Fingerprinting**: Machine learning-based device fingerprinting
+7. **Quick Login History Enhancement**: Enhanced quick login history with device trust integration
+8. **Public API Security**: Rate limiting and security measures for public endpoints
+9. **Device Trust Analytics**: Analytics for device trust usage patterns
+10. **Multi-Device Management**: Enhanced multi-device management capabilities
 
 ### Future Enhancements (Previous Session)
 1. **Advanced Permissions**: More granular permission levels
@@ -438,17 +504,19 @@ src/
 - ✅ **Database**: Fully operational with device trust system and trusted_devices table
 - ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
 - ✅ **Frontend**: Responsive with device trust UI and smooth login experience
-- ✅ **Backend**: Stable API endpoints with device trust management
+- ✅ **Backend**: Stable API endpoints with device trust management and public endpoints
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Device Trust System**: Complete implementation with incognito detection
-- ✅ **Security**: Enhanced security with device fingerprinting and incognito protection
-- ✅ **User Experience**: Smooth login flow with proper error handling
+- ✅ **Device Trust System**: Complete implementation with incognito detection and quick login integration
+- ✅ **Security**: Enhanced security with device fingerprinting, incognito protection, and public API security
+- ✅ **User Experience**: Smooth login flow with proper error handling and quick login history integration
 - ✅ **Device Management**: Complete UI for viewing and managing trusted devices
 - ✅ **Password Security**: Device expiry on password change/set for enhanced security
 - ✅ **Responsive Design**: DeviceManagement component uses responsive components
 - ✅ **Build System**: Both frontend and backend build successfully without errors
 - ✅ **Code Quality**: All TypeScript errors resolved, unused imports cleaned up
 - ✅ **Event-Driven Architecture**: Auto asset creation using event-driven pattern
+- ✅ **Public API Endpoints**: Public device revocation endpoints working without authentication
+- ✅ **Quick Login Integration**: Device trust revocation integrated with quick login history removal
 
 ## Notes
 - Device Trust System fully implemented with comprehensive backend and frontend integration
@@ -464,6 +532,13 @@ src/
 - Password security enhanced: all trusted devices expire when password is changed or set
 - DeviceManagement component updated to use ResponsiveTypography and ResponsiveButton for better responsive design
 - New expireAllDevices method provides audit trail while maintaining security
+- Quick login history integration: device trust revocation when user removes themselves from history
+- Public API endpoints: device revocation works without authentication for better user experience
+- Precise device matching: use both device fingerprint and username for accurate device identification
+- Current device revocation: only revoke current device, not all devices of the user
+- Public decorator integration: @Public() decorator bypasses JWT authentication for specific endpoints
+- User entity fix: user.userId instead of user.id for proper database field mapping
+- Code cleanup: removed unused code and simplified device revocation methods
 - System is production-ready with comprehensive device trust security and user-friendly interface
 - All device trust features working correctly including fingerprinting, incognito detection, and device management
 - Multi-account portfolio management system remains fully operational alongside device trust
