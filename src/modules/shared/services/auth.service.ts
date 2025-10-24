@@ -279,6 +279,9 @@ export class AuthService {
     user.passwordHash = await this.hashPassword(password);
     user.isPasswordSet = true;
     
+    // Update profile completion status after setting password
+    user.updateProfileCompletion();
+    
     await this.userRepository.save(user);
 
     // Expire all trusted devices for security when password is first set

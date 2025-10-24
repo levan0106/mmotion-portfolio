@@ -193,17 +193,17 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                 <CardContent>
                   <Box display="flex" alignItems="center">
                     <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
-                      <AttachMoney color="success" sx={{ fontSize: 32 }} />
+                      <PieChart color="info" sx={{ fontSize: 32 }} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
-                        {t('investorReport.cashBalance', 'Tiền mặt')}
+                        {t('investorReport.investmentAssets', 'Tiền đầu tư')}
                       </ResponsiveTypography>
-                      <ResponsiveTypography variant="cardValue" color="success.main" sx={{ mb: 0.5 }}>
-                        {formatCurrency(data.cashBalance)}
+                      <ResponsiveTypography variant="cardValue" color="warning.main" sx={{ mb: 0.5 }}>
+                        {formatCurrency(data.assetValue)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
-                        {formatPercentage(data.summary.cashPercentage)} {t('investorReport.ofTotal', 'tổng tài sản')}
+                        {formatPercentage(data.summary.assetPercentage)} {t('investorReport.ofTotal', 'tổng tài sản')}
                       </ResponsiveTypography>
                     </Box>
                   </Box>
@@ -216,17 +216,17 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                 <CardContent>
                   <Box display="flex" alignItems="center">
                     <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
-                      <PieChart color="info" sx={{ fontSize: 32 }} />
+                      <AttachMoney color="success" sx={{ fontSize: 32 }} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <ResponsiveTypography variant="cardTitle" sx={{ mb: 0.5 }}>
-                        {t('investorReport.investmentAssets', 'Tiền đầu tư')}
+                        {t('investorReport.cashBalance', 'Tiền mặt')}
                       </ResponsiveTypography>
-                      <ResponsiveTypography variant="cardValue" color="warning.main" sx={{ mb: 0.5 }}>
-                        {formatCurrency(data.assetValue)}
+                      <ResponsiveTypography variant="cardValue" color="success.main" sx={{ mb: 0.5 }}>
+                        {formatCurrency(data.cashBalance)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
-                        {formatPercentage(data.summary.assetPercentage)} {t('investorReport.ofTotal', 'tổng tài sản')}
+                        {formatPercentage(data.summary.cashPercentage)} {t('investorReport.ofTotal', 'tổng tài sản')}
                       </ResponsiveTypography>
                     </Box>
                   </Box>
