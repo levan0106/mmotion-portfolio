@@ -184,6 +184,27 @@ export class DeviceTrustService {
   }
 
   /**
+   * Expire all trusted devices for user (mark as expired but keep in database)
+   */
+  async expireAllDevices(userId: string): Promise<void> {
+    try {
+      // Update all devices to set isTrusted = false and expiresAt = now
+      await this.trustedDeviceRepository.update(
+        { userId },
+        { 
+          isTrusted: false,
+          expiresAt: new Date()
+        }
+      );
+
+      this.logger.log(`All devices expired for user ${userId}`);
+    } catch (error) {
+      this.logger.error(`Error expiring all devices: ${error.message}`);
+      throw new BadRequestException('Failed to expire all devices');
+    }
+  }
+
+  /**
    * Calculate time since last used
    */
   private calculateTimeSince(lastUsed: Date): string {

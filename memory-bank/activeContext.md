@@ -2,8 +2,8 @@
 
 ## Current Session Focus
 **Date**: October 23, 2025  
-**Session Type**: Device Trust System Implementation & Enhancement  
-**Primary Goal**: Implement comprehensive Device Trust system with incognito detection, secure device management, and smooth user experience
+**Session Type**: Device Trust System Implementation & Enhancement + Password Security Enhancement  
+**Primary Goal**: Implement comprehensive Device Trust system with incognito detection, secure device management, smooth user experience, and password change security enhancement
 
 ## Recent Achievements
 
@@ -42,6 +42,14 @@
    - **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
    - **Device Information**: Comprehensive device details with browser info and location
    - **Files Updated**: Login.tsx, deviceTrustService.ts, device-trust.service.ts
+
+6. **Password Security Enhancement**
+   - **Device Expiry on Password Change**: All trusted devices expire when user changes password
+   - **Device Expiry on Password Set**: All trusted devices expire when user sets password for first time
+   - **Security Enhancement**: Prevents unauthorized access from old trusted devices after password change
+   - **Audit Trail**: Expired devices remain in database for security tracking
+   - **Error Handling**: Graceful error handling if device expiry fails
+   - **Files Updated**: auth.service.ts, device-trust.service.ts
 
 ### ✅ Global Asset Tracking Cleanup Endpoint Fix (Previous Session)
 1. **HTTP Method Mismatch Resolution**
@@ -181,13 +189,13 @@
 ### Key Components Modified (Current Session)
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
 - `frontend/src/services/deviceTrustService.ts` - Frontend device trust management service
-- `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI
+- `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI with ResponsiveTypography/Button
 - `frontend/src/pages/Login.tsx` - Enhanced login flow with device trust integration
 - `frontend/src/pages/Settings.tsx` - Added Security tab with device management
 - `src/modules/shared/entities/trusted-device.entity.ts` - Database entity for trusted devices
-- `src/modules/shared/services/device-trust.service.ts` - Backend device trust service
+- `src/modules/shared/services/device-trust.service.ts` - Backend device trust service with expireAllDevices method
 - `src/modules/shared/controllers/device-trust.controller.ts` - Device trust API endpoints
-- `src/modules/shared/services/auth.service.ts` - Enhanced authentication with device trust
+- `src/modules/shared/services/auth.service.ts` - Enhanced authentication with device trust and password security
 - `src/migrations/1735123456789-CreateTrustedDeviceTable.ts` - Database migration for trusted devices
 
 ### Key Components Modified (Previous Session)
@@ -209,6 +217,8 @@
 - **Error Handling**: Proper error display for invalid credentials while hiding password requirement messages
 - **Device Information**: Comprehensive device details with browser info and trust levels
 - **Revoke Functionality**: Easy device revocation with individual and bulk options
+- **Password Security**: All trusted devices expire when password is changed for enhanced security
+- **Responsive Design**: DeviceManagement component uses ResponsiveTypography and ResponsiveButton
 
 ### User Experience Improvements (Previous Session)
 - **Multi-Account Access**: Users can access portfolios they have permissions for
@@ -266,6 +276,8 @@
 - **Security Enhancement**: Incognito sessions generate random fingerprints (never trusted)
 - **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
 - **Device Revocation**: Individual and bulk device revocation with proper database cleanup
+- **Password Security**: All trusted devices expire when password is changed or set
+- **Device Expiry**: New expireAllDevices method marks devices as expired but keeps audit trail
 
 ### Authentication & Security
 - **Progressive Authentication**: Device trust bypasses password for trusted devices
@@ -273,6 +285,9 @@
 - **Error Handling**: Proper error display for invalid credentials (401 status)
 - **Device Management**: Complete UI for viewing and managing trusted devices
 - **Security Protection**: Incognito/private mode sessions are never trusted
+- **Password Change Security**: All trusted devices expire when password is changed
+- **Password Set Security**: All trusted devices expire when password is first set
+- **Audit Trail**: Expired devices remain in database for security tracking
 
 ### Multi-Account Portfolio Management
 - **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels
@@ -315,6 +330,8 @@
 6. ✅ **User Experience**: Smooth login flow with proper error handling
 7. ✅ **Security Enhancement**: Incognito mode protection and device revocation
 8. ✅ **Time Display**: Accurate time display for device last used
+9. ✅ **Password Security Enhancement**: Device expiry on password change/set
+10. ✅ **Responsive Components**: DeviceManagement uses ResponsiveTypography/Button
 
 ### Future Enhancements (Current Session)
 1. **Advanced Device Trust Features**: Device location tracking and geofencing
@@ -403,6 +420,8 @@ src/
 - ✅ **Security**: Enhanced security with device fingerprinting and incognito protection
 - ✅ **User Experience**: Smooth login flow with proper error handling
 - ✅ **Device Management**: Complete UI for viewing and managing trusted devices
+- ✅ **Password Security**: Device expiry on password change/set for enhanced security
+- ✅ **Responsive Design**: DeviceManagement component uses responsive components
 
 ## Notes
 - Device Trust System fully implemented with comprehensive backend and frontend integration
@@ -415,9 +434,12 @@ src/
 - Device revocation functionality properly deletes devices from database instead of just marking as untrusted
 - Time display enhanced to show accurate relative time (minutes/hours/days ago) instead of just "Today"
 - Error handling refined to only hide error messages for 400 status (password required) while showing 401 errors
+- Password security enhanced: all trusted devices expire when password is changed or set
+- DeviceManagement component updated to use ResponsiveTypography and ResponsiveButton for better responsive design
+- New expireAllDevices method provides audit trail while maintaining security
 - System is production-ready with comprehensive device trust security and user-friendly interface
 - All device trust features working correctly including fingerprinting, incognito detection, and device management
 - Multi-account portfolio management system remains fully operational alongside device trust
 - Permission-based access control continues to work across all APIs
 - ResponsiveTable component system provides consistent styling
-- System is ready for production deployment with enhanced security, device trust, and user experience
+- System is ready for production deployment with enhanced security, device trust, password security, and user experience

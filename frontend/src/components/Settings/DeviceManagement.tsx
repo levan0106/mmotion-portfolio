@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardHeader,
   CardContent,
-  Typography,
   Box,
-  Button,
   Chip,
   IconButton,
   Dialog,
@@ -23,6 +22,8 @@ import {
   Avatar,
   Tooltip
 } from '@mui/material';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
+import { ResponsiveButton } from '../Common/ResponsiveButton';
 import {
   Security as SecurityIcon,
   Delete as DeleteIcon,
@@ -34,6 +35,7 @@ import {
 import { deviceTrustService, TrustedDevice, DeviceStats } from '../../services/deviceTrustService';
 
 export const DeviceManagement: React.FC = () => {
+  const { t } = useTranslation();
   const [devices, setDevices] = useState<TrustedDevice[]>([]);
   const [stats, setStats] = useState<DeviceStats>({
     totalDevices: 0,
@@ -65,7 +67,7 @@ export const DeviceManagement: React.FC = () => {
       setDevices(devicesData);
       setStats(statsData);
     } catch (err: any) {
-      setError(err.message || 'Failed to load device data');
+      setError(err.message || t('deviceManagement.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ export const DeviceManagement: React.FC = () => {
       await loadData();
       setRevokeDialogOpen(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to revoke device');
+      setError(err.message || t('deviceManagement.errors.revokeFailed'));
     } finally {
       setRevokingDeviceId(null);
     }
@@ -91,7 +93,7 @@ export const DeviceManagement: React.FC = () => {
       await loadData();
       setRevokeAllDialogOpen(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to revoke all devices');
+      setError(err.message || t('deviceManagement.errors.revokeAllFailed'));
     } finally {
       setRevokingDeviceId(null);
     }
@@ -118,8 +120,8 @@ export const DeviceManagement: React.FC = () => {
       <Card>
         <CardHeader
           avatar={<SecurityIcon color="primary" />}
-          title="Trusted Devices"
-          subheader="Manage devices that can access your account without password"
+          title={t('deviceManagement.title')}
+          subheader={t('deviceManagement.subtitle')}
         />
         <CardContent>
           {error && (
@@ -136,10 +138,10 @@ export const DeviceManagement: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <DeviceHubIcon color="primary" sx={{ mr: 1 }} />
                     <Box>
-                      <Typography variant="h6">{stats.totalDevices}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Total Devices
-                      </Typography>
+                      <ResponsiveTypography variant="cardValue">{stats.totalDevices}</ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('deviceManagement.stats.totalDevices')}
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -151,10 +153,10 @@ export const DeviceManagement: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <CheckCircleIcon color="success" sx={{ mr: 1 }} />
                     <Box>
-                      <Typography variant="h6">{stats.activeDevices}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Active Devices
-                      </Typography>
+                      <ResponsiveTypography variant="cardValue">{stats.activeDevices}</ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('deviceManagement.stats.activeDevices')}
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -166,10 +168,10 @@ export const DeviceManagement: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <WarningIcon color="warning" sx={{ mr: 1 }} />
                     <Box>
-                      <Typography variant="h6">{stats.expiredDevices}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Expired Devices
-                      </Typography>
+                      <ResponsiveTypography variant="cardValue">{stats.expiredDevices}</ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('deviceManagement.stats.expiredDevices')}
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -181,10 +183,10 @@ export const DeviceManagement: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <SecurityIcon color="info" sx={{ mr: 1 }} />
                     <Box>
-                      <Typography variant="h6">{stats.highTrustDevices}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        High Trust
-                      </Typography>
+                      <ResponsiveTypography variant="cardValue">{stats.highTrustDevices}</ResponsiveTypography>
+                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
+                        {t('deviceManagement.stats.highTrust')}
+                      </ResponsiveTypography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -196,12 +198,12 @@ export const DeviceManagement: React.FC = () => {
           {devices.length === 0 ? (
             <Box textAlign="center" py={4}>
               <DeviceHubIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary">
-                No Trusted Devices
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Devices will be automatically added when you log in
-              </Typography>
+                    <ResponsiveTypography variant="cardTitle" color="text.secondary">
+                      {t('deviceManagement.noDevices.title')}
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
+                      {t('deviceManagement.noDevices.subtitle')}
+                    </ResponsiveTypography>
             </Box>
           ) : (
             <List>
@@ -214,9 +216,9 @@ export const DeviceManagement: React.FC = () => {
                     <ListItemText
                       primary={
                         <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="subtitle1">
-                            {device.deviceName}
-                          </Typography>
+                            <ResponsiveTypography variant="cardTitle">
+                              {device.deviceName}
+                            </ResponsiveTypography>
                           <Chip
                             label={getTrustLevelLabel(device.trustLevel)}
                             size="small"
@@ -228,7 +230,7 @@ export const DeviceManagement: React.FC = () => {
                           />
                           {!device.isActive && (
                             <Chip
-                              label="Expired"
+                              label={t('deviceManagement.device.expired')}
                               size="small"
                               color="warning"
                               variant="outlined"
@@ -238,17 +240,17 @@ export const DeviceManagement: React.FC = () => {
                       }
                       secondary={
                         <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            {device.browserInfo}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {device.location} • Last used: {device.timeSinceLastUsed}
-                          </Typography>
+                            <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
+                              {device.browserInfo}
+                            </ResponsiveTypography>
+                            <ResponsiveTypography variant="cardSubtitle" color="text.secondary">
+                              {device.location} • {t('deviceManagement.device.lastUsed')}: {device.timeSinceLastUsed}
+                            </ResponsiveTypography>
                         </Box>
                       }
                     />
                     <ListItemSecondaryAction>
-                      <Tooltip title="Revoke Device">
+                      <Tooltip title={t('deviceManagement.device.revoke')}>
                         <IconButton
                           edge="end"
                           color="error"
@@ -276,20 +278,20 @@ export const DeviceManagement: React.FC = () => {
           {/* Actions */}
           {devices.length > 0 && (
             <Box mt={3} display="flex" gap={2}>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteSweepIcon />}
-                onClick={() => setRevokeAllDialogOpen(true)}
-              >
-                Revoke All Devices
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={loadData}
-              >
-                Refresh
-              </Button>
+                    <ResponsiveButton
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteSweepIcon />}
+                      onClick={() => setRevokeAllDialogOpen(true)}
+                    >
+                      {t('deviceManagement.device.revokeAll')}
+                    </ResponsiveButton>
+                    <ResponsiveButton
+                      variant="outlined"
+                      onClick={loadData}
+                    >
+                      {t('deviceManagement.device.refresh')}
+                    </ResponsiveButton>
             </Box>
           )}
         </CardContent>
@@ -297,48 +299,52 @@ export const DeviceManagement: React.FC = () => {
 
       {/* Revoke Device Dialog */}
       <Dialog open={revokeDialogOpen} onClose={() => setRevokeDialogOpen(false)}>
-        <DialogTitle>Revoke Device</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>{t('deviceManagement.dialogs.revokeDevice.title')}</DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to revoke this device? You will need to enter your password 
-            the next time you log in from this device.
-          </Typography>
+          <ResponsiveTypography variant="body2" ellipsis={false}>
+            {t('deviceManagement.dialogs.revokeDevice.message')}
+          </ResponsiveTypography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRevokeDialogOpen(false)}>Cancel</Button>
-          <Button
-            color="error"
-            onClick={() => handleRevokeDevice(selectedDeviceId || '')}
-            disabled={revokingDeviceId !== null}
-          >
-            Revoke
-          </Button>
+                <ResponsiveButton onClick={() => setRevokeDialogOpen(false)}>
+                  {t('deviceManagement.dialogs.revokeDevice.cancel')}
+                </ResponsiveButton>
+                <ResponsiveButton
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleRevokeDevice(selectedDeviceId || '')}
+                  disabled={revokingDeviceId !== null}
+                >
+                  {t('deviceManagement.dialogs.revokeDevice.confirm')}
+                </ResponsiveButton>
         </DialogActions>
       </Dialog>
 
       {/* Revoke All Devices Dialog */}
       <Dialog open={revokeAllDialogOpen} onClose={() => setRevokeAllDialogOpen(false)}>
-        <DialogTitle>Revoke All Devices</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>{t('deviceManagement.dialogs.revokeAll.title')}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
-            <Typography variant="body2">
-              This will revoke all trusted devices. You will need to enter your password 
-              the next time you log in from any device.
-            </Typography>
+            <ResponsiveTypography variant="body2" ellipsis={false}>
+              {t('deviceManagement.dialogs.revokeAll.warning')}
+            </ResponsiveTypography>
           </Alert>
-          <Typography>
-            Are you sure you want to revoke all {devices.length} devices?
-          </Typography>
+          <ResponsiveTypography variant="body2" ellipsis={false}>
+            {t('deviceManagement.dialogs.revokeAll.message', { count: devices.length })}
+          </ResponsiveTypography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRevokeAllDialogOpen(false)}>Cancel</Button>
-          <Button
-            color="error"
-            onClick={handleRevokeAllDevices}
-            disabled={revokingDeviceId !== null}
-          >
-            {revokingDeviceId === 'all' ? 'Revoking...' : 'Revoke All'}
-          </Button>
+                <ResponsiveButton onClick={() => setRevokeAllDialogOpen(false)}>
+                  {t('deviceManagement.dialogs.revokeAll.cancel')}
+                </ResponsiveButton>
+                <ResponsiveButton
+                  variant="contained"
+                  color="error"
+                  onClick={handleRevokeAllDevices}
+                  disabled={revokingDeviceId !== null}
+                >
+                  {revokingDeviceId === 'all' ? t('deviceManagement.dialogs.revokeAll.revoking') : t('deviceManagement.dialogs.revokeAll.confirm')}
+                </ResponsiveButton>
         </DialogActions>
       </Dialog>
     </Box>

@@ -393,7 +393,7 @@ export const Login: React.FC = () => {
             </ResponsiveButton>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <ResponsiveTypography variant="formHelper" color="text.secondary">
+              <ResponsiveTypography variant="formHelper" color="text.secondary" ellipsis={false}>
                 {currentStep === 'password' 
                   ? t('login.messages.enterPassword')
                   : userState === 'COMPLETE' 
@@ -403,6 +403,27 @@ export const Login: React.FC = () => {
                   : t('login.messages.easyStart')
                 }
               </ResponsiveTypography>
+              
+              {/* Forget Password Link */}
+              {currentStep === 'password' && (
+                <Box sx={{ mt: 2 }}>
+                  <ResponsiveButton
+                    variant="text"
+                    size="small"
+                    onClick={() => navigate('/forget-password')}
+                    sx={{
+                      textTransform: 'none',
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.light',
+                        color: 'primary.dark',
+                      }
+                    }}
+                  >
+                    {t('login.buttons.forgetPassword')}
+                  </ResponsiveButton>
+                </Box>
+              )}
             </Box>
 
             {/* User History Section */}

@@ -134,16 +134,39 @@ class DeviceTrustService {
    * Get human-readable device name
    */
   private getDeviceName(): string {
-    const platform = navigator.platform;
     const userAgent = navigator.userAgent;
     
-    if (userAgent.includes('Chrome')) return `Chrome on ${platform}`;
-    if (userAgent.includes('Firefox')) return `Firefox on ${platform}`;
-    if (userAgent.includes('Safari')) return `Safari on ${platform}`;
-    if (userAgent.includes('Edge')) return `Edge on ${platform}`;
-    if (userAgent.includes('Opera')) return `Opera on ${platform}`;
+    // Detect device type
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isTablet = /iPad|Android(?!.*Mobile)/i.test(userAgent);
+    const isDesktop = !isMobile && !isTablet;
     
-    return `${platform} Browser`;
+    // Detect browser
+    let browser = 'Unknown Browser';
+    if (userAgent.includes('Edg/')) browser = 'Microsoft Edge';
+    else if (userAgent.includes('Chrome/')) browser = 'Google Chrome';
+    else if (userAgent.includes('Firefox/')) browser = 'Mozilla Firefox';
+    else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) browser = 'Safari';
+    else if (userAgent.includes('Opera/') || userAgent.includes('OPR/')) browser = 'Opera';
+    
+    // Detect operating system
+    let os = 'Unknown OS';
+    if (userAgent.includes('Windows NT 10.0')) os = 'Windows 10/11';
+    else if (userAgent.includes('Windows NT 6.3')) os = 'Windows 8.1';
+    else if (userAgent.includes('Windows NT 6.1')) os = 'Windows 7';
+    else if (userAgent.includes('Mac OS X')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+    
+    // Create device description
+    let deviceType = '';
+    if (isMobile) deviceType = 'mobile';
+    else if (isTablet) deviceType = 'tablet';
+    else if (isDesktop) deviceType = 'desktop';
+    else deviceType = 'device';
+    
+    return `${deviceType} • ${browser} • ${os}`;
   }
 
   /**
@@ -158,8 +181,52 @@ class DeviceTrustService {
    * Get location (simplified to avoid rate limits)
    */
   private async getLocation(): Promise<string> {
-    // Skip location to avoid rate limits
-    return 'unknown';
+    // Try to get location from browser timezone
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timezone) {
+        // Convert timezone to readable location
+        if (timezone.includes('Ho_Chi_Minh') || timezone.includes('Bangkok')) {
+          return 'Việt Nam';
+        } else if (timezone.includes('Tokyo')) {
+          return 'Nhật Bản';
+        } else if (timezone.includes('Seoul')) {
+          return 'Hàn Quốc';
+        } else if (timezone.includes('Singapore')) {
+          return 'Singapore';
+        } else if (timezone.includes('New_York')) {
+          return 'Hoa Kỳ';
+        } else if (timezone.includes('London')) {
+          return 'Anh';
+        } else if (timezone.includes('Paris')) {
+          return 'Pháp';
+        } else if (timezone.includes('Berlin')) {
+          return 'Đức';
+        } else if (timezone.includes('Sydney')) {
+          return 'Úc';
+        } else {
+          return timezone.replace(/_/g, ' ');
+        }
+      }
+    } catch (error) {
+      console.log('Could not detect location from timezone');
+    }
+    
+    // Fallback to browser language
+    const language = navigator.language || navigator.languages?.[0];
+    if (language?.startsWith('vi')) {
+      return 'Việt Nam';
+    } else if (language?.startsWith('en')) {
+      return 'English';
+    } else if (language?.startsWith('ja')) {
+      return 'Japan';
+    } else if (language?.startsWith('ko')) {
+      return 'Korea';
+    } else if (language?.startsWith('zh')) {
+      return 'China';
+    }
+    
+    return 'Không xác định';
   }
 
   /**

@@ -136,7 +136,7 @@ export class AuthService {
     // Create main account
     const mainAccount = await this.accountRepository.save({
       name: username,
-      email: `${username}@demo.com`, // Default email for demo users
+      email: `${username}@mmotion.cloud`, // Default email for demo users
       baseCurrency: 'VND',
       isMainAccount: true,
       userId: user.userId,
@@ -145,7 +145,7 @@ export class AuthService {
     // Auto assign default role if enabled
     try {
       await this.autoRoleAssignmentService.assignDefaultRole(user.userId);
-      this.logger.log(`Auto-assigned default role to user: ${username}`);
+      //this.logger.log(`Auto-assigned default role to user: ${username}`);
     } catch (error) {
       this.logger.warn(`Failed to auto-assign default role to user ${username}: ${error.message}`);
       // Don't throw error - user creation should succeed even if role assignment fails
@@ -165,7 +165,7 @@ export class AuthService {
           isDemo: true,
         }
       );
-      this.logger.log(`Đã gửi thông báo chào mừng đến user demo: ${username}`);
+      //this.logger.log(`Đã gửi thông báo chào mừng đến user demo: ${username}`);
     } catch (error) {
       this.logger.warn(`Không thể gửi thông báo chào mừng đến user demo ${username}: ${error.message}`);
       // Don't throw error - user creation should succeed even if notification fails
@@ -263,6 +263,16 @@ export class AuthService {
     user.isPasswordSet = true;
     
     await this.userRepository.save(user);
+
+    // Expire all trusted devices for security when password is first set
+    try {
+      await this.deviceTrustService.expireAllDevices(userId);
+      this.logger.log(`All trusted devices expired for user: ${userId} due to password being set`);
+    } catch (error) {
+      this.logger.warn(`Failed to expire trusted devices for user ${userId}: ${error.message}`);
+      // Don't throw error here as password setting should still succeed
+    }
+
     this.logger.log(`Password set for user: ${userId}`);
   }
 
@@ -292,6 +302,15 @@ export class AuthService {
     // Hash and save new password
     user.passwordHash = await this.hashPassword(newPassword);
     await this.userRepository.save(user);
+
+    // Expire all trusted devices for security
+    try {
+      await this.deviceTrustService.expireAllDevices(userId);
+      this.logger.log(`All trusted devices expired for user: ${userId} due to password change`);
+    } catch (error) {
+      this.logger.warn(`Failed to expire trusted devices for user ${userId}: ${error.message}`);
+      // Don't throw error here as password change should still succeed
+    }
     
     this.logger.log(`Password changed for user: ${userId}`);
   }

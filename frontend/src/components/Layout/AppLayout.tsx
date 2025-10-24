@@ -738,7 +738,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           borderColor: 'divider',
           background: alpha(theme.palette.background.paper, 0.5),
         }}>
-          <Tooltip title={isDrawerCollapsed ? 'Expand menu' : 'Collapse menu'} placement="right">
+          <Tooltip title={isDrawerCollapsed ? t('navigation.expandMenu') : t('navigation.collapseMenu')} placement="right">
             <IconButton
               onClick={handleDrawerCollapse}
               sx={{
@@ -803,7 +803,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               right: -4,
               zIndex: 1,
             }}>
-              <Tooltip title="Profile incomplete - Click to update" placement="top">
+              <Tooltip title={t('navigation.profileIncomplete')} placement="top">
                 <Chip
                   icon={<WarningIcon sx={{ fontSize: 14 }} />}
                   label="!"
@@ -861,7 +861,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   {currentUser?.fullName || currentUser?.username || 'User'}
                 </Typography>
                 {currentUser?.isProfileComplete ? (
-                  <Tooltip title="Profile complete" placement="top">
+                  <Tooltip title={t('navigation.profileComplete')} placement="top">
                     <CheckCircleIcon 
                       sx={{ 
                         fontSize: 16, 
@@ -871,7 +871,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     />
                   </Tooltip>
                 ) : currentUser?.isPasswordSet ? (
-                  <Tooltip title="Password set, profile optional" placement="top">
+                  <Tooltip title={t('navigation.passwordSet')} placement="top">
                     <CheckCircleIcon 
                       sx={{ 
                         fontSize: 16, 
@@ -881,7 +881,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     />
                   </Tooltip>
                 ) : (
-                  <Tooltip title="Profile needs completion" placement="top">
+                  <Tooltip title={t('navigation.profileNeedsCompletion')} placement="top">
                     <EditIcon 
                       sx={{ 
                         fontSize: 16, 
@@ -916,7 +916,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     fontSize: '0.7rem',
                   }}
                 >
-                  Complete your profile
+                  {t('navigation.completeYourProfile')}
                 </Typography>
               )}
             </Box>
@@ -932,7 +932,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-            <Tooltip title="Settings" placement="top">
+            <Tooltip title={t('navigation.settings')} placement="top">
               <IconButton 
                 size="small" 
                 sx={{ 
@@ -1060,7 +1060,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               mr: { xs: 1, sm: 2 }
             }}>
               <Box sx={{ position: 'relative' }}>
-                <Tooltip title="Click to go to Home" placement="bottom" arrow>
+                <Tooltip title={t('navigation.clickToGoToHome')} placement="bottom" arrow>
                   <Avatar 
                     sx={{ 
                       width: 32, 

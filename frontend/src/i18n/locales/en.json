@@ -111,6 +111,35 @@
       "primary": "Primary",
       "daysRemaining": "days remaining",
       "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "remaining": "remaining",
+      "days": "days",
+      "day": "day",
+      "weeks": "weeks",
+      "week": "week",
+      "months": "months",
+      "month": "month",
+      "years": "years",
+      "year": "year",
+      "status": {
+        "overdue": "Overdue",
+        "completed": "Completed",
+        "dangerous": "Dangerous",
+        "urgent": "Urgent",
+        "attention": "Attention",
+        "excellent": "Excellent",
+        "good": "Good",
+        "okay": "Okay"
+      },
+      "tooltip": {
+        "overdue": "Goal has exceeded the target date",
+        "completed": "Goal has been completed 100%",
+        "noTargetDate": "No target date set. Progress: {{progress}}%, Remaining: {{remaining}}%",
+        "warning": "WARNING: Time remaining {{timePercent}}% ({{days}} days) is less than the percentage needed to complete {{progressPercent}}%",
+        "safe": "SAFE: Time remaining {{timePercent}}% ({{days}} days) is sufficient to complete the remaining {{progressPercent}}%"
+      },
       "priority": {
         "highest": "Highest",
         "high": "High",
@@ -180,7 +209,16 @@
     "globalAssets": "Global Assets",
     "adminManagement": "System Administration",
     "transactions": "Transactions",
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "profileIncomplete": "Profile incomplete - Click to update",
+    "profileComplete": "Profile complete",
+    "passwordSet": "Password set, profile optional",
+    "profileNeedsCompletion": "Profile needs completion",
+    "completeYourProfile": "Complete your profile",
+    "clickToGoToHome": "Click to go to Home",
+    "settings": "Settings"
   },
   "portfolio": {
     "title": "Portfolio Management",
@@ -1795,7 +1833,15 @@
     "main": "Main",
     "investor": "Investor",
     "protectedAccount": "Protected Account",
-    "noAccounts": "No accounts found. Create your first account to get started."
+    "noAccounts": "No accounts found. Create your first account to get started.",
+    "moreActions": "More Actions",
+    "deleteConfirm": {
+      "title": "Delete Account",
+      "subtitle": "This action cannot be undone",
+      "message": "Are you sure you want to delete the account \"{{accountName}}\" ({{accountEmail}})?",
+      "warning": "This will permanently delete the account and all associated data. This action cannot be undone.",
+      "deleting": "Deleting..."
+    }
   },
   "accountSwitcher": {
     "switching": "Switching...",
@@ -2481,6 +2527,76 @@
       "loadFailed": "Failed to load permissions",
       "addFailed": "Failed to add permission",
       "deleteFailed": "Failed to delete permission"
+    }
+  },
+  "deviceManagement": {
+    "title": "Trusted Devices",
+    "subtitle": "Manage devices that can access your account without password",
+    "stats": {
+      "totalDevices": "Total Devices",
+      "activeDevices": "Active Devices",
+      "expiredDevices": "Expired Devices",
+      "highTrust": "High Trust"
+    },
+    "noDevices": {
+      "title": "No Trusted Devices",
+      "subtitle": "Devices will be automatically added when you log in"
+    },
+    "device": {
+      "lastUsed": "Last used",
+      "expired": "Expired",
+      "revoke": "Revoke Device",
+      "revokeAll": "Revoke All Devices",
+      "refresh": "Refresh"
+    },
+    "dialogs": {
+      "revokeDevice": {
+        "title": "Revoke Device",
+        "message": "Are you sure you want to revoke this device? You will need to enter your password the next time you log in from this device.",
+        "cancel": "Cancel",
+        "confirm": "Revoke"
+      },
+      "revokeAll": {
+        "title": "Revoke All Devices",
+        "warning": "This will revoke all trusted devices. You will need to enter your password the next time you log in from any device.",
+        "message": "Are you sure you want to revoke all {{count}} devices?",
+        "cancel": "Cancel",
+        "confirm": "Revoke All",
+        "revoking": "Revoking..."
+      }
+    },
+    "errors": {
+      "loadFailed": "Failed to load device data",
+      "revokeFailed": "Failed to revoke device",
+      "revokeAllFailed": "Failed to revoke all devices"
+    }
+  },
+  "forgetPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email to contact admin for support",
+    "emailLabel": "Email",
+    "submitButton": "Send Request",
+    "backToLogin": "Back to Login",
+    "contactAdmin": {
+      "title": "Contact Admin",
+      "description": "If you forgot your password, please contact admin for support",
+      "button": "Contact Admin",
+      "modal": {
+        "title": "Contact Admin",
+        "description": "This feature is under development. Please contact admin via email below for the fastest support.",
+        "contactInfo": "Contact Information:",
+        "messageLabel": "Message",
+        "messagePlaceholder": "Describe your issue in detail...",
+        "cancel": "Cancel",
+        "send": "Send Message",
+        "sending": "Sending...",
+        "success": "Message sent successfully! Admin will contact you back as soon as possible."
+      }
+    },
+    "errors": {
+      "emailRequired": "Please enter email",
+      "invalidEmail": "Invalid email format",
+      "submitFailed": "Failed to send request"
     }
   }
 }

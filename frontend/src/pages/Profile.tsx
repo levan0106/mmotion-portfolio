@@ -25,7 +25,6 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   Cake as CakeIcon,
-  Home as HomeIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { authService, User, UpdateProfileRequest, SetPasswordRequest, ChangePasswordRequest } from '../services/authService';
@@ -461,12 +460,12 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12} sx={{ mb: 2 }}>
                   <TextField
                     fullWidth
                     label={t('profile.address')}
                     multiline
-                    rows={3}
+                    rows={1}
                     value={isEditing ? formData.address : user.address || ''}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     disabled={!isEditing}
@@ -474,14 +473,14 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                       startAdornment: <HomeIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                     }}
                   />
-                </Grid>
+                </Grid> */}
               </Grid>
             </Collapse>
           </Box>
 
           {/* Action Buttons */}
           {isEditing && (
-            <Box sx={{ display: 'flex', gap: 2, my: 0 }}>
+            <Box sx={{ display: 'flex', gap: 2, my: 1 }}>
               <ResponsiveButton
                 variant="contained"
                 onClick={handleSave}

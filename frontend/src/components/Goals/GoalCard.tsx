@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Typography,
   Chip,
   LinearProgress,
   Box,
@@ -16,6 +15,7 @@ import {
   Paper,
   Slider,
 } from '@mui/material';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import {
   MoreVert as MoreVertIcon,
   TrendingUp as TrendingUpIcon,
@@ -52,20 +52,168 @@ const getStatusColor = (status: GoalStatus) => {
   }
 };
 
-const getProgressStatusColor = (progressStatus: string) => {
-  switch (progressStatus) {
-    case 'ACHIEVED':
-      return 'success';
-    case 'ON_TRACK':
-      return 'primary';
-    case 'MODERATE':
-      return 'warning';
-    case 'NEEDS_ATTENTION':
-      return 'error';
-    case 'OVERDUE':
-      return 'error';
-    default:
-      return 'default';
+const getProgressColor = (goal: any) => {
+  const { achievementPercentage, isOverdue, createdAt, targetDate } = goal;
+  
+  // Nếu đã quá hạn
+  if (isOverdue) {
+    return '#f44336'; // Red for overdue
+  }
+  
+  // Nếu đã đạt 100%
+  if (achievementPercentage >= 100) {
+    return '#4caf50'; // Green for achieved
+  }
+  
+  // Nếu không có targetDate, chỉ đánh giá theo tiến độ
+  if (!targetDate) {
+    if (achievementPercentage >= 80) {
+      return '#4caf50'; // Xanh lá - tốt
+    } else if (achievementPercentage >= 50) {
+      return '#2196f3'; // Xanh dương - ổn
+    } else {
+      return '#03a9f4'; // Xanh dương nhạt - bình thường
+    }
+  }
+  
+  // Tính thời gian còn lại
+  const now = new Date();
+  const start = new Date(createdAt); // Sử dụng createdAt làm ngày bắt đầu
+  const target = new Date(targetDate);
+  const totalDuration = target.getTime() - start.getTime();
+  const remainingDuration = target.getTime() - now.getTime();
+  
+  // Tính tỷ lệ thời gian còn lại
+  const timeRemaining = Math.max(remainingDuration / totalDuration, 0);
+  
+  // Tính phần trăm cần hoàn thành còn lại
+  const remainingProgress = 100 - achievementPercentage;
+  
+  // Chỉ cảnh báo khi % thời gian còn lại < % cần hoàn thành
+  const isTimeCritical = timeRemaining * 100 < remainingProgress;
+  
+  if (isTimeCritical) {
+    // Thời gian còn lại ít hơn phần trăm cần hoàn thành
+    if (remainingProgress > 50) {
+      return '#f44336'; // Đỏ - rất nguy hiểm
+    } else if (remainingProgress > 30) {
+      return '#ff5722'; // Cam đậm - nguy hiểm
+    } else {
+      return '#ff9800'; // Cam - cần chú ý
+    }
+  } else {
+    // Thời gian còn đủ, đánh giá theo tiến độ
+    if (achievementPercentage >= 80) {
+      return '#4caf50'; // Xanh lá - tốt
+    } else if (achievementPercentage >= 50) {
+      return '#2196f3'; // Xanh dương - ổn
+    } else {
+      return '#03a9f4'; // Xanh dương nhạt - bình thường
+    }
+  }
+};
+
+const getProgressStatus = (goal: any, t: any) => {
+  const { achievementPercentage, isOverdue, createdAt, targetDate } = goal;
+  
+  if (isOverdue) {
+    return t('goals.card.status.overdue');
+  }
+  
+  if (achievementPercentage >= 100) {
+    return t('goals.card.status.completed');
+  }
+  
+  // Nếu không có targetDate, chỉ đánh giá theo tiến độ
+  if (!targetDate) {
+    if (achievementPercentage >= 80) {
+      return t('goals.card.status.excellent');
+    } else if (achievementPercentage >= 50) {
+      return t('goals.card.status.okay');
+    } else {
+      return t('goals.card.status.good');
+    }
+  }
+  
+  // Tính thời gian còn lại và phần trăm cần hoàn thành
+  const now = new Date();
+  const start = new Date(createdAt); // Sử dụng createdAt làm ngày bắt đầu
+  const target = new Date(targetDate);
+  const totalDuration = target.getTime() - start.getTime();
+  const remainingDuration = target.getTime() - now.getTime();
+  console.log("start date", createdAt, "target date", targetDate);
+  const timeRemaining = Math.max(remainingDuration / totalDuration, 0);
+  const remainingProgress = 100 - achievementPercentage;
+  console.log(timeRemaining, remainingProgress);
+  // Chỉ cảnh báo khi % thời gian còn lại < % cần hoàn thành
+  const isTimeCritical = timeRemaining * 100 < remainingProgress;
+  
+  if (isTimeCritical) {
+    // Thời gian còn lại ít hơn phần trăm cần hoàn thành
+    if (remainingProgress > 50) {
+      return t('goals.card.status.dangerous');
+    } else if (remainingProgress > 30) {
+      return t('goals.card.status.urgent');
+    } else {
+      return t('goals.card.status.attention');
+    }
+  } else {
+    // Thời gian còn đủ, đánh giá theo tiến độ
+    if (achievementPercentage >= 80) {
+      return t('goals.card.status.excellent');
+    } else if (achievementPercentage >= 50) {
+      return t('goals.card.status.okay');
+    } else {
+      return t('goals.card.status.good');
+    }
+  }
+};
+
+const getProgressTooltip = (goal: any, t: any) => {
+  const { achievementPercentage, isOverdue, createdAt, targetDate } = goal;
+  
+  if (isOverdue) {
+    return t('goals.card.tooltip.overdue');
+  }
+  
+  if (achievementPercentage >= 100) {
+    return t('goals.card.tooltip.completed');
+  }
+  
+  // Nếu không có targetDate, hiển thị thông tin đơn giản
+  if (!targetDate) {
+    const remainingProgress = 100 - achievementPercentage;
+    return t('goals.card.tooltip.noTargetDate', {
+      progress: Math.round(achievementPercentage),
+      remaining: Math.round(remainingProgress)
+    });
+  }
+  
+  // Tính toán chi tiết
+  const now = new Date();
+  const start = new Date(createdAt);
+  const target = new Date(targetDate);
+  const totalDuration = target.getTime() - start.getTime();
+  const remainingDuration = target.getTime() - now.getTime();
+  const timeRemaining = Math.max(remainingDuration / totalDuration, 0);
+  const remainingProgress = 100 - achievementPercentage;
+  const isTimeCritical = timeRemaining * 100 < remainingProgress;
+  
+  const timeRemainingPercent = Math.round(timeRemaining * 100);
+  const daysRemaining = Math.ceil(remainingDuration / (1000 * 60 * 60 * 24));
+  
+  if (isTimeCritical) {
+    return t('goals.card.tooltip.warning', {
+      timePercent: timeRemainingPercent,
+      days: daysRemaining.toLocaleString(),
+      progressPercent: Math.round(remainingProgress)
+    });
+  } else {
+    return t('goals.card.tooltip.safe', {
+      timePercent: timeRemainingPercent,
+      days: daysRemaining.toLocaleString(),
+      progressPercent: Math.round(remainingProgress)
+    });
   }
 };
 
@@ -113,9 +261,9 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   const getDaysRemainingText = () => {
     if (!goal.daysRemaining) return null;
     if (goal.daysRemaining > 0) {
-      return `${goal.daysRemaining} ${t('goals.card.daysRemaining')}`;
+      return `${goal.daysRemaining.toLocaleString()} ${t('goals.card.daysRemaining')}`;
     }
-    return `${t('goals.card.overdue')} ${Math.abs(goal.daysRemaining)} ${t('goals.card.daysRemaining')}`;
+    return `${t('goals.card.overdue')} ${Math.abs(goal.daysRemaining).toLocaleString()} ${t('goals.card.daysRemaining')}`;
   };
 
   return (
@@ -135,11 +283,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     >
       <CardHeader
         title={
-          <Stack direction="row" alignItems="center" gap={1} spacing={1}>
+          <Stack direction="row" alignItems="center" gap={1} spacing={1} sx={{ minWidth: 0, flex: 1 }}>
             {getProgressIcon()}
-            <Typography variant="h6" component="div" noWrap fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-              {goal.name}
-            </Typography>
+            <Tooltip title={goal.name} placement="top" arrow>
+              <ResponsiveTypography 
+                variant="cardTitle" 
+                component="div" 
+                fontWeight={600}
+              >
+                {goal.name}
+              </ResponsiveTypography>
+            </Tooltip>
             {goal.isPrimary && (
               <Chip 
                 icon={<StarIcon />}
@@ -147,7 +301,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                 size="small" 
                 color="primary" 
                 variant="filled"
-                sx={{ fontWeight: 500 }}
+                sx={{ fontWeight: 500, flexShrink: 0 }}
               />
             )}
           </Stack>
@@ -168,7 +322,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           </Stack>
         }
         action={
-          <Box>
+          <Box sx={{ flexShrink: 0 }}>
             <Tooltip title={t('goals.options')}>
               <IconButton 
                 onClick={handleClick}
@@ -217,7 +371,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({
             </Menu>
           </Box>
         }
-        sx={{ pb: 1 }}
+        sx={{ 
+          pb: 1,
+          '& .MuiCardHeader-content': {
+            minWidth: 0,
+            overflow: 'hidden'
+          },
+          '& .MuiCardHeader-action': {
+            flexShrink: 0,
+            alignSelf: 'flex-start'
+          }
+        }}
       />
       
       <CardContent sx={{ flexGrow: 1, pt: 0 }}>
@@ -234,56 +398,80 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
               {t('goals.card.progress')}
-            </Typography>
-            <Typography variant="h6" fontWeight={700} color="primary.main">
-              {formatPercentage(goal.achievementPercentage)}
-            </Typography>
+            </ResponsiveTypography>
+            <Stack direction="row" alignItems="center" gap={1}>
+              <ResponsiveTypography 
+                variant="cardValue" 
+                fontWeight={700} 
+                sx={{ 
+                  color: getProgressColor(goal),
+                  transition: 'color 0.3s ease'
+                }}
+              >
+                {formatPercentage(goal.achievementPercentage,1)}
+              </ResponsiveTypography>
+              <Tooltip title={getProgressTooltip(goal, t)} placement="top" arrow>
+                <Chip 
+                  label={getProgressStatus(goal, t)}
+                  size="small"
+                  sx={{ 
+                    backgroundColor: getProgressColor(goal),
+                    color: 'white',
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    height: 20,
+                    cursor: 'help'
+                  }}
+                />
+              </Tooltip>
+            </Stack>
           </Stack>
-          <LinearProgress
-            variant="determinate"
-            value={Math.min(goal.achievementPercentage, 100)}
-            sx={{ 
-              height: 8, 
-              borderRadius: 4,
-              backgroundColor: 'grey.200',
-              '& .MuiLinearProgress-bar': {
-                backgroundColor: getProgressStatusColor(goal.progressStatus) === 'success' ? '#4caf50' :
-                               getProgressStatusColor(goal.progressStatus) === 'primary' ? '#2196f3' :
-                               getProgressStatusColor(goal.progressStatus) === 'warning' ? '#ff9800' :
-                               getProgressStatusColor(goal.progressStatus) === 'error' ? '#f44336' : '#9e9e9e',
-                borderRadius: 4
-              }
-            }}
-          />
+          <Tooltip title={getProgressTooltip(goal, t)} placement="top" arrow>
+            <LinearProgress
+              variant="determinate"
+              value={Math.min(goal.achievementPercentage, 100)}
+              sx={{ 
+                height: 8, 
+                borderRadius: 4,
+                backgroundColor: 'grey.200',
+                cursor: 'help',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: getProgressColor(goal),
+                  borderRadius: 4,
+                  transition: 'background-color 0.3s ease'
+                }
+              }}
+            />
+          </Tooltip>
           
           <Stack direction="row" justifyContent="space-between" alignItems="center" mt={1}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+            <ResponsiveTypography variant="caption" color="text.secondary">
               {formatCurrency(goal.currentValue)} / {formatCurrency(goal.targetValue)}
-            </Typography>
+            </ResponsiveTypography>
           </Stack>
         </Paper>
 
         {/* Values Section */}
         <Stack spacing={{ xs: 1, sm: 1.5 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
               {t('goals.card.currentValue')}
-            </Typography>
-            <Typography variant="body1" fontWeight={600}>
+            </ResponsiveTypography>
+            <ResponsiveTypography variant="cardValue" fontWeight={600}>
               {formatCurrency(goal.currentValue)}
-            </Typography>
+            </ResponsiveTypography>
           </Stack>
 
           {goal.targetValue && (
             <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                 {t('goals.card.target')}
-              </Typography>
-              <Typography variant="body1" fontWeight={600}>
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardValue" fontWeight={600}>
                 {formatCurrency(goal.targetValue)}
-              </Typography>
+              </ResponsiveTypography>
             </Stack>
           )}
 
@@ -327,21 +515,24 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                     size="small"
                     sx={{
                       '& .MuiSlider-track': {
-                        backgroundColor: goal.priority === 1 ? '#757575' : 
-                                       goal.priority === 2 ? '#1976d2' : 
-                                       goal.priority === 3 ? '#388e3c' : 
-                                       goal.priority === 4 ? '#f57c00' : '#d32f2f',
+                        background: 'linear-gradient(to right, #e3f2fd 0%, #bbdefb 25%, #90caf9 50%, #64b5f6 75%, #1976d2 100%)',
+                        height: 4,
                       },
                       '& .MuiSlider-thumb': {
-                        backgroundColor: goal.priority === 1 ? '#757575' : 
-                                       goal.priority === 2 ? '#1976d2' : 
-                                       goal.priority === 3 ? '#388e3c' : 
-                                       goal.priority === 4 ? '#f57c00' : '#d32f2f',
-                        width: 12,
-                        height: 12,
+                        backgroundColor: goal.priority === 1 ? '#e3f2fd' : 
+                                       goal.priority === 2 ? '#bbdefb' : 
+                                       goal.priority === 3 ? '#90caf9' : 
+                                       goal.priority === 4 ? '#64b5f6' : '#1976d2',
+                        width: 16,
+                        height: 16,
+                        border: '1px solid grey.400',
                       },
                       '& .MuiSlider-mark': {
                         backgroundColor: 'transparent',
+                      },
+                      '& .MuiSlider-rail': {
+                        backgroundColor: '#e0e0e0',
+                        height: 4,
                       }
                     }}
                   />

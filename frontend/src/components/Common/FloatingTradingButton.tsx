@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Fab,
   Tooltip,
   alpha,
   Zoom,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,11 +28,19 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentAccount } = useAccount();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [showTradeForm, setShowTradeForm] = useState(false);
   const [isCreatingPortfolio, setIsCreatingPortfolio] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
   
   const createTradeMutation = useCreateTrade();
   const { portfolios, createPortfolio, isCreating: isCreatingPortfolioHook } = usePortfolios(currentAccount?.accountId);
+
+  // Always show tooltip on desktop
+  useEffect(() => {
+    setTooltipOpen(isDesktop);
+  }, [isDesktop]);
 
   const handleCreateTrade = async (data: CreateTradeDto) => {
     try {
@@ -107,6 +117,12 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
           }
           placement="left"
           arrow
+          open={tooltipOpen}
+          onOpen={() => setTooltipOpen(true)}
+          onClose={() => setTooltipOpen(isDesktop)}
+          disableHoverListener={isDesktop}
+          disableFocusListener={isDesktop}
+          disableTouchListener={isDesktop}
         >
           <Fab
             color="secondary"

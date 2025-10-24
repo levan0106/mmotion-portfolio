@@ -14,6 +14,15 @@ import {
   Divider,
   Alert,
   CircularProgress,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
@@ -24,6 +33,8 @@ import {
   Star as StarIcon,
   ContentCopy as CopyIcon,
   Check as CheckIcon,
+  MoreVert as MoreVertIcon,
+  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { Account } from '../../types';
 import { apiService } from '../../services/api';
@@ -39,6 +50,11 @@ export const AccountManagement: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedAccountForMenu, setSelectedAccountForMenu] = useState<Account | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadAccounts();
@@ -87,17 +103,33 @@ export const AccountManagement: React.FC = () => {
   };
 
   const handleDeleteAccount = async (accountId: string) => {
-    if (!window.confirm(t('accountManagement.confirmDelete'))) {
-      return;
+    const account = accounts.find(acc => acc.accountId === accountId);
+    if (account) {
+      setAccountToDelete(account);
+      setDeleteConfirmOpen(true);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!accountToDelete) return;
 
     try {
-      await apiService.api.delete(`/api/v1/accounts/${accountId}`);
-      setAccounts(prev => prev.filter(acc => acc.accountId !== accountId));
+      setDeleting(true);
+      await apiService.api.delete(`/api/v1/accounts/${accountToDelete.accountId}`);
+      setAccounts(prev => prev.filter(acc => acc.accountId !== accountToDelete.accountId));
+      setDeleteConfirmOpen(false);
+      setAccountToDelete(null);
     } catch (err: any) {
       console.error('Error deleting account:', err);
       setError(t('accountManagement.error.deleteFailed'));
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setAccountToDelete(null);
   };
 
   const handleCopyId = async (accountId: string) => {
@@ -124,13 +156,30 @@ export const AccountManagement: React.FC = () => {
     }
   };
 
-  const getCurrencySymbol = (currency: string) => {
-    const symbols: Record<string, string> = {
-      'VND': '₫',
-      'USD': '$'
-    };
-    return symbols[currency] || currency;
+  const handleMoreMenuOpen = (event: React.MouseEvent<HTMLElement>, account: Account) => {
+    setMoreMenuAnchor(event.currentTarget);
+    setSelectedAccountForMenu(account);
   };
+
+  const handleMoreMenuClose = () => {
+    setMoreMenuAnchor(null);
+    setSelectedAccountForMenu(null);
+  };
+
+  const handleEditFromMenu = () => {
+    if (selectedAccountForMenu) {
+      handleEditAccount(selectedAccountForMenu);
+    }
+    handleMoreMenuClose();
+  };
+
+  const handleDeleteFromMenu = () => {
+    if (selectedAccountForMenu) {
+      handleDeleteAccount(selectedAccountForMenu.accountId);
+    }
+    handleMoreMenuClose();
+  };
+
 
   const getInitials = (name: string) => {
     return name
@@ -183,6 +232,7 @@ export const AccountManagement: React.FC = () => {
                     sx={{ 
                       py: 0.5,
                       px: 1,
+                      pr: 6, // Add right padding to prevent text from overlapping with More Actions button
                       ...(account.isMainAccount && {
                         backgroundColor: 'primary.50',
                         mb: 0.25,
@@ -218,6 +268,10 @@ export const AccountManagement: React.FC = () => {
                       )}
                     </Box>
                     <ListItemText
+                      sx={{ 
+                        pr: 2, // Add right padding to ListItemText
+                        maxWidth: 'calc(100% - 60px)', // Ensure text doesn't overlap with More Actions button
+                      }}
                       primary={
                         <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.25 }}>
                           <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
@@ -295,9 +349,9 @@ export const AccountManagement: React.FC = () => {
                                 <CopyIcon sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
                               )}
                             </Box>
-                            <Box component="span" sx={{ color: 'text.secondary' }}>
+                            {/* <Box component="span" sx={{ color: 'text.secondary' }}>
                               {account.baseCurrency} {getCurrencySymbol(account.baseCurrency)}
-                            </Box>
+                            </Box> */}
                           </Box>
                           {account.isMainAccount && (
                             <Box component="span" sx={{ 
@@ -321,23 +375,22 @@ export const AccountManagement: React.FC = () => {
                         </Box>
                       }
                     />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        onClick={() => handleEditAccount(account)}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      {!account.isMainAccount && (
+                    <ListItemSecondaryAction sx={{ right: 8 }}>
+                      <Tooltip title={t('accountManagement.moreActions')}>
                         <IconButton
                           edge="end"
-                          onClick={() => handleDeleteAccount(account.accountId)}
-                          color="error"
+                          onClick={(event) => handleMoreMenuOpen(event, account)}
+                          sx={{ 
+                            zIndex: 1, // Ensure button is above other content
+                            backgroundColor: 'background.paper',
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            }
+                          }}
                         >
-                          <DeleteIcon />
+                          <MoreVertIcon />
                         </IconButton>
-                      )}
+                      </Tooltip>
                     </ListItemSecondaryAction>
                   </ListItem>
                   {index < accounts.length - 1 && <Divider />}
@@ -371,6 +424,153 @@ export const AccountManagement: React.FC = () => {
         account={selectedAccount}
         onAccountUpdated={handleAccountUpdated}
       />
+
+      {/* More Actions Menu */}
+      <Menu
+        anchorEl={moreMenuAnchor}
+        open={Boolean(moreMenuAnchor)}
+        onClose={handleMoreMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleEditFromMenu}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ResponsiveTypography variant="body2">
+            {t('common.edit')}
+          </ResponsiveTypography>
+        </MenuItem>
+        {selectedAccountForMenu && !selectedAccountForMenu.isMainAccount && (
+          <MenuItem onClick={handleDeleteFromMenu} sx={{ color: 'error.main' }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" color="error" />
+            </ListItemIcon>
+            <ResponsiveTypography variant="body2">
+              {t('common.delete')}
+            </ResponsiveTypography>
+          </MenuItem>
+        )}
+      </Menu>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
+      >
+        <DialogTitle>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: '50%',
+                backgroundColor: 'error.50',
+                color: 'error.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <WarningIcon sx={{ fontSize: 28 }} />
+            </Box>
+            <Box>
+              <ResponsiveTypography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
+                {t('accountManagement.deleteConfirm.title')}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="body2" color="text.secondary">
+                {t('accountManagement.deleteConfirm.subtitle')}
+              </ResponsiveTypography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          {accountToDelete && (
+            <Box>
+              <DialogContentText sx={{ mb: 3, color: 'text.primary' }}>
+                {t('accountManagement.deleteConfirm.message', { 
+                  accountName: accountToDelete.name,
+                  accountEmail: accountToDelete.email 
+                })}
+              </DialogContentText>
+              
+              {/* Account Info Card */}
+              <Card variant="outlined" sx={{ p: 2, backgroundColor: 'grey.50' }}>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <Avatar sx={{ bgcolor: 'primary.main' }}>
+                    {getInitials(accountToDelete.name)}
+                  </Avatar>
+                  <Box flex={1}>
+                    <ResponsiveTypography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {accountToDelete.name}
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" color="text.secondary">
+                      {accountToDelete.email}
+                    </ResponsiveTypography>
+                    <Box display="flex" gap={1} mt={1}>
+                      {accountToDelete.isMainAccount && (
+                        <Chip
+                          label={t('accountManagement.main')}
+                          size="small"
+                          color="primary"
+                          variant="filled"
+                        />
+                      )}
+                      {accountToDelete.isInvestor && (
+                        <Chip
+                          label={t('accountManagement.investor')}
+                          size="small"
+                          color="secondary"
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              </Card>
+
+              {/* Warning Alert */}
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                <ResponsiveTypography variant="body2" ellipsis={false}>
+                  {t('accountManagement.deleteConfirm.warning')}
+                </ResponsiveTypography>
+              </Alert>
+            </Box>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <ResponsiveButton
+            onClick={handleCancelDelete}
+            disabled={deleting}
+          >
+            {t('common.cancel')}
+          </ResponsiveButton>
+          <ResponsiveButton
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+            variant="contained"
+            color="error"
+            startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleting ? t('accountManagement.deleteConfirm.deleting') : t('common.delete')}
+          </ResponsiveButton>
+        </DialogActions>
+      </Dialog>
+
     </Box>
   );
 };

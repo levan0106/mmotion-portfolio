@@ -95,14 +95,14 @@ const Settings: React.FC = () => {
               {...a11yProps(0)}
             />
             <Tab
-              icon={<SecurityIcon />}
-              label={t('settings.tabs.security')}
+              icon={<PersonIcon />}
+              label={t('settings.tabs.profile')}
               iconPosition="start"
               {...a11yProps(1)}
             />
             <Tab
-              icon={<PersonIcon />}
-              label={t('settings.tabs.profile')}
+              icon={<SecurityIcon />}
+              label={t('settings.tabs.security')}
               iconPosition="start"
               {...a11yProps(2)}
             />
@@ -142,6 +142,10 @@ const Settings: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={value} index={1}>
+          <Profile embedded={true} maxWidth="md" />
+        </TabPanel>
+
+        <TabPanel value={value} index={2}>
           <Box sx={{ mb: 3 }}>
             <ResponsiveTypography variant="pageTitle" component="h2" gutterBottom>
               {t('settings.security.title')}
@@ -151,10 +155,6 @@ const Settings: React.FC = () => {
             </ResponsiveTypography>
           </Box>
           <DeviceManagement />
-        </TabPanel>
-
-        <TabPanel value={value} index={2}>
-          <Profile embedded={true} maxWidth="md" />
         </TabPanel>
 
         <TabPanel value={value} index={3}>

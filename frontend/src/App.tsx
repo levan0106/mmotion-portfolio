@@ -25,6 +25,7 @@ import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
 import Goals from './pages/Goals';
 import Login from './pages/Login';
+import ForgetPassword from './pages/ForgetPassword';
 import Welcome from './pages/Welcome';
 import SystemGuide from './pages/SystemGuide';
 import Profile from './pages/Profile';
@@ -72,6 +73,7 @@ const AppContent: React.FC = () => {
       {!isAuthenticated ? (
         <>
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
           <Route path="*" element={<Login />} />
         </>
       ) : (

@@ -295,13 +295,13 @@
 ## Key Files Modified in Current Session
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
 - `frontend/src/services/deviceTrustService.ts` - Frontend device trust management service
-- `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI
+- `frontend/src/components/Settings/DeviceManagement.tsx` - Complete device management UI with ResponsiveTypography/Button
 - `frontend/src/pages/Login.tsx` - Enhanced login flow with device trust integration
 - `frontend/src/pages/Settings.tsx` - Added Security tab with device management
 - `src/modules/shared/entities/trusted-device.entity.ts` - Database entity for trusted devices
-- `src/modules/shared/services/device-trust.service.ts` - Backend device trust service
+- `src/modules/shared/services/device-trust.service.ts` - Backend device trust service with expireAllDevices method
 - `src/modules/shared/controllers/device-trust.controller.ts` - Device trust API endpoints
-- `src/modules/shared/services/auth.service.ts` - Enhanced authentication with device trust
+- `src/modules/shared/services/auth.service.ts` - Enhanced authentication with device trust and password security
 - `src/migrations/1735123456789-CreateTrustedDeviceTable.ts` - Database migration for trusted devices
 
 ## Key Files Modified in Previous Session
@@ -327,3 +327,5 @@
 - ✅ **Smooth Login Flow**: No error messages for password requirements, proper error display for invalid credentials
 - ✅ **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
 - ✅ **Security Enhancement**: Comprehensive device trust security with incognito protection
+- ✅ **Password Security**: Device expiry on password change/set for enhanced security
+- ✅ **Responsive Design**: DeviceManagement component uses ResponsiveTypography and ResponsiveButton
