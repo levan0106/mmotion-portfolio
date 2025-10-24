@@ -31,6 +31,7 @@ import { AssetValueCalculatorService } from './services/asset-value-calculator.s
 import { AutoSyncService } from './services/auto-sync.service';
 import { GlobalAssetTrackingService } from './services/global-asset-tracking.service';
 import { ApiCallDetailService } from './services/api-call-detail.service';
+import { AutoAssetCreationListener } from './listeners/auto-asset-creation.listener';
 import { AssetRepository } from './repositories/asset.repository';
 import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -101,6 +102,7 @@ import { SharedModule } from '../shared/shared.module';
     AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
+    AutoAssetCreationListener,
     AssetRepository,
     {
       provide: 'IAssetRepository',
@@ -126,6 +128,7 @@ import { SharedModule } from '../shared/shared.module';
     AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
+    AutoAssetCreationListener,
     AssetRepository,
     TypeOrmModule,
   ],

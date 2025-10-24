@@ -126,7 +126,7 @@
       "status": {
         "overdue": "Quá hạn",
         "completed": "Hoàn thành",
-        "dangerous": "Nguy hiểm",
+        "dangerous": "Chậm",
         "urgent": "Cần gấp",
         "attention": "Chú ý",
         "excellent": "Rất tốt",

@@ -66,14 +66,22 @@ export class PortfolioPermissionService {
       throw new BadRequestException('Permission already exists for this account');
     }
 
-    // Only owner can grant permissions
-    if (portfolio.accountId !== grantedBy) {
+    const portfolioOwnerPermission =  await this.portfolioPermissionRepository.findOne({
+      where: { 
+        portfolioId, 
+        accountId: grantedBy,
+        permissionType: PortfolioPermissionType.OWNER
+      }
+    });
+
+    // Only owner or owner's permission can grant permissions
+    if (portfolio.accountId !== grantedBy && !portfolioOwnerPermission) {
       throw new ForbiddenException('Only the portfolio owner can grant permissions');
     }
 
     // Owner cannot grant permission to themselves
-    if (portfolio.accountId === accountId) {
-      throw new BadRequestException('Owner already has full access to the portfolio');
+    if (portfolio.accountId === accountId || grantedBy === accountId) {
+      throw new BadRequestException('Account already has full access to the portfolio');
     }
 
     // Create new permission

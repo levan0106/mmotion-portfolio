@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { HttpModule } from '@nestjs/axios';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Account } from './entities/account.entity';
 import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
@@ -35,6 +37,7 @@ import { PermissionGuard } from './guards/permission.guard';
 import { RoleGuard } from './guards/role.guard';
 import { Deposit } from '../portfolio/entities/deposit.entity';
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
+import { PortfolioPermission } from '../portfolio/entities/portfolio-permission.entity';
 import { NotificationModule } from '../../notification/notification.module';
 
 /**
@@ -43,12 +46,14 @@ import { NotificationModule } from '../../notification/notification.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, User, Role, Permission, UserRole, Deposit, Portfolio, TrustedDevice]),
+    TypeOrmModule.forFeature([Account, User, Role, Permission, UserRole, Deposit, Portfolio, PortfolioPermission, TrustedDevice]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '24h' },
     }),
+    HttpModule,
+    EventEmitterModule.forRoot(),
     NotificationModule,
   ],
   controllers: [

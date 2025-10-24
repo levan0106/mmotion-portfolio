@@ -7,6 +7,8 @@ import { Account } from '../entities/account.entity';
 import { AutoRoleAssignmentService } from './auto-role-assignment.service';
 import { NotificationGateway } from '../../../notification/notification.gateway';
 import { DeviceTrustService, DeviceInfo } from './device-trust.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserCreatedEvent } from '../events/user-created.event';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
@@ -35,6 +37,7 @@ export class AuthService {
     private readonly autoRoleAssignmentService: AutoRoleAssignmentService,
     private readonly notificationGateway: NotificationGateway,
     private readonly deviceTrustService: DeviceTrustService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -190,6 +193,20 @@ export class AuthService {
     } catch (error) {
       this.logger.warn(`Failed to send public portfolios notification to demo user ${username}: ${error.message}`);
       // Don't throw error - user creation should succeed even if notification fails
+    }
+
+    // Emit user created event for auto asset creation
+    try {
+      this.eventEmitter.emit('user.created', new UserCreatedEvent(
+        user.userId,
+        mainAccount.accountId,
+        username,
+        true // isDemo
+      ));
+      this.logger.log(`Emitted user.created event for: ${username}`);
+    } catch (error) {
+      this.logger.warn(`Failed to emit user.created event for ${username}: ${error.message}`);
+      // Don't throw error - user creation should succeed even if event emission fails
     }
 
     // Generate JWT token

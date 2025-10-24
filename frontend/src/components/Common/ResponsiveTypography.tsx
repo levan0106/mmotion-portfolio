@@ -15,7 +15,7 @@ interface ResponsiveTypographyProps extends Omit<TypographyProps, 'variant'> {
 /**
  * Responsive Typography component that uses custom typography variants
  */
-export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
+export const ResponsiveTypography = React.forwardRef<HTMLDivElement, ResponsiveTypographyProps>(({
   variant,
   customVariant,
   overrides = {},
@@ -26,7 +26,7 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
   mobileOnly = false,
   children,
   ...restProps
-}) => {
+}, ref) => {
   const { variants, getTypographySx } = useTypography();
   
   // Get the appropriate sx prop based on variant type
@@ -88,6 +88,7 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
   
   return (
     <Typography
+      ref={ref}
       {...restProps}
       variant={typographyVariant}
       sx={getSx()}
@@ -95,6 +96,6 @@ export const ResponsiveTypography: React.FC<ResponsiveTypographyProps> = ({
       {children}
     </Typography>
   );
-};
+});
 
 export default ResponsiveTypography;

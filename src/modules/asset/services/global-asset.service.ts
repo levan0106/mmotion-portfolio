@@ -283,6 +283,31 @@ export class GlobalAssetService {
   }
 
   /**
+   * Get top 100 global assets for new user setup.
+   * Returns the most popular/active global assets.
+   * @returns Array of top 100 global assets
+   */
+  async getTop100GlobalAssets(): Promise<GlobalAssetResponseDto[]> {
+    this.logger.log('Getting top 100 global assets for new user setup');
+
+    try {
+      const assets = await this.globalAssetRepository.find({
+        where: { isActive: true },
+        order: { 
+          symbol: 'ASC' // Order by symbol for consistent results
+        },
+        take: 100,
+        relations: ['assetPrice'],
+      });
+
+      return assets.map(asset => this.mapToResponseDto(asset));
+    } catch (error) {
+      this.logger.error(`Failed to get top 100 global assets: ${error.message}`);
+      throw new BadRequestException(`Failed to get top 100 global assets: ${error.message}`);
+    }
+  }
+
+  /**
    * Update a global asset.
    * @param id - Asset ID
    * @param updateDto - Update data

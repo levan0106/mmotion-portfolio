@@ -10,7 +10,7 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Fab,
+  // Fab,
   Paper,
   Stack,
   Divider,
@@ -339,7 +339,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
         </Box>
       </Box>
       {/* Floating Action Button for Mobile */}
-      <Fab
+      {/* <Fab
         color="primary"
         aria-label="add goal"
         onClick={() => setShowForm(true)}
@@ -351,7 +351,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
         }}
       >
         <AddIcon />
-      </Fab>
+      </Fab> */}
 
       {/* Goal Form Modal */}
       <GoalForm

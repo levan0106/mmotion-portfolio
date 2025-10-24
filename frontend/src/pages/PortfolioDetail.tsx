@@ -158,8 +158,9 @@ const PortfolioDetail: React.FC = () => {
     performanceData,
   } = usePortfolioAnalytics(portfolioId!);
   
-  // Check if current user is the owner
-  const isOwner = portfolio && accountId ? portfolio.accountId === accountId : false;
+  // Check if current user is the owner (creator or has owner permission)
+  const isOwner = portfolio && accountId ? 
+    (portfolio.accountId === accountId || portfolio.userPermission?.isOwner === true) : false;
   
   const createTradeMutation = useCreateTrade();
   const tradesQuery = useTrades(portfolioId!);

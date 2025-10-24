@@ -30,8 +30,8 @@ const PortfolioCardWithPermissions: React.FC<PortfolioCardWithPermissionsProps> 
 }) => {
   const { accountId } = useAccount();
   
-  // Check if current user is the owner
-  const isOwner = portfolio.accountId === accountId;
+  // Check if current user is the owner (creator or has owner permission)
+  const isOwner = portfolio.accountId === accountId || portfolio.userPermission?.isOwner === true;
   
   // Only fetch permission stats if user is owner
   const { data: permissionStats } = usePortfolioPermissionStats(portfolio.portfolioId, isOwner);

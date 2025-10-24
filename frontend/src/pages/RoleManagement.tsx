@@ -6,7 +6,7 @@ import {
   CardContent,
   Alert,
   CircularProgress,
-  Fab,
+  // Fab,
   Tabs,
   Tab,
   Paper,
@@ -441,7 +441,7 @@ const RoleManagementContent: React.FC = () => {
       />
 
       {/* Floating Action Button */}
-      <Fab
+      {/* <Fab
         color="primary"
         aria-label="add role"
         sx={{
@@ -452,7 +452,7 @@ const RoleManagementContent: React.FC = () => {
         onClick={handleCreateRole}
       >
         <AddIcon />
-      </Fab>
+      </Fab> */}
     </Box>
   );
 };

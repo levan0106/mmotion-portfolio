@@ -73,7 +73,7 @@ export class PermissionCheckService {
       return {
         hasAccess,
         accessLevel,
-        isOwner: false,
+        isOwner: permission.permissionType === 'OWNER',
         permissionType: permission.permissionType
       };
 
@@ -119,11 +119,27 @@ export class PermissionCheckService {
     const portfolioIds = portfolios.map(p => p.portfolioId);
     const permissions = await this.checkMultiplePortfolioPermissions(portfolioIds, accountId, context);
     
-    // Filter portfolios based on access
-    const accessiblePortfolios = portfolios.filter(portfolio => {
-      const permission = permissions[portfolio.portfolioId];
-      return permission.hasAccess;
-    });
+    // Filter portfolios based on access and add userPermission field
+    const accessiblePortfolios = portfolios
+      .filter(portfolio => {
+        const permission = permissions[portfolio.portfolioId];
+        return permission.hasAccess;
+      })
+      .map(portfolio => {
+        const permission = permissions[portfolio.portfolioId];
+        return {
+          ...portfolio,
+          userPermission: {
+            permissionType: permission.permissionType,
+            isOwner: permission.isOwner,
+            accessLevel: permission.accessLevel,
+            canView: true,
+            canUpdate: permission.permissionType === 'OWNER' || permission.permissionType === 'UPDATE',
+            canDelete: permission.isOwner,
+            canManagePermissions: permission.isOwner
+          }
+        };
+      });
 
     return {
       portfolios: accessiblePortfolios,

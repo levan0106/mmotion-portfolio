@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from '../entities/account.entity';
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
+import { PortfolioPermission, PortfolioPermissionType } from '../../portfolio/entities/portfolio-permission.entity';
 
 /**
  * Service for validating account ownership and portfolio relationships.
@@ -15,6 +16,8 @@ export class AccountValidationService {
     private readonly accountRepository: Repository<Account>,
     @InjectRepository(Portfolio)
     private readonly portfolioRepository: Repository<Portfolio>,
+    @InjectRepository(PortfolioPermission)
+    private readonly portfolioPermissionRepository: Repository<PortfolioPermission>,
   ) {}
 
   /**
@@ -40,18 +43,32 @@ export class AccountValidationService {
   }
 
   /**
-   * Validate that a portfolio belongs to the specified account.
+   * Validate that a portfolio belongs to the specified account or user has owner permission.
    * @param portfolioId - Portfolio ID to validate
    * @param accountId - Account ID to validate against
    * @returns Promise<boolean>
-   * @throws ForbiddenException if portfolio doesn't belong to account
+   * @throws ForbiddenException if portfolio doesn't belong to account and user has no owner permission
    */
   async validatePortfolioOwnership(portfolioId: string, accountId: string): Promise<boolean> {
+    // First check if account is the creator
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId, accountId }
     });
 
-    if (!portfolio) {
+    if (portfolio) {
+      return true; // User is the creator
+    }
+
+    // If not creator, check if user has owner permission
+    const permission = await this.portfolioPermissionRepository.findOne({
+      where: { 
+        portfolioId, 
+        accountId,
+        permissionType: PortfolioPermissionType.OWNER
+      }
+    });
+    
+    if (!permission) {
       throw new ForbiddenException(
         `Portfolio with ID "${portfolioId}" does not belong to account "${accountId}"`
       );

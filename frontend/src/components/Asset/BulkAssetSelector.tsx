@@ -257,7 +257,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               
               {showHelp && (
                 <Box sx={{ p: 3, pt: 0 }}>
-                  <ResponsiveTypography variant="body2" sx={{ 
+                  <ResponsiveTypography variant="body2" ellipsis={false} sx={{ 
                     color: 'text.secondary', 
                     fontWeight: 500,
                     lineHeight: 1.6

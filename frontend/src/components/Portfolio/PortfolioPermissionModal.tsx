@@ -307,7 +307,8 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                     </TableCell>
                     <TableCell align="center">
                       <Box display="flex" gap={1} justifyContent="center">
-                        {permission.permissionType !== PortfolioPermissionType.OWNER && (
+                        {/* Can not delete by itself and not granted by the current account */}
+                        {permission.accountId !== permission.grantedBy && accountId !== permission.accountId && (
                           <Tooltip title={t('permissions.removePermission')}>
                             <IconButton
                               size="small"
@@ -330,10 +331,10 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         {permissions.length === 0 && !loading && (
           <Box textAlign="center" py={4}>
             <SecurityIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <ResponsiveTypography variant="cardValue" color="text.secondary">
+            <ResponsiveTypography variant="cardLabel" color="text.primary">
               {t('permissions.noPermissions')}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="formHelper" color="text.secondary">
+            <ResponsiveTypography variant="cardLabel" color="text.secondary">
               {t('permissions.noPermissionsDescription')}
             </ResponsiveTypography>
           </Box>
