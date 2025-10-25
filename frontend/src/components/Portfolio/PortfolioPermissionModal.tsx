@@ -25,6 +25,11 @@ import {
   InputLabel,
   Avatar,
   AlertTitle,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -55,6 +60,7 @@ interface PortfolioPermissionModalProps {
   portfolioId: string;
   portfolioName: string;
   onPermissionUpdated?: () => void;
+  creatorAccountId: string;
 }
 
 const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
@@ -63,6 +69,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
   portfolioId,
   portfolioName,
   onPermissionUpdated,
+  creatorAccountId,
 }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
@@ -73,6 +80,8 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [selectedPermissionType, setSelectedPermissionType] = useState<PortfolioPermissionType>(PortfolioPermissionType.VIEW);
   const [isAddingPermission, setIsAddingPermission] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [permissionToDelete, setPermissionToDelete] = useState<string | null>(null);
 
   // Load permissions when modal opens
   useEffect(() => {
@@ -153,20 +162,38 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
   };
 
 
-  const handleDeletePermission = async (permissionId: string) => {
-    if (!window.confirm(t('permissions.confirmRemove')) || !accountId) return;
+  const handleDeletePermission = (permissionId: string) => {
+    setPermissionToDelete(permissionId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeletePermission = async () => {
+    if (!permissionToDelete || !accountId) return;
 
     try {
-      await portfolioPermissionApi.deletePermission(permissionId, portfolioId, accountId);
-      setPermissions(prev => prev.filter(perm => perm.permissionId !== permissionId));
+      await portfolioPermissionApi.deletePermission(permissionToDelete, portfolioId, accountId);
+      setPermissions(prev => prev.filter(perm => perm.permissionId !== permissionToDelete));
+      
+      // Hiển thị toast success message
+      ToastService.success(t('permissions.deleteSuccess'));
       
       if (onPermissionUpdated) {
         onPermissionUpdated();
       }
     } catch (err) {
+      // Hiển thị toast error message
+      ToastService.error(t('permissions.errors.deleteFailed'));
       setError('Failed to delete permission');
       console.error('Error deleting permission:', err);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setPermissionToDelete(null);
     }
+  };
+
+  const cancelDeletePermission = () => {
+    setDeleteConfirmOpen(false);
+    setPermissionToDelete(null);
   };
 
   const getPermissionIcon = (permissionType: PortfolioPermissionType) => {
@@ -281,7 +308,10 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                 <MenuItem value={PortfolioPermissionType.VIEW}>{t('permissions.permissionTypes.view')}</MenuItem>
                 <MenuItem value={PortfolioPermissionType.UPDATE}>{t('permissions.permissionTypes.update')}</MenuItem>
                 <MenuItem value={PortfolioPermissionType.OWNER}>{t('permissions.permissionTypes.owner')}</MenuItem>
-                <MenuItem value={PortfolioPermissionType.CREATOR}>{t('permissions.permissionTypes.creator')}</MenuItem>
+                {/* Only show creator permission if the current account is the owner */}
+                {creatorAccountId && accountId === creatorAccountId && (
+                  <MenuItem value={PortfolioPermissionType.CREATOR}>{t('permissions.permissionTypes.creator')}</MenuItem>
+                )}
               </Select>
             </FormControl>
             
@@ -352,7 +382,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                     <TableCell align="center">
                       <Box display="flex" gap={1} justifyContent="center">
                         {/* Can not delete by itself and not granted by the current account */}
-                        {permission.accountId !== permission.grantedBy && accountId !== permission.accountId && (
+                        {accountId !== permission.accountId && (
                           <Tooltip title={t('permissions.removePermission')}>
                             <IconButton
                               size="small"
@@ -383,6 +413,33 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
             </ResponsiveTypography>
           </Box>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteConfirmOpen}
+          onClose={cancelDeletePermission}
+          aria-labelledby="delete-dialog-title"
+          aria-describedby="delete-dialog-description"
+        >
+          <DialogTitle id="delete-dialog-title">
+            <ResponsiveTypography variant="cardTitle">
+            {t('permissions.confirmRemove')}
+            </ResponsiveTypography>
+          </DialogTitle>
+          <DialogContent>
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('permissions.confirmRemoveDescription')}
+            </ResponsiveTypography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelDeletePermission} color="primary">
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={confirmDeletePermission} color="error" variant="contained">
+              {t('permissions.removePermission')}
+            </Button>
+          </DialogActions>
+        </Dialog>
     </ModalWrapper>
   );
 };

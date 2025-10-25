@@ -2520,7 +2520,9 @@
     "transferCreatorWarning": "⚠️ WARNING: This is a critical action!",
     "transferCreatorWarningMessage": "You are transferring portfolio ownership to another person. After transfer, you will lose ownership and cannot see this portfolio anymore. This action cannot be undone!",
     "transferCreatorSuccess": "Portfolio ownership transferred successfully!",
-    "confirmRemove": "Are you sure you want to remove this permission?",
+    "deleteSuccess": "Permission deleted successfully!",
+    "confirmRemove": "Confirm Permission Removal",
+    "confirmRemoveDescription": "Are you sure you want to remove this permission? This action cannot be undone.",
     "noPermissions": "No permissions set for this portfolio",
     "noPermissionsDescription": "Add accounts to share access to this portfolio",
     "permissionTypes": {
@@ -2532,7 +2534,8 @@
     "errors": {
       "loadFailed": "Failed to load permissions",
       "addFailed": "Failed to add permission",
-      "deleteFailed": "Failed to delete permission"
+      "deleteFailed": "Failed to delete permission",
+      "transferCreatorFailed": "Failed to transfer portfolio ownership"
     }
   },
   "deviceManagement": {

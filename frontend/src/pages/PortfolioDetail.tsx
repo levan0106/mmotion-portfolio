@@ -1137,6 +1137,7 @@ const PortfolioDetail: React.FC = () => {
         onClose={() => setPermissionModalOpen(false)}
         portfolioId={portfolioId!}
         portfolioName={portfolio.name}
+        creatorAccountId={portfolio.accountId}
         onPermissionUpdated={() => {
           // TODO: Refresh portfolio data or permission stats
           console.log('Permissions updated');

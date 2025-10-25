@@ -334,6 +334,7 @@ const Portfolios: React.FC = () => {
         onClose={handlePermissionModalClose}
         portfolioId={selectedPortfolioForPermission || ''}
         portfolioName={selectedPortfolioForPermission ? (portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.name || '') : ''}
+        creatorAccountId={selectedPortfolioForPermission ? (portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.accountId || '') : ''}
         onPermissionUpdated={() => {
           // Optionally refetch portfolios to update permission stats
           refetch();

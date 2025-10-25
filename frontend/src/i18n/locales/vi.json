@@ -216,8 +216,8 @@
     "profileComplete": "Hồ sơ đã hoàn thiện",
     "passwordSet": "Đã đặt mật khẩu, hồ sơ tùy chọn",
     "profileNeedsCompletion": "Hồ sơ cần hoàn thiện",
-    "completeYourProfile": "Hoàn thiện hồ sơ",
-    "clickToGoToHome": "Nhấp để về trang chủ"
+    "completeYourProfile": "Cần hoàn thiện hồ sơ",
+    "clickToGoToHome": "Nhấp để đi đến trang chủ"
   },
   "portfolio": {
     "title": "Danh mục của bạn",
@@ -2501,7 +2501,9 @@
     "transferCreatorWarning": "CẢNH BÁO: Hành động quan trọng!",
     "transferCreatorWarningMessage": "Bạn đang chuyển quyền sở hữu danh mục cho người khác. Sau khi chuyển, bạn sẽ mất quyền sở hữu và không còn thấy danh mục này. Hành động này không thể hoàn tác!",
     "transferCreatorSuccess": "Đã chuyển quyền sở hữu danh mục thành công!",
-    "confirmRemove": "Bạn có chắc chắn muốn xóa quyền này không?",
+    "deleteSuccess": "Đã xóa quyền truy cập thành công!",
+    "confirmRemove": "Xác nhận xóa quyền truy cập",
+    "confirmRemoveDescription": "Bạn có chắc chắn muốn xóa quyền truy cập này không? Hành động này không thể hoàn tác.",
     "noPermissions": "Chưa có quyền nào được thiết lập cho danh mục này",
     "noPermissionsDescription": "Thêm tài khoản để chia sẻ quyền truy cập danh mục này",
     "permissionTypes": {
@@ -2513,7 +2515,8 @@
     "errors": {
       "loadFailed": "Không thể tải quyền",
       "addFailed": "Không thể thêm quyền",
-      "deleteFailed": "Không thể xóa quyền"
+      "deleteFailed": "Không thể xóa quyền",
+      "transferCreatorFailed": "Không thể chuyển quyền sở hữu danh mục"
     }
   },
   "deviceManagement": {

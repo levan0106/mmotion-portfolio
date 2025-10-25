@@ -65,7 +65,7 @@ export class PortfolioPermissionService {
         { portfolioId },
         { accountId: accountId }
       );
-      console.log('Portfolio ownership transferred successfully');
+    
       // Return success message thay vì tạo permission
       return {
         message: 'Portfolio ownership transferred successfully',
@@ -158,7 +158,7 @@ export class PortfolioPermissionService {
   
     // Add owner permission at the beginning
     const ownerPermission = {
-      permissionId: `owner-${portfolio.portfolioId}`,
+      permissionId: `${portfolio.portfolioId}`,
       accountId: portfolio.accountId,
       accountName: ownerAccount?.name || 'Unknown',
       accountEmail: ownerAccount?.email || 'Unknown',
@@ -197,7 +197,7 @@ export class PortfolioPermissionService {
     });
 
     if (!permission) {
-      throw new NotFoundException('Permission not found');
+      throw new NotFoundException('Portfolio permission not found. You are trying to delete a permission that does not exist.');
     }
 
     // Only owner can manage permissions
@@ -206,16 +206,25 @@ export class PortfolioPermissionService {
     });
 
     if (!portfolio) {
-      throw new NotFoundException('Portfolio not found');
+      throw new NotFoundException('Portfolio not found. You are trying to delete a permission that does not exist.');
     }
 
-    if (portfolio.accountId !== requesterAccountId) {
+    const portfolioOwnerPermission =  await this.portfolioPermissionRepository.findOne({
+      where: { 
+        portfolioId: permission.portfolioId, 
+        accountId: requesterAccountId,
+        permissionType: PortfolioPermissionType.OWNER
+      }
+    });
+
+    // only owner or owner's permission can delete permission
+    if (portfolio.accountId !== requesterAccountId && !portfolioOwnerPermission) {
       throw new ForbiddenException('Only the portfolio owner can manage permissions');
     }
 
     // Cannot delete owner permission
-    if (permission.permissionType === PortfolioPermissionType.OWNER) {
-      throw new BadRequestException('Cannot delete owner permission');
+    if (permission.accountId === requesterAccountId) {
+      throw new BadRequestException('You cannot delete your own permission');
     }
 
     await this.portfolioPermissionRepository.remove(permission);

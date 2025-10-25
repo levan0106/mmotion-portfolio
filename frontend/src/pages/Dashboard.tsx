@@ -619,6 +619,7 @@ const Dashboard: React.FC = () => {
             onClose={handlePermissionModalClose}
             portfolioId={selectedPortfolioForPermission}
             portfolioName={portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.name || ''}
+            creatorAccountId={portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.accountId || ''}
             onPermissionUpdated={() => {
               // Refresh portfolios when permissions are updated
               refetchPortfolios();
