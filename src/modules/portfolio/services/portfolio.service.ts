@@ -474,130 +474,6 @@ export class PortfolioService {
   }
 
   /**
-   * Get all portfolios for an account with real-time P&L calculation.
-   * @param accountId - Account ID
-   * @returns Promise<Portfolio[]>
-   */
-  async getPortfoliosByAccount(accountId: string): Promise<Portfolio[]> {
-    const cacheKey = `portfolios:account:${accountId}`;
-    
-    // Try to get from cache first (if enabled)
-    if (this.CACHE_ENABLED) {
-      const cachedPortfolios = await this.cacheManager.get<Portfolio[]>(cacheKey);
-      if (cachedPortfolios) {
-        return cachedPortfolios;
-      }
-    }
-
-    const portfolios = await this.portfolioRepository.findByAccountId(accountId);
-    
-    // Calculate real-time P&L for each portfolio using PortfolioCalculationService
-    const portfoliosWithRealTimePL = await Promise.all(
-      portfolios.map(async (portfolio) => {
-        try {
-          // Calculate correct cash balance from cash flows
-          const correctCashBalance = await this.cashFlowService.getCashBalance(portfolio.portfolioId);
-          
-          // Use PortfolioCalculationService to get real-time calculations
-          const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(
-            portfolio.portfolioId
-          );
-
-          // Calculate total unrealized P&L from all asset positions
-          const totalUnrealizedPL = calculation.assetPositions.reduce(
-            (sum, position) => sum + position.unrealizedPl,
-            0
-          );
-
-          // Calculate total realized P&L from trade details
-          const totalRealizedPL = await this.portfolioValueCalculator.calculateRealizedPL(portfolio.portfolioId);
-
-          // Calculate total value (cash + assets)
-          const totalAssetValue = calculation.assetPositions.reduce(
-            (sum, position) => sum + position.currentValue,
-            0
-          );
-          const totalValue = correctCashBalance + totalAssetValue;
-
-          // Calculate new portfolio fields
-          const newFields = await this.calculateNewPortfolioFields(portfolio.portfolioId);
-
-          // Get NAV per unit for funds (DB-first with fallback calculation)
-          let navPerUnit = portfolio.navPerUnit || 0;
-          if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
-            const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
-              ? parseFloat(portfolio.totalOutstandingUnits) 
-              : portfolio.totalOutstandingUnits;
-            
-            // Check if DB value is valid and not stale
-            const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(navPerUnit);
-            const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
-            
-            if (isNavPerUnitValid && !isNavPerUnitStale) {
-              // Use DB value (already set above)
-              this.logger.debug(`Using DB navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
-            } else {
-              // Fallback to real-time calculation
-              navPerUnit = newFields.totalAllValue / outstandingUnits;
-              const reason = !isNavPerUnitValid ? 'DB value is zero' : 'DB value is stale';
-              this.logger.debug(`Calculated real-time navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
-            }
-          }
-
-          // Return portfolio with updated real-time values
-          const updatedPortfolio = {
-            ...portfolio,
-            totalValue: totalValue, // Keep old field for backward compatibility
-            unrealizedPl: totalUnrealizedPL, // Keep old field for backward compatibility
-            realizedPl: totalRealizedPL, // Keep old field for backward compatibility
-            cashBalance: correctCashBalance, // Use calculated cash balance
-            // Set new fields
-            totalAssetValue: newFields.totalAssetValue,
-            totalInvestValue: newFields.totalInvestValue,
-            totalAllValue: newFields.totalAllValue,
-            totalCapitalValue: newFields.totalCapitalValue,
-            realizedAssetPnL: newFields.realizedAssetPnL,
-            realizedInvestPnL: newFields.realizedInvestPnL,
-            realizedAllPnL: newFields.realizedAllPnL,
-            unrealizedAssetPnL: newFields.unrealizedAssetPnL,
-            unrealizedInvestPnL: newFields.unrealizedInvestPnL,
-            unrealizedAllPnL: newFields.unrealizedAllPnL,
-            // Update NAV per unit for funds
-            navPerUnit: navPerUnit,
-          };
-          
-          // Add computed properties to match Portfolio type
-          Object.defineProperty(updatedPortfolio, 'canAcceptInvestors', {
-            get: function() { return this.isFund; },
-            enumerable: true
-          });
-          Object.defineProperty(updatedPortfolio, 'investorCount', {
-            get: function() { return this.investorHoldings?.length || 0; },
-            enumerable: true
-          });
-          Object.defineProperty(updatedPortfolio, 'hasValidNavPerUnit', {
-            get: function() { return this.isFund && this.totalOutstandingUnits > 0 && this.navPerUnit > 0; },
-            enumerable: true
-          });
-          
-          return updatedPortfolio;
-        } catch (error) {
-          // If calculation fails, return original portfolio data
-          console.error(`Error calculating real-time P&L for portfolio ${portfolio.portfolioId}:`, error);
-          return portfolio;
-        }
-      })
-    );
-    
-    // Cache the result (if enabled)
-    if (this.CACHE_ENABLED) {
-      await this.cacheManager.set(cacheKey, portfoliosWithRealTimePL, this.CACHE_TTL);
-    }
-
-    return portfoliosWithRealTimePL as Portfolio[];
-  }
-
-  /**
    * Get all portfolios accessible by an account (owned + shared with permissions).
    * This includes portfolios owned by the account and portfolios shared with the account.
    * @param accountId - Account ID
@@ -614,19 +490,34 @@ export class PortfolioService {
       }
     }
 
-    // Get owned portfolios
-    const ownedPortfolios = await this.getPortfoliosByAccount(accountId);
+    // Get owned portfolios (already have real-time calculation)
+    const ownedPortfolios = await this.portfolioRepository.findByAccountId(accountId);
     
-    // Get shared portfolios (portfolios this account has permission to access)
-    const sharedPortfolios = await this.portfolioPermissionService.getAccountAccessiblePortfolios(accountId);
+    // Use common method for real-time calculation and caching
+    const ownedPortfoliosWithRealTime = await this.getPortfoliosWithRealTimeCalculation(
+      accountId, 
+      ownedPortfolios, 
+      'portfolios'
+    );
+
+    
+    // Get shared portfolios (raw data from database)
+    const sharedPortfoliosRaw = await this.portfolioPermissionService.getAccountAccessiblePortfolios(accountId);
+    
+    // Apply real-time calculation to shared portfolios using common method
+    const sharedPortfoliosWithRealTime = await this.getPortfoliosWithRealTimeCalculation(
+      accountId, 
+      sharedPortfoliosRaw, 
+      'shared-portfolios'
+    );
     
     // Combine and deduplicate portfolios
-    const allPortfolios = [...ownedPortfolios];
-    const ownedPortfolioIds = new Set(ownedPortfolios.map(p => p.portfolioId));
+    const allPortfolios = [...ownedPortfoliosWithRealTime];
+    const ownedPortfolioIds = new Set(ownedPortfoliosWithRealTime.map(p => p.portfolioId));
     
-    for (const sharedPortfolio of sharedPortfolios) {
+    for (const sharedPortfolio of sharedPortfoliosWithRealTime) {
       if (!ownedPortfolioIds.has(sharedPortfolio.portfolioId)) {
-        allPortfolios.push(sharedPortfolio);
+        allPortfolios.push(sharedPortfolio as any);
       }
     }
 
@@ -864,6 +755,145 @@ export class PortfolioService {
     }
 
     return metrics;
+  }
+
+  /**
+   * Get portfolios with real-time calculation and caching.
+   * This is a common method used by both owned and shared portfolios.
+   * @param accountId - Account ID for cache key
+   * @param portfolios - Array of portfolio entities
+   * @param cacheKeyPrefix - Prefix for cache key (e.g., 'portfolios' or 'accessible-portfolios')
+   * @returns Promise<any[]> - Portfolios with real-time values
+   */
+  private async getPortfoliosWithRealTimeCalculation(
+    accountId: string, 
+    portfolios: Portfolio[], 
+    cacheKeyPrefix: string
+  ): Promise<any[]> {
+    const cacheKey = `${cacheKeyPrefix}:account:${accountId}`;
+    
+    // Try to get from cache first (if enabled)
+    if (this.CACHE_ENABLED) {
+      const cachedPortfolios = await this.cacheManager.get<any[]>(cacheKey);
+      if (cachedPortfolios) {
+        return cachedPortfolios;
+      }
+    }
+
+    // Calculate real-time values for each portfolio
+    const portfoliosWithRealTime = await Promise.all(
+      portfolios.map(async (portfolio) => {
+        return await this.calculatePortfolioRealTimeValues(portfolio);
+      })
+    );
+    
+    // Cache the result (if enabled)
+    if (this.CACHE_ENABLED) {
+      await this.cacheManager.set(cacheKey, portfoliosWithRealTime, this.CACHE_TTL);
+    }
+
+    return portfoliosWithRealTime;
+  }
+
+  /**
+   * Calculate real-time values for a portfolio.
+   * This is a common method used by both owned and shared portfolios.
+   * @param portfolio - Portfolio entity
+   * @returns Promise<any> - Portfolio with real-time values
+   */
+  private async calculatePortfolioRealTimeValues(portfolio: Portfolio): Promise<any> {
+    try {
+      // Calculate correct cash balance from cash flows
+      const correctCashBalance = await this.cashFlowService.getCashBalance(portfolio.portfolioId);
+      
+      // Use PortfolioCalculationService to get real-time calculations
+      const calculation = await this.portfolioCalculationService.calculatePortfolioAssetValues(
+        portfolio.portfolioId
+      );
+
+      // Calculate total unrealized P&L from all asset positions
+      const totalUnrealizedPL = calculation.assetPositions.reduce(
+        (sum, position) => sum + position.unrealizedPl,
+        0
+      );
+
+      // Calculate total realized P&L from trade details
+      const totalRealizedPL = await this.portfolioValueCalculator.calculateRealizedPL(portfolio.portfolioId);
+
+      // Calculate total value (cash + assets)
+      const totalAssetValue = calculation.assetPositions.reduce(
+        (sum, position) => sum + position.currentValue,
+        0
+      );
+      const totalValue = correctCashBalance + totalAssetValue;
+
+      // Calculate new portfolio fields
+      const newFields = await this.calculateNewPortfolioFields(portfolio.portfolioId);
+
+      // Get NAV per unit for funds (DB-first with fallback calculation)
+      let navPerUnit = portfolio.navPerUnit || 0;
+      if (portfolio.isFund && portfolio.totalOutstandingUnits > 0) {
+        const outstandingUnits = typeof portfolio.totalOutstandingUnits === 'string' 
+          ? parseFloat(portfolio.totalOutstandingUnits) 
+          : portfolio.totalOutstandingUnits;
+        
+        // Check if DB value is valid and not stale
+        const isNavPerUnitValid = this.navUtilsService.isNavPerUnitValid(navPerUnit);
+        const isNavPerUnitStale = this.navUtilsService.isNavPerUnitStale(portfolio.lastNavDate);
+        
+        if (isNavPerUnitValid && !isNavPerUnitStale) {
+          // Use DB value (already set above)
+          this.logger.debug(`Using DB navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (lastNavDate: ${portfolio.lastNavDate})`);
+        } else {
+          // Fallback to real-time calculation
+          navPerUnit = newFields.totalAllValue / outstandingUnits;
+          const reason = !isNavPerUnitValid ? 'DB value is zero' : 'DB value is stale';
+          this.logger.debug(`Calculated real-time navPerUnit: ${navPerUnit} for portfolio ${portfolio.portfolioId} (reason: ${reason}, lastNavDate: ${portfolio.lastNavDate})`);
+        }
+      }
+
+      // Return portfolio with updated real-time values
+      const updatedPortfolio = {
+        ...portfolio,
+        totalValue: totalValue, // Keep old field for backward compatibility
+        unrealizedPl: totalUnrealizedPL, // Keep old field for backward compatibility
+        realizedPl: totalRealizedPL, // Keep old field for backward compatibility
+        cashBalance: correctCashBalance, // Use calculated cash balance
+        // Set new fields
+        totalAssetValue: newFields.totalAssetValue,
+        totalInvestValue: newFields.totalInvestValue,
+        totalAllValue: newFields.totalAllValue,
+        totalCapitalValue: newFields.totalCapitalValue,
+        realizedAssetPnL: newFields.realizedAssetPnL,
+        realizedInvestPnL: newFields.realizedInvestPnL,
+        realizedAllPnL: newFields.realizedAllPnL,
+        unrealizedAssetPnL: newFields.unrealizedAssetPnL,
+        unrealizedInvestPnL: newFields.unrealizedInvestPnL,
+        unrealizedAllPnL: newFields.unrealizedAllPnL,
+        // Update NAV per unit for funds
+        navPerUnit: navPerUnit,
+      };
+      
+      // Add computed properties to match Portfolio type
+      Object.defineProperty(updatedPortfolio, 'canAcceptInvestors', {
+        get: function() { return this.isFund; },
+        enumerable: true
+      });
+      Object.defineProperty(updatedPortfolio, 'investorCount', {
+        get: function() { return this.investorHoldings?.length || 0; },
+        enumerable: true
+      });
+      Object.defineProperty(updatedPortfolio, 'hasValidNavPerUnit', {
+        get: function() { return this.isFund && this.totalOutstandingUnits > 0 && this.navPerUnit > 0; },
+        enumerable: true
+      });
+      
+      return updatedPortfolio;
+    } catch (error) {
+      // If calculation fails, return original portfolio data
+      console.error(`Error calculating real-time P&L for portfolio ${portfolio.portfolioId}:`, error);
+      return portfolio;
+    }
   }
 
   /**

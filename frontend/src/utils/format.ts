@@ -145,6 +145,9 @@ export const formatCurrency = (
       notation: compact ? 'compact' : 'standard',
     }).format(0);
   }
+
+  // If the absolute value is very small, treat as zero
+  const normalizedAmount = Math.abs(numAmount) < 1e-8 ? 0 : numAmount;
   
   // Check if user wants full format (from localStorage with default)
   const showFullStorage = localStorage.getItem('currency-show-full');
@@ -163,8 +166,8 @@ export const formatCurrency = (
   }
   
   // Special formatting for millions with appropriate suffixes (only if not showing full)
-  if (Math.abs(numAmount) >= 1000000 && !showFull) {
-    const millionsAmount = numAmount / 1000000;
+  if (Math.abs(normalizedAmount) >= 1000000 && !showFull) {
+    const millionsAmount = normalizedAmount / 1000000;
     const formattedMillions = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 1,
@@ -244,7 +247,7 @@ export const formatCurrency = (
     minimumFractionDigits: precision,
     maximumFractionDigits: precision,
     notation: compact ? 'compact' : 'standard',
-  }).format(numAmount);
+  }).format(normalizedAmount);
   
   // Add currency symbol if requested
   if (showSymbol) {
