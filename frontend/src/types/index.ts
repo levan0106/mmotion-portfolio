@@ -14,6 +14,7 @@ export enum PortfolioPermissionType {
   OWNER = 'OWNER',
   UPDATE = 'UPDATE',
   VIEW = 'VIEW',
+  CREATOR = 'CREATOR',
 }
 
 // User Permission interface

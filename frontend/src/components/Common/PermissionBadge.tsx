@@ -1,6 +1,6 @@
 import React from 'react';
 import { Chip, Tooltip } from '@mui/material';
-import { Security, Edit, Visibility, Star } from '@mui/icons-material';
+import { Security, Edit, Visibility, Star, PersonAdd } from '@mui/icons-material';
 import { UserPermission, PortfolioPermissionType } from '../../types';
 
 interface PermissionBadgeProps {
@@ -40,6 +40,13 @@ const PermissionBadge: React.FC<PermissionBadgeProps> = ({
           color: 'default' as const,
           icon: <Visibility fontSize="small" />,
           tooltip: 'You can only view this portfolio.'
+        };
+      case PortfolioPermissionType.CREATOR:
+        return {
+          label: 'Creator',
+          color: 'success' as const,
+          icon: <PersonAdd fontSize="small" />,
+          tooltip: 'You are the creator of this portfolio. You can transfer the creation permission to another account.'
         };
       default:
         return {

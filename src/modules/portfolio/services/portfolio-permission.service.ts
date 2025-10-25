@@ -58,6 +58,27 @@ export class PortfolioPermissionService {
       throw new NotFoundException('Account not found');
     }
 
+    // Nếu permission type là CREATOR, chỉ update accountId của portfolio
+    if (permissionType === PortfolioPermissionType.CREATOR && portfolio.accountId === grantedBy) {
+      // Update accountId trong bảng portfolio
+      await this.portfolioRepository.update(
+        { portfolioId },
+        { accountId: accountId }
+      );
+      console.log('Portfolio ownership transferred successfully');
+      // Return success message thay vì tạo permission
+      return {
+        message: 'Portfolio ownership transferred successfully',
+        portfolioId,
+        newOwnerId: accountId
+      } as any;
+    }
+
+    // Nếu không phải CREATOR hoặc là owner tự grant, báo lỗi
+    if (permissionType === PortfolioPermissionType.CREATOR) {
+      throw new BadRequestException('Cannot transfer ownership to yourself');
+    }
+
     // Check if permission already exists
     const existingPermission = await this.portfolioPermissionRepository.findOne({
       where: { portfolioId, accountId },
@@ -277,6 +298,7 @@ export class PortfolioPermissionService {
 
     permissions.forEach(permission => {
       switch (permission.permissionType) {
+        case PortfolioPermissionType.CREATOR:
         case PortfolioPermissionType.OWNER:
           stats.ownerCount++;
           break;
@@ -300,7 +322,7 @@ export class PortfolioPermissionService {
     newOwnerAccountId: string,
     currentOwnerAccountId: string,
   ): Promise<void> {
-    // Check if current user is owner
+    // Check if current user is owner or creator
     const currentOwnerPermission = await this.getAccountPermissionForPortfolio(
       portfolioId,
       currentOwnerAccountId,

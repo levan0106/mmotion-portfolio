@@ -19,6 +19,7 @@ export enum PortfolioPermissionType {
   OWNER = 'OWNER',
   UPDATE = 'UPDATE',
   VIEW = 'VIEW',
+  CREATOR = 'CREATOR',
 }
 
 /**
@@ -150,6 +151,8 @@ export class PortfolioPermission {
         return 'Read and Update';
       case PortfolioPermissionType.VIEW:
         return 'Read only';
+      case PortfolioPermissionType.CREATOR:
+        return 'Full access (Creator)';
       default:
         return 'Unknown';
     }

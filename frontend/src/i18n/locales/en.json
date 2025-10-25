@@ -2516,13 +2516,18 @@
     "granted": "Granted",
     "actions": "Actions",
     "removePermission": "Remove Permission",
+    "transferCreator": "Transfer Portfolio Creator",
+    "transferCreatorWarning": "⚠️ WARNING: This is a critical action!",
+    "transferCreatorWarningMessage": "You are transferring portfolio ownership to another person. After transfer, you will lose ownership and cannot see this portfolio anymore. This action cannot be undone!",
+    "transferCreatorSuccess": "Portfolio ownership transferred successfully!",
     "confirmRemove": "Are you sure you want to remove this permission?",
     "noPermissions": "No permissions set for this portfolio",
     "noPermissionsDescription": "Add accounts to share access to this portfolio",
     "permissionTypes": {
       "owner": "Owner",
       "update": "Update",
-      "view": "View"
+      "view": "View",
+      "creator": "Creator"
     },
     "errors": {
       "loadFailed": "Failed to load permissions",

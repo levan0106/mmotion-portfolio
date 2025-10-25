@@ -194,7 +194,7 @@
     "fundManagement": {
       "title": "Quản lý quỹ",
       "portfolios": "Danh mục",
-      "assets": "Các loại tài sản",
+      "assets": "Tài sản đầu tư",
       "deposits": "Tiền gửi",
       "reports": "Báo cáo"
     },
@@ -2495,15 +2495,20 @@
     "currentPermissions": "Quyền Hiện tại",
     "account": "Tài khoản",
     "granted": "Được cấp",
-    "actions": "Hành động",
+    "actions": "Thao tác",
     "removePermission": "Xóa Quyền",
+    "transferCreator": "Chuyển Người tạo Danh mục",
+    "transferCreatorWarning": "CẢNH BÁO: Hành động quan trọng!",
+    "transferCreatorWarningMessage": "Bạn đang chuyển quyền sở hữu danh mục cho người khác. Sau khi chuyển, bạn sẽ mất quyền sở hữu và không còn thấy danh mục này. Hành động này không thể hoàn tác!",
+    "transferCreatorSuccess": "Đã chuyển quyền sở hữu danh mục thành công!",
     "confirmRemove": "Bạn có chắc chắn muốn xóa quyền này không?",
     "noPermissions": "Chưa có quyền nào được thiết lập cho danh mục này",
     "noPermissionsDescription": "Thêm tài khoản để chia sẻ quyền truy cập danh mục này",
     "permissionTypes": {
       "owner": "Chủ sở hữu",
       "update": "Chỉnh sửa",
-      "view": "Chỉ xem"
+      "view": "Chỉ xem",
+      "creator": "Người tạo"
     },
     "errors": {
       "loadFailed": "Không thể tải quyền",

@@ -24,6 +24,7 @@ import {
   FormControl,
   InputLabel,
   Avatar,
+  AlertTitle,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -39,9 +40,11 @@ import { PortfolioPermissionType } from '../../types';
 import { portfolioPermissionApi, PortfolioPermission, CreatePortfolioPermissionDto } from '../../services/api.portfolio-permission';
 import { useAccount } from '../../contexts/AccountContext';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import ModalWrapper from '../Common/ModalWrapper';
 import { ResponsiveButton } from '../Common';
+import { ToastService } from '../../services/toast';
 
 
 // PortfolioPermission interface is now imported from API service
@@ -63,6 +66,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
+  const navigate = useNavigate();
   const [permissions, setPermissions] = useState<PortfolioPermission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +104,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
 
     try {
       setIsAddingPermission(true);
-      
+            
       const createDto: CreatePortfolioPermissionDto = {
         portfolioId,
         accountId: selectedAccountId,
@@ -108,15 +112,40 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
       };
       
       const newPermission = await portfolioPermissionApi.createPermission(createDto, accountId);
-      setPermissions(prev => [...prev, newPermission]);
-      setSelectedAccountId('');
-      setSelectedPermissionType(PortfolioPermissionType.VIEW);
       
-      if (onPermissionUpdated) {
-        onPermissionUpdated();
+      // Nếu là CREATOR, đóng modal, hiển thị toast và navigate về /portfolios
+      if (selectedPermissionType === PortfolioPermissionType.CREATOR) {
+        setSelectedAccountId('');
+        setSelectedPermissionType(PortfolioPermissionType.VIEW);
+        
+        // Hiển thị toast success message
+        ToastService.success(t('permissions.transferCreatorSuccess'));
+        
+        // Đóng modal
+        onClose();
+        
+        // Navigate về /portfolios
+        navigate('/portfolios');
+        
+        // Hiển thị toast message
+        if (onPermissionUpdated) {
+          onPermissionUpdated();
+        }
+      } else {
+        setPermissions(prev => [...prev, newPermission]);
+        setSelectedAccountId('');
+        setSelectedPermissionType(PortfolioPermissionType.VIEW);
+        
+        if (onPermissionUpdated) {
+          onPermissionUpdated();
+        }
       }
     } catch (err) {
-      setError(t('permissions.errors.addFailed'));
+      if (selectedPermissionType === PortfolioPermissionType.CREATOR) {
+        setError(t('permissions.errors.transferCreatorFailed'));
+      } else {
+        setError(t('permissions.errors.addFailed'));
+      }
       console.error('Error adding permission:', err);
     } finally {
       setIsAddingPermission(false);
@@ -148,6 +177,8 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         return <UpdateIcon />;
       case PortfolioPermissionType.VIEW:
         return <ViewIcon />;
+      case PortfolioPermissionType.CREATOR:
+        return <PersonAddIcon />;
       default:
         return <SecurityIcon />;
     }
@@ -161,6 +192,8 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         return 'warning';
       case PortfolioPermissionType.VIEW:
         return 'info';
+      case PortfolioPermissionType.CREATOR:
+        return 'success';
       default:
         return 'default';
     }
@@ -174,6 +207,8 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
         return t('permissions.permissionTypes.update');
       case PortfolioPermissionType.VIEW:
         return t('permissions.permissionTypes.view');
+      case PortfolioPermissionType.CREATOR:
+        return t('permissions.permissionTypes.creator');
       default:
         return 'Unknown';
     }
@@ -217,6 +252,14 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
             {t('permissions.addNewPermission')}
           </ResponsiveTypography>
           
+          {/* Warning for CREATOR permission */}
+          {selectedPermissionType === PortfolioPermissionType.CREATOR && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <AlertTitle>{t('permissions.transferCreatorWarning')}</AlertTitle>
+              {t('permissions.transferCreatorWarningMessage')}
+            </Alert>
+          )}
+          
           <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
             <TextField
               label={t('permissions.accountId')}
@@ -238,6 +281,7 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
                 <MenuItem value={PortfolioPermissionType.VIEW}>{t('permissions.permissionTypes.view')}</MenuItem>
                 <MenuItem value={PortfolioPermissionType.UPDATE}>{t('permissions.permissionTypes.update')}</MenuItem>
                 <MenuItem value={PortfolioPermissionType.OWNER}>{t('permissions.permissionTypes.owner')}</MenuItem>
+                <MenuItem value={PortfolioPermissionType.CREATOR}>{t('permissions.permissionTypes.creator')}</MenuItem>
               </Select>
             </FormControl>
             
@@ -246,10 +290,10 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
               onClick={handleAddPermission}
               disabled={!selectedAccountId || isAddingPermission}
               startIcon={isAddingPermission ? <CircularProgress size={16} /> : <AddIcon />}
-              mobileText={t('permissions.addPermission')}
-              desktopText={t('permissions.addPermission')}
+              mobileText={selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
+              desktopText={selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
             >
-              {t('permissions.addPermission')}
+              {selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
             </ResponsiveButton>
           </Box>
         </Paper>
