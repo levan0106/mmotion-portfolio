@@ -729,6 +729,7 @@ export class AssetService {
     currentQuantity: number;
     currentPrice: number;
     avgCost: number;
+    priceUpdatedAt?: Date;
   }> {
     const cacheKey = `current:${assetId}:${portfolioId || 'none'}`;
     const cached = this.cacheService.get<{
@@ -736,6 +737,7 @@ export class AssetService {
       currentQuantity: number;
       currentPrice: number;
       avgCost: number;
+      priceUpdatedAt?: Date;
     }>(cacheKey);
 
     if (cached) {
@@ -772,14 +774,17 @@ export class AssetService {
       currentQuantity: number;
       currentPrice: number;
       avgCost: number;
+      priceUpdatedAt?: Date;
     };
     
     // Get current market price for this asset - use fresh data from global_assets
     let currentMarketPrice = 0;
-    const globalAssetPrice = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
-    if (globalAssetPrice !== null && globalAssetPrice > 0) {
-      currentMarketPrice = globalAssetPrice;
-      console.log(`[DEBUG] Using fresh global asset price: ${currentMarketPrice}`);
+    let priceUpdatedAt: Date | undefined;
+    const globalAssetPriceData = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
+    if (globalAssetPriceData !== null && globalAssetPriceData.currentPrice > 0) {
+      currentMarketPrice = globalAssetPriceData.currentPrice;
+      priceUpdatedAt = globalAssetPriceData.priceUpdatedAt;
+      console.log(`[DEBUG] Using fresh global asset price: ${currentMarketPrice}, updatedAt: ${priceUpdatedAt}`);
     } else {
       // Fallback to cached method if global asset not available
       currentMarketPrice = await this.getCurrentMarketPrice(assetId);
@@ -794,6 +799,7 @@ export class AssetService {
         currentQuantity: 0,
         currentPrice: currentMarketPrice,
         avgCost: 0,
+        priceUpdatedAt,
       };
     } else {
       // Calculate current quantity and average cost
@@ -838,6 +844,7 @@ export class AssetService {
         currentQuantity: Math.max(0, currentQuantity), // Ensure non-negative
         currentPrice: currentMarketPrice,
         avgCost: avgCost,
+        priceUpdatedAt,
       };
       
       console.log(`[DEBUG] Final result for ${assetId}: currentQuantity=${result.currentQuantity}, currentValue=${result.currentValue}, currentPrice=${result.currentPrice}, avgCost=${result.avgCost}`);
@@ -901,18 +908,21 @@ export class AssetService {
   }
 
   /**
-   * Get current price directly from global assets table with join
+   * Get current price and price update timestamp from global assets table with join
    * This method is optimized for calculations that need fresh price data
    * @param symbol - Asset symbol
-   * @returns Current price or null if not found
+   * @returns Object with current price and price update timestamp or null if not found
    */
-  private async getCurrentPriceFromGlobalAssetJoin(symbol: string): Promise<number | null> {
+  private async getCurrentPriceFromGlobalAssetJoin(symbol: string): Promise<{ currentPrice: number; priceUpdatedAt: Date } | null> {
     try {
       const globalAsset = await this.assetGlobalSyncService.getGlobalAssetBySymbol(symbol);
       if (!globalAsset || !globalAsset.assetPrice) {
         return null;
       }
-      return globalAsset.assetPrice.currentPrice;
+      return {
+        currentPrice: globalAsset.assetPrice.currentPrice,
+        priceUpdatedAt: globalAsset.assetPrice.lastPriceUpdate
+      };
     } catch (error) {
       console.error(`Failed to get current price from global asset join: ${error.message}`);
       return null;
@@ -930,6 +940,7 @@ export class AssetService {
     currentQuantity: number;
     currentPrice: number;
     avgCost: number;
+    priceUpdatedAt?: Date;
   }> {
     const [initialValues, currentValues] = await Promise.all([
       this.calculateInitialValues(assetId),
@@ -942,6 +953,7 @@ export class AssetService {
       currentQuantity: currentValues.currentQuantity,
       currentPrice: currentValues.currentPrice,
       avgCost: currentValues.avgCost,
+      priceUpdatedAt: currentValues.priceUpdatedAt,
     };
   }
 
@@ -998,10 +1010,10 @@ export class AssetService {
         const asset = await this.assetRepository.findById(assetId);
         if (!asset) return null;
         
-        const currentPrice = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
+        const priceData = await this.getCurrentPriceFromGlobalAssetJoin(asset.symbol);
         return {
           quantity: asset.currentQuantity || 0,
-          price: currentPrice || 0,
+          price: priceData?.currentPrice || 0,
           ...options
         };
       })

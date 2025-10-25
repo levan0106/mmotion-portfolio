@@ -505,8 +505,8 @@ export const formatDateFns = (date: string | Date, formatString: string = 'MMM d
  * @param date - The date to format
  * @returns Formatted date and time string
  */
-export const formatDateTime = (date: string | Date): string => {
-  return formatDateFns(date, 'MMM dd, yyyy HH:mm');
+export const formatDateTime = (date: string | Date, format: string = 'MMM dd, yyyy HH:mm'): string => {
+  return formatDateFns(date, format);
 };
 
 /**

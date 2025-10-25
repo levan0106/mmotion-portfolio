@@ -41,6 +41,7 @@ export interface Asset {
   avgCost?: number;
   quantity?: number;
   totalValue?: number;
+  priceUpdatedAt?: Date;
   performance?: {
     daily: number;
     weekly: number;

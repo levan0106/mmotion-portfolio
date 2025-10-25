@@ -79,6 +79,12 @@ export class AssetResponseDto {
   })
   avgCost?: number;
 
+  @ApiPropertyOptional({
+    description: 'Timestamp when the asset price was last updated',
+    example: '2024-01-15T10:30:00.000Z',
+  })
+  priceUpdatedAt?: Date;
+
   @ApiProperty({
     description: 'Timestamp when the asset was created',
     example: '2024-01-15T10:30:00.000Z',

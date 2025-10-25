@@ -152,15 +152,6 @@ const AssetTableRow = memo(({
           </Box>
         </Box>
       </TableCell>
-      <TableCell sx={{ textAlign: 'right', 
-        maxWidth: { xs: '80px', sm: '100px' }, 
-        minWidth: '60px',
-        display: { xs: 'none', sm: 'table-cell' }
-        }}>
-        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
-          {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
-        </ResponsiveTypography>
-      </TableCell>
       <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '120px', sm: '150px' }, minWidth: '100px' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
           <ResponsiveTypography 
@@ -192,20 +183,29 @@ const AssetTableRow = memo(({
           </Box>
         </Box>
       </TableCell>
+      <TableCell sx={{ textAlign: 'right', 
+        maxWidth: { xs: '80px', sm: '100px' }, 
+        minWidth: '60px',
+        display: { xs: 'none', sm: 'table-cell' }
+        }}>
+        <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 500 }}>
+          {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
+        </ResponsiveTypography>
+      </TableCell>
       <TableCell sx={{ textAlign: 'right', maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
         <ResponsiveTypography variant="tableCell" sx={{ color: 'success.main' }}>
           {formatCurrency(Number(asset.totalValue) || 0, baseCurrency)}
         </ResponsiveTypography>
         <ResponsiveTypography variant="formHelper" sx={{ 
           color: 'text.secondary', fontSize: { xs: '0.65rem', sm: '0.7rem' },
-          marginTop: 0.5
+          marginTop: 0.5, display: { xs: 'block', sm: 'none' }
           }}>
           {formatNumber(asset.totalQuantity, asset.type === 'CRYPTO' ? 5 : 1) || 0}
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-          {formatDateTime(asset.updatedAt)}
+          {formatDateTime(asset.priceUpdatedAt || new Date(), 'HH:mm:ss dd/MM/yyyy')}
         </ResponsiveTypography>
       </TableCell>
       <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
@@ -454,14 +454,14 @@ const AssetsWithTradesList = memo(({
                       {t('assets.table.asset')}
                       </ResponsiveTypography>
                     </TableCell>
-                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
-                        {t('assets.table.quantity')}
-                      </ResponsiveTypography>
-                    </TableCell>
                     <TableCell sx={{ textAlign: 'right'}}>
                       <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
                         {t('assets.table.priceComparison')}
+                      </ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.quantity')}
                       </ResponsiveTypography>
                     </TableCell>
                     <TableCell sx={{ textAlign: 'right'}}>
@@ -568,11 +568,11 @@ const AssetsWithoutTradesList = memo(({
                         {t('assets.table.asset')}
                         </ResponsiveTypography>
                       </TableCell>
-                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
-                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography>
-                    </TableCell>
                     <TableCell sx={{ textAlign: 'right'}}>
                       <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceComparison')}</ResponsiveTypography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right', display: { xs: 'none', sm: 'table-cell' } }}>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.quantity')}</ResponsiveTypography>
                     </TableCell>
                     <TableCell sx={{ textAlign: 'right' }}>
                       <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.totalValue')}</ResponsiveTypography>

@@ -17,6 +17,7 @@ export class AssetMapper {
     currentPrice?: number;
     avgCost?: number;
     currentQuantity?: number;
+    priceUpdatedAt?: Date;
   }): AssetResponseDto {
     // Use computed currentQuantity if available, otherwise fall back to asset.currentQuantity
     const currentQuantity = computedFields?.currentQuantity ?? asset.currentQuantity ?? 0;
@@ -38,6 +39,7 @@ export class AssetMapper {
       currentQuantity: currentQuantity, // Use computed or fallback to asset value
       currentPrice: computedFields?.currentPrice,
       avgCost: computedFields?.avgCost,
+      priceUpdatedAt: computedFields?.priceUpdatedAt,
       createdAt: asset.createdAt,
       updatedAt: asset.updatedAt,
       createdBy: asset.createdBy,
