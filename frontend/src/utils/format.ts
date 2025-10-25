@@ -116,6 +116,23 @@ export const formatNumberWithPreferences = (
 };
 
 /**
+ * Normalize an amount to zero if it is very small
+ * @param amount - The amount to normalize (can be string or number)
+ * @returns Normalized amount
+ */
+export const normalizeAmount = (
+  amount: string | number | undefined | null
+): number => {
+  // Convert string to number if needed
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (numAmount === undefined || numAmount === null || isNaN(numAmount)) {
+    return 0;
+  }
+  // If the absolute value is very small, treat as zero
+  return Math.abs(numAmount) < 1e-8 ? 0 : numAmount;
+};
+
+/**
  * Format a number or string as currency (handles API string values)
  * @param amount - The amount to format (can be string or number)
  * @param currency - The currency code (default: 'VND')
@@ -147,7 +164,7 @@ export const formatCurrency = (
   }
 
   // If the absolute value is very small, treat as zero
-  const normalizedAmount = Math.abs(numAmount) < 1e-8 ? 0 : numAmount;
+  const normalizedAmount = normalizeAmount(numAmount);
   
   // Check if user wants full format (from localStorage with default)
   const showFullStorage = localStorage.getItem('currency-show-full');
