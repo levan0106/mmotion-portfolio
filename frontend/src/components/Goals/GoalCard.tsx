@@ -448,7 +448,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           
           <Stack direction="row" justifyContent="space-between" alignItems="center" mt={1}>
             <ResponsiveTypography variant="caption" color="text.secondary">
-              {formatCurrency(goal.currentValue)} / {formatCurrency(goal.targetValue)}
+              {formatCurrency( (goal.targetValue || 0) - (goal.currentValue || 0))  }
             </ResponsiveTypography>
           </Stack>
         </Paper>
@@ -459,7 +459,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
             <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
               {t('goals.card.currentValue')}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="cardValue" fontWeight={600}>
+            <ResponsiveTypography variant="cardValue">
               {formatCurrency(goal.currentValue)}
             </ResponsiveTypography>
           </Stack>
@@ -469,7 +469,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
               <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
                 {t('goals.card.target')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardValue" fontWeight={600}>
+              <ResponsiveTypography variant="cardValue">
                 {formatCurrency(goal.targetValue)}
               </ResponsiveTypography>
             </Stack>
@@ -499,6 +499,9 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                 arrow
               >
                 <Box>
+                  <ResponsiveTypography variant="cardLabel" color="text.secondary" fontWeight={500}>
+                    {t('goals.form.priority')}
+                  </ResponsiveTypography>
                   <Slider
                     value={goal.priority}
                     min={1}
