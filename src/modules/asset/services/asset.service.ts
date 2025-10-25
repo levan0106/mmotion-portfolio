@@ -93,7 +93,6 @@ export class AssetService {
     // Use setImmediate to run in next tick (non-blocking)
     setImmediate(async () => {
       try {
-        console.log(`[SYNC DEBUG] Starting background sync for asset: ${asset.symbol}`);
         const globalAssetId = await this.assetGlobalSyncService.syncAssetOnCreate({
           symbol: asset.symbol,
           name: asset.name,
@@ -101,7 +100,6 @@ export class AssetService {
           currency: 'VND', // Default currency for now
           userId: asset.createdBy,
         });
-        console.log(`[SYNC DEBUG] Background sync completed for asset: ${asset.symbol}, globalAssetId: ${globalAssetId}`);
       } catch (error) {
         console.error(`[SYNC ERROR] Failed to sync asset with global asset: ${error.message}`, error.stack);
         // Log error but don't fail the request
@@ -192,9 +190,7 @@ export class AssetService {
    * @returns Paginated assets
    */
   async findAll(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
-    console.log('AssetService.findAll called with filters:', filters);
     const result = await this.assetRepository.findWithPagination(filters);
-    console.log('AssetService.findAll result:', { total: result.total, dataCount: result.data.length });
     return result;
   }
 
@@ -741,15 +737,11 @@ export class AssetService {
     }>(cacheKey);
 
     if (cached) {
-      console.log(`[DEBUG] Using cached current values for ${assetId}: currentPrice=${cached.currentPrice}, currentQuantity=${cached.currentQuantity}`);
       return cached;
     }
 
-    console.log(`[DEBUG] Calculating current values for ${assetId}, portfolioId=${portfolioId}`);
-
     // Get asset first
     const asset = await this.assetRepository.findById(assetId);
-    console.log(`[DEBUG] Asset found: ${asset ? 'YES' : 'NO'}, initialQuantity: ${asset?.initialQuantity}, currentQuantity: ${asset?.currentQuantity}`);
     if (!asset) {
       return {
         currentValue: 0,
@@ -784,16 +776,13 @@ export class AssetService {
     if (globalAssetPriceData !== null && globalAssetPriceData.currentPrice > 0) {
       currentMarketPrice = globalAssetPriceData.currentPrice;
       priceUpdatedAt = globalAssetPriceData.priceUpdatedAt;
-      console.log(`[DEBUG] Using fresh global asset price: ${currentMarketPrice}, updatedAt: ${priceUpdatedAt}`);
     } else {
       // Fallback to cached method if global asset not available
       currentMarketPrice = await this.getCurrentMarketPrice(assetId);
-      console.log(`[DEBUG] Using fallback price: ${currentMarketPrice}`);
     }
 
     if (!trades || trades.length === 0) {
       // If no trades in this portfolio, quantity should be 0
-      console.log(`[DEBUG] No trades found for asset ${assetId} in portfolio ${portfolioId}, returning quantity = 0`);
       result = {
         currentValue: 0,
         currentQuantity: 0,
@@ -814,7 +803,6 @@ export class AssetService {
         const tax = Number(trade.tax || 0);
         const totalTradeCost = quantity * price + fee + tax;
         
-        console.log(`[DEBUG] Trade: ${trade.side} ${quantity} @ ${price}, portfolioId: ${trade.portfolioId}, currentQuantity before: ${currentQuantity}`);
         
         if (trade.side === 'BUY') {
           currentQuantity += quantity;
@@ -825,13 +813,10 @@ export class AssetService {
           // For sells, we don't add to totalCost but we need to track for avgCost calculation
         }
         
-        console.log(`[DEBUG] Trade processed: currentQuantity after: ${currentQuantity}`);
       }
 
       
       
-      console.log(`[DEBUG] Trades found: ${trades.length}`);
-      console.log(`[DEBUG] Trades found, calculating from trades`);
       
       // Calculate current value
       const currentValue = currentQuantity * currentMarketPrice;
@@ -847,7 +832,6 @@ export class AssetService {
         priceUpdatedAt,
       };
       
-      console.log(`[DEBUG] Final result for ${assetId}: currentQuantity=${result.currentQuantity}, currentValue=${result.currentValue}, currentPrice=${result.currentPrice}, avgCost=${result.avgCost}`);
     }
 
     // Cache for 2 minutes (shorter TTL for current values as they change more frequently)
@@ -882,28 +866,20 @@ export class AssetService {
     // Try to get current price from global asset first
     const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(asset.symbol);
     if (globalAssetPrice !== null && globalAssetPrice > 0) {
-      console.log(`[DEBUG] Using global asset price: ${globalAssetPrice}`);
       return globalAssetPrice;
     }
 
     // Fallback to market data service
     const marketPrice = await this.marketDataService.getCurrentPrice(asset.symbol);
-    console.log(`[DEBUG] getCurrentMarketPrice for ${asset.symbol}: marketPrice=${marketPrice}`);
-    
     if (marketPrice > 0) {
-      console.log(`[DEBUG] Using market price: ${marketPrice}`);
       return marketPrice;
     }
 
     // Fallback to latest trade price if no market data available
     const latestTrade = await this.assetRepository.getLatestTrade(assetId);
     if (latestTrade) {
-      console.log(`[DEBUG] Fallback to trade price: ${latestTrade.price}`);
       return latestTrade.price;
     }
-
-    // Default price if no trades exist
-    console.log(`[DEBUG] No price available, returning 0`);
     return 0;
   }
 

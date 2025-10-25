@@ -10,32 +10,19 @@ import { QueryClient } from 'react-query';
  * @param portfolioId - Portfolio ID to invalidate queries for
  */
 export const invalidatePortfolioQueries = async (queryClient: QueryClient, portfolioId: string) => {
-  console.log('🔍 Searching for queries with portfolioId:', portfolioId);
   
-  // Get all queries first to debug
-  const allQueries = queryClient.getQueryCache().getAll();
-  const portfolioQueries = allQueries.filter((query: any) => 
-    query.queryKey.includes(portfolioId)
-  );
   
-  console.log('📋 Found portfolio queries:', portfolioQueries.map((q: any) => ({
-    queryKey: q.queryKey,
-    status: q.state.status,
-    dataUpdatedAt: q.state.dataUpdatedAt
-  })));
   
   // Invalidate the queries
   const result = await queryClient.invalidateQueries({
     predicate: (query: any) => {
       const shouldInvalidate = query.queryKey.includes(portfolioId);
       if (shouldInvalidate) {
-        console.log('🔄 Invalidating query:', query.queryKey);
       }
       return shouldInvalidate;
     }
   });
   
-  console.log('✅ Invalidation result:', result);
   return result;
 };
 
@@ -98,7 +85,6 @@ export const refetchPortfolioQueries = async (queryClient: QueryClient, portfoli
  * @param portfolioId - Portfolio ID to refresh queries for
  */
 export const forceRefreshPortfolioData = async (queryClient: QueryClient, portfolioId: string) => {
-  console.log('🚀 Force refreshing all portfolio data for:', portfolioId);
   
   // Step 1: Remove all portfolio-related queries from cache
   const queriesToRemove = queryClient.getQueryCache().findAll({
@@ -107,7 +93,6 @@ export const forceRefreshPortfolioData = async (queryClient: QueryClient, portfo
     }
   });
   
-  console.log('🗑️ Removing queries from cache:', queriesToRemove.map((q: any) => q.queryKey));
   queriesToRemove.forEach(query => {
     queryClient.removeQueries(query.queryKey);
   });
@@ -115,5 +100,4 @@ export const forceRefreshPortfolioData = async (queryClient: QueryClient, portfo
   // Step 2: Invalidate all queries (this will trigger refetch)
   await queryClient.invalidateQueries();
   
-  console.log('✅ Force refresh completed');
 };

@@ -10,7 +10,7 @@ import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 import { GlobalAssetTrackingService } from './global-asset-tracking.service';
-import { GlobalAssetSyncType, GlobalAssetSyncSource } from '../entities/global-asset-tracking.entity';
+import { GlobalAssetSyncType, GlobalAssetSyncSource, GlobalAssetSyncStatus } from '../entities/global-asset-tracking.entity';
 import * as cron from 'node-cron';
 import * as moment from 'moment-timezone';
 
@@ -359,7 +359,7 @@ export class AutoSyncService {
       // Update tracking status to in progress
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        'in_progress' as any,
+        GlobalAssetSyncStatus.IN_PROGRESS,
         0, // totalSymbols
         0, // successfulUpdates
         0, // failedUpdates
@@ -381,7 +381,7 @@ export class AutoSyncService {
 
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        'in_progress' as any,
+        GlobalAssetSyncStatus.IN_PROGRESS,
         totalAssetsInDatabase, // Use database assets count, not API symbols
         0, // successfulUpdates - will be updated after sync
         0, // failedUpdates - will be updated after sync
@@ -402,19 +402,19 @@ export class AutoSyncService {
       const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
       
       // Determine final status based on success rate
-      const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
+      const finalStatus = finalSuccessRate === 100 ? GlobalAssetSyncStatus.COMPLETED : GlobalAssetSyncStatus.FAILED;
       
-      
-      // Update tracking with final results
+      //step 4: update tracking with final results
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        finalStatus as any,
+        finalStatus,
         totalAssetsInDatabase, // Use database assets count, not API symbols
         syncResult.successfulUpdates || 0,
         syncResult.failedUpdates || 0,
         totalApis,
         successfulApis,
         failedApis,
+        syncResult.failedSymbols || []
       );
       
       this.lastSyncTime = new Date();
@@ -479,7 +479,7 @@ export class AutoSyncService {
       // Update tracking status to in progress
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        'in_progress' as any,
+        GlobalAssetSyncStatus.IN_PROGRESS,
         0, // totalSymbols
         0, // successfulUpdates
         0, // failedUpdates
@@ -501,7 +501,7 @@ export class AutoSyncService {
 
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        'in_progress' as any,
+        GlobalAssetSyncStatus.IN_PROGRESS,
         totalAssetsInDatabase, // Use database assets count, not API symbols
         0, // successfulUpdates - will be updated after sync
         0, // failedUpdates - will be updated after sync
@@ -522,13 +522,13 @@ export class AutoSyncService {
       const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
       
       // Determine final status based on success rate
-      const finalStatus = finalSuccessRate === 100 ? 'completed' : 'failed';
+      const finalStatus = finalSuccessRate === 100 ? GlobalAssetSyncStatus.COMPLETED : GlobalAssetSyncStatus.FAILED;
       
       
       // Update tracking with final results including failed symbols
       tracking = await this.globalAssetTrackingService.updateProgress(
         syncId,
-        finalStatus as any,
+        finalStatus,
         totalAssetsInDatabase, // Use database assets count, not API symbols
         syncResult.successfulUpdates || 0,
         syncResult.failedUpdates || 0,
@@ -635,18 +635,6 @@ export class AutoSyncService {
           const currentPrice = marketData?.buyPrice || marketData?.sellPrice;
           
           if (currentPrice && currentPrice > 0) {
-            // Check price validity: biến động không quá 50% so với lần trước
-            let isPriceValid = true;
-            const previousPrice = asset.assetPrice?.currentPrice;
-            
-            if (previousPrice && previousPrice > 0) {
-              const priceChangePercent = Math.abs((currentPrice - previousPrice) / previousPrice) * 100;
-              if (priceChangePercent > 50) {
-                isPriceValid = false;
-              }
-            }
-            
-            if (isPriceValid) {
               const now = new Date();
               const changeReason = isManual 
                 ? `Market manual trigger sync ${now.toLocaleDateString('vi-VN')}`
@@ -689,10 +677,6 @@ export class AutoSyncService {
               
               successCount++;
               // this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
-            } else {
-              failedSymbols.push(asset.symbol);
-              errorCount++; // Count as failed update
-            }
           } else {
             failedSymbols.push(asset.symbol);
             errorCount++; // Count as failed update
@@ -745,7 +729,7 @@ export class AutoSyncService {
         // Update tracking record with correct API statistics
         await this.globalAssetTrackingService.updateProgress(
           syncId,
-          'in_progress' as any,
+          GlobalAssetSyncStatus.IN_PROGRESS,
           undefined, // totalSymbols
           undefined, // successfulUpdates
           undefined, // failedUpdates

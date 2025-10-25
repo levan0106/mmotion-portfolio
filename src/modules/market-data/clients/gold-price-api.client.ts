@@ -262,10 +262,10 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
       
       // Map common symbols to gold types
       const symbolMap: { [key: string]: string[] } = {
-        'SJC': ['SJC', 'SJC 9999', 'SJC 999', 'GOLDSJC'],
-        'PNJ': ['PNJ', 'PNJ 9999', 'GOLDPNJ'],
-        'DOJI': ['DOJI', 'DOJI 9999'],
-        'GOLD': ['Vàng', 'Gold', 'Vàng 9999', 'GOLD', 'GOLDSJC', 'GOLDPNJ'],
+        'SJC': ['SJC', 'SJC 9999', 'SJC 999', 'GOLDSJC', 'SJCGOLD'],
+        'PNJ': ['PNJ', 'PNJ 9999', 'GOLDPNJ', 'PNJGOLD'],
+        'DOJI': ['DOJI', 'DOJI 9999', 'DOJIGOLD', 'GOLDDOJI'],
+        'GOLD': ['Vàng', 'Gold', 'Vàng 9999', 'GOLD', '9999','VANG9999'],
         'SILVER': ['Bạc', 'Silver']
       };
 

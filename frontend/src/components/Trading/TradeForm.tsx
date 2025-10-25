@@ -770,8 +770,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   <Box sx={{ 
                     display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
-                    borderBottom: 1,
-                    borderColor: 'grey.300'
                   }}>
                     {/* Trade Value - Left half */}
                     <Box sx={{ 
@@ -780,16 +778,18 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      px: 2,
-                      py: {xs: 1, sm: 2},
-                      borderRight: { xs: 0, sm: 1 },
-                      borderBottom: { xs: 1, sm: 0 },
+                      py: {xs: 1, sm: 2},     
+                      mx: 2,
+                      borderBottom: 1,
                       borderColor: 'grey.300'
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
                         <MonetizationOnIcon sx={{ fontSize: 20, color: 'info.main', mr: 1 }} />
                         <ResponsiveTypography variant="body1" fontWeight={500}>
                           {t('trading.form.totalValue')}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="caption" color="text.secondary">
+                          (1)
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="h6" fontWeight={600} color="info.main">
@@ -804,13 +804,18 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      px: 2,
-                      py: {xs: 1, sm: 2},
+                      py: {xs: 1, sm: 2},   
+                      mx: 2,
+                      borderBottom: 1,
+                      borderColor: 'grey.300'
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
                         <AssessmentIcon sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
                         <ResponsiveTypography variant="body1" fontWeight={500}>
                           {t('trading.form.feesTaxes')}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="caption" color="text.secondary">
+                          (2)
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="h6" fontWeight={600} color="warning.main">
@@ -831,20 +836,20 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      px: 2,
-                      borderRight: { xs: 0, sm: 1 },
-                      borderBottom: { xs: 1, sm: 0 },
-                      borderColor: 'grey.300',
-                      py: {xs: 1, sm: 2},
+                      py: {xs: 1, sm: 2},   
+                      mx: 2,
+                      borderBottom: 1,
+                      borderColor: 'grey.300'
                     }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', mb: { xs: 1, sm: 0 } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
+                        <MonetizationOnIcon sx={{ fontSize: 20, color: 'primary.main', mr: 1 }} />
                         <ResponsiveTypography variant="body1" fontWeight={500}>
                           {watchedSide === TradeSide.SELL ? t('trading.form.amountReceived') : t('trading.form.amountPaid')}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="caption" color="text.secondary">
                           {watchedSide === TradeSide.SELL 
-                            ? '(Value - Fees - Taxes)' 
-                            : '(Value + Fees + Taxes)'}
+                            ? ' (1-2)' 
+                            : ' (1+2)'}
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="h6" fontWeight={600} color="primary.main">
@@ -859,8 +864,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      px: 2,
                       py: {xs: 1, sm: 2},
+                      mx: 2,
+                      borderBottom: 1,
+                      borderColor: 'grey.300'
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
                         {watchedSide === TradeSide.BUY ? 

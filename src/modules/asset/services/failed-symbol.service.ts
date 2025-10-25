@@ -80,10 +80,11 @@ export class FailedSymbolService {
    * Get failed symbols by execution ID
    */
   async getFailedSymbolsByExecutionId(executionId: string): Promise<FailedSymbol[]> {
-    const failedSymbols = await this.failedSymbolRepository.find({
-      where: { executionId },
-      order: { createdAt: 'DESC' },
-    });
+    const failedSymbols = await this.failedSymbolRepository.query(`
+      SELECT * FROM failed_symbols 
+      WHERE execution_id = $1 
+      ORDER BY created_at DESC
+    `, [executionId]);
 
     this.logger.log(`[FailedSymbolService] Retrieved ${failedSymbols.length} failed symbols for execution: ${executionId}`);
     return failedSymbols;

@@ -170,8 +170,8 @@ export class UserService {
     try {
       await this.notificationGateway.sendSystemNotification(
         savedUser.userId,
-        'Welcome to Portfolio Management System!',
-        `Hello ${savedUser.fullName || savedUser.email}! Welcome to our portfolio management platform. Start by creating your first portfolio.`,
+        'Chào mừng đến với MMOTION!',
+        `Xin chào ${savedUser.fullName || savedUser.email}! Chào mừng bạn đến với nền tảng quản lý danh mục đầu tư. Tài khoản của bạn đã sẵn sàng. Hãy cài đặt mật khẩu để bảo vệ tài khoản và tạo danh mục đầu tiên của bạn.`,
         '/portfolios',
         {
           type: 'welcome',
@@ -186,26 +186,26 @@ export class UserService {
       // Don't throw error - user creation should succeed even if notification fails
     }
 
-    // Send public portfolios notification
-    try {
-      await this.notificationGateway.sendSystemNotification(
-        savedUser.userId,
-        'Explore Public Portfolio Templates',
-        `Discover our collection of public portfolio templates! These templates are created by experienced users and can help you get started quickly. Browse templates, see their structure, and create your own portfolio based on successful strategies.`,
-        '/portfolios?tab=templates',
-        {
-          type: 'system',
-          userId: savedUser.userId,
-          email: savedUser.email,
-          fullName: savedUser.fullName,
-          action: 'explore_public_portfolios',
-        }
-      );
-      this.logger.log(`Sent public portfolios notification to user: ${savedUser.email}`);
-    } catch (error) {
-      this.logger.warn(`Failed to send public portfolios notification to user ${savedUser.email}: ${error.message}`);
-      // Don't throw error - user creation should succeed even if notification fails
-    }
+    // // Send public portfolios notification
+    // try {
+    //   await this.notificationGateway.sendSystemNotification(
+    //     savedUser.userId,
+    //     'Explore Public Portfolio Templates',
+    //     `Discover our collection of public portfolio templates! These templates are created by experienced users and can help you get started quickly. Browse templates, see their structure, and create your own portfolio based on successful strategies.`,
+    //     '/portfolios?tab=templates',
+    //     {
+    //       type: 'system',
+    //       userId: savedUser.userId,
+    //       email: savedUser.email,
+    //       fullName: savedUser.fullName,
+    //       action: 'explore_public_portfolios',
+    //     }
+    //   );
+    //   this.logger.log(`Sent public portfolios notification to user: ${savedUser.email}`);
+    // } catch (error) {
+    //   this.logger.warn(`Failed to send public portfolios notification to user ${savedUser.email}: ${error.message}`);
+    //   // Don't throw error - user creation should succeed even if notification fails
+    // }
 
     return this.mapUserToResponse(savedUser);
   }

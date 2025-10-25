@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GlobalAssetTracking, GlobalAssetSyncStatus, GlobalAssetSyncType, GlobalAssetSyncSource } from '../entities/global-asset-tracking.entity';
 import { ApiCallDetailService } from './api-call-detail.service';
+import { TrackingAlertData } from './tracking-alert.service';
+import { TrackingFailureEvent, CriticalTrackingFailureEvent } from '../listeners/tracking-alert.listener';
 
 export interface GlobalAssetTrackingQuery {
   status?: GlobalAssetSyncStatus;
@@ -45,6 +48,7 @@ export class GlobalAssetTrackingService {
     @InjectRepository(GlobalAssetTracking)
     private readonly globalAssetTrackingRepository: Repository<GlobalAssetTracking>,
     private readonly apiCallDetailService: ApiCallDetailService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -126,6 +130,25 @@ export class GlobalAssetTrackingService {
       tracking.executionTimeMs = tracking.calculateExecutionTime();
     }
 
+    // Send alert to admin for tracking failure
+    if (status === GlobalAssetSyncStatus.FAILED) {
+      await this.sendTrackingFailureAlert(tracking, {
+        executionId: tracking.executionId,
+        status: tracking.status,
+        errorMessage: tracking.errorMessage,
+        errorCode: tracking.errorCode,
+        failedSymbolsCount: tracking.failedSymbols?.length || 0,
+        totalSymbols: tracking.totalSymbols,
+        successRate: tracking.successRate ? tracking.successRate / 100 : 0,
+        executionTime: tracking.executionTimeMs,
+        triggeredBy: tracking.source,
+        metadata: {
+          stackTrace: tracking.stackTrace,
+          type: tracking.type,
+        },
+      });
+    }
+
     const updated = await this.globalAssetTrackingRepository.save(tracking);
     this.logger.log(`[GlobalAssetTrackingService] Updated tracking record: ${executionId} - Status: ${status}`);
     return updated;
@@ -157,6 +180,24 @@ export class GlobalAssetTrackingService {
 
     const updated = await this.globalAssetTrackingRepository.save(tracking);
     this.logger.error(`[GlobalAssetTrackingService] Updated tracking record with error: ${executionId} - ${errorMessage}`);
+    
+    // Send alert to admin for tracking failure
+    await this.sendTrackingFailureAlert(updated, {
+      executionId: updated.executionId,
+      status: updated.status,
+      errorMessage: updated.errorMessage,
+      errorCode: updated.errorCode,
+      failedSymbolsCount: updated.failedSymbols?.length || 0,
+      totalSymbols: updated.totalSymbols,
+      successRate: updated.successRate ? updated.successRate / 100 : 0,
+      executionTime: updated.executionTimeMs,
+      triggeredBy: updated.source,
+      metadata: {
+        stackTrace: updated.stackTrace,
+        type: updated.type,
+      },
+    });
+    
     return updated;
   }
 
@@ -439,5 +480,46 @@ export class GlobalAssetTrackingService {
    */
   private convertSuccessRateForRecords(records: GlobalAssetTracking[]): GlobalAssetTracking[] {
     return records.map(record => this.convertSuccessRate(record));
+  }
+
+  /**
+   * Send tracking failure alert to admin using event-driven approach
+   */
+  private async sendTrackingFailureAlert(
+    tracking: GlobalAssetTracking,
+    alertData: TrackingAlertData,
+  ): Promise<void> {
+    try {
+      // Determine alert type based on failure severity
+      const isCriticalFailure = this.isCriticalFailure(tracking, alertData);
+      
+      if (isCriticalFailure) {
+        this.eventEmitter.emit('tracking.critical_failure', new CriticalTrackingFailureEvent(tracking, alertData));
+        this.logger.log(`[GlobalAssetTrackingService] Emitted critical failure event for execution: ${tracking.executionId}`);
+      } else {
+        this.eventEmitter.emit('tracking.failure', new TrackingFailureEvent(tracking, alertData));
+        this.logger.log(`[GlobalAssetTrackingService] Emitted failure event for execution: ${tracking.executionId}`);
+      }
+    } catch (error) {
+      this.logger.error(`[GlobalAssetTrackingService] Error emitting tracking failure event:`, error);
+    }
+  }
+
+  /**
+   * Determine if this is a critical failure that requires immediate attention
+   */
+  private isCriticalFailure(tracking: GlobalAssetTracking, alertData: TrackingAlertData): boolean {
+    // Critical failure conditions:
+    // 1. Success rate is very low (< 50%)
+    // 2. High number of failed symbols (> 100)
+    // 3. System-level errors (not API errors)
+    // 4. Manual trigger failures (admin-initiated)
+    
+    const hasLowSuccessRate = alertData.successRate !== undefined && alertData.successRate < 0.5;
+    const hasHighFailureCount = alertData.failedSymbolsCount !== undefined && alertData.failedSymbolsCount > 100;
+    const isSystemError = alertData.errorCode && !alertData.errorCode.includes('API_');
+    const isManualTrigger = tracking.source === 'manual_trigger';
+    
+    return hasLowSuccessRate || hasHighFailureCount || isSystemError || isManualTrigger;
   }
 }

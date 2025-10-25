@@ -64,8 +64,6 @@ export class NotificationGateway {
         metadata,
       });
       
-      console.log(`Saved ${type} notification to database for user ${userId}: ${title}`);
-      
       // Emit real-time notification
       this.server.to(`user-${userId}`).emit('notification', {
         id: notification.id,
@@ -79,7 +77,6 @@ export class NotificationGateway {
         timestamp: new Date(),
       });
       
-      console.log(`Sent real-time ${type} notification to user ${userId}: ${title}`);
     } catch (error) {
       console.error(`Error sending ${type} notification to user ${userId}:`, error);
     }

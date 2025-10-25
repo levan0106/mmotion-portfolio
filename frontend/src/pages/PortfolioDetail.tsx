@@ -191,15 +191,6 @@ const PortfolioDetail: React.FC = () => {
     
     setIsRefreshingAll(true);
     try {
-      console.log('🔄 Starting refresh for portfolio:', portfolioId);
-      
-      // Debug: Log all current queries
-      const allQueries = queryClient.getQueryCache().getAll();
-      console.log('📊 All queries before refresh:', allQueries.map(q => ({
-        queryKey: q.queryKey,
-        state: q.state.status,
-        dataUpdatedAt: q.state.dataUpdatedAt
-      })));
       
       // Method 1: Use utility function
       await invalidatePortfolioQueries(queryClient, portfolioId);
@@ -219,7 +210,6 @@ const PortfolioDetail: React.FC = () => {
         queryClient.invalidateQueries(['cash-flow', portfolioId]),
       ]);
       
-      console.log('✅ Refresh completed');
     } catch (error) {
       console.error('❌ Error refreshing data:', error);
     } finally {
@@ -1140,7 +1130,6 @@ const PortfolioDetail: React.FC = () => {
         creatorAccountId={portfolio.accountId}
         onPermissionUpdated={() => {
           // TODO: Refresh portfolio data or permission stats
-          console.log('Permissions updated');
         }}
       />
 

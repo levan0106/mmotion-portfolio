@@ -9,6 +9,7 @@ import { Asset } from './entities/asset.entity';
 import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
+import { Account } from '../shared/entities/account.entity';
 import { GlobalAssetController } from './controllers/global-asset.controller';
 import { BasicPriceController } from './controllers/basic-price.controller';
 import { PriceHistoryController } from './controllers/price-history.controller';
@@ -31,13 +32,16 @@ import { AssetValueCalculatorService } from './services/asset-value-calculator.s
 import { AutoSyncService } from './services/auto-sync.service';
 import { GlobalAssetTrackingService } from './services/global-asset-tracking.service';
 import { ApiCallDetailService } from './services/api-call-detail.service';
+import { TrackingAlertService } from './services/tracking-alert.service';
 import { AutoAssetCreationListener } from './listeners/auto-asset-creation.listener';
+import { TrackingAlertListener } from './listeners/tracking-alert.listener';
 import { AssetRepository } from './repositories/asset.repository';
 import { IAssetRepository } from './repositories/asset.repository.interface';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { TradingModule } from '../trading/trading.module';
 import { LoggingModule } from '../logging/logging.module';
 import { SharedModule } from '../shared/shared.module';
+import { NotificationModule } from '../../notification/notification.module';
 
 /**
  * Asset Module for the Global Assets System.
@@ -68,11 +72,13 @@ import { SharedModule } from '../shared/shared.module';
       Trade,
       TradeDetail,
       Portfolio,
+      Account,
     ]),
     forwardRef(() => MarketDataModule),
     forwardRef(() => TradingModule),
     LoggingModule,
     SharedModule,
+    NotificationModule,
   ],
   controllers: [
     GlobalAssetController,
@@ -102,7 +108,9 @@ import { SharedModule } from '../shared/shared.module';
     AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
+    TrackingAlertService,
     AutoAssetCreationListener,
+    TrackingAlertListener,
     AssetRepository,
     {
       provide: 'IAssetRepository',
@@ -128,7 +136,9 @@ import { SharedModule } from '../shared/shared.module';
     AutoSyncService, // PRIMARY: Handles both external API sync and price updates
     GlobalAssetTrackingService,
     ApiCallDetailService,
+    TrackingAlertService,
     AutoAssetCreationListener,
+    TrackingAlertListener,
     AssetRepository,
     TypeOrmModule,
   ],

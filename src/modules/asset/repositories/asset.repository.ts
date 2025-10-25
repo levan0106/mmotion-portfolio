@@ -425,7 +425,6 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (filters.symbol) {
-      console.log('Filtering by symbol:', filters.symbol);
       queryBuilder.andWhere('LOWER(asset.symbol) = LOWER(:symbol)', { 
         symbol: filters.symbol 
       });

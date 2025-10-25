@@ -1503,8 +1503,8 @@
       "pnl": "P&L",
       "date": "Date",
       "quantity": "Quantity",
-      "avgCost": "Avg Cost",
-      "marketValue": "Market Value",
+      "avgCost": "Avg Buy Price",
+      "marketValue": "Total Sell Value",
       "trades": "Trades"
     },
     "status": {

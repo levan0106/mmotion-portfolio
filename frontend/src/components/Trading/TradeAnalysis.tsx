@@ -1067,13 +1067,13 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
-                      <TableCell sx={{ 
+                      {/* <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.side')}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell sx={{ 
                         fontWeight: 600,
                         // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
@@ -1093,7 +1093,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <TableBody>
                     {analysis.topTrades.slice(0, 5).map((trade) => (
                       <TableRow key={trade.tradeId}>
-                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1}}>
                           <Box>
                             <ResponsiveTypography 
                               variant="tableCell" 
@@ -1110,14 +1110,14 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             </ResponsiveTypography>
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                        {/* <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Chip
                             label={trade.side}
                             color={trade.side === 'BUY' ? 'success' : 'error'}
                             size={isCompactMode ? "small" : "medium"}
                             sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                           />
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell 
                           sx={{ 
                             py: isCompactMode ? 0.5 : 1,
@@ -1200,13 +1200,13 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
-                      <TableCell sx={{ 
+                      {/* <TableCell sx={{ 
                         fontWeight: 600,
                         // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
                         py: isCompactMode ? 0.5 : 1
                       }}>
                         {t('tradeAnalysis.table.side')}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell sx={{ 
                         fontWeight: 600,
                         // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
@@ -1243,14 +1243,14 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                             </ResponsiveTypography>
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                        {/* <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
                           <Chip
                             label={trade.side}
                             color={trade.side === 'BUY' ? 'success' : 'error'}
                             size={isCompactMode ? "small" : "medium"}
                             sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                           />
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell 
                           sx={{ 
                             py: isCompactMode ? 0.5 : 1,

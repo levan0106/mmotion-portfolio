@@ -147,6 +147,8 @@ services:
       - AUTOMATED_SNAPSHOT_RETRY_DELAY_SECONDS=${AUTOMATED_SNAPSHOT_RETRY_DELAY_SECONDS:-5}
       # Auto Asset Creation Configuration
       - AUTO_CREATE_ASSETS_FOR_NEW_USERS=${AUTO_CREATE_ASSETS_FOR_NEW_USERS:-true}
+      # Admin Configuration
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
     volumes:
       - .:/app
       - /app/node_modules

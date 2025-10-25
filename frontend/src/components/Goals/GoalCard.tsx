@@ -141,10 +141,8 @@ const getProgressStatus = (goal: any, t: any) => {
   const target = new Date(targetDate);
   const totalDuration = target.getTime() - start.getTime();
   const remainingDuration = target.getTime() - now.getTime();
-  console.log("start date", createdAt, "target date", targetDate);
   const timeRemaining = Math.max(remainingDuration / totalDuration, 0);
   const remainingProgress = 100 - achievementPercentage;
-  console.log(timeRemaining, remainingProgress);
   // Chỉ cảnh báo khi % thời gian còn lại < % cần hoàn thành
   const isTimeCritical = timeRemaining * 100 < remainingProgress;
   

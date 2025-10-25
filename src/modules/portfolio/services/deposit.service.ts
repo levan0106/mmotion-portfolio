@@ -141,7 +141,6 @@ export class DepositService {
     const deposit = await this.depositRepository.findByIdOrFail(id);
     
     // Allow deletion of both ACTIVE and SETTLED deposits
-    console.log(`[DepositService] Deleting deposit ${id} with status: ${deposit.status}`);
 
     // Delete old cash flows. DON'T change this logic.
     // step1: delete creation cash flow
@@ -155,7 +154,6 @@ export class DepositService {
     
     await this.depositRepository.delete(id);
     
-    console.log(`[DepositService] Successfully deleted deposit ${id}`);
   }
 
   /**

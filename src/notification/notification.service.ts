@@ -11,6 +11,10 @@ export class NotificationService {
   ) {}
 
   async create(notification: Partial<Notification>): Promise<Notification> {
+    // Set createdAt explicitly with current time
+    const now = new Date();
+    notification.createdAt = now;
+    
     return this.notificationRepository.save(notification);
   }
 

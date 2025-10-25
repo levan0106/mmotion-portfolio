@@ -19,7 +19,6 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({ userId
   useEffect(() => {
     // Only initialize once per userId
     if (!hasInitialized.current) {
-      // console.log(`Initializing notifications for user ${userId}`);
       // Clear previous user's shown notifications
       shownNotifications.current.clear();
       notificationQueue.current = [];
@@ -67,7 +66,6 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({ userId
         setCurrentToast(nextNotification);
         setToastOpen(true);
         lastNotificationTime.current = now;
-        // console.log(`Showing toast for notification: ${nextNotification.title}`);
       }
     }
   }, [notifications, toastOpen]);
@@ -83,7 +81,6 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({ userId
         setTimeout(() => {
           setCurrentToast(nextNotification);
           setToastOpen(true);
-          // console.log(`Showing next toast for notification: ${nextNotification.title}`);
         }, 100); // Small delay between toasts
       }
     }, 300); // Wait for animation to complete

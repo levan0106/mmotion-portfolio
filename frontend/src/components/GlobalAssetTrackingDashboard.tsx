@@ -94,15 +94,12 @@ export default function GlobalAssetTrackingDashboard({ className }: GlobalAssetT
   const fetchApiCallDetails = useCallback(async (executionId: string) => {
     // Avoid fetching the same executionId multiple times
     if (lastFetchedExecutionId === executionId && apiCallDetails.length > 0) {
-      console.log('API call details already fetched for executionId:', executionId);
       return;
     }
 
     try {
       setLoadingApiCalls(true);
-      console.log('Fetching API call details for executionId:', executionId);
       const details = await GlobalAssetTrackingService.getApiCallDetails(executionId);
-      console.log('API call details received:', details);
       setApiCallDetails(details || []);
       setLastFetchedExecutionId(executionId);
     } catch (error) {

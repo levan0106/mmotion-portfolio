@@ -249,10 +249,7 @@ export class AssetController {
       await this.accountValidationService.validatePortfolioOwnership(filters.portfolioId, filters.accountId);
     }
     
-    console.log('Asset filters received:', filters);
-    console.log('hasTrades filter:', filters.hasTrades);
     const result = await this.assetService.findAll(filters);
-    console.log('Controller result:', { total: result.total, dataCount: result.data.length });
     
     // Map assets with computed fields
     const mappedAssets = await Promise.all(

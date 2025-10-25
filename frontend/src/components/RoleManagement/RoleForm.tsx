@@ -231,7 +231,6 @@ export const RoleForm: React.FC<RoleFormProps> = ({
     if (!acc[permission.category]) {
       acc[permission.category] = [];
     }
-    // console.log('permission', permission);
     acc[permission.category].push(permission);
     return acc;
   }, {} as Record<string, any>);

@@ -115,7 +115,6 @@ export class PerformanceSnapshotService {
     granularity: SnapshotGranularity,
     manager: any
   ): Promise<PortfolioPerformanceSnapshot> {
-    console.log('🚀 createPortfolioPerformanceSnapshot called');
     // Check if portfolio exists
     const portfolio = await manager.findOne(Portfolio, {
       where: { portfolioId }

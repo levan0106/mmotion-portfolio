@@ -320,7 +320,25 @@ const AdminManagementContent: React.FC = () => {
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
-          sx={{ px: 2 }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ 
+            px: 2,
+            '& .MuiTab-root': {
+              minWidth: 'auto',
+              padding: '12px 16px',
+              '@media (max-width: 600px)': {
+                padding: '8px 12px',
+                fontSize: '0.875rem',
+              }
+            },
+            '& .MuiTabs-scrollButtons': {
+              '@media (max-width: 600px)': {
+                width: '32px',
+              }
+            }
+          }}
         >
           <Tab 
             icon={<SecurityIcon />}
