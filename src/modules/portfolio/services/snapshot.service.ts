@@ -90,15 +90,10 @@ export class SnapshotService {
   async prepareAssetSnapshots(portfolioId: string, snapshotDate: Date, 
     granularity: SnapshotGranularity, createdBy?: string): Promise<AssetAllocationSnapshot[]> {
     
-    this.logger.log(`Preparing asset snapshots for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
-    
     // Get all assets in portfolio that have trades
     let assets = await this.assetService.findByPortfolioId(portfolioId);
     
-    this.logger.log(`Found ${assets.length} assets with trades in portfolio ${portfolioId}`);
-    
     if (assets.length === 0) {
-      this.logger.warn(`No assets with trades found in portfolio ${portfolioId}. Returning empty snapshots.`);
       return [];
     }
 
@@ -111,7 +106,6 @@ export class SnapshotService {
       assets = assets.filter(asset => {
         return asset.trades.some(trade => {
           const tradeDateStr = normalizeDateToString(trade.tradeDate);
-          this.logger.debug(`Comparing trade date ${tradeDateStr} with snapshot date ${snapshotDateStr}`);
           // Check if trade is on or before snapshot date (compare by date only, not time)
           const tradeDate = new Date(trade.tradeDate);
           tradeDate.setHours(0, 0, 0, 0);
@@ -121,10 +115,7 @@ export class SnapshotService {
         });
       });
       
-      this.logger.log(`Filtered assets by date: ${originalCount} -> ${assets.length} (snapshot date: ${snapshotDateStr})`);
-      
       if (assets.length === 0) {
-        this.logger.warn(`All assets filtered out by snapshot date ${snapshotDateStr}. Returning empty snapshots.`);
         return [];
       }
     }
@@ -140,8 +131,6 @@ export class SnapshotService {
     }> = [];
 
     // Batch process all assets for better performance
-    this.logger.log(`🚀 Batch processing ${assets.length} assets for portfolio ${portfolioId}`);
-    
     // Step 1: Batch fetch all prices at once using optimized method
     const pricePromises = assets.map(asset => 
       this.getCurrentPriceLaterOptimized(asset.symbol, snapshotDate)
@@ -172,21 +161,13 @@ export class SnapshotService {
     const priceMap = new Map(priceResults.map(result => [result.asset.id, result.price]));
     const tradesMap = new Map(tradesResults.map(result => [result.asset.id, result.trades]));
     
-    this.logger.log(`✅ Batch fetched prices and trades for ${assets.length} assets`);
-    
     // Step 3: Process all assets with pre-fetched data
     for (const asset of assets) {
-      this.logger.log(`Processing asset ${asset.symbol} (${asset.id}) for portfolio ${portfolioId}`);
-      
       const currentPrice = priceMap.get(asset.id) || 0;
       const trades = tradesMap.get(asset.id) || [];
       
-      this.logger.log(`Current price for ${asset.symbol} on ${snapshotDate.toISOString().split('T')[0]}: ${currentPrice}`);
-      this.logger.log(`Found ${trades.length} trades for asset ${asset.symbol}`);
-      
       // Use FIFO calculation to get all values at once
       const positionData = this.assetValueCalculator.calculateAssetPositionFIFOFinal(trades, currentPrice);
-      this.logger.log(`Position data for ${asset.symbol}: currentValue=${positionData.currentValue}, quantity=${positionData.quantity}`);
       
       assetData.push({
         asset,
@@ -200,15 +181,11 @@ export class SnapshotService {
     const totalPortfolioValue = assetData.reduce((sum, data) => sum + data.currentValue, 0);
 
     // Second, create snapshots with calculated values
-    this.logger.log(`Creating asset snapshots for ${assetData.length} assets`);
-    
     for (const data of assetData) {
       const { asset, currentValue, positionData, currentPrice } = data;
       const { quantity, avgCost, unrealizedPl, realizedPl, totalPnl } = positionData;
       const costBasis = quantity * avgCost;
       const returnPercentage = this.assetValueCalculator.calculateReturnPercentageFinal(quantity, currentPrice, avgCost);
-      
-      this.logger.log(`Creating snapshot for ${asset.symbol}: quantity=${quantity}, currentValue=${currentValue}, costBasis=${costBasis}`);
       
       // Calculate allocation percentage
       // we should include deposits in the total portfolio value
@@ -250,10 +227,7 @@ export class SnapshotService {
       };
 
       assetSnapshots.push(assetSnapshot as AssetAllocationSnapshot);
-      this.logger.log(`Added snapshot for ${asset.symbol} to array`);
     }
-    
-    this.logger.log(`Created ${assetSnapshots.length} asset snapshots in memory`);
 
     return assetSnapshots;
   }
@@ -269,8 +243,6 @@ export class SnapshotService {
   ): Promise<AssetAllocationSnapshot[]> {
     snapshotDate = typeof snapshotDate === 'string' ? new Date(snapshotDate) : snapshotDate;
 
-    this.logger.log(`Creating portfolio snapshot for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
-    
     // Step 0: Prepare asset allocation snapshots
     const assetSnapshots = await this.prepareAssetSnapshots(portfolioId, snapshotDate, granularity, createdBy);
 
@@ -283,9 +255,6 @@ export class SnapshotService {
     
     if (assetSnapshots.length > 0) {
       createdSnapshots = await this.snapshotRepo.createMany(assetSnapshots);
-      this.logger.log(`Created ${createdSnapshots.length} asset snapshots for portfolio ${portfolioId}`);
-    } else {
-      this.logger.warn(`No asset snapshots to create for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}. Skipping asset snapshot creation.`);
     }
 
     // Step 3: Create PORTFOLIO snapshot after asset snapshots are created
@@ -301,10 +270,7 @@ export class SnapshotService {
         granularity,
         createdBy ? `${createdBy}-portfolio-snapshot` : 'portfolio-snapshot'
       );
-      
-      this.logger.log(`Successfully created portfolio snapshot for portfolio ${portfolioId}`);
     } catch (error) {
-      this.logger.error(`Failed to create portfolio snapshot for portfolio ${portfolioId}:`, error);
       // Don't throw error here to avoid breaking asset snapshot creation
       // Portfolio snapshot creation is optional and can be retried later
     }
@@ -359,7 +325,6 @@ export class SnapshotService {
 
       return { dailyReturn, cumulativeReturn };
     } catch (error) {
-      this.logger.error(`Error calculating returns for asset ${assetId}: ${error.message}`);
       return { dailyReturn: 0, cumulativeReturn: 0 };
     }
   }
@@ -410,7 +375,6 @@ export class SnapshotService {
 
       return { dailyReturn, cumulativeReturn };
     } catch (error) {
-      this.logger.error(`Error calculating returns for asset ${assetId}: ${error.message}`);
       return { dailyReturn: 0, cumulativeReturn: 0 };
     }
   }
@@ -491,7 +455,6 @@ export class SnapshotService {
     const actualMinDate = await this.findActualMinSnapshotDate(portfolioId, startDate, endDate);
     
     if (!actualMinDate) {
-      this.logger.warn(`No snapshots found for portfolio ${portfolioId} in date range ${startDate.toISOString()} to ${endDate.toISOString()}`);
       return [];
     }
 
@@ -500,7 +463,6 @@ export class SnapshotService {
     const dailyTimeline = await this.generateTimelineFromDailySnapshots(portfolioId, actualMinDate, actualEndDate, SnapshotGranularity.DAILY);
 
     if (dailyTimeline.length === 0) {
-      this.logger.warn(`No DAILY timeline data generated for portfolio ${portfolioId}`);
       return [];
     }
 
@@ -578,11 +540,9 @@ export class SnapshotService {
       });
 
       const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-      this.logger.log(`Found actual min snapshot date: ${minDate.toISOString().split('T')[0]} for portfolio ${portfolioId}`);
       
       return minDate;
     } catch (error) {
-      this.logger.error(`Error finding actual min snapshot date: ${error.message}`);
       return null;
     }
   }
@@ -640,7 +600,6 @@ export class SnapshotService {
       });
       return navSnapshots && navSnapshots.length > 0;
     } catch (error) {
-      this.logger.error(`Error checking NAV snapshots in range: ${error.message}`);
       return false;
     }
   }
@@ -698,7 +657,6 @@ export class SnapshotService {
         // Empty allocation data
       }));
     } catch (error) {
-      this.logger.error(`Error generating empty timeline data from snapshot dates: ${error.message}`);
       return this.generateEmptyTimelineData(startDate, endDate, granularity);
     }
   }
@@ -722,7 +680,6 @@ export class SnapshotService {
       });
 
       if (dailySnapshots.length === 0) {
-        this.logger.warn(`No DAILY snapshots found for portfolio ${portfolioId} in date range ${startDate.toISOString()} to ${endDate.toISOString()}`);
         return [];
       }
 
@@ -809,7 +766,6 @@ export class SnapshotService {
 
       return timelineData;
     } catch (error) {
-      this.logger.error(`Error generating timeline from daily snapshots: ${error.message}`);
       return [];
     }
   }
@@ -851,7 +807,6 @@ export class SnapshotService {
         return dataPoint;
       });
     } catch (error) {
-      this.logger.error(`Error generating timeline data from current positions: ${error.message}`);
       return this.generateEmptyTimelineData(startDate, endDate, granularity);
     }
   }
@@ -869,7 +824,6 @@ export class SnapshotService {
         { assetType: 'BOND', currentValue: 40000000 }
       ];
     } catch (error) {
-      this.logger.error(`Error getting current positions: ${error.message}`);
       return [];
     }
   }
@@ -939,7 +893,6 @@ export class SnapshotService {
         : 0;
     });
 
-    this.logger.debug(`Calculated allocation from snapshots:`, allocation);
     return allocation;
   }
 
@@ -1148,10 +1101,8 @@ export class SnapshotService {
         return latestTradePrice;
       }
 
-      this.logger.warn(`No price found for symbol ${symbol} on ${snapshotDate.toISOString()}, using 0`);
       return 0;
     } catch (error) {
-      this.logger.error(`Error getting price for ${symbol} on ${snapshotDate.toISOString()}:`, error);
       return 0;
     }
   }
@@ -1165,35 +1116,29 @@ export class SnapshotService {
       // PRIORITY 1: Get price from price history for the snapshot date (most likely to succeed)
       const historicalPrice = await this.priceHistoryService.getPriceByDate(symbol, snapshotDate);
       if (historicalPrice !== null && historicalPrice > 0) {
-        this.logger.debug(`Using historical price for ${symbol} on ${snapshotDate.toISOString()}: ${historicalPrice}`);
         return historicalPrice;
       }
 
       // PRIORITY 2: Fallback to current global asset price (cached, fast)
       const globalAssetPrice = await this.assetGlobalSyncService.getCurrentPriceFromGlobalAsset(symbol);
       if (globalAssetPrice !== null && globalAssetPrice > 0) {
-        this.logger.debug(`Using current global asset price for ${symbol}: ${globalAssetPrice}`);
         return globalAssetPrice;
       }
 
       // PRIORITY 3: Fallback to market data service (external API, slower)
       const marketPrice = await this.marketDataService.getCurrentPrice(symbol);
       if (marketPrice > 0) {
-        this.logger.debug(`Using market data price for ${symbol}: ${marketPrice}`);
         return marketPrice;
       }
 
       // PRIORITY 4: Final fallback to latest trade price (database query, slowest)
       const latestTradePrice = await this.getLatestTradePrice(symbol);
       if (latestTradePrice > 0) {
-        this.logger.debug(`Using latest trade price for ${symbol}: ${latestTradePrice}`);
         return latestTradePrice;
       }
 
-      this.logger.warn(`No price found for symbol ${symbol} on ${snapshotDate.toISOString()}, using 0`);
       return 0;
     } catch (error) {
-      this.logger.error(`Error getting price for ${symbol} on ${snapshotDate.toISOString()}:`, error);
       return 0;
     }
   }
@@ -1216,7 +1161,6 @@ export class SnapshotService {
 
       return 0;
     } catch (error) {
-      this.logger.error(`Error getting latest trade price for ${symbol}:`, error);
       return 0;
     }
   }
@@ -1370,8 +1314,6 @@ export class SnapshotService {
     snapshotDate: Date,
     granularity?: SnapshotGranularity
   ): Promise<{ deletedCount: number; message: string }> {
-    this.logger.log(`Deleting snapshots for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}${granularity ? ` with granularity ${granularity}` : ''}`);
-
     const deletedCount = await this.snapshotRepo.deleteByPortfolioAndDate(
       portfolioId,
       snapshotDate,
@@ -1385,15 +1327,12 @@ export class SnapshotService {
         snapshotDate,
         granularity
       );
-      this.logger.log(`Portfolio snapshot also deleted for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}`);
     } catch (error) {
-      this.logger.warn(`Failed to delete portfolio snapshot: ${error.message}`);
       // Continue even if portfolio snapshot deletion fails
     }
 
     const message = `Successfully deleted ${deletedCount} snapshots for portfolio ${portfolioId} on ${snapshotDate.toISOString().split('T')[0]}${granularity ? ` with granularity ${granularity}` : ''}`;
     
-    this.logger.log(message);
     return { deletedCount, message };
   }
 
@@ -1404,8 +1343,6 @@ export class SnapshotService {
     portfolioId: string,
     granularity: SnapshotGranularity
   ): Promise<{ deletedCount: number; message: string }> {
-    this.logger.log(`Deleting all ${granularity} snapshots for portfolio ${portfolioId}`);
-
     // Get all snapshots with this granularity first to count them
     const snapshots = await this.snapshotRepo.findMany({
       portfolioId,
@@ -1425,15 +1362,12 @@ export class SnapshotService {
         portfolioId,
         granularity
       );
-      this.logger.log(`Portfolio snapshots also deleted for portfolio ${portfolioId} with granularity ${granularity}`);
     } catch (error) {
-      this.logger.warn(`Failed to delete portfolio snapshots: ${error.message}`);
       // Continue even if portfolio snapshot deletion fails
     }
 
     const message = `Successfully deleted ${deletedCount} ${granularity} snapshots for portfolio ${portfolioId}`;
     
-    this.logger.log(message);
     return { deletedCount, message };
   }
 

@@ -582,14 +582,14 @@ export class SnapshotController {
         const firstTransactionDate = await this.cashFlowService.getFirstTransactionDate(portfolioId);
         
         if (firstTransactionDate) {
-          startDate = firstTransactionDate;
+          startDate = new Date(firstTransactionDate.setHours(12, 0, 0, 0));
           endDate = new Date();
           dateRange = {
             startDate: startDate.toISOString().split('T')[0],
             endDate: endDate.toISOString().split('T')[0]
           };
           
-          this.logger.log(`Using date range from first transaction (${startDate.toISOString().split('T')[0]}) to current date for portfolio ${portfolioId}`);
+          // this.logger.log(`Using date range from first transaction (${dateRange.startDate}) to (${dateRange.endDate}) for portfolio ${portfolioId}`);
         } else {
           // Fallback to current date if no transactions found
           startDate = new Date();
@@ -613,7 +613,7 @@ export class SnapshotController {
       endDate,
       SnapshotGranularity.DAILY,
       executionId,
-      'api-recalculation',
+      accountId || 'api-recalculation',
       SnapshotTrackingType.MANUAL
     );
     
@@ -643,7 +643,8 @@ export class SnapshotController {
       dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-    
+    // this.logger.log(`generateDateRange: Generated ${dates.length} dates from ${startDate} to ${endDate}`);
+    // this.logger.log(`generateDateRange: Generated ${dates.length} dates from ${dates[0]} to ${dates[dates.length - 1]}`);
     return dates;
   }
 
@@ -678,7 +679,7 @@ export class SnapshotController {
     let failedDates = 0;
     const results = [];
     
-    this.logger.log(`Processing ${datesToProcess.length} dates from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    this.logger.log(`createSnapshotsForDateRange: Processing ${datesToProcess.length} dates from ${datesToProcess[0]} to ${datesToProcess[datesToProcess.length - 1]}`);
     
     // Process each date in the range
     for (const date of datesToProcess) {

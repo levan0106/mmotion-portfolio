@@ -864,8 +864,6 @@ export class CashFlowService {
         { cashBalance: newCashBalance }
       );
 
-      this.logger.log(`Transfer completed: ${amount} from ${fromSource} to ${toSource} for portfolio ${portfolioId}`);
-
       return {
         withdrawalCashFlow: savedWithdrawal,
         depositCashFlow: savedDeposit,
@@ -896,8 +894,14 @@ export class CashFlowService {
         .where('trade.portfolioId = :portfolioId', { portfolioId })
         .getRawOne();
 
+      // this.logger.log(`getFirstTransactionDate: First cash flow date: ${firstCashFlow?.firstCashFlowDate}`);
+      // this.logger.log(`getFirstTransactionDate: First trade date: ${firstTrade?.firstTradeDate}`);
       const cashFlowDate = firstCashFlow?.firstCashFlowDate ? new Date(firstCashFlow.firstCashFlowDate) : null;
       const tradeDate = firstTrade?.firstTradeDate ? new Date(firstTrade.firstTradeDate) : null;
+
+
+      // this.logger.log(`getFirstTransactionDate: Cash flow date: ${cashFlowDate}`);
+      // this.logger.log(`getFirstTransactionDate: Trade date: ${tradeDate}`);
 
       // Return the earliest date between cashflow and trade
       if (cashFlowDate && tradeDate) {
@@ -910,7 +914,6 @@ export class CashFlowService {
 
       return null;
     } catch (error) {
-      this.logger.error(`Error getting first transaction date for portfolio ${portfolioId}:`, error);
       return null;
     }
   }
