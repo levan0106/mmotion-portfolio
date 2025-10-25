@@ -280,15 +280,9 @@ export class InvestorReportController {
       throw new Error('accountId query parameter is required');
     }
 
-    this.logger.log(`Generating comprehensive investor report for portfolio ${portfolioId}`);
-
     try {
       const comprehensiveReport = await this.getComprehensiveInvestorReportData(portfolioId, accountId);
-
-      this.logger.log(`Comprehensive investor report generated successfully for portfolio ${portfolioId}`);
       return comprehensiveReport;
-
-
     } catch (error) {
       this.logger.error(`Error generating comprehensive investor report for portfolio ${portfolioId}: ${error.message}`);
       throw error;
@@ -322,10 +316,6 @@ export class InvestorReportController {
     
     const totalValue = Number(cashBalance) + Number(assetValue) + Number(depositsValue);
     
-    // Debug logging
-    this.logger.log(`Portfolio ${portfolioId} values: cashBalance=${cashBalance}, assetValue=${assetValue}, depositsValue=${depositsValue}, totalValue=${totalValue}`);
-    this.logger.log(`Positions count: ${positions.length}, positions: ${JSON.stringify(positions.map(p => ({ symbol: p.symbol, currentValue: p.currentValue, assetType: p.assetType })))}`);
-    
     const cashPercentage = totalValue > 0 ? Number(((cashBalance / totalValue) * 100).toFixed(2)) : 0;
     const assetPercentage = totalValue > 0 ? Number(((assetValue / totalValue) * 100).toFixed(2)) : 0;
     const depositsPercentage = totalValue > 0 ? Number(((depositsValue / totalValue) * 100).toFixed(2)) : 0;
@@ -351,9 +341,6 @@ export class InvestorReportController {
         unrealizedPl: unrealizedPl,
       };
     });
-
-    // Debug logging for asset details
-    this.logger.log(`Asset details calculated: ${JSON.stringify(assetDetails.map(ad => ({ symbol: ad.symbol, currentValue: ad.currentValue, percentage: ad.percentage })))}`);
 
     // Format deposits data
     const formattedDeposits = deposits.map(deposit => {
@@ -387,7 +374,7 @@ export class InvestorReportController {
         cashBalance: Number(cashBalance),
         assetValue: Number(assetValue),
         depositsValue: Number(depositsValue),
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: performance.lastUpdated,
       },
       summary: {
         totalAssets: positions.length,
@@ -407,6 +394,7 @@ export class InvestorReportController {
         dailyGrowth: Number(performance.dailyGrowth),
         monthlyGrowth: Number(performance.monthlyGrowth),
         ytdGrowth: Number(performance.ytdGrowth),
+        lastUpdated: performance.lastUpdated,
       },
     };
   }
@@ -473,9 +461,6 @@ export class InvestorReportController {
       item.percentage = totalValue > 0 ? Number(((item.value / totalValue) * 100).toFixed(2)) : 0;
     });
 
-    // Debug logging for asset allocation
-    this.logger.log(`Asset allocation calculated: ${JSON.stringify(assetAllocation)}`);
-
     return assetAllocation;
   }
 
@@ -486,6 +471,7 @@ export class InvestorReportController {
     dailyGrowth: number;
     monthlyGrowth: number;
     ytdGrowth: number;
+    lastUpdated: Date;
   }> {
     try {
       const latestSnapshot = await this.performanceSnapshotService.getLatestPortfolioPerformanceSnapshot(portfolioId);
@@ -495,6 +481,7 @@ export class InvestorReportController {
           dailyGrowth: 0,
           monthlyGrowth: 0,
           ytdGrowth: 0,
+          lastUpdated: new Date(),
         };
       }
       
@@ -508,6 +495,7 @@ export class InvestorReportController {
         dailyGrowth: parseMetric(latestSnapshot.portfolioTWR1D),
         monthlyGrowth: parseMetric(latestSnapshot.portfolioTWR1M),
         ytdGrowth: parseMetric(latestSnapshot.portfolioTWRYTD),
+        lastUpdated: latestSnapshot.snapshotDate,
       };
     } catch (error) {
       this.logger.warn(`Failed to get performance metrics for portfolio ${portfolioId}: ${error.message}`);
@@ -515,6 +503,7 @@ export class InvestorReportController {
         dailyGrowth: 0,
         monthlyGrowth: 0,
         ytdGrowth: 0,
+        lastUpdated: new Date(),
       };
     }
   }

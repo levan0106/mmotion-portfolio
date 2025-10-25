@@ -428,13 +428,13 @@ export const formatNumberWithSeparators = (
 /**
  * Format a date to a readable string
  * @param date - The date to format
- * @param format - The format options (default: 'short')
+ * @param format - The format options: 'short', 'medium', 'long', 'full', or custom format string (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd') (default: 'short')
  * @param locale - The locale for formatting (default: 'en-US')
  * @returns Formatted date string
  */
 export const formatDate = (
   date: Date | string | undefined | null,
-  format: 'short' | 'medium' | 'long' | 'full' = 'short',
+  format: 'short' | 'medium' | 'long' | 'full' | string = 'short',
   locale: string = 'en-US'
 ): string => {
   locale = 'en-US';
@@ -449,6 +449,11 @@ export const formatDate = (
     return 'Invalid Date';
   }
   
+  // Handle custom format strings (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', etc.)
+  if (typeof format === 'string' && !['short', 'medium', 'long', 'full'].includes(format)) {
+    return formatCustomDate(dateObj, format);
+  }
+  
   const options: Record<string, Intl.DateTimeFormatOptions> = {
     short: { year: 'numeric', month: 'short', day: 'numeric' },
     medium: { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' },
@@ -457,6 +462,34 @@ export const formatDate = (
   };
   
   return new Intl.DateTimeFormat(locale, options[format]).format(dateObj);
+};
+
+/**
+ * Format a date using a custom format string
+ * @param date - The date object to format
+ * @param format - Custom format string (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd')
+ * @returns Formatted date string
+ */
+const formatCustomDate = (date: Date, format: string): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  
+  // Use a more specific approach to avoid conflicts
+  let result = format;
+  
+  // Replace in order of specificity to avoid conflicts
+  result = result.replace(/yyyy/g, year.toString());
+  result = result.replace(/MM/g, month);
+  result = result.replace(/dd/g, day);
+  result = result.replace(/HH/g, hours);
+  result = result.replace(/mm/g, minutes);
+  result = result.replace(/ss/g, seconds);
+  
+  return result;
 };
 
 /**

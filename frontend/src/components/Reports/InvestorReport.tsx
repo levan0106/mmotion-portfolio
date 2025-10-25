@@ -17,7 +17,7 @@ import {
   ShowChart,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency, formatNumber, formatPercentage, formatPercentageValue } from '../../utils/format';
+import { formatCurrency, formatDate, formatNumber, formatPercentage, formatPercentageValue } from '../../utils/format';
 import { InvestorReportData } from '../../types/investor-report.types';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import ResponsiveTable from '../Common/ResponsiveTable';
@@ -155,7 +155,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         </Box>
         <Box display="flex" justifyContent="flex-end">
           <ResponsiveTypography variant="caption" color="text.secondary">
-            {t('investorReport.lastUpdated', 'Cập nhật lần cuối')}: {new Date(data.lastUpdated).toLocaleString('vi-VN')}
+            {t('investorReport.lastUpdated', 'Cập nhật lần cuối')}: {formatDate(data.lastUpdated, 'dd/MM/yyyy')}
           </ResponsiveTypography>
         </Box>
       </Box>
