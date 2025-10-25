@@ -758,115 +758,133 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               </Grid>
             </Box>
 
-            {/* Summary Section */}
-            <Box >
-              <Box display="flex" justifyContent="space-between" alignItems="center" >
-                <ResponsiveTypography variant="cardTitle" color="primary" sx={{ mb: 1, mt: 4 }}>
-                  {t('trading.form.tradeSummary')}
-                </ResponsiveTypography>
-              </Box>
-              <Grid container spacing={2} sx={{ px: 1 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={2} sx={{ 
-                    bgcolor: 'white', 
-                    borderRadius: 2, 
-                    border: 1, 
-                    borderColor: 'grey.300',
-                    height: '100%',
+            {/* Summary Section - Compact List View with 2 fields per row */}
+            <Box sx={{ mt: 4 }}>
+              <ResponsiveTypography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600 }}>
+                {t('trading.form.tradeSummary')}
+              </ResponsiveTypography>
+              
+              <Card sx={{ border: 1, borderColor: 'grey.300' }}>
+                <CardContent sx={{ p: 0 }}>
+                  {/* Row 1: Trade Value + Fees and Taxes */}
+                  <Box sx={{ 
                     display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center'
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    borderBottom: 1,
+                    borderColor: 'grey.300'
                   }}>
-                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
-                      <MonetizationOnIcon sx={{ fontSize: 20, color: 'info.main', mr: 1 }} />
-                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                        {t('trading.form.totalValue')}
+                    {/* Trade Value - Left half */}
+                    <Box sx={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      px: 2,
+                      py: {xs: 1, sm: 2},
+                      borderRight: { xs: 0, sm: 1 },
+                      borderBottom: { xs: 1, sm: 0 },
+                      borderColor: 'grey.300'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
+                        <MonetizationOnIcon sx={{ fontSize: 20, color: 'info.main', mr: 1 }} />
+                        <ResponsiveTypography variant="body1" fontWeight={500}>
+                          {t('trading.form.totalValue')}
+                        </ResponsiveTypography>
+                      </Box>
+                      <ResponsiveTypography variant="h6" fontWeight={600} color="info.main">
+                        {formatCurrency(calculatedValues.value, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
-                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="info.main">
-                      {formatCurrency(calculatedValues.value, baseCurrency)}
-                    </ResponsiveTypography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
-                    bgcolor: 'white', 
-                    borderRadius: 2, 
-                    border: 1, 
-                    borderColor: 'grey.300',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center'
-                  }}>
-                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
-                      <AssessmentIcon sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
-                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                        {t('trading.form.feesTaxes')}
+
+                    {/* Fees and Taxes - Right half */}
+                    <Box sx={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      px: 2,
+                      py: {xs: 1, sm: 2},
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
+                        <AssessmentIcon sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
+                        <ResponsiveTypography variant="body1" fontWeight={500}>
+                          {t('trading.form.feesTaxes')}
+                        </ResponsiveTypography>
+                      </Box>
+                      <ResponsiveTypography variant="h6" fontWeight={600} color="warning.main">
+                        {formatCurrency(calculatedValues.fee + calculatedValues.tax, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
-                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="warning.main">
-                      {formatCurrency(calculatedValues.fee + calculatedValues.tax, baseCurrency)}
-                    </ResponsiveTypography>
                   </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
-                    bgcolor: 'white', 
-                    borderRadius: 2, 
-                    border: 1, 
-                    borderColor: 'grey.300',
-                    height: '100%',
+
+                  {/* Row 2: Total Cost/Amount + Trade Side */}
+                  <Box sx={{ 
                     display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center'
+                    flexDirection: { xs: 'column', sm: 'row' }
                   }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                      {watchedSide === TradeSide.SELL ? t('trading.form.amountReceived') : t('trading.form.amountPaid')}
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="cardValue" fontWeight="bold" color="primary.main">
-                      {formatCurrency(calculatedValues.cost, baseCurrency)}
-                    </ResponsiveTypography>
-                    <ResponsiveTypography variant="labelXSmall" color="text.secondary" sx={{ mt: 0.5 }}>
-                      {watchedSide === TradeSide.SELL 
-                        ? '(Value - Fees - Taxes)' 
-                        : '(Value + Fees + Taxes)'}
-                    </ResponsiveTypography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box textAlign="center" p={isModal ? 1 : 2} sx={{ 
-                    bgcolor: 'white', 
-                    borderRadius: 2, 
-                    border: 1, 
-                    borderColor: 'grey.300',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center'
-                  }}>
-                    <Box display="flex" alignItems="center" justifyContent="center" mb={1}>
-                      {watchedSide === TradeSide.BUY ? 
-                        <TrendingUpIcon sx={{ fontSize: 20, color: 'success.main', mr: 1 }} /> :
-                        <TrendingDownIcon sx={{ fontSize: 20, color: 'error.main', mr: 1 }} />
-                      }
-                      <ResponsiveTypography variant="cardLabel" color="text.secondary">
-                        {t('trading.form.tradeSide')}
+                    {/* Total Cost/Amount - Left half */}
+                    <Box sx={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      px: 2,
+                      borderRight: { xs: 0, sm: 1 },
+                      borderBottom: { xs: 1, sm: 0 },
+                      borderColor: 'grey.300',
+                      py: {xs: 1, sm: 2},
+                    }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', mb: { xs: 1, sm: 0 } }}>
+                        <ResponsiveTypography variant="body1" fontWeight={500}>
+                          {watchedSide === TradeSide.SELL ? t('trading.form.amountReceived') : t('trading.form.amountPaid')}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="caption" color="text.secondary">
+                          {watchedSide === TradeSide.SELL 
+                            ? '(Value - Fees - Taxes)' 
+                            : '(Value + Fees + Taxes)'}
+                        </ResponsiveTypography>
+                      </Box>
+                      <ResponsiveTypography variant="h6" fontWeight={600} color="primary.main">
+                        {formatCurrency(calculatedValues.cost, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
-                    <Chip
-                      label={watchedSide}
-                      color={getSideColor(watchedSide)}
-                      icon={watchedSide === TradeSide.BUY ? 
-                        <TrendingUpIcon sx={{ fontSize: 16 }} /> :
-                        <TrendingDownIcon sx={{ fontSize: 16 }} />
-                      }
-                      size="small"
-                      sx={{ fontWeight: 600 }}
-                    />
+
+                    {/* Trade Side - Right half */}
+                    <Box sx={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      px: 2,
+                      py: {xs: 1, sm: 2},
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 0 } }}>
+                        {watchedSide === TradeSide.BUY ? 
+                          <TrendingUpIcon sx={{ fontSize: 20, color: 'success.main', mr: 1 }} /> :
+                          <TrendingDownIcon sx={{ fontSize: 20, color: 'error.main', mr: 1 }} />
+                        }
+                        <ResponsiveTypography variant="body1" fontWeight={500}>
+                          {t('trading.form.tradeSide')}
+                        </ResponsiveTypography>
+                      </Box>
+                      <Chip
+                        label={watchedSide}
+                        color={getSideColor(watchedSide)}
+                        icon={watchedSide === TradeSide.BUY ? 
+                          <TrendingUpIcon sx={{ fontSize: 16 }} /> :
+                          <TrendingDownIcon sx={{ fontSize: 16 }} />
+                        }
+                        size="small"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </Box>
                   </Box>
-                </Grid>
-              </Grid>
+                </CardContent>
+              </Card>
             </Box>
 
             {/* Submit Button */}
