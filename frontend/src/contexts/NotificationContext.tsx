@@ -21,6 +21,7 @@ interface NotificationContextType {
   socket: Socket | null;
   isConnected: boolean;
   currentUserId: string | null;
+  isFullscreenOpen: boolean;
   addNotification: (notification: Notification) => void;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -28,6 +29,7 @@ interface NotificationContextType {
   fetchNotifications: (userId?: string) => Promise<void>;
   connectSocket: (userId: string) => void;
   disconnectSocket: () => void;
+  setFullscreenOpen: (open: boolean) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -42,6 +44,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const connectSocket = (userId: string) => {
     if (socket) {
@@ -178,6 +181,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     socket,
     isConnected,
     currentUserId,
+    isFullscreenOpen,
     addNotification,
     markAsRead,
     markAllAsRead,
@@ -185,6 +189,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     fetchNotifications,
     connectSocket,
     disconnectSocket,
+    setFullscreenOpen: setIsFullscreenOpen,
   };
 
   return (

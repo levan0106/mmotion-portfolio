@@ -13,6 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '../../contexts/AccountContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { TradeForm } from '../Trading/TradeForm';
 import { CreateTradeDto, TradeFormData } from '../../types';
 import { useCreateTrade } from '../../hooks/useTrading';
@@ -28,6 +29,7 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentAccount } = useAccount();
+  const { isFullscreenOpen } = useNotifications();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [showTradeForm, setShowTradeForm] = useState(false);
@@ -102,6 +104,11 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
 
   // Don't show the button if user is not authenticated or is investor
   if (!currentAccount?.accountId || currentAccount?.isInvestor) {
+    return null;
+  }
+
+  // Don't show the button when notifications are in fullscreen mode
+  if (isFullscreenOpen) {
     return null;
   }
 

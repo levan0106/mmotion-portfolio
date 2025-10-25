@@ -13,6 +13,11 @@ import {
   Chip,
   Paper,
   Link,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  AppBar,
+  Toolbar,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -25,6 +30,8 @@ import {
   ShowChart as ShowChartIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Fullscreen as FullscreenIcon,
+  FullscreenExit as FullscreenExitIcon,
 } from '@mui/icons-material';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { Notification } from '../../contexts/NotificationContext';
@@ -77,6 +84,8 @@ export const NotificationBell: React.FC = () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    isFullscreenOpen,
+    setFullscreenOpen,
   } = useNotifications();
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -89,6 +98,16 @@ export const NotificationBell: React.FC = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setExpandedNotification(null);
+  };
+
+  const handleFullscreenOpen = () => {
+    setFullscreenOpen(true);
+    setAnchorEl(null); // Close the popover when opening fullscreen
+  };
+
+  const handleFullscreenClose = () => {
+    setFullscreenOpen(false);
     setExpandedNotification(null);
   };
 
@@ -170,6 +189,14 @@ export const NotificationBell: React.FC = () => {
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
             <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600 }}>Notifications</Typography>
             <Box>
+              <IconButton
+                size="small"
+                onClick={handleFullscreenOpen}
+                title="View all notifications"
+                sx={{ mr: 1 }}
+              >
+                <FullscreenIcon />
+              </IconButton>
               {unreadCount > 0 && (
                 <Button
                   size="small"
@@ -433,6 +460,312 @@ export const NotificationBell: React.FC = () => {
           )}
         </Paper>
       </Popover>
+
+      {/* Fullscreen Modal */}
+      <Dialog
+        open={isFullscreenOpen}
+        onClose={handleFullscreenClose}
+        maxWidth="lg"
+        fullWidth
+        fullScreen
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.default',
+          },
+        }}
+      >
+        <AppBar position="static" color="primary">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              All Notifications ({notifications.length})
+            </Typography>
+            <IconButton
+              color="inherit"
+              onClick={handleFullscreenClose}
+              title="Close fullscreen"
+            >
+              <FullscreenExitIcon />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+
+        <DialogContent sx={{ p: 0, bgcolor: 'background.default' }}>
+          {notifications.length === 0 ? (
+            <Box 
+              textAlign="center" 
+              py={8}
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                gap: 2
+              }}
+            >
+              <NotificationsIcon sx={{ fontSize: 64, color: 'text.secondary' }} />
+              <Typography variant="h6" color="text.secondary">
+                No notifications yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                You'll see notifications here when they arrive
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ py: 0 }}>
+              {notifications.map((notification, index) => (
+                <React.Fragment key={notification.id}>
+                  <ListItem
+                    sx={{
+                      bgcolor: notification.isRead ? 'transparent' : 'action.hover',
+                      borderRadius: 1,
+                      mb: 0.5,
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                      py: 1.5,
+                      px: 2,
+                      cursor: 'default',
+                      '&:hover': {
+                        bgcolor: 'action.selected',
+                        transform: 'translateY(-1px)',
+                        boxShadow: 2,
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
+                  >
+                    <Box display="flex" alignItems="flex-start" gap={1} mb={1}>
+                      <Box
+                        sx={{
+                          color: `${getNotificationColor(notification.type)}.main`,
+                          mt: 0.25,
+                        }}
+                      >
+                        {getNotificationIcon(notification.type)}
+                      </Box>
+                      <Box flex={1} minWidth={0}>
+                        <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontWeight: notification.isRead ? 'normal' : 'bold',
+                              flex: 1,
+                              minWidth: 0,
+                              fontSize: '1rem',
+                            }}
+                          >
+                            {notification.title}
+                          </Typography>
+                          <Chip
+                            label={notification.type.toUpperCase()}
+                            size="small"
+                            color={getNotificationColor(notification.type) as any}
+                            variant="outlined"
+                            sx={{ fontSize: '0.75rem', height: 24 }}
+                          />
+                        </Box>
+                        <Box>
+                          {expandedNotification === notification.id ? (
+                            <Box>
+                              <Typography 
+                                variant="body1" 
+                                color="text.primary"
+                                sx={{
+                                  wordBreak: 'break-word',
+                                  lineHeight: 1.5,
+                                  fontSize: '0.9rem',
+                                  mb: 1.5,
+                                }}
+                              >
+                                {notification.message}
+                              </Typography>
+                              {notification.actionUrl && (
+                                <Box sx={{ 
+                                  p: 1.5, 
+                                  bgcolor: 'action.hover', 
+                                  borderRadius: 1,
+                                  border: '1px solid',
+                                  borderColor: 'divider',
+                                }}>
+                                  <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                    Quick Action:
+                                  </Typography>
+                                  <Link
+                                    href={notification.actionUrl}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleNotificationClick(notification);
+                                    }}
+                                    sx={{
+                                      fontSize: '0.9rem',
+                                      fontWeight: 500,
+                                      textDecoration: 'none',
+                                      color: 'primary.main',
+                                      '&:hover': {
+                                        textDecoration: 'underline',
+                                        color: 'primary.dark',
+                                      },
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    🔗 {notification.actionUrl}
+                                  </Link>
+                                </Box>
+                              )}
+                            </Box>
+                          ) : (
+                            <Typography 
+                              variant="body1" 
+                              color="text.secondary"
+                              sx={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                wordBreak: 'break-word',
+                                lineHeight: 1.4,
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  color: 'text.primary',
+                                },
+                              }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await toggleExpanded(notification.id);
+                              }}
+                            >
+                              {notification.message}
+                            </Typography>
+                          )}
+                          {expandedNotification !== notification.id && notification.message.length > 100 && (
+                            <Button
+                              size="small"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await toggleExpanded(notification.id);
+                              }}
+                              startIcon={<ExpandMoreIcon />}
+                              sx={{
+                                p: 0.5,
+                                minWidth: 'auto',
+                                fontSize: '0.8rem!important',
+                                textTransform: 'none',
+                                mt: 0.5,
+                                minHeight: 'auto',
+                                height: '24px',
+                              }}
+                            >
+                              More
+                            </Button>
+                          )}
+                          {expandedNotification === notification.id && (
+                            <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
+                              <Button
+                                size="small"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await toggleExpanded(notification.id);
+                                }}
+                                startIcon={<ExpandLessIcon />}
+                                sx={{
+                                  p: 0.5,
+                                  minWidth: 'auto',
+                                  fontSize: '0.8rem!important',
+                                  textTransform: 'none',
+                                  minHeight: 'auto',
+                                  height: '24px',
+                                }}
+                              >
+                                Less
+                              </Button>
+                              {notification.actionUrl && (
+                                <Button
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNotificationClick(notification);
+                                  }}
+                                  sx={{
+                                    p: 0.5,
+                                    minWidth: 'auto',
+                                    fontSize: '0.8rem!important',
+                                    textTransform: 'none',
+                                    minHeight: 'auto',
+                                    height: '24px',
+                                    color: 'primary.main',
+                                    '&:hover': {
+                                      color: 'primary.dark',
+                                      bgcolor: 'primary.light',
+                                    },
+                                  }}
+                                >
+                                  🔗 Go
+                                </Button>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                            {formatDate(notification.createdAt)}
+                          </Typography>
+                          <Box display="flex" gap={0.5}>
+                            {!notification.isRead && (
+                              <ListIconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsRead(notification);
+                                }}
+                                title="Mark as read"
+                                sx={{ p: 0.5, minWidth: 'auto' }}
+                              >
+                                <MarkEmailReadIcon sx={{ fontSize: '1rem' }} />
+                              </ListIconButton>
+                            )}
+                            <ListIconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(notification);
+                              }}
+                              title="Delete"
+                              color="error"
+                              sx={{ p: 0.5, minWidth: 'auto' }}
+                            >
+                              <DeleteIcon sx={{ fontSize: '1rem' }} />
+                            </ListIconButton>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </ListItem>
+                  {index < notifications.length - 1 && <Divider sx={{ my: 0.5 }} />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2, bgcolor: 'background.default' }}>
+          <Button
+            onClick={handleMarkAllAsRead}
+            startIcon={<MarkEmailReadIcon />}
+            disabled={unreadCount === 0}
+            variant="outlined"
+            sx={{ mr: 1 }}
+          >
+            Mark all as read
+          </Button>
+          <Button
+            onClick={handleFullscreenClose}
+            variant="contained"
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
