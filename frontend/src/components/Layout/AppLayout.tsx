@@ -49,6 +49,7 @@ import { useTranslation } from 'react-i18next';
 import { AccountSwitcher } from '../Account';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import { usePortfolio } from '../../hooks/usePortfolios';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
@@ -98,6 +99,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [drawerCollapsed, setDrawerCollapsed] = useState(isTablet);
   const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
+  
+  // Get portfolio ID from current path
+  const portfolioId = getPortfolioIdFromPath();
+  
+  // Fetch portfolio data if we're viewing a portfolio detail page
+  const { portfolio } = usePortfolio(portfolioId || '');
   const { hasAnyPermission, hasAnyRole } = usePermissions();
 
   // Create menu items with i18n - filter based on account type
@@ -1032,16 +1039,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <MenuIcon />
             </IconButton>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-                Portfolio Management System
-              </Typography>
+              <ResponsiveTypography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+                {portfolioId && portfolio ? portfolio.name : 'Portfolio Management System'}
+              </ResponsiveTypography>
               <Typography variant="caption" color="text.secondary">
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                {portfolioId && portfolio ? (
+                  `${t('portfolio.title')}`
+                ) : (
+                  new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })
+                )}
               </Typography>
             </Box>
           </Box>

@@ -22,6 +22,7 @@ interface DepositFormProps {
   portfolioId: string;
   initialData?: CreateDepositDto;
   isEdit?: boolean;
+  standalone?: boolean; // New prop to control if form should be wrapped in ModalWrapper
 }
 
 interface CreateDepositDto {
@@ -97,6 +98,9 @@ const DepositForm: React.FC<DepositFormProps> = ({
       notes: '',
     },
   });
+
+  // Create a ref to access the form element
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const startDate = watch('startDate');
 
@@ -255,24 +259,35 @@ const DepositForm: React.FC<DepositFormProps> = ({
             {t('deposit.form.cancel')}
           </ResponsiveButton>
           <ResponsiveButton 
-            type="submit" 
             variant="contained" 
             disabled={isSubmitting}
             icon={<Save />}
             mobileText={t('deposit.form.save')}
             desktopText={t('deposit.form.save')}
+            onClick={() => {
+              // Trigger form submission by clicking the submit button inside the form
+              if (formRef.current) {
+                const submitButton = formRef.current.querySelector('button[type="submit"]') as HTMLButtonElement;
+                if (submitButton) {
+                  submitButton.click();
+                }
+              }
+            }}
           >
             {isSubmitting ? t('deposit.form.processing') : (isEdit ? t('deposit.form.update') : t('deposit.form.create'))}
           </ResponsiveButton>
         </>
       }
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
+        
+        {/* Hidden submit button for form submission */}
+        <button type="submit" style={{ display: 'none' }} />
         
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12} sm={6}>
