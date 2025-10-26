@@ -8,7 +8,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -18,6 +17,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Grid,
 } from '@mui/material';
 import { ResponsiveTypography, ResponsiveButton } from '../Common';
 import {
@@ -176,8 +176,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
           isMockData: false,
         });
       } catch (error) {
-        console.error('Error fetching portfolio info:', error);
-        
         // Fallback to mock data for demonstration
         const mockPortfolios = [
           { id: '1', name: 'Main Portfolio' },
@@ -201,19 +199,53 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
     }
   }, [asset, accountId, open]);
 
-  if (!asset) return null;
-
-  // Calculate performance metrics
-  const currentPrice = asset.currentPrice || 0;
-  const avgCost = asset.avgCost || 0;
-  const quantity = asset.quantity || asset.totalQuantity || 0;
-  const totalValue = Number(asset.totalValue) || 0;
+  // Helper component to render all items in a single grid with borders
+  const GridListItems: React.FC<{ items: Array<{ label: string; value: React.ReactNode }> }> = ({ items }) => (
+    <Grid container spacing={0}>
+      {items.map((item, index) => (
+        <Grid 
+          item 
+          xs={6} 
+          md={3} 
+          key={index}
+          sx={{
+            borderRight: { xs: index % 2 === 1 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', md: index % 4 === 3 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)' },
+            borderBottom: { xs: index >= items.length - 2 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', md: index >= items.length - 4 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)' },
+            p: 1.5,
+            minHeight: 'auto',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <ListItemText
+            primary={item.label}
+            secondary={item.value}
+            primaryTypographyProps={{ 
+              variant: 'subtitle2', 
+              color: 'text.secondary',
+              sx: {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }
+            }}
+            secondaryTypographyProps={{ variant: 'subtitle1', fontWeight: 500 }}
+            sx={{ width: '100%' }}
+          />
+        </Grid>
+      ))}
+    </Grid>
+  );
+  const currentPrice = asset?.currentPrice || 0;
+  const avgCost = asset?.avgCost || 0;
+  const quantity = asset?.quantity || asset?.totalQuantity || 0;
+  const totalValue = Number(asset?.totalValue) || 0;
   const costBasis = avgCost * quantity;
   const unrealizedPnL = totalValue - costBasis;
   const unrealizedPnLPercentage = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
 
   // Performance data
-  const performance = asset.performance || {
+  const performance = asset?.performance || {
     daily: 0,
     weekly: 0,
     monthly: 0,
@@ -260,34 +292,46 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
       maxWidth="lg"
       loading={loading}
       actions={
-        <Stack direction="row" spacing={1}>
-          {onEdit && (
-            <ResponsiveButton
-              onClick={() => onEdit(asset)}
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<EditIcon />}
-              mobileText={t('common.edit')}
-              desktopText={t('common.edit')}
-            >
-              {t('common.edit')}
-            </ResponsiveButton>
-          )}
-          {onDelete && (
-            <ResponsiveButton
-              onClick={() => onDelete(asset)}
-              variant="contained"
-              color="error"
-              size="small"
-              startIcon={<DeleteIcon />}
-              mobileText={t('common.delete')}
-              desktopText={t('common.delete')}
-            >
-              {t('common.delete')}
-            </ResponsiveButton>
-          )}
-        </Stack>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <Stack direction="row" spacing={1}>
+            {onEdit && asset && (
+              <ResponsiveButton
+                onClick={() => onEdit(asset)}
+                variant="contained"
+                color="primary"
+                size="small"
+                icon={<EditIcon />}
+                mobileText=""
+                desktopText={t('common.edit')}
+              >
+                {t('common.edit')}
+              </ResponsiveButton>
+            )}
+            {onDelete && asset && (
+              <ResponsiveButton
+                onClick={() => onDelete(asset)}
+                variant="contained"
+                color="error"
+                size="small"
+                icon={<DeleteIcon />}
+                mobileText=""
+                desktopText={t('common.delete')}
+              >
+                {t('common.delete')}
+              </ResponsiveButton>
+            )}
+          </Stack>
+          <ResponsiveButton
+            onClick={onClose}
+            variant="outlined"
+            color="secondary"
+            size="small"
+            mobileText={t('common.close')}
+            desktopText={t('common.close')}
+          >
+            {t('common.close')}
+          </ResponsiveButton>
+        </Box>
       }
     >
       <Box sx={{ p: 1 }}>
@@ -297,26 +341,26 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
           sx={{
             p: 2,
             mb: 2,
-            background: `linear-gradient(135deg, ${getAssetTypeColor(asset.type)}15 0%, ${getAssetTypeColor(asset.type)}05 100%)`,
-            border: `1px solid ${getAssetTypeColor(asset.type)}30`,
+            background: `linear-gradient(135deg, ${getAssetTypeColor(asset?.type || '')}15 0%, ${getAssetTypeColor(asset?.type || '')}05 100%)`,
+            border: `1px solid ${getAssetTypeColor(asset?.type || '')}30`,
             borderRadius: 2,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box>
               <ResponsiveTypography variant="pageTitle" >
-                {asset.name}
+                {asset?.name}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary'}}>
-                {asset.symbol}
+                {asset?.symbol}
               </ResponsiveTypography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Chip
-                label={asset.type}
+                label={asset?.type}
                 size="small"
                 sx={{
-                  backgroundColor: getAssetTypeColor(asset.type),
+                  backgroundColor: getAssetTypeColor(asset?.type || ''),
                   color: 'white',
                   fontWeight: 600,
                   textTransform: 'uppercase',
@@ -324,9 +368,9 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 }}
               />
               <Chip
-                label={asset.isActive ? t('asset.details.status.active') : t('asset.details.status.inactive')}
+                label={asset?.isActive ? t('asset.details.status.active') : t('asset.details.status.inactive')}
                 size="small"
-                color={asset.isActive ? 'success' : 'error'}
+                color={asset?.isActive ? 'success' : 'error'}
                 variant="outlined"
               />
 
@@ -435,253 +479,209 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
           )} */}
         </Paper>
 
-        {/* Key Metrics Cards */}
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #1976d215 0%, #1976d205 100%)' }}>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                  {t('asset.details.metrics.currentValue')}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="cardValueLarge" sx={{ color: 'primary.main' }}>
-                  {formatCurrency(totalValue, baseCurrency)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${unrealizedPnL >= 0 ? '#2e7d3215' : '#d32f2f15'} 0%, ${unrealizedPnL >= 0 ? '#2e7d3205' : '#d32f2f05'} 100%)` }}>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                  {t('asset.details.metrics.unrealizedPnL')}
-                </ResponsiveTypography>
-                <ResponsiveTypography 
-                  variant="cardValueLarge" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: unrealizedPnL >= 0 ? 'success.main' : 'error.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0.5
-                  }}
-                >
-                  {getPerformanceIcon(unrealizedPnL)}
-                  {formatCurrency(unrealizedPnL, baseCurrency)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${unrealizedPnLPercentage >= 0 ? '#2e7d3215' : '#d32f2f15'} 0%, ${unrealizedPnLPercentage >= 0 ? '#2e7d3205' : '#d32f2f05'} 100%)` }}>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                  {t('asset.details.metrics.pnlPercentage')}
-                </ResponsiveTypography>
-                <ResponsiveTypography 
-                  variant="cardValueLarge" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: unrealizedPnLPercentage >= 0 ? 'success.main' : 'error.main'
-                  }}
-                >
-                  {formatPercentage(unrealizedPnLPercentage, 2)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f57c0015 0%, #f57c0005 100%)' }}>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                  {t('asset.details.metrics.quantity')}
-                </ResponsiveTypography>
-                <ResponsiveTypography variant="cardValueLarge" sx={{ color: 'warning.main' }}>
-                  {formatNumber(quantity, 2)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Financial Overview */}
-        <Grid container spacing={2} sx={{ mb: 1.5 }}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AssessmentIcon color="primary" />
-                  {t('asset.details.sections.priceInformation')}
-                </ResponsiveTypography>
-                <Stack spacing={2}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.price.currentPrice')}</ResponsiveTypography>
-                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main' }}>
-                      {formatCurrency(currentPrice, baseCurrency)}
+        {/* Combined Grid - All Asset Information */}
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AssessmentIcon color="primary" />
+              {t('asset.details.sections.assetInformation')}
+            </ResponsiveTypography>
+            <GridListItems 
+              items={[
+                // Key Metrics
+                {
+                  label: t('asset.details.metrics.currentValue'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                      {formatCurrency(totalValue, baseCurrency)}
                     </ResponsiveTypography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.price.averageCost')}</ResponsiveTypography>
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
-                      {formatCurrency(avgCost, baseCurrency)}
-                    </ResponsiveTypography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.price.priceChange')}</ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.metrics.unrealizedPnL'),
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(unrealizedPnL)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: unrealizedPnL >= 0 ? 'success.main' : 'error.main'
+                        }}
+                      >
+                        {formatCurrency(unrealizedPnL, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                {
+                  label: t('asset.details.metrics.pnlPercentage'),
+                  value: (
                     <ResponsiveTypography 
                       variant="cardValue" 
                       sx={{ 
                         fontWeight: 600, 
-                        color: getPerformanceColor(currentPrice - avgCost),
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5
+                        color: unrealizedPnLPercentage >= 0 ? 'success.main' : 'error.main'
                       }}
                     >
-                      {getPerformanceIcon(currentPrice - avgCost)}
-                      {formatCurrency(currentPrice - avgCost, baseCurrency)}
+                      {formatPercentage(unrealizedPnLPercentage, 2)}
                     </ResponsiveTypography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AccountBalanceIcon color="primary" />
-                  {t('asset.details.sections.positionDetails')}
-                </ResponsiveTypography>
-                <Stack spacing={2}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.position.totalQuantity')}</ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.metrics.quantity'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'warning.main', fontWeight: 600 }}>
+                      {formatNumber(quantity, 2)}
+                    </ResponsiveTypography>
+                  )
+                },
+                // Financial Overview
+                {
+                  label: t('asset.details.price.currentPrice'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                      {formatCurrency(currentPrice, baseCurrency)}
+                    </ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.price.averageCost'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
+                      {formatCurrency(avgCost, baseCurrency)}
+                    </ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.price.priceChange'),
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(currentPrice - avgCost)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: getPerformanceColor(currentPrice - avgCost)
+                        }}
+                      >
+                        {formatCurrency(currentPrice - avgCost, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                {
+                  label: t('asset.details.position.totalQuantity'),
+                  value: (
                     <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                       {formatNumber(quantity, 2)}
                     </ResponsiveTypography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.position.costBasis')}</ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.position.costBasis'),
+                  value: (
                     <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
                       {formatCurrency(costBasis, baseCurrency)}
                     </ResponsiveTypography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary">{t('asset.details.position.marketValue')}</ResponsiveTypography>
+                  )
+                },
+                {
+                  label: t('asset.details.position.marketValue'),
+                  value: (
                     <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'primary.main' }}>
                       {formatCurrency(totalValue, baseCurrency)}
                     </ResponsiveTypography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Performance Analytics */}
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingUpIcon color="primary" />
-              {t('asset.details.sections.performanceAnalytics')}
-            </ResponsiveTypography>
-            <Grid container spacing={1.5}>
-              {[
-                { label: t('asset.details.performance.daily'), value: performance.daily, color: getPerformanceColor(performance.daily) },
-                { label: t('asset.details.performance.weekly'), value: performance.weekly, color: getPerformanceColor(performance.weekly) },
-                { label: t('asset.details.performance.monthly'), value: performance.monthly, color: getPerformanceColor(performance.monthly) },
-                { label: t('asset.details.performance.yearly'), value: performance.yearly, color: getPerformanceColor(performance.yearly) },
-              ].map((metric) => (
-                <Grid item xs={6} sm={3} key={metric.label}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      textAlign: 'center',
-                      border: `1px solid ${metric.color}30`,
-                      background: `linear-gradient(135deg, ${metric.color}15 0%, ${metric.color}05 100%)`,
-                    }}
-                  >
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                      {metric.label}
+                  )
+                },
+                // Performance Analytics
+                { 
+                  label: t('asset.details.performance.daily'), 
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(performance.daily)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: getPerformanceColor(performance.daily)
+                        }}
+                      >
+                        {formatPercentage(performance.daily, 2)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                { 
+                  label: t('asset.details.performance.weekly'), 
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(performance.weekly)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: getPerformanceColor(performance.weekly)
+                        }}
+                      >
+                        {formatPercentage(performance.weekly, 2)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                { 
+                  label: t('asset.details.performance.monthly'), 
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(performance.monthly)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: getPerformanceColor(performance.monthly)
+                        }}
+                      >
+                        {formatPercentage(performance.monthly, 2)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                { 
+                  label: t('asset.details.performance.yearly'), 
+                  value: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getPerformanceIcon(performance.yearly)}
+                      <ResponsiveTypography 
+                        variant="cardValue" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: getPerformanceColor(performance.yearly)
+                        }}
+                      >
+                        {formatPercentage(performance.yearly, 2)}
+                      </ResponsiveTypography>
+                    </Box>
+                  )
+                },
+                // Metadata
+                {
+                  label: t('asset.details.metadata.created'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
+                      {asset ? new Date(asset.createdAt).toLocaleDateString() : ''}
                     </ResponsiveTypography>
-                    <ResponsiveTypography 
-                      variant="cardValueLarge" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: metric.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 0.5
-                      }}
-                    >
-                      {getPerformanceIcon(metric.value)}
-                      {formatPercentage(metric.value, 2)}
+                  )
+                },
+                {
+                  label: t('asset.details.metadata.lastUpdated'),
+                  value: (
+                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
+                      {asset ? new Date(asset.updatedAt).toLocaleDateString() : ''}
                     </ResponsiveTypography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
-
-        {/* Metadata */}
-        <Card>
-          <CardContent>
-            <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <InfoIcon color="primary" />
-              {t('asset.details.sections.assetInformation')}
-            </ResponsiveTypography>
-            <Grid container spacing={1.5}>
-              <Grid item xs={12} sm={6} md={4}>
-                <Box sx={{ textAlign: 'center', p: 1 }}>
-                  <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                    {t('asset.details.metadata.created')}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography variant="cardValueSmall" sx={{ fontWeight: 600 }}>
-                    {new Date(asset.createdAt).toLocaleDateString()}
-                  </ResponsiveTypography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Box sx={{ textAlign: 'center', p: 1 }}>
-                  <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                    {t('asset.details.metadata.lastUpdated')}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography variant="cardValueSmall" sx={{ fontWeight: 600 }}>
-                    {new Date(asset.updatedAt).toLocaleDateString()}
-                  </ResponsiveTypography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Box sx={{ textAlign: 'center', p: 1 }}>
-                  <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                    {t('asset.details.metadata.assetId')}
-                  </ResponsiveTypography>
-                  <ResponsiveTypography variant="cardValueSmall" sx={{ fontWeight: 600, fontFamily: 'monospace' }}>
-                    {asset.id}
-                  </ResponsiveTypography>
-                </Box>
-              </Grid>
-              {/* <Grid item xs={12} sm={6} md={3}>
-                <Box sx={{ textAlign: 'center', p: 1 }}>
-                  <ResponsiveTypography variant="cardLabel" color="text.secondary" gutterBottom>
-                    Status
-                  </ResponsiveTypography>
-                  <Chip
-                    label={asset.isActive ? 'Active' : 'Inactive'}
-                    size="small"
-                    color={asset.isActive ? 'success' : 'error'}
-                    variant="outlined"
-                  />
-                </Box>
-              </Grid> */}
-            </Grid>
+                  )
+                }
+              ]}
+            />
           </CardContent>
         </Card>
       </Box>

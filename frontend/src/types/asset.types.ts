@@ -19,6 +19,12 @@ export enum AssetType {
   //OTHER = 'OTHER'
 }
 
+// Price mode enum for asset pricing
+export enum PriceMode {
+  AUTOMATIC = 'AUTOMATIC', // Auto-sync from market data
+  MANUAL = 'MANUAL'        // Manual price entry only
+}
+
 export interface Asset {
   id: string;
   symbol: string;
@@ -31,6 +37,8 @@ export interface Asset {
   updatedAt: Date | string;
   createdBy: string;
   updatedBy: string;
+  // Price mode for auto-sync behavior
+  priceMode?: PriceMode;
   // Frontend computed properties
   description?: string;
   initialValue?: number;
@@ -65,6 +73,9 @@ export interface CreateAssetRequest {
   symbol: string;
   type: AssetType;
   description?: string;
+  priceMode?: PriceMode;
+  manualPrice?: number;
+  currentPrice?: number;
   initialValue?: number;
   initialQuantity?: number;
   currentValue?: number;
@@ -78,6 +89,7 @@ export interface UpdateAssetRequest {
   // symbol field is read-only after creation
   type?: AssetType;
   description?: string;
+  priceMode?: PriceMode;
   currentValue?: number;
   currentQuantity?: number;
   updatedBy: string;
@@ -274,6 +286,18 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng có kỳ hạn',
   //[AssetType.CASH]: 'Tiền mặt và tiền gửi không kỳ hạn',
   //[AssetType.OTHER]: 'Các loại tài sản khác',
+};
+
+// Price Mode Labels for UI
+export const PriceModeLabels: Record<PriceMode, string> = {
+  [PriceMode.AUTOMATIC]: 'Tự động',
+  [PriceMode.MANUAL]: 'Thủ công',
+};
+
+// Price Mode Descriptions for UI
+export const PriceModeDescriptions: Record<PriceMode, string> = {
+  [PriceMode.AUTOMATIC]: 'Tự động lấy giá từ thị trường và cập nhật định kỳ',
+  [PriceMode.MANUAL]: 'Chỉ nhập giá thủ công, không tự động cập nhật từ thị trường',
 };
 
 // Validation Rules

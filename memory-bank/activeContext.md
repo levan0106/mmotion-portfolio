@@ -1,13 +1,59 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 25, 2025  
-**Session Type**: Notification Fullscreen Enhancement + Floating Button Integration  
-**Primary Goal**: Add fullscreen notification view and hide floating button during fullscreen mode
+**Date**: October 26, 2025  
+**Session Type**: Asset Management Enhancement + Migration Consolidation  
+**Primary Goal**: Enhanced asset creation workflow with global asset integration and consolidated database migrations
 
 ## Recent Achievements
 
-### ✅ Notification Fullscreen Enhancement + Floating Button Integration (Current Session - October 25, 2025)
+### ✅ Asset Management Enhancement + Migration Consolidation (Current Session - October 26, 2025)
+1. **Enhanced Asset Creation Workflow**
+   - **Global Asset Integration**: Automatic global asset data fetching when creating assets
+   - **Symbol Input Validation**: Alphanumeric-only symbol input with automatic uppercase conversion
+   - **Auto-fill Functionality**: Automatic population of asset details from global asset data
+   - **Permission-Based Field Control**: Disable fields based on asset ownership (createdBy vs accountId)
+   - **Focus Management**: Fixed symbol input focus loss during data fetching
+   - **Helper Text System**: Dynamic helper text indicating symbol availability in system
+   - **Field Reordering**: Symbol field moved before name field for better UX
+   - **Blur-Based Fetching**: Global asset data fetched only on symbol field blur (not on every change)
+   - **Files Updated**: AssetForm.tsx, AssetFormModal.tsx, Assets.tsx, global-asset.service.ts
+
+2. **Backend API Enhancement**
+   - **New API Endpoint**: GET /api/v1/global-assets/symbol/:symbol for symbol-based lookup
+   - **Service Layer Enhancement**: findBySymbol method in GlobalAssetService
+   - **DTO Enhancement**: Added createdBy field to GlobalAssetResponseDto
+   - **Permission Integration**: createdBy field mapping for ownership validation
+   - **Files Updated**: global-asset.controller.ts, global-asset.service.ts, global-asset-response.dto.ts
+
+3. **Database Migration Consolidation**
+   - **Migration Consolidation**: Merged 3 separate migrations into 1 comprehensive migration
+   - **Unified Migration**: 1761449000001-AddPriceModeAndCreatedByToAssets.ts
+   - **Comprehensive Changes**: Added price_mode to both assets and global_assets tables
+   - **CreatedBy Field**: Added created_by column to global_assets table
+   - **Enum Creation**: Created separate enums for assets and global_assets price_mode
+   - **Rollback Support**: Complete rollback functionality for all changes
+   - **Files Created**: 1761449000001-AddPriceModeAndCreatedByToAssets.ts
+   - **Files Deleted**: 1735128000000-AddPriceModeToAssets.ts, 1735128000001-AddPriceModeToGlobalAssets.ts, 1761449000000-AddCreatedByToGlobalAssets.ts
+
+4. **Asset Details Modal Enhancement**
+   - **List View Redesign**: Converted from card-based to list-based layout
+   - **Responsive Grid System**: 4 columns desktop, 2 columns mobile for optimal space usage
+   - **Unified Grid Layout**: Single grid combining all asset information sections
+   - **Border System**: Light borders (rgba(0, 0, 0, 0.08)) for item separation
+   - **Asset ID Removal**: Removed Asset ID field for cleaner interface
+   - **Text Truncation**: Ellipsis (...) for long labels with proper overflow handling
+   - **Professional Styling**: Consistent typography and spacing throughout
+   - **Files Updated**: AssetDetailsModal.tsx
+
+5. **Code Cleanup and Optimization**
+   - **Debug Log Removal**: Removed console.log statements from frontend and backend
+   - **Unused Code Cleanup**: Removed commented-out code and unused imports
+   - **TypeScript Fixes**: Resolved all linter errors and type mismatches
+   - **Production Ready**: Clean, maintainable code ready for production deployment
+   - **Files Cleaned**: AssetForm.tsx, AssetDetailsModal.tsx, Assets.tsx, global-asset.service.ts, asset-global-sync.service.ts
+
+### ✅ Notification Fullscreen Enhancement + Floating Button Integration (Previous Session - October 25, 2025)
 1. **NotificationBell Fullscreen Feature**
    - **Fullscreen Button**: Added fullscreen icon button in notification popover header
    - **Fullscreen Modal**: Implemented full-screen modal displaying all notifications
@@ -298,11 +344,17 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `frontend/src/pages/Login.tsx` - Enhanced with quick login history device trust integration
-- `frontend/src/services/deviceTrustService.ts` - Added public API method for device revocation
-- `src/modules/shared/services/device-trust.service.ts` - Enhanced with public device revocation method
-- `src/modules/shared/controllers/device-trust.controller.ts` - Added public endpoint with @Public() decorator
-- `src/modules/shared/decorators/public.decorator.ts` - Public decorator for bypassing authentication
+- `frontend/src/components/Asset/AssetForm.tsx` - Enhanced with global asset integration and permission-based field control
+- `frontend/src/components/Asset/AssetFormModal.tsx` - Updated to pass globalAsset data to AssetForm
+- `frontend/src/components/Asset/AssetDetailsModal.tsx` - Redesigned with list view and responsive grid system
+- `frontend/src/pages/Assets.tsx` - Enhanced with global asset data fetching for permission checking
+- `frontend/src/services/global-asset.service.ts` - Added getGlobalAssetBySymbol method
+- `frontend/src/types/global-asset.types.ts` - Added createdBy and assetPrice fields
+- `src/modules/asset/controllers/global-asset.controller.ts` - Added symbol-based lookup endpoint
+- `src/modules/asset/services/global-asset.service.ts` - Added findBySymbol method and createdBy mapping
+- `src/modules/asset/dto/global-asset-response.dto.ts` - Added createdBy field
+- `src/modules/asset/services/asset-global-sync.service.ts` - Enhanced with createdBy field handling
+- `src/migrations/1761449000001-AddPriceModeAndCreatedByToAssets.ts` - Consolidated migration file
 
 ### Key Components Modified (Previous Session)
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
@@ -327,13 +379,16 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Quick Login History Integration**: When user removes themselves from quick login history, device trust is also revoked
-- **Current Device Revocation**: Only revoke the current device, not all devices of the user
-- **Seamless Device Management**: No authentication required for device revocation from quick login history
-- **Precise Device Matching**: Use both device fingerprint and username for accurate device identification
-- **Public API Access**: Device revocation works without JWT token for better user experience
-- **Error Handling**: Graceful error handling if device trust revocation fails
-- **Code Cleanup**: Removed unused code and simplified device revocation methods
+- **Enhanced Asset Creation**: Automatic global asset data fetching with symbol validation
+- **Permission-Based Control**: Fields disabled based on asset ownership for security
+- **Focus Management**: Fixed symbol input focus loss during data fetching
+- **Helper Text System**: Dynamic helper text indicating symbol availability
+- **Field Reordering**: Symbol field moved before name for better workflow
+- **Blur-Based Fetching**: Data fetched only on field blur for better performance
+- **List View Design**: Professional list-based layout with responsive grid system
+- **Text Truncation**: Ellipsis for long labels with proper overflow handling
+- **Migration Consolidation**: Single migration file for easier database management
+- **Code Cleanup**: Production-ready code with debug logs removed
 
 ### User Experience Improvements (Previous Session)
 - **Seamless Login Experience**: No error messages when password is required, smooth transition to password step
@@ -449,16 +504,21 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
-1. ✅ **Quick Login History Integration**: Device trust revocation when user removes themselves from history
-2. ✅ **Public API Endpoints**: Created public endpoint for device revocation without authentication
-3. ✅ **Device Trust Enhancement**: Enhanced device trust system with precise device matching
-4. ✅ **Backend Service Enhancement**: Separated authenticated and public device revocation methods
-5. ✅ **Frontend Service Enhancement**: Added public API method for device revocation
-6. ✅ **User Entity Fix**: Fixed user.id to user.userId for proper database field mapping
-7. ✅ **Code Cleanup**: Removed unused code and simplified device revocation methods
-8. ✅ **Public Decorator Integration**: Used @Public() decorator to bypass JWT authentication
-9. ✅ **Error Handling**: Proper error handling for user not found and device not found scenarios
-10. ✅ **Current Device Revocation**: Only revoke current device, not all devices of the user
+1. ✅ **Enhanced Asset Creation Workflow**: Global asset integration with automatic data fetching
+2. ✅ **Symbol Input Validation**: Alphanumeric-only input with automatic uppercase conversion
+3. ✅ **Auto-fill Functionality**: Automatic population of asset details from global asset data
+4. ✅ **Permission-Based Field Control**: Disable fields based on asset ownership (createdBy vs accountId)
+5. ✅ **Focus Management**: Fixed symbol input focus loss during data fetching
+6. ✅ **Helper Text System**: Dynamic helper text indicating symbol availability in system
+7. ✅ **Field Reordering**: Symbol field moved before name field for better UX
+8. ✅ **Blur-Based Fetching**: Global asset data fetched only on symbol field blur
+9. ✅ **Backend API Enhancement**: New symbol-based lookup endpoint for global assets
+10. ✅ **Service Layer Enhancement**: findBySymbol method in GlobalAssetService
+11. ✅ **DTO Enhancement**: Added createdBy field to GlobalAssetResponseDto
+12. ✅ **Database Migration Consolidation**: Merged 3 migrations into 1 comprehensive migration
+13. ✅ **Asset Details Modal Redesign**: List view with responsive grid system
+14. ✅ **Text Truncation**: Ellipsis for long labels with proper overflow handling
+15. ✅ **Code Cleanup**: Removed debug logs and unused code for production readiness
 
 ### Completed Tasks (Previous Session)
 1. ✅ **Device Trust System Implementation**: Complete backend and frontend implementation
@@ -476,16 +536,16 @@
 13. ✅ **Build Verification**: Both frontend and backend build successfully
 
 ### Future Enhancements (Current Session)
-1. **Advanced Device Trust Features**: Device location tracking and geofencing
-2. **Enhanced Security**: Two-factor authentication integration with device trust
-3. **Device Analytics**: Advanced analytics for device usage patterns
-4. **Bulk Operations**: Enhanced bulk device management operations
-5. **Device Notifications**: Push notifications for new device logins
-6. **Advanced Fingerprinting**: Machine learning-based device fingerprinting
-7. **Quick Login History Enhancement**: Enhanced quick login history with device trust integration
-8. **Public API Security**: Rate limiting and security measures for public endpoints
-9. **Device Trust Analytics**: Analytics for device trust usage patterns
-10. **Multi-Device Management**: Enhanced multi-device management capabilities
+1. **Advanced Asset Management**: Bulk asset operations and advanced filtering
+2. **Enhanced Global Asset Integration**: Real-time price updates and market data integration
+3. **Asset Analytics**: Advanced analytics for asset performance and trends
+4. **Asset Templates**: Pre-defined asset templates for common asset types
+5. **Asset Import/Export**: CSV import/export functionality for asset data
+6. **Asset Validation**: Enhanced validation rules for asset creation and updates
+7. **Asset History**: Comprehensive asset change history and audit trail
+8. **Asset Permissions**: More granular permission system for asset management
+9. **Asset Notifications**: Real-time notifications for asset price changes
+10. **Asset Reporting**: Advanced reporting capabilities for asset analysis
 
 ### Future Enhancements (Previous Session)
 1. **Advanced Permissions**: More granular permission levels
@@ -562,6 +622,11 @@ src/
 - ✅ **Frontend**: Responsive with device trust UI and smooth login experience
 - ✅ **Backend**: Stable API endpoints with device trust management and public endpoints
 - ✅ **Deployment**: Production-ready configuration with Docker
+- ✅ **Asset Management Enhancement**: Enhanced asset creation workflow with global asset integration
+- ✅ **Permission-Based Control**: Asset field control based on ownership (createdBy vs accountId)
+- ✅ **Global Asset Integration**: Automatic global asset data fetching and auto-fill functionality
+- ✅ **Asset Details Modal**: Redesigned with list view and responsive grid system
+- ✅ **Database Migration Consolidation**: Merged 3 migrations into 1 comprehensive migration
 - ✅ **Device Trust System**: Complete implementation with incognito detection and quick login integration
 - ✅ **Security**: Enhanced security with device fingerprinting, incognito protection, and public API security
 - ✅ **User Experience**: Smooth login flow with proper error handling and quick login history integration
@@ -575,29 +640,27 @@ src/
 - ✅ **Quick Login Integration**: Device trust revocation integrated with quick login history removal
 
 ## Notes
-- Device Trust System fully implemented with comprehensive backend and frontend integration
-- Advanced device fingerprinting using Canvas, WebGL, Audio, Screen, User Agent for unique identification
-- Incognito/private mode detection prevents untrusted sessions from being marked as trusted
-- Database migration successfully created trusted_devices table with proper relationships and indexes
-- Authentication flow enhanced with device trust integration and progressive authentication
-- Frontend UI provides complete device management interface in Settings > Security tab
-- User experience improved with smooth login flow and proper error handling
-- Device revocation functionality properly deletes devices from database instead of just marking as untrusted
-- Time display enhanced to show accurate relative time (minutes/hours/days ago) instead of just "Today"
-- Error handling refined to only hide error messages for 400 status (password required) while showing 401 errors
-- Password security enhanced: all trusted devices expire when password is changed or set
-- DeviceManagement component updated to use ResponsiveTypography and ResponsiveButton for better responsive design
-- New expireAllDevices method provides audit trail while maintaining security
-- Quick login history integration: device trust revocation when user removes themselves from history
-- Public API endpoints: device revocation works without authentication for better user experience
-- Precise device matching: use both device fingerprint and username for accurate device identification
-- Current device revocation: only revoke current device, not all devices of the user
-- Public decorator integration: @Public() decorator bypasses JWT authentication for specific endpoints
-- User entity fix: user.userId instead of user.id for proper database field mapping
-- Code cleanup: removed unused code and simplified device revocation methods
-- System is production-ready with comprehensive device trust security and user-friendly interface
-- All device trust features working correctly including fingerprinting, incognito detection, and device management
-- Multi-account portfolio management system remains fully operational alongside device trust
-- Permission-based access control continues to work across all APIs
-- ResponsiveTable component system provides consistent styling
-- System is ready for production deployment with enhanced security, device trust, password security, and user experience
+- Asset Management Enhancement fully implemented with comprehensive global asset integration
+- Enhanced asset creation workflow with automatic global asset data fetching and permission-based field control
+- Symbol input validation with alphanumeric-only input and automatic uppercase conversion
+- Auto-fill functionality automatically populates asset details from global asset data
+- Permission-based field control disables fields based on asset ownership (createdBy vs accountId)
+- Focus management fixed symbol input focus loss during data fetching operations
+- Helper text system provides dynamic feedback indicating symbol availability in system
+- Field reordering moved symbol field before name field for better user workflow
+- Blur-based fetching ensures global asset data is fetched only on symbol field blur for better performance
+- Backend API enhancement with new symbol-based lookup endpoint for global assets
+- Service layer enhancement with findBySymbol method in GlobalAssetService
+- DTO enhancement added createdBy field to GlobalAssetResponseDto for ownership validation
+- Database migration consolidation merged 3 separate migrations into 1 comprehensive migration
+- Asset Details Modal redesigned with list view and responsive grid system (4 columns desktop, 2 columns mobile)
+- Unified grid layout combining all asset information sections with light borders for separation
+- Asset ID removal for cleaner interface and text truncation with ellipsis for long labels
+- Professional styling with consistent typography and spacing throughout
+- Code cleanup removed debug logs and unused code for production readiness
+- System is production-ready with enhanced asset management, global asset integration, and user-friendly interface
+- All asset management features working correctly including global asset integration, permission control, and UI enhancements
+- Multi-account portfolio management system remains fully operational alongside asset management enhancements
+- Permission-based access control continues to work across all APIs with enhanced asset ownership validation
+- ResponsiveTable component system provides consistent styling with enhanced asset details modal
+- System is ready for production deployment with enhanced asset management, global asset integration, and comprehensive user experience

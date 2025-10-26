@@ -572,7 +572,8 @@
       "quantity": "Số lượng",
       "priceComparison": "So sánh giá",
       "totalValue": "Tổng giá trị",
-      "lastUpdated": "Giá cập nhật cuối"
+      "lastUpdated": "Giá cập nhật cuối",
+      "priceMode": "Cập nhật giá"
     },
     "metrics": {
       "totalAssets": "Số lượng tài sản",
@@ -672,7 +673,7 @@
     },
     "portfoliosActive": "Danh mục hoạt động",
     "portfolioPerformance": "Phân tích hiệu suất danh mục",
-    "bestPerforming": "Danh mục tốt nhất",
+    "bestPerforming": "Lợi nhuận danh mục tốt nhất",
     "bestPortfolioCash": "Tiền mặt danh mục tốt nhất",
     "quickInsights": "Thông tin nhanh",
     "averagePortfolioValueLabel": "Giá trị trung bình:",
@@ -850,7 +851,7 @@
       "noDetailsFound": "Không tìm thấy chi tiết danh mục"
     },
     "summary": {
-      "totalInvestment": "Tổng đầu tư",
+      "totalInvestment": "Tiền vốn",
       "currentValue": "Giá trị hiện tại",
       "totalPnL": "Tổng lợi nhuận",
       "totalReturn": "Tăng trưởng",
@@ -1647,8 +1648,14 @@
         "symbol": "Mã tài sản",
         "symbolPlaceholder": "VD: AAPL, HPG",
         "symbolHelper": "Mã tài sản không thể thay đổi sau khi tạo.",
+        "symbolFoundInSystem": "✓ Mã này có trong hệ thống và sẵn sàng để sử dụng",
         "symbolDisabledHelper": "Mã tài sản không thể thay đổi sau khi tạo",
         "type": "Loại tài sản",
+        "priceMode": "Cập nhật giá",
+        "priceModeHelper": "Chọn cách quản lý giá cho tài sản này",
+        "manualPrice": "Giá hiện tại",
+        "manualPricePlaceholder": "Nhập giá tài sản",
+        "manualPriceHelper": "Giá này sẽ được sử dụng thay vì tự cập nhật giá từ thị trường",
         "currency": "Tiền tệ",
         "currencyHelper": "Hiện tại chỉ hỗ trợ VND",
         "description": "Mô tả",
@@ -1657,10 +1664,21 @@
       "validation": {
         "nameRequired": "Tên tài sản là bắt buộc",
         "symbolRequired": "Mã tài sản là bắt buộc",
-        "typeRequired": "Loại tài sản là bắt buộc"
+        "symbolInvalidFormat": "Mã tài sản chỉ được chứa chữ cái và số",
+        "typeRequired": "Loại tài sản là bắt buộc",
+        "priceModeRequired": "Chế độ giá là bắt buộc",
+        "manualPriceRequired": "Giá thủ công là bắt buộc khi chọn chế độ thủ công"
+      },
+      "priceMode": {
+        "automatic": "Tự động",
+        "automaticDescription": "Hệ thống tự lấy giá từ thị trường và cập nhật định kỳ",
+        "manual": "Thủ công",
+        "manualDescription": "Nhập giá thủ công, không tự động cập nhật từ thị trường",
+        "readOnlyInfo": "Chỉ người tạo tài sản mới có thể thay đổi chế độ giá"
       },
       "loading": {
-        "types": "Đang tải loại tài sản..."
+        "types": "Đang tải loại tài sản...",
+        "fetchingGlobalAsset": "Đang tìm kiếm thông tin tài sản từ thị trường..."
       },
       "error": {
         "typesLoadFailed": "Lỗi tải loại tài sản"
@@ -1702,6 +1720,8 @@
         "quantity": "Số lượng"
       },
       "sections": {
+        "keyMetrics": "Chỉ số chính",
+        "financialOverview": "Tổng quan tài chính",
         "priceInformation": "Thông tin giá",
         "positionDetails": "Chi tiết vị thế",
         "performanceAnalytics": "Phân tích hiệu suất",
@@ -2581,6 +2601,14 @@
         "send": "Gửi tin nhắn",
         "sending": "Đang gửi...",
         "success": "Tin nhắn đã được gửi thành công! Admin sẽ liên hệ lại sớm nhất có thể."
+      }
+    },
+    "globalAsset": {
+      "priceMode": {
+        "automatic": "Tự động",
+        "manual": "Thủ công",
+        "automaticDescription": "Tự động lấy giá từ thị trường",
+        "manualDescription": "Chỉ nhập giá thủ công"
       }
     },
     "errors": {

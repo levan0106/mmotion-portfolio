@@ -49,6 +49,7 @@ interface GlobalAsset {
   symbol: string;
   name: string;
   type: string;
+  priceMode: string;
   nation: string;
   marketCode: string;
   currency: string;

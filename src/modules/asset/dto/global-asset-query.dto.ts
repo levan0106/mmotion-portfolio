@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum, IsBoolean, IsArray, IsNumber, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 /**
  * DTO for querying global assets with filtering, pagination, and sorting.
@@ -47,6 +48,18 @@ export class GlobalAssetQueryDto {
   @IsOptional()
   @IsEnum(AssetType)
   type?: AssetType;
+
+  /**
+   * Filter by price mode.
+   */
+  @ApiPropertyOptional({
+    description: 'Filter by price mode',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  @IsOptional()
+  @IsEnum(PriceMode)
+  priceMode?: PriceMode;
 
   /**
    * Filter by market code.

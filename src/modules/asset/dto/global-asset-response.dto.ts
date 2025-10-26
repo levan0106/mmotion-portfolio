@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 /**
  * DTO for global asset response data.
@@ -47,6 +48,16 @@ export class GlobalAssetResponseDto {
     example: AssetType.STOCK,
   })
   type: AssetType;
+
+  /**
+   * Price mode for the global asset (AUTOMATIC or MANUAL).
+   */
+  @ApiProperty({
+    description: 'Price mode for the global asset',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  priceMode: PriceMode;
 
   /**
    * Nation code where this asset is traded (e.g., 'VN', 'US', 'UK').
@@ -101,6 +112,15 @@ export class GlobalAssetResponseDto {
     example: 'Leading steel manufacturer in Vietnam',
   })
   description?: string;
+
+  /**
+   * User ID who created this global asset.
+   */
+  @ApiProperty({
+    description: 'User ID who created this global asset',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  createdBy: string;
 
   /**
    * Timestamp when the asset was created.

@@ -151,6 +151,43 @@ export class GlobalAssetController {
   }
 
   /**
+   * Get a single global asset by symbol.
+   */
+  @Get('symbol/:symbol')
+  @ApiOperation({
+    summary: 'Get global asset by symbol',
+    description: 'Retrieve a specific global asset by its symbol. Returns the first match found.',
+  })
+  @ApiParam({
+    name: 'symbol',
+    description: 'Asset symbol',
+    type: 'string',
+    example: 'BDS',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Global asset retrieved successfully',
+    type: GlobalAssetResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Global asset not found',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid symbol format',
+  })
+  async findGlobalAssetBySymbol(
+    @Param('symbol') symbol: string,
+  ): Promise<GlobalAssetResponseDto> {
+    const asset = await this.globalAssetService.findBySymbol(symbol.toUpperCase());
+    if (!asset) {
+      throw new NotFoundException(`Global asset with symbol '${symbol}' not found.`);
+    }
+    return asset;
+  }
+
+  /**
    * Get a single global asset by ID.
    */
   @Get(':id')

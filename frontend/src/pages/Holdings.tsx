@@ -270,24 +270,8 @@ const Holdings: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* Giá trị hiện tại */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Assessment color="warning" sx={{ fontSize: 20, mr: 1 }} />
-                      <Box sx={{ flex: 1 }}>
-                        <ResponsiveTypography variant="cardTitle" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                          {t('holdings.summary.currentValue')}
-                        </ResponsiveTypography>
-                        <ResponsiveTypography variant="cardValue" color="warning.main" fontWeight="600" sx={{ fontSize: '0.9rem' }}>
-                          {formatCurrency(totalCurrentValue, displayCurrency)}
-                        </ResponsiveTypography>
-                      </Box>
-                    </Box>
-                  </Grid>
-
-                  {/* Cột 2 */}
-                  <Grid item xs={6}>
                     {/* Tổng P&L */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}> 
                       {totalPnL >= 0 ? <TrendingUp color="success" sx={{ fontSize: 20, mr: 1 }} /> : <TrendingDown color="error" sx={{ fontSize: 20, mr: 1 }} />}
                       <Box sx={{ flex: 1 }}>
                         <ResponsiveTypography variant="cardTitle" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
@@ -303,6 +287,22 @@ const Holdings: React.FC = () => {
                         </ResponsiveTypography>
                       </Box>
                     </Box>
+                  </Grid>
+
+                  {/* Cột 2 */}
+                  <Grid item xs={6}>
+                    {/* Giá trị hiện tại */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                      <Assessment color="warning" sx={{ fontSize: 20, mr: 1 }} />
+                      <Box sx={{ flex: 1 }}>
+                        <ResponsiveTypography variant="cardTitle" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          {t('holdings.summary.currentValue')}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography variant="cardValue" color="warning.main" fontWeight="600" sx={{ fontSize: '0.9rem' }}>
+                          {formatCurrency(totalCurrentValue, displayCurrency)}
+                        </ResponsiveTypography>
+                      </Box>
+                    </Box>                    
 
                     {/* Tổng lợi nhuận */}
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -319,53 +319,6 @@ const Holdings: React.FC = () => {
                   </Grid>
                 </Grid>
 
-                {/* Performance Summary - Mobile Full Width */}
-                {/* <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                  <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.8rem', fontWeight: 600 }}>
-                    {t('holdings.summary.performance', 'Tổng quan hiệu suất')}
-                  </ResponsiveTypography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Box sx={{ textAlign: 'center', flex: 1 }}>
-                      <ResponsiveTypography 
-                        variant="body1" 
-                        color="text.primary" 
-                        fontWeight="600" 
-                        sx={{ fontSize: '0.9rem' }}
-                      >
-                        {formatCurrency(totalInvestment, displayCurrency)}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        {t('holdings.summary.totalInvestment')}
-                      </ResponsiveTypography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', flex: 1 }}>
-                      <ResponsiveTypography 
-                        variant="body1" 
-                        color="text.primary" 
-                        fontWeight="600" 
-                        sx={{ fontSize: '0.9rem' }}
-                      >
-                        {formatCurrency(totalCurrentValue, displayCurrency)}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        {t('holdings.summary.currentValue')}
-                      </ResponsiveTypography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', flex: 1 }}>
-                      <ResponsiveTypography 
-                        variant="body1" 
-                        color={totalPnL >= 0 ? 'success.main' : 'error.main'} 
-                        fontWeight="600" 
-                        sx={{ fontSize: '0.9rem' }}
-                      >
-                        {formatCurrency(totalPnL, displayCurrency)}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        {t('holdings.summary.totalPnL')}
-                      </ResponsiveTypography>
-                    </Box>
-                  </Box>
-                </Box> */}
               </CardContent>
             </Card>
           </Box>

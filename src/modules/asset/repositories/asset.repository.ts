@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, In } from 'typeorm';
 import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 import { IAssetRepository, AssetStatistics } from './asset.repository.interface';
 import { Trade } from '../../trading/entities/trade.entity';
 import { TradeDetail } from '../../trading/entities/trade-detail.entity';
@@ -16,6 +17,7 @@ export interface AssetFilters {
   portfolioId?: string;
   symbol?: string;
   type?: AssetType;
+  priceMode?: PriceMode;
   search?: string;
   hasTrades?: boolean;
   sortBy?: string;
@@ -434,6 +436,10 @@ export class AssetRepository implements IAssetRepository {
       queryBuilder.andWhere('asset.type = :type', { type: filters.type });
     }
 
+    if (filters.priceMode) {
+      queryBuilder.andWhere('asset.priceMode = :priceMode', { priceMode: filters.priceMode });
+    }
+
     if (filters.search) {
       queryBuilder.andWhere(
         '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
@@ -507,6 +513,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (filters.type) {
       queryBuilder.andWhere('asset.type = :type', { type: filters.type });
+    }
+
+    if (filters.priceMode) {
+      queryBuilder.andWhere('asset.priceMode = :priceMode', { priceMode: filters.priceMode });
     }
 
     if (filters.search) {
@@ -598,6 +608,10 @@ export class AssetRepository implements IAssetRepository {
     // Apply additional filters
     if (filters.type) {
       queryBuilder.andWhere('asset.type = :type', { type: filters.type });
+    }
+
+    if (filters.priceMode) {
+      queryBuilder.andWhere('asset.priceMode = :priceMode', { priceMode: filters.priceMode });
     }
 
     if (filters.search) {

@@ -571,7 +571,8 @@
       "quantity": "Quantity",
       "priceComparison": "Price Comparison",
       "totalValue": "Total Value",
-      "lastUpdated": "Last Updated"
+      "lastUpdated": "Last Updated",
+      "priceMode": "Update Price"
     },
     "metrics": {
       "totalAssets": "Total Assets",
@@ -1596,6 +1597,7 @@
         "symbol": "Asset Symbol",
         "symbolPlaceholder": "e.g., AAPL, HPG",
         "symbolHelper": "Symbol cannot be changed after creation.",
+        "symbolFoundInSystem": "✓ This symbol exists in the system and is ready to use",
         "symbolDisabledHelper": "Symbol cannot be changed after creation",
         "type": "Asset Type",
         "currency": "Currency",
@@ -1606,10 +1608,21 @@
       "validation": {
         "nameRequired": "Asset name is required",
         "symbolRequired": "Asset symbol is required",
-        "typeRequired": "Asset type is required"
+        "symbolInvalidFormat": "Asset symbol can only contain letters and numbers",
+        "typeRequired": "Asset type is required",
+        "priceModeRequired": "Price mode is required",
+        "manualPriceRequired": "Manual price is required when manual mode is selected"
+      },
+      "priceMode": {
+        "automatic": "Automatic",
+        "automaticDescription": "Automatically fetch prices from market and update periodically",
+        "manual": "Manual",
+        "manualDescription": "Only manual price input, no automatic market updates",
+        "readOnlyInfo": "Only the asset creator can change the price mode"
       },
       "loading": {
-        "types": "Loading asset types..."
+        "types": "Loading asset types...",
+        "fetchingGlobalAsset": "Searching for asset information from the market..."
       },
       "error": {
         "typesLoadFailed": "Error loading asset types"
@@ -1651,6 +1664,8 @@
         "quantity": "Quantity"
       },
       "sections": {
+        "keyMetrics": "Key Metrics",
+        "financialOverview": "Financial Overview",
         "priceInformation": "Price Information",
         "positionDetails": "Position Details",
         "performanceAnalytics": "Performance Analytics",

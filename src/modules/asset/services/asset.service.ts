@@ -3,6 +3,7 @@ import { AssetRepository, AssetFilters, PaginatedResponse } from '../repositorie
 import { IAssetRepository, AssetStatistics } from '../repositories/asset.repository.interface';
 import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 import { AssetCacheService } from './asset-cache.service';
 import { MarketDataService } from '../../market-data/services/market-data.service';
 import { AssetGlobalSyncService } from './asset-global-sync.service';
@@ -24,6 +25,7 @@ export interface CreateAssetDto {
   code?: string; // Deprecated
   type: AssetType;
   description?: string;
+  priceMode?: PriceMode;
   createdBy: string;
   updatedBy: string;
 }
@@ -41,6 +43,7 @@ export interface UpdateAssetDto {
   name?: string;
   type?: AssetType;
   description?: string;
+  priceMode?: PriceMode;
   updatedBy: string;
 }
 
@@ -69,18 +72,22 @@ export class AssetService {
     // Validate business rules
     await this.validateAssetCreation(createAssetDto);
 
-    // Ensure symbol is uppercase for consistency
+    // Extract manualPrice from DTO before creating asset
+    const { manualPrice, ...assetCreateData } = createAssetDto as any;
+    
+    // Ensure symbol is uppercase for consistency and set default priceMode
     const normalizedCreateDto = {
-      ...createAssetDto,
+      ...assetCreateData,
       symbol: createAssetDto.symbol.toUpperCase(),
+      priceMode: createAssetDto.priceMode || PriceMode.AUTOMATIC,
     };
 
-    // Create asset
+    // Create asset (without manualPrice field)
     const asset = await this.assetRepository.create(normalizedCreateDto);
     
     // ✅ PERFORMANCE OPTIMIZATION: Async sync with global asset
     // Don't block the response - sync in background
-    this.syncAssetInBackground(asset);
+    this.syncAssetInBackground(asset, normalizedCreateDto, manualPrice);
     
     return asset;
   }
@@ -89,7 +96,7 @@ export class AssetService {
    * Sync asset with global asset in background (non-blocking)
    * @private
    */
-  private syncAssetInBackground(asset: Asset): void {
+  private syncAssetInBackground(asset: Asset, createAssetDto: CreateAssetDto, manualPrice?: number): void {
     // Use setImmediate to run in next tick (non-blocking)
     setImmediate(async () => {
       try {
@@ -99,6 +106,8 @@ export class AssetService {
           type: asset.type,
           currency: 'VND', // Default currency for now
           userId: asset.createdBy,
+          priceMode: asset.priceMode, // Pass user asset's priceMode to sync with global asset
+          manualPrice: manualPrice, // Pass manual price if provided
         });
       } catch (error) {
         console.error(`[SYNC ERROR] Failed to sync asset with global asset: ${error.message}`, error.stack);
@@ -157,6 +166,7 @@ export class AssetService {
           symbol: globalAsset.symbol,
           type: globalAsset.type,
           description: globalAsset.description,
+          priceMode: globalAsset.priceMode,
           createdBy: accountId,
           updatedBy: accountId,
         };
@@ -265,15 +275,21 @@ export class AssetService {
     // Note: Symbol field is read-only after creation, so it's not included in update DTO
     // Only name, type, and description can be updated
 
-    // Update asset
-    const updatedAsset = await this.assetRepository.update(id, updateAssetDto);
+    // Extract manualPrice from DTO before updating asset
+    const { manualPrice, ...assetUpdateData } = updateAssetDto as any;
+    
+    // Update asset (without manualPrice field)
+    const updatedAsset = await this.assetRepository.update(id, assetUpdateData);
     
     // Sync with global asset
     try {
       await this.assetGlobalSyncService.syncAssetOnUpdate(id, {
+        userId: existingAsset.createdBy,
         name: updateAssetDto.name,
         type: updateAssetDto.type,
         currency: 'VND', // Default currency for now
+        priceMode: updateAssetDto.priceMode, // Pass priceMode to sync with global asset
+        manualPrice: manualPrice, // Pass manual price if provided
       });
     } catch (error) {
       console.warn(`Failed to sync asset with global asset: ${error.message}`);

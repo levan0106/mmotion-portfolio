@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 /**
  * Asset Response DTO
@@ -42,6 +43,13 @@ export class AssetResponseDto {
     example: 'Leading steel manufacturer in Vietnam',
   })
   description?: string;
+
+  @ApiProperty({
+    description: 'Price mode for the asset (AUTOMATIC or MANUAL)',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  priceMode: PriceMode;
 
   @ApiProperty({
     description: 'Initial value of the asset when first added to portfolio',

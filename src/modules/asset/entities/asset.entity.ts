@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 import { Trade } from '../../trading/entities/trade.entity';
 
 /**
@@ -80,6 +81,24 @@ export class Asset {
     name: 'type'
   })
   type: AssetType;
+
+  /**
+   * Price mode for the asset (AUTOMATIC or MANUAL).
+   * AUTOMATIC: Auto-sync from market data
+   * MANUAL: Manual price entry only
+   */
+  @ApiProperty({
+    description: 'Price mode for the asset',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  @Column({ 
+    type: 'enum', 
+    enum: PriceMode,
+    default: PriceMode.AUTOMATIC,
+    name: 'price_mode'
+  })
+  priceMode: PriceMode;
 
   /**
    * Optional description of the asset.

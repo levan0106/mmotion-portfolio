@@ -47,6 +47,7 @@ interface GlobalAsset {
   symbol: string;
   name: string;
   type: string;
+  priceMode: string;
   nation: string;
   marketCode: string;
   currency: string;
@@ -125,7 +126,7 @@ const NATION_NAMES: Record<string, string> = {
 //   SZSE: 'Shenzhen Stock Exchange',
 // };
 
-type SortField = 'symbol' | 'name' | 'type' | 'nation' | 'marketCode' | 'createdAt';
+type SortField = 'symbol' | 'name' | 'type' | 'priceMode' | 'nation' | 'marketCode' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
 const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
@@ -393,7 +394,7 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     Symbol
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ maxWidth: 200 }}>
                   <TableSortLabel
                     active={sortField === 'name'}
                     direction={sortField === 'name' ? sortDirection : 'asc'}
@@ -411,6 +412,8 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     Type
                   </TableSortLabel>
                 </TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Change %</TableCell>
                 <TableCell>
                   <TableSortLabel
                     active={sortField === 'marketCode'}
@@ -420,22 +423,29 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                     Market
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Change %</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'priceMode'}
+                    direction={sortField === 'priceMode' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('priceMode')}
+                  >
+                    Price Mode
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
+                  <TableCell colSpan={9} align="center">
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : paginatedAssets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
+                  <TableCell colSpan={9} align="center">
                     <Typography variant="body2" color="text.secondary">
                       No assets found
                     </Typography>
@@ -471,13 +481,24 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                         />
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
                       <Box>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ 
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
                           {asset.name}
                         </Typography>
                         {asset.description && (
-                          <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+                          <Box component="span" sx={{ 
+                            fontSize: '0.75rem', 
+                            color: 'text.secondary', 
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
                             {asset.description}
                           </Box>
                         )}
@@ -492,11 +513,6 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                           color: 'white',
                         }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {getNationDisplayName(asset.nation)}
-                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
@@ -515,10 +531,23 @@ const GlobalAssetList: React.FC<GlobalAssetListProps> = ({
                       {renderChangePercent(asset.assetPrice?.priceChangePercent)}
                     </TableCell>
                     <TableCell>
+                      <Typography variant="body2">
+                        {getNationDisplayName(asset.nation)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
                       <Chip
                         label={asset.isActive ? 'Active' : 'Inactive'}
                         size="small"
                         color={asset.isActive ? 'success' : 'default'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={asset.priceMode}
+                        size="small"
+                        color={asset.priceMode === 'MANUAL' ? 'warning' : 'success'}
+                        variant={asset.priceMode === 'MANUAL' ? 'outlined' : 'filled'}
                       />
                     </TableCell>
                     <TableCell align="right">

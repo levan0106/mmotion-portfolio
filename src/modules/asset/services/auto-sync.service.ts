@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { AssetPrice } from '../entities/asset-price.entity';
 import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 import { GlobalAssetTrackingService } from './global-asset-tracking.service';
@@ -338,7 +339,10 @@ export class AutoSyncService {
     
     // Get total assets in database for proper success rate calculation
     const totalAssetsInDatabase = await this.globalAssetRepository.count({
-      where: { isActive: true }
+      where: { 
+        isActive: true,
+        priceMode: Not(PriceMode.MANUAL)
+      }
     });
     
     // Create tracking record
@@ -458,7 +462,10 @@ export class AutoSyncService {
     
     // Get total assets in database for proper success rate calculation
     const totalAssetsInDatabase = await this.globalAssetRepository.count({
-      where: { isActive: true }
+      where: { 
+        isActive: true,
+        priceMode: Not(PriceMode.MANUAL)
+      }
     });
     
     // Create tracking record
@@ -567,9 +574,12 @@ export class AutoSyncService {
       'auto-sync-operation',
       async () => {
         
-        // Get all active global assets
+        // Get all active global assets that are NOT MANUAL price mode (includes AUTOMATIC and null)
         const globalAssets = await this.globalAssetRepository.find({
-          where: { isActive: true },
+          where: { 
+            isActive: true,
+            priceMode: Not(PriceMode.MANUAL)
+          },
           relations: ['assetPrice']
         });
 

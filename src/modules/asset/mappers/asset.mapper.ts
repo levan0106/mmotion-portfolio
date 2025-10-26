@@ -33,6 +33,7 @@ export class AssetMapper {
       symbol: asset.symbol,
       type: asset.type,
       description: asset.description,
+      priceMode: asset.priceMode,
       initialValue: asset.initialValue,
       initialQuantity: asset.initialQuantity,
       currentValue: currentValue, // Calculated real-time

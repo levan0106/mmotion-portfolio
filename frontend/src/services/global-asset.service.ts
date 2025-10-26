@@ -76,7 +76,28 @@ class GlobalAssetService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching global asset by ID:', error);
+      return null;
+    }
+  }
+
+  async getGlobalAssetBySymbol(symbol: string): Promise<GlobalAsset | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/symbol/${symbol}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`Failed to fetch global asset by symbol: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
       return null;
     }
   }

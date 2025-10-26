@@ -103,24 +103,29 @@ export class TrackingAlertService {
 
   private async getAdminUserId(): Promise<string | null> {
     try {
-      // Get admin username from environment variable
-      const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-      
-      // Normalize username: lowercase, trim, and remove all spaces
-      const normalizedUsername = adminUsername.toLowerCase().trim().replace(/\s+/g, '');
-      
-      // Find user by username
-      const account = await this.accountRepository.findOne({
-        where: { user: { username: normalizedUsername } },
-      });
+        console.log('ADMIN_USERNAME', process.env.ADMIN_USERNAME);
+        // Get admin username from environment variable
+        const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+        
+        // Normalize username: lowercase, trim, and remove all spaces
+        const normalizedUsername = adminUsername.toLowerCase().trim().replace(/\s+/g, '');
+        
+        // Find main account of the user by username
+        const account = await this.accountRepository.findOne({
+            where: { 
+            user: { username: normalizedUsername },
+            isMainAccount: true 
+            },
+            relations: ['user']
+        });
 
-      if (!account) {
-        this.logger.warn(`Admin user not found with username: ${adminUsername}`);
-        return null;
-      }
+        if (!account) {
+            this.logger.warn(`Admin main account not found with username: ${adminUsername}`);
+            return null;
+        }
 
-      this.logger.log(`Found admin user: ${account.name} (${account.userId})`);
-      return account.userId;
+        this.logger.log(`Found admin user: ${account.name} (${account.userId})`);
+        return account.userId;
     } catch (error) {
       this.logger.error(`Error getting admin user ID:`, error);
       return null;

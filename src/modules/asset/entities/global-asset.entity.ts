@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 import { Trade } from '../../trading/entities/trade.entity';
 import { AssetPrice } from './asset-price.entity';
 import { AssetPriceHistory } from './asset-price-history.entity';
@@ -100,6 +101,25 @@ export class GlobalAsset {
     comment: 'Asset type'
   })
   type: AssetType;
+
+  /**
+   * Price mode for the global asset (AUTOMATIC or MANUAL).
+   * AUTOMATIC: Auto-sync from market data
+   * MANUAL: Manual price entry only
+   */
+  @ApiProperty({
+    description: 'Price mode for the global asset',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  @Column({ 
+    type: 'enum', 
+    enum: PriceMode,
+    default: PriceMode.AUTOMATIC,
+    name: 'price_mode',
+    comment: 'Price mode for the global asset'
+  })
+  priceMode: PriceMode;
 
   /**
    * Nation code where this asset is traded (e.g., 'VN', 'US', 'UK').
@@ -199,6 +219,21 @@ export class GlobalAsset {
     comment: 'Asset description'
   })
   description?: string;
+
+  /**
+   * User ID who created this global asset.
+   */
+  @ApiProperty({
+    description: 'User ID who created this global asset',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @Column({ 
+    type: 'uuid', 
+    nullable: true,
+    name: 'created_by',
+    comment: 'User ID who created this global asset'
+  })
+  createdBy?: string;
 
   /**
    * Timestamp when the asset was created.

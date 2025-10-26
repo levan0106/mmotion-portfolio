@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindManyOptions, Like, In } from 'typeorm';
+import { Repository, FindOptionsWhere, FindManyOptions, Like, In, Not } from 'typeorm';
 import { GlobalAsset } from '../entities/global-asset.entity';
 import { NationConfigService } from './nation-config.service';
 import { BasicPriceService } from './basic-price.service';
@@ -14,6 +14,7 @@ import { CreateAssetPriceDto } from '../dto/create-asset-price.dto';
 import { UpdateAssetPriceDto } from '../dto/update-asset-price.dto';
 import { AssetType } from '../enums/asset-type.enum';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 type NationCode = 'VN' | 'US' | 'UK' | 'JP' | 'SG';
 
@@ -257,6 +258,31 @@ export class GlobalAssetService {
   }
 
   /**
+   * Find a global asset by symbol.
+   * @param symbol - Asset symbol
+   * @returns Asset or null
+   */
+  async findBySymbol(symbol: string): Promise<GlobalAssetResponseDto | null> {
+    this.logger.log(`Finding global asset by symbol: ${symbol}`);
+
+    try {
+      const asset = await this.globalAssetRepository.findOne({
+        where: { symbol: symbol.toUpperCase() },
+        relations: ['assetPrice'],
+      });
+
+      if (!asset) {
+        return null;
+      }
+
+      return this.mapToResponseDto(asset);
+    } catch (error) {
+      this.logger.error(`Failed to find global asset by symbol ${symbol}: ${error.message}`);
+      throw new BadRequestException(`Failed to find global asset: ${error.message}`);
+    }
+  }
+
+  /**
    * Find a global asset by symbol and nation.
    * @param symbol - Asset symbol
    * @param nation - Nation code
@@ -292,7 +318,7 @@ export class GlobalAssetService {
 
     try {
       const assets = await this.globalAssetRepository.find({
-        where: { isActive: true },
+        where: { isActive: true, priceMode: Not(PriceMode.MANUAL) }, //chỉ lấy assets là của hệ thống, không lấy assets là của user
         order: { 
           symbol: 'ASC' // Order by symbol for consistent results
         },
@@ -535,12 +561,14 @@ export class GlobalAssetService {
       symbol: asset.symbol,
       name: asset.name,
       type: asset.type,
+      priceMode: asset.priceMode,
       nation: asset.nation,
       marketCode: asset.marketCode,
       currency: asset.currency,
       timezone: asset.timezone,
       isActive: asset.isActive,
       description: asset.description,
+      createdBy: asset.createdBy,
       createdAt: asset.createdAt,
       updatedAt: asset.updatedAt,
       globalIdentifier: asset.getGlobalIdentifier(),

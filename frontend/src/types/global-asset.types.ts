@@ -5,14 +5,23 @@ export interface GlobalAsset {
   symbol: string;
   name: string;
   type: AssetType;
+  priceMode: string;
   nation: string;
   marketCode: string;
   currency: string;
   timezone: string;
   isActive: boolean;
   description?: string;
+  createdBy?: string;
   createdAt: string;
   updatedAt: string;
+  assetPrice?: {
+    currentPrice: number;
+    priceType: string;
+    priceSource: string;
+    lastPriceUpdate: Date | string;
+    priceChangePercent?: number;
+  };
 }
 
 export interface GlobalAssetFilters {

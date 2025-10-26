@@ -46,6 +46,7 @@ import AssetsFilterPanel from '../components/Assets/AssetsFilterPanel';
 import { UserGuide } from '../components/Common/UserGuide';
 import { Asset, AssetFilters as AssetFiltersType } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
+import { globalAssetService } from '../services/global-asset.service';
 import { getAssetTypeColor } from '../config/chartColors';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
@@ -207,6 +208,21 @@ const AssetTableRow = memo(({
         <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 400, color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
           {formatDateTime(asset.priceUpdatedAt || new Date(), 'HH:mm:ss dd/MM/yyyy')}
         </ResponsiveTypography>
+      </TableCell>
+      <TableCell sx={{ maxWidth: { xs: '100px', sm: '120px' }, minWidth: '80px' }}>
+        <Chip
+          label={asset.priceMode === 'AUTOMATIC' ? t('asset.form.priceMode.automatic') : t('asset.form.priceMode.manual')}
+          color={asset.priceMode === 'AUTOMATIC' ? 'success' : 'warning'}
+          size="small"
+          sx={{ 
+            fontWeight: 500,
+            fontSize: '0.7rem',
+            height: 20,
+            '& .MuiChip-label': {
+              fontWeight: 600
+            }
+          }}
+        />
       </TableCell>
       <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
@@ -474,6 +490,11 @@ const AssetsWithTradesList = memo(({
                         {t('assets.table.lastUpdated')}
                       </ResponsiveTypography>
                     </TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>
+                        {t('assets.table.priceMode')}
+                      </ResponsiveTypography>
+                    </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>
@@ -580,6 +601,9 @@ const AssetsWithoutTradesList = memo(({
                     <TableCell>
                       <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.lastUpdated')}</ResponsiveTypography>
                     </TableCell>
+                    <TableCell>
+                      <ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('assets.table.priceMode')}</ResponsiveTypography>
+                    </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}><ResponsiveTypography variant="tableCellSmall" sx={{ fontWeight: 600 }}>{t('common.actions')}</ResponsiveTypography></TableCell>
                   </TableRow>
                 </TableHead>
@@ -627,6 +651,7 @@ const Assets: React.FC = () => {
   // Modal state
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [globalAsset, setGlobalAsset] = useState<any>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [showBulkSelector, setShowBulkSelector] = useState(false);
@@ -651,9 +676,18 @@ const Assets: React.FC = () => {
     setSelectedAsset(asset);
   }, []);
 
-  const handleEditAsset = useCallback((asset: Asset) => {
+  const handleEditAsset = useCallback(async (asset: Asset) => {
     setSelectedAsset(null); // Close details modal first
     setEditingAsset(asset);
+    setGlobalAsset(null); // Reset global asset data
+    
+    try {
+      // Fetch global asset data for permission checking
+      const globalAssetData = await globalAssetService.getGlobalAssetBySymbol(asset.symbol);
+      setGlobalAsset(globalAssetData);
+        } catch (error) {
+          // Continue without global asset data - permission will be denied
+        }
   }, []);
 
   const handleDeleteAsset = useCallback(async (asset: Asset) => {
@@ -670,7 +704,6 @@ const Assets: React.FC = () => {
       setPortfolioInfo(portfolioInfo.portfolios);
       setShowDeleteWarning(true);
     } catch (error) {
-      console.error('Error getting portfolio info:', error);
       // Still show modal but with default values
       setTradeCount(0);
       setPortfolioInfo([]);
@@ -718,6 +751,7 @@ const Assets: React.FC = () => {
   const handleCloseModals = useCallback(() => {
     setSelectedAsset(null);
     setEditingAsset(null);
+    setGlobalAsset(null);
     setShowCreateForm(false);
     setShowDeleteWarning(false);
     setShowBulkSelector(false);
@@ -735,22 +769,21 @@ const Assets: React.FC = () => {
     try {
       if (editingAsset) {
         await updateAsset(editingAsset.id, assetData);
+        // Refresh data after update to show updated information
+        refresh();
       } else {
         await createAsset(assetData);
         // Refresh data to get updated prices from global assets
-        // setTimeout(() => {
-        //   refresh();
-        // }, 1000);
+        refresh();
       }
 
       handleCloseModals();
     } catch (error) {
-      console.error('Error saving asset:', error);
       setFormError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingAsset, updateAsset, createAsset, handleCloseModals]);
+  }, [editingAsset, updateAsset, createAsset, handleCloseModals, refresh]);
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!assetToDelete) return;
@@ -759,7 +792,6 @@ const Assets: React.FC = () => {
       await deleteAsset(assetToDelete.id);
       handleCloseModals();
     } catch (error) {
-      console.error('Error deleting asset:', error);
       setFormError(error instanceof Error ? error.message : 'An error occurred');
     }
   }, [assetToDelete, deleteAsset, handleCloseModals]);
@@ -770,7 +802,6 @@ const Assets: React.FC = () => {
       // The BulkAssetSelector will handle showing the result and closing modal
       return response;
     } catch (error) {
-      console.error('Error in bulk create:', error);
       throw error;
     }
   }, [accountId]);
@@ -984,6 +1015,7 @@ const Assets: React.FC = () => {
           loading={isSubmitting}
           error={formError}
           editingAsset={editingAsset}
+          globalAsset={globalAsset}
           accountId={accountId}
         />
 

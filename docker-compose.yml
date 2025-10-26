@@ -148,7 +148,7 @@ services:
       # Auto Asset Creation Configuration
       - AUTO_CREATE_ASSETS_FOR_NEW_USERS=${AUTO_CREATE_ASSETS_FOR_NEW_USERS:-true}
       # Admin Configuration
-      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-tungle}
     volumes:
       - .:/app
       - /app/node_modules

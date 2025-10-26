@@ -18,7 +18,7 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { AssetForm } from './AssetForm';
-import { Asset } from '../../types/asset.types';
+import { Asset, PriceMode } from '../../types/asset.types';
 
 
 export interface AssetFormModalProps {
@@ -29,6 +29,7 @@ export interface AssetFormModalProps {
   loading?: boolean;
   error?: string | null;
   editingAsset?: Asset | null;
+  globalAsset?: any; // Global asset data for permission checking
   accountId?: string;
 }
 
@@ -40,6 +41,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
   loading = false,
   error = null,
   editingAsset,
+  globalAsset,
   accountId,
 }) => {
   const { t } = useTranslation();
@@ -104,12 +106,16 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
         <Box           >
           <AssetForm
             userId={accountId}
+            currentUserId={accountId}
+            globalAsset={globalAsset}
+            asset={editingAsset || undefined}
             initialData={editingAsset ? (() => {
               const initialData = {
                 name: editingAsset.name || '',
                 symbol: editingAsset.symbol || '',
                 type: editingAsset.type as any,
                 description: editingAsset.description || '',
+                priceMode: editingAsset.priceMode || PriceMode.AUTOMATIC,
                 // Computed fields are shown as read-only for display purposes
                 initialValue: editingAsset.initialValue || undefined,
                 initialQuantity: editingAsset.initialQuantity || undefined,

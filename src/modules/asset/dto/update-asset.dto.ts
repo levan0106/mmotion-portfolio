@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsEnum, IsNumber, IsOptional, Min, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 /**
  * Update Asset DTO
@@ -45,6 +46,25 @@ export class UpdateAssetDto {
   @IsString({ message: 'Asset description must be a string' })
   @MaxLength(1000, { message: 'Asset description cannot exceed 1000 characters' })
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'Price mode for the asset (AUTOMATIC or MANUAL)',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  @IsOptional()
+  @IsEnum(PriceMode, { message: 'Price mode must be a valid enum value' })
+  priceMode?: PriceMode;
+
+  @ApiPropertyOptional({
+    description: 'Manual price for the asset (required when priceMode is MANUAL)',
+    example: 150000,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Manual price must be a number' })
+  @Min(0, { message: 'Manual price must be non-negative' })
+  manualPrice?: number;
 
   // Note: initialValue, initialQuantity, currentValue, currentQuantity are computed fields
   // and are calculated automatically from trades. They should not be included in update DTOs.

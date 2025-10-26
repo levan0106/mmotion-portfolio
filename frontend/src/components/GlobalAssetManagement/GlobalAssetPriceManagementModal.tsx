@@ -1,4 +1,6 @@
 import React from 'react';
+import { Box, Typography, Chip } from '@mui/material';
+import { AutoMode as AutoModeIcon, Edit as EditIcon } from '@mui/icons-material';
 import AssetPriceManagement from '../AssetPriceManagement';
 import { ResponsiveButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
@@ -8,6 +10,7 @@ interface GlobalAsset {
   symbol: string;
   name: string;
   type: string;
+  priceMode: string;
   nation: string;
   marketCode: string;
   currency: string;
@@ -43,7 +46,30 @@ const GlobalAssetPriceManagementModal: React.FC<GlobalAssetPriceManagementModalP
   loading = false,
   error,
 }) => {
+
   if (!asset) return null;
+
+  const getPriceModeColor = (priceMode: string) => {
+    switch (priceMode) {
+      case 'AUTOMATIC':
+        return 'success';
+      case 'MANUAL':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
+  const getPriceModeIcon = (priceMode: string) => {
+    switch (priceMode) {
+      case 'AUTOMATIC':
+        return <AutoModeIcon fontSize="small" />;
+      case 'MANUAL':
+        return <EditIcon fontSize="small" />;
+      default:
+        return undefined;
+    }
+  };
 
   return (
     <ModalWrapper
@@ -60,6 +86,34 @@ const GlobalAssetPriceManagementModal: React.FC<GlobalAssetPriceManagementModalP
         </ResponsiveButton>
       }
     >
+      {/* Price Mode Display */}
+      <Box sx={{ 
+        mx: 2,
+        p: 2, 
+        backgroundColor: 'grey.50', 
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'grey.200'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            Price Mode:
+          </Typography>
+          <Chip
+            label={asset.priceMode}
+            color={getPriceModeColor(asset.priceMode) as any}
+            icon={getPriceModeIcon(asset.priceMode)}
+            size="small"
+            sx={{ 
+              fontWeight: 500,
+              '& .MuiChip-icon': {
+                fontSize: '16px'
+              }
+            }}
+          />
+        </Box>
+      </Box>
+
       <AssetPriceManagement
         asset={{
           id: asset.id,

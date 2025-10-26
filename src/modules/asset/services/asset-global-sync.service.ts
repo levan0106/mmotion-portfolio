@@ -8,6 +8,7 @@ import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { NationConfigService } from './nation-config.service';
 import { BasicPriceService } from './basic-price.service';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
+import { PriceMode } from '../enums/price-mode.enum';
 
 export interface AssetSyncData {
   symbol: string;
@@ -15,6 +16,8 @@ export interface AssetSyncData {
   type: AssetType;
   currency: string;
   userId: string;
+  priceMode?: string;
+  manualPrice?: number;
 }
 
 @Injectable()
@@ -29,9 +32,7 @@ export class AssetGlobalSyncService {
     private readonly nationConfigService: NationConfigService,
     private readonly basicPriceService: BasicPriceService,
     @Optional() private readonly externalMarketDataService?: ExternalMarketDataService,
-  ) {
-    console.log('[SYNC SERVICE] AssetGlobalSyncService constructor called');
-  }
+  ) {}
 
   /**
    * Sync asset with global asset when creating new asset
@@ -40,7 +41,6 @@ export class AssetGlobalSyncService {
    */
   async syncAssetOnCreate(assetData: AssetSyncData): Promise<string | null> {
     try {
-      console.log(`[SYNC SERVICE] Starting sync for asset: ${assetData.symbol}`);
       this.logger.log(`Syncing asset on create: ${assetData.symbol}`);
 
       // Check if global asset already exists
@@ -49,7 +49,6 @@ export class AssetGlobalSyncService {
       });
 
       if (globalAsset) {
-        console.log(`[SYNC SERVICE] Global asset already exists: ${globalAsset.id} for symbol: ${assetData.symbol}`);
         this.logger.log(`Global asset already exists: ${globalAsset.id} for symbol: ${assetData.symbol}`);
         
         // Ensure market price exists even if global asset already exists
@@ -58,7 +57,7 @@ export class AssetGlobalSyncService {
         return globalAsset.id;
       }
 
-      console.log(`[SYNC SERVICE] No existing global asset found for symbol: ${assetData.symbol}, creating new one...`);
+      this.logger.log(`No existing global asset found for symbol: ${assetData.symbol}, creating new one...`);
 
       // Get nation config for user's currency - default to VN for now
       let nationCode = 'VN';
@@ -86,6 +85,8 @@ export class AssetGlobalSyncService {
         marketCode: 'HOSE', // Default market code for VN
         timezone: 'Asia/Ho_Chi_Minh', // Default timezone for VN
         isActive: true,
+        priceMode: assetData.priceMode as any || 'AUTOMATIC', // Use user's priceMode or default to AUTOMATIC
+        createdBy: assetData.userId,
       });
 
       console.log(`[SYNC SERVICE] Creating global asset with symbol: ${assetData.symbol}, name: ${assetData.name}`);
@@ -94,7 +95,7 @@ export class AssetGlobalSyncService {
       this.logger.log(`Created new global asset: ${savedGlobalAsset.id} with symbol: ${savedGlobalAsset.symbol}`);
 
       // Create initial market price record for the global asset
-      await this.createInitialMarketPrice(savedGlobalAsset.id, assetData.userId);
+      await this.createInitialMarketPrice(savedGlobalAsset.id, assetData.userId, assetData.manualPrice);
 
       return savedGlobalAsset.id;
     } catch (error) {
@@ -104,6 +105,40 @@ export class AssetGlobalSyncService {
   }
 
   /**
+   * Update global asset price simply (like priceMode update)
+   * @param globalAssetId - Global asset ID
+   * @param newPrice - New price value
+   * @returns Updated AssetPrice ID or null if failed
+   */
+  private async updateGlobalAssetPrice(globalAssetId: string, newPrice: number): Promise<string | null> {
+    try {
+      console.log(`[SYNC SERVICE] Updating global asset price: ${globalAssetId} with new price: ${newPrice}`);
+      
+      // Update existing price with new value
+      const priceResponse = await this.basicPriceService.updateByAssetId(globalAssetId, {
+        currentPrice: newPrice,
+        priceType: PriceType.MANUAL,
+        priceSource: PriceSource.USER_INPUT,
+        metadata: {
+          is_manual_update: true,
+          note: `Manual price update: ${newPrice}`,
+          market_source: 'manual',
+          updated_at: new Date().toISOString()
+        }
+      });
+
+      console.log(`[SYNC SERVICE] Updated global asset price: ${globalAssetId} to ${newPrice}`);
+      this.logger.log(`Updated global asset price: ${globalAssetId} to ${newPrice}`);
+      
+      return priceResponse.id;
+    } catch (error) {
+      this.logger.error(`Failed to update global asset price: ${error.message}`, error.stack);
+      return null;
+    }
+  }
+
+
+  /**
    * Create initial market price record for a global asset using BasicPriceService
    * Tries to fetch real market price first, falls back to default value 1 if no market data available
    * Only creates if it doesn't already exist to avoid overwriting existing prices
@@ -111,7 +146,7 @@ export class AssetGlobalSyncService {
    * @param userId - User ID who created the asset
    * @returns Created AssetPrice ID or null if already exists
    */
-  private async createInitialMarketPrice(globalAssetId: string, userId?: string): Promise<string | null> {
+  private async createInitialMarketPrice(globalAssetId: string, userId?: string, manualPrice?: number): Promise<string | null> {
     try {
       console.log(`[SYNC SERVICE] Checking if market price exists for global asset: ${globalAssetId}, userId: ${userId}`);
       
@@ -135,25 +170,25 @@ export class AssetGlobalSyncService {
         return null;
       }
 
-      // ✅ PERFORMANCE OPTIMIZATION: Skip external API calls during asset creation
-      // Use default price to avoid blocking the create request
-      // Market price will be fetched in background later
-      const currentPrice = 1; // Default price
-      const priceType = PriceType.MANUAL;
-      const priceSource = PriceSource.USER_INPUT;
+      // Use manual price if provided, otherwise use default price
+      const currentPrice = manualPrice || 1; // Use manual price or default
+      const priceType = manualPrice ? PriceType.MANUAL : PriceType.MANUAL;
+      const priceSource = manualPrice ? PriceSource.USER_INPUT : PriceSource.USER_INPUT;
       const metadata = {
         created_by: userId || 'asset_creation',
         is_initial: true,
-        note: 'Default price - market data will be fetched in background',
-        market_source: 'default',
+        note: manualPrice ? `Manual price: ${manualPrice}` : 'Default price - market data will be fetched in background',
+        market_source: manualPrice ? 'manual' : 'default',
         created_at: new Date().toISOString(),
-        needs_market_update: true
+        needs_market_update: !manualPrice // Only need market update if no manual price provided
       };
       
-      console.log(`[SYNC SERVICE] Using default price: ${currentPrice} for asset: ${globalAsset.symbol} (market data will be fetched in background)`);
+      console.log(`[SYNC SERVICE] Using ${manualPrice ? 'manual' : 'default'} price: ${currentPrice} for asset: ${globalAsset.symbol}`);
       
-      // ✅ BACKGROUND PRICE FETCHING: Schedule market price update in background
-      this.scheduleMarketPriceUpdate(globalAsset);
+      // ✅ BACKGROUND PRICE FETCHING: Schedule market price update in background only if no manual price
+      if (!manualPrice) {
+        this.scheduleMarketPriceUpdate(globalAsset);
+      }
 
       // Use BasicPriceService to create market price
       const priceResponse = await this.basicPriceService.create({
@@ -213,88 +248,6 @@ export class AssetGlobalSyncService {
   }
 
   /**
-   * Fetch price from a specific source
-   * @param globalAsset - Global asset
-   * @param sourceCode - Price source code
-   * @returns Price or null if not available
-   */
-  // private async fetchPriceFromSource(globalAsset: GlobalAsset, sourceCode: string): Promise<number | null> {
-  //   try {
-  //     // This is a placeholder for actual price fetching logic
-  //     // In a real implementation, you would call different APIs based on sourceCode
-  //     // For now, we'll simulate some price fetching
-      
-  //     switch (sourceCode) {
-  //       case 'VNDIRECT':
-  //         // Simulate VnDirect API call
-  //         return this.simulateVnDirectPrice(globalAsset);
-  //       case 'CAFEF':
-  //         // Simulate Cafef API call
-  //         return this.simulateCafefPrice(globalAsset);
-  //       case 'YAHOO_FINANCE':
-  //         // Simulate Yahoo Finance API call
-  //         return this.simulateYahooFinancePrice(globalAsset);
-  //       default:
-  //         console.log(`[SYNC SERVICE] Unknown price source: ${sourceCode}`);
-  //         return null;
-  //     }
-  //   } catch (error) {
-  //     console.log(`[SYNC SERVICE] Error fetching price from ${sourceCode}: ${error.message}`);
-  //     return null;
-  //   }
-  // }
-
-  /**
-   * Simulate VnDirect price fetching
-   * In real implementation, this would call actual VnDirect API
-   */
-  // private async simulateVnDirectPrice(globalAsset: GlobalAsset): Promise<number | null> {
-  //   // Simulate API delay
-  //   await new Promise(resolve => setTimeout(resolve, 100));
-    
-  //   // Simulate price based on asset type and nation
-  //   if (globalAsset.nation === 'VN' && globalAsset.type === 'STOCK') {
-  //     // Simulate Vietnamese stock prices (10k-200k VND)
-  //     return Math.random() * 190000 + 10000;
-  //   }
-    
-  //   return null;
-  // }
-
-  /**
-   * Simulate Cafef price fetching
-   * In real implementation, this would call actual Cafef API
-   */
-  // private async simulateCafefPrice(globalAsset: GlobalAsset): Promise<number | null> {
-  //   // Simulate API delay
-  //   await new Promise(resolve => setTimeout(resolve, 150));
-    
-  //   // Simulate price based on asset type
-  //   if (globalAsset.type === 'GOLD') {
-  //     // Simulate gold prices (60-80 million VND per tael)
-  //     return Math.random() * 20000000 + 60000000;
-  //   }
-    
-  //   return null;
-  // }
-
-  /**
-   * Simulate Yahoo Finance price fetching
-   * In real implementation, this would call actual Yahoo Finance API
-   */
-  // private async simulateYahooFinancePrice(globalAsset: GlobalAsset): Promise<number | null> {
-  //   // Simulate API delay
-  //   await new Promise(resolve => setTimeout(resolve, 200));
-    
-  //   // Simulate US stock prices ($10-500)
-  //   if (globalAsset.nation === 'US' && globalAsset.type === 'STOCK') {
-  //     return Math.random() * 490 + 10;
-  //   }
-    
-  //   return null;
-  // }
-
-  /**
    * Sync asset with global asset when updating asset
    * @param assetId - Asset ID being updated
    * @param assetData - Updated asset data
@@ -322,47 +275,65 @@ export class AssetGlobalSyncService {
       if (!globalAsset) {
         // Create global asset if it doesn't exist
         this.logger.log(`Global asset not found, creating new one for: ${asset.symbol}`);
-        return await this.syncAssetOnCreate({
+        const globalAssetId = await this.syncAssetOnCreate({
           symbol: asset.symbol,
           name: asset.name,
           type: asset.type,
-        currency: 'VND', // Default currency for now
-        userId: asset.createdBy,
+          currency: 'VND', // Default currency for now
+          userId: asset.createdBy,
+          priceMode: asset.priceMode as any
         });
+        // If manual price is provided, update the price directly
+        if (assetData.priceMode === PriceMode.MANUAL && assetData.manualPrice !== undefined) {
+          await this.updateGlobalAssetPrice(globalAssetId, assetData.manualPrice);
+        }
+        return globalAssetId;
       }
 
       // Update global asset if needed
       const needsUpdate = 
         (assetData.name && globalAsset.name !== assetData.name) ||
         (assetData.type && globalAsset.type !== assetData.type) ||
-        (assetData.currency && globalAsset.currency !== assetData.currency);
+        (assetData.currency && globalAsset.currency !== assetData.currency) ||
+        (assetData.priceMode && globalAsset.priceMode !== assetData.priceMode) ||
+        (assetData.manualPrice !== undefined);
 
+      console.log(`[SYNC SERVICE] needsUpdate: ${needsUpdate}`);
       if (needsUpdate) {
-        this.logger.log(`Updating global asset: ${globalAsset.id}`);
+        // this.logger.log(`Updating global asset: ${globalAsset.id} createdby: ${globalAsset.createdBy} editBy: ${assetData.userId}`);
         
-        if (assetData.name) globalAsset.name = assetData.name;
-        if (assetData.type) globalAsset.type = assetData.type;
-        if (assetData.currency) {
-          globalAsset.currency = assetData.currency;
-          // Update nation if currency changed
-          let nationCode = 'VN';
-          try {
-            const allConfigs = Object.keys(this.nationConfigService['config'] || {});
-            const foundNation = allConfigs.find(code => {
-              const config = this.nationConfigService.getNationConfig(code as any);
-              return config.currency === assetData.currency;
-            });
-            if (foundNation) {
-              nationCode = foundNation;
+        // only update global asset if this asset is owned by the user
+        if (globalAsset.createdBy === assetData.userId) {
+          // console.log(`[SYNC SERVICE] Updating global asset: ${globalAsset.id} createdby: ${globalAsset.createdBy} editBy: ${assetData.userId}`);
+          if (assetData.name) globalAsset.name = assetData.name;
+          if (assetData.type) globalAsset.type = assetData.type;
+          if (assetData.priceMode) globalAsset.priceMode = assetData.priceMode as any;
+          if (assetData.currency) {
+            globalAsset.currency = assetData.currency;
+            // Update nation if currency changed
+            let nationCode = 'VN';
+            try {
+              const allConfigs = Object.keys(this.nationConfigService['config'] || {});
+              const foundNation = allConfigs.find(code => {
+                const config = this.nationConfigService.getNationConfig(code as any);
+                return config.currency === assetData.currency;
+              });
+              if (foundNation) {
+                nationCode = foundNation;
+              }
+            } catch (error) {
+              this.logger.warn(`Could not find nation for currency ${assetData.currency}, keeping current nation`);
             }
-          } catch (error) {
-            this.logger.warn(`Could not find nation for currency ${assetData.currency}, keeping current nation`);
+            globalAsset.nation = nationCode;
           }
-          globalAsset.nation = nationCode;
-        }
+          await this.globalAssetRepository.save(globalAsset);
+          // this.logger.log(`Updated global asset: ${globalAsset.id}`);
 
-        await this.globalAssetRepository.save(globalAsset);
-        this.logger.log(`Updated global asset: ${globalAsset.id}`);
+          // If manual price is provided, update the price directly
+          if (assetData.priceMode === PriceMode.MANUAL && assetData.manualPrice !== undefined) {
+            await this.updateGlobalAssetPrice(globalAsset.id, assetData.manualPrice);
+          }
+        }
       }
 
       // Ensure market price record exists for the global asset

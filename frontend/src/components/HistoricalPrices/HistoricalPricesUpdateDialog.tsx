@@ -51,6 +51,7 @@ interface GlobalAsset {
   symbol: string;
   name: string;
   type: string;
+  priceMode: string;
   currency: string;
   selected: boolean;
   assetPrice?: {
@@ -124,6 +125,7 @@ const HistoricalPricesUpdateDialog: React.FC<HistoricalPricesUpdateDialogProps> 
           symbol: asset.symbol,
           name: asset.name,
           type: asset.type,
+          priceMode: asset.priceMode,
           currency: asset.currency,
           selected: false,
           assetPrice: asset.assetPrice
