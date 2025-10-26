@@ -1683,6 +1683,13 @@
       "error": {
         "typesLoadFailed": "Lỗi tải loại tài sản"
       },
+      "warning": {
+        "differencesWithGlobalAsset": "⚠️ Thông tin tài sản khác với hệ thống",
+        "differencesExplanation": "Thông tin này có thể khác với hệ thống. Bạn có thể cập nhật để đồng bộ với thông tin mới nhất."
+      },
+      "actions": {
+        "syncWithGlobalAsset": "Cập nhật từ hệ thống"
+      },
       "info": {
         "computedFields": {
           "title": "Các trường tính toán",

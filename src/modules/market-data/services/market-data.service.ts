@@ -973,6 +973,27 @@ export class MarketDataService {
           }
           return [];
         
+        case 'COMMODITY':
+          // Commodities can use similar logic to stocks
+          this.logger.log(`Using FMarket API for COMMODITY ${symbol}`);
+          const commodityData = await this.getHistoricalDataFromFMarket(symbol, startDate, endDate, pageIndex, pageSize, assetType);
+          if (commodityData && commodityData.length > 0) {
+            this.logger.log(`Got ${commodityData.length} records from FMarket for ${symbol}`);
+            return commodityData;
+          }
+          this.logger.warn(`FMarket failed for ${symbol}`);
+          return [];
+        
+        case 'REALESTATE':
+          // Real estate typically doesn't have daily market data, return empty
+          this.logger.log(`Real estate assets typically don't have daily market data for ${symbol}`);
+          return [];
+        
+        case 'OTHER':
+          // Other assets typically don't have market data, return empty
+          this.logger.log(`Other assets typically don't have market data for ${symbol}`);
+          return [];
+        
         default:
           this.logger.warn(`Unknown asset type: ${assetType}, returning empty array`);
           return [];

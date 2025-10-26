@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { ResponsiveButton, ResponsiveTypography, MoneyInput } from '../Common';
-import { CreateAssetRequest, Asset, AssetType, PriceMode } from '../../types/asset.types';
+import { CreateAssetRequest, Asset, AssetType, PriceMode, AssetTypeLabels, PriceModeLabels } from '../../types/asset.types';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
 import { useAccount } from '../../contexts/AccountContext';
 import { globalAssetService } from '../../services/global-asset.service';
@@ -73,6 +73,23 @@ export const AssetForm: React.FC<AssetFormProps> = ({
   const [isFetchingGlobalAsset, setIsFetchingGlobalAsset] = useState(false);
   const [fetchedGlobalAsset, setFetchedGlobalAsset] = useState<any>(null);
   
+  // State for checking differences between asset and global asset
+  const [assetGlobalDifferences, setAssetGlobalDifferences] = useState<string[]>([]);
+  
+  // Function to sync asset data with global asset
+  const syncWithGlobalAsset = () => {
+    if (!globalAsset) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      type: globalAsset.type || prev.type,
+      priceMode: globalAsset.priceMode || prev.priceMode,
+    }));
+    
+    // Clear differences after sync
+    setAssetGlobalDifferences([]);
+  };
+  
   // Ref to maintain focus on symbol input
   const symbolInputRef = useRef<HTMLInputElement>(null);
   const [shouldMaintainFocus, setShouldMaintainFocus] = useState(false);
@@ -101,6 +118,35 @@ export const AssetForm: React.FC<AssetFormProps> = ({
       }
     }
   }, [isEditMode, globalAsset, fetchedGlobalAsset, accountId]);
+
+  // Check differences between asset and global asset in edit mode
+  React.useEffect(() => {
+    if (isEditMode && asset && globalAsset) {
+      const differences = checkAssetGlobalDifferences(asset, globalAsset);
+      setAssetGlobalDifferences(differences);
+    } else {
+      setAssetGlobalDifferences([]);
+    }
+  }, [isEditMode, asset, globalAsset]);
+
+  // Function to check differences between asset and global asset
+  const checkAssetGlobalDifferences = (assetData: Asset, globalAssetData: any) => {
+    const differences: string[] = [];
+    
+    if (!globalAssetData) return differences;
+    
+    // Check type differences
+    if (assetData.type !== globalAssetData.type) {
+      differences.push(`Loại: "${AssetTypeLabels[assetData.type as AssetType]}" khác với hệ thống "${AssetTypeLabels[globalAssetData.type as AssetType]}"`);
+    }
+    
+    // Check price mode differences
+    if (assetData.priceMode !== globalAssetData.priceMode) {
+      differences.push(`Chế độ giá: "${PriceModeLabels[assetData.priceMode as PriceMode]}" khác với hệ thống "${PriceModeLabels[globalAssetData.priceMode as PriceMode]}"`);
+    }
+    
+    return differences;
+  };
 
   // Function to fetch global asset data by symbol
   const fetchGlobalAssetBySymbol = async (symbol: string) => {
@@ -181,7 +227,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
     // Only validate symbol in create mode
     if (!isEditMode && !formData.symbol?.trim()) {
       newErrors.symbol = t('asset.form.validation.symbolRequired');
-    } else if (!isEditMode && formData.symbol && !/^[A-Z0-9]+$/.test(formData.symbol)) {
+    } else if (!isEditMode && formData.symbol && !/^[A-Z0-9-]+$/.test(formData.symbol)) {
       newErrors.symbol = t('asset.form.validation.symbolInvalidFormat');
     }
 
@@ -227,10 +273,10 @@ export const AssetForm: React.FC<AssetFormProps> = ({
 
     let value = event.target.value;
     
-    // Ensure symbol is always uppercase and only contains letters and numbers
+    // Ensure symbol is always uppercase and only contains letters, numbers, and hyphens
     if (field === 'symbol') {
-      // Remove any non-alphanumeric characters
-      value = value.replace(/[^A-Za-z0-9]/g, '');
+      // Remove any non-alphanumeric characters except hyphens
+      value = value.replace(/[^A-Za-z0-9-]/g, '');
       // Convert to uppercase
       value = value.toUpperCase();
     }
@@ -295,6 +341,46 @@ export const AssetForm: React.FC<AssetFormProps> = ({
               disabled
               helperText={t('asset.form.fields.symbolDisabledHelper')}
             />
+          </Grid>
+        )}
+
+        {/* Display differences between asset and global asset */}
+        {isEditMode && assetGlobalDifferences.length > 0 && (
+          <Grid item xs={12}>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Box sx={{ fontWeight: 600, mb: 1 }}>
+                {t('asset.form.warning.differencesWithGlobalAsset')}
+              </Box>
+              <Box component="ul" sx={{ margin: 0, paddingLeft: 2 }}>
+                {assetGlobalDifferences.map((difference, index) => (
+                  <Box component="li" key={index} sx={{ fontSize: '0.875rem' }}>
+                    {difference}
+                  </Box>
+                ))}
+              </Box>
+              <Box sx={{ fontSize: '0.75rem', mt: 1, fontStyle: 'italic', mb: 2 }}>
+                {t('asset.form.warning.differencesExplanation')}
+              </Box>
+              <ResponsiveButton
+                variant="outlined"
+                size="small"
+                onClick={syncWithGlobalAsset}
+                sx={{ 
+                  borderColor: 'warning.main',
+                  color: 'warning.main',
+                  '&:hover': {
+                    borderColor: 'warning.dark',
+                    backgroundColor: 'warning.light',
+                    color: 'warning.dark'
+                  }
+                }}
+                forceTextOnly={true}
+                mobileText={t('asset.form.actions.syncWithGlobalAsset')}
+                desktopText={t('asset.form.actions.syncWithGlobalAsset')}
+              >
+                {t('asset.form.actions.syncWithGlobalAsset')}
+              </ResponsiveButton>
+            </Alert>
           </Grid>
         )}
 

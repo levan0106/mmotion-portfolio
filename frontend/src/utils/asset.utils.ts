@@ -48,11 +48,12 @@ export const groupAssetsByType = (assets: Asset[]): Record<AssetType, Asset[]> =
     [AssetType.BOND]: [],
     [AssetType.CRYPTO]: [],
     [AssetType.COMMODITY]: [],
-    //[AssetType.REIT]: [],
     [AssetType.GOLD]: [],
+    [AssetType.REALESTATE]: [],
+    [AssetType.OTHER]: [],
+    //[AssetType.REIT]: [],
     //[AssetType.DEPOSIT]: [],
     //[AssetType.CASH]: [],
-    //[AssetType.OTHER]: [],
   };
 
   assets.forEach(asset => {
@@ -74,11 +75,12 @@ export const calculateAssetAllocation = (assets: Asset[]): Record<AssetType, num
     [AssetType.BOND]: 0,
     [AssetType.CRYPTO]: 0,
     [AssetType.COMMODITY]: 0,
-    //[AssetType.REIT]: 0,
     [AssetType.GOLD]: 0,
+    [AssetType.REALESTATE]: 0,
+    [AssetType.OTHER]: 0,
+    //[AssetType.REIT]: 0,
     //[AssetType.DEPOSIT]: 0,
     //[AssetType.CASH]: 0,
-    //[AssetType.OTHER]: 0,
   };
   }
 
@@ -88,11 +90,12 @@ export const calculateAssetAllocation = (assets: Asset[]): Record<AssetType, num
     [AssetType.BOND]: 0,
     [AssetType.CRYPTO]: 0,
     [AssetType.COMMODITY]: 0,
-    //[AssetType.REIT]: 0,
     [AssetType.GOLD]: 0,
+    [AssetType.REALESTATE]: 0,
+    [AssetType.OTHER]: 0,
+    //[AssetType.REIT]: 0,
     //[AssetType.DEPOSIT]: 0,
     //[AssetType.CASH]: 0,
-    //[AssetType.OTHER]: 0,
   };
 
   Object.entries(grouped).forEach(([type, typeAssets]) => {

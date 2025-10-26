@@ -55,6 +55,8 @@ export class AssetAnalyticsService {
         [AssetType.GOLD]: 0,
         [AssetType.CRYPTO]: 0,
         [AssetType.COMMODITY]: 0,
+        [AssetType.REALESTATE]: 0,
+        [AssetType.OTHER]: 0,
         //[AssetType.DEPOSIT]: 0,
         //[AssetType.CASH]: 0,
       };
@@ -66,6 +68,8 @@ export class AssetAnalyticsService {
       [AssetType.GOLD]: 0,
       [AssetType.CRYPTO]: 0,
       [AssetType.COMMODITY]: 0,
+      [AssetType.REALESTATE]: 0,
+      [AssetType.OTHER]: 0,
       //[AssetType.DEPOSIT]: 0,
       //[AssetType.CASH]: 0,
     };
@@ -311,7 +315,7 @@ export class AssetAnalyticsService {
   private calculateTypeCorrelation(type1: AssetType, type2: AssetType): number {
     // Simplified correlation matrix based on asset types
     // TODO: Improve correlation matrix
-    const correlations: Record<AssetType, Record<AssetType, number>> = {
+    const correlations: Partial<Record<AssetType, Partial<Record<AssetType, number>>>> = {
       [AssetType.STOCK]: {
         [AssetType.STOCK]: 0.8,
         [AssetType.BOND]: -0.2,
@@ -348,24 +352,6 @@ export class AssetAnalyticsService {
         //[AssetType.DEPOSIT]: 0.0,
         //[AssetType.CASH]: 0.0,
       },
-      // [AssetType.DEPOSIT]: {
-      //   [AssetType.STOCK]: 0.0,
-      //   [AssetType.BOND]: 0.4,
-      //   [AssetType.GOLD]: 0.0,
-      //   [AssetType.CRYPTO]: 0.1,
-      //   [AssetType.COMMODITY]: 0.0,
-      //   //[AssetType.DEPOSIT]: 0.9,
-      //   //[AssetType.CASH]: 0.5,
-      // },
-      // [AssetType.CASH]: {
-      //   [AssetType.STOCK]: 0.0,
-      //   [AssetType.BOND]: 0.0,
-      //   [AssetType.GOLD]: 0.0,
-      //   [AssetType.CRYPTO]: 0.0,
-      //   [AssetType.COMMODITY]: 0.0,
-      //   //[AssetType.DEPOSIT]: 0.5,
-      //   //[AssetType.CASH]: 1.0,
-      // },
       [AssetType.CRYPTO]: {
         [AssetType.STOCK]: 0.1,
         [AssetType.BOND]: 0.1,
@@ -377,7 +363,7 @@ export class AssetAnalyticsService {
       },
     };
 
-    return correlations[type1][type2];
+    return correlations[type1]?.[type2] ?? 0.0;
   }
 
   /**

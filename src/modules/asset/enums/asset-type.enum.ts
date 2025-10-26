@@ -18,6 +18,12 @@ export enum AssetType {
   /** Commodities */
   COMMODITY = 'COMMODITY',
   
+  /** Real estate investments */
+  REALESTATE = 'REALESTATE',
+  
+  /** Other asset types */
+  OTHER = 'OTHER',
+  
   /** Bank deposits and fixed income */
   //DEPOSIT = 'DEPOSIT',
   
@@ -34,6 +40,8 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.GOLD]: 'Vàng',
   [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa',
+  [AssetType.REALESTATE]: 'Bất động sản',
+  [AssetType.OTHER]: 'Khác',
   //[AssetType.DEPOSIT]: 'Tiền gửi',
   //[AssetType.CASH]: 'Tiền mặt'
 };
@@ -47,6 +55,8 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   [AssetType.GOLD]: 'Vàng và kim loại quý',
   [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
+  [AssetType.REALESTATE]: 'Bất động sản và các khoản đầu tư liên quan',
+  [AssetType.OTHER]: 'Các loại tài sản khác không thuộc các danh mục trên',
   //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng và sản phẩm tiết kiệm',
   //[AssetType.CASH]: 'Tiền mặt và các khoản tương đương tiền'
 };

@@ -14,10 +14,12 @@ export enum AssetType {
   STOCK = 'STOCK',
   BOND = 'BOND',
   GOLD = 'GOLD',
+  CRYPTO = 'CRYPTO',
+  COMMODITY = 'COMMODITY',
+  REALESTATE = 'REALESTATE',
+  OTHER = 'OTHER',
   DEPOSIT = 'DEPOSIT',
   CASH = 'CASH',
-  REAL_ESTATE = 'REAL_ESTATE',
-  CRYPTO = 'CRYPTO',
 }
 
 export enum RiskLevel {

@@ -77,7 +77,7 @@ export class CreateGoalManagementTables1735000000000 implements MigrationInterfa
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "PK_goal_asset_allocation" PRIMARY KEY ("id"),
-        CONSTRAINT "CHK_asset_type" CHECK ("asset_type" IN ('STOCK', 'BOND', 'GOLD', 'DEPOSIT', 'CASH', 'REAL_ESTATE', 'CRYPTO')),
+        CONSTRAINT "CHK_asset_type" CHECK ("asset_type" IN ('STOCK', 'BOND', 'GOLD', 'DEPOSIT', 'CASH', 'REALESTATE', 'CRYPTO')),
         CONSTRAINT "CHK_risk_level" CHECK ("risk_level" IN ('LOW', 'MEDIUM', 'HIGH')),
         CONSTRAINT "CHK_rebalance_frequency" CHECK ("rebalance_frequency" IN ('DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY')),
         CONSTRAINT "CHK_percentage" CHECK ("target_percentage" >= 0 AND "target_percentage" <= 100)

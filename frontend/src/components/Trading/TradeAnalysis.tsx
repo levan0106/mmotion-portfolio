@@ -1063,7 +1063,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       <TableCell sx={{ 
                         fontWeight: 600,
                         fontSize: isCompactMode ? '0.7rem' : '0.875rem',
-                        py: isCompactMode ? 0.5 : 1
+                        py: isCompactMode ? 0.5 : 1,
+                        maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                        minWidth: '100px'
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
@@ -1093,18 +1095,32 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <TableBody>
                     {analysis.topTrades.slice(0, 5).map((trade) => (
                       <TableRow key={trade.tradeId}>
-                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1}}>
+                        <TableCell sx={{ 
+                          py: isCompactMode ? 0.5 : 1,
+                          maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                          minWidth: '100px'
+                        }}>
                           <Box>
                             <ResponsiveTypography 
                               variant="tableCell" 
                               fontWeight="medium"
+                              sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {trade.assetSymbol}
                             </ResponsiveTypography>
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
-                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
+                              sx={{
+                                display: {'xs': 'none', 'sm': 'block'},
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {trade.assetName}
                             </ResponsiveTypography>
@@ -1195,8 +1211,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
-                        py: isCompactMode ? 0.5 : 1
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1,
+                        maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                        minWidth: '100px'
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
@@ -1226,18 +1244,32 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                   <TableBody>
                     {analysis.worstTrades.slice(0, 5).map((trade) => (
                       <TableRow key={trade.tradeId}>
-                        <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                        <TableCell sx={{ 
+                          py: isCompactMode ? 0.5 : 1,
+                          maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                          minWidth: '100px'
+                        }}>
                           <Box>
                             <ResponsiveTypography 
                               variant="tableCell" 
                               fontWeight="medium"
+                              sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {trade.assetSymbol}
                             </ResponsiveTypography>
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
-                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
+                              sx={{
+                                display: {'xs': 'none', 'sm': 'block'},
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {trade.assetName}
                             </ResponsiveTypography>
@@ -1306,8 +1338,10 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     <TableRow sx={{ bgcolor: 'grey.50' }}>
                       <TableCell sx={{ 
                         fontWeight: 600,
-                        // fontSize: isCompactMode ? '0.7rem' : '0.875rem',
-                        py: isCompactMode ? 0.5 : 1
+                        fontSize: isCompactMode ? '0.7rem' : '0.875rem',
+                        py: isCompactMode ? 0.5 : 1,
+                        maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                        minWidth: '100px'
                       }}>
                         {t('tradeAnalysis.table.asset')}
                       </TableCell>
@@ -1359,18 +1393,32 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     {assetChartData && assetChartData.length > 0 ? (
                       assetChartData.map((asset) => (
                         <TableRow key={asset.assetId || asset.name} hover>
-                          <TableCell sx={{ py: isCompactMode ? 0.5 : 1 }}>
+                          <TableCell sx={{ 
+                            py: isCompactMode ? 0.5 : 1,
+                            maxWidth: { xs: '120px', sm: '150px', md: '200px' },
+                            minWidth: '100px'
+                          }}>
                             <Box>
                             <ResponsiveTypography 
                               variant="tableCell" 
                               fontWeight="bold"
+                              sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {asset.name}
                             </ResponsiveTypography>
                             <ResponsiveTypography 
                               variant="formHelper" 
                               color="text.secondary"
-                              sx={{display: {'xs': 'none', 'sm': 'block'}}}
+                              sx={{
+                                display: {'xs': 'none', 'sm': 'block'},
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
                             >
                               {asset.fullName}
                             </ResponsiveTypography>

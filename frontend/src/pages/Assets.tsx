@@ -75,11 +75,14 @@ const AssetTableRow = memo(({
     const color = getAssetTypeColor(type);
     // Map chart colors to Material-UI chip colors
     switch (color) {
-      case '#9c27b0': return 'secondary'; // Purple - STOCK
-      case '#059669': return 'success';   // Emerald - BOND
-      case '#ff9800': return 'warning';   // Orange - GOLD
-      case '#dc3532': return 'error';    // Rose - CRYPTO
-      case '#1377c7': return 'info';      // Sky - DEPOSITS
+      case '#045db4': return 'primary';    // Blue - STOCK
+      case '#059669': return 'success';    // Emerald - BOND
+      case '#ff9800': return 'warning';     // Orange - GOLD
+      case '#dc3532': return 'error';      // Rose - CRYPTO
+      case '#ff5722': return 'error';      // Deep Orange - COMMODITY
+      case '#795548': return 'default';    // Brown - REALESTATE
+      case '#9e9e9e': return 'default';    // Grey - OTHER
+      case '#5d2fd3': return 'secondary';  // Purple - DEPOSITS
       default: return 'default';
     }
   };

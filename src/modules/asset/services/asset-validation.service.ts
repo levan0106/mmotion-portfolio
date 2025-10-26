@@ -310,12 +310,32 @@ export class AssetValidationService {
         break;
 
       case AssetType.COMMODITY:
-        // Cash can have any value and quantity
+        // Commodities can have any value and quantity
         if (value < 0) {
           throw new BadRequestException('Commodity value cannot be negative');
         }
         if (quantity < 0) {
           throw new BadRequestException('Commodity quantity cannot be negative');
+        }
+        break;
+
+      case AssetType.REALESTATE:
+        // Real estate typically has high minimum values
+        if (value < 10000000) {
+          throw new BadRequestException('Real estate value should be at least 10,000,000 VND');
+        }
+        if (quantity < 0.001) {
+          throw new BadRequestException('Real estate quantity should be at least 0.001');
+        }
+        break;
+
+      case AssetType.OTHER:
+        // Other assets can have any value and quantity
+        if (value < 0) {
+          throw new BadRequestException('Other asset value cannot be negative');
+        }
+        if (quantity < 0) {
+          throw new BadRequestException('Other asset quantity cannot be negative');
         }
         break;
 

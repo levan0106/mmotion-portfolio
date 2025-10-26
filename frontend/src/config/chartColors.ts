@@ -8,6 +8,9 @@ export interface AssetTypeColors {
   BOND: string;
   GOLD: string;
   CRYPTO: string;
+  COMMODITY: string;
+  REALESTATE: string;
+  OTHER: string;
   DEPOSITS: string;
   [key: string]: string; // Allow additional asset types
 }
@@ -17,14 +20,17 @@ export const CHART_COLORS: AssetTypeColors = {
   BOND: '#059669',       // Emerald
   GOLD: '#ff9800',       // Orange/Yellow
   CRYPTO: '#dc3532',     // Rose
-  DEPOSITS: '#5d2fd3',   // purple
+  COMMODITY: '#ff5722',  // Deep Orange
+  REALESTATE: '#795548', // Brown
+  OTHER: '#9e9e9e',      // Grey
+  DEPOSITS: '#5d2fd3',   // Purple
 };
 
 // Extended color palette for additional asset types
 export const EXTENDED_CHART_COLORS: AssetTypeColors = {
   ...CHART_COLORS,
   CASH: '#607d8b',       // Slate
-  REAL_ESTATE: '#795548', // Brown
+  REALESTATE: '#795548', // Brown
   COMMODITIES: '#ff5722', // Deep Orange
   FOREX: '#3f51b5',      // Indigo
   OTHER: '#9e9e9e',      // Grey

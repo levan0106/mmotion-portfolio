@@ -12,11 +12,12 @@ export enum AssetType {
   BOND = 'BOND',
   CRYPTO = 'CRYPTO',
   COMMODITY = 'COMMODITY',
-  //REIT = 'REIT',
   GOLD = 'GOLD',
+  REALESTATE = 'REALESTATE',
+  OTHER = 'OTHER',
+  //REIT = 'REIT',
   //DEPOSIT = 'DEPOSIT',
-  //CASH = 'CASH',
-  //OTHER = 'OTHER'
+  //CASH = 'CASH'
 }
 
 // Price mode enum for asset pricing
@@ -129,11 +130,12 @@ export interface AssetAllocation {
   [AssetType.BOND]: number;
   [AssetType.CRYPTO]: number;
   [AssetType.COMMODITY]: number;
-  //[AssetType.REIT]: number;
   [AssetType.GOLD]: number;
+  [AssetType.REALESTATE]: number;
+  [AssetType.OTHER]: number;
+  //[AssetType.REIT]: number;
   //[AssetType.DEPOSIT]: number;
   //[AssetType.CASH]: number;
-  //[AssetType.OTHER]: number;
 }
 
 export interface AssetAllocationItem {
@@ -268,11 +270,12 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.BOND]: 'Trái phiếu',
   [AssetType.CRYPTO]: 'Tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa',
-  //[AssetType.REIT]: 'Bất động sản',
   [AssetType.GOLD]: 'Vàng',
+  [AssetType.REALESTATE]: 'Bất động sản',
+  [AssetType.OTHER]: 'Khác',
+  //[AssetType.REIT]: 'Bất động sản',
   //[AssetType.DEPOSIT]: 'Tiền gửi',
   //[AssetType.CASH]: 'Tiền mặt',
-  //[AssetType.OTHER]: 'Khác',
 };
 
 // Asset Type Descriptions for UI
@@ -281,11 +284,12 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   [AssetType.BOND]: 'Trái phiếu chính phủ và doanh nghiệp',
   [AssetType.CRYPTO]: 'Tiền điện tử và tài sản số',
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
-  //[AssetType.REIT]: 'Quỹ đầu tư bất động sản',
   [AssetType.GOLD]: 'Vàng vật chất và vàng tài khoản',
+  [AssetType.REALESTATE]: 'Bất động sản và các khoản đầu tư liên quan',
+  [AssetType.OTHER]: 'Các loại tài sản khác không thuộc các danh mục trên',
+  //[AssetType.REIT]: 'Quỹ đầu tư bất động sản',
   //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng có kỳ hạn',
   //[AssetType.CASH]: 'Tiền mặt và tiền gửi không kỳ hạn',
-  //[AssetType.OTHER]: 'Các loại tài sản khác',
 };
 
 // Price Mode Labels for UI

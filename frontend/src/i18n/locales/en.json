@@ -1627,6 +1627,13 @@
       "error": {
         "typesLoadFailed": "Error loading asset types"
       },
+      "warning": {
+        "differencesWithGlobalAsset": "⚠️ Asset information differs from the system",
+        "differencesExplanation": "This information may differ from the system. You can update to sync with the latest information."
+      },
+      "actions": {
+        "syncWithGlobalAsset": "Update from System"
+      },
       "info": {
         "computedFields": {
           "title": "Computed Fields",
