@@ -24,6 +24,27 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### Generic Form Modal Pattern - **IMPLEMENTED** ✅
+- **Centralized Form System**: GenericFormModal for unified form creation experience
+- **Tabbed Interface**: 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi) for different transaction types
+- **Auto Form Selection**: Automatic form rendering when tab changes without additional clicks
+- **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+- **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm
+- **Form Submission Handling**: Centralized submission with formRef system and comprehensive fallback logic
+- **API Integration**: Fixed API calls to use effectivePortfolioId instead of empty selectedPortfolioId
+- **Portfolio Management**: Context-aware portfolio selection and auto-selection
+- **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
+- **Button Control System**: hideButtons prop for unified form button management
+- **Width Consistency**: Fixed modal width changes when switching between tabs
+- **Mobile Optimization**: Touch-friendly interface with hidden tab icons on mobile
+- **Translation Support**: Comprehensive i18n support for Vietnamese and English
+- **Error Handling**: Comprehensive error handling for all form types
+- **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
+- **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
+- **FloatingTradingButton Integration**: Updated to open GenericFormModal instead of individual forms
+- **Files**: GenericFormModal.tsx, ModalWrapper.tsx, TradeForm.tsx, CashFlowForm.tsx, CashFlowFormModal.tsx, CashFlowLayout.tsx, DepositForm.tsx, FloatingTradingButton.tsx, en.json, vi.json
+- **Pattern**: Centralized form modal with tabbed interface, responsive design, and comprehensive form integration
+
 ### Asset Management Enhancement Pattern - **IMPLEMENTED** ✅
 - **Global Asset Integration**: Automatic global asset data fetching when creating assets
 - **Symbol Input Validation**: Alphanumeric-only symbol input with automatic uppercase conversion

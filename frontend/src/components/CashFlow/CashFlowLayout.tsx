@@ -7,7 +7,6 @@ import {
   Box,
   Card,
   CardContent,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -35,17 +34,17 @@ import {
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
-import { ModalWrapper } from '../Common/ModalWrapper';
+import CashFlowFormModal from './CashFlowFormModal';
+import CashflowDeleteConfirmationModal from './CashflowDeleteConfirmationModal';
+import TransferCashModal from './TransferCashModal';
 import {
   AccountBalance as DepositIcon,
   AccountBalanceWallet as WithdrawIcon,
   TrendingUp as DividendIcon,
   TrendingUp,
-  TrendingDown,
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,
-  Add as AddIcon,
   Timeline as TimelineIcon,
   TableChart as TableIcon,
   Edit as EditIcon,
@@ -64,8 +63,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { formatCurrency, formatDate } from '../../utils/format';
 import CashFlowChart from './CashFlowChart';
 import FundingSourceSummary from './FundingSourceSummary';
-import MoneyInput from '../Common/MoneyInput';
-import FundingSourceInput from '../Common/FundingSourceInput';
 
 interface CashFlow {
   cashflowId: string;
@@ -79,14 +76,6 @@ interface CashFlow {
   fundingSource?: string;
   createdAt: string;
   updatedAt: string;
-}
-
-interface TransferCashData {
-  fromSource: string;
-  toSource: string;
-  amount: number;
-  description: string;
-  transferDate: string;
 }
 
 interface CashFlowLayoutProps {
@@ -114,22 +103,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const [cashFlowToDelete, setCashFlowToDelete] = useState<CashFlow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
-  const [transferData, setTransferData] = useState<TransferCashData>({
-    fromSource: '',
-    toSource: '',
-    amount: 0,
-    description: '',
-    transferDate: '',
-  });
-  const [formData, setFormData] = useState({
-    amount: '',
-    description: '',
-    reference: '',
-    currency: 'VND',
-    flowDate: '',
-    status: 'COMPLETED',
-    fundingSource: '',
-  });
   const [tabValue, setTabValue] = useState(1);
   const [filterTypes, setFilterTypes] = useState<string[]>(['ALL']);
   const [dateFilters, setDateFilters] = useState({
@@ -231,47 +204,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     loadAllCashFlows();
   }, [portfolioId]);
 
-  // Handle form submission
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const payload = {
-        portfolioId: portfolioId,
-        amount: parseFloat(formData.amount),
-        type: dialogType.toUpperCase(),
-        description: formData.description,
-        reference: formData.reference || undefined,
-        flowDate: formData.flowDate ? formData.flowDate : undefined,
-        currency: formData.currency,
-        status: formData.status,
-        fundingSource: formData.fundingSource || undefined,
-      };
-
-      const isEdit = editingCashFlow !== null;
-      
-      if (isEdit) {
-        await apiService.updateCashFlow(portfolioId, accountId, editingCashFlow.cashflowId, payload);
-      } else {
-        await apiService.createCashFlow(portfolioId, accountId, dialogType, payload);
-      }
-
-      // Reset form with auto-filled flowDate
-      resetFormWithAutoFlowDate();
-      setDialogOpen(false);
-      setEditingCashFlow(null);
-      setError(null); // Clear error on success
-      
-      await loadCashFlows();
-      await loadAllCashFlows(); // Reload all cash flows for summary
-      onCashFlowUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('cashflow.error.createFailed', { action: editingCashFlow ? 'update' : 'create' }));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Get type color
   const getTypeColor = (type: string) => {
@@ -309,55 +241,12 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
-  const getTypeDescription = (type: string) => {
-    switch (type) {
-      case 'deposit': return t('cashflow.typeDescription.deposit');
-      case 'withdrawal': return t('cashflow.typeDescription.withdrawal');
-      case 'dividend': return t('cashflow.typeDescription.dividend');
-      case 'interest': return t('cashflow.typeDescription.interest');
-      case 'fee': return t('cashflow.typeDescription.fee');
-      case 'tax': return t('cashflow.typeDescription.tax');
-      case 'adjustment': return t('cashflow.typeDescription.adjustment');
-      case 'buy_trade': return t('cashflow.typeDescription.buyTrade');
-      case 'sell_trade': return t('cashflow.typeDescription.sellTrade');
-      case 'deposit_settlement': return t('cashflow.typeDescription.depositSettlement');
-      case 'deposit_creation': return t('cashflow.typeDescription.depositCreation');
-      default: return t('cashflow.typeDescription.default');
-    }
-  };
 
   const formatTypeName = (type: string) => {
     return type.replace(/_/g, ' ');
   };
 
-  const isCashFlowIn = (type: string) => {
-    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'].includes(type);
-  };
 
-  const getCashFlowDirection = (type: string) => {
-    return isCashFlowIn(type) ? 'IN' : 'OUT';
-  };
-
-  const getCashFlowDirectionColor = (type: string) => {
-    return isCashFlowIn(type) ? 'success' : 'error';
-  };
-
-  const getCashFlowDirectionIcon = (type: string) => {
-    switch (type) {
-      case 'DEPOSIT': return <DepositIcon />;
-      case 'WITHDRAWAL': return <WithdrawIcon />;
-      case 'DIVIDEND': return <DividendIcon />;
-      case 'INTEREST': return <TrendingUp />;
-      case 'FEE': return <CancelIcon />;
-      case 'TAX': return <CancelIcon />;
-      case 'ADJUSTMENT': return <BalanceIcon />;
-      case 'BUY_TRADE': return <WithdrawIcon />;
-      case 'SELL_TRADE': return <DepositIcon />;
-      case 'DEPOSIT_SETTLEMENT': return <DepositIcon />;
-      case 'DEPOSIT_CREATION': return <WithdrawIcon />;
-      default: return isCashFlowIn(type) ? <TrendingUp /> : <TrendingDown />;
-    }
-  };
 
   // Calculate summary stats using all cash flows (not paginated data)
   let totalDeposits = (allCashFlows || [])
@@ -440,91 +329,14 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setTabValue(newValue);
   };
 
-  // Helper function to get current local date for form
-  const getCurrentLocalDate = () => {
-    const now = new Date();
-    return now.toISOString().slice(0, 10);
-  };
 
-  // Helper function to reset form with auto-filled flowDate and portfolio funding source
-  const resetFormWithAutoFlowDate = () => {
-    setFormData({
-      amount: '',
-      description: '',
-      reference: '',
-      currency: 'VND',
-      flowDate: getCurrentLocalDate(),
-      status: 'COMPLETED',
-      fundingSource: portfolio?.fundingSource || '',
-    });
-  };
 
   const handleCreateCashFlow = (type: 'deposit' | 'withdrawal' | 'dividend' | 'interest' | 'fee' | 'tax' | 'adjustment') => {
     setDialogType(type);
     setEditingCashFlow(null);
-    resetFormWithAutoFlowDate();
     setDialogOpen(true);
   };
 
-  // Handle transfer cash
-  const handleTransferCash = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!transferData.fromSource || !transferData.toSource) {
-        throw new Error('Please select both source and destination funding sources');
-      }
-
-      if (transferData.fromSource === transferData.toSource) {
-        throw new Error('Source and destination cannot be the same');
-      }
-
-      if (transferData.amount <= 0) {
-        throw new Error('Transfer amount must be greater than 0');
-      }
-
-      const payload = {
-        portfolioId: portfolioId,
-        fromSource: transferData.fromSource,
-        toSource: transferData.toSource,
-        amount: transferData.amount,
-        description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
-        // Fix timezone issue: handle both ISO string and date string formats
-        transferDate: (() => {
-          let dateStr = transferData.transferDate;
-          if (dateStr.includes('T')) {
-            // If it's already an ISO string, extract date part
-            dateStr = dateStr.split('T')[0];
-          }
-          // Append 'T00:00:00' to ensure local time interpretation
-          return new Date(dateStr + 'T00:00:00').toISOString();
-        })(),
-      };
-
-      await apiService.transferCashFlow(portfolioId, accountId, payload);
-
-      // Reset form and close dialog
-      setTransferData({
-        fromSource: '',
-        toSource: '',
-        amount: 0,
-        description: '',
-        transferDate: getCurrentLocalDate(),
-      });
-      setTransferDialogOpen(false);
-      setError(null);
-      
-      // Reload data
-      await loadCashFlows();
-      await loadAllCashFlows();
-      onCashFlowUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to transfer cash');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEditCashFlow = (cashFlow: CashFlow) => {
     // Check if cash flow is cancelled
@@ -535,23 +347,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     
     setEditingCashFlow(cashFlow);
     setDialogType(cashFlow.type.toLowerCase() as any);
-    
-    // Format dates for input - Fix timezone issue
-    // Extract date part only to avoid timezone conversion issues
-    const flowDate = cashFlow.flowDate.includes('T') 
-      ? cashFlow.flowDate.split('T')[0] 
-      : cashFlow.flowDate;
-    
-    setFormData({
-      amount: cashFlow.amount.toString(),
-      description: cashFlow.description || '',
-      reference: cashFlow.reference || '',
-      currency: cashFlow.currency || 'VND',
-      flowDate: flowDate,
-      status: cashFlow.status || 'COMPLETED',
-      fundingSource: cashFlow.fundingSource || '',
-    });
-    
     setDialogOpen(true);
   };
 
@@ -561,29 +356,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!cashFlowToDelete) return;
-    
-    try {
-      setLoading(true);
-      setDeleteError(null); // Clear previous errors
-      
-      await apiService.deleteCashFlow(portfolioId, accountId, cashFlowToDelete.cashflowId);
-
-      await loadCashFlows();
-      await loadAllCashFlows(); // Reload all cash flows for summary
-      setDeleteDialogOpen(false);
-      setCashFlowToDelete(null);
-      setDeleteError(null); // Clear error on success
-      onCashFlowUpdate?.();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete cash flow';
-      setDeleteError(errorMessage);
-      console.error('Delete cash flow error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
   return (
@@ -709,13 +481,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               mobileText={t('cashflow.transfer')}
               desktopText={t('cashflow.transferCash')}
               onClick={() => {
-                setTransferData({
-                  fromSource: '',
-                  toSource: '',
-                  amount: 0,
-                  description: '',
-                  transferDate: getCurrentLocalDate(),
-                });
                 setTransferDialogOpen(true);
               }}
               size={compact ? "small" : "medium"}
@@ -1706,433 +1471,155 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       </Box> */}
 
       {/* Cash Flow Dialog */}
-      <ModalWrapper
+      <CashFlowFormModal
         open={dialogOpen}
         onClose={() => {
-          resetFormWithAutoFlowDate();
           setDialogOpen(false);
           setError(null);
         }}
-        title={editingCashFlow ? t('cashflow.modal.editTitle') : t('cashflow.modal.createTitle', { type: dialogType.charAt(0).toUpperCase() + dialogType.slice(1) })}
-        icon={editingCashFlow ? <EditIcon color="primary" /> : getTypeIcon(dialogType)}
-        maxWidth="md"
-        fullWidth
-        loading={loading}
-        titleColor={editingCashFlow ? 'primary' : getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
-        actions={
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <ResponsiveButton 
-              onClick={() => {
-                resetFormWithAutoFlowDate();
-                setDialogOpen(false);
+        onSubmit={async (formData) => {
+          try {
+            setLoading(true);
                 setError(null);
-              }}
-              mobileText={t('common.cancel')}
-              desktopText={t('common.cancel')}
-            >
-              {t('common.cancel')}
-            </ResponsiveButton>
-            <ResponsiveButton
-              onClick={handleSubmit}
-              variant="contained"
-              icon={editingCashFlow ? <EditIcon /> : <AddIcon />}
-              mobileText={loading ? (editingCashFlow ? t('cashflow.modal.updating') : t('cashflow.modal.creating')) : (editingCashFlow ? t('common.update') : t('common.create'))}
-              desktopText={loading ? (editingCashFlow ? t('cashflow.modal.updatingCashFlow') : t('cashflow.modal.creatingCashFlow')) : (editingCashFlow ? t('cashflow.modal.updateCashFlow') : t('cashflow.modal.createCashFlow'))}
-              disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))}
-            >
-              {loading ? (editingCashFlow ? t('cashflow.modal.updatingCashFlow') : t('cashflow.modal.creatingCashFlow')) : (editingCashFlow ? t('cashflow.modal.updateCashFlow') : t('cashflow.modal.createCashFlow'))}
-            </ResponsiveButton>
-          </Box>
-        }
-      >
-        <Box sx={{ pt: 1 }}>
-          {editingCashFlow && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Editing:</strong> {editingCashFlow.description}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper">
-                Original Amount: {formatCurrency(editingCashFlow.amount)} | 
-                Type: {editingCashFlow.type} | 
-                Status: {editingCashFlow.status}
-              </ResponsiveTypography>
-            </Alert>
-          )}
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Error:</strong> {error}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                Please check your input and try again.
-              </ResponsiveTypography>
-            </Alert>
-          )}
-          
-          {/* Cash Flow Type Indicator */}
-          {!editingCashFlow && (
-            <Alert 
-              severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
-              sx={{ 
-                mb: 2, 
-                borderLeft: `4px solid ${getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#4caf50' : '#f44336'}`,
-                backgroundColor: getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? '#e8f5e8' : '#ffebee'
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {getTypeIcon(dialogType)}
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
-                    {dialogType.charAt(0).toUpperCase() + dialogType.slice(1)} Transaction
-                  </ResponsiveTypography>
-                    <Chip
-                      icon={getCashFlowDirectionIcon(dialogType.toUpperCase())}
-                      label={`${formatTypeName(dialogType.toUpperCase())} - ${getCashFlowDirection(dialogType.toUpperCase())}`}
-                      color={getCashFlowDirectionColor(dialogType.toUpperCase()) as any}
-                      size="small"
-                      variant="filled"
-                    />
-                  </Box>
-                  <ResponsiveTypography variant="formHelper">
-                    {getTypeDescription(dialogType)}
-                  </ResponsiveTypography>
-                </Box>
-              </Box>
-            </Alert>
-          )}
-          
-          <Grid container spacing={3}>
-            {/* Left Column */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ pr: { md: 1.5 } }}>
-                <MoneyInput
-                  value={parseFloat(formData.amount) || 0}
-                  onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
-                  label={t('cashflow.form.amount')}
-                  placeholder={t('cashflow.form.amountPlaceholder')}
-                  required
-                  currency={formData.currency}
-                  margin="normal"
-                  // helperText={
-                  //   editingCashFlow 
-                  //     ? `${t('cashflow.form.original')}: ${formatCurrency(editingCashFlow.amount)} | ${t('cashflow.form.new')}: ${formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')}`
-                  //     : formData.amount ? formatCurrency(parseFloat(formData.amount) || 0, formData.currency) : t('cashflow.form.enterAmount')
-                  // }
-                  error={!!(formData.amount && (parseFloat(formData.amount) <= 0 || isNaN(parseFloat(formData.amount))))}
-                />
-                
-                {/* <FormControl fullWidth margin="normal">
-                  <InputLabel>{t('cashflow.form.currency')}</InputLabel>
-                  <Select
-                    value={formData.currency}
-                    label={t('cashflow.form.currency')}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                  >
-                    <MenuItem value="VND">VND</MenuItem>
-                    <MenuItem value="USD">USD</MenuItem>
-                    <MenuItem value="EUR">EUR</MenuItem>
-                    <MenuItem value="GBP">GBP</MenuItem>
-                    <MenuItem value="JPY">JPY</MenuItem>
-                  </Select>
-                </FormControl> */}
-                
-                <TextField
-                  fullWidth
-                  label={t('cashflow.form.fundingSource')}
-                  value={formData.fundingSource}
-                  onChange={(e) => setFormData({ ...formData, fundingSource: e.target.value.toUpperCase() })}
-                  margin="normal"
-                  placeholder={t('cashflow.form.fundingSourcePlaceholder')}
-                  inputProps={{
-                    style: { textTransform: 'uppercase' }
-                  }}
-                />
-              </Box>
-            </Grid>
+
+            const payload = {
+              portfolioId: portfolioId,
+              amount: parseFloat(formData.amount),
+              type: dialogType.toUpperCase(),
+              description: formData.description,
+              reference: formData.reference || undefined,
+              flowDate: formData.flowDate ? formData.flowDate : undefined,
+              currency: formData.currency,
+              status: formData.status,
+              fundingSource: formData.fundingSource || undefined,
+            };
+
+            const isEdit = editingCashFlow !== null;
             
-            {/* Right Column */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ pl: { md: 1.5 } }}>
-                <TextField
-                  fullWidth
-                  label={t('cashflow.form.flowDate')}
-                  type="date"
-                  value={formData.flowDate}
-                  onChange={(e) => setFormData({ ...formData, flowDate: e.target.value })}
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  // helperText={t('cashflow.form.flowDateHelper')}
-                />
-                                
-                <TextField
-                  fullWidth
-                  label={t('cashflow.form.description')}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  margin="normal"
-                  multiline
-                  rows={1}
-                  // helperText={
-                  //   editingCashFlow 
-                  //     ? `${t('cashflow.form.original')}: "${editingCashFlow.description}"`
-                  //     : t('cashflow.form.descriptionHelper')
-                  // }
-                />
-              </Box>
-            </Grid>
+            if (isEdit) {
+              await apiService.updateCashFlow(portfolioId, accountId, editingCashFlow.cashflowId, payload);
+            } else {
+              await apiService.createCashFlow(portfolioId, accountId, dialogType, payload);
+            }
+
+            // Reset form with auto-filled flowDate
+            setDialogOpen(false);
+            setEditingCashFlow(null);
+            setError(null); // Clear error on success
             
-          </Grid>
-        </Box>
-      </ModalWrapper>
+            await loadCashFlows();
+            await loadAllCashFlows(); // Reload all cash flows for summary
+            onCashFlowUpdate?.();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : t('cashflow.error.createFailed', { action: editingCashFlow ? 'update' : 'create' }));
+          } finally {
+            setLoading(false);
+          }
+        }}
+        dialogType={dialogType}
+        editingCashFlow={editingCashFlow}
+        loading={loading}
+        error={error}
+        portfolioFundingSource={portfolio?.fundingSource || ''}
+      />
 
       {/* Delete Confirmation Dialog */}
-      <ModalWrapper
+      <CashflowDeleteConfirmationModal
         open={deleteDialogOpen}
         onClose={() => {
           setDeleteDialogOpen(false);
           setDeleteError(null);
         }}
-        title={t('cashflow.delete.title')}
-        icon={<DeleteIcon color="error" />}
-        maxWidth="sm"
-        fullWidth
+        onConfirm={async () => {
+          if (!cashFlowToDelete) return;
+          
+          try {
+            setLoading(true);
+            setDeleteError(null); // Clear previous errors
+            
+            await apiService.deleteCashFlow(portfolioId, accountId, cashFlowToDelete.cashflowId);
+
+            await loadCashFlows();
+            await loadAllCashFlows(); // Reload all cash flows for summary
+            setDeleteDialogOpen(false);
+            setCashFlowToDelete(null);
+            setDeleteError(null); // Clear error on success
+            onCashFlowUpdate?.();
+          } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete cash flow';
+            setDeleteError(errorMessage);
+            console.error('Delete cash flow error:', err);
+          } finally {
+            setLoading(false);
+          }
+        }}
+        cashFlowToDelete={cashFlowToDelete}
         loading={loading}
-        titleColor="error"
-        actions={
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <ResponsiveButton 
-              onClick={() => {
-                setDeleteDialogOpen(false);
-                setDeleteError(null);
-              }}
-              mobileText={t('common.cancel')}
-              desktopText={t('common.cancel')}
-            >
-              {t('common.cancel')}
-            </ResponsiveButton>
-            <ResponsiveButton 
-              onClick={confirmDelete} 
-              color="error" 
-              variant="contained"
-              icon={loading ? null : <DeleteIcon />}
-              mobileText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
-              desktopText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
-              disabled={loading}
-            >
-              {loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
-            </ResponsiveButton>
-          </Box>
-        }
-      >
-        <Box sx={{ pt: 1 }}>
-        <ResponsiveTypography variant="tableCell">
-          {t('cashflow.delete.message')}
-        </ResponsiveTypography>
-        </Box>
-        {cashFlowToDelete?.status === 'CANCELLED' && (
-          <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.warning')}:</strong> {t('cashflow.delete.cancelledWarning')}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-              {t('cashflow.delete.cancelledHelper')}
-            </ResponsiveTypography>
-          </Alert>
-        )}
-        
-        {deleteError && (
-          <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.error')}:</strong> {deleteError}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-              {t('cashflow.delete.errorHelper')}
-            </ResponsiveTypography>
-          </Alert>
-        )}
-        
-        {cashFlowToDelete && (
-          <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.type')}:</strong> {cashFlowToDelete.type}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.amount')}:</strong> {formatCurrency(cashFlowToDelete.amount, cashFlowToDelete.currency)}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.description')}:</strong> {cashFlowToDelete.description}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="tableCell">
-              <strong>{t('cashflow.delete.status')}:</strong> {cashFlowToDelete.status}
-            </ResponsiveTypography>
-          </Box>
-        )}
-      </ModalWrapper>
+        error={deleteError}
+      />
 
       {/* Transfer Cash Dialog */}
-      <ModalWrapper
+      <TransferCashModal
         open={transferDialogOpen}
         onClose={() => {
           setTransferDialogOpen(false);
           setError(null);
         }}
-        title={t('cashflow.transfer.title')}
-        icon={<TransferIcon color="secondary" />}
-        maxWidth="md"
-        fullWidth
-        loading={loading}
-        titleColor="secondary"
-        actions={
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <ResponsiveButton 
-              onClick={() => {
-                setTransferDialogOpen(false);
+        onSubmit={async (transferData) => {
+          try {
+            setLoading(true);
                 setError(null);
-              }}
-              mobileText={t('common.cancel')}
-              desktopText={t('common.cancel')}
-            >
-              {t('common.cancel')}
-            </ResponsiveButton>
-            <ResponsiveButton
-              onClick={handleTransferCash}
-              variant="contained"
-              color="secondary"
-              icon={<TransferIcon />}
-              mobileText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transfer')}
-              desktopText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
-              disabled={
-                loading || 
-                !transferData.fromSource || 
-                !transferData.toSource ||
-                transferData.amount <= 0 || 
-                transferData.fromSource === transferData.toSource
-              }
-            >
-              {loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
-            </ResponsiveButton>
-          </Box>
-        }
-      >
-        <Box sx={{ pt: 1 }}>
-          <ResponsiveTypography variant="formHelper" sx={{ mb: 2, display: 'block' }}>
-            {t('cashflow.transfer.description')}
-          </ResponsiveTypography>
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <ResponsiveTypography variant="tableCell">
-                <strong>Error:</strong> {error}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                Please check your input and try again.
-              </ResponsiveTypography>
-            </Alert>
-          )}
-          
-          <Grid container spacing={3}>
-            {/* Left Column */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ pr: { md: 1.5 } }}>
-                <FormControl fullWidth margin="normal" required>
-                  <InputLabel>{t('cashflow.transfer.fromSource')}</InputLabel>
-                  <Select
-                    value={transferData.fromSource}
-                    label={t('cashflow.transfer.fromSource')}
-                    onChange={(e) => setTransferData({ ...transferData, fromSource: e.target.value })}
-                  >
-                    {getFundingSources().map((source) => (
-                      <MenuItem key={source} value={source}>
-                        {source}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <ResponsiveTypography variant="formHelper" sx={{ mt: 0.5, display: 'block' }}>
-                    {t('cashflow.transfer.fromSourceHelper')}
-                  </ResponsiveTypography>
-                </FormControl>
-                
-                <FundingSourceInput
-                  value={transferData.toSource}
-                  onChange={(toSource) => setTransferData({ ...transferData, toSource })}
-                  existingSources={getFundingSources()}
-                  label={t('cashflow.transfer.toSource')}
-                  placeholder={t('cashflow.transfer.toSourcePlaceholder')}
-                  required
-                  allowNew={true}
-                />
-                
-                <MoneyInput
-                  value={transferData.amount}
-                  onChange={(amount) => setTransferData({ ...transferData, amount })}
-                  label={t('cashflow.transfer.amount')}
-                  placeholder={t('cashflow.transfer.amountPlaceholder')}
-                  required
-                  margin="normal"
-                  error={!!(transferData.amount && transferData.amount <= 0)}
-                  // helperText={
-                  //   transferData.amount > 0 
-                  //     ? t('cashflow.transfer.amountHelper', { amount: formatCurrency(transferData.amount) })
-                  //     : t('cashflow.transfer.amountHelperEmpty')
-                  // }
-                />
-              </Box>
-            </Grid>
-            
-            {/* Right Column */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ pl: { md: 1.5 } }}>
-                <TextField
-                  fullWidth
-                  label={t('cashflow.transfer.date')}
-                  type="date"
-                  value={transferData.transferDate}
-                  onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  helperText={t('cashflow.transfer.dateHelper')}
-                />
-                
-                <TextField
-                  fullWidth
-                  label={t('cashflow.transfer.description')}
-                  value={transferData.description}
-                  onChange={(e) => setTransferData({ ...transferData, description: e.target.value })}
-                  margin="normal"
-                  multiline
-                  rows={3}
-                  placeholder={t('cashflow.transfer.descriptionPlaceholder', { 
-                    from: transferData.fromSource || t('cashflow.transfer.source'), 
-                    to: transferData.toSource || t('cashflow.transfer.destination') 
-                  })}
-                  helperText={t('cashflow.transfer.descriptionHelper')}
-                />
-              </Box>
-            </Grid>
-          </Grid>
 
-          {/* Transfer Summary */}
-          {transferData.fromSource && transferData.toSource && transferData.amount > 0 && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 'bold' }}>
-                {t('cashflow.transfer.summary')}:
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="tableCell">
-                {t('cashflow.transfer.summaryText', { 
-                  amount: formatCurrency(transferData.amount), 
-                  from: transferData.fromSource, 
-                  to: transferData.toSource 
-                })}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="formHelper" sx={{ mt: 1, display: 'block' }}>
-                {t('cashflow.transfer.summaryHelper')}
-              </ResponsiveTypography>
-            </Alert>
-          )}
-        </Box>
-      </ModalWrapper>
+            if (!transferData.fromSource || !transferData.toSource) {
+              throw new Error('Please select both source and destination funding sources');
+            }
+
+            if (transferData.fromSource === transferData.toSource) {
+              throw new Error('Source and destination cannot be the same');
+            }
+
+            if (transferData.amount <= 0) {
+              throw new Error('Transfer amount must be greater than 0');
+            }
+
+            const payload = {
+              portfolioId: portfolioId,
+              fromSource: transferData.fromSource,
+              toSource: transferData.toSource,
+              amount: transferData.amount,
+              description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
+              // Fix timezone issue: handle both ISO string and date string formats
+              transferDate: (() => {
+                let dateStr = transferData.transferDate;
+                if (dateStr.includes('T')) {
+                  // If it's already an ISO string, extract date part
+                  dateStr = dateStr.split('T')[0];
+                }
+                // Append 'T00:00:00' to ensure local time interpretation
+                return new Date(dateStr + 'T00:00:00').toISOString();
+              })(),
+            };
+
+            await apiService.transferCashFlow(portfolioId, accountId, payload);
+
+            // Reset form and close dialog
+            setTransferDialogOpen(false);
+            setError(null);
+            
+            // Reload data
+            await loadCashFlows();
+            await loadAllCashFlows();
+            onCashFlowUpdate?.();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to transfer cash');
+          } finally {
+            setLoading(false);
+          }
+        }}
+        loading={loading}
+        error={error}
+        fundingSources={getFundingSources()}
+      />
     </Box>
     </LocalizationProvider>
   );

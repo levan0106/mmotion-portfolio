@@ -26,8 +26,9 @@ interface ModalWrapperProps {
   children: React.ReactNode;
   actions?: React.ReactNode;
   loading?: boolean;
-  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | false;
   fullWidth?: boolean;
+  fullScreen?: boolean;
   showCloseButton?: boolean;
   disableCloseOnBackdrop?: boolean;
   disableCloseOnEscape?: boolean;
@@ -45,6 +46,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   loading = false,
   maxWidth = 'md',
   fullWidth = true,
+  fullScreen = false,
   showCloseButton = true,
   disableCloseOnBackdrop = false,
   disableCloseOnEscape = false,
@@ -83,28 +85,24 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
           titlePadding: 2,
           contentPadding: 2,
           actionsPadding: 2,
-          maxWidth: 'sm' as const,
         };
       case 'medium':
         return {
           titlePadding: 3,
           contentPadding: 3,
           actionsPadding: 3,
-          maxWidth: 'md' as const,
         };
       case 'large':
         return {
           titlePadding: 4,
           contentPadding: 4,
           actionsPadding: 4,
-          maxWidth: 'lg' as const,
         };
       default:
         return {
           titlePadding: 3,
           contentPadding: 3,
           actionsPadding: 3,
-          maxWidth: 'md' as const,
         };
     }
   };
@@ -115,13 +113,36 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     <Dialog
       open={open}
       onClose={disableCloseOnBackdrop ? undefined : handleClose}
-      maxWidth={maxWidth}
+      maxWidth={maxWidth === 'xxl' ? 'xl' : maxWidth}
       fullWidth={fullWidth}
+      fullScreen={fullScreen}
       disableEscapeKeyDown={disableCloseOnEscape}
       PaperProps={{
         sx: {
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          borderRadius: fullScreen ? 0 : 2,
+          boxShadow: fullScreen ? 'none' : '0 8px 32px rgba(0,0,0,0.12)',
+          // Force consistent width across different content
+          width: fullScreen ? '100%' : 
+                 maxWidth === 'xs' ? '400px' : 
+                 maxWidth === 'sm' ? '500px' : 
+                 maxWidth === 'md' ? '700px' : 
+                 maxWidth === 'lg' ? '900px' : 
+                 maxWidth === 'xl' ? '1200px' : 
+                 maxWidth === 'xxl' ? '1400px' : '700px',
+          minWidth: fullScreen ? 'auto' : 
+                   maxWidth === 'xs' ? '400px' : 
+                   maxWidth === 'sm' ? '500px' : 
+                   maxWidth === 'md' ? '700px' : 
+                   maxWidth === 'lg' ? '900px' : 
+                   maxWidth === 'xl' ? '1200px' : 
+                   maxWidth === 'xxl' ? '1400px' : '700px',
+          maxWidth: fullScreen ? '100%' : 
+                   maxWidth === 'xs' ? '400px' : 
+                   maxWidth === 'sm' ? '500px' : 
+                   maxWidth === 'md' ? '700px' : 
+                   maxWidth === 'lg' ? '900px' : 
+                   maxWidth === 'xl' ? '1200px' : 
+                   maxWidth === 'xxl' ? '1400px' : '700px',
         }
       }}
     >

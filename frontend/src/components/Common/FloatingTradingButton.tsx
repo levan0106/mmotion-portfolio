@@ -18,6 +18,7 @@ import { TradeForm } from '../Trading/TradeForm';
 import { CreateTradeDto, TradeFormData } from '../../types';
 import { useCreateTrade } from '../../hooks/useTrading';
 import { usePortfolios } from '../../hooks/usePortfolios';
+import GenericFormModal from './GenericFormModal';
 
 interface FloatingTradingButtonProps {
   portfolioId?: string;
@@ -32,6 +33,7 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
   const { isFullscreenOpen } = useNotifications();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const [showGenericForm, setShowGenericForm] = useState(false);
   const [showTradeForm, setShowTradeForm] = useState(false);
   const [isCreatingPortfolio, setIsCreatingPortfolio] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
@@ -60,10 +62,6 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
       tradeDate: data.tradeDate,
     };
     await handleCreateTrade(createTradeData);
-  };
-
-  const handleCloseForm = () => {
-    setShowTradeForm(false);
   };
 
   const handleAssetCreated = async () => {
@@ -98,8 +96,8 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
       }
     }
 
-    // Open trade form modal - user can select portfolio in the modal
-    setShowTradeForm(true);
+    // Open generic form modal - user can select what type of data to create
+    setShowGenericForm(true);
   };
 
   // Don't show the button if user is not authenticated or is investor
@@ -120,7 +118,7 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
           title={
             isCreatingPortfolio || isCreatingPortfolioHook 
               ? t('trading.floatingButton.creatingPortfolio', 'Đang tạo danh mục...')
-              : t('trading.floatingButton.tooltip', 'Tạo giao dịch nhanh')
+              : t('trading.floatingButton.tooltip', 'Tạo dữ liệu mới')
           }
           placement="left"
           arrow
@@ -133,7 +131,7 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
         >
           <Fab
             color="secondary"
-            aria-label={t('trading.floatingButton.ariaLabel', 'Tạo giao dịch')}
+            aria-label={t('trading.floatingButton.ariaLabel', 'Tạo dữ liệu')}
             onClick={handleButtonClick}
             sx={{
               position: 'fixed',
@@ -160,10 +158,17 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
         </Tooltip>
       </Zoom>
 
-      {/* Trade Form Modal */}
+      {/* Generic Form Modal */}
+      <GenericFormModal
+        open={showGenericForm}
+        onClose={() => setShowGenericForm(false)}
+        portfolioId={portfolioId || (portfolios?.length === 1 ? portfolios[0].portfolioId : undefined)}
+      />
+
+      {/* Trade Form Modal - Keep for backward compatibility */}
       <TradeForm
         open={showTradeForm}
-        onClose={handleCloseForm}
+        onClose={() => setShowTradeForm(false)}
         onSubmit={handleCreateTradeFromForm}
         defaultPortfolioId={portfolioId || (portfolios?.length === 1 ? portfolios[0].portfolioId : undefined)}
         isLoading={createTradeMutation.isLoading}

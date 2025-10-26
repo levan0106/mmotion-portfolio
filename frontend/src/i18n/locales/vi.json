@@ -1404,12 +1404,68 @@
     "withdrawal": "Tiền ra",
     "transferCash": "Chuyển tiền"
   },
-  "fundingSource": {
-    "label": "Nguồn tiền",
-    "placeholder": "Nhập hoặc chọn nguồn tiền...",
-    "enterNew": "Nhập tên nguồn tiền mới",
-    "typeToSearch": "Nhập để tìm kiếm hoặc chọn từ nguồn có sẵn",
-    "enterNewSource": "Nhập nguồn tiền mới..."
+  "genericForm": {
+    "title": "Tạo giao dịch mới",
+    "subtitle": "Chọn loại giao dịch bạn muốn thực hiện",
+    "create": "Tạo",
+    "tabs": {
+      "trading": "Mua/Bán",
+      "cashflow": "Nạp/Rút tiền",
+      "deposit": "Tiền gửi"
+    },
+    "options": {
+      "buy": {
+        "title": "Mua tài sản",
+        "description": "Mua cổ phiếu, trái phiếu, vàng..."
+      },
+      "sell": {
+        "title": "Bán tài sản",
+        "description": "Bán cổ phiếu, trái phiếu, vàng..."
+      },
+      "depositCash": {
+        "title": "Nạp tiền",
+        "description": "Nạp tiền vào danh mục"
+      },
+      "withdrawCash": {
+        "title": "Rút tiền",
+        "description": "Rút tiền từ danh mục"
+      },
+      "bankDeposit": {
+        "title": "Tiền gửi ngân hàng",
+        "description": "Tạo tiền gửi ngân hàng với lãi suất"
+      }
+    },
+    "buy": {
+      "title": "Mua tài sản",
+      "description": "Tạo tài sản mới để có thể mua"
+    },
+    "sell": {
+      "title": "Bán tài sản",
+      "description": "Tạo tài sản mới để có thể bán"
+    },
+    "depositCash": {
+      "title": "Nạp tiền",
+      "description": "Nạp tiền vào danh mục đầu tư"
+    },
+    "withdrawCash": {
+      "title": "Rút tiền",
+      "description": "Rút tiền từ danh mục đầu tư"
+    },
+    "bankDeposit": {
+      "title": "Tạo Tiền gửi",
+      "description": "Thêm thông tin tiền gửi ngân hàng với lãi suất"
+    },
+    "goToCashFlow": "Đi đến Dòng tiền",
+    "goToTrading": "Đi đến Giao dịch",
+    "portfolioInfo": {
+      "title": "Danh mục được chọn",
+      "fundingSource": "Nguồn vốn",
+      "selectPortfolio": "Chọn danh mục"
+    },
+    "error": {
+      "noPortfolio": "Không tìm thấy danh mục",
+      "noPortfolioDescription": "Vui lòng tạo danh mục trước khi thực hiện giao dịch"
+    }
   },
   "portfolioError": {
     "benchmarkLoadFailed": "Không thể tải dữ liệu benchmark",

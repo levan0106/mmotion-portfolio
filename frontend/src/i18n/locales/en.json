@@ -1353,12 +1353,68 @@
     "withdrawal": "Withdrawal",
     "transferCash": "Transfer Cash"
   },
-  "fundingSource": {
-    "label": "Funding Source",
-    "placeholder": "Type or select funding source...",
-    "enterNew": "Enter a new funding source name",
-    "typeToSearch": "Type to search or select from existing sources",
-    "enterNewSource": "Enter new funding source..."
+  "genericForm": {
+    "title": "Create New Transaction",
+    "subtitle": "Select the type of transaction you want to perform",
+    "create": "Create",
+    "tabs": {
+      "trading": "Buy/Sell",
+      "cashflow": "Deposit/Withdraw",
+      "deposit": "Bank Deposit"
+    },
+    "options": {
+      "buy": {
+        "title": "Buy Asset",
+        "description": "Buy stocks, bonds, gold..."
+      },
+      "sell": {
+        "title": "Sell Asset",
+        "description": "Sell stocks, bonds, gold..."
+      },
+      "depositCash": {
+        "title": "Deposit Cash",
+        "description": "Deposit money into portfolio"
+      },
+      "withdrawCash": {
+        "title": "Withdraw Cash",
+        "description": "Withdraw money from portfolio"
+      },
+      "bankDeposit": {
+        "title": "Bank Deposit",
+        "description": "Create bank deposit with interest rate"
+      }
+    },
+    "buy": {
+      "title": "Buy Asset",
+      "description": "Create new asset to buy"
+    },
+    "sell": {
+      "title": "Sell Asset",
+      "description": "Create new asset to sell"
+    },
+    "depositCash": {
+      "title": "Deposit Cash",
+      "description": "Deposit money into investment portfolio"
+    },
+    "withdrawCash": {
+      "title": "Withdraw Cash",
+      "description": "Withdraw money from investment portfolio"
+    },
+    "bankDeposit": {
+      "title": "Create Bank Deposit",
+      "description": "Add bank deposit information with interest rates"
+    },
+    "goToCashFlow": "Go to Cash Flow",
+    "goToTrading": "Go to Trading",
+    "portfolioInfo": {
+      "title": "Selected Portfolio",
+      "fundingSource": "Funding Source",
+      "selectPortfolio": "Select Portfolio"
+    },
+    "error": {
+      "noPortfolio": "No Portfolio Found",
+      "noPortfolioDescription": "Please create a portfolio before performing transactions"
+    }
   },
   "portfolioError": {
     "benchmarkLoadFailed": "Failed to load benchmark data",

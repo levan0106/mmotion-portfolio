@@ -2,7 +2,49 @@
 
 ## What Works
 ### ✅ Completed
-- **ASSET MANAGEMENT ENHANCEMENT + MIGRATION CONSOLIDATION - COMPLETED** (Current Session - October 26, 2025)
+- **GENERIC FORM MODAL ENHANCEMENT + FORM INTEGRATION - COMPLETED** (Current Session - October 26, 2025)
+  - **Generic Form Modal Implementation**: Complete centralized form modal with tabbed interface
+    - **Centralized Form System**: Created GenericFormModal for unified form creation experience
+    - **Tabbed Interface**: Implemented 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi)
+    - **Auto Form Selection**: Automatic form rendering when tab changes without additional clicks
+    - **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+    - **Form Integration**: Integrated TradeForm, CashFlowForm, and DepositForm into unified modal
+    - **Files Created**: GenericFormModal.tsx
+  - **Form Submission Handling**: Centralized submission with comprehensive fallback logic
+    - **Centralized Submission**: GenericFormModal controls all form submissions with common buttons
+    - **Form Reference System**: Implemented formRef system for programmatic form submission
+    - **Fallback Logic**: Added fallback logic for forms without submit buttons (TradeForm, CashFlowForm)
+    - **API Integration**: Fixed API calls to use effectivePortfolioId instead of empty selectedPortfolioId
+    - **Error Handling**: Comprehensive error handling for all form types
+    - **Files Updated**: GenericFormModal.tsx, TradeForm.tsx, CashFlowForm.tsx, DepositForm.tsx
+  - **Responsive Design Enhancement**: Complete mobile optimization and desktop layout
+    - **Mobile Optimization**: Fullscreen modal on mobile devices with touch-friendly interface
+    - **Desktop Layout**: Fixed width modal using Material-UI size system (md/lg)
+    - **Tab Styling**: Responsive tabs with icon hiding on mobile for cleaner interface
+    - **Form Layout**: Consistent form layouts using md breakpoint for all forms
+    - **Width Consistency**: Fixed modal width changes when switching between tabs
+    - **Files Updated**: GenericFormModal.tsx, ModalWrapper.tsx, TradeForm.tsx, CashFlowForm.tsx, DepositForm.tsx
+  - **Portfolio Management Integration**: Context-aware portfolio selection and auto-selection
+    - **Context-Aware Logic**: Portfolio selection hidden when opened from portfolio detail page
+    - **Auto Portfolio Selection**: Automatic portfolio selection when modal opens from general pages
+    - **Effective Portfolio ID**: Unified logic using effectivePortfolioId for all API calls
+    - **Portfolio Validation**: Error display when no portfolio is available
+    - **Files Updated**: GenericFormModal.tsx
+  - **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
+    - **CashFlowForm Extraction**: Extracted CashFlowForm from CashFlowFormModal for reuse
+    - **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
+    - **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
+    - **Button Control**: Added hideButtons prop to control form button visibility
+    - **Files Created**: CashFlowForm.tsx, CashFlowFormModal.tsx, TransferCashModal.tsx, CashflowDeleteConfirmationModal.tsx
+    - **Files Updated**: CashFlowLayout.tsx
+  - **Translation and i18n Support**: Comprehensive translation support
+    - **Comprehensive Translations**: Added translation keys for all GenericFormModal components
+    - **Portfolio Information**: Added portfolio selection and information display translations
+    - **Error Messages**: Added error message translations for form validation
+    - **Consistent Language**: Vietnamese and English translations for all new features
+    - **Files Updated**: en.json, vi.json
+
+- **ASSET MANAGEMENT ENHANCEMENT + MIGRATION CONSOLIDATION - COMPLETED** (Previous Session - October 26, 2025)
   - **Enhanced Asset Creation Workflow**: Complete global asset integration with automatic data fetching
     - **Global Asset Integration**: Automatic global asset data fetching when creating assets
     - **Symbol Input Validation**: Alphanumeric-only symbol input with automatic uppercase conversion
@@ -315,6 +357,21 @@
 
 ## Current Status
 ### 🎯 Active Development
+- **Generic Form Modal**: Complete centralized form modal with tabbed interface and responsive design
+- **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm into unified modal
+- **Form Submission**: Centralized submission handling with formRef system and comprehensive fallback logic
+- **API Integration**: Fixed API calls to use effectivePortfolioId for proper portfolio handling
+- **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+- **Portfolio Management**: Context-aware portfolio selection and auto-selection
+- **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
+- **Button Control System**: Added hideButtons prop for unified form button management
+- **Width Consistency**: Fixed modal width changes when switching between tabs
+- **Mobile Optimization**: Touch-friendly interface with hidden tab icons on mobile
+- **Translation Support**: Comprehensive i18n support for Vietnamese and English
+- **Error Handling**: Comprehensive error handling for all form types
+- **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
+- **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
+- **FloatingTradingButton Integration**: Updated to open GenericFormModal instead of individual forms
 - **Asset Management Enhancement**: Complete global asset integration with automatic data fetching and permission-based field control
 - **Enhanced Asset Creation Workflow**: Symbol validation, auto-fill functionality, and focus management
 - **Permission-Based Control**: Asset field control based on ownership (createdBy vs accountId)
@@ -387,17 +444,16 @@
 - **Performance**: Optimization for large datasets with permission checks
 
 ## Key Files Modified in Current Session
-- `frontend/src/components/Asset/AssetForm.tsx` - Enhanced with global asset integration and permission-based field control
-- `frontend/src/components/Asset/AssetFormModal.tsx` - Updated to pass globalAsset data to AssetForm
-- `frontend/src/components/Asset/AssetDetailsModal.tsx` - Redesigned with list view and responsive grid system
-- `frontend/src/pages/Assets.tsx` - Enhanced with global asset data fetching for permission checking
-- `frontend/src/services/global-asset.service.ts` - Added getGlobalAssetBySymbol method
-- `frontend/src/types/global-asset.types.ts` - Added createdBy and assetPrice fields
-- `src/modules/asset/controllers/global-asset.controller.ts` - Added symbol-based lookup endpoint
-- `src/modules/asset/services/global-asset.service.ts` - Added findBySymbol method and createdBy mapping
-- `src/modules/asset/dto/global-asset-response.dto.ts` - Added createdBy field
-- `src/modules/asset/services/asset-global-sync.service.ts` - Enhanced with createdBy field handling
-- `src/migrations/1761449000001-AddPriceModeAndCreatedByToAssets.ts` - Consolidated migration file
+- `frontend/src/components/Common/GenericFormModal.tsx` - Centralized form modal with tabbed interface and responsive design
+- `frontend/src/components/Common/ModalWrapper.tsx` - Enhanced with fullScreen support and width consistency
+- `frontend/src/components/Trading/TradeForm.tsx` - Updated for GenericFormModal integration with external portfolio props
+- `frontend/src/components/CashFlow/CashFlowForm.tsx` - Extracted standalone form component for reuse
+- `frontend/src/components/CashFlow/CashFlowFormModal.tsx` - Refactored to use CashFlowForm internally
+- `frontend/src/components/CashFlow/CashFlowLayout.tsx` - Updated to use separated modal components
+- `frontend/src/components/Deposit/DepositForm.tsx` - Updated for GenericFormModal integration
+- `frontend/src/components/Common/FloatingTradingButton.tsx` - Updated to open GenericFormModal
+- `frontend/src/i18n/locales/en.json` - Added GenericFormModal translations
+- `frontend/src/i18n/locales/vi.json` - Added GenericFormModal translations
 
 ## Key Files Modified in Previous Session
 - `frontend/src/pages/AdminManagement.tsx` - Fixed mobile scroll issues for admin management tabs
@@ -424,16 +480,18 @@
 - `docker-compose.yml` - Added ADMIN_USERNAME environment variable support
 
 ## System Health
-- ✅ **Database**: Fully operational with enhanced asset management and consolidated migrations
+- ✅ **Database**: Fully operational with GenericFormModal and centralized form system
 - ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
-- ✅ **Frontend**: Responsive with enhanced asset management UI and global asset integration
-- ✅ **Backend**: Stable API endpoints with enhanced global asset services and symbol-based lookup
+- ✅ **Frontend**: Responsive with GenericFormModal and centralized form system
+- ✅ **Backend**: Stable API endpoints with device trust management and public endpoints
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Asset Management Enhancement**: Complete global asset integration with automatic data fetching
-- ✅ **Permission-Based Control**: Asset field control based on ownership (createdBy vs accountId)
-- ✅ **Global Asset Integration**: Automatic global asset data fetching and auto-fill functionality
-- ✅ **Asset Details Modal**: Redesigned with list view and responsive grid system
-- ✅ **Database Migration Consolidation**: Merged 3 migrations into 1 comprehensive migration
+- ✅ **Generic Form Modal**: Centralized form modal with tabbed interface and responsive design
+- ✅ **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm
+- ✅ **Form Submission**: Centralized submission handling with formRef system and fallback logic
+- ✅ **API Integration**: Fixed API calls to use effectivePortfolioId for proper portfolio handling
+- ✅ **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+- ✅ **Portfolio Management**: Context-aware portfolio selection and auto-selection
+- ✅ **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
 - ✅ **Device Trust System**: Complete implementation with incognito detection
 - ✅ **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
 - ✅ **Incognito Protection**: Incognito/private mode sessions are never trusted for security

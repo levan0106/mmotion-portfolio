@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   TextField,
   Grid,
-  MenuItem,
   Alert,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
@@ -23,6 +22,7 @@ interface DepositFormProps {
   initialData?: CreateDepositDto;
   isEdit?: boolean;
   standalone?: boolean; // New prop to control if form should be wrapped in ModalWrapper
+  hideButtons?: boolean; // New prop to hide form buttons
 }
 
 interface CreateDepositDto {
@@ -48,9 +48,10 @@ const DepositForm: React.FC<DepositFormProps> = ({
   portfolioId,
   initialData,
   isEdit = false,
+  standalone = true,
+  hideButtons = false,
 }) => {
   const { t } = useTranslation();
-  const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   // Create validation schema with translations
@@ -67,22 +68,11 @@ const DepositForm: React.FC<DepositFormProps> = ({
   });
 
   // Create term options with translations
-  const termOptions = [
-    { value: '1M', label: t('deposit.form.termOptions.1M') },
-    { value: '3M', label: t('deposit.form.termOptions.3M') },
-    { value: '6M', label: t('deposit.form.termOptions.6M') },
-    { value: '1Y', label: t('deposit.form.termOptions.1Y') },
-    { value: '2Y', label: t('deposit.form.termOptions.2Y') },
-    { value: '3Y', label: t('deposit.form.termOptions.3Y') },
-    { value: '5Y', label: t('deposit.form.termOptions.5Y') },
-  ];
 
   const {
     control,
     handleSubmit,
     reset,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateDepositDto>({
     resolver: yupResolver(validationSchema),
@@ -102,8 +92,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
   // Create a ref to access the form element
   const formRef = React.useRef<HTMLFormElement>(null);
 
-  const startDate = watch('startDate');
-
   // Reset form when opening/closing
   useEffect(() => {
     if (open) {
@@ -120,21 +108,6 @@ const DepositForm: React.FC<DepositFormProps> = ({
           termMonths: initialData.termMonths || 0,
           notes: initialData.notes || '',
         });
-        // Calculate term from dates - Fix timezone issue
-        if (initialData.startDate && initialData.endDate) {
-          // Extract date part only to avoid timezone conversion issues
-          const startDateStr = initialData.startDate.includes('T') 
-            ? initialData.startDate.split('T')[0] 
-            : initialData.startDate;
-          const endDateStr = initialData.endDate.includes('T') 
-            ? initialData.endDate.split('T')[0] 
-            : initialData.endDate;
-          
-          const start = new Date(startDateStr + 'T00:00:00');
-          const end = new Date(endDateStr + 'T00:00:00');
-          const term = calculateTermFromDates(start, end);
-          setSelectedTerm(term);
-        }
       } else {
         reset({
           portfolioId: portfolioId || '',
@@ -147,67 +120,10 @@ const DepositForm: React.FC<DepositFormProps> = ({
           termMonths: 0,
           notes: '',
         });
-        setSelectedTerm('');
       }
       setError('');
     }
   }, [open, initialData, portfolioId, reset]);
-
-  const calculateEndDate = (startDate: Date, term: string): Date => {
-    const endDate = new Date(startDate);
-    
-    switch (term) {
-      case '1M':
-        endDate.setMonth(endDate.getMonth() + 1);
-        break;
-      case '3M':
-        endDate.setMonth(endDate.getMonth() + 3);
-        break;
-      case '6M':
-        endDate.setMonth(endDate.getMonth() + 6);
-        break;
-      case '1Y':
-        endDate.setFullYear(endDate.getFullYear() + 1);
-        break;
-      case '2Y':
-        endDate.setFullYear(endDate.getFullYear() + 2);
-        break;
-      case '3Y':
-        endDate.setFullYear(endDate.getFullYear() + 3);
-        break;
-      case '5Y':
-        endDate.setFullYear(endDate.getFullYear() + 5);
-        break;
-      default:
-        break;
-    }
-    
-    return endDate;
-  };
-
-  const calculateTermFromDates = (startDate: Date, endDate: Date): string => {
-    const diffTime = endDate.getTime() - startDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 31) return '1M';
-    if (diffDays <= 93) return '3M';
-    if (diffDays <= 186) return '6M';
-    if (diffDays <= 366) return '1Y';
-    if (diffDays <= 732) return '2Y';
-    if (diffDays <= 1098) return '3Y';
-    if (diffDays <= 1830) return '5Y';
-    
-    return '';
-  };
-
-  const handleTermChange = (term: string) => {
-    setSelectedTerm(term);
-    if (startDate) {
-      const start = new Date(startDate);
-      const end = calculateEndDate(start, term);
-      setValue('endDate', end.toISOString().split('T')[0]);
-    }
-  };
 
   const handleFormSubmit = async (data: CreateDepositDto) => {
     try {
@@ -244,208 +160,220 @@ const DepositForm: React.FC<DepositFormProps> = ({
     }
   };
 
-  return (
-    <ModalWrapper
-      open={open}
-      onClose={onClose}
-      title={isEdit ? t('deposit.form.editTitle') : t('deposit.form.createTitle')}
-      icon={<AccountBalance />}
-      maxWidth="md"
-      fullWidth
-      loading={isSubmitting}
-      actions={
-        <>
-          <ResponsiveButton onClick={onClose} disabled={isSubmitting}>
-            {t('deposit.form.cancel')}
-          </ResponsiveButton>
-          <ResponsiveButton 
-            variant="contained" 
-            disabled={isSubmitting}
-            icon={<Save />}
-            mobileText={t('deposit.form.save')}
-            desktopText={t('deposit.form.save')}
-            onClick={() => {
-              // Trigger form submission by clicking the submit button inside the form
-              if (formRef.current) {
-                const submitButton = formRef.current.querySelector('button[type="submit"]') as HTMLButtonElement;
-                if (submitButton) {
-                  submitButton.click();
-                }
-              }
-            }}
-          >
-            {isSubmitting ? t('deposit.form.processing') : (isEdit ? t('deposit.form.update') : t('deposit.form.create'))}
-          </ResponsiveButton>
-        </>
-      }
-    >
-      <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        
-        {/* Hidden submit button for form submission */}
-        <button type="submit" style={{ display: 'none' }} />
-        
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="bankName"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('deposit.form.bankName')}
-                  error={!!errors.bankName}
-                  helperText={errors.bankName?.message}
-                  required
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="accountNumber"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('deposit.form.accountNumber')}
-                  error={!!errors.accountNumber}
-                  helperText={errors.accountNumber?.message}
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="principal"
-              control={control}
-              render={({ field }) => (
-                <MoneyInput
-                  value={field.value || 0}
-                  onChange={(value) => field.onChange(value)}
-                  label={t('deposit.form.principal')}
-                  placeholder={t('deposit.form.principalPlaceholder')}
-                  helperText={errors.principal?.message}
-                  error={!!errors.principal}
-                  currency="VND"
-                  showCurrency={true}
-                  align="right"
-                  required
-                  disabled={isSubmitting}
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="interestRate"
-              control={control}
-              render={({ field }) => (
-                <NumberInput
-                  value={field.value || 0}
-                  onChange={(value) => field.onChange(value)}
-                  label={t('deposit.form.interestRate')}
-                  placeholder={t('deposit.form.interestRatePlaceholder')}
-                  helperText={errors.interestRate?.message}
-                  error={!!errors.interestRate}
-                  decimalPlaces={2}
-                  min={0}
-                  max={100}
-                  step={0.01}
-                  showThousandsSeparator={false}
-                  align="right"
-                  required
-                  disabled={isSubmitting}
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={t('deposit.form.term')}
-              select
-              value={selectedTerm}
-              onChange={(e) => handleTermChange(e.target.value)}
-              helperText={t('deposit.form.termHelper')}
-            >
-              {termOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('deposit.form.startDate')}
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.startDate}
-                  helperText={errors.startDate?.message}
-                  required
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('deposit.form.endDate')}
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.endDate}
-                  helperText={errors.endDate?.message}
-                  required
-                />
-              )}
-            />
-          </Grid>
-          
-          <Grid item xs={12}>
-            <Controller
-              name="notes"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={t('deposit.form.notes')}
-                  multiline
-                  rows={3}
-                  error={!!errors.notes}
-                  helperText={errors.notes?.message}
-                />
-              )}
-            />
-          </Grid>
+  const formContent = (
+    <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {/* Hidden submit button for form submission */}
+      <button type="submit" style={{ display: 'none' }} />
+      
+      <Grid container spacing={2} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="bankName"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label={t('deposit.form.bankName')}
+                error={!!errors.bankName}
+                helperText={errors.bankName?.message}
+                required
+              />
+            )}
+          />
         </Grid>
-      </form>
-    </ModalWrapper>
+        
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="accountNumber"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label={t('deposit.form.accountNumber')}
+                error={!!errors.accountNumber}
+                helperText={errors.accountNumber?.message}
+              />
+            )}
+          />
+        </Grid>
+        
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="principal"
+            control={control}
+            render={({ field }) => (
+              <MoneyInput
+                value={field.value || 0}
+                onChange={(value) => field.onChange(value)}
+                label={t('deposit.form.principal')}
+                placeholder={t('deposit.form.principalPlaceholder')}
+                helperText={errors.principal?.message}
+                error={!!errors.principal}
+                currency="VND"
+                showCurrency={true}
+                align="right"
+                required
+                disabled={isSubmitting}
+              />
+            )}
+          />
+        </Grid>
+        
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="interestRate"
+            control={control}
+            render={({ field }) => (
+              <NumberInput
+                value={field.value || 0}
+                onChange={(value) => field.onChange(value)}
+                label={t('deposit.form.interestRate')}
+                placeholder={t('deposit.form.interestRatePlaceholder')}
+                helperText={errors.interestRate?.message}
+                error={!!errors.interestRate}
+                decimalPlaces={2}
+                min={0}
+                max={100}
+                step={0.01}
+                showThousandsSeparator={false}
+                align="right"
+                required
+                disabled={isSubmitting}
+              />
+            )}
+          />
+        </Grid>
+        
+        {/* <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label={t('deposit.form.term')}
+            select
+            value={selectedTerm}
+            onChange={(e) => handleTermChange(e.target.value)}
+            helperText={t('deposit.form.termHelper')}
+          >
+            {termOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid> */}
+        
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="startDate"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label={t('deposit.form.startDate')}
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.startDate}
+                helperText={errors.startDate?.message}
+                required
+              />
+            )}
+          />
+        </Grid>
+        
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="endDate"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label={t('deposit.form.endDate')}
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.endDate}
+                helperText={errors.endDate?.message}
+                required
+              />
+            )}
+          />
+        </Grid>
+        
+        <Grid item xs={12}>
+          <Controller
+            name="notes"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label={t('deposit.form.notes')}
+                multiline
+                rows={2}
+                error={!!errors.notes}
+                helperText={errors.notes?.message}
+              />
+            )}
+          />
+        </Grid>
+      </Grid>
+    </form>
   );
+
+  // Return standalone ModalWrapper or just form content
+  if (standalone) {
+    return (
+      <ModalWrapper
+        open={open}
+        onClose={onClose}
+        title={isEdit ? t('deposit.form.editTitle') : t('deposit.form.createTitle')}
+        icon={<AccountBalance />}
+        maxWidth="md"
+        fullWidth
+        loading={isSubmitting}
+        actions={
+          !hideButtons ? (
+            <>
+              <ResponsiveButton onClick={onClose} disabled={isSubmitting}>
+                {t('deposit.form.cancel')}
+              </ResponsiveButton>
+              <ResponsiveButton 
+                variant="contained" 
+                disabled={isSubmitting}
+                icon={<Save />}
+                mobileText={t('deposit.form.save')}
+                desktopText={t('deposit.form.save')}
+                onClick={() => {
+                  // Trigger form submission by clicking the submit button inside the form
+                  if (formRef.current) {
+                    const submitButton = formRef.current.querySelector('button[type="submit"]') as HTMLButtonElement;
+                    if (submitButton) {
+                      submitButton.click();
+                    }
+                  }
+                }}
+              >
+                {isSubmitting ? t('deposit.form.processing') : (isEdit ? t('deposit.form.update') : t('deposit.form.create'))}
+              </ResponsiveButton>
+            </>
+          ) : undefined
+        }
+      >
+        {formContent}
+      </ModalWrapper>
+    );
+  }
+
+  // Return just form content for generic modal usage
+  return formContent;
 };
 
 export default DepositForm;

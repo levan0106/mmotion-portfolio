@@ -478,7 +478,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   />
                 </Box>
                 
-                <Grid container spacing={2} sx={{ px: 1 }}>
+                <Grid container spacing={2}>
                   {/* Portfolio Selection - Show when defaultPortfolioId is null or empty */}
                   {(!defaultPortfolioId || defaultPortfolioId === '') && (
                     <Grid item xs={12} md={12}>
@@ -596,7 +596,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               {/* <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
                 {t('trading.form.tradeDetails')}
               </ResponsiveTypography> */}
-              <Grid container spacing={2} sx={{ px: 1, mt: 2 }}>
+              <Grid container spacing={2} sx={{ mt: 2 }}>
 
                 {/* Quantity */}
                 <Grid item xs={12} md={6}>
@@ -680,7 +680,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 </Box>
                 
                 {isAdditionalInfoExpanded && (
-                  <Grid container spacing={2} sx={{ px: 1 }}>
+                  <Grid container spacing={2}>
                     {/* Fee */}
                     <Grid item xs={12} md={6}>
                         <MoneyInput
@@ -713,7 +713,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               {/* <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
                 {t('trading.form.exchangeFunding')}
               </ResponsiveTypography> */}
-              <Grid container spacing={2} sx={{ px: 1, mt: 2 }}>
+              <Grid container spacing={2} sx={{ mt: 2 }}>
                 {/* Exchange */}
                 <Grid item xs={12} md={6}>
                   <TextField
