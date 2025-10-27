@@ -208,8 +208,13 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
         </ResponsiveTypography>
       </Box>
 
+      <Divider sx={{ mb: 1 }} />
+
       {/* Portfolio Information */}
-      <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card sx={{ mb: 1, 
+          border: 0, 
+          boxShadow: 0,
+          background:"transparent" }}>
         <CardContent sx={{ p: 2 }}>
           <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
             {t('deposit.details.portfolioInfo')}
@@ -244,8 +249,13 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
         </CardContent>
       </Card>
 
+      <Divider sx={{ mb: 1 }} />
+
       {/* Financial Summary */}
-      <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card sx={{ mb: 1, 
+          border: 0, 
+          boxShadow: 0,
+          background:"transparent" }}>
         <CardContent sx={{ p: 2 }}>
           <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
             {t('deposit.details.financialInfo')}
@@ -299,8 +309,13 @@ const DepositDetailsModal: React.FC<DepositDetailsModalProps> = ({
         </CardContent>
       </Card>
 
+      <Divider sx={{ mb: 1 }} />
+
       {/* Timeline Information */}
-      <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card sx={{ mb: 0, 
+          border: 0, 
+          boxShadow: 0,
+          background:"transparent" }}>
         <CardContent sx={{ p: 2 }}>
           <ResponsiveTypography variant="cardTitle" gutterBottom sx={{ mb: 2 }}>
             {t('deposit.details.timelineInfo')}
