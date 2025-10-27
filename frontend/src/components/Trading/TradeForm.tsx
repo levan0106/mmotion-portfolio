@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ResponsiveCard } from '../Common';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -759,13 +759,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             </Box>
 
             {/* Summary Section - Compact List View with 2 fields per row */}
-            <Box sx={{ mt: 4 }}>
-              <ResponsiveTypography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600 }}>
-                {t('trading.form.tradeSummary')}
-              </ResponsiveTypography>
-              
-              <Card sx={{ border: 'none', boxShadow: 'none', backgroundColor: 'transparent'}}>
-                <CardContent sx={{ p: 0 }}>
+            <Box sx={{ mt: 3 }}>
+              <ResponsiveCard variant="transparent" size="small"
+              spacing="none" hoverable={false} title={t('trading.form.tradeSummary')}>
                   {/* Row 1: Trade Value + Fees and Taxes */}
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                     {/* Trade Value - Left half */}
@@ -885,8 +881,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       />
                     </Box>
                   </Box>
-                </CardContent>
-              </Card>
+                </ResponsiveCard>
             </Box>
 
             {/* Submit Button */}

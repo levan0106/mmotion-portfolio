@@ -24,6 +24,22 @@ flowchart LR
 
 ## Key Technical Decisions - **IMPLEMENTATION READY**
 
+### ResponsiveCard Component System Pattern - **IMPLEMENTED** ✅
+- **Unified Card Component**: ResponsiveCard for consistent card styling across application
+- **Multiple Variants**: default, transparent, outlined, and elevated variants for different use cases
+- **Responsive Design**: Automatic mobile/desktop adaptation with breakpoint detection using useMediaQuery
+- **Size System**: Small, medium, large sizes with appropriate padding and spacing configurations
+- **Hover Control**: Configurable hover effects with hoverable prop for better user control
+- **Click Support**: Clickable cards with transform animations and onClick handlers
+- **Loading States**: Built-in loading and error state handling with CircularProgress and Alert
+- **Sub-Components**: ResponsiveCardContent, ResponsiveCardHeader, ResponsiveCardActions for modular usage
+- **TypeScript Types**: Comprehensive type definitions for all components and props
+- **Consistent API**: Unified prop system across all sub-components
+- **Theme Integration**: Proper Material-UI theme integration with shadows and colors
+- **Accessibility**: Proper cursor states and transition animations
+- **Files**: ResponsiveCard.tsx, ResponsiveCard.types.ts, index.ts (Common components export)
+- **Pattern**: Unified card component system with responsive design, multiple variants, and comprehensive functionality
+
 ### Generic Form Modal Pattern - **IMPLEMENTED** ✅
 - **Centralized Form System**: GenericFormModal for unified form creation experience
 - **Tabbed Interface**: 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi) for different transaction types

@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   CircularProgress,
@@ -90,7 +90,6 @@ function TabPanel(props: TabPanelProps) {
 const PortfolioDetail: React.FC = () => {
   const { t } = useTranslation();
   const { portfolioId } = useParams<{ portfolioId: string }>();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [tabValue, setTabValue] = useState(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -224,7 +223,7 @@ const PortfolioDetail: React.FC = () => {
   const totalTradeRealizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
   const handleBack = () => {
-    navigate('/portfolios');
+    window.history.back();
   };
 
   if (isPortfolioLoading) {

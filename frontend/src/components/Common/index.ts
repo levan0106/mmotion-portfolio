@@ -8,3 +8,4 @@ export { default as ModalWrapper } from './ModalWrapper';
 export { default as PermissionBadge } from './PermissionBadge';
 export { default as ResponsiveTable } from './ResponsiveTable';
 export { default as ResponsiveTableWithActions } from './ResponsiveTableWithActions';
+export { default as ResponsiveCard, ResponsiveCardContent, ResponsiveCardHeader, ResponsiveCardActions } from './ResponsiveCard';

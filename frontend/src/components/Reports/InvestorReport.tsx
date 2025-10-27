@@ -21,6 +21,7 @@ import { formatCurrency, formatDate, formatNumber, formatPercentage, formatPerce
 import { InvestorReportData } from '../../types/investor-report.types';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import ResponsiveTable from '../Common/ResponsiveTable';
+import ResponsiveCard from '../Common/ResponsiveCard';
 
 interface InvestorReportProps {
   data: InvestorReportData;
@@ -99,7 +100,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
   };
 
   return (
-    <Box>
+    <Box sx={{ backgroundColor: 'background.paper', p:2 }}>
       {/* Header */}
       <Box mb={3}>
         <Box display="flex" flexDirection="column" gap={1}>
@@ -383,15 +384,19 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         </Box>
       </Box>
 
-
+      {/* <Divider sx={{ mb: 1 }} /> */}
+      
       {/* Asset Allocation by Type */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-        <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
-            {t('investorReport.assetAllocation', 'Phân bổ tài sản theo loại')}
-          </ResponsiveTypography>
-          <ResponsiveTable
-            columns={[
+      <ResponsiveCard
+        variant="transparent"
+        size="small"
+        spacing="none"
+        hoverable={false}
+        title={t('investorReport.assetAllocation', 'Phân bổ tài sản theo loại')}
+      >
+        <ResponsiveTable
+          hoverable={false}
+          columns={[
               {
                 key: 'assetType',
                 header: t('investorReport.assetType', 'Loại tài sản'),
@@ -450,17 +455,21 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
             data={data.assetAllocation}
             size="small"
           />
-        </CardContent>
-      </Card>
+      </ResponsiveCard>
+      
+      {/* <Divider sx={{ mb: 1 }} /> */}
 
       {/* Asset Details */}
-      <Card>
-        <CardContent>
-          <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
-            {t('investorReport.assetDetails', 'Chi tiết tài sản')}
-          </ResponsiveTypography>
-          <ResponsiveTable
-            columns={[
+      <ResponsiveCard
+        variant="transparent"
+        size="small"
+        spacing="none"
+        hoverable={false}
+        title={t('investorReport.assetDetails', 'Chi tiết tài sản')}
+      >
+        <ResponsiveTable
+          hoverable={false}
+          columns={[
               {
                 key: 'symbol',
                 header: t('investorReport.symbol', 'Mã'),
@@ -547,17 +556,21 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
             data={data.assetDetails}
             size="small"
           />
-        </CardContent>
-      </Card>
+      </ResponsiveCard>
+
+      {/* <Divider sx={{ mb: 1 }} /> */}
 
       {data.deposits && data.deposits.length > 0 && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
-            <ResponsiveTypography variant="cardTitle" sx={{ mb: 2 }}>
-              {t('investorReport.depositsDetails', 'Chi tiết tiền gửi')}
-            </ResponsiveTypography>
-            <ResponsiveTable
-              columns={[
+        <ResponsiveCard
+        variant="transparent"
+        size="small"
+        spacing="none"
+        hoverable={false}
+        title={t('investorReport.depositsDetails', 'Chi tiết tiền gửi')}
+      >
+          <ResponsiveTable
+            hoverable={false}
+            columns={[
                 {
                   key: 'bankName',
                   header: t('investorReport.bankName', 'Ngân hàng'),
@@ -634,8 +647,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
               data={data.deposits}
               size="small"
             />
-          </CardContent>
-        </Card>
+          </ResponsiveCard>
       )}
     </Box>
   );
