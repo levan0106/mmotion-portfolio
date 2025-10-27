@@ -134,7 +134,7 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
               <ListItemText
                 primary={portfolio.templateName || portfolio.name}
                 secondary={
-                  <Box>
+                  <Box component="span" sx={{ display: 'block' }}>
                     <Typography variant="body2" color="text.secondary" component="span">
                       {portfolio.description || t('publicPortfolioSelector.noDescription')}
                     </Typography>
@@ -143,24 +143,24 @@ export const PublicPortfolioSelector: React.FC<PublicPortfolioSelectorProps> = (
                         {t('publicPortfolioSelector.createdBy', { name: portfolio.creatorName })}
                       </Typography>
                     )}
-                    <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip label={portfolio.baseCurrency} size="small" />
-                      <Chip 
-                        label={t('publicPortfolioSelector.tradesCount', { count: portfolio.trades?.length || 0 })} 
-                        size="small" 
-                      />
-                      <Chip 
-                        label={t('publicPortfolioSelector.cashFlowsCount', { count: portfolio.cashFlows?.length || 0 })} 
-                        size="small" 
-                      />
-                      <Chip 
-                        label={t('publicPortfolioSelector.depositsCount', { count: portfolio.deposits?.length || 0 })} 
-                        size="small" 
-                      />
-                    </Box>
                   </Box>
                 }
               />
+              <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip label={portfolio.baseCurrency} size="small" />
+                <Chip 
+                  label={t('publicPortfolioSelector.tradesCount', { count: portfolio.trades?.length || 0 })} 
+                  size="small" 
+                />
+                <Chip 
+                  label={t('publicPortfolioSelector.cashFlowsCount', { count: portfolio.cashFlows?.length || 0 })} 
+                  size="small" 
+                />
+                <Chip 
+                  label={t('publicPortfolioSelector.depositsCount', { count: portfolio.deposits?.length || 0 })} 
+                  size="small" 
+                />
+              </Box>
               <ListItemSecondaryAction>
                 <IconButton onClick={() => handleSelect(portfolio)}>
                   <CopyIcon />

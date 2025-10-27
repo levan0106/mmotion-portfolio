@@ -221,13 +221,14 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       onClose={onClose}
       title={t('bulkAssetSelector.title')}
       maxWidth="md"
-      fullWidth
+      fullWidth={isMobile}
+      fullScreen={isMobile}
       loading={isCreating}
       actions={modalActions}
     >
         <Box>
             {/* Collapsible Help Text */}
-            <Box sx={{ 
+            {!isMobile && ( <Box sx={{ 
               mb: 3, 
               mt: 2,
               backgroundColor: alpha(theme.palette.info.main, 0.08),
@@ -235,7 +236,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
               border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
               overflow: 'hidden'
             }}>
-              {!isMobile && ( <ResponsiveButton
+              <ResponsiveButton
                 forceTextOnly={true}
                 onClick={() => setShowHelp(!showHelp)}
                 sx={{
@@ -253,8 +254,8 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                 desktopText={t('bulkAssetSelector.help.title')}
               >
                 {t('bulkAssetSelector.help.title')}
-              </ResponsiveButton> )}
-              
+              </ResponsiveButton>
+                
               {showHelp && (
                 <Box sx={{ p: 3, pt: 0 }}>
                   <ResponsiveTypography variant="body2" ellipsis={false} sx={{ 
@@ -267,6 +268,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
                 </Box>
               )}
             </Box>
+          )}
             
             <Box mb={3} sx={{ pt: 3 }}>
               <Grid container spacing={2} alignItems="center">

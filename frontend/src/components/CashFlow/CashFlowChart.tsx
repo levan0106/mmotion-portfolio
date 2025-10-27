@@ -12,7 +12,6 @@ import {
   Select,
   MenuItem,
   Chip,
-  Paper,
   Grid,
   Divider,
   Skeleton,
@@ -260,7 +259,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
               {t('cashflow.chart.noData.message')}
             </Typography>
           </Alert>
-          <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+          {/* <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
             <Typography variant="caption" color="text.secondary">
               {t('cashflow.chart.debugInfo', { 
                 lineData: lineData.length, 
@@ -268,7 +267,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
                 pieData: pieData.length 
               })}
             </Typography>
-          </Paper>
+          </Paper> */}
         </Box>
       );
     }

@@ -1340,7 +1340,8 @@
       "inflow": "Inflow",
       "outflow": "Outflow",
       "transactions": "Transactions",
-      "lastTransaction": "Last Transaction"
+      "lastTransaction": "Last Transaction",
+      "typeToSearch": "Type to search funding sources"
     },
     "tabs": {
       "analytics": "Analytics",

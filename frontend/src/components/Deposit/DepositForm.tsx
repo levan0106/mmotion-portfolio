@@ -349,6 +349,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
                 variant="contained" 
                 disabled={isSubmitting}
                 icon={<Save />}
+                forceTextOnly={true}
                 mobileText={t('deposit.form.save')}
                 desktopText={t('deposit.form.save')}
                 onClick={() => {

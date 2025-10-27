@@ -250,7 +250,6 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
       icon={<SecurityIcon color="primary" />}
       maxWidth="md"
       fullWidth
-      size="large"
       actions={
         <ResponsiveButton
           onClick={onClose}

@@ -182,6 +182,7 @@ export class GlobalAssetController {
   ): Promise<GlobalAssetResponseDto> {
     const asset = await this.globalAssetService.findBySymbol(symbol.toUpperCase());
     if (!asset) {
+      return null;
       throw new NotFoundException(`Global asset with symbol '${symbol}' not found.`);
     }
     return asset;

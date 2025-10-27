@@ -1,6 +1,17 @@
 /**
  * Modal Wrapper Component
  * Reusable modal wrapper for consistent layout and styling across the application
+ * 
+ * Features:
+ * - Automatic mobile detection with autoMobileDetection prop (default: true)
+ * - Responsive layout that automatically switches to fullScreen on mobile
+ * - Customizable mobile breakpoint with mobileBreakpoint prop (default: 'sm')
+ * - Manual override available by setting autoMobileDetection={false}
+ * 
+ * Usage:
+ * - Default behavior: <ModalWrapper> - automatically detects mobile and adjusts layout
+ * - Manual control: <ModalWrapper autoMobileDetection={false} fullScreen={true}>
+ * - Custom breakpoint: <ModalWrapper mobileBreakpoint="md">
  */
 
 import React from 'react';
@@ -9,10 +20,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Typography,
   Box,
   IconButton,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -34,6 +46,9 @@ interface ModalWrapperProps {
   disableCloseOnEscape?: boolean;
   titleColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   size?: 'small' | 'medium' | 'large';
+  // Auto mobile detection options
+  autoMobileDetection?: boolean; // Enable automatic mobile detection
+  mobileBreakpoint?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'; // Breakpoint for mobile detection
 }
 
 export const ModalWrapper: React.FC<ModalWrapperProps> = ({
@@ -52,7 +67,15 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   disableCloseOnEscape = false,
   titleColor = 'primary',
   size = 'medium',
+  autoMobileDetection = true,
+  mobileBreakpoint = 'sm',
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down(mobileBreakpoint));
+  
+  // Auto-detect mobile behavior if enabled
+  const effectiveFullScreen = autoMobileDetection ? isMobile : fullScreen;
+  const effectiveFullWidth = autoMobileDetection ? true : fullWidth;
   const handleClose = () => {
     if (!loading) {
       onClose();
@@ -114,35 +137,35 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       open={open}
       onClose={disableCloseOnBackdrop ? undefined : handleClose}
       maxWidth={maxWidth === 'xxl' ? 'xl' : maxWidth}
-      fullWidth={fullWidth}
-      fullScreen={fullScreen}
+      fullWidth={effectiveFullWidth}
+      fullScreen={effectiveFullScreen}
       disableEscapeKeyDown={disableCloseOnEscape}
       PaperProps={{
         sx: {
-          borderRadius: fullScreen ? 0 : 2,
-          boxShadow: fullScreen ? 'none' : '0 8px 32px rgba(0,0,0,0.12)',
+          borderRadius: effectiveFullScreen ? 0 : 2,
+          boxShadow: effectiveFullScreen ? 'none' : '0 8px 32px rgba(0,0,0,0.12)',
           // Force consistent width across different content
-          width: fullScreen ? '100%' : 
+          width: effectiveFullScreen ? '100%' : 
                  maxWidth === 'xs' ? '400px' : 
                  maxWidth === 'sm' ? '500px' : 
-                 maxWidth === 'md' ? '700px' : 
+                 maxWidth === 'md' ? '700px!important' : 
                  maxWidth === 'lg' ? '900px' : 
                  maxWidth === 'xl' ? '1200px' : 
-                 maxWidth === 'xxl' ? '1400px' : '700px',
-          minWidth: fullScreen ? 'auto' : 
+                 maxWidth === 'xxl' ? '1400px' : '700px!important',
+          minWidth: effectiveFullScreen ? 'auto' : 
                    maxWidth === 'xs' ? '400px' : 
                    maxWidth === 'sm' ? '500px' : 
-                   maxWidth === 'md' ? '700px' : 
+                   maxWidth === 'md' ? '700px!important' : 
                    maxWidth === 'lg' ? '900px' : 
                    maxWidth === 'xl' ? '1200px' : 
-                   maxWidth === 'xxl' ? '1400px' : '700px',
-          maxWidth: fullScreen ? '100%' : 
+                   maxWidth === 'xxl' ? '1400px' : '700px!important',
+          maxWidth: effectiveFullScreen ? '100%' : 
                    maxWidth === 'xs' ? '400px' : 
                    maxWidth === 'sm' ? '500px' : 
-                   maxWidth === 'md' ? '700px' : 
+                   maxWidth === 'md' ? '700px!important' : 
                    maxWidth === 'lg' ? '900px' : 
                    maxWidth === 'xl' ? '1200px' : 
-                   maxWidth === 'xxl' ? '1400px' : '700px',
+                   maxWidth === 'xxl' ? '1400px' : '700px!important',
         }
       }}
     >
@@ -162,16 +185,21 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 {icon}
               </Box>
             )}
-            <Typography
-              variant="h6"
+            <Box
+              component="span"
               sx={{
-                fontWeight: 600,
+                fontWeight: 500,
                 color: getTitleColor(),
                 flex: 1,
+                fontSize: '1.25rem',
+                lineHeight: 1.2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
               {title}
-            </Typography>
+            </Box>
           </Box>
           {showCloseButton && (
             <IconButton

@@ -764,21 +764,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 {t('trading.form.tradeSummary')}
               </ResponsiveTypography>
               
-              <Card sx={{ border: 1, borderColor: 'grey.300' }}>
+              <Card sx={{ border: 'none', boxShadow: 'none', backgroundColor: 'transparent'}}>
                 <CardContent sx={{ p: 0 }}>
                   {/* Row 1: Trade Value + Fees and Taxes */}
-                  <Box sx={{ 
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                  }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                     {/* Trade Value - Left half */}
-                    <Box sx={{ 
-                      flex: 1,
-                      display: 'flex', 
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      py: {xs: 1, sm: 2},     
+                    <Box sx={{ flex: 1, display: 'flex', 
+                      flexDirection: 'row', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      py: {xs: 1, sm: 2}, 
                       mx: 2,
                       borderBottom: 1,
                       borderColor: 'grey.300'

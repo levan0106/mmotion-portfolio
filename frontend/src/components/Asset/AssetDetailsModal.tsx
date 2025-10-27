@@ -289,8 +289,9 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
       onClose={onClose}
       title={t('asset.details.title')}
       icon={<AccountBalanceIcon />}
-      maxWidth="lg"
+      maxWidth="md"
       loading={loading}
+      // Auto mobile detection is enabled by default
       actions={
         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <Stack direction="row" spacing={1}>
@@ -346,16 +347,31 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
             borderRadius: 2,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box>
-              <ResponsiveTypography variant="pageTitle" >
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: { xs: 'flex-start', sm: 'center' }, 
+            justifyContent: { xs: 'flex-start', sm: 'space-between' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 2, sm: 0 },
+            mb: 2 
+          }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
+              <ResponsiveTypography variant="pageTitle">
                 {asset?.name}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary'}}>
+              <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary' }}>
                 {asset?.symbol}
               </ResponsiveTypography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            {/* Asset Type and Status */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1, 
+              flexWrap: 'wrap',
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' }
+            }}>
               <Chip
                 label={asset?.type}
                 size="small"
@@ -385,6 +401,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                         {t('asset.details.portfolios.title', { count: portfolioInfo.portfolios.length })}:
                         {portfolioInfo.isMockData && (
                           <Chip 
+                            key="demo-chip-portfolios"
                             label={t('asset.details.demo')} 
                             size="small" 
                             color="warning" 
@@ -436,6 +453,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                         {t('asset.details.trading.title', { count: portfolioInfo.tradingCount })}:
                         {portfolioInfo.isMockData && (
                           <Chip 
+                            key="demo-chip-trading"
                             label={t('asset.details.demo')} 
                             size="small" 
                             color="warning" 

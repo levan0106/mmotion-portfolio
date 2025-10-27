@@ -485,7 +485,7 @@
       "createTrade": "Tạo giao dịch"
     },
     "floatingButton": {
-      "tooltip": "Ghi nhận mua/bán",
+      "tooltip": "Tạo nhanh",
       "ariaLabel": "Tạo giao dịch",
       "createPortfolioFirst": "Tạo danh mục trước",
       "creatingPortfolio": "Đang tạo danh mục..."
@@ -1204,7 +1204,10 @@
       "subtitle": "Trực quan hóa xu hướng dòng tiền",
       "loading": "Đang tải dữ liệu biểu đồ...",
       "fetchingData": "Đang tải dữ liệu cho danh mục",
-      "noData": "Không có dữ liệu dòng tiền",
+      "noData": {
+        "title": "Không có dữ liệu",
+        "message": "Không có dữ liệu dòng tiền cho khoảng thời gian đã chọn"
+      },
       "refresh": "Làm mới biểu đồ",
       "chartType": "Loại biểu đồ",
       "lineChart": "Biểu đồ đường",
@@ -1391,7 +1394,8 @@
       "inflow": "Tiền vào",
       "outflow": "Tiền ra",
       "transactions": "Giao dịch",
-      "lastTransaction": "Giao dịch cuối"
+      "lastTransaction": "Giao dịch cuối",
+      "typeToSearch": "Nhập để tìm kiếm nguồn tiền"
     },
     "tabs": {
       "analytics": "Phân tích",
@@ -2356,7 +2360,7 @@
     "createCount": "Tạo {{count}}",
     "createAssets": "Tạo {{count}} Assets",
     "results": {
-      "found": "Tìm thấy {{count}} assets chưa có trong portfolio"
+      "found": "Tìm thấy {{count}} assets chưa có trong danh sách của bạn"
     },
     "noAssets": {
       "allOwned": "Bạn đã có tất cả assets có sẵn trong hệ thống",

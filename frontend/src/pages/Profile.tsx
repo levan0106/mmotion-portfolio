@@ -488,6 +488,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                 icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
                 mobileText={saving ? t('profile.saving') : t('profile.saveChanges')}
                 desktopText={saving ? t('profile.saving') : t('profile.saveChanges')}
+                forceTextOnly={true}
               >
                 {saving ? t('profile.saving') : t('profile.saveChanges')}
               </ResponsiveButton>
@@ -498,6 +499,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                 icon={<CancelIcon />}
                 mobileText={t('profile.cancel')}
                 desktopText={t('profile.cancel')}
+                forceTextOnly={true}
               >
                 {t('profile.cancel')}
               </ResponsiveButton>
@@ -574,6 +576,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                   onClick={() => setShowChangePassword(true)}
                   mobileText={t('profile.changePassword')}
                   desktopText={t('profile.changePassword')}
+                  forceTextOnly={true}
                 >
                   {t('profile.changePassword')}
                 </ResponsiveButton>
@@ -604,6 +607,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                       icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
                       mobileText={saving ? t('profile.changing') : t('profile.changePassword')}
                       desktopText={saving ? t('profile.changing') : t('profile.changePassword')}
+                      forceTextOnly={true}
                     >
                       {saving ? t('profile.changing') : t('profile.changePassword')}
                     </ResponsiveButton>
@@ -615,6 +619,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                       }}
                       mobileText={t('profile.cancel')}
                       desktopText={t('profile.cancel')}
+                      forceTextOnly={true}
                     >
                       {t('profile.cancel')}
                     </ResponsiveButton>
