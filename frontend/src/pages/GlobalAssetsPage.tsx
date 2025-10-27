@@ -6,7 +6,7 @@ import AutoSyncToggle from '../components/GlobalAssetManagement/AutoSyncToggle';
 import { UpdatePriceByDateButton } from '../components/AssetPrice';
 import { HistoricalPricesButton } from '../components/HistoricalPrices';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
-import { useGlobalAssets, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
+import { useGlobalAssets, useCreateGlobalAsset, useUpdateGlobalAsset, useUpdateAssetPrice, useUpdateAssetPriceFromMarket, useAutoSync } from '../hooks/useGlobalAssets';
 import { useSystemStatus } from '../hooks/useSystemStatus';
 import { BulkUpdateResult } from '../hooks/useAssetPriceBulk';
 import { apiService } from '../services/api';
@@ -41,6 +41,10 @@ const GlobalAssetsContent: React.FC = () => {
   const updateAssetPriceMutation = useUpdateAssetPrice();
   const updateAssetPriceFromMarketMutation = useUpdateAssetPriceFromMarket();
   
+  // Asset management hooks
+  const createGlobalAssetMutation = useCreateGlobalAsset();
+  const updateGlobalAssetMutation = useUpdateGlobalAsset();
+  
   // Auto sync hook
   const { } = useAutoSync();
 
@@ -65,12 +69,26 @@ const GlobalAssetsContent: React.FC = () => {
     await refetchAssets();
   };
 
-  const handleCreateAsset = async (_data: any) => {
-    // This will be handled by the GlobalAssetManagement component
+  const handleCreateAsset = async (data: any) => {
+    try {
+      await createGlobalAssetMutation.mutateAsync(data);
+      // Refresh assets after successful creation
+      await refetchAssets();
+    } catch (error) {
+      console.error('Create asset error:', error);
+      throw error;
+    }
   };
 
-  const handleUpdateAsset = async (_id: string, _data: any) => {
-    // This will be handled by the GlobalAssetManagement component
+  const handleUpdateAsset = async (id: string, data: any) => {
+    try {
+      await updateGlobalAssetMutation.mutateAsync({ id, data });
+      // Refresh assets after successful update
+      await refetchAssets();
+    } catch (error) {
+      console.error('Update asset error:', error);
+      throw error;
+    }
   };
 
   const handlePriceUpdate = async (
@@ -117,7 +135,7 @@ const GlobalAssetsContent: React.FC = () => {
   };
 
   // Combine loading states
-  const isLoading = assetsLoading || updateAssetPriceMutation.isLoading || updateAssetPriceFromMarketMutation.isLoading;
+  const isLoading = assetsLoading || updateAssetPriceMutation.isLoading || updateAssetPriceFromMarketMutation.isLoading || createGlobalAssetMutation.isLoading || updateGlobalAssetMutation.isLoading;
   
   // Combine error states
   const error = assetsError;

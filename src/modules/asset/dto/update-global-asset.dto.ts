@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsEnum, IsOptional, IsBoolean, Length, Matches } from 'class-validator';
 import { AssetType } from '../enums/asset-type.enum';
-
+import { PriceMode } from '../enums/price-mode.enum';
 /**
  * DTO for updating an existing global asset.
  * 
@@ -120,4 +120,20 @@ export class UpdateGlobalAssetDto {
   @IsString()
   @Length(0, 1000)
   description?: string;
+
+  /**
+   * Price mode for the global asset (AUTOMATIC or MANUAL).
+   * AUTOMATIC: Auto-sync from market data
+   * MANUAL: Manual price entry only
+   */
+  @ApiPropertyOptional({
+    description: 'Price mode for the global asset',
+    enum: PriceMode,
+    example: PriceMode.AUTOMATIC,
+  })
+  @IsOptional()
+  @IsEnum(PriceMode, {
+    message: 'Price mode must be one of: AUTOMATIC, MANUAL',
+  })
+  priceMode?: PriceMode;
 }

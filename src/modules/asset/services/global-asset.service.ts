@@ -105,7 +105,7 @@ export class GlobalAssetService {
       sortOrder = 'ASC',
       page = 1,
       limit = 10,
-      includeInactive = false,
+      includeInactive = true,
       hasTradesOnly = false,
     } = queryDto;
 

@@ -393,16 +393,16 @@ export class ReportService {
         // Use the first trade's exchange for this asset
         const exchangeValue = asset.trades[0].exchange && asset.trades[0].exchange.trim() !== '' 
           ? asset.trades[0].exchange 
-          : 'FMARKET';
+          : 'UNKNOWN';
         assetExchangeMap.set(asset.id, exchangeValue);
       } else {
-        assetExchangeMap.set(asset.id, 'FMARKET');
+        assetExchangeMap.set(asset.id, 'UNKNOWN');
       }
     });
 
     // Group assets by exchange
     for (const asset of assets) {
-      const exchange = assetExchangeMap.get(asset.id) || 'FMARKET';
+      const exchange = assetExchangeMap.get(asset.id) || 'UNKNOWN';
       const value = asset.fifoPosition?.currentValue || 0;
       const capitalValue = (asset.fifoPosition?.avgCost || 0) * (asset.fifoPosition?.quantity || 0);
       const quantity = asset.fifoPosition?.quantity || 0;

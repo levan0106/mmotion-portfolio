@@ -64,21 +64,10 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
       'CRYPTO': 'Crypto',
       'REALESTATE': 'Bất động sản',
       'COMMODITY': 'Hàng hóa',
-      'FOREIGN_EXCHANGE': 'Ngoại tệ',
-      'MUTUAL_FUND': 'Quỹ tương hỗ',
+      'OTHER': 'Khác',
       'ETF': 'ETF',
-      'Cash': 'Tiền mặt',
-      'Deposits': 'Tiền gửi',
-      'Stock': 'Cổ phiếu',
-      'Bond': 'Trái phiếu',
-      'Gold': 'Vàng',
-      'Crypto': 'Crypto',
-      'RealEstate': 'Bất động sản',
-      'Commodity': 'Hàng hóa',
-      'Foreign Exchange': 'Ngoại tệ',
-      'Mutual Fund': 'Quỹ tương hỗ',
     };
-    return mapping[assetType as keyof typeof mapping] || assetType;
+    return mapping[assetType.toUpperCase() as keyof typeof mapping] || assetType;
   };
 
   const getAssetTypeColor = (assetType: string) => {
@@ -92,9 +81,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
       'Crypto': theme.palette.error.main,
       'Bất động sản': theme.palette.secondary.main,
       'Hàng hóa': theme.palette.warning.main,
-      'Ngoại tệ': theme.palette.info.main,
-      'Quỹ tương hỗ': theme.palette.secondary.main,
-      'ETF': theme.palette.primary.main,
+      'Khác': theme.palette.grey[500],
     };
     return colors[vietnameseType as keyof typeof colors] || theme.palette.grey[500];
   };

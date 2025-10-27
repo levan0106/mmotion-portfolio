@@ -10,10 +10,8 @@ import {
   Select,
   MenuItem,
   Grid,
-  Box,
   CircularProgress,
   Typography,
-  Chip,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -21,6 +19,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ResponsiveButton } from './Common';
+import { useAccount } from '../contexts/AccountContext';
 
 // Types
 interface GlobalAssetFormData {
@@ -31,7 +30,10 @@ interface GlobalAssetFormData {
   marketCode: string;
   currency: string;
   timezone: string;
-  description?: string;
+  description?: string | null;
+  createdBy?: string;
+  priceMode: string;
+  isActive: boolean;
 }
 
 interface NationConfig {
@@ -80,21 +82,21 @@ const validationSchema = yup.object({
   type: yup
     .string()
     .required('Asset type is required')
-    .oneOf(['STOCK', 'BOND', 'CRYPTO', 'COMMODITY', 'CURRENCY', 'ETF', 'MUTUAL_FUND'], 'Invalid asset type'),
-  nation: yup
+    .oneOf(['STOCK', 'BOND', 'CRYPTO', 'COMMODITY', 'GOLD', 'REALESTATE', 'OTHER'], 'Invalid asset type'),
+  // Hidden fields - set default values
+  nation: yup.string().default('VN'),
+  marketCode: yup.string().default('HOSE'),
+  currency: yup.string().default('VND'),
+  timezone: yup.string().default('Asia/Ho_Chi_Minh'),
+  createdBy: yup.string().optional(),
+  priceMode: yup
     .string()
-    .required('Nation is required'),
-  marketCode: yup
-    .string()
-    .required('Market code is required'),
-  currency: yup
-    .string()
-    .required('Currency is required'),
-  timezone: yup
-    .string()
-    .required('Timezone is required'),
+    .required('Price mode is required')
+    .oneOf(['AUTOMATIC', 'MANUAL'], 'Invalid price mode'),
+  isActive: yup.boolean().required('Status is required'),
   description: yup
     .string()
+    .nullable()
     .max(500, 'Description must be at most 500 characters'),
 });
 
@@ -102,11 +104,17 @@ const validationSchema = yup.object({
 const ASSET_TYPES = [
   { value: 'STOCK', label: 'Stock' },
   { value: 'BOND', label: 'Bond' },
-  { value: 'CRYPTO', label: 'Cryptocurrency' },
+  { value: 'CRYPTO', label: 'Crypto' },
   { value: 'COMMODITY', label: 'Commodity' },
-  { value: 'CURRENCY', label: 'Currency' },
-  { value: 'ETF', label: 'ETF' },
-  { value: 'MUTUAL_FUND', label: 'Mutual Fund' },
+  { value: 'GOLD', label: 'Gold' },
+  { value: 'REALESTATE', label: 'Real Estate' },
+  { value: 'OTHER', label: 'Other' }
+];
+
+// Price modes
+const PRICE_MODES = [
+  { value: 'AUTOMATIC', label: 'Automatic' },
+  { value: 'MANUAL', label: 'Manual' },
 ];
 
 // Mock nation configuration (in real app, this would come from API)
@@ -198,8 +206,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
   mode,
   loading = false,
 }) => {
-  const [selectedNation, setSelectedNation] = useState<string>('');
-  const [availableMarketCodes, setAvailableMarketCodes] = useState<Array<{ code: string; name: string }>>([]);
+  const { accountId } = useAccount();
   const [symbolValidation, setSymbolValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: '' });
 
   const {
@@ -215,11 +222,14 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
       symbol: '',
       name: '',
       type: 'STOCK',
-      nation: '',
-      marketCode: '',
-      currency: '',
-      timezone: '',
+      nation: 'VN', // Default to Vietnam
+      marketCode: 'HOSE', // Default to Ho Chi Minh Stock Exchange
+      currency: 'VND', // Default to Vietnamese Dong
+      timezone: 'Asia/Ho_Chi_Minh', // Default to Vietnam timezone
       description: '',
+      createdBy: mode === 'create' ? accountId : '', // Set current accountId for create mode
+      priceMode: 'AUTOMATIC', // Default to automatic pricing
+      isActive: true, // Default to active
       ...initialData,
     },
   });
@@ -228,18 +238,75 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
   const watchedType = watch('type');
   const watchedSymbol = watch('symbol');
 
-  // Update market codes when nation changes
+  // Reset form when initialData changes (for edit mode)
   useEffect(() => {
-    if (watchedNation) {
-      const nationConfig = NATION_CONFIG.find(n => n.code === watchedNation);
-      if (nationConfig) {
-        setAvailableMarketCodes(nationConfig.marketCodes);
-        setValue('currency', nationConfig.currency);
-        setValue('timezone', nationConfig.timezone);
-        setSelectedNation(watchedNation);
-      }
+    if (initialData && mode === 'edit') {
+      reset({
+        symbol: initialData.symbol || '',
+        name: initialData.name || '',
+        type: initialData.type || 'STOCK',
+        nation: initialData.nation || 'VN',
+        marketCode: initialData.marketCode || 'HOSE',
+        currency: initialData.currency || 'VND',
+        timezone: initialData.timezone || 'Asia/Ho_Chi_Minh',
+        description: initialData.description || '',
+        createdBy: initialData.createdBy || '',
+        priceMode: initialData.priceMode || 'AUTOMATIC',
+        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+      });
+      
+      // Update market codes state for edit mode - removed since fields are hidden
+      // if (initialData.nation) {
+      //   const nationConfig = NATION_CONFIG.find(n => n.code === initialData.nation);
+      //   if (nationConfig) {
+      //     setAvailableMarketCodes(nationConfig.marketCodes);
+      //   }
+      // }
     }
-  }, [watchedNation, setValue]);
+  }, [initialData, mode, reset]);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      // Reset form to default values when modal opens
+      reset({
+        symbol: '',
+        name: '',
+        type: 'STOCK',
+        nation: 'VN',
+        marketCode: 'HOSE',
+        currency: 'VND',
+        timezone: 'Asia/Ho_Chi_Minh',
+        description: '',
+        createdBy: mode === 'create' ? accountId : '',
+        priceMode: 'AUTOMATIC',
+        isActive: true,
+        ...initialData,
+      });
+      
+      // Reset symbol validation
+      setSymbolValidation({ isValid: true, message: '' });
+    }
+  }, [open, mode, accountId, initialData, reset]);
+
+  // Set current accountId for create mode
+  useEffect(() => {
+    if (mode === 'create' && accountId) {
+      setValue('createdBy', accountId);
+    }
+  }, [mode, accountId, setValue]);
+
+  // Update market codes when nation changes - removed since fields are hidden
+  // useEffect(() => {
+  //   if (watchedNation) {
+  //     const nationConfig = NATION_CONFIG.find(n => n.code === watchedNation);
+  //     if (nationConfig) {
+  //       setAvailableMarketCodes(nationConfig.marketCodes);
+  //       setValue('currency', nationConfig.currency);
+  //       setValue('timezone', nationConfig.timezone);
+  //     }
+  //   }
+  // }, [watchedNation, setValue]);
 
   // Validate symbol format based on nation and type
   useEffect(() => {
@@ -252,36 +319,47 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
           isValid,
           message: isValid ? '' : `Symbol format is invalid for ${watchedType} in ${nationConfig.name}`,
         });
+      } else {
+        // For asset types without specific patterns (REALESTATE, CRYPTO, etc.), always consider valid
+        setSymbolValidation({ isValid: true, message: '' });
       }
     }
   }, [watchedSymbol, watchedNation, watchedType]);
 
   const handleClose = () => {
     reset();
-    setSelectedNation('');
-    setAvailableMarketCodes([]);
     setSymbolValidation({ isValid: true, message: '' });
     onClose();
   };
 
   const handleFormSubmit = async (data: GlobalAssetFormData) => {
     try {
-      await onSubmit(data);
+      // Clean up data before submission
+      const cleanedData: any = {
+        symbol: data.symbol,
+        name: data.name,
+        type: data.type,
+        nation: data.nation,
+        marketCode: data.marketCode,
+        currency: data.currency,
+        timezone: data.timezone,
+        priceMode: data.priceMode,
+        isActive: data.isActive,
+        createdBy: data.createdBy,
+      };
+      
+      // Include description if it exists (can be empty string or null)
+      if (data.description !== undefined && data.description !== null) {
+        cleanedData.description = data.description.trim() || null;
+      }
+      
+      await onSubmit(cleanedData);
       handleClose();
     } catch (error) {
       console.error('Form submission error:', error);
     }
   };
 
-  const getNationDisplayName = (code: string) => {
-    const nation = NATION_CONFIG.find(n => n.code === code);
-    return nation ? `${nation.name} (${code})` : code;
-  };
-
-  const getMarketCodeDisplayName = (code: string) => {
-    const market = availableMarketCodes.find(m => m.code === code);
-    return market ? `${market.name} (${code})` : code;
-  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -362,24 +440,53 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                 />
               </Grid>
 
-              {/* Nation */}
+              {/* Created By - Read Only */}
+              {(mode === 'edit' && initialData?.createdBy) || (mode === 'create' && accountId) ? (
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name="createdBy"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Created By (Account ID)"
+                        fullWidth
+                        disabled
+                        helperText={
+                          mode === 'create' 
+                            ? "Account ID of the current user who will create this asset"
+                            : "Account ID of the user who created this asset"
+                        }
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            color: 'text.secondary',
+                            WebkitTextFillColor: 'unset',
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+              ) : null}
+
+              {/* Price Mode */}
               <Grid item xs={12} sm={6}>
                 <Controller
-                  name="nation"
+                  name="priceMode"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.nation}>
-                      <InputLabel>Nation</InputLabel>
-                      <Select {...field} label="Nation">
-                        {NATION_CONFIG.map((nation) => (
-                          <MenuItem key={nation.code} value={nation.code}>
-                            {getNationDisplayName(nation.code)}
+                    <FormControl fullWidth error={!!errors.priceMode}>
+                      <InputLabel>Price Mode</InputLabel>
+                      <Select {...field} label="Price Mode">
+                        {PRICE_MODES.map((mode) => (
+                          <MenuItem key={mode.value} value={mode.value}>
+                            {mode.label}
                           </MenuItem>
                         ))}
                       </Select>
-                      {errors.nation && (
+                      {errors.priceMode && (
                         <Typography variant="caption" color="error">
-                          {errors.nation.message}
+                          {errors.priceMode.message}
                         </Typography>
                       )}
                     </FormControl>
@@ -387,63 +494,29 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                 />
               </Grid>
 
-              {/* Market Code */}
+              {/* Status (Active/Inactive) */}
               <Grid item xs={12} sm={6}>
                 <Controller
-                  name="marketCode"
+                  name="isActive"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.marketCode} disabled={!watchedNation}>
-                      <InputLabel>Market Code</InputLabel>
-                      <Select {...field} label="Market Code">
-                        {availableMarketCodes.map((market) => (
-                          <MenuItem key={market.code} value={market.code}>
-                            {getMarketCodeDisplayName(market.code)}
-                          </MenuItem>
-                        ))}
+                    <FormControl fullWidth error={!!errors.isActive}>
+                      <InputLabel>Status</InputLabel>
+                      <Select 
+                        {...field} 
+                        label="Status"
+                        value={field.value ? 'true' : 'false'}
+                        onChange={(e) => field.onChange(e.target.value === 'true')}
+                      >
+                        <MenuItem value="true">Active</MenuItem>
+                        <MenuItem value="false">Inactive</MenuItem>
                       </Select>
-                      {errors.marketCode && (
+                      {errors.isActive && (
                         <Typography variant="caption" color="error">
-                          {errors.marketCode.message}
+                          {errors.isActive.message}
                         </Typography>
                       )}
                     </FormControl>
-                  )}
-                />
-              </Grid>
-
-              {/* Currency */}
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="currency"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Currency"
-                      fullWidth
-                      error={!!errors.currency}
-                      helperText={errors.currency?.message}
-                      disabled
-                    />
-                  )}
-                />
-              </Grid>
-
-              {/* Timezone */}
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="timezone"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Timezone"
-                      fullWidth
-                      error={!!errors.timezone}
-                      helperText={errors.timezone?.message}
-                      disabled
-                    />
                   )}
                 />
               </Grid>
@@ -459,7 +532,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                       label="Description"
                       fullWidth
                       multiline
-                      rows={3}
+                      rows={2}
                       error={!!errors.description}
                       helperText={errors.description?.message}
                       placeholder="Optional description of the asset"
@@ -468,21 +541,6 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                 />
               </Grid>
 
-              {/* Nation Info Display */}
-              {selectedNation && (
-                <Grid item xs={12}>
-                  <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Nation Configuration
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip label={`Currency: ${watch('currency')}`} size="small" />
-                      <Chip label={`Timezone: ${watch('timezone')}`} size="small" />
-                      <Chip label={`Markets: ${availableMarketCodes.length}`} size="small" />
-                    </Box>
-                  </Box>
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
 

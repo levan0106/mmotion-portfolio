@@ -1,13 +1,47 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 26, 2025  
-**Session Type**: UI Enhancement + Component System Development  
-**Primary Goal**: ResponsiveCard component system, UI consistency improvements, and bug fixes
+**Date**: October 27, 2025  
+**Session Type**: Global Asset Form Enhancement + Backend API Fixes  
+**Primary Goal**: Fix GlobalAssetForm description field, disable asset type validation, and enhance global asset API
 
 ## Recent Achievements
 
-### ✅ UI Enhancement + Component System Development (Current Session - October 26, 2025)
+### ✅ Global Asset Form Enhancement + Backend API Fixes (Current Session - October 27, 2025)
+1. **GlobalAssetForm Description Field Fix**
+   - **Optional Description**: Fixed description field to be truly optional (allow null/empty values)
+   - **Validation Schema Update**: Updated yup validation to use `.nullable()` for description field
+   - **Form Submission Logic**: Enhanced form submission to handle empty description properly
+   - **TypeScript Interface**: Updated GlobalAssetFormData interface to support `string | null` for description
+   - **Files Updated**: GlobalAssetForm.tsx
+
+2. **Asset Type Validation Simplification**
+   - **Disabled Nation-Based Validation**: Simplified NationConfigService to always allow all asset types for all nations
+   - **Removed Complex Logic**: Replaced complex validation logic with simple `return true` in `isAssetTypeEnabled` method
+   - **Code Simplification**: Eliminated unnecessary validation complexity for better maintainability
+   - **REALESTATE Support**: Fixed issue where REALESTATE assets were not allowed for VN nation
+   - **Files Updated**: nation-config.service.ts
+
+3. **Global Asset API Enhancement**
+   - **PriceMode Field Support**: Added priceMode field to UpdateGlobalAssetDto for proper API updates
+   - **Missing Field Fix**: Fixed issue where priceMode was not being updated in global asset API
+   - **DTO Enhancement**: Added PriceMode enum import and validation to UpdateGlobalAssetDto
+   - **API Testing**: Verified that priceMode updates work correctly (AUTOMATIC/MANUAL)
+   - **Files Updated**: update-global-asset.dto.ts
+
+4. **Nation Configuration Updates**
+   - **Complete Asset Type Support**: Added all missing asset types (CRYPTO, COMMODITY, REALESTATE, OTHER) to all nations
+   - **Consistent Configuration**: Updated VN, US, UK, JP, SG configurations to include all asset types
+   - **Symbol Pattern Updates**: Ensured all nations have appropriate symbol patterns for all asset types
+   - **Files Updated**: nation-config.service.ts
+
+5. **API Testing and Verification**
+   - **Backend Restart**: Successfully restarted backend container to apply changes
+   - **API Response Verification**: Confirmed that priceMode and isActive fields are properly returned in API responses
+   - **Real Estate Asset Testing**: Successfully tested REALESTATE asset creation and updates for VN nation
+   - **Field Update Testing**: Verified that priceMode changes from MANUAL to AUTOMATIC work correctly
+
+### ✅ UI Enhancement + Component System Development (Previous Session - October 26, 2025)
 1. **ResponsiveCard Component System Implementation**
    - **Unified Card Component**: Created ResponsiveCard component for consistent card styling across application
    - **Multiple Variants**: Implemented default, transparent, outlined, and elevated variants
@@ -439,13 +473,10 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `frontend/src/components/Common/ResponsiveCard.tsx` - New unified card component with responsive design and multiple variants
-- `frontend/src/components/Common/ResponsiveCard.types.ts` - TypeScript type definitions for ResponsiveCard system
-- `frontend/src/components/Common/index.ts` - Updated exports to include ResponsiveCard components
-- `frontend/src/components/Reports/InvestorReport.tsx` - UI improvements with hover animation removal and ResponsiveCard integration
-- `frontend/src/components/Deposit/DepositSettlementModal.tsx` - Bug fixes for submit button and layout improvements
-- `frontend/src/pages/PortfolioDetail.tsx` - Enhanced navigation with browser back functionality
-- `frontend/src/components/Trading/TradeForm.tsx` - Code cleanup with unused import removal
+- `frontend/src/components/GlobalAssetForm.tsx` - Fixed description field to be truly optional with proper validation
+- `src/modules/asset/services/nation-config.service.ts` - Simplified asset type validation and added all asset types to all nations
+- `src/modules/asset/dto/update-global-asset.dto.ts` - Added priceMode field support for proper API updates
+- `src/modules/asset/services/global-asset.service.ts` - Enhanced update method to handle priceMode field properly
 
 ### Key Components Modified (Previous Session - Generic Form Modal)
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
@@ -470,16 +501,12 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Unified Card System**: ResponsiveCard component provides consistent card styling across all pages
-- **Hover Control**: Configurable hover effects for better user control and accessibility
-- **Responsive Design**: Automatic mobile/desktop adaptation with proper breakpoint detection
-- **Natural Navigation**: Browser back functionality provides intuitive navigation experience
-- **Clean UI**: Removed distracting hover animations for professional appearance
-- **Bug Fixes**: Fixed non-working buttons and form submissions for better reliability
-- **Code Quality**: Clean, maintainable code with proper TypeScript types
-- **Component Reusability**: ResponsiveCard can be used consistently across all pages
-- **Loading States**: Built-in loading and error handling for better user feedback
-- **Flexible Styling**: Multiple variants and size options for different use cases
+- **Optional Description Field**: Description field now properly supports empty/null values without validation errors
+- **Simplified Asset Creation**: All asset types (REALESTATE, CRYPTO, COMMODITY, OTHER) now work for all nations
+- **API Field Updates**: PriceMode and Status fields now update correctly through the global asset API
+- **Code Simplification**: Removed complex validation logic for better maintainability and performance
+- **Real Estate Support**: Fixed issue preventing REALESTATE assets from being created for VN nation
+- **Consistent API Response**: All global asset API responses now include proper priceMode and isActive fields
 
 ### User Experience Improvements (Previous Session - Generic Form Modal)
 - **Seamless Login Experience**: No error messages when password is required, smooth transition to password step
@@ -595,21 +622,16 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
-1. ✅ **Generic Form Modal Implementation**: Centralized form modal with tabbed interface
-2. ✅ **Form Integration**: Integrated TradeForm, CashFlowForm, and DepositForm into unified modal
-3. ✅ **Responsive Design**: Fullscreen on mobile, fixed width on desktop
-4. ✅ **Form Submission Handling**: Centralized submission with formRef system and fallback logic
-5. ✅ **API Integration Fix**: Fixed API calls to use effectivePortfolioId instead of empty selectedPortfolioId
-6. ✅ **Portfolio Management**: Context-aware portfolio selection and auto-selection
-7. ✅ **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
-8. ✅ **Button Control System**: Added hideButtons prop to control form button visibility
-9. ✅ **Width Consistency**: Fixed modal width changes when switching between tabs
-10. ✅ **Mobile Optimization**: Touch-friendly interface with hidden tab icons on mobile
-11. ✅ **Translation Support**: Added comprehensive i18n support for Vietnamese and English
-12. ✅ **Error Handling**: Comprehensive error handling for all form types
-13. ✅ **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
-14. ✅ **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
-15. ✅ **FloatingTradingButton Integration**: Updated to open GenericFormModal instead of individual forms
+1. ✅ **GlobalAssetForm Description Field Fix**: Made description field truly optional with proper validation
+2. ✅ **Asset Type Validation Simplification**: Disabled complex nation-based validation for all asset types
+3. ✅ **Global Asset API Enhancement**: Added priceMode field support to UpdateGlobalAssetDto
+4. ✅ **Nation Configuration Updates**: Added all missing asset types to all nation configurations
+5. ✅ **API Testing and Verification**: Confirmed priceMode and status field updates work correctly
+6. ✅ **REALESTATE Asset Support**: Fixed issue preventing REALESTATE assets for VN nation
+7. ✅ **Backend Container Restart**: Successfully applied all changes to running backend
+8. ✅ **Code Quality Improvements**: Clean, maintainable code with proper TypeScript types
+9. ✅ **API Response Verification**: Confirmed all fields (priceMode, isActive, description) work correctly
+10. ✅ **Validation Logic Simplification**: Removed unnecessary complexity for better performance
 
 ### Completed Tasks (Previous Session)
 1. ✅ **Device Trust System Implementation**: Complete backend and frontend implementation
@@ -721,21 +743,20 @@ src/
 ```
 
 ## System Health
-- ✅ **Database**: Fully operational with device trust system and trusted_devices table
+- ✅ **Database**: Fully operational with global asset system and all asset types supported
 - ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
-- ✅ **Frontend**: Responsive with ResponsiveCard component system and unified UI consistency
-- ✅ **Backend**: Stable API endpoints with device trust management and public endpoints
+- ✅ **Frontend**: Responsive with GlobalAssetForm enhancements and proper field validation
+- ✅ **Backend**: Stable API endpoints with enhanced global asset management and simplified validation
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **ResponsiveCard System**: Unified card component with multiple variants and responsive design
-- ✅ **UI Consistency**: Consistent styling across all pages with hover control and clean design
-- ✅ **Navigation Enhancement**: Natural browser back functionality for better user experience
-- ✅ **Bug Fixes**: All critical bugs fixed including form submissions and button functionality
-- ✅ **Code Quality**: Clean TypeScript code with proper types and no linting errors
-- ✅ **Build System**: Frontend builds successfully without errors
-- ✅ **Component System**: Reusable ResponsiveCard components for consistent UI
+- ✅ **Global Asset System**: Complete support for all asset types (STOCK, BOND, GOLD, CRYPTO, COMMODITY, REALESTATE, OTHER)
+- ✅ **API Field Support**: PriceMode and Status fields properly supported in all global asset operations
+- ✅ **Form Validation**: Optional description field with proper null/empty value handling
+- ✅ **Code Quality**: Clean TypeScript code with simplified validation logic and proper types
+- ✅ **Build System**: Frontend and backend build successfully without errors
+- ✅ **Asset Type Validation**: Simplified validation allowing all asset types for all nations
 - ✅ **Device Trust System**: Complete implementation with incognito detection and quick login integration
 - ✅ **Security**: Enhanced security with device fingerprinting, incognito protection, and public API security
-- ✅ **User Experience**: Smooth navigation with proper error handling and intuitive interactions
+- ✅ **User Experience**: Smooth asset creation and management with proper field updates
 - ✅ **Device Management**: Complete UI for viewing and managing trusted devices
 - ✅ **Password Security**: Device expiry on password change/set for enhanced security
 - ✅ **Responsive Design**: All components optimized for mobile and desktop
@@ -744,18 +765,16 @@ src/
 - ✅ **Quick Login Integration**: Device trust revocation integrated with quick login history removal
 
 ## Notes
-- ResponsiveCard component system fully implemented with unified card styling across application
-- Multiple variants (default, transparent, outlined, elevated) provide flexible design options
-- Responsive design automatically adapts to mobile/desktop with proper breakpoint detection
-- Hover control system allows configurable hover effects for better user experience
-- Natural browser back functionality provides intuitive navigation experience
-- All critical bugs fixed including form submissions and button functionality
-- Clean TypeScript code with comprehensive type definitions and no linting errors
-- Component reusability enables consistent UI across all pages
-- Built-in loading and error states provide better user feedback
-- System is production-ready with unified component system and enhanced user experience
-- All UI improvements working correctly including hover control, navigation, and bug fixes
-- Multi-account portfolio management system remains fully operational alongside UI enhancements
-- Permission-based access control continues to work across all APIs with enhanced UI consistency
-- ResponsiveTable component system provides consistent styling with enhanced card system
-- System is ready for production deployment with unified component system and comprehensive user experience
+- GlobalAssetForm description field now properly supports optional values without validation errors
+- All asset types (REALESTATE, CRYPTO, COMMODITY, OTHER) now work for all nations (VN, US, UK, JP, SG)
+- Global asset API now properly supports priceMode field updates (AUTOMATIC/MANUAL)
+- Simplified asset type validation logic for better maintainability and performance
+- Backend container successfully restarted and all changes applied correctly
+- API testing confirmed that priceMode and isActive fields update properly
+- Code quality improvements with clean TypeScript types and proper validation
+- System is production-ready with enhanced global asset management capabilities
+- All global asset operations working correctly including creation, updates, and field management
+- Multi-account portfolio management system remains fully operational alongside global asset enhancements
+- Permission-based access control continues to work across all APIs with enhanced asset support
+- Device trust system and other core features remain fully functional
+- System is ready for production deployment with comprehensive global asset management

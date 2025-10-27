@@ -45,6 +45,10 @@ export class NationConfigService {
             STOCK: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Cổ phiếu' },
             BOND: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Trái phiếu' },
             GOLD: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Vàng' },
+            CRYPTO: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Tài sản số' },
+            COMMODITY: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Hàng hóa' },
+            REALESTATE: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Bất động sản' },
+            OTHER: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Khác' },
             DEPOSIT: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Tiền gửi' },
             CASH: { enabled: true, defaultMarketCode: 'HOSE', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Tiền mặt' }
           },
@@ -76,6 +80,10 @@ export class NationConfigService {
             STOCK: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Stocks' },
             BOND: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Bonds' },
             GOLD: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Gold' },
+            CRYPTO: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cryptocurrency' },
+            COMMODITY: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Commodities' },
+            REALESTATE: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Real Estate' },
+            OTHER: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Other' },
             DEPOSIT: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Deposits' },
             CASH: { enabled: true, defaultMarketCode: 'NYSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cash' }
           },
@@ -104,6 +112,10 @@ export class NationConfigService {
             STOCK: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Stocks' },
             BOND: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Bonds' },
             GOLD: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Gold' },
+            CRYPTO: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cryptocurrency' },
+            COMMODITY: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Commodities' },
+            REALESTATE: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Real Estate' },
+            OTHER: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Other' },
             DEPOSIT: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Deposits' },
             CASH: { enabled: true, defaultMarketCode: 'LSE', symbolPattern: '^[A-Z]{1,5}$', description: 'Cash' }
           },
@@ -131,6 +143,10 @@ export class NationConfigService {
             STOCK: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Stocks' },
             BOND: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Bonds' },
             GOLD: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Gold' },
+            CRYPTO: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Cryptocurrency' },
+            COMMODITY: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Commodities' },
+            REALESTATE: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Real Estate' },
+            OTHER: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Other' },
             DEPOSIT: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Deposits' },
             CASH: { enabled: true, defaultMarketCode: 'TSE', symbolPattern: '^[0-9]{4}$', description: 'Cash' }
           },
@@ -159,6 +175,10 @@ export class NationConfigService {
             STOCK: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Stocks' },
             BOND: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Bonds' },
             GOLD: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Gold' },
+            CRYPTO: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Cryptocurrency' },
+            COMMODITY: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Commodities' },
+            REALESTATE: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Real Estate' },
+            OTHER: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Other' },
             DEPOSIT: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Deposits' },
             CASH: { enabled: true, defaultMarketCode: 'SGX', symbolPattern: '^[A-Z0-9]{3,10}$', description: 'Cash' }
           },
@@ -231,14 +251,13 @@ export class NationConfigService {
    * @param nationCode - Nation code
    * @param assetType - Asset type
    * @returns True if enabled, false otherwise
+   * 
+   * Note: Simplified implementation - always returns true to allow all asset types
+   * for all nations, removing complex validation logic.
    */
   isAssetTypeEnabled(nationCode: NationCode, assetType: AssetType): boolean {
-    try {
-      const config = this.getNationConfig(nationCode);
-      return config.assetTypes[assetType]?.enabled ?? false;
-    } catch {
-      return false;
-    }
+    // Simplified: Always allow all asset types for all nations
+    return true;
   }
 
   /**

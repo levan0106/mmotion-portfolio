@@ -116,7 +116,7 @@ const createGlobalAsset = async (data: CreateGlobalAssetDto): Promise<GlobalAsse
 };
 
 const updateGlobalAsset = async (id: string, data: UpdateGlobalAssetDto): Promise<GlobalAsset> => {
-  const response = await apiService.api.patch(`/api/v1/global-assets/${id}`, data);
+  const response = await apiService.api.put(`/api/v1/global-assets/${id}`, data);
   return response.data;
 };
 
