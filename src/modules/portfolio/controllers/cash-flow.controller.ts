@@ -241,8 +241,8 @@ export class CashFlowController {
       fundingSource?: string;
     },
   ) {
-    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-    const flowDate = createDepositDto.flowDate ? new Date(createDepositDto.flowDate + 'T00:00:00') : undefined;
+    // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+    const flowDate = createDepositDto.flowDate ? new Date(createDepositDto.flowDate + 'T12:00:00') : undefined;
     const effectiveDate = createDepositDto.effectiveDate || flowDate;
     
     return await this.cashFlowService.createCashFlow(

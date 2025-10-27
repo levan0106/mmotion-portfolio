@@ -1395,7 +1395,11 @@
       "outflow": "Tiền ra",
       "transactions": "Giao dịch",
       "lastTransaction": "Giao dịch cuối",
-      "typeToSearch": "Nhập để tìm kiếm nguồn tiền"
+      "typeToSearch": "Nhập để tìm kiếm nguồn tiền",
+      "enterNew": "Nhập nguồn tiền mới",
+      "enterNewSource": "Nhập nguồn tiền mới",
+      "inputLabel": "Nguồn tiền",
+      "inputPlaceholder": "Nhập nguồn tiền"
     },
     "tabs": {
       "analytics": "Phân tích",
@@ -1415,45 +1419,26 @@
     "tabs": {
       "trading": "Mua/Bán",
       "cashflow": "Nạp/Rút tiền",
-      "deposit": "Tiền gửi"
+      "deposit": "Tiền gửi",
+      "transfer": "Chuyển tiền"
     },
     "options": {
-      "buy": {
-        "title": "Mua tài sản",
-        "description": "Mua cổ phiếu, trái phiếu, vàng..."
+      "trading": {
+        "title": "Mua/Bán tài sản",
+        "description": "Mua/Bán cổ phiếu, trái phiếu, vàng..."
       },
-      "sell": {
-        "title": "Bán tài sản",
-        "description": "Bán cổ phiếu, trái phiếu, vàng..."
-      },
-      "depositCash": {
-        "title": "Nạp tiền",
-        "description": "Nạp tiền vào danh mục"
-      },
-      "withdrawCash": {
-        "title": "Rút tiền",
-        "description": "Rút tiền từ danh mục"
+      "cashFlow": {
+        "title": "Nạp/Rút tiền",
+        "description": "Nạp hoặc rút tiền từ danh mục"
       },
       "bankDeposit": {
         "title": "Tiền gửi ngân hàng",
         "description": "Tạo tiền gửi ngân hàng với lãi suất"
+      },
+      "bankTransfer": {
+        "title": "Chuyển tiền",
+        "description": "Chuyển tiền giữa các nguồn vốn"
       }
-    },
-    "buy": {
-      "title": "Mua tài sản",
-      "description": "Tạo tài sản mới để có thể mua"
-    },
-    "sell": {
-      "title": "Bán tài sản",
-      "description": "Tạo tài sản mới để có thể bán"
-    },
-    "depositCash": {
-      "title": "Nạp tiền",
-      "description": "Nạp tiền vào danh mục đầu tư"
-    },
-    "withdrawCash": {
-      "title": "Rút tiền",
-      "description": "Rút tiền từ danh mục đầu tư"
     },
     "bankDeposit": {
       "title": "Tạo Tiền gửi",
@@ -1888,8 +1873,9 @@
     "title": "Báo cáo tài sản",
     "subtitle": "Tổng quan tài sản hiện có",
     "lastUpdated": "Cập nhật lần cuối",
-    "totalValue": "Tiền gốc và lãi",
+    "totalValue": "Tổng giá trị",
     "totalValueDesc": "Tổng tài sản danh mục",
+    "totalValueWithInterest": "Tổng vốn và lãi",
     "investmentAssets": "Tiền đầu tư",
     "deposits": "Tiền gửi",
     "cashBalance": "Tiền mặt",

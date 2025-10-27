@@ -39,7 +39,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
   existingSources = [],
   label,
   placeholder,
-  helperText,
+  // helperText,
   error = false,
   required = false,
   disabled = false,
@@ -57,31 +57,29 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredSources, setFilteredSources] = useState<string[]>([]);
 
-  // Filter sources based on current value
+  // Filter sources based on current value - only when dropdown is shown
   useEffect(() => {
-    if (!value) {
-      setFilteredSources(existingSources);
-    } else {
-      const filtered = existingSources.filter(source =>
-        source.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredSources(filtered);
+    if (showDropdown) {
+      if (!value) {
+        setFilteredSources(existingSources);
+      } else {
+        const filtered = existingSources.filter(source =>
+          source.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSources(filtered);
+      }
     }
-  }, [value, existingSources]);
+  }, [value, existingSources, showDropdown]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.toUpperCase();
-    setShowDropdown(true);
     
     if (isNewSource) {
       onChange(inputValue);
     } else {
       onChange(inputValue);
-      // Check if it matches an existing source
-      if (existingSources.includes(inputValue)) {
-        setIsNewSource(false);
-        setShowDropdown(false);
-      }
+      // Only show dropdown if user explicitly focuses or clicks
+      // Don't auto-show dropdown while typing
     }
   };
 
@@ -119,17 +117,17 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
     setShowDropdown(false);
   };
 
-  const getHelperText = () => {
-    if (helperText) return helperText;
-    if (isNewSource) return t('fundingSource.enterNew');
-    return t('fundingSource.typeToSearch');
-  };
+  // const getHelperText = () => {
+  //   if (helperText) return helperText;
+  //   if (isNewSource) return t('fundingSource.enterNew');
+  //   return t('cashflow.fundingSource.typeToSearch');
+  // };
 
   return (
     <Box sx={{ position: 'relative' }}>
       <TextField
         fullWidth={fullWidth}
-        label={label || t('fundingSource.label')}
+        label={label || t('fundingSource.inputLabel')}
         value={value}
         onChange={handleChange}
         onFocus={handleFocus}
@@ -140,7 +138,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
         error={error}
         variant={variant}
         size={size}
-        placeholder={placeholder || t('fundingSource.placeholder')}
+        placeholder={placeholder || t('fundingSource.inputPlaceholder')}
         inputProps={{
           style: { textTransform: 'uppercase' }
         }}
@@ -158,7 +156,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
             </InputAdornment>
           ),
         }}
-        helperText={getHelperText()}
+        // helperText={getHelperText()}
       />
       
       {/* Dropdown for existing sources */}
@@ -172,7 +170,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
             zIndex: 1000,
             maxHeight: 200,
             overflow: 'auto',
-            mt: 0.5,
+            mt: -1,
             boxShadow: 2
           }}
         >
@@ -212,7 +210,7 @@ const FundingSourceInput: React.FC<FundingSourceInputProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AddIcon fontSize="small" />
                 <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                  {t('fundingSource.enterNewSource')}
+                  {t('cashflow.fundingSource.enterNewSource')}
                 </Typography>
               </Box>
             </Box>

@@ -25,8 +25,8 @@ import {
   TrendingUp as CashFlowIcon,
   SwapHoriz as TradeIcon,
   Add as AddIcon,
-  TrendingUp as BuyIcon,
   AccountBalance as DepositCashIcon,
+  SwapHoriz as TransferIcon,
 } from '@mui/icons-material';
 import { ModalWrapper } from './ModalWrapper';
 import { ResponsiveTypography } from './ResponsiveTypography';
@@ -34,6 +34,7 @@ import { ResponsiveButton } from './ResponsiveButton';
 import DepositForm from '../Deposit/DepositForm';
 import { TradeForm } from '../Trading/TradeForm';
 import CashFlowForm from '../CashFlow/CashFlowForm';
+import TransferCashForm, { TransferCashData } from '../CashFlow/TransferCashForm';
 import { TradeFormData, TradeSide } from '../../types';
 import { useAccount } from '../../contexts/AccountContext';
 import { usePortfolios } from '../../hooks/usePortfolios';
@@ -45,7 +46,7 @@ interface GenericFormModalProps {
   portfolioId?: string;
 }
 
-type FormType = 'buy' | 'sell' | 'deposit_cash' | 'withdraw_cash' | 'bank_deposit';
+type FormType = 'trading' | 'cash_flow' | 'bank_deposit' | 'bank_transfer';
 
 const GenericFormModal: React.FC<GenericFormModalProps> = ({
   open,
@@ -103,13 +104,13 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
       icon: <TradeIcon />,
       forms: [
         {
-          id: 'buy' as FormType,
-          title: t('genericForm.options.buy.title', 'Mua tài sản'),
-          description: t('genericForm.options.buy.description', 'Mua cổ phiếu, trái phiếu, vàng...'),
-          icon: <BuyIcon />,
+          id: 'trading' as FormType,
+          title: t('genericForm.options.trading.title', 'Mua/Bán tài sản'),
+          description: t('genericForm.options.trading.description', 'Mua/Bán cổ phiếu, trái phiếu, vàng...'),
+          icon: <TradeIcon />,
           color: '#2e7d32',
           category: 'trading',
-        }
+        },
       ],
     },
     {
@@ -118,9 +119,9 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
       icon: <CashFlowIcon />,
       forms: [
         {
-          id: 'deposit_cash' as FormType,
-          title: t('genericForm.options.depositCash.title', 'Nạp tiền'),
-          description: t('genericForm.options.depositCash.description', 'Nạp tiền vào danh mục'),
+          id: 'cash_flow' as FormType,
+          title: t('genericForm.options.cashFlow.title', 'Nạp/Rút tiền'),
+          description: t('genericForm.options.cashFlow.description', 'Nạp hoặc rút tiền từ danh mục'),
           icon: <DepositCashIcon />,
           color: '#2e7d32',
           category: 'cashflow',
@@ -139,6 +140,21 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
           icon: <DepositIcon />,
           color: '#1976d2',
           category: 'deposit',
+        },
+      ],
+    },
+    {
+      id: 'transfer',
+      label: t('genericForm.tabs.transfer', 'Chuyển tiền'),
+      icon: <TransferIcon />,
+      forms: [
+        {
+          id: 'bank_transfer' as FormType,
+          title: t('genericForm.options.bankTransfer.title', 'Chuyển tiền'),
+          description: t('genericForm.options.bankTransfer.description', 'Chuyển tiền giữa các nguồn vốn'),
+          icon: <TransferIcon />,
+          color: '#9c27b0',
+          category: 'transfer',
         },
       ],
     },
@@ -199,7 +215,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
     
     // Fallback: Call form submit handlers directly
     switch (selectedForm) {
-      case 'buy':
+      case 'trading':
         // TradeForm doesn't have a submit button, we need to trigger its internal submit
         const tradeFormElement = formRef?.querySelector('form');
         if (tradeFormElement) {
@@ -207,8 +223,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
           tradeFormElement.dispatchEvent(formEvent);
         }
         break;
-      case 'deposit_cash':
-      case 'withdraw_cash':
+      case 'cash_flow':
         // CashFlowForm doesn't have a submit button, we need to trigger its internal submit
         const cashFlowFormElement = formRef?.querySelector('form');
         if (cashFlowFormElement) {
@@ -218,6 +233,14 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
         break;
       case 'bank_deposit':
         // DepositForm has hidden submit button, should work with the querySelector above
+        break;
+      case 'bank_transfer':
+        // TransferCashForm doesn't have a submit button, we need to trigger its internal submit
+        const transferFormElement = formRef?.querySelector('form');
+        if (transferFormElement) {
+          const formEvent = new Event('submit', { bubbles: true, cancelable: true });
+          transferFormElement.dispatchEvent(formEvent);
+        }
         break;
     }
   };
@@ -361,7 +384,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
         )}
 
         {/* Render Selected Form */}
-        {selectedForm === 'buy' && (
+        {selectedForm === 'trading' && (
           <Box ref={(el) => setFormRef(el as HTMLFormElement)}>
             <TradeForm
               onSubmit={handleTradeSubmit}
@@ -375,7 +398,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
           </Box>
         )}
 
-        {selectedForm === 'deposit_cash' && (
+        {selectedForm === 'cash_flow' && (
           <Box ref={(el) => setFormRef(el as HTMLFormElement)}>
             <CashFlowForm
               onSubmit={async (formData) => {
@@ -386,7 +409,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
                   const payload = {
                     portfolioId: effectivePortfolioId,
                     amount: parseFloat(formData.amount),
-                    type: 'DEPOSIT',
+                    type: formData.type || 'DEPOSIT', // Use formData.type from toggle
                     description: formData.description,
                     reference: formData.reference || undefined,
                     flowDate: formData.flowDate ? formData.flowDate : undefined,
@@ -395,64 +418,29 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
                     fundingSource: formData.fundingSource || undefined,
                   };
 
-                  await apiService.createCashFlow(effectivePortfolioId, accountId, 'deposit', payload);
+                  const isDeposit = payload.type === 'DEPOSIT';
+                  await apiService.createCashFlow(effectivePortfolioId, accountId, isDeposit ? 'deposit' : 'withdrawal', payload);
                   
                   setError(null);
                   onClose(); // Close the generic modal
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : 'Failed to create deposit');
+                  setError(err instanceof Error ? err.message : 'Failed to create cash flow');
                 } finally {
                   setLoading(false);
                 }
               }}
               onCancel={() => {}} // No-op since we handle cancel at modal level
-              dialogType="deposit"
+              dialogType="deposit" // Default to deposit, toggle will handle the rest
               editingCashFlow={null}
               loading={loading}
               error={error}
               portfolioFundingSource={portfolios?.find(p => p.portfolioId === effectivePortfolioId)?.fundingSource || ''}
               hideButtons={true}
-            />
-          </Box>
-        )}
-
-        {selectedForm === 'withdraw_cash' && (
-          <Box ref={(el) => setFormRef(el as HTMLFormElement)}>
-            <CashFlowForm
-              onSubmit={async (formData) => {
-                try {
-                  setLoading(true);
-                  setError(null);
-
-                  const payload = {
-                    portfolioId: effectivePortfolioId,
-                    amount: parseFloat(formData.amount),
-                    type: 'WITHDRAWAL',
-                    description: formData.description,
-                    reference: formData.reference || undefined,
-                    flowDate: formData.flowDate ? formData.flowDate : undefined,
-                    currency: formData.currency,
-                    status: formData.status,
-                    fundingSource: formData.fundingSource || undefined,
-                  };
-
-                  await apiService.createCashFlow(effectivePortfolioId, accountId, 'withdrawal', payload);
-                  
-                  setError(null);
-                  onClose(); // Close the generic modal
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : 'Failed to create withdrawal');
-                } finally {
-                  setLoading(false);
-                }
+              showToggle={true}
+              onTypeChange={() => {
+                // No need to update selectedForm since we're using the same form
+                // The toggle will handle the type internally
               }}
-              onCancel={() => {}} // No-op since we handle cancel at modal level
-              dialogType="withdrawal"
-              editingCashFlow={null}
-              loading={loading}
-              error={error}
-              portfolioFundingSource={portfolios?.find(p => p.portfolioId === effectivePortfolioId)?.fundingSource || ''}
-              hideButtons={true}
             />
           </Box>
         )}
@@ -470,21 +458,83 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
             />
           </Box>
         )}
+
+        {selectedForm === 'bank_transfer' && (
+          <Box ref={(el) => setFormRef(el as HTMLFormElement)}>
+            <TransferCashForm
+              onSubmit={async (transferData: TransferCashData) => {
+                try {
+                  setLoading(true);
+                  setError(null);
+                  
+                  const effectivePortfolioId = portfolioId || selectedPortfolioId;
+                  if (!effectivePortfolioId) {
+                    throw new Error('No portfolio selected');
+                  }
+                  
+                  // Validate required fields
+                  if (!transferData.fromSource || !transferData.toSource || !transferData.amount || transferData.amount <= 0) {
+                    throw new Error('Please fill in all required fields');
+                  }
+                  
+                  if (transferData.fromSource === transferData.toSource) {
+                    throw new Error('From source and to source cannot be the same');
+                  }
+
+                  const payload = {
+                    portfolioId: effectivePortfolioId,
+                    fromSource: transferData.fromSource,
+                    toSource: transferData.toSource,
+                    amount: transferData.amount,
+                    description: transferData.description || `Transfer from ${transferData.fromSource} to ${transferData.toSource}`,
+                    // Fix timezone issue: handle both ISO string and date string formats
+                    transferDate: (() => {
+                      let dateStr = transferData.transferDate;
+                      if (dateStr.includes('T')) {
+                        // If it's already an ISO string, extract date part
+                        dateStr = dateStr.split('T')[0];
+                      }
+                      // Append 'T12:00:00' to ensure local time interpretation
+                      return new Date(dateStr + 'T12:00:00').toISOString();
+                    })(),
+                  };
+
+                  // Call API to create transfer using transferCashFlow
+                  await apiService.transferCashFlow(effectivePortfolioId, accountId, payload);
+                  
+                  setError(null);
+                  onClose(); // Close the generic modal
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Failed to create transfer');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              loading={loading}
+              error={error}
+              hideSubmitButton={true}
+              showActions={false}
+              portfolioId={effectivePortfolioId}
+            />
+          </Box>
+        )}
       </Box>
     );
   };
 
   return (
+    <>
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title={selectedForm ? tabConfigs.flatMap(tab => tab.forms).find(f => f.id === selectedForm)?.title || t('genericForm.title', 'Tạo giao dịch mới') : t('genericForm.title', 'Tạo giao dịch mới')}
+      title=""
       icon={<AddIcon />}
       maxWidth={isMobile ? false : "lg"}
       fullWidth={isMobile}
       fullScreen={isMobile}
       loading={loading}
       showCloseButton={!selectedForm}
+      hideHeader={true}
       actions={
         selectedForm ? (
           <>
@@ -511,7 +561,16 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
       }
     >
       {/* Always show tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: isMobile ? 2 : 3 }}>
+        <Box sx={{ 
+          borderBottom: 1, 
+          borderColor: 'divider', 
+          mb: isMobile ? 2 : 3,
+          mt: isMobile ? -2 : 0,
+          position: 'sticky',
+          top: -16,
+          backgroundColor: 'background.paper',
+          zIndex: 1,
+        }}>
         <Tabs 
           value={activeTab} 
           onChange={handleTabChange} 
@@ -529,7 +588,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
                 textTransform: 'none', 
                 fontWeight: 600,
                 fontSize: isMobile ? '0.75rem' : '0.875rem',
-                py: isMobile ? 1 : 1.5,
+                py: 0,
                 px: isMobile ? 1 : 2,
                 minHeight: isMobile ? 48 : 'auto'
               }}
@@ -541,6 +600,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
       {/* Render form content */}
       {selectedForm ? renderSelectedForm() : renderFormSelection()}
     </ModalWrapper>
+  </>
   );
 };
 

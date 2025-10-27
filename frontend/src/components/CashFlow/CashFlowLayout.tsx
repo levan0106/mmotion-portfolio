@@ -147,17 +147,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     totalPages: 0,
   });
 
-  // Get unique funding sources from cash flows
-  const getFundingSources = () => {
-    const sources = new Set<string>();
-    allCashFlows.forEach(cf => {
-      if (cf.fundingSource && cf.fundingSource.trim()) {
-        sources.add(cf.fundingSource);
-      }
-    });
-    return Array.from(sources).sort();
-  };
-
   // Load all cash flows for summary calculations
   const loadAllCashFlows = async () => {
     try {
@@ -1618,7 +1607,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         }}
         loading={loading}
         error={error}
-        fundingSources={getFundingSources()}
+        portfolioId={portfolioId}
       />
     </Box>
     </LocalizationProvider>

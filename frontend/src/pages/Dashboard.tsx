@@ -216,6 +216,10 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+  const bestPortfolio = portfolios.length > 0 ? portfolios.reduce((best, current) => 
+    (current.unrealizedInvestPnL/current.totalInvestValue || 0) > (best.unrealizedInvestPnL/best.totalInvestValue || 0) ? current : best
+  ) : null;
+
   return (
     <Fade in timeout={800}>
       <Box>
@@ -414,15 +418,10 @@ const Dashboard: React.FC = () => {
                           {t('dashboard.bestPerforming')}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardTitle" sx={{ color: 'success.main' }}>
-                          {portfolios.length > 0 ? portfolios.reduce((best, current) => 
-                            (current.unrealizedInvestPnL/current.totalInvestValue || 0) > (best.unrealizedInvestPnL/best.totalInvestValue || 0) ? current : best
-                          ).name : 'N/A'}
+                          {bestPortfolio?.name || 'N/A'}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardValueMedium" sx={{ color: 'success.main' }}>
-                          {formatCurrency(
-                            Math.max(...portfolios.map(p => Number(p.unrealizedInvestPnL) || 0)), 
-                            displayCurrency
-                          )}
+                          {formatCurrency(bestPortfolio?.unrealizedInvestPnL || 0, displayCurrency)}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
@@ -433,23 +432,14 @@ const Dashboard: React.FC = () => {
                           {t('dashboard.bestPortfolioCash')}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardTitle" sx={{ color: 'info.main' }}>
-                          {portfolios.length > 0 ? (() => {
-                            const bestPortfolio = portfolios.reduce((best, current) => 
-                              (current.unrealizedInvestPnL/current.totalInvestValue || 0) > (best.unrealizedInvestPnL/best.totalInvestValue || 0) ? current : best
-                            );
-                            const bestPortfolioCash = normalizeAmount(bestPortfolio.cashBalance);
-                            const bestPortfolioTotalValue = normalizeAmount(bestPortfolio.totalInvestValue);
-                            const bestPortfolioCashPercentage = bestPortfolioTotalValue > 0 ? (bestPortfolioCash / bestPortfolioTotalValue) * 100 : 0;
-                            return formatPercentage(bestPortfolioCashPercentage);
-                          })() : 'N/A'}
+                          {bestPortfolio ? 
+                            formatPercentage((bestPortfolio?.totalInvestValue && bestPortfolio?.totalInvestValue > 0) ? 
+                            (normalizeAmount(bestPortfolio?.cashBalance || 0) / normalizeAmount(bestPortfolio?.totalInvestValue || 0)) * 100 : 
+                            0)
+                          : 'N/A'}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="cardValueMedium" sx={{ color: 'info.main' }}>
-                          {portfolios.length > 0 ? (() => {
-                            const bestPortfolio = portfolios.reduce((best, current) => 
-                              (current.unrealizedInvestPnL/current.totalInvestValue || 0) > (best.unrealizedInvestPnL/best.totalInvestValue || 0) ? current : best
-                            );
-                            return formatCurrency(normalizeAmount(bestPortfolio.cashBalance), displayCurrency);
-                          })() : 'N/A'}
+                          {bestPortfolio ? formatCurrency(normalizeAmount(bestPortfolio?.cashBalance || 0), displayCurrency) : 'N/A'}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>

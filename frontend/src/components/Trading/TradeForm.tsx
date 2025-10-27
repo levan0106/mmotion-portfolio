@@ -17,6 +17,8 @@ import {
   FormControl,
   InputLabel,
   Button,
+  Collapse,
+  Fade,
 } from '@mui/material';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
@@ -147,6 +149,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   
   // Additional information section collapse state
   const [isAdditionalInfoExpanded, setIsAdditionalInfoExpanded] = useState(false);
+  
+  // Exchange and funding source section collapse state
+  const [isExchangeFundingExpanded, setIsExchangeFundingExpanded] = useState(false);
 
   // Form values for calculations
   const watchedQuantity = formData.quantity;
@@ -657,8 +662,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     display: 'flex', 
                     alignItems: 'center', 
                     cursor: 'pointer',
-                    mb: 2,
-                    mt: 2,
+                    mb: 0,
+                    mt: 1,
                     '&:hover': {
                       bgcolor: 'action.hover',
                       borderRadius: 1
@@ -668,7 +673,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   }}
                   onClick={() => setIsAdditionalInfoExpanded(!isAdditionalInfoExpanded)}
                 >
-                  <ResponsiveTypography variant="cardLabel" sx={{ flexGrow: 1 }}>
+                  <ResponsiveTypography variant="cardLabel" sx={{ flexGrow: 1, color: 'primary.main' }}>
                     {t('trading.form.additionalInformation')}
                   </ResponsiveTypography>
                   <Box sx={{ 
@@ -679,89 +684,117 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   </Box>
                 </Box>
                 
-                {isAdditionalInfoExpanded && (
-                  <Grid container spacing={2}>
-                    {/* Fee */}
-                    <Grid item xs={12} md={6}>
-                        <MoneyInput
-                          value={formData.fee || 0}
-                          onChange={(fee) => handleFieldChange('fee', fee)}
-                          label={`${t('trading.form.tradingFee')} (${baseCurrency})`}
-                          error={!!errors.fee}
-                          disabled={isLoading}
-                          currency={baseCurrency}
-                        />
-                      </Grid>
+                 <Collapse in={isAdditionalInfoExpanded} timeout="auto" unmountOnExit>
+                   <Grid container spacing={1} sx={{ mt: 0 }}>
+                     {/* Fee */}
+                     <Grid item xs={12} md={6}>
+                         <MoneyInput
+                           value={formData.fee || 0}
+                           onChange={(fee) => handleFieldChange('fee', fee)}
+                           label={`${t('trading.form.tradingFee')} (${baseCurrency})`}
+                           error={!!errors.fee}
+                           disabled={isLoading}
+                           currency={baseCurrency}
+                         />
+                       </Grid>
 
-                      {/* Tax */}
-                      <Grid item xs={12} md={6}>
-                        <MoneyInput
-                          value={formData.tax || 0}
-                          onChange={(tax) => handleFieldChange('tax', tax)}
-                          label={`${t('trading.form.tax')} (${baseCurrency})`}
-                          error={!!errors.tax}
-                          disabled={isLoading}
-                          currency={baseCurrency}
-                        />
-                      </Grid>
-                  </Grid>
-                )}
+                       {/* Tax */}
+                       <Grid item xs={12} md={6}>
+                         <MoneyInput
+                           value={formData.tax || 0}
+                           onChange={(tax) => handleFieldChange('tax', tax)}
+                           label={`${t('trading.form.tax')} (${baseCurrency})`}
+                           error={!!errors.tax}
+                           disabled={isLoading}
+                           currency={baseCurrency}
+                         />
+                       </Grid>
+                   </Grid>
+                 </Collapse>
               </Box>
 
             {/* Exchange and Funding Source Section */}
             <Box>
-              {/* <ResponsiveTypography variant="cardLabel" sx={{ mb: 2 , mt: 2 }}>
-                {t('trading.form.exchangeFunding')}
-              </ResponsiveTypography> */}
-              <Grid container spacing={2} sx={{ mt: 2 }}>
-                {/* Exchange */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    value={formData.exchange}
-                    onChange={(e) => handleFieldChange('exchange', e.target.value.toUpperCase())}
-                    label={t('trading.form.exchangePlatform')}
-                    fullWidth
-                    error={!!errors.exchange}
-                    disabled={isLoading}
-                    placeholder={t('trading.form.enterExchangePlatform')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2
-                      }
-                    }}
-                    inputProps={{
-                      style: { textTransform: 'uppercase' }
-                    }}
-                  />
-                </Grid>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  mb: 0,
+                  mt: 1,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    borderRadius: 1
+                  },
+                  p: 1,
+                  borderRadius: 1
+                }}
+                onClick={() => setIsExchangeFundingExpanded(!isExchangeFundingExpanded)}
+              >
+                <ResponsiveTypography variant="cardLabel" sx={{ flexGrow: 1, color: 'primary.main' }}>
+                  {t('trading.form.exchangeFunding')}
+                </ResponsiveTypography>
+                <Box sx={{ 
+                  transform: isExchangeFundingExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease-in-out'
+                }}>
+                  ▼
+                </Box>
+              </Box>
+              
+              <Collapse in={isExchangeFundingExpanded} timeout="auto" unmountOnExit>
+                <Grid container spacing={1} sx={{ mt: 0 }}>
+                  {/* Exchange */}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      value={formData.exchange}
+                      onChange={(e) => handleFieldChange('exchange', e.target.value.toUpperCase())}
+                      label={t('trading.form.exchangePlatform')}
+                      fullWidth
+                      error={!!errors.exchange}
+                      disabled={isLoading}
+                      placeholder={t('trading.form.enterExchangePlatform')}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2
+                        }
+                      }}
+                      inputProps={{
+                        style: { textTransform: 'uppercase' }
+                      }}
+                    />
+                  </Grid>
 
-                {/* Funding Source */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    value={formData.fundingSource}
-                    onChange={(e) => handleFieldChange('fundingSource', e.target.value.toUpperCase())}
-                    label={t('trading.form.fundingSource')}
-                    fullWidth
-                    error={!!errors.fundingSource}
-                    disabled={isLoading}
-                    placeholder={t('trading.form.enterFundingSource')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2
-                      }
-                    }}
-                    inputProps={{
-                      style: { textTransform: 'uppercase' }
-                    }}
-                  />
+                  {/* Funding Source */}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      value={formData.fundingSource}
+                      onChange={(e) => handleFieldChange('fundingSource', e.target.value.toUpperCase())}
+                      label={t('trading.form.fundingSource')}
+                      fullWidth
+                      error={!!errors.fundingSource}
+                      disabled={isLoading}
+                      placeholder={t('trading.form.enterFundingSource')}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2
+                        }
+                      }}
+                      inputProps={{
+                        style: { textTransform: 'uppercase' }
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              </Collapse>
             </Box>
 
-            {/* Summary Section - Compact List View with 2 fields per row */}
-            <Box sx={{ mt: 3 }}>
-              <ResponsiveCard variant="transparent" size="small"
-              spacing="none" hoverable={false} title={t('trading.form.tradeSummary')}>
+            {/* Summary Section - Only show when required fields are filled */}
+            {formData.assetId && formData.quantity > 0 && formData.price > 0 && (
+              <Fade in={true} timeout={600}>
+                <Box sx={{ mt: 3 }}>
+                  <ResponsiveCard variant="transparent" size="small"
+                  spacing="none" hoverable={false} title={t('trading.form.tradeSummary')}>
                   {/* Row 1: Trade Value + Fees and Taxes */}
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                     {/* Trade Value - Left half */}
@@ -882,7 +915,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     </Box>
                   </Box>
                 </ResponsiveCard>
-            </Box>
+                </Box>
+              </Fade>
+            )}
 
             {/* Submit Button */}
             {showSubmitButton && (

@@ -46,6 +46,7 @@ interface ModalWrapperProps {
   disableCloseOnEscape?: boolean;
   titleColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   size?: 'small' | 'medium' | 'large';
+  hideHeader?: boolean; // Hide the entire header section
   // Auto mobile detection options
   autoMobileDetection?: boolean; // Enable automatic mobile detection
   mobileBreakpoint?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'; // Breakpoint for mobile detection
@@ -67,6 +68,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   disableCloseOnEscape = false,
   titleColor = 'primary',
   size = 'medium',
+  hideHeader = false,
   autoMobileDetection = true,
   mobileBreakpoint = 'sm',
 }) => {
@@ -169,65 +171,67 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         }
       }}
     >
-      <DialogTitle
-        sx={{
-          p: sizeStyles.titlePadding,
-          py: 1,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          backgroundColor: 'background.paper',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            {icon && (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {icon}
+      {!hideHeader && (
+        <DialogTitle
+          sx={{
+            p: sizeStyles.titlePadding,
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              {icon && (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {icon}
+                </Box>
+              )}
+              <Box
+                sx={{
+                  fontWeight: 500,
+                  color: getTitleColor(),
+                  flex: 1,
+                  fontSize: '1.25rem',
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {title}
               </Box>
-            )}
-            <Box
-              sx={{
-                fontWeight: 500,
-                color: getTitleColor(),
-                flex: 1,
-                fontSize: '1.25rem',
-                lineHeight: 1.2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {title}
             </Box>
+            {showCloseButton && (
+              <IconButton
+                onClick={handleClose}
+                disabled={loading}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    color: 'text.primary',
+                  },
+                  '&:disabled': {
+                    color: 'text.disabled',
+                  },
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            )}
           </Box>
-          {showCloseButton && (
-            <IconButton
-              onClick={handleClose}
-              disabled={loading}
-              size="small"
-              sx={{
-                color: 'text.secondary',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                  color: 'text.primary',
-                },
-                '&:disabled': {
-                  color: 'text.disabled',
-                },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          )}
-        </Box>
-      </DialogTitle>
+        </DialogTitle>
+      )}
 
       <DialogContent
         sx={{
           p: sizeStyles.contentPadding,
           py: 2,
           mt: 2,
-          backgroundColor: 'background.default',
+          backgroundColor: 'background.paper',
         }}
       >
         {children}

@@ -171,7 +171,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
       {/* Hidden submit button for form submission */}
       <button type="submit" style={{ display: 'none' }} />
       
-      <Grid container spacing={2} sx={{ mt: 1 }}>
+      <Grid container spacing={2} sx={{ mt: 0 }}>
         <Grid item xs={12} md={6}>
           <Controller
             name="bankName"
@@ -251,24 +251,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
             )}
           />
         </Grid>
-        
-        {/* <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label={t('deposit.form.term')}
-            select
-            value={selectedTerm}
-            onChange={(e) => handleTermChange(e.target.value)}
-            helperText={t('deposit.form.termHelper')}
-          >
-            {termOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid> */}
-        
+                
         <Grid item xs={12} md={6}>
           <Controller
             name="startDate"

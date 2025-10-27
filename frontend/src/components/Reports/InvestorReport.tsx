@@ -590,7 +590,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                 },
                 {
                   key: 'totalValue',
-                  header: t('investorReport.totalValue', 'Tổng giá trị'),
+                  header: t('investorReport.totalValueWithInterest', 'Tổng vốn và lãi'),
                   align: 'right',
                   render: (deposit: any) => (
                     <ResponsiveTypography variant="tableCell" fontWeight="medium" color="primary.main">

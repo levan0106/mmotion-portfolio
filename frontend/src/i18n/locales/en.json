@@ -217,8 +217,7 @@
     "passwordSet": "Password set, profile optional",
     "profileNeedsCompletion": "Profile needs completion",
     "completeYourProfile": "Complete your profile",
-    "clickToGoToHome": "Click to go to Home",
-    "settings": "Settings"
+    "clickToGoToHome": "Click to go to Home"
   },
   "portfolio": {
     "title": "Portfolio Management",
@@ -1341,7 +1340,11 @@
       "outflow": "Outflow",
       "transactions": "Transactions",
       "lastTransaction": "Last Transaction",
-      "typeToSearch": "Type to search funding sources"
+      "typeToSearch": "Type to search funding sources",
+      "enterNew": "Enter new funding source",
+      "enterNewSource": "Enter new funding source",
+      "inputLabel": "Funding Source",
+      "inputPlaceholder": "Enter funding source"
     },
     "tabs": {
       "analytics": "Analytics",
@@ -1361,45 +1364,26 @@
     "tabs": {
       "trading": "Buy/Sell",
       "cashflow": "Deposit/Withdraw",
-      "deposit": "Bank Deposit"
+      "deposit": "Bank Deposit",
+      "transfer": "Transfer"
     },
     "options": {
-      "buy": {
-        "title": "Buy Asset",
-        "description": "Buy stocks, bonds, gold..."
+      "trading": {
+        "title": "Buy/Sell Asset",
+        "description": "Buy/Sell stocks, bonds, gold..."
       },
-      "sell": {
-        "title": "Sell Asset",
-        "description": "Sell stocks, bonds, gold..."
-      },
-      "depositCash": {
-        "title": "Deposit Cash",
-        "description": "Deposit money into portfolio"
-      },
-      "withdrawCash": {
-        "title": "Withdraw Cash",
-        "description": "Withdraw money from portfolio"
+      "cashFlow": {
+        "title": "Deposit/Withdraw",
+        "description": "Deposit or withdraw money from portfolio"
       },
       "bankDeposit": {
         "title": "Bank Deposit",
         "description": "Create bank deposit with interest rate"
+      },
+      "bankTransfer": {
+        "title": "Transfer Money",
+        "description": "Transfer money between funding sources"
       }
-    },
-    "buy": {
-      "title": "Buy Asset",
-      "description": "Create new asset to buy"
-    },
-    "sell": {
-      "title": "Sell Asset",
-      "description": "Create new asset to sell"
-    },
-    "depositCash": {
-      "title": "Deposit Cash",
-      "description": "Deposit money into investment portfolio"
-    },
-    "withdrawCash": {
-      "title": "Withdraw Cash",
-      "description": "Withdraw money from investment portfolio"
     },
     "bankDeposit": {
       "title": "Create Bank Deposit",
@@ -1831,6 +1815,7 @@
     "lastUpdated": "Last Updated",
     "totalValue": "Total Portfolio Value",
     "totalValueDesc": "Total Portfolio Assets",
+    "totalValueWithInterest": "Total Value with Interest",
     "investmentAssets": "Investment Assets",
     "deposits": "Deposits",
     "cashBalance": "Cash",

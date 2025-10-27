@@ -4,8 +4,8 @@ import {
   Box,
   Grid,
   Alert,
-  Chip,
   TextField,
+  Switch,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -38,6 +38,8 @@ interface CashFlowFormProps {
   error: string | null;
   portfolioFundingSource?: string;
   hideButtons?: boolean;
+  showToggle?: boolean; // New prop to show/hide toggle
+  onTypeChange?: (newType: 'deposit' | 'withdrawal') => void; // Callback for type change
 }
 
 const CashFlowForm: React.FC<CashFlowFormProps> = ({
@@ -49,8 +51,13 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
   error,
   portfolioFundingSource = '',
   hideButtons = false,
+  showToggle = false,
+  onTypeChange,
 }) => {
   const { t } = useTranslation();
+  
+  // State for toggle between deposit/withdrawal
+  const [isDeposit, setIsDeposit] = useState(dialogType === 'deposit');
   
   const [formData, setFormData] = useState({
     amount: '',
@@ -81,6 +88,17 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
     });
   };
 
+  // Handle toggle change
+  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newIsDeposit = event.target.checked;
+    setIsDeposit(newIsDeposit);
+    
+    // Call parent callback if provided
+    if (onTypeChange) {
+      onTypeChange(newIsDeposit ? 'deposit' : 'withdrawal');
+    }
+  };
+
   // Reset form when component mounts or editingCashFlow changes
   useEffect(() => {
     if (editingCashFlow) {
@@ -98,73 +116,32 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
         status: editingCashFlow.status || 'COMPLETED',
         fundingSource: editingCashFlow.fundingSource || '',
       });
+      
+      // Set toggle state based on cash flow type
+      setIsDeposit(editingCashFlow.type === 'DEPOSIT');
     } else {
       resetFormWithAutoFlowDate();
+      // Reset toggle state based on dialogType
+      setIsDeposit(dialogType === 'deposit');
     }
-  }, [editingCashFlow, portfolioFundingSource]);
+  }, [editingCashFlow, portfolioFundingSource, dialogType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData);
-  };
-
-  // Get type icon
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'DEPOSIT': return '💰';
-      case 'WITHDRAWAL': return '💸';
-      case 'DIVIDEND': return '📈';
-      case 'INTEREST': return '📊';
-      case 'FEE': return '❌';
-      case 'TAX': return '❌';
-      case 'ADJUSTMENT': return '⚖️';
-      case 'BUY_TRADE': return '💸';
-      case 'SELL_TRADE': return '💰';
-      case 'DEPOSIT_SETTLEMENT': return '💰';
-      case 'DEPOSIT_CREATION': return '💸';
-      default: return undefined;
-    }
-  };
-
-  const getTypeDescription = (type: string) => {
-    switch (type) {
-      case 'deposit': return t('cashflow.typeDescription.deposit');
-      case 'withdrawal': return t('cashflow.typeDescription.withdrawal');
-      case 'dividend': return t('cashflow.typeDescription.dividend');
-      case 'interest': return t('cashflow.typeDescription.interest');
-      case 'fee': return t('cashflow.typeDescription.fee');
-      case 'tax': return t('cashflow.typeDescription.tax');
-      case 'adjustment': return t('cashflow.typeDescription.adjustment');
-      case 'buy_trade': return t('cashflow.typeDescription.buyTrade');
-      case 'sell_trade': return t('cashflow.typeDescription.sellTrade');
-      case 'deposit_settlement': return t('cashflow.typeDescription.depositSettlement');
-      case 'deposit_creation': return t('cashflow.typeDescription.depositCreation');
-      default: return t('cashflow.typeDescription.default');
-    }
-  };
-
-  const formatTypeName = (type: string) => {
-    return type.replace(/_/g, ' ');
-  };
-
-  const isCashFlowIn = (type: string) => {
-    return ['DEPOSIT', 'DIVIDEND', 'INTEREST', 'SELL_TRADE', 'DEPOSIT_SETTLEMENT'].includes(type);
-  };
-
-  const getCashFlowDirection = (type: string) => {
-    return isCashFlowIn(type) ? 'IN' : 'OUT';
-  };
-
-  const getCashFlowDirectionColor = (type: string) => {
-    return isCashFlowIn(type) ? 'success' : 'error';
-  };
-
-  const getCashFlowDirectionIcon = (type: string) => {
-    return isCashFlowIn(type) ? '📈' : '📉';
+    // Add type to formData based on current toggle state
+    const submitData = {
+      ...formData,
+      type: isDeposit ? 'DEPOSIT' : 'WITHDRAWAL'
+    };
+    await onSubmit(submitData);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ pt: 2 }}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ pt: 0 }}>
+      {/* Hidden submit button for external trigger */}
+      {hideButtons && (
+        <button type="submit" style={{ display: 'none' }} />
+      )}
       {editingCashFlow && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <ResponsiveTypography variant="tableCell">
@@ -190,7 +167,7 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
       )}
       
       {/* Cash Flow Type Indicator */}
-      {!editingCashFlow && (
+      {/* {!editingCashFlow && (
         <Alert 
           severity={getCashFlowDirectionColor(dialogType.toUpperCase()) === 'success' ? 'success' : 'error'}
           sx={{ 
@@ -220,12 +197,44 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
             </Box>
           </Box>
         </Alert>
+      )} */}
+      
+      {/* Simple Toggle Button for Deposit/Withdrawal */}
+      {showToggle && !editingCashFlow && (
+        <Box sx={{ 
+          mb: 0, 
+          display: 'flex', 
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <ResponsiveTypography variant="tableCell" color="text.secondary">
+            {isDeposit ? t('cashflow.deposit', 'Nạp') : t('cashflow.withdrawal', 'Rút')}
+          </ResponsiveTypography>
+          <Switch
+            checked={isDeposit}
+            onChange={handleToggleChange}
+            size="medium"
+            sx={{
+              '& .MuiSwitch-thumb': {
+                backgroundColor: isDeposit ? '#4caf50' : '#f44336',
+                width: 20,
+                height: 20,
+              },
+              '& .MuiSwitch-track': {
+                backgroundColor: isDeposit ? '#4caf50' : '#f44336',
+                opacity: 0.3,
+                height: 14,
+              },
+            }}
+          />
+        </Box>
       )}
       
-      <Grid container spacing={3}>
+      <Grid container spacing={1}>
         {/* Left Column */}
         <Grid item xs={12} md={6}>
-          <Box sx={{ pr: { md: 1.5 } }}>
+          <Box sx={{ pr: { md: 1 } }}>
             <MoneyInput
               value={parseFloat(formData.amount) || 0}
               onChange={(amount) => setFormData({ ...formData, amount: amount.toString() })}
@@ -253,7 +262,7 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
         
         {/* Right Column */}
         <Grid item xs={12} md={6}>
-          <Box sx={{ pl: { md: 1.5 } }}>
+          <Box sx={{ pl: { md: 1 } }}>
             <TextField
               fullWidth
               label={t('cashflow.form.flowDate')}
