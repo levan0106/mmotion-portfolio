@@ -31,7 +31,7 @@ interface GlobalAssetFormData {
   currency: string;
   timezone: string;
   description?: string | null;
-  createdBy?: string;
+  createdBy?: string | null;
   priceMode: string;
   isActive: boolean;
 }
@@ -73,7 +73,7 @@ const validationSchema = yup.object({
     .required('Symbol is required')
     .min(1, 'Symbol must be at least 1 character')
     .max(20, 'Symbol must be at most 20 characters')
-    .matches(/^[A-Z0-9.-]+$/, 'Symbol must contain only uppercase letters, numbers, dots, and hyphens'),
+    .matches(/^[A-Z0-9-]+$/, 'Symbol must contain only uppercase letters, numbers, and hyphens'),
   name: yup
     .string()
     .required('Name is required')
@@ -88,7 +88,7 @@ const validationSchema = yup.object({
   marketCode: yup.string().default('HOSE'),
   currency: yup.string().default('VND'),
   timezone: yup.string().default('Asia/Ho_Chi_Minh'),
-  createdBy: yup.string().optional(),
+  createdBy: yup.string().nullable().optional(),
   priceMode: yup
     .string()
     .required('Price mode is required')
@@ -131,8 +131,13 @@ const NATION_CONFIG: NationConfig[] = [
     ],
     defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
-      STOCK: '^[A-Z]{3,4}$',
-      BOND: '^[A-Z]{2,4}[0-9]{2,4}$',
+      STOCK: '^[A-Z0-9-]+$',
+      BOND: '^[A-Z0-9-]+$',
+      CRYPTO: '^[A-Z0-9-]+$',
+      COMMODITY: '^[A-Z0-9-]+$',
+      GOLD: '^[A-Z0-9-]+$',
+      REALESTATE: '^[A-Z0-9-]+$',
+      OTHER: '^[A-Z0-9-]+$',
     },
     tradingHours: {
       timezone: 'Asia/Ho_Chi_Minh',
@@ -157,8 +162,13 @@ const NATION_CONFIG: NationConfig[] = [
     ],
     defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
-      STOCK: '^[A-Z]{1,5}$',
-      BOND: '^[A-Z]{2,4}[0-9]{2,4}$',
+      STOCK: '^[A-Z0-9-]+$',
+      BOND: '^[A-Z0-9-]+$',
+      CRYPTO: '^[A-Z0-9-]+$',
+      COMMODITY: '^[A-Z0-9-]+$',
+      GOLD: '^[A-Z0-9-]+$',
+      REALESTATE: '^[A-Z0-9-]+$',
+      OTHER: '^[A-Z0-9-]+$',
     },
     tradingHours: {
       timezone: 'America/New_York',
@@ -182,8 +192,13 @@ const NATION_CONFIG: NationConfig[] = [
     ],
     defaultPriceSource: 'EXTERNAL_API',
     assetTypePatterns: {
-      STOCK: '^[A-Z]{2,4}$',
-      BOND: '^[A-Z]{2,4}[0-9]{2,4}$',
+      STOCK: '^[A-Z0-9-]+$',
+      BOND: '^[A-Z0-9-]+$',
+      CRYPTO: '^[A-Z0-9-]+$',
+      COMMODITY: '^[A-Z0-9-]+$',
+      GOLD: '^[A-Z0-9-]+$',
+      REALESTATE: '^[A-Z0-9-]+$',
+      OTHER: '^[A-Z0-9-]+$',
     },
     tradingHours: {
       timezone: 'Europe/London',
@@ -215,7 +230,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
     reset,
     watch,
     setValue,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<GlobalAssetFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -441,7 +456,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
               </Grid>
 
               {/* Created By - Read Only */}
-              {(mode === 'edit' && initialData?.createdBy) || (mode === 'create' && accountId) ? (
+              {(mode === 'edit') || (mode === 'create' && accountId) ? (
                 <Grid item xs={12} sm={6}>
                   <Controller
                     name="createdBy"
@@ -449,6 +464,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                     render={({ field }) => (
                       <TextField
                         {...field}
+                        value={field.value || ''}
                         label="Created By (Account ID)"
                         fullWidth
                         disabled
@@ -529,6 +545,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
+                      value={field.value || ''}
                       label="Description"
                       fullWidth
                       multiline
@@ -551,7 +568,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
             <ResponsiveButton
               type="submit"
               variant="contained"
-              disabled={loading || !isDirty || !symbolValidation.isValid}
+              disabled={loading || !symbolValidation.isValid}
               icon={loading ? <CircularProgress size={20} /> : undefined}
               mobileText={loading ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
               desktopText={loading ? 'Saving...' : mode === 'create' ? 'Create Asset' : 'Update Asset'}
