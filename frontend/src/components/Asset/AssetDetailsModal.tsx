@@ -207,7 +207,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
           item 
           xs={6} 
           md={3} 
-          key={index}
+          key={`${item.label}-${index}`}
           sx={{
             borderRight: { xs: index % 2 === 1 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', md: index % 4 === 3 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)' },
             borderBottom: { xs: index >= items.length - 2 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', md: index >= items.length - 4 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)' },

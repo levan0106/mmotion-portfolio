@@ -33,7 +33,7 @@ import {
 interface ModalWrapperProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title: string | React.ReactNode;
   icon?: React.ReactNode;
   children: React.ReactNode;
   actions?: React.ReactNode;
@@ -150,15 +150,15 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
                  maxWidth === 'sm' ? '500px' : 
                  maxWidth === 'md' ? '700px!important' : 
                  maxWidth === 'lg' ? '900px' : 
-                 maxWidth === 'xl' ? '1200px' : 
-                 maxWidth === 'xxl' ? '1400px' : '700px!important',
+                 maxWidth === 'xl' ? '100%' : 
+                 maxWidth === 'xxl' ? '100%' : '700px!important',
           minWidth: effectiveFullScreen ? 'auto' : 
                    maxWidth === 'xs' ? '400px' : 
                    maxWidth === 'sm' ? '500px' : 
                    maxWidth === 'md' ? '700px!important' : 
                    maxWidth === 'lg' ? '900px' : 
-                   maxWidth === 'xl' ? '1200px' : 
-                   maxWidth === 'xxl' ? '1400px' : '700px!important',
+                   maxWidth === 'xl' ? 'auto' : 
+                   maxWidth === 'xxl' ? 'auto' : '700px!important',
           maxWidth: effectiveFullScreen ? '100%' : 
                    maxWidth === 'xs' ? '400px' : 
                    maxWidth === 'sm' ? '500px' : 
@@ -186,7 +186,6 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
               </Box>
             )}
             <Box
-              component="span"
               sx={{
                 fontWeight: 500,
                 color: getTitleColor(),

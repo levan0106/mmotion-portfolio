@@ -27,7 +27,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
-import { AssetType, AssetTypeLabels } from '../../types/asset.types';
+import { AssetType, AssetTypeLabels, PriceMode } from '../../types/asset.types';
 import { useGlobalAssets } from '../../hooks/useGlobalAssets';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { toastService } from '../../utils/toast';
@@ -65,7 +65,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
 
   const { data: globalAssets = [], isLoading: loading, error, refetch: fetchGlobalAssets } = useGlobalAssets({
     isActive: true,
-    limit: 100,
+    limit: 1000,
     sortBy: 'name',
     sortOrder: 'ASC'
   });
@@ -165,7 +165,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
   const availableAssets = React.useMemo(() => {
     const existingSymbols = new Set(existingAssets.map(asset => asset.symbol.toUpperCase()));
     return globalAssets.filter((asset: any) => 
-      !existingSymbols.has(asset.symbol.toUpperCase())
+      !existingSymbols.has(asset.symbol.toUpperCase()) && asset.priceMode !== PriceMode.MANUAL
     );
   }, [globalAssets, existingAssets]);
 
@@ -206,6 +206,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
         onClick={handleBulkCreate}
         disabled={selectedAssets.length === 0 || isCreating}
         icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+        forceTextOnly={true}
         mobileText={isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createCount', { count: selectedAssets.length })}
         desktopText={isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createAssets', { count: selectedAssets.length })}
       >
@@ -220,9 +221,9 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       open={open}
       onClose={onClose}
       title={t('bulkAssetSelector.title')}
-      maxWidth="md"
-      fullWidth={isMobile}
-      fullScreen={isMobile}
+      maxWidth="md"      
+      size="medium"
+      titleColor="primary"
       loading={isCreating}
       actions={modalActions}
     >

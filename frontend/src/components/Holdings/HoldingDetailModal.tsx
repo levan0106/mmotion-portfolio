@@ -6,10 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
   Table,
   TableBody,
@@ -18,10 +14,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
   Alert,
-  IconButton,
-  Tooltip,
   alpha,
   useTheme,
   Divider,
@@ -32,15 +25,14 @@ import {
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
-  Close as CloseIcon,
   TrendingUp,
   TrendingDown,
   AccountBalanceWallet,
   MonetizationOn,
   Assessment,
-  Refresh,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
 import { format, parseISO } from 'date-fns';
@@ -144,54 +136,37 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
   );
 
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={onClose}
-      maxWidth="xl"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
-          backdropFilter: 'blur(10px)',
-          border: `0.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-          maxHeight: '90vh'
-        }
-      }}
-    >
-      <DialogTitle sx={{ 
-        pb: 1,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.25rem' }}>
-              {holdingName}
-            </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
-              {t('holdings.modal.subtitle')}
-            </ResponsiveTypography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title={t('common.refresh')}>
-              <IconButton onClick={fetchHoldingDetail} size="small" disabled={isLoading}>
-                <Refresh />
-              </IconButton>
-            </Tooltip>
-            <IconButton onClick={onClose} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      title={
+        <Box>
+          <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.25rem' }}>
+            {holdingName}
+          </ResponsiveTypography>
+          <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+            {t('holdings.modal.subtitle')}
+          </ResponsiveTypography>
         </Box>
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 0, overflow: 'auto', flex: 1 }}>
-        {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress size={60} thickness={4} />
-          </Box>
-        ) : error ? (
+      }
+      loading={isLoading}
+      maxWidth="xl"
+      size="small"
+      titleColor="primary"
+      actions={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* <Tooltip title={t('common.refresh')}>
+            <IconButton onClick={fetchHoldingDetail} size="small" disabled={isLoading}>
+              <Refresh />
+            </IconButton>
+          </Tooltip> */}
+          <ResponsiveButton onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
+            {t('common.close')}
+          </ResponsiveButton>
+        </Box>
+      }
+    >
+        {error ? (
           <Alert 
             severity="error" 
             sx={{ m: 3, borderRadius: 2 }}
@@ -375,14 +350,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             </Box>
           </Box>
         ) : null}
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <ResponsiveButton onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
-          {t('common.close')}
-        </ResponsiveButton>
-      </DialogActions>
-    </Dialog>
+    </ModalWrapper>
   );
 };
 

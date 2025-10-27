@@ -375,7 +375,7 @@ const DepositManagement: React.FC = () => {
       {analytics && (
         <Grid container spacing={2} mb={3}>
           {/* Card 1: Tổng quan */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} sx={{display: {xs: 'none', sm: 'block'}}}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>

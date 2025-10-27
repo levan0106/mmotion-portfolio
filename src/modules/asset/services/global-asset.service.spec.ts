@@ -9,6 +9,7 @@ import { CreateGlobalAssetDto } from '../dto/create-global-asset.dto';
 import { UpdateGlobalAssetDto } from '../dto/update-global-asset.dto';
 import { GlobalAssetQueryDto } from '../dto/global-asset-query.dto';
 import { AssetType } from '../enums/asset-type.enum';
+import { PriceMode } from '../enums/price-mode.enum';
 
 describe('GlobalAssetService', () => {
   let service: GlobalAssetService;
@@ -20,6 +21,7 @@ describe('GlobalAssetService', () => {
     symbol: 'HPG',
     name: 'Hoa Phat Group',
     type: AssetType.STOCK,
+    priceMode: PriceMode.AUTOMATIC,
     nation: 'VN',
     marketCode: 'HOSE',
     currency: 'VND',

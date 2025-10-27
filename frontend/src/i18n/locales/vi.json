@@ -2339,7 +2339,7 @@
     }
   },
   "bulkAssetSelector": {
-    "title": "Chọn Assets từ danh sách mẫu",
+    "title": "Chọn Assets từ hệ thống",
     "help": {
       "title": "💡 Hướng dẫn sử dụng",
       "description": "Chọn các assets từ danh sách mẫu để tạo nhanh trong portfolio của bạn. Danh sách chỉ hiển thị các assets mà bạn chưa sở hữu. Bạn cũng có thể tìm kiếm theo tên hoặc symbol."
