@@ -275,7 +275,8 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ 
         overflow: 'auto',
-        p: 2
+        py: 2,
+        px: 0
       }}>
         {/* Enhanced Current Price Display */}
         <Card sx={{ 
@@ -286,19 +287,17 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
           color: 'white',
           overflow: 'hidden'
         }}>
-          <CardContent sx={{ p: 4 }}>
-            <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} md={6}>
+          <CardContent sx={{ p: 2 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="h3" sx={{ 
                     fontWeight: 700,
-                    mb: 1,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    mb: 2,
                   }}>
                     {formatPrice(asset.assetPrice?.currentPrice || 0, asset.currency)}
                   </Typography>
                   <Typography variant="h6" sx={{ 
-                    opacity: 0.9,
                     fontWeight: 400,
                     mb: 2
                   }}>
@@ -321,57 +320,53 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 1, justifyContent: 'flex-end' }}>
                   {asset.assetPrice && (
                     <>
                       <Chip
                         label={asset.assetPrice.priceType}
-                        size="medium"
+                        size="small"
                         sx={{ 
                           backgroundColor: 'rgba(255,255,255,0.2)', 
                           color: 'white',
-                          fontWeight: 600,
                           border: '1px solid rgba(255,255,255,0.3)'
                         }}
                       />
                       <Chip
                         label={asset.assetPrice.priceSource}
-                        size="medium"
+                        size="small"
                         sx={{ 
                           backgroundColor: 'rgba(255,255,255,0.2)', 
                           color: 'white',
-                          fontWeight: 600,
                           border: '1px solid rgba(255,255,255,0.3)'
                         }}
                       />
                       <Chip
                         label={getPriceAge(asset.assetPrice.lastPriceUpdate)}
-                        size="medium"
+                        size="small"
                         sx={{
                           backgroundColor: getPriceAgeColor(asset.assetPrice.lastPriceUpdate) === 'success' ? 'rgba(76,175,80,0.8)' :
                                          getPriceAgeColor(asset.assetPrice.lastPriceUpdate) === 'warning' ? 'rgba(255,152,0,0.8)' :
                                          'rgba(244,67,54,0.8)',
                           color: 'white',
-                          fontWeight: 600
                         }}
                       />
                     </>
                   )}
+                  <Typography variant="subtitle2" sx={{ 
+                    fontWeight: 500
+                  }}>
+                    Last updated: {asset.assetPrice ? formatDate(asset.assetPrice.lastPriceUpdate) : 'N/A'}
+                  </Typography>
                 </Box>
-                <Typography variant="body1" sx={{ 
-                  opacity: 0.9,
-                  fontWeight: 500
-                }}>
-                  Last updated: {asset.assetPrice ? formatDate(asset.assetPrice.lastPriceUpdate) : 'Never'}
-                </Typography>
               </Grid>
             </Grid>
           </CardContent>
         </Card>
 
         {/* Price History Section */}
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ py: 2, px: 0 }}>
             <Box>
                 {/* Controls Row (no header) */}
                 <Box sx={{ 

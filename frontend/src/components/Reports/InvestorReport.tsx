@@ -87,9 +87,9 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
   };
 
   return (
-    <Box sx={{ backgroundColor: 'background.paper', p:2 }}>
+    <Box sx={{ backgroundColor: 'background.paper', p:{xs:0, md:2} }}>
       {/* Header */}
-      <Box mb={3}>
+      <Box mb={3} px={{xs:1, md:0}}>
         <Box display="flex" flexDirection="column" gap={1}>
           
           {/* Growth Metrics - Right aligned like "Cập nhật lần cuối" */}
@@ -248,7 +248,7 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         </Box>
 
         {/* Mobile: 2-Column List Layout */}
-        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        <Box sx={{ display: { xs: 'block', md: 'none' },p:{xs:1, md:2} }}>
           <Card>
             <CardContent sx={{ p: 2 }}>
               <Grid container spacing={2}>
@@ -380,6 +380,18 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         spacing="none"
         hoverable={false}
         title={t('investorReport.assetAllocation', 'Phân bổ tài sản theo loại')}
+        sx={{ 
+          padding: '0 !important',
+          '& .MuiCardContent-root': {
+            padding: '0 !important',
+          },
+          '& .MuiCard-root': {
+            padding: '0 !important',
+          },
+          '& .MuiPaper-root': {
+            padding: '0 !important',
+          }
+         }}
       >
         <ResponsiveTable
           hoverable={false}
@@ -453,6 +465,18 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         spacing="none"
         hoverable={false}
         title={t('investorReport.assetDetails', 'Chi tiết tài sản')}
+        sx={{ 
+          padding: '0 !important',
+          '& .MuiCardContent-root': {
+            padding: '0 !important',
+          },
+          '& .MuiCard-root': {
+            padding: '0 !important',
+          },
+          '& .MuiPaper-root': {
+            padding: '0 !important',
+          }
+         }}
       >
         <ResponsiveTable
           hoverable={false}
@@ -554,6 +578,18 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
         spacing="none"
         hoverable={false}
         title={t('investorReport.depositsDetails', 'Chi tiết tiền gửi')}
+        sx={{ 
+          padding: '0 !important',
+          '& .MuiCardContent-root': {
+            padding: '0 !important',
+          },
+          '& .MuiCard-root': {
+            padding: '0 !important',
+          },
+          '& .MuiPaper-root': {
+            padding: '0 !important',
+          }
+         }}
       >
           <ResponsiveTable
             hoverable={false}

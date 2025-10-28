@@ -331,7 +331,7 @@ const Holdings: React.FC = () => {
               <ResponsiveTypography variant="pageTitle" component="h2" sx={{ mb: 1 }}>
                 {t('holdings.table.title')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="pageSubtitle">
+              <ResponsiveTypography variant="pageSubtitle" sx={{ display: { xs: 'none', md: 'block' } }}>
                 {t('holdings.table.subtitle')}
               </ResponsiveTypography>
             </Box>

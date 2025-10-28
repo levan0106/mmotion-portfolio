@@ -49,7 +49,7 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
         mb:0,
         px: { xs: 1, sm: 0 }
       }}>
-        <Box>
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <ResponsiveTypography variant="chartTitle" gutterBottom>
             {title}
           </ResponsiveTypography>
@@ -59,11 +59,13 @@ const AssetAllocationTimeline: React.FC<AssetAllocationTimelineProps> = ({
         </Box>
         
         {showGranularitySelector && onGranularityChange && (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
           <GranularitySelector
             value={granularity}
-            onChange={onGranularityChange}
-            compact={compact}
-          />
+              onChange={onGranularityChange}
+              compact={compact}
+            />
+          </Box>
         )}
       </Box>
 

@@ -77,9 +77,8 @@ const GlobalAssetPriceManagementModal: React.FC<GlobalAssetPriceManagementModalP
       onClose={onClose}
       title={`Price Management - ${asset.symbol}`}
       maxWidth="lg"
-      fullWidth
       loading={loading}
-      size="large"
+      size="medium"
       actions={
         <ResponsiveButton onClick={onClose} mobileText="Close" desktopText="Close">
           Close
@@ -88,7 +87,6 @@ const GlobalAssetPriceManagementModal: React.FC<GlobalAssetPriceManagementModalP
     >
       {/* Price Mode Display */}
       <Box sx={{ 
-        mx: 2,
         p: 2, 
         backgroundColor: 'grey.50', 
         borderRadius: 2,

@@ -1035,7 +1035,7 @@ const PortfolioDetail: React.FC = () => {
             backdropFilter: 'blur(10px)',
           }}
         >
-          <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+          <Box sx={{ p: { xs: 0, sm: 2, md: 3 } }}>
             <InvestorReportWrapper
               portfolioId={portfolioId!}
               accountId={portfolio.accountId}

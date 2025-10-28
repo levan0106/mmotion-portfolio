@@ -155,12 +155,12 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
                  maxWidth === 'xl' ? '100%' : 
                  maxWidth === 'xxl' ? '100%' : '700px!important',
           minWidth: effectiveFullScreen ? 'auto' : 
-                   maxWidth === 'xs' ? '400px' : 
-                   maxWidth === 'sm' ? '500px' : 
-                   maxWidth === 'md' ? '700px!important' : 
-                   maxWidth === 'lg' ? '900px' : 
+                   maxWidth === 'xs' ? 'auto' : 
+                   maxWidth === 'sm' ? 'auto' : 
+                   maxWidth === 'md' ? 'auto' : 
+                   maxWidth === 'lg' ? 'auto' : 
                    maxWidth === 'xl' ? 'auto' : 
-                   maxWidth === 'xxl' ? 'auto' : '700px!important',
+                   maxWidth === 'xxl' ? 'auto' : 'auto',
           maxWidth: effectiveFullScreen ? '100%' : 
                    maxWidth === 'xs' ? '400px' : 
                    maxWidth === 'sm' ? '500px' : 
