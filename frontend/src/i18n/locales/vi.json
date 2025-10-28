@@ -6,6 +6,7 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "delete": "Xóa",
+    "deleting": "Đang xóa...",
     "edit": "Chỉnh sửa",
     "create": "Tạo mới",
     "update": "Cập nhật",
@@ -73,7 +74,7 @@
   "goals": {
     "title": "Mục tiêu đầu tư",
     "subtitle": "Quản lý và theo dõi các mục tiêu tài chính của bạn",
-    "create": "Tạo mục tiêu mới",
+    "create": "Thêm mục tiêu",
     "createFirst": "Tạo mục tiêu đầu tiên",
     "edit": "Chỉnh sửa mục tiêu",
     "delete": "Xóa mục tiêu",
@@ -105,11 +106,13 @@
       "update": "Cập nhật"
     },
     "card": {
+      "name": "Tên mục tiêu",
       "progress": "Tiến độ",
       "currentValue": "Giá trị hiện tại",
       "target": "Mục tiêu",
       "primary": "Chính",
       "daysRemaining": "ngày còn lại",
+      "date": "Thời gian",
       "overdue": "Quá hạn",
       "today": "Hôm nay",
       "tomorrow": "Ngày mai",
@@ -167,11 +170,15 @@
       "clearFiltersAction": "Xóa bộ lọc",
       "createFirstAction": "Tạo mục tiêu đầu tiên",
       "loading": "Đang tải...",
-      "error": "Không thể tải danh sách mục tiêu. Vui lòng thử lại sau."
+      "error": "Không thể tải danh sách mục tiêu. Vui lòng thử lại sau.",
+      "gridView": "Xem dạng lưới",
+      "tableView": "Xem dạng bảng",
+      "rowsPerPage": "Số dòng",
+      "of": "của"
     },
     "status": {
-      "active": "Đang hoạt động",
-      "achieved": "Đã đạt được",
+      "active": "Hoạt động",
+      "achieved": "Đạt mục tiêu",
       "paused": "Tạm dừng",
       "cancelled": "Đã hủy"
     },
@@ -181,6 +188,17 @@
       "medium": "Trung bình",
       "low": "Thấp",
       "lowest": "Rất thấp"
+    },
+    "deleteConfirm": {
+      "title": "Xác nhận xóa mục tiêu",
+      "message": "Bạn có chắc chắn muốn xóa mục tiêu này không?",
+      "warning": "Cảnh báo",
+      "warningMessage": "Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến mục tiêu này sẽ bị xóa vĩnh viễn.",
+      "goalDetails": "Chi tiết mục tiêu sẽ bị xóa:",
+      "name": "Tên",
+      "currentValue": "Giá trị hiện tại",
+      "target": "Mục tiêu",
+      "progress": "Tiến độ"
     }
   },
   "navigation": {
@@ -780,7 +798,7 @@
     "export": "Xuất",
     "import": "Nhập",
     "refresh": "Làm mới",
-    "rowsPerPage": "Số dòng mỗi trang",
+    "rowsPerPage": "Số dòng",
     "of": "của",
     "date": "Ngày",
     "actions": "",

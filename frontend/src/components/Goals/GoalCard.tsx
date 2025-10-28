@@ -14,8 +14,10 @@ import {
   Divider,
   Paper,
   Slider,
+  Button,
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
+import { ModalWrapper } from '../Common/ModalWrapper';
 import {
   MoreVert as MoreVertIcon,
   TrendingUp as TrendingUpIcon,
@@ -24,6 +26,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
   Star as StarIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { Goal, GoalStatus } from '../../types/goal.types';
 import { formatCurrency, formatPercentage } from '../../utils/format';
@@ -225,6 +228,8 @@ export const GoalCard: React.FC<GoalCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -238,6 +243,29 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   const handleAction = (action: () => void) => {
     action();
     handleClose();
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+    handleClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!onDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDelete(goal);
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
   };
 
   const getProgressIcon = () => {
@@ -362,7 +390,8 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                 </MenuItem>
               )}
               {onDelete && (
-                <MenuItem onClick={() => handleAction(() => onDelete(goal))}>
+                <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+                  <DeleteIcon sx={{ mr: 1, fontSize: '1rem' }} />
                   {t('goals.delete')}
                 </MenuItem>
               )}
@@ -446,7 +475,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           
           <Stack direction="row" justifyContent="space-between" alignItems="center" mt={1}>
             <ResponsiveTypography variant="caption" color="text.secondary">
-              {formatCurrency( (goal.targetValue || 0) - (goal.currentValue || 0))  }
+              {formatCurrency( (goal.currentValue || 0) - (goal.targetValue || 0))  }
             </ResponsiveTypography>
           </Stack>
         </Paper>
@@ -543,6 +572,89 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           </Stack>
         </Stack>
       </CardContent>
+
+      {/* Delete Confirmation Modal */}
+      <ModalWrapper
+        open={showDeleteConfirm}
+        onClose={handleDeleteCancel}
+        title={t('goals.deleteConfirm.title', 'Xác nhận xóa mục tiêu')}
+        icon={<DeleteIcon color="error" />}
+        titleColor="error"
+        maxWidth="sm"
+        loading={isDeleting}
+        disableCloseOnBackdrop={isDeleting}
+        disableCloseOnEscape={isDeleting}
+      >
+        <Box sx={{ py: 2 }}>
+          <ResponsiveTypography variant="body1" sx={{ mb: 2 }}>
+            {t('goals.deleteConfirm.message', 'Bạn có chắc chắn muốn xóa mục tiêu này không?')}
+          </ResponsiveTypography>
+          
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 2, 
+              backgroundColor: 'error.50', 
+              border: '1px solid', 
+              borderColor: 'error.200',
+              borderRadius: 1
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+              <WarningIcon color="error" sx={{ fontSize: '1.2rem' }} />
+              <ResponsiveTypography variant="subtitle2" fontWeight={600} color="error.main">
+                {t('goals.deleteConfirm.warning', 'Cảnh báo')}
+              </ResponsiveTypography>
+            </Stack>
+            <ResponsiveTypography variant="body2" color="error.main" ellipsis={false}>
+              {t('goals.deleteConfirm.warningMessage', 'Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến mục tiêu này sẽ bị xóa vĩnh viễn.')}
+            </ResponsiveTypography>
+          </Paper>
+
+          <Box sx={{ mt: 2, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+            <ResponsiveTypography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+              {t('goals.deleteConfirm.goalDetails', 'Chi tiết mục tiêu sẽ bị xóa:')}
+            </ResponsiveTypography>
+            <Stack spacing={0.5}>
+              <ResponsiveTypography variant="body2" color="text.secondary">
+                <strong>{t('goals.card.name', 'Tên')}:</strong> {goal.name}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="body2" color="text.secondary">
+                <strong>{t('goals.card.currentValue', 'Giá trị hiện tại')}:</strong> {formatCurrency(goal.currentValue)}
+              </ResponsiveTypography>
+              {goal.targetValue && (
+                <ResponsiveTypography variant="body2" color="text.secondary">
+                  <strong>{t('goals.card.target', 'Mục tiêu')}:</strong> {formatCurrency(goal.targetValue)}
+                </ResponsiveTypography>
+              )}
+              <ResponsiveTypography variant="body2" color="text.secondary">
+                <strong>{t('goals.card.progress', 'Tiến độ')}:</strong> {formatPercentage(goal.achievementPercentage, 1)}
+              </ResponsiveTypography>
+            </Stack>
+          </Box>
+        </Box>
+
+        <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Button
+            variant="outlined"
+            onClick={handleDeleteCancel}
+            disabled={isDeleting}
+            sx={{ minWidth: 100 }}
+          >
+            {t('common.cancel', 'Hủy')}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteConfirm}
+            disabled={isDeleting}
+            startIcon={isDeleting ? undefined : <DeleteIcon />}
+            sx={{ minWidth: 120 }}
+          >
+            {isDeleting ? t('common.deleting', 'Đang xóa...') : t('goals.delete', 'Xóa')}
+          </Button>
+        </Stack>
+      </ModalWrapper>
     </Card>
   );
 };

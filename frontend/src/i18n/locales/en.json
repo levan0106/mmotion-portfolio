@@ -110,6 +110,7 @@
       "target": "Target",
       "primary": "Primary",
       "daysRemaining": "days remaining",
+      "date": "Date",
       "overdue": "Overdue",
       "today": "Today",
       "tomorrow": "Tomorrow",
