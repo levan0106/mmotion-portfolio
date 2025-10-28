@@ -122,7 +122,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
     },
     {
       title: t('holdings.modal.totalInvested'),
-      value: formatCurrency(holdingDetail.summary.totalAmountInvested, 'VND'),
+      value: formatCurrency((holdingDetail.summary.totalAmountInvested || 0) - (holdingDetail.summary.totalAmountReceived || 0), 'VND'),
       subtitle: t('holdings.modal.amountInvested'),
       icon: <MonetizationOn />,
       color: 'info' as const,
@@ -155,11 +155,6 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
       titleColor="primary"
       actions={
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* <Tooltip title={t('common.refresh')}>
-            <IconButton onClick={fetchHoldingDetail} size="small" disabled={isLoading}>
-              <Refresh />
-            </IconButton>
-          </Tooltip> */}
           <ResponsiveButton onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
             {t('common.close')}
           </ResponsiveButton>
@@ -184,7 +179,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
         ) : holdingDetail ? (
           <Box>
             {/* Summary Metrics */}
-            <Box sx={{ px: { xs: 0, sm: 3 }, py:2 }}>
+            <Box sx={{ px: { xs: 0, sm: 1, md: 2 }, py:2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 {t('holdings.modal.summary')}
               </ResponsiveTypography>
@@ -236,7 +231,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             <Divider />
 
             {/* Transaction History */}
-            <Box sx={{ px: { xs: 0, sm: 3 }, py:2 }}>
+            <Box sx={{ px: { xs: 0, sm: 1, md: 2 }, py:2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 {t('holdings.detail.transactionHistory')}
               </ResponsiveTypography>

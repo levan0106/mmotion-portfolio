@@ -569,7 +569,7 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
           position: 'sticky',
           top: -16,
           backgroundColor: 'background.paper',
-          zIndex: 1,
+          zIndex: 10,
         }}>
         <Tabs 
           value={activeTab} 

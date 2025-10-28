@@ -209,7 +209,7 @@ const Holdings: React.FC = () => {
             </Box>
           </Box>
         </Box>
-      <Box sx={{ px: { xs: 0, sm: 4 } }}>
+      <Box sx={{ px: { xs: 0, sm: 1, md: 2 } }}>
         {/* Summary Metrics - Responsive Layout */}
         <Box sx={{ mb: 4 }}>
           {/* Desktop: Grid Layout */}

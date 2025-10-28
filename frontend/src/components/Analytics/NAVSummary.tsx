@@ -151,7 +151,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         }
       })
     }}>
-      <CardContent sx={{ p: { xs: 0.5, sm: getUltraSpacing(3, 1.5) } }}>
+      <CardContent sx={{ p: { xs: 0.5, sm: 1, md: getUltraSpacing(1, 1.5) } }}>
         {/* Header */}
         <Box sx={{ 
           display: 'flex', 
@@ -193,7 +193,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         {/* NAV Information Grid */}
         <Grid container spacing={getUltraSpacing(2, 1)}>
           {/* NAV Total */}
-          <Grid item xs={12} sm={actualIsFund ? 6 : 12} md={actualIsFund ? 4 : 12}>
+          <Grid item xs={12} sm={actualIsFund ? 6 : 12} md={actualIsFund ? 4 : 6}>
             <Box sx={{
               p: getUltraSpacing(2.5, 1.5),
               backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',

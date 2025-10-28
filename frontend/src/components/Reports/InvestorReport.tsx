@@ -89,12 +89,12 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
   return (
     <Box sx={{ backgroundColor: 'background.paper', px:{xs:0, md:2}}}>
       {/* Header */}
-      <Box mb={2} px={{xs:1, md:0}} pt={{xs:1, md:2}}>
+      <Box mb={2} px={{xs:1, md:0}} pt={{xs:1, sm:0}}>
         <Box display="flex" flexDirection="column" gap={1}>
           
           {/* Growth Metrics - Right aligned like "Cập nhật lần cuối" */}
           {data.performance && (
-            <Box justifyContent="flex-end" sx={{ display: { xs: 'none', md: 'flex' } }}>
+            <Box justifyContent="flex-end" sx={{ display: { xs: 'none', sm: 'flex' } }}>
               <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
                 <Box display="flex" alignItems="center" gap={0.5}>
                   <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
@@ -376,8 +376,8 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
       {/* Asset Allocation by Type */}
       <ResponsiveCard
         variant="transparent"
-        size="small"
-        spacing="none"
+        size="medium"
+        spacing="medium"
         hoverable={false}
         title={t('investorReport.assetAllocation', 'Phân bổ tài sản theo loại')}
         sx={{ 
@@ -461,8 +461,8 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
       {/* Asset Details */}
       <ResponsiveCard
         variant="transparent"
-        size="small"
-        spacing="none"
+        size="medium"
+        spacing="medium"
         hoverable={false}
         title={t('investorReport.assetDetails', 'Chi tiết tài sản')}
         sx={{ 
@@ -574,8 +574,8 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
       {data.deposits && data.deposits.length > 0 && (
         <ResponsiveCard
         variant="transparent"
-        size="small"
-        spacing="none"
+        size="medium"
+        spacing="medium"
         hoverable={false}
         title={t('investorReport.depositsDetails', 'Chi tiết tiền gửi')}
         sx={{ 
