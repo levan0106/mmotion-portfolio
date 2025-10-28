@@ -676,6 +676,7 @@ const Assets: React.FC = () => {
   };
 
   const handleViewAssetDetail = useCallback((asset: Asset) => {
+    console.log('handleViewAssetDetail', asset);
     setSelectedAsset(asset);
   }, []);
 

@@ -33,7 +33,7 @@ export interface Asset {
   type: string;
   assetClass: string;
   currency: string;
-  isActive: boolean;
+  isActive?: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: string;

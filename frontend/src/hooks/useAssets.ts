@@ -120,6 +120,8 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           ...asset,
           createdAt: asset.createdAt,
           updatedAt: asset.updatedAt,
+          isActive: asset.isActive ?? true, // Default to true if undefined
+
           // Preserve computed fields from backend
           initialValue: asset.initialValue,
           initialQuantity: asset.initialQuantity,

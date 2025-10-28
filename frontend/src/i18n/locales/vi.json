@@ -221,6 +221,7 @@
   },
   "portfolio": {
     "title": "Danh mục của bạn",
+    "portfolioOverview": "Tổng quan Danh mục",
     "create": "Tạo Danh mục",
     "edit": "Chỉnh sửa Danh mục",
     "delete": "Xóa Danh mục",
@@ -1541,14 +1542,14 @@
     "realizedPnL": "P&L đã thực hiện",
     "unrealizedPnL": "P&L chưa thực hiện",
     "winRate": "Tỷ lệ thắng",
-    "tradingStatistics": "Thống kê giao dịch",
+    "tradingStatistics": "Thống kê",
     "trades": "Giao dịch",
-    "average": "Trung bình",
+    "average": "TB",
     "buyTrades": "Giao dịch mua",
     "sellTrades": "Giao dịch bán",
     "totalVolume": "Tổng giá trị",
-    "riskMetrics": "Chỉ số rủi ro tài sản đã bán",
-    "riskLevel": "Mức độ rủi ro",
+    "riskMetrics": "Chỉ số rủi ro tài sản",
+    "riskLevel": "Mức độ",
     "riskLevels": {
       "high": "Cao",
       "medium": "Trung bình",
@@ -1780,8 +1781,8 @@
         "assetInformation": "Thông tin tài sản"
       },
       "price": {
-        "currentPrice": "Giá hiện tại",
-        "averageCost": "Chi phí trung bình",
+        "currentPrice": "Giá thị trường",
+        "averageCost": "Giá mua trung bình",
         "priceChange": "Thay đổi giá"
       },
       "position": {

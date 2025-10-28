@@ -92,7 +92,7 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
           <ResponsiveTypography variant="chartTitle">
             {title}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
+          <ResponsiveTypography variant="chartSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
             {t('portfolio.correlationMatrix')}
           </ResponsiveTypography>
         </>

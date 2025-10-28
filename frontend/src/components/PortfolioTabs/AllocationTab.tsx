@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Grid, CircularProgress, Card, CardContent } from '@mui/material';
+import { Box, Grid, CircularProgress, Card, CardContent, Divider } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { applyBorderStyle, applyBorderHover } from '../../utils/borderUtils';
 import { 
@@ -152,7 +152,9 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
       px: { xs: 0.5, sm: getUltraSpacing(2, 1) }
     }}>
       {/* Professional Portfolio Overview Section */}
-      <Grid container spacing={getUltraSpacing(3, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
+      {/* Desktop Card Layout */}
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <Grid container spacing={getUltraSpacing(3, 1)} sx={{ mb: getUltraSpacing(4, 2) }}>
         {/* Total Investment Value Card */}
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -312,6 +314,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             color: '#212529',
             position: 'relative',
             overflow: 'hidden',
+            display: {xs: 'none', sm: 'flex'},
             ...applyBorderHover('card', {
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               '&:hover': {
@@ -332,11 +335,12 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.05
+              opacity: 0.05,
             }}>
               <TrendingUp sx={{ fontSize: 35, color: '#4caf50' }} />
             </Box>
-            <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1 }}>
+            <CardContent sx={{ p: getUltraSpacing(3, 1.5), position: 'relative', zIndex: 1,
+             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: getUltraSpacing(2, 1) }}>
                 
                 <ResponsiveTypography variant="cardTitle" sx={{ textAlign: 'center' }}>
@@ -352,7 +356,88 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             </CardContent>
           </Card>
         </Grid>
-      </Grid>
+        </Grid>
+      </Box>
+
+      {/* Mobile Table Layout */}
+      <Box sx={{ display: { xs: 'block', md: 'none' }, mb: getUltraSpacing(4, 2) }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: getUltraSpacing(2, 1) }}>
+          <AccountBalance sx={{ fontSize: 20, color: 'primary.main' }} />
+          <ResponsiveTypography variant="pageTitle">
+                {t('portfolio.portfolioOverview')}
+          </ResponsiveTypography>
+        </Box>
+            
+            {/* Simple List Layout */}
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              gap: getUltraSpacing(1, 0.5),
+              '& .portfolio-item': {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                p: getUltraSpacing(1, 0.5),
+                borderRadius: 0.5,
+                backgroundColor: 'transparent',
+                border: 'none',
+                minHeight: 'auto'
+              }
+            }}>
+              {/* Total Investment */}
+              <Box className="portfolio-item">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                    {t('portfolio.totalInvestment')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValue" sx={{ 
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#1976d2'
+                }}>
+                  {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
+                </ResponsiveTypography>
+              </Box>
+
+              <Divider/>
+              
+              {/* Unrealized P&L */}
+              <Box className="portfolio-item">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                    {t('portfolio.unrealizedPL')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValue" sx={{ 
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: (portfolio.unrealizedInvestPnL || 0) >= 0 ? '#4caf50' : '#f44336'
+                }}>
+                  {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
+                </ResponsiveTypography>
+              </Box>
+              
+              <Divider/>
+              
+              {/* Cash Balance */}
+              <Box className="portfolio-item">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                    {t('portfolio.cashBalance')}
+                  </ResponsiveTypography>
+                </Box>
+                <ResponsiveTypography variant="cardValue" sx={{ 
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#9c27b0'
+                }}>
+                  {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
+                </ResponsiveTypography>
+              </Box>
+
+            </Box>
+      </Box>
 
       {/* Asset Allocation Section */}
       <ResponsiveTypography variant="pageTitle" sx={{ 
@@ -649,10 +734,11 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
 
       {/* Allocation Timeline Section */}
       <ResponsiveTypography variant="pageTitle" sx={{ 
-        mb: getUltraSpacing(3, 1),
+        mb: 1,
         display: 'flex',
         alignItems: 'center',
-        gap: 1
+        gap: 1,
+        mt:1
       }}>
         <TimelineIcon sx={{ fontSize: 20, color: 'primary.main' }} />
         {t('portfolio.allocationTimeline')}

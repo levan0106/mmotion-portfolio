@@ -280,7 +280,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
           }}>
             {title}
           </ResponsiveTypography>
-          <ResponsiveTypography variant="chartSubtitle" color="text.secondary">
+          <ResponsiveTypography variant="chartSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
             {t('portfolio.riskVsReturnAnalysis')}
           </ResponsiveTypography>
         </Box>

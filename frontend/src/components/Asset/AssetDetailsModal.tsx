@@ -217,21 +217,23 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
             alignItems: 'center'
           }}
         >
-          <ListItemText
-            primary={item.label}
-            secondary={item.value}
-            primaryTypographyProps={{ 
-              variant: 'subtitle2', 
-              color: 'text.secondary',
-              sx: {
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }
-            }}
-            secondaryTypographyProps={{ variant: 'subtitle1', fontWeight: 500 }}
-            sx={{ width: '100%' }}
-          />
+          <ListItem sx={{ p: 0 }}>
+            <ListItemText
+              primary={item.label}
+              secondary={item.value}
+              primaryTypographyProps={{ 
+                variant: 'subtitle2', 
+                color: 'text.secondary',
+                sx: {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }
+              }}
+              secondaryTypographyProps={{ variant: 'subtitle1', fontWeight: 500 }}
+              sx={{ width: '100%' }}
+            />
+          </ListItem>
         </Grid>
       ))}
     </Grid>
@@ -289,7 +291,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
       onClose={onClose}
       title={t('asset.details.title')}
       icon={<AccountBalanceIcon />}
-      maxWidth="md"
+      maxWidth="lg"
       loading={loading}
       // Auto mobile detection is enabled by default
       actions={
@@ -311,7 +313,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
             {onDelete && asset && (
               <ResponsiveButton
                 onClick={() => onDelete(asset)}
-                variant="contained"
+                variant="text"
                 color="error"
                 size="small"
                 icon={<DeleteIcon />}
@@ -325,8 +327,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
           <ResponsiveButton
             onClick={onClose}
             variant="outlined"
-            color="secondary"
-            size="small"
+            size="small"  
             mobileText={t('common.close')}
             desktopText={t('common.close')}
           >
@@ -356,11 +357,11 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
             mb: 2 
           }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
-              <ResponsiveTypography variant="pageTitle">
-                {asset?.name}
-              </ResponsiveTypography>
-              <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary' }}>
+              <ResponsiveTypography variant="cardTitle">
                 {asset?.symbol}
+              </ResponsiveTypography>
+              <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
+                {asset?.name}
               </ResponsiveTypography>
             </Box>
             {/* Asset Type and Status */}
@@ -378,15 +379,14 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 sx={{
                   backgroundColor: getAssetTypeColor(asset?.type || ''),
                   color: 'white',
-                  fontWeight: 600,
                   textTransform: 'uppercase',
                   fontSize: '0.75rem',
                 }}
               />
               <Chip
-                label={asset?.isActive ? t('asset.details.status.active') : t('asset.details.status.inactive')}
+                label={(asset?.isActive ?? true) ? t('asset.details.status.active') : t('asset.details.status.inactive')}
                 size="small"
-                color={asset?.isActive ? 'success' : 'error'}
+                color={(asset?.isActive ?? true) ? 'success' : 'error'}
                 variant="outlined"
               />
 
@@ -399,19 +399,11 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                     <Box>
                       <ResponsiveTypography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                         {t('asset.details.portfolios.title', { count: portfolioInfo.portfolios.length })}:
-                        {portfolioInfo.isMockData && (
-                          <Chip 
-                            key="demo-chip-portfolios"
-                            label={t('asset.details.demo')} 
-                            size="small" 
-                            color="warning" 
-                            sx={{ ml: 1, fontSize: '0.6rem', height: 16 }}
-                          />
-                        )}
+                        
                       </ResponsiveTypography>
                       <List dense sx={{ p: 0, maxHeight: 200, overflow: 'auto' }}>
-                        {portfolioInfo.portfolios.map((portfolio) => (
-                          <ListItem key={portfolio.id} sx={{ py: 0.5, px: 0 }}>
+                        {portfolioInfo.portfolios.map((portfolio, index) => (
+                          <ListItem key={portfolio.id || `portfolio-${index}`} sx={{ py: 0.5, px: 0 }}>
                             <ListItemText
                               primary={portfolio.name}
                               primaryTypographyProps={{ fontSize: '0.75rem' }}
@@ -419,11 +411,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                           </ListItem>
                         ))}
                       </List>
-                      {portfolioInfo.isMockData && (
-                        <ResponsiveTypography variant="caption" sx={{ color: 'warning.main', mt: 1, display: 'block' }}>
-                          {t('asset.details.demoDataWarning')}
-                        </ResponsiveTypography>
-                      )}
                     </Box>
                   ) : (
                     <ResponsiveTypography>{t('asset.details.noPortfolios')}</ResponsiveTypography>
@@ -489,12 +476,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
               </Tooltip>
             </Box>
           </Box>
-          
-          {/* {asset.description && (
-            <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary' }}>
-              {asset.description}
-            </ResponsiveTypography>
-          )} */}
         </Paper>
 
         {/* Combined Grid - All Asset Information */}
@@ -510,7 +491,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 {
                   label: t('asset.details.metrics.currentValue'),
                   value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main' }}>
                       {formatCurrency(totalValue, baseCurrency)}
                     </ResponsiveTypography>
                   )
@@ -523,7 +504,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: unrealizedPnL >= 0 ? 'success.main' : 'error.main'
                         }}
                       >
@@ -538,7 +518,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                     <ResponsiveTypography 
                       variant="cardValue" 
                       sx={{ 
-                        fontWeight: 600, 
                         color: unrealizedPnLPercentage >= 0 ? 'success.main' : 'error.main'
                       }}
                     >
@@ -549,7 +528,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 {
                   label: t('asset.details.metrics.quantity'),
                   value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ color: 'warning.main', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'warning.main'}}>
                       {formatNumber(quantity, 2)}
                     </ResponsiveTypography>
                   )
@@ -558,7 +537,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 {
                   label: t('asset.details.price.currentPrice'),
                   value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                    <ResponsiveTypography variant="cardValue" sx={{ color: 'primary.main'}}>
                       {formatCurrency(currentPrice, baseCurrency)}
                     </ResponsiveTypography>
                   )
@@ -566,7 +545,7 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                 {
                   label: t('asset.details.price.averageCost'),
                   value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
+                    <ResponsiveTypography variant="cardValue" >
                       {formatCurrency(avgCost, baseCurrency)}
                     </ResponsiveTypography>
                   )
@@ -579,37 +558,12 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: getPerformanceColor(currentPrice - avgCost)
                         }}
                       >
                         {formatCurrency(currentPrice - avgCost, baseCurrency)}
                       </ResponsiveTypography>
                     </Box>
-                  )
-                },
-                {
-                  label: t('asset.details.position.totalQuantity'),
-                  value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
-                      {formatNumber(quantity, 2)}
-                    </ResponsiveTypography>
-                  )
-                },
-                {
-                  label: t('asset.details.position.costBasis'),
-                  value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
-                      {formatCurrency(costBasis, baseCurrency)}
-                    </ResponsiveTypography>
-                  )
-                },
-                {
-                  label: t('asset.details.position.marketValue'),
-                  value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      {formatCurrency(totalValue, baseCurrency)}
-                    </ResponsiveTypography>
                   )
                 },
                 // Performance Analytics
@@ -621,7 +575,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: getPerformanceColor(performance.daily)
                         }}
                       >
@@ -638,7 +591,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: getPerformanceColor(performance.weekly)
                         }}
                       >
@@ -655,7 +607,6 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                       <ResponsiveTypography 
                         variant="cardValue" 
                         sx={{ 
-                          fontWeight: 600, 
                           color: getPerformanceColor(performance.monthly)
                         }}
                       >
@@ -681,19 +632,10 @@ export const AssetDetailsModal: React.FC<AssetDetailsModalProps> = ({
                     </Box>
                   )
                 },
-                // Metadata
-                {
-                  label: t('asset.details.metadata.created'),
-                  value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
-                      {asset ? new Date(asset.createdAt).toLocaleDateString() : ''}
-                    </ResponsiveTypography>
-                  )
-                },
                 {
                   label: t('asset.details.metadata.lastUpdated'),
                   value: (
-                    <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 600 }}>
+                    <ResponsiveTypography variant="cardValue" >
                       {asset ? new Date(asset.updatedAt).toLocaleDateString() : ''}
                     </ResponsiveTypography>
                   )

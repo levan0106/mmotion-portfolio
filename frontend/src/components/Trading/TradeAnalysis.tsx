@@ -581,7 +581,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     variant="outlined"
                     sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   />
-                  <AssessmentIcon sx={{ color: 'primary.main', fontSize: isCompactMode ? 18 : 24 }} />
+                  <AssessmentIcon sx={{ display:{xs: 'none', sm: 'block'}, color: 'primary.main', fontSize: isCompactMode ? 18 : 24 }} />
                 </Box>
               </Box>
               
@@ -659,7 +659,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     variant="outlined"
                     sx={{ fontSize: isCompactMode ? '0.65rem' : '0.75rem' }}
                   />
-                  <ShowChartIcon sx={{ color: 'warning.main', fontSize: isCompactMode ? 18 : 24 }} />
+                  <ShowChartIcon sx={{display:{xs: 'none', sm: 'block'}, color: 'warning.main', fontSize: isCompactMode ? 18 : 24 }} />
                 </Box>
               </Box>
               

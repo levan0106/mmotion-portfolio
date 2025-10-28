@@ -221,6 +221,7 @@
   },
   "portfolio": {
     "title": "Portfolio Management",
+    "portfolioOverview": "Portfolio Overview",
     "create": "Create Portfolio",
     "edit": "Edit Portfolio",
     "delete": "Delete Portfolio",

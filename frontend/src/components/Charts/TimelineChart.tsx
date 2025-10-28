@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { Box, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Paper, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme } from '@mui/material';
 import { formatPercentageValue, formatDateFns as formatDate } from '../../utils/format';
 import { getAssetTypeColor, RECHARTS_COLORS } from '../../config/chartColors';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
@@ -39,6 +39,7 @@ export interface TimelineChartProps {
   height?: number;
   colors?: string[];
   showBarTypeToggle?: boolean;
+  showChartTypeToggle?: boolean;
   defaultChartType?: ChartType;
   defaultBarType?: BarType;
   yAxisDomain?: [number, number];
@@ -64,6 +65,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
   height = 267,
   colors = RECHARTS_COLORS,
   showBarTypeToggle = true,
+  showChartTypeToggle = true,
   defaultChartType = 'line',
   defaultBarType = 'stacked',
   yAxisDomain = [0, 100],
@@ -84,6 +86,8 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
 }) => {
   const [chartType, setChartType] = useState<ChartType>(defaultChartType);
   const [barType, setBarType] = useState<BarType>(defaultBarType);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Get series names from all data points (exclude 'date' key)
   const seriesNames = data.length > 0 
@@ -177,7 +181,18 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                 flexShrink: 0
               }}
             />
-            <ResponsiveTypography variant="chartLegend">
+            <ResponsiveTypography 
+              variant="chartLegend"
+              sx={{
+                lineHeight: isMobile ? 1.2 : undefined,
+                '&.MuiTypography-root': {
+                  fontSize: isMobile ? '0.65rem !important' : '0.75rem !important',
+                },
+                '&.MuiTypography-chartLegend': {
+                  fontSize: isMobile ? '0.65rem !important' : '0.75rem !important',
+                }
+              }}
+            >
               {entry.value}
             </ResponsiveTypography>
           </Box>
@@ -307,60 +322,65 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
           )}
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {/* Bar Type Toggle - only show when bar or combo is selected */}
-          {showBarTypeToggle && (chartType === 'bar' || chartType === 'combo') && (
-            <ToggleButtonGroup
-              value={barType}
-              exclusive
-              onChange={handleBarTypeChange}
-              size="small"
-              sx={{ 
-                '& .MuiToggleButton-root': {
-                  fontSize: '0.5rem',
-                  px: compact ? 0.375 : 0.5,
-                  py: compact ? 0.125 : 0.25,
-                  minWidth: compact ? '35px' : '40px',
-                  height: compact ? '20px' : '24px',
-                }
-              }}
-            >
-              <ToggleButton value="stacked">
-                Stacked
-              </ToggleButton>
-              <ToggleButton value="side-by-side">
-                Side-by-Side
-              </ToggleButton>
-            </ToggleButtonGroup>
-          )}
-          
-          {/* Chart Type Toggle */}
-          <ToggleButtonGroup
-            value={chartType}
-            exclusive
-            onChange={handleChartTypeChange}
-            size="small"
-            sx={{ 
-              '& .MuiToggleButton-root': {
-                fontSize: '0.5rem',
-                px: compact ? 0.5 : 0.75,
-                py: compact ? 0.25 : 0.375,
-                minWidth: compact ? '30px' : '35px',
-                height: compact ? '20px' : '24px',
-              }
-            }}
-          >
-            <ToggleButton value="line">
-              Line
-            </ToggleButton>
-            <ToggleButton value="bar">
-              Bar
-            </ToggleButton>
-            <ToggleButton value="combo">
-              Combo
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+        {/* Only show toggle controls if any toggle is enabled */}
+        {(showChartTypeToggle || showBarTypeToggle) && (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {/* Bar Type Toggle - only show when bar or combo is selected and enabled */}
+            {showBarTypeToggle && (chartType === 'bar' || chartType === 'combo') && (
+              <ToggleButtonGroup
+                value={barType}
+                exclusive
+                onChange={handleBarTypeChange}
+                size="small"
+                sx={{ 
+                  '& .MuiToggleButton-root': {
+                    fontSize: '0.5rem',
+                    px: compact ? 0.375 : 0.5,
+                    py: compact ? 0.125 : 0.25,
+                    minWidth: compact ? '35px' : '40px',
+                    height: compact ? '20px' : '24px',
+                  }
+                }}
+              >
+                <ToggleButton value="stacked">
+                  Stacked
+                </ToggleButton>
+                <ToggleButton value="side-by-side">
+                  Side-by-Side
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+            
+            {/* Chart Type Toggle - only show when enabled */}
+            {showChartTypeToggle && (
+              <ToggleButtonGroup
+                value={chartType}
+                exclusive
+                onChange={handleChartTypeChange}
+                size="small"
+                sx={{ 
+                  '& .MuiToggleButton-root': {
+                    fontSize: '0.5rem',
+                    px: compact ? 0.5 : 0.75,
+                    py: compact ? 0.25 : 0.375,
+                    minWidth: compact ? '30px' : '35px',
+                    height: compact ? '20px' : '24px',
+                  }
+                }}
+              >
+                <ToggleButton value="line">
+                  Line
+                </ToggleButton>
+                <ToggleButton value="bar">
+                  Bar
+                </ToggleButton>
+                <ToggleButton value="combo">
+                  Combo
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+          </Box>
+        )}
       </Box>
       
       <Box sx={{ height: compact ? height * 0.75 : height }}>

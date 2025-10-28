@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Grid, Card, CardContent, Chip } from '@mui/material';
+import { Box, Grid, Card, CardContent, Chip, useMediaQuery, useTheme } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { getPnLColor, getPnLLightColor } from '../../config/chartColors';
@@ -51,6 +51,8 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   compact = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Add null checks
   if (!data || data.length === 0) {
     return (
@@ -162,6 +164,280 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     return null;
   };
 
+  // Mobile Chart Component (Vertical)
+  const MobileAllocationChart = () => (
+    <Box sx={{ height: compact ? 200 : 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} layout="vertical">
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            type="number"
+            tickFormatter={(value) => formatPercentage(value)}
+            tick={{ fontSize: compact ? 10 : 12 }}
+          />
+          <YAxis
+            type="category"
+            dataKey="symbol" 
+            tick={{ fontSize: compact ? 10 : 12 }}
+            width={compact ? 60 : 80}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  );
+
+  // Desktop Chart Component (Horizontal)
+  const DesktopAllocationChart = () => (
+    <Box sx={{ height: compact ? 200 : 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="symbol" 
+            tick={{ fontSize: compact ? 10 : 12 }}
+            angle={-45}
+            textAnchor="end"
+            height={compact ? 60 : 80}
+          />
+          <YAxis
+            tickFormatter={(value) => formatPercentage(value)}
+            tick={{ fontSize: compact ? 10 : 12 }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  );
+
+  // Mobile P&L Chart Component (Vertical)
+  const MobilePnLChart = () => (
+    <Box sx={{ height: compact ? 200 : 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} layout="vertical">
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            type="number"
+            tickFormatter={(value) => formatCurrency(value, baseCurrency)}
+            tick={{ fontSize: compact ? 10 : 12 }}
+          />
+          <YAxis
+            type="category"
+            dataKey="symbol" 
+            tick={{ fontSize: compact ? 10 : 12 }}
+            width={compact ? 60 : 80}
+          />
+          <Tooltip 
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload;
+                return (
+                  <Box sx={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 2,
+                    p: 2,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    minWidth: 200,
+                    maxWidth: 300
+                  }}>
+                    <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, color: '#1a1a1a' }}>
+                      {data.symbol} - {data.name}
+                    </ResponsiveTypography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.currentValue')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(data.totalValue, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.quantity')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {data.quantity?.toLocaleString() || '0'}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.marketPrice')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(data.currentPrice, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      p: 1,
+                      backgroundColor: getPnLLightColor(data.unrealizedPl),
+                      borderRadius: 1,
+                      border: `1px solid ${getPnLColor(data.unrealizedPl)}40`
+                    }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.unrealizedPL')}:
+                      </ResponsiveTypography>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <ResponsiveTypography 
+                          variant="tableCell" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: getPnLColor(data.unrealizedPl)
+                          }}
+                        >
+                          {formatCurrency(data.unrealizedPl, baseCurrency)}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography 
+                          variant="labelSmall" 
+                          sx={{ 
+                            color: getPnLColor(data.unrealizedPl)
+                          }}
+                        >
+                          {formatPercentage(data.unrealizedPlPercentage)}
+                        </ResponsiveTypography>
+                      </Box>
+                    </Box>
+                  </Box>
+                );
+              }
+              return null;
+            }}
+          />
+          <Bar dataKey="unrealizedPl" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={getPnLColor(entry.unrealizedPl)} 
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  );
+
+  // Desktop P&L Chart Component (Horizontal)
+  const DesktopPnLChart = () => (
+    <Box sx={{ height: compact ? 200 : 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="symbol" 
+            tick={{ fontSize: compact ? 10 : 12 }}
+            angle={-45}
+            textAnchor="end"
+            height={compact ? 60 : 80}
+          />
+          <YAxis
+            tickFormatter={(value) => formatCurrency(value, baseCurrency)}
+            tick={{ fontSize: compact ? 10 : 12 }}
+          />
+          <Tooltip 
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload;
+                return (
+                  <Box sx={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 2,
+                    p: 2,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    minWidth: 200,
+                    maxWidth: 300
+                  }}>
+                    <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, color: '#1a1a1a' }}>
+                      {data.symbol} - {data.name}
+                    </ResponsiveTypography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.currentValue')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(data.totalValue, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.quantity')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {data.quantity?.toLocaleString() || '0'}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.marketPrice')}:
+                      </ResponsiveTypography>
+                      <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(data.currentPrice, baseCurrency)}
+                      </ResponsiveTypography>
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      p: 1,
+                      backgroundColor: getPnLLightColor(data.unrealizedPl),
+                      borderRadius: 1,
+                      border: `1px solid ${getPnLColor(data.unrealizedPl)}40`
+                    }}>
+                      <ResponsiveTypography variant="tableCell" color="text.secondary">
+                        {t('portfolio.unrealizedPL')}:
+                      </ResponsiveTypography>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <ResponsiveTypography 
+                          variant="tableCell" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: getPnLColor(data.unrealizedPl)
+                          }}
+                        >
+                          {formatCurrency(data.unrealizedPl, baseCurrency)}
+                        </ResponsiveTypography>
+                        <ResponsiveTypography 
+                          variant="labelSmall" 
+                          sx={{ 
+                            color: getPnLColor(data.unrealizedPl)
+                          }}
+                        >
+                          {formatPercentage(data.unrealizedPlPercentage)}
+                        </ResponsiveTypography>
+                      </Box>
+                    </Box>
+                  </Box>
+                );
+              }
+              return null;
+            }}
+          />
+          <Bar dataKey="unrealizedPl" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={getPnLColor(entry.unrealizedPl)} 
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  );
+
   if (!data || data.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -192,30 +468,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <ResponsiveTypography variant="chartTitle" >
             {t('portfolio.assetAllocation')} (%)
           </ResponsiveTypography>
-          <Box sx={{ height: compact ? 200 : 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="symbol" 
-                  tick={{ fontSize: compact ? 10 : 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={compact ? 60 : 80}
-                />
-                <YAxis
-                  tickFormatter={(value) => formatPercentage(value)}
-                  tick={{ fontSize: compact ? 10 : 12 }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
+          {isMobile ? <MobileAllocationChart /> : <DesktopAllocationChart />}
         </Grid>
 
         {/* P&L Chart */}
@@ -223,111 +476,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <ResponsiveTypography variant="chartTitle" >
             {t('portfolio.unrealizedPL')}
           </ResponsiveTypography>
-          <Box sx={{ height: compact ? 200 : 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="symbol" 
-                  tick={{ fontSize: compact ? 10 : 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={compact ? 60 : 80}
-                />
-                <YAxis
-                  tickFormatter={(value) => formatCurrency(value, baseCurrency)}
-                  tick={{ fontSize: compact ? 10 : 12 }}
-                />
-                <Tooltip 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <Box sx={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                          border: '1px solid #e0e0e0',
-                          borderRadius: 2,
-                          p: 2,
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                          minWidth: 200,
-                          maxWidth: 300
-                        }}>
-                          <ResponsiveTypography variant="cardTitle" sx={{ mb: 1, color: '#1a1a1a' }}>
-                            {data.symbol} - {data.name}
-                          </ResponsiveTypography>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {t('portfolio.currentValue')}:
-                            </ResponsiveTypography>
-                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                              {formatCurrency(data.totalValue, baseCurrency)}
-                            </ResponsiveTypography>
-                          </Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {t('portfolio.quantity')}:
-                            </ResponsiveTypography>
-                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                              {data.quantity?.toLocaleString() || '0'}
-                            </ResponsiveTypography>
-                          </Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {t('portfolio.marketPrice')}:
-                            </ResponsiveTypography>
-                            <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
-                              {formatCurrency(data.currentPrice, baseCurrency)}
-                            </ResponsiveTypography>
-                          </Box>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            p: 1,
-                            backgroundColor: getPnLLightColor(data.unrealizedPl),
-                            borderRadius: 1,
-                            border: `1px solid ${getPnLColor(data.unrealizedPl)}40`
-                          }}>
-                            <ResponsiveTypography variant="tableCell" color="text.secondary">
-                              {t('portfolio.unrealizedPL')}:
-                            </ResponsiveTypography>
-                            <Box sx={{ textAlign: 'right' }}>
-                              <ResponsiveTypography 
-                                variant="tableCell" 
-                                sx={{ 
-                                  fontWeight: 600,
-                                  color: getPnLColor(data.unrealizedPl)
-                                }}
-                              >
-                                {formatCurrency(data.unrealizedPl, baseCurrency)}
-                              </ResponsiveTypography>
-                              <ResponsiveTypography 
-                                variant="labelSmall" 
-                                sx={{ 
-                                  color: getPnLColor(data.unrealizedPl)
-                                }}
-                              >
-                                {formatPercentage(data.unrealizedPlPercentage)}
-                              </ResponsiveTypography>
-                            </Box>
-                          </Box>
-                        </Box>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="unrealizedPl" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={getPnLColor(entry.unrealizedPl)} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
+          {isMobile ? <MobilePnLChart /> : <DesktopPnLChart />}
         </Grid>
       </Grid>
 
@@ -366,7 +515,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               </ResponsiveTypography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={6} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 {t('portfolio.profitableAssets')}
@@ -379,7 +528,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               </ResponsiveTypography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={6} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">
                 {t('portfolio.bestPerformer')}
@@ -402,7 +551,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
       {/* Asset Detail Cards */}
       <Grid container spacing={compact ? 1 : 1.5}>
         {chartData.map((asset, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={2.4} xl={2} key={index}>
+          <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={index}>
             <Card 
               sx={{ 
                 height: '100%',
@@ -590,7 +739,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
         borderRadius: 2,
       }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 {t('portfolio.totalAssets')}
@@ -600,7 +749,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               </ResponsiveTypography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 {t('portfolio.totalAssetValue')}
@@ -610,7 +759,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               </ResponsiveTypography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 {t('portfolio.totalPL')}
@@ -626,7 +775,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               </ResponsiveTypography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary" gutterBottom>
                 {t('portfolio.assetTypes')}

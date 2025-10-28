@@ -193,7 +193,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
         {/* NAV Information Grid */}
         <Grid container spacing={getUltraSpacing(2, 1)}>
           {/* NAV Total */}
-          <Grid item xs={12} md={actualIsFund ? 4 : 6}>
+          <Grid item xs={12} sm={actualIsFund ? 6 : 12} md={actualIsFund ? 4 : 12}>
             <Box sx={{
               p: getUltraSpacing(2.5, 1.5),
               backgroundColor: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
@@ -379,7 +379,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
 
           {/* NAV per Unit (only for funds) */}
           {actualIsFund && (
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} md={4}>
             <Box sx={{
               p: getUltraSpacing(2.5, 1.5),
               backgroundColor: 'linear-gradient(135deg, #fff3e0 0%, #ffffff 100%)',
