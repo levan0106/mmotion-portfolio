@@ -5,15 +5,11 @@ import {
   Card,
   CardContent,
   Grid,
-  CircularProgress,
-  Chip,
-  Tooltip,
-  IconButton
+  CircularProgress
 } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
-  InfoOutlined,
   AccountBalance
 } from '@mui/icons-material';
 import {
@@ -80,7 +76,6 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState('12');
   const [granularity, setGranularity] = useState('DAILY');
-  const [showReturn, setShowReturn] = useState(false);
 
   const timeframeOptions = [
     { value: '3', label: '3M' },
