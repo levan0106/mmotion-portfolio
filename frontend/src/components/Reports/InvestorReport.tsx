@@ -87,9 +87,9 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
   };
 
   return (
-    <Box sx={{ backgroundColor: 'background.paper', p:{xs:0, md:2} }}>
+    <Box sx={{ backgroundColor: 'background.paper', px:{xs:0, md:2}}}>
       {/* Header */}
-      <Box mb={3} px={{xs:1, md:0}}>
+      <Box mb={2} px={{xs:1, md:0}} pt={{xs:1, md:2}}>
         <Box display="flex" flexDirection="column" gap={1}>
           
           {/* Growth Metrics - Right aligned like "Cập nhật lần cuối" */}

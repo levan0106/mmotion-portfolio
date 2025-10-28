@@ -411,7 +411,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={isCompactMode ? 2 : 4}>
         <Box>
-          <ResponsiveTypography variant="pageTitle" component="h1" gutterBottom>
+          <ResponsiveTypography variant="pageTitle" ellipsis={false}>
             {t('tradeAnalysis.title')}
           </ResponsiveTypography>
           <ResponsiveTypography variant="pageSubtitle" color="text.secondary" display={isMobile ? 'none' : 'block'}>

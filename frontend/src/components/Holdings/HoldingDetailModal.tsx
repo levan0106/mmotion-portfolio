@@ -184,13 +184,13 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
         ) : holdingDetail ? (
           <Box>
             {/* Summary Metrics */}
-            <Box sx={{ p: 3, pb: 2 }}>
+            <Box sx={{ px: { xs: 0, sm: 3 }, py:2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 {t('holdings.modal.summary')}
               </ResponsiveTypography>
               <Grid container spacing={2}>
                 {summaryMetrics.map((metric, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={index}>
+                  <Grid item xs={6} sm={6} md={3} key={index}>
                     <Card sx={{ 
                       height: '100%',
                       background: `linear-gradient(135deg, ${alpha(theme.palette[metric.color].main, 0.06)} 0%, ${alpha(theme.palette[metric.color].main, 0.03)} 100%)`,
@@ -207,7 +207,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
                               color: `${metric.color}.main`,
                               width: 40,
                               height: 40,
-                              display: 'flex',
+                              display: { xs: 'none', sm: 'flex' },
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
@@ -236,7 +236,7 @@ const HoldingDetailModal: React.FC<HoldingDetailModalProps> = ({
             <Divider />
 
             {/* Transaction History */}
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ px: { xs: 0, sm: 3 }, py:2 }}>
               <ResponsiveTypography variant="cardTitle" sx={{ mb: 2, fontWeight: 600 }}>
                 {t('holdings.detail.transactionHistory')}
               </ResponsiveTypography>

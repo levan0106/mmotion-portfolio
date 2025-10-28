@@ -216,47 +216,26 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               p: compact ? 0.75 : 1, 
               borderRadius: 2, 
               background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-              display: 'flex',
+              display: { xs: 'none', sm: 'flex' },
               alignItems: 'center',
               justifyContent: 'center'
             }}>
               <AccountBalance sx={{ color: 'white', fontSize: compact ? 18 : 20 }} />
             </Box>
             <Box>
-              <ResponsiveTypography variant="pageTitle" >
+              <ResponsiveTypography variant="pageTitle" ellipsis={false}>
                 {t('navHistory.title')}
               </ResponsiveTypography>
               {!compact && (
-                <ResponsiveTypography variant="pageSubtitle" >
+                <ResponsiveTypography variant="pageSubtitle" sx={{ display: { xs: 'none', sm: 'block' } }}>
                   {t('navHistory.subtitle')}
                 </ResponsiveTypography>
               )}
             </Box>
-            <Tooltip title={t('navHistory.tooltipDescription')}>
-              <IconButton size="small" sx={{ ml: 1 }}>
-                <InfoOutlined fontSize="small" sx={{ color: '#666' }} />
-              </IconButton>
-            </Tooltip>
           </Box>
 
           {/* Professional Controls */}
           <Box sx={{ display: 'flex', gap: compact ? 1 : 1.5, alignItems: 'center' }}>
-            <Chip
-              label={showReturn ? t('navHistory.returnPercent') : t('navHistory.navValue')}
-              onClick={() => setShowReturn(!showReturn)}
-              color={showReturn ? "primary" : "default"}
-              variant={showReturn ? "filled" : "outlined"}
-              size={compact ? "small" : "medium"}
-              sx={{ 
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: compact ? '0.7rem' : '0.8rem',
-                '&:hover': {
-                  backgroundColor: showReturn ? 'primary.dark' : 'primary.light',
-                  color: showReturn ? 'white' : 'primary.main'
-                }
-              }}
-            />
             
             <ResponsiveFormSelect
               compact={compact}
@@ -264,7 +243,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               options={timeframeOptions}
               value={timeframe}
               onChange={(value) => handleTimeframeChange({ target: { value: String(value) } })}
-              formControlSx={{ minWidth: compact ? 70 : 85 }}
+              formControlSx={{ minWidth: compact ? 60 : 70 }}
               selectSx={{
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#e0e0e0'
@@ -281,7 +260,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               options={granularityOptions}
               value={granularity}
               onChange={(value) => handleGranularityChange({ target: { value: String(value) } })}
-              formControlSx={{ minWidth: compact ? 80 : 95 }}
+              formControlSx={{ minWidth: compact ? 60 : 70 }}
               selectSx={{
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#e0e0e0'
