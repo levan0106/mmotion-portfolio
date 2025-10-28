@@ -164,9 +164,20 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
     return null;
   };
 
+  // Calculate dynamic height based on data length
+  const getChartHeight = () => {
+    const baseHeight = 50;
+    const itemHeight = compact ? 20 : 30; // Height per item
+    const minHeight = compact ? 100 : 150;
+    const maxHeight = compact ? 400 : 600;
+    
+    const calculatedHeight = Math.max(minHeight, Math.min(maxHeight, baseHeight + (chartData.length * itemHeight)));
+    return calculatedHeight;
+  };
+
   // Mobile Chart Component (Vertical)
   const MobileAllocationChart = () => (
-    <Box sx={{ height: compact ? 200 : 300 }}>
+    <Box sx={{ height: {xs: getChartHeight(), sm: compact ? 200 : 300} }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" />
@@ -182,7 +193,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
             width={compact ? 60 : 80}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="percentage" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
@@ -194,14 +205,14 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   // Desktop Chart Component (Horizontal)
   const DesktopAllocationChart = () => (
-    <Box sx={{ height: compact ? 200 : 300 }}>
+    <Box sx={{ height: {xs: getChartHeight(), sm: compact ? 200 : 300} }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="symbol" 
             tick={{ fontSize: compact ? 10 : 12 }}
-            angle={-45}
+            angle={-70}
             textAnchor="end"
             height={compact ? 60 : 80}
           />
@@ -222,7 +233,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   // Mobile P&L Chart Component (Vertical)
   const MobilePnLChart = () => (
-    <Box sx={{ height: compact ? 200 : 300 }}>
+    <Box sx={{ height: {xs: getChartHeight(), sm: compact ? 200 : 300} }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" />
@@ -316,7 +327,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
               return null;
             }}
           />
-          <Bar dataKey="unrealizedPl" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="unrealizedPl" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
@@ -331,14 +342,14 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   // Desktop P&L Chart Component (Horizontal)
   const DesktopPnLChart = () => (
-    <Box sx={{ height: compact ? 200 : 300 }}>
+    <Box sx={{ height: {xs: getChartHeight(), sm: compact ? 200 : 300} }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="symbol" 
             tick={{ fontSize: compact ? 10 : 12 }}
-            angle={-45}
+            angle={-70}
             textAnchor="end"
             height={compact ? 60 : 80}
           />
