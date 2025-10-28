@@ -601,8 +601,13 @@
       "combinedAssetValue": "Giá trị tài sản kết hợp",
       "averageValue": "Giá trị trung bình",
       "perAssetAverage": "Trung bình mỗi tài sản",
+      "currentProfitLoss": "Lãi/lỗ hiện tại",
+      "totalProfit": "Tổng lãi",
+      "totalLoss": "Tổng lỗ",
       "assetTypes": "Loại tài sản",
-      "differentCategories": "Các danh mục khác nhau"
+      "differentCategories": "Các danh mục khác nhau",
+      "profitable": "Lãi",
+      "loss": "Lỗ"
     },
     "actions": {
       "viewDetails": "Xem chi tiết",
@@ -617,7 +622,12 @@
     },
     "filters": {
       "title": "Bộ lọc",
-      "active": "Đang hoạt động"
+      "active": "Đang hoạt động",
+      "activeFilters": "Bộ lọc",
+      "clearAll": "Xóa lọc",
+      "search": "Tìm kiếm",
+      "type": "Loại tài sản",
+      "portfolio": "Danh mục"
     },
     "noAssets": {
       "title": "Không tìm thấy tài sản",

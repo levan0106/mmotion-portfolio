@@ -2,7 +2,7 @@
  * Assets page component - Shows assets for the current account
  */
 
-import React, { useState, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { useAssets } from '../hooks/useAssets';
 import { useAccount } from '../contexts/AccountContext';
+import { usePortfolios } from '../hooks/usePortfolios';
 import { formatCurrency, formatDateTime, formatNumber } from '../utils/format';
 import { AssetDetailsModal } from '../components/Asset/AssetDetailsModal';
 import { AssetFormModal } from '../components/Asset/AssetFormModal';
@@ -293,19 +294,59 @@ const SummaryMetrics = memo(({
       return acc;
     }, {} as Record<string, number>);
 
+    // Calculate profit/loss assets
+    const profitableAssets = assets.filter(asset => {
+      const currentPrice = Number(asset.currentPrice) || 0;
+      const avgCost = Number(asset.avgCost) || 0;
+      return avgCost > 0 && currentPrice > avgCost;
+    }).length;
+
+    const lossAssets = assets.filter(asset => {
+      const currentPrice = Number(asset.currentPrice) || 0;
+      const avgCost = Number(asset.avgCost) || 0;
+      return avgCost > 0 && currentPrice < avgCost;
+    }).length;
+
+    // Calculate total profit/loss
+    const totalProfitLoss = assets.reduce((sum, asset) => {
+      const currentPrice = Number(asset.currentPrice) || 0;
+      const avgCost = Number(asset.avgCost) || 0;
+      const quantity = Number(asset.totalQuantity) || 0;
+      
+      if (avgCost > 0) {
+        const profitLoss = (currentPrice - avgCost) * quantity;
+        return sum + profitLoss;
+      }
+      return sum;
+    }, 0);
+
     return {
       totalAssets,
       totalValue,
       averageValue,
       assetsByType,
+      profitableAssets,
+      lossAssets,
+      totalProfitLoss,
     };
   }, [assets]);
 
   const summaryMetricsCards = useMemo(() => [
     {
       title: t('assets.metrics.totalAssets'),
-      value: summaryMetrics.totalAssets.toString(),
-      subtitle: t('assets.metrics.assetsInPortfolio'),
+      value: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ color: 'success.main', fontWeight: 600 }}>
+              {summaryMetrics.profitableAssets}↑
+            </Box>
+            <Box sx={{ color: 'error.main', fontWeight: 600 }}>
+              {summaryMetrics.lossAssets}↓
+            </Box>
+          </Box>
+        </Box>
+      ),
+      subtitle: `${t('assets.metrics.profitable')}: ${summaryMetrics.profitableAssets} | ${t('assets.metrics.loss')}: ${summaryMetrics.lossAssets}`,
       icon: <AccountBalanceWallet sx={{ fontSize: 24, color: 'primary.main' }} />,
       color: 'primary' as const,
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
@@ -320,12 +361,24 @@ const SummaryMetrics = memo(({
       gradient: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.06)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
     },
     {
-      title: t('assets.metrics.averageValue'),
-      value: formatCurrency(summaryMetrics.averageValue, baseCurrency),
-      subtitle: t('assets.metrics.perAssetAverage'),
-      icon: <AccountBalance sx={{ fontSize: 24, color: 'info.main' }} />,
-      color: 'info' as const,
-      gradient: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+      title: t('assets.metrics.currentProfitLoss'),
+      value: (
+        <Box sx={{ 
+          color: summaryMetrics.totalProfitLoss >= 0 ? 'success.main' : 'error.main',
+          fontWeight: 600
+        }}>
+          {summaryMetrics.totalProfitLoss >= 0 ? '+' : ''}{formatCurrency(summaryMetrics.totalProfitLoss, baseCurrency)}
+        </Box>
+      ),
+      subtitle: summaryMetrics.totalProfitLoss >= 0 ? t('assets.metrics.totalProfit') : t('assets.metrics.totalLoss'),
+      icon: <AccountBalance sx={{ 
+        fontSize: 24, 
+        color: summaryMetrics.totalProfitLoss >= 0 ? 'success.main' : 'error.main' 
+      }} />,
+      color: summaryMetrics.totalProfitLoss >= 0 ? 'success' as const : 'error' as const,
+      gradient: summaryMetrics.totalProfitLoss >= 0 
+        ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.06)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.06)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
       mobileHidden: true,
     },
     {
@@ -641,6 +694,7 @@ const Assets: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { accountId, baseCurrency } = useAccount();
+  const { portfolios } = usePortfolios(accountId);
   const { assets, loading, error, filters, refresh, updateAsset, createAsset, deleteAsset, setFilters: setApiFilters } = useAssets({ 
     initialFilters: { 
       createdBy: accountId,
@@ -670,6 +724,27 @@ const Assets: React.FC = () => {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
+
+  // Reset filters on page load/reload
+  useEffect(() => {
+    const resetFilters = () => {
+      const clearedFilters: AssetFiltersType = {
+        search: '',
+        type: undefined,
+        portfolioId: undefined,
+        sortBy: 'name',
+        sortOrder: 'ASC',
+        limit: 50,
+        createdBy: accountId,
+      };
+      setApiFilters(clearedFilters);
+    };
+
+    // Reset filters when component mounts or accountId changes
+    if (accountId) {
+      resetFilters();
+    }
+  }, [accountId]); // Removed setApiFilters from dependencies to prevent infinite loop
 
   const handleRefresh = () => {
     refresh();
@@ -909,44 +984,117 @@ const Assets: React.FC = () => {
           t={t}
         />
 
-        {/* Filter Controls */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* User Guide Component - Left Side */}
-          <UserGuide
-            guideKey="assets"
-            position="top-left"
-            size="large"
-          />
-          
-          {/* Control Buttons - Right Side */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <ResponsiveButton
-              variant="outlined"
-              icon={<Refresh />}
-              onClick={handleRefresh}
-              mobileText={t('common.refresh')}
-              desktopText={t('assets.actions.refreshData')}
-              sx={{ 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 500,
-              }}
-            >
-              {t('assets.actions.refreshData')}
-            </ResponsiveButton>
-            <ResponsiveButton
-              variant={showFilters ? "contained" : "outlined"}
-              icon={<FilterList />}
-              onClick={() => handleFiltersToggle(!showFilters)}
-              sx={{ 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 500,
-              }}
-            >
-              {t('assets.filters.title')} {showFilters && `(${t('assets.filters.active')})`}
-            </ResponsiveButton>
+        {/* Filter Controls with Active Filters */}
+        <Box sx={{ mb: 3 }}>
+          {/* Top Row: User Guide and Control Buttons */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            {/* User Guide Component - Left Side */}
+            <UserGuide
+              guideKey="assets"
+              position="top-left"
+              size="large"
+            />
+            
+            {/* Control Buttons - Right Side */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <ResponsiveButton
+                variant="outlined"
+                icon={<Refresh />}
+                onClick={handleRefresh}
+                mobileText={t('common.refresh')}
+                desktopText={t('assets.actions.refreshData')}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                {t('assets.actions.refreshData')}
+              </ResponsiveButton>
+              <ResponsiveButton
+                variant={showFilters ? "contained" : "outlined"}
+                icon={<FilterList />}
+                onClick={() => handleFiltersToggle(!showFilters)}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                {t('assets.filters.title')}
+              </ResponsiveButton>
+            </Box>
           </Box>
+
+          {/* Active Filters Display - Same row as controls */}
+          {(() => {
+            const activeFilters = [];
+            if (filters.search) activeFilters.push({ key: 'search', label: t('assets.filters.search'), value: filters.search });
+            if (filters.type) activeFilters.push({ key: 'type', label: t('assets.filters.type'), value: filters.type });
+            if (filters.portfolioId) {
+              const portfolio = portfolios?.find(p => p.portfolioId === filters.portfolioId);
+              activeFilters.push({ 
+                key: 'portfolioId', 
+                label: t('assets.filters.portfolio'), 
+                value: portfolio?.name || filters.portfolioId 
+              });
+            }
+            
+            return activeFilters.length > 0 ? (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1, 
+                flexWrap: 'wrap',
+                px: 1,
+                backgroundColor: 'grey.50',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'grey.200'
+              }}>
+                <ResponsiveTypography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mr: 1 }}>
+                  {t('assets.filters.activeFilters')}:
+                </ResponsiveTypography>
+                {activeFilters.map((filter) => (
+                  <Chip
+                    key={filter.key}
+                    label={`${filter.label}: ${filter.value}`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    onDelete={() => {
+                      const newFilters = { ...filters };
+                      if (filter.key === 'search') newFilters.search = '';
+                      if (filter.key === 'type') newFilters.type = undefined;
+                      if (filter.key === 'portfolioId') newFilters.portfolioId = undefined;
+                      handleFiltersChange(newFilters);
+                    }}
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      height: 24,
+                      '& .MuiChip-label': {
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                ))}
+                <ResponsiveButton
+                  size="small"
+                  variant="text"
+                  onClick={handleClearFilters}
+                  sx={{ 
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    minWidth: 'auto',
+                    px: 1,
+                    ml: 'auto'
+                  }}
+                >
+                  {t('assets.filters.clearAll')}
+                </ResponsiveButton>
+              </Box>
+            ) : null;
+          })()}
         </Box>
 
         {/* Asset Filters */}

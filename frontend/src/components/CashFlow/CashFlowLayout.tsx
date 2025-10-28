@@ -105,6 +105,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [tabValue, setTabValue] = useState(1);
   const [filterTypes, setFilterTypes] = useState<string[]>(['ALL']);
+  
+  // Row click edit modal state
+  const [rowClickEditModalOpen, setRowClickEditModalOpen] = useState(false);
+  const [rowClickEditingCashFlow, setRowClickEditingCashFlow] = useState<CashFlow | null>(null);
   const [dateFilters, setDateFilters] = useState({
     startDate: null as Date | null,
     endDate: null as Date | null,
@@ -343,6 +347,23 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     setCashFlowToDelete(cashFlow);
     setDeleteError(null); // Clear previous errors
     setDeleteDialogOpen(true);
+  };
+
+  // Handler for row click to open edit modal
+  const handleCashFlowRowClick = (cashFlow: CashFlow) => {
+    // Check if cash flow is cancelled
+    if (cashFlow.status === 'CANCELLED') {
+      return; // Don't open edit modal for cancelled cash flows
+    }
+    
+    setRowClickEditingCashFlow(cashFlow);
+    setRowClickEditModalOpen(true);
+  };
+
+  // Handler to close row click edit modal
+  const handleRowClickEditModalClose = () => {
+    setRowClickEditModalOpen(false);
+    setRowClickEditingCashFlow(null);
   };
 
 
@@ -1278,7 +1299,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                           
                           {/* Cash Flow Rows */}
                           {!collapsedDates.has(dateKey) && cashFlows.map((cashFlow) => (
-                            <TableRow key={cashFlow.cashflowId} hover>
+                            <TableRow 
+                              key={cashFlow.cashflowId} 
+                              hover
+                              onClick={() => handleCashFlowRowClick(cashFlow)}
+                              sx={{ 
+                                cursor: cashFlow.status === 'CANCELLED' ? 'default' : 'pointer',
+                                '&:hover': {
+                                  backgroundColor: cashFlow.status === 'CANCELLED' ? 'inherit' : 'action.hover'
+                                }
+                              }}
+                            >
                               <TableCell>
                                 <Chip
                                   {...(getTypeIcon(cashFlow.type) && { icon: getTypeIcon(cashFlow.type) })}
@@ -1336,7 +1367,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                                     <span>
                                       <IconButton
                                         size="small"
-                                        onClick={() => handleEditCashFlow(cashFlow)}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditCashFlow(cashFlow);
+                                        }}
                                         color="primary"
                                         disabled={cashFlow.status === 'CANCELLED'}
                                       >
@@ -1347,7 +1381,10 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                                   <Tooltip title={t('cashflow.tooltips.delete')}>
                                     <IconButton
                                       size="small"
-                                      onClick={() => handleDeleteCashFlow(cashFlow)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteCashFlow(cashFlow);
+                                      }}
                                       color="error"
                                     >
                                       <DeleteIcon fontSize="small" />
@@ -1608,6 +1645,51 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         loading={loading}
         error={error}
         portfolioId={portfolioId}
+      />
+
+      {/* Row Click Edit Modal */}
+      <CashFlowFormModal
+        open={rowClickEditModalOpen}
+        onClose={handleRowClickEditModalClose}
+        onSubmit={async (formData) => {
+          try {
+            setLoading(true);
+            setError(null);
+
+            const payload = {
+              portfolioId: portfolioId,
+              amount: parseFloat(formData.amount),
+              type: rowClickEditingCashFlow?.type || 'DEPOSIT',
+              description: formData.description,
+              reference: formData.reference || undefined,
+              flowDate: formData.flowDate ? formData.flowDate : undefined,
+              currency: formData.currency,
+              status: formData.status,
+              fundingSource: formData.fundingSource || undefined,
+            };
+
+            if (rowClickEditingCashFlow) {
+              await apiService.updateCashFlow(portfolioId, accountId, rowClickEditingCashFlow.cashflowId, payload);
+            }
+
+            // Close modal and refresh data
+            handleRowClickEditModalClose();
+            setError(null);
+            
+            await loadCashFlows();
+            await loadAllCashFlows();
+            onCashFlowUpdate?.();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : t('cashflow.error.updateFailed'));
+          } finally {
+            setLoading(false);
+          }
+        }}
+        dialogType={rowClickEditingCashFlow?.type.toLowerCase() as any || 'deposit'}
+        editingCashFlow={rowClickEditingCashFlow}
+        loading={loading}
+        error={error}
+        portfolioFundingSource={portfolio?.fundingSource || ''}
       />
     </Box>
     </LocalizationProvider>

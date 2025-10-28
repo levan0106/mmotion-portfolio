@@ -598,7 +598,12 @@
     },
     "filters": {
       "title": "Filters",
-      "active": "Active"
+      "active": "Active",
+      "activeFilters": "Filters",
+      "clearAll": "Clear All",
+      "search": "Search",
+      "type": "Asset Type",
+      "portfolio": "Portfolio"
     },
     "noAssets": {
       "title": "No Assets Found",
