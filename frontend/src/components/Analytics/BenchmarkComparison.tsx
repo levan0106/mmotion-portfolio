@@ -147,10 +147,11 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
         }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ResponsiveTypography variant="chartTitle" gutterBottom sx={{ mb: 0 }}>
+            <ResponsiveTypography variant="chartTitle" gutterBottom sx={{ mb: 0 }} ellipsis={false}>
               {title}
             </ResponsiveTypography>
-            <Tooltip
+            {!isMobile ? (
+              <Tooltip
               title={
                 <Box sx={{ p: 1 }}>
                   <ResponsiveTypography variant="chartTitle" sx={{ mb: 1 }} ellipsis={false}>
@@ -193,6 +194,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
                 <InfoOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
+            ) : <></>}
           </Box>
           <ResponsiveTypography variant="formHelper" color="text.secondary" display={isMobile ? 'none' : 'block'}>
             {t('benchmark.subtitle', { benchmarkName })}
@@ -213,7 +215,8 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             ]}
             value={twrPeriod}
             onChange={(value) => handleTwrPeriodChange(String(value))}
-            formControlSx={{ minWidth: 80 }}
+            formControlSx={{ minWidth: isMobile ? 50 : 80 }}
+            selectSx={{ fontSize: isMobile ? '0.65rem!important' : '0.75rem!important'}}
           />
           <ResponsiveFormSelect
             compact={false}
@@ -229,7 +232,8 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             ]}
             value={timeframe}
             onChange={(value) => handleTimeframeChange(String(value))}
-            formControlSx={{ minWidth: 80 }}
+            formControlSx={{ minWidth: isMobile ? 50 : 80 }}
+            selectSx={{ fontSize: isMobile ? '0.65rem!important' : '0.75rem!important'}}
           />
         </Box>
         </Box>
