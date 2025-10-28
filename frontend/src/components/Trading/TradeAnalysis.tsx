@@ -455,7 +455,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         {/* Total P&L Card */}
         <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
-            height: isCompactMode ? 120 : 200, 
+            height: {xs:'auto', sm: isCompactMode ? 120 : 180}, 
             boxShadow: 2,
             background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
             border: '1px solid #e3f2fd',
@@ -466,9 +466,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
+            <CardContent sx={{ py: isCompactMode ? 1.5 : 2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 1}>
                 <Box>
                   <ResponsiveTypography 
                     variant="formHelper" 
@@ -543,7 +543,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         {/* Trading Statistics Card - Combined Trades & Volume */}
         <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
-            height: isCompactMode ? 120 : 200, 
+            height: {xs:'auto', sm: isCompactMode ? 120 : 180}, 
             boxShadow: 2,
             background: 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
             border: '1px solid #e1bee7',
@@ -554,9 +554,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
+            <CardContent sx={{ py: isCompactMode ? 1.5 : 2, px:2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 1}>
                 <Box>
                   <ResponsiveTypography 
                     variant="formHelper" 
@@ -621,7 +621,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
         {/* Risk Metrics Card - Volatility & Max Drawdown */}
         <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
-            height: isCompactMode ? 120 : 200, 
+            height: {xs:'auto', sm: isCompactMode ? 120 : 180}, 
             boxShadow: 2,
             background: 'linear-gradient(135deg, #ffffff 0%, #fff3e0 100%)',
             border: '1px solid #ffcc02',
@@ -632,9 +632,9 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: isCompactMode ? 1.5 : 2 }}>
+            <CardContent sx={{ py: isCompactMode ? 1.5 : 2, px:2 }}>
               {/* Header */}
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompactMode ? 1 : 1}>
                 <Box>
                   <ResponsiveTypography 
                     variant="formHelper" 

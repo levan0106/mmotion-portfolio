@@ -12,7 +12,6 @@ import { apiService } from '../../services/api';
 import NAVSummary from '../Analytics/NAVSummary';
 import NAVHistoryChart from '../Analytics/NAVHistoryChart';
 import BenchmarkComparison from '../Analytics/BenchmarkComparison';
-import MWRBenchmarkComparison from '../Analytics/MWRBenchmarkComparison';
 import { TradeAnalysisContainer } from '../Trading/TradeAnalysis';
 import RiskMetricsDashboard from '../Analytics/RiskMetricsDashboard';
 
@@ -36,12 +35,8 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [isBenchmarkLoading, setIsBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
-  const [mwrBenchmarkData, setMwrBenchmarkData] = useState<any>(null);
-  const [isMwrBenchmarkLoading, setIsMwrBenchmarkLoading] = useState(false);
-  const [mwrBenchmarkError, setMwrBenchmarkError] = useState<string | null>(null);
   const [benchmarkTimeframe, setBenchmarkTimeframe] = useState('1Y');
   const [benchmarkTwrPeriod, setBenchmarkTwrPeriod] = useState('YTD');
-  const [benchmarkMwrPeriod, setBenchmarkMwrPeriod] = useState('YTD');
 
   // State for risk metrics
   const [, setRiskMetricsData] = useState<any>(null);
@@ -94,27 +89,27 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   }, [portfolioId, benchmarkTimeframe, benchmarkTwrPeriod]);
 
   // Fetch MWR benchmark comparison data
-  useEffect(() => {
-    const fetchMWRBenchmarkData = async () => {
-      if (!portfolioId) return;
-      
-      try {
-        setIsMwrBenchmarkLoading(true);
-        setMwrBenchmarkError(null);
-        
-        const months = getTimeframeMonths(benchmarkTimeframe);
-        const response = await apiService.getPortfolioMWRBenchmarkComparison(portfolioId, months, benchmarkMwrPeriod);
-        setMwrBenchmarkData(response);
-      } catch (error) {
-        console.error('Error fetching MWR benchmark data:', error);
-        setMwrBenchmarkError(t('portfolio.error.mwrBenchmarkLoadFailed'));
-      } finally {
-        setIsMwrBenchmarkLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMWRBenchmarkData = async () => {
+  //     if (!portfolioId) return;
+  //     
+  //     try {
+  //       setIsMwrBenchmarkLoading(true);
+  //       setMwrBenchmarkError(null);
+  //       
+  //       const months = getTimeframeMonths(benchmarkTimeframe);
+  //       const response = await apiService.getPortfolioMWRBenchmarkComparison(portfolioId, months, benchmarkMwrPeriod);
+  //       setMwrBenchmarkData(response);
+  //     } catch (error) {
+  //       console.error('Error fetching MWR benchmark data:', error);
+  //       setMwrBenchmarkError(t('portfolio.error.mwrBenchmarkLoadFailed'));
+  //     } finally {
+  //       setIsMwrBenchmarkLoading(false);
+  //     }
+  //   };
 
-    fetchMWRBenchmarkData();
-  }, [portfolioId, benchmarkTimeframe, benchmarkMwrPeriod]);
+  //   fetchMWRBenchmarkData();
+  // }, [portfolioId, benchmarkTimeframe, benchmarkMwrPeriod]);
 
   // Fetch risk metrics data
   useEffect(() => {
@@ -145,10 +140,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   // Handle benchmark TWR period change
   const handleBenchmarkTwrPeriodChange = (twrPeriod: string) => {
     setBenchmarkTwrPeriod(twrPeriod);
-  };
-
-  const handleBenchmarkMwrPeriodChange = (mwrPeriod: string) => {
-    setBenchmarkMwrPeriod(mwrPeriod);
   };
 
   return (
@@ -185,7 +176,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         {/* Side-by-Side Performance Views */}
         <Grid container spacing={{ xs: getUltraSpacing(1, 0.5), sm: getUltraSpacing(2, 1), md: getUltraSpacing(2, 1) }}>
           {/* Fund Manager View - TWR */}
-          <Grid item xs={12} sm={12} md={6} lg={6}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
             {/* Header */}
             <Box sx={{ 
               display: isMobile || isCompactMode ? 'none' : 'flex', 
@@ -265,8 +256,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           </Grid>
 
           {/* Individual Investor View - MWR */}
-          <Grid item xs={12} sm={12} md={6} lg={6}>
-            {/* Header */}
+          {/* <Grid item xs={12} sm={12} md={6} lg={6}>
             <Box sx={{ 
               display: isMobile || isCompactMode ? 'none' : 'flex', 
               alignItems: { xs: 'flex-start', sm: 'center' },
@@ -320,7 +310,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
               </Box>
             </Box>
             
-            {/* Chart */}
             {isMwrBenchmarkLoading ? (
               <Box display="flex" justifyContent="center" p={2}>
                 <CircularProgress size={24} />
@@ -339,7 +328,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                 currentTimeframe={benchmarkTimeframe}
               />
             ):(<></>)}
-          </Grid>
+          </Grid> */}
         </Grid>
       </Box>
       

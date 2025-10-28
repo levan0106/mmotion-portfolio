@@ -985,10 +985,22 @@ export class TradingService {
       if (periodSnapshots.length > 0) {
         const lastSnapshot = periodSnapshots[periodSnapshots.length - 1];
         periodData.unrealizedPl = parseFloat(lastSnapshot.unrealized_asset_pl?.toString() || '0');
-        console.log(`📊 ${periodData.period}: Using last snapshot from ${lastSnapshot.snapshot_date}, unrealized P&L: ${periodData.unrealizedPl}`);
+        // console.log(`📊 ${periodData.period}: Using last snapshot from ${lastSnapshot.snapshot_date}, unrealized P&L: ${periodData.unrealizedPl}`);
       } else {
-        periodData.unrealizedPl = 0;
-        console.log(`📊 ${periodData.period}: No snapshots found, using unrealized P&L: 0`);
+        // If no snapshots found in current period, use the most recent snapshot before this period
+        const previousSnapshots = allSnapshots.filter(snapshot => {
+          const snapshotDate = new Date(snapshot.snapshot_date);
+          return snapshotDate < periodStart;
+        });
+        
+        if (previousSnapshots.length > 0) {
+          const lastPreviousSnapshot = previousSnapshots[previousSnapshots.length - 1];
+          periodData.unrealizedPl = parseFloat(lastPreviousSnapshot.unrealized_asset_pl?.toString() || '0');
+          // console.log(`📊 ${periodData.period}: No snapshots in period, using previous snapshot from ${lastPreviousSnapshot.snapshot_date}, unrealized P&L: ${periodData.unrealizedPl}`);
+        } else {
+          periodData.unrealizedPl = 0;
+          // console.log(`📊 ${periodData.period}: No snapshots found in period or before, using unrealized P&L: 0`);
+        }
       }
       
       periodData.totalPl = periodData.realizedPl + periodData.unrealizedPl;

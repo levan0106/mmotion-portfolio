@@ -167,8 +167,8 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+            <CardContent sx={{ py: compact ? 0.5 : 1, px:2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 0.5 : 1}>
                 <ResponsiveTypography 
                   variant="formHelper" 
                   color="text.secondary"
@@ -187,7 +187,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               <Chip 
                 label={varLevel.toUpperCase()} 
                 color={getRiskColor(varLevel) as any}
-                size={compact ? "small" : "medium"}
+                size="small"
                 sx={{ 
                   mt: 1,
                   fontSize: compact ? '0.65rem' : '0.75rem'
@@ -210,8 +210,8 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+            <CardContent sx={{ py: compact ? 0.5 : 1, px:2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 0.5 : 1}>
                 <ResponsiveTypography 
                   variant="formHelper" 
                   color="text.secondary"
@@ -230,7 +230,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               <Chip 
                 label={sharpeLevel.toUpperCase()} 
                 color={getRiskColor(sharpeLevel) as any}
-                size={compact ? "small" : "medium"}
+                size="small"
                 sx={{ 
                   mt: 1,
                   fontSize: compact ? '0.65rem' : '0.75rem'
@@ -253,8 +253,8 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+            <CardContent sx={{ py: compact ? 0.5 : 1, px:2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 0.5 : 1}>
                 <ResponsiveTypography 
                   variant="formHelper" 
                   color="text.secondary"
@@ -273,7 +273,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               <Chip 
                 label={volatilityLevel.toUpperCase()} 
                 color={getRiskColor(volatilityLevel) as any}
-                size={compact ? "small" : "medium"}
+                size="small"
                 sx={{ 
                   mt: 1,
                   fontSize: compact ? '0.65rem' : '0.75rem'
@@ -296,8 +296,8 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               transition: 'all 0.3s ease-in-out'
             }
           }}>
-            <CardContent sx={{ p: compact ? 1.5 : 2 }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 1 : 2}>
+            <CardContent sx={{ py: compact ? 0.5 : 1, px:2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={compact ? 0.5 : 1}>
                 <ResponsiveTypography 
                   variant="formHelper" 
                   color="text.secondary"
@@ -316,7 +316,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
               <Chip 
                 label={drawdownLevel.toUpperCase()} 
                 color={getRiskColor(drawdownLevel) as any}
-                size={compact ? "small" : "medium"}
+                size="small"
                 sx={{ 
                   mt: 1,
                   fontSize: compact ? '0.65rem' : '0.75rem'
@@ -347,7 +347,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                   {t('riskMetrics.additionalMetrics')}
                 </ResponsiveTypography>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={6} sm={6} md={3}>
                     <Box>
                       <ResponsiveTypography 
                         variant="formHelper" 
@@ -363,7 +363,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={6} sm={6} md={3}>
                     <Box>
                       <ResponsiveTypography 
                         variant="formHelper" 
@@ -379,7 +379,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={6} sm={6} md={3}>
                     <Box>
                       <ResponsiveTypography 
                         variant="formHelper" 
@@ -395,7 +395,7 @@ const RiskMetricsDashboard: React.FC<RiskMetricsDashboardProps> = ({
                       </ResponsiveTypography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={6} sm={6} md={3}>
                     <Box>
                       <ResponsiveTypography 
                         variant="formHelper" 

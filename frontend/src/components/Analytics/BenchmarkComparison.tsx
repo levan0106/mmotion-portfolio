@@ -18,13 +18,13 @@ import {
 import { 
   Box, 
   Paper, 
-  Grid, 
   Card, 
   CardContent, 
   Tooltip,
   IconButton,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Grid
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
@@ -203,13 +203,13 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             compact={false}
             size="small"
             options={[
-              { value: '1D', label: '1 Day TWR' },
-              { value: '1W', label: '1 Week TWR' },
-              { value: '1M', label: '1 Month TWR' },
-              { value: '3M', label: '3 Months TWR' },
-              { value: '6M', label: '6 Months TWR' },
-              { value: '1Y', label: '1 Year TWR' },
-              { value: 'YTD', label: 'YTD TWR' },
+              { value: '1D', label: '1 Day' },
+              { value: '1W', label: '1 Week' },
+              { value: '1M', label: '1 Month' },
+              { value: '3M', label: '3 Months' },
+              { value: '6M', label: '6 Months' },
+              { value: '1Y', label: '1 Year' },
+              { value: 'YTD', label: 'YTD' },
             ]}
             value={twrPeriod}
             onChange={(value) => handleTwrPeriodChange(String(value))}
@@ -234,79 +234,104 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
         </Box>
         </Box>
 
-        {/* Performance Metrics */}
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
-          <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
-                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                  <TrendingUp color="primary" sx={{ fontSize: 16 }} />
-                  <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    {t('benchmark.portfolio')}
-                  </ResponsiveTypography>
-                </Box>
-                <ResponsiveTypography 
-                  variant="cardValue" 
-                  color={portfolioReturn >= 0 ? "success.main" : "error.main"} 
-                  fontWeight="bold"
-                >
-                  {formatPercentage(portfolioReturn)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
+        {/* Performance Metrics - Simple List View */}
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3} lg={3} xl={2}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrendingUp color="primary" sx={{ fontSize: 16 }} />
+              <ResponsiveTypography variant="formHelper" color="text.secondary">
+                {t('benchmark.portfolio')}
+              </ResponsiveTypography>
+            </Box>
+            <ResponsiveTypography 
+              variant="cardValue" 
+              color={portfolioReturn >= 0 ? "success.main" : "error.main"} 
+              fontWeight="bold"
+            >
+              {formatPercentage(portfolioReturn)}
+            </ResponsiveTypography>
+          </Box>
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
-                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                  <TrendingUp color="info" sx={{ fontSize: 16 }} />
-                  <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    {benchmarkName}
-                  </ResponsiveTypography>
-                </Box>
-                <ResponsiveTypography 
-                  variant="cardValue" 
-                  color={benchmarkReturn >= 0 ? "success.main" : "error.main"} 
-                  fontWeight="bold"
-                >
-                  {formatPercentage(benchmarkReturn)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
+          <Grid item xs={12} sm={6} md={3} lg={3} xl={2}>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrendingUp color="info" sx={{ fontSize: 16 }} />
+              <ResponsiveTypography variant="formHelper" color="text.secondary">
+                {benchmarkName}
+              </ResponsiveTypography>
+            </Box>
+            <ResponsiveTypography 
+              variant="cardValue" 
+              color={benchmarkReturn >= 0 ? "success.main" : "error.main"} 
+              fontWeight="bold"
+            >
+              {formatPercentage(benchmarkReturn)}
+            </ResponsiveTypography>
+          </Box>
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
-                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                  <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
-                  <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    {t('benchmark.difference')}
-                  </ResponsiveTypography>
-                </Box>
-                <ResponsiveTypography 
-                  variant="cardValue" 
-                  color={excessReturn >= 0 ? "success.main" : "error.main"} 
-                  fontWeight="bold"
-                >
-                  {formatPercentage(excessReturn)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
+          <Grid item xs={12} sm={6} md={3} lg={3} xl={2}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CompareArrows color={excessReturn >= 0 ? "success" : "error"} sx={{ fontSize: 16 }} />
+              <ResponsiveTypography variant="formHelper" color="text.secondary">
+                {t('benchmark.difference')}
+              </ResponsiveTypography>
+            </Box>
+            <ResponsiveTypography 
+              variant="cardValue" 
+              color={excessReturn >= 0 ? "success.main" : "error.main"} 
+              fontWeight="bold"
+            >
+              {formatPercentage(excessReturn)}
+            </ResponsiveTypography>
+          </Box>
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <Card sx={{ height: 80, display: 'flex', alignItems: 'center' }}>
-              <CardContent sx={{ p: { xs: 0.5, sm: 1.5 }, '&:last-child': { pb: { xs: 0.5, sm: 1.5 } } }}>
-                <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                  <TrendingDown color="warning" sx={{ fontSize: 16 }} />
-                  <ResponsiveTypography variant="formHelper" color="text.secondary">
-                    {t('benchmark.trackingError')}
-                  </ResponsiveTypography>
-                </Box>
-                <ResponsiveTypography variant="cardValue" color="warning.main" fontWeight="bold">
-                  {formatPercentage(trackingError)}
-                </ResponsiveTypography>
-              </CardContent>
-            </Card>
+          <Grid item xs={12} sm={6} md={3} lg={3} xl={2}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrendingDown color="warning" sx={{ fontSize: 16 }} />
+              <ResponsiveTypography variant="formHelper" color="text.secondary">
+                {t('benchmark.trackingError')}
+              </ResponsiveTypography>
+            </Box>
+            <ResponsiveTypography 
+              variant="cardValue" 
+              color="warning.main" 
+              fontWeight="bold"
+            >
+              {formatPercentage(trackingError)}
+            </ResponsiveTypography>
+          </Box>
           </Grid>
         </Grid>
 
