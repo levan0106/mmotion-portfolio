@@ -8,6 +8,8 @@ import {
   CircularProgress,
   Fab,
   useTheme,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -15,6 +17,7 @@ import {
   TrendingUp as TrendingUpIcon,
   MonetizationOn as MonetizationOnIcon,
   Assessment as AssessmentIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../Common';
 import PortfolioCardWithPermissions from './PortfolioCardWithPermissions';
@@ -29,6 +32,7 @@ interface PortfolioListProps {
   onDeletePortfolio?: (portfolioId: string) => void;
   onCreatePortfolio?: () => void;
   onManagePermissions?: (portfolioId: string) => void;
+  onRefresh?: () => void;
 }
 
 const PortfolioList: React.FC<PortfolioListProps> = ({
@@ -37,6 +41,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
   onDeletePortfolio,
   onCreatePortfolio,
   onManagePermissions,
+  onRefresh,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -85,50 +90,39 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          mb: 1
+          mb: 0
         }}>{t('portfolio.title')}</ResponsiveTypography>
-        {onCreatePortfolio && (
-          <ResponsiveButton
-            className="portfolio-list__create-btn"
-            onClick={onCreatePortfolio}
-            icon={<AddIcon />}
-            mobileText={t('common.create')}
-            desktopText={t('portfolio.create')}
-          >
-            {t('portfolio.create')}
-          </ResponsiveButton>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {onRefresh && (
+            <Tooltip title={t('common.refresh')}>
+              <IconButton
+                onClick={onRefresh}
+                disabled={isLoading}
+                color="primary"
+                sx={{ 
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: 'primary.50'
+                  }
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {onCreatePortfolio && (
+            <ResponsiveButton
+              className="portfolio-list__create-btn"
+              onClick={onCreatePortfolio}
+              icon={<AddIcon />}
+              mobileText={t('common.create')}
+              desktopText={t('portfolio.create')}
+            >
+              {t('portfolio.create')}
+            </ResponsiveButton>
+          )}
+        </div>
       </div>
-
-      {/* Filters */}
-      {/* <div className="portfolio-list__filters">
-        <TextField
-          label="Search portfolios"
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-          }}
-          className="portfolio-list__search"
-        />
-        <FormControl size="small" className="portfolio-list__currency-filter">
-          <InputLabel>Currency</InputLabel>
-          <Select
-            value={currencyFilter}
-            label="Currency"
-            onChange={(e) => setCurrencyFilter(e.target.value)}
-          >
-            <MenuItem value="">All Currencies</MenuItem>
-            {currencies.map((currency) => (
-              <MenuItem key={currency} value={currency}>
-                {currency}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div> */}
 
       {/* Portfolio Grid */}
       {filteredPortfolios.length === 0 ? (

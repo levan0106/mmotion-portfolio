@@ -55,6 +55,7 @@ import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import DataDisplayToggle from '../Common/DataDisplayToggle';
 import FloatingTradingButton from '../Common/FloatingTradingButton';
+import FloatingMenuButton from '../Common/FloatingMenuButton';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -783,6 +784,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             onClick={() => {
               if (currentUser) {
                 navigate('/profile');
+                if (isMobile || isTablet) {
+                  setMobileOpen(false);
+                }
               }
             }}
             sx={{ 
@@ -942,6 +946,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Tooltip title={t('navigation.settings')} placement="top">
               <IconButton 
                 size="small" 
+                onClick={() => {
+                  navigate('/profile');
+                  if (isMobile || isTablet) {
+                    setMobileOpen(false);
+                  }
+                }}
                 sx={{ 
                   color: 'text.secondary',
                   background: alpha(theme.palette.background.paper, 0.3),
@@ -1256,6 +1266,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         
         {/* Global Floating Trading Button */}
         <FloatingTradingButton portfolioId={getPortfolioIdFromPath()} />
+        
+        {/* Floating Menu Button for Mobile */}
+        <FloatingMenuButton 
+          onClick={handleDrawerToggle}
+          isOpen={mobileOpen}
+        />
       </Box>
     </Box>
   );

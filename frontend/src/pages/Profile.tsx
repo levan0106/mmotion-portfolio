@@ -12,6 +12,8 @@ import {
   Collapse,
   Grid,
   Breakpoint,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { ResponsiveButton, ResponsiveTypography } from '../components/Common';
@@ -26,6 +28,8 @@ import {
   Phone as PhoneIcon,
   Cake as CakeIcon,
   Lock as LockIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon,
 } from '@mui/icons-material';
 import { authService, User, UpdateProfileRequest, SetPasswordRequest, ChangePasswordRequest } from '../services/authService';
 import { useAccount } from '../contexts/AccountContext';
@@ -48,6 +52,9 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showChangeNewPassword, setShowChangeNewPassword] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState<UpdateProfileRequest>({});
@@ -524,43 +531,72 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                   onClick={() => setShowPassword(true)}
                   mobileText={t('profile.setPassword')}
                   desktopText={t('profile.setPassword')}
+                  forceTextOnly={true}
                 >
                   {t('profile.setPassword')}
                 </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
-                  <TextField
-                    fullWidth
-                    label={t('profile.newPassword')}
-                    type="password"
-                    value={passwordData.password}
-                    onChange={(e) => setPasswordData({ password: e.target.value })}
-                    helperText={t('profile.passwordHelper')}
-                    sx={{ mb: 2 }}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <ResponsiveButton
-                      variant="contained"
-                      onClick={handleSetPassword}
-                      disabled={saving || !passwordData.password}
-                      icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                      mobileText={saving ? t('profile.setting') : t('profile.setPassword')}
-                      desktopText={saving ? t('profile.setting') : t('profile.setPassword')}
-                    >
-                      {saving ? t('profile.setting') : t('profile.setPassword')}
-                    </ResponsiveButton>
-                    <ResponsiveButton
-                      variant="outlined"
-                      onClick={() => {
-                        setShowPassword(false);
-                        setPasswordData({ password: '' });
+                  <form onSubmit={(e) => { e.preventDefault(); handleSetPassword(); }}>
+                    {/* Hidden username field for password manager accessibility */}
+                    <input
+                      type="text"
+                      autoComplete="username"
+                      value={user?.email || user?.username || ''}
+                      style={{ display: 'none' }}
+                      readOnly
+                    />
+                    <TextField
+                      fullWidth
+                      label={t('profile.newPassword')}
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={passwordData.password}
+                      onChange={(e) => setPasswordData({ password: e.target.value })}
+                      helperText={t('profile.passwordHelper')}
+                      autoComplete="new-password"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              edge="end"
+                            >
+                              {showNewPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
                       }}
-                      mobileText={t('profile.cancel')}
-                      desktopText={t('profile.cancel')}
-                    >
-                      {t('profile.cancel')}
-                    </ResponsiveButton>
-                  </Box>
+                      sx={{ mb: 2 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <ResponsiveButton
+                        variant="contained"
+                        type="submit"
+                        disabled={saving || !passwordData.password}
+                        icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                        mobileText={saving ? t('profile.setting') : t('profile.setPassword')}
+                        desktopText={saving ? t('profile.setting') : t('profile.setPassword')}
+                        forceTextOnly={true}
+                      >
+                        {saving ? t('profile.setting') : t('profile.setPassword')}
+                      </ResponsiveButton>
+                      <ResponsiveButton
+                        icon={<CancelIcon />}
+                        variant="outlined"
+                        type="button"
+                        onClick={() => {
+                          setShowPassword(false);
+                          setPasswordData({ password: '' });
+                        }}
+                        mobileText={t('profile.cancel')}
+                        desktopText={t('profile.cancel')}
+                        forceTextOnly={true}
+                      >
+                        {t('profile.cancel')}
+                      </ResponsiveButton>
+                    </Box>
+                  </form>
                 </Box>
               )}
             </Box>
@@ -582,48 +618,87 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                 </ResponsiveButton>
               ) : (
                 <Box sx={{ maxWidth: 400 }}>
-                  <TextField
-                    fullWidth
-                    label={t('profile.currentPassword')}
-                    type="password"
-                    value={changePasswordData.currentPassword}
-                    onChange={(e) => setChangePasswordData({ ...changePasswordData, currentPassword: e.target.value })}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    label={t('profile.newPassword')}
-                    type="password"
-                    value={changePasswordData.newPassword}
-                    onChange={(e) => setChangePasswordData({ ...changePasswordData, newPassword: e.target.value })}
-                    helperText={t('profile.passwordHelper')}
-                    sx={{ mb: 2 }}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <ResponsiveButton
-                      variant="contained"
-                      onClick={handleChangePassword}
-                      disabled={saving || !changePasswordData.currentPassword || !changePasswordData.newPassword}
-                      icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                      mobileText={saving ? t('profile.changing') : t('profile.changePassword')}
-                      desktopText={saving ? t('profile.changing') : t('profile.changePassword')}
-                      forceTextOnly={true}
-                    >
-                      {saving ? t('profile.changing') : t('profile.changePassword')}
-                    </ResponsiveButton>
-                    <ResponsiveButton
-                      variant="outlined"
-                      onClick={() => {
-                        setShowChangePassword(false);
-                        setChangePasswordData({ currentPassword: '', newPassword: '' });
+                  <form onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }}>
+                    {/* Hidden username field for password manager accessibility */}
+                    <input
+                      type="text"
+                      autoComplete="username"
+                      value={user?.email || user?.username || ''}
+                      style={{ display: 'none' }}
+                      readOnly
+                    />
+                    <TextField
+                      fullWidth
+                      label={t('profile.currentPassword')}
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={changePasswordData.currentPassword}
+                      onChange={(e) => setChangePasswordData({ ...changePasswordData, currentPassword: e.target.value })}
+                      autoComplete="current-password"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle current password visibility"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              edge="end"
+                            >
+                              {showCurrentPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
                       }}
-                      mobileText={t('profile.cancel')}
-                      desktopText={t('profile.cancel')}
-                      forceTextOnly={true}
-                    >
-                      {t('profile.cancel')}
-                    </ResponsiveButton>
-                  </Box>
+                      sx={{ mb: 2 }}
+                    />
+                    <TextField
+                      fullWidth
+                      label={t('profile.newPassword')}
+                      type={showChangeNewPassword ? 'text' : 'password'}
+                      value={changePasswordData.newPassword}
+                      onChange={(e) => setChangePasswordData({ ...changePasswordData, newPassword: e.target.value })}
+                      helperText={t('profile.passwordHelper')}
+                      autoComplete="new-password"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle new password visibility"
+                              onClick={() => setShowChangeNewPassword(!showChangeNewPassword)}
+                              edge="end"
+                            >
+                              {showChangeNewPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{ mb: 2 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <ResponsiveButton
+                        variant="contained"
+                        type="submit"
+                        disabled={saving || !changePasswordData.currentPassword || !changePasswordData.newPassword}
+                        icon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                        mobileText={saving ? t('profile.changing') : t('profile.changePassword')}
+                        desktopText={saving ? t('profile.changing') : t('profile.changePassword')}
+                        forceTextOnly={true}
+                      >
+                        {saving ? t('profile.changing') : t('profile.changePassword')}
+                      </ResponsiveButton>
+                      <ResponsiveButton
+                        variant="outlined"
+                        type="button"
+                        onClick={() => {
+                          setShowChangePassword(false);
+                          setChangePasswordData({ currentPassword: '', newPassword: '' });
+                        }}
+                        mobileText={t('profile.cancel')}
+                        desktopText={t('profile.cancel')}
+                        forceTextOnly={true}
+                      >
+                        {t('profile.cancel')}
+                      </ResponsiveButton>
+                    </Box>
+                  </form>
                 </Box>
               )}
             </Box>

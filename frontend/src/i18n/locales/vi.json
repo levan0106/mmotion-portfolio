@@ -955,8 +955,8 @@
       "noTransactionsMessage": "Danh mục này chưa có giao dịch đăng ký hoặc mua lại nào."
     },
     "transaction": {
-      "subscription": "Đăng ký mua",
-      "redemption": "Đăng ký bán"
+      "subscription": "Thêm mới",
+      "redemption": "Rút vốn"
     },
     "edit": {
       "title": "Chỉnh sửa giao dịch {{type}}",

@@ -225,6 +225,14 @@ const Portfolios: React.FC = () => {
     setActiveTab(newValue);
   };
 
+  const handleRefreshData = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh portfolios:', error);
+    }
+  };
+
   // Get the portfolio data for editing
   const getEditingPortfolioData = (): Partial<CreatePortfolioDto> | undefined => {
     if (!editingPortfolio) return undefined;
@@ -300,6 +308,7 @@ const Portfolios: React.FC = () => {
             onDeletePortfolio={handleDeletePortfolio}
             onCreatePortfolio={handleCreatePortfolio}
             onManagePermissions={handleManagePermissions}
+            onRefresh={handleRefreshData}
           />
         </Box>
       )}
