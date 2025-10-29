@@ -1389,7 +1389,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
                 id: selectedTrade.tradeId,
                 data: {
                   ...data,
-                  tradeDate: typeof data.tradeDate === 'string' ? data.tradeDate : (data.tradeDate as Date).toISOString()
+                  tradeDate: data.tradeDate
                 }
               });
               handleCloseModals();

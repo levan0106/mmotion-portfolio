@@ -72,8 +72,8 @@ export class InvestorHoldingService {
   async subscribeToFund(dto: SubscribeToFundDto, subscriptionDate?: string): Promise<SubscriptionResult> {
     this.logger.log(`Processing fund subscription: ${dto.accountId} -> ${dto.portfolioId}, amount: ${dto.amount}`);
 
-    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-    const subDate = subscriptionDate ? new Date(subscriptionDate + 'T00:00:00') : new Date();
+    // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+    const subDate = subscriptionDate ? new Date(subscriptionDate + 'T12:00:00') : new Date();
 
     // 1. Validate inputs
     await this.validateSubscription(dto);
@@ -173,8 +173,8 @@ export class InvestorHoldingService {
       });
 
       // 7. Create CashFlow record with transaction reference
-      // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-      const subscriptionDate = dto.subscriptionDate ? new Date(dto.subscriptionDate + 'T00:00:00') : new Date();
+      // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+      const subscriptionDate = dto.subscriptionDate ? new Date(dto.subscriptionDate + 'T12:00:00') : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.DEPOSIT,
@@ -238,8 +238,8 @@ export class InvestorHoldingService {
   async redeemFromFund(dto: RedeemFromFundDto, redemptionDate?: string): Promise<RedemptionResult> {
     this.logger.log(`Processing fund redemption: ${dto.accountId} -> ${dto.portfolioId}, units: ${dto.units}`);
 
-    // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-    const rdDate = redemptionDate ? new Date(redemptionDate + 'T00:00:00') : new Date();
+    // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+    const rdDate = redemptionDate ? new Date(redemptionDate + 'T12:00:00') : new Date();
 
     // 1. Validate inputs
     await this.validateRedemption(dto);
@@ -291,8 +291,8 @@ export class InvestorHoldingService {
       });
 
       // 6. Create CashFlow record with transaction reference
-      // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-      const redemptionDate = dto.redemptionDate ? new Date(dto.redemptionDate + 'T00:00:00') : new Date();
+      // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+      const redemptionDate = dto.redemptionDate ? new Date(dto.redemptionDate + 'T12:00:00') : new Date();
       const cashFlowResult = await this.cashFlowService.createCashFlow(
         dto.portfolioId,
         CashFlowType.WITHDRAWAL,
@@ -849,8 +849,8 @@ export class InvestorHoldingService {
       currentValue: realTimeNavValue,
       unrealizedPnL: 0,
       realizedPnL: 0,
-      createdAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
+      createdAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
     });
 
     // 6. Create FundUnitTransaction record
@@ -860,8 +860,8 @@ export class InvestorHoldingService {
       units: Math.round(initialUnits * 1000) / 1000,
       navPerUnit: Math.round(navPerUnit * 1000) / 1000,
       amount: Math.round(realTimeNavValue * 1000) / 1000,
-      createdAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate + 'T00:00:00') : new Date(),
+      createdAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
+      updatedAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
       description: `Initial investment for portfolio.`,
     });
     
@@ -1146,8 +1146,8 @@ export class InvestorHoldingService {
         dateStr = dateStr.split('T')[0];
       }
       processedDateStr = dateStr;
-      // Append 'T00:00:00' to ensure local time interpretation
-      transactionDate = new Date(dateStr + 'T00:00:00');
+      // Append 'T12:00:00' to ensure local time interpretation
+      transactionDate = new Date(dateStr + 'T12:00:00');
       transaction.createdAt = transactionDate;
       transaction.updatedAt = transactionDate;
     }

@@ -1,13 +1,47 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 28, 2025  
-**Session Type**: Mobile UI Enhancement + Profile Form Accessibility  
-**Primary Goal**: Enhance mobile user experience with floating menu button and improve Profile form accessibility
+**Date**: October 29, 2025  
+**Session Type**: Date Normalization Utility + TradeForm Date Handling Fix  
+**Primary Goal**: Create unified date normalization utility and fix timezone issues in TradeForm DatePicker
 
 ## Recent Achievements
 
-### ✅ Mobile UI Enhancement + Profile Form Accessibility (Current Session - October 28, 2025)
+### ✅ Date Normalization Utility Implementation + TradeForm Date Fix (Current Session - October 29, 2025)
+1. **Date Normalization Utility Creation**
+   - **Unified Function**: Created single `normalizeDate()` function to handle all date conversion cases
+   - **Auto Type Detection**: Automatically detects input type (string/Date/null) and returns appropriate output
+   - **Timezone Safety**: Extracts YYYY-MM-DD directly from ISO strings to avoid timezone conversion issues
+   - **Option Support**: Supports `{ output: 'iso-string' }` and `{ includeTime: true/false }` options
+   - **Current Time Integration**: When formatting Date to ISO, includes current time (hours, minutes, seconds)
+   - **Date-Only Support**: Option to format with 00:00:00 UTC for date-only operations
+   - **Files Created**: date.utils.ts
+   - **Files Updated**: utils/index.ts (export)
+
+2. **TradeForm Date Handling Fix**
+   - **Timezone Issue Resolution**: Fixed issue where selecting same date showed different results
+   - **Date Normalization**: Applied normalizeDate utility throughout TradeForm for consistent date handling
+   - **DatePicker Integration**: DatePicker value uses normalizeDate() for proper display
+   - **Form Submission**: Form submission uses normalizeDate() with iso-string output option
+   - **Initial Data Loading**: Initial data normalization with proper date parsing
+   - **Consistent Behavior**: All date operations now use unified normalization function
+   - **Files Updated**: TradeForm.tsx
+
+3. **Code Optimization**
+   - **Single Function Pattern**: Replaced multiple functions (normalizeDateToLocal, normalizeDateToISO, normalizeDateToISODateOnly) with one unified function
+   - **Reduced Nesting**: Eliminated need for nested function calls (normalizeDate(normalizeDate(...)))
+   - **Cleaner API**: Single function with options is easier to use and understand
+   - **Type Safety**: Proper TypeScript types with union return types (Date | string)
+   - **Documentation**: Comprehensive JSDoc comments with examples
+   - **Files Updated**: date.utils.ts, TradeForm.tsx
+
+4. **Date Format Handling**
+   - **ISO String Parsing**: Direct extraction of YYYY-MM-DD from ISO strings prevents timezone conversion
+   - **Local Date Creation**: Creates Date objects with local time at 00:00:00 for DatePicker compatibility
+   - **Current Time Preservation**: Preserves selected date while using current time for ISO formatting
+   - **Consistent Storage**: All dates stored in consistent ISO format with proper timezone handling
+
+### ✅ Mobile UI Enhancement + Profile Form Accessibility (Previous Session - October 28, 2025)
 1. **FloatingMenuButton Implementation**
    - **Mobile Navigation**: Created floating menu button for easy mobile navigation
    - **Position**: Bottom-left corner (16px from edges) for thumb-friendly access

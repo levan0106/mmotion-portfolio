@@ -50,6 +50,7 @@ import {
   getBaseCurrency
 } from '../../utils/currency';
 import { useCurrencyCache } from '../../hooks/useCurrencyCache';
+import { normalizeDate } from '../../utils/date.utils';
 
 // Simple validation functions
 const validateForm = (formData: any) => {
@@ -123,20 +124,26 @@ export const TradeForm: React.FC<TradeFormProps> = ({
 
   
   // Form state management
-  const [formData, setFormData] = useState({
-    portfolioId: initialData?.portfolioId || defaultPortfolioId || '',
-    assetId: initialData?.assetId || '',
-    tradeDate: initialData?.tradeDate || new Date().toISOString(),
-    side: initialData?.side || TradeSide.BUY,
-    quantity: initialData?.quantity || 0,
-    price: initialData?.price || 0,
-    fee: initialData?.fee || 0,
-    tax: initialData?.tax || 0,
-    tradeType: initialData?.tradeType || TradeType.MARKET,
-    source: initialData?.source || TradeSource.MANUAL,
-    exchange: initialData?.exchange || '',
-    fundingSource: initialData?.fundingSource || '',
-    notes: initialData?.notes || '',
+  const [formData, setFormData] = useState(() => {
+    const initialTradeDate = initialData?.tradeDate 
+      ? normalizeDate(initialData.tradeDate, { output: 'iso-string' })
+      : normalizeDate(new Date());
+    
+    return {
+      portfolioId: initialData?.portfolioId || defaultPortfolioId || '',
+      assetId: initialData?.assetId || '',
+      tradeDate: initialTradeDate,
+      side: initialData?.side || TradeSide.BUY,
+      quantity: initialData?.quantity || 0,
+      price: initialData?.price || 0,
+      fee: initialData?.fee || 0,
+      tax: initialData?.tax || 0,
+      tradeType: initialData?.tradeType || TradeType.MARKET,
+      source: initialData?.source || TradeSource.MANUAL,
+      exchange: initialData?.exchange || '',
+      fundingSource: initialData?.fundingSource || '',
+      notes: initialData?.notes || '',
+    };
   });
 
   // Validation state - only show errors after user interaction
@@ -201,10 +208,15 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   // Update form data when initialData changes (for edit mode)
   useEffect(() => {
     if (initialData && mode === 'edit') {
+      // Normalize tradeDate from initialData
+      const normalizedDate = initialData.tradeDate 
+        ? normalizeDate(initialData.tradeDate, { output: 'iso' })
+        : normalizeDate(new Date());
+      
       setFormData({
         portfolioId: initialData.portfolioId || '',
         assetId: initialData.assetId || '',
-        tradeDate: initialData.tradeDate || new Date().toISOString(),
+        tradeDate: normalizedDate,
         side: initialData.side || TradeSide.BUY,
         quantity: initialData.quantity || 0,
         price: initialData.price || 0,
@@ -226,7 +238,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       setFormData({
         portfolioId: defaultPortfolioId || '',
         assetId: '',
-        tradeDate: new Date().toISOString(),
+        tradeDate: normalizeDate(new Date()),
         side: TradeSide.BUY,
         quantity: 0,
         price: 0,
@@ -351,14 +363,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         setHasUserInteracted(true);
         return; // Don't submit if form is invalid
       }
+      // Normalize tradeDate before submit to ensure consistent format
+      // normalizeDate returns Date if input is string, or string if input is Date
+      // For submit, we need string, so handle both cases
+      const normalizedTradeDate = normalizeDate(formData.tradeDate, { output: 'iso-string' }) as string;
       
       // Use the form data directly
       const submitData: TradeFormData = {
         portfolioId: formData.portfolioId,
         assetId: formData.assetId,
-        tradeDate: typeof formData.tradeDate === 'string' 
-          ? formData.tradeDate 
-          : (formData.tradeDate as Date).toISOString(),
+        tradeDate: normalizedTradeDate,
         side: formData.side,
         quantity: formData.quantity,
         price: formData.price,
@@ -557,27 +571,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                     <DatePicker
                       label={`${t('trading.form.tradeDate')} *`}
                       disabled={isLoading}
-                      value={(() => {
-                        try {
-                          if (!formData.tradeDate) return new Date();
-                          if (typeof formData.tradeDate === 'string') {
-                            const date = new Date(formData.tradeDate);
-                            return isNaN(date.getTime()) ? new Date() : date;
-                          }
-                          return formData.tradeDate;
-                        } catch {
-                          return new Date();
-                        }
-                      })()}
+                      value={normalizeDate(formData.tradeDate) as Date}
                       onChange={(newValue) => {
                         try {
                           if (newValue && !isNaN(newValue.getTime())) {
-                            handleFieldChange('tradeDate', newValue.toISOString());
+                            handleFieldChange('tradeDate', normalizeDate(newValue) as string);
                           } else {
-                            handleFieldChange('tradeDate', new Date().toISOString());
+                            handleFieldChange('tradeDate', normalizeDate(new Date()) as string);
                           }
                         } catch {
-                          handleFieldChange('tradeDate', new Date().toISOString());
+                          handleFieldChange('tradeDate', normalizeDate(new Date()) as string);
                         }
                       }}
                       slotProps={{

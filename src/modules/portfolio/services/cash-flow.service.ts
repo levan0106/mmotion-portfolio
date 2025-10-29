@@ -624,8 +624,8 @@ export class CashFlowService {
           amount: updateData.amount,
           currency: updateData.currency,
           description: updateData.description,
-          // Fix timezone issue: append 'T00:00:00' to ensure local time interpretation
-          flowDate: updateData.flowDate ? new Date(updateData.flowDate + 'T00:00:00') : cashFlow.flowDate,
+          // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
+          flowDate: updateData.flowDate ? new Date(updateData.flowDate + 'T12:00:00') : cashFlow.flowDate,
           status: updateData.status as CashFlowStatus || cashFlow.status,
           reference: updateData.reference || cashFlow.reference,
           effectiveDate: updateData.effectiveDate ? new Date(updateData.effectiveDate) : cashFlow.effectiveDate,

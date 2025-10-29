@@ -40,6 +40,31 @@ flowchart LR
 - **Files**: ResponsiveCard.tsx, ResponsiveCard.types.ts, index.ts (Common components export)
 - **Pattern**: Unified card component system with responsive design, multiple variants, and comprehensive functionality
 
+### Date Normalization Utility Pattern - **IMPLEMENTED** ✅
+- **Unified Function**: Single `normalizeDate()` function handles all date conversion cases
+- **Auto Type Detection**: Automatically detects input type (string/Date/null) and returns appropriate output
+  - String/null → Date object (for DatePicker value)
+  - Date → ISO string (for form submission)
+- **Timezone Safety**: Extracts YYYY-MM-DD directly from ISO strings to avoid timezone conversion issues
+- **Option Support**: Configurable behavior with options:
+  - `{ output: 'iso-string' }` - Force ISO string output when input is string
+  - `{ includeTime: true }` - Include current time when formatting (default)
+  - `{ includeTime: false }` - Use 00:00:00 UTC for date-only operations
+- **Current Time Integration**: When formatting Date to ISO with `includeTime: true`, preserves selected date but uses current time
+- **Direct Date Extraction**: parseDateToLocal() extracts date part from ISO string without timezone conversion
+- **Format Date to ISO**: formatDateToISO() handles both time-included and date-only ISO string generation
+- **Type Safety**: Proper TypeScript types with union return types (Date | string) and NormalizeDateOptions interface
+- **No Nested Calls**: Single function call eliminates need for nested normalization
+- **Comprehensive Documentation**: JSDoc comments with examples for all use cases
+- **Internal Helpers**: parseDateToLocal() and formatDateToISO() as internal helper functions (not exported)
+- **File Location**: frontend/src/utils/date.utils.ts
+- **Export**: Available through utils/index.ts for easy importing
+- **Usage Pattern**: 
+  - DatePicker value: `normalizeDate(formData.tradeDate) as Date`
+  - Form submission: `normalizeDate(newValue, { output: 'iso-string' }) as string`
+  - Date-only storage: `normalizeDate(date, { output: 'iso-string', includeTime: false })`
+- **Pattern**: Unified date normalization with automatic type detection, timezone safety, and flexible options
+
 ### Generic Form Modal Pattern - **IMPLEMENTED** ✅
 - **Centralized Form System**: GenericFormModal for unified form creation experience
 - **Tabbed Interface**: 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi) for different transaction types
@@ -106,7 +131,7 @@ flowchart LR
 
 ### Timezone Handling Pattern - **IMPLEMENTED** ✅
 - **Problem**: JavaScript `new Date(dateString)` interprets "YYYY-MM-DD" as UTC midnight, causing timezone shifts
-- **Solution Pattern**: `new Date(dateString + 'T00:00:00')` to force local time interpretation
+- **Solution Pattern**: `new Date(dateString + 'T12:00:00')` to force local time interpretation
 - **ISO String Handling**: Extract date part from existing ISO strings before applying pattern
 - **Implementation**: Applied across all date-related operations (cash flows, fund transactions, deposits)
 - **Files**: investor-holding.service.ts, cash-flow.controller.ts, cash-flow.service.ts, CashFlowLayout.tsx, DepositForm.tsx

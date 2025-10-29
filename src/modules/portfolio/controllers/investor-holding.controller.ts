@@ -93,19 +93,6 @@ export class InvestorHoldingController {
     return this.investorHoldingService.getFundInvestors(portfolioId);
   }
 
-  // @Get('holding/:accountId/:portfolioId')
-  // @ApiOperation({ summary: 'Get specific holding' })
-  // @ApiParam({ name: 'accountId', description: 'Investor account ID' })
-  // @ApiParam({ name: 'portfolioId', description: 'Fund portfolio ID' })
-  // @ApiResponse({ status: 200, description: 'Holding retrieved successfully' })
-  // @ApiResponse({ status: 404, description: 'Holding not found' })
-  // async getHolding(
-  //   @Param('accountId', ParseUUIDPipe) accountId: string,
-  //   @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
-  // ): Promise<InvestorHolding | null> {
-  //   return this.investorHoldingService.getInvestorHoldingValues(portfolioId, accountId);
-  // }
-
   @Get('nav-per-unit/:portfolioId')
   @ApiOperation({ summary: 'Get current NAV per unit for a fund' })
   @ApiParam({ name: 'portfolioId', description: 'Fund portfolio ID' })

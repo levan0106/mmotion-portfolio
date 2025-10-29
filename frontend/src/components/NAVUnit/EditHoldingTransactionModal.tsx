@@ -325,7 +325,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
           </Grid>
           {Math.abs((formData.units || 0) * navPerUnit - (formData.amount || 0)) > 0.01 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              <ResponsiveTypography variant="labelSmall">
+              <ResponsiveTypography variant="labelSmall" ellipsis={false}>
                 {t('holdings.edit.amountDifferenceNote', { 
                   calculated: formatCurrency((formData.units || 0) * navPerUnit, 'VND'),
                   entered: formatCurrency(formData.amount || 0, 'VND')
@@ -346,24 +346,21 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
 
         {/* Date Awareness Notice */}
         <Alert severity="info" sx={{ mt: 2 }}>
-          <ResponsiveTypography variant="cardLabel" sx={{ fontWeight: 400 }}>
-            {t('holdings.edit.recalculationNotice')}
-          </ResponsiveTypography>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }} ellipsis={false}>
             {t('holdings.edit.recalculationMessage')}
           </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <ResponsiveTypography component="li" variant="labelSmall">
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
               {t('holdings.edit.recalculationItem1')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
               {t('holdings.edit.recalculationItem2')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
               {t('holdings.edit.recalculationItem3')}
             </ResponsiveTypography>
           </Box>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }} ellipsis={false}>
             {t('holdings.edit.recalculationDate', { date: formData.transactionDate || t('common.currentDate') })}
           </ResponsiveTypography>
         </Alert>

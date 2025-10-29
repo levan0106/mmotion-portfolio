@@ -1621,8 +1621,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                   // If it's already an ISO string, extract date part
                   dateStr = dateStr.split('T')[0];
                 }
-                // Append 'T00:00:00' to ensure local time interpretation
-                return new Date(dateStr + 'T00:00:00').toISOString();
+                // Append 'T12:00:00' to ensure local time interpretation
+                return new Date(dateStr + 'T12:00:00').toISOString();
               })(),
             };
 
