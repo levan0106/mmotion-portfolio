@@ -94,7 +94,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg'));
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -1048,23 +1048,52 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             >
               <MenuIcon />
             </IconButton>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <ResponsiveTypography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-                {portfolioId && portfolio ? portfolio.name : 'Portfolio Management System'}
-              </ResponsiveTypography>
-              <Typography variant="caption" color="text.secondary">
-                {portfolioId && portfolio ? (
-                  `${t('portfolio.title')}`
-                ) : (
-                  new Date().toLocaleDateString('en-US', { 
+            
+             {portfolioId && portfolio ? (              
+               <Box sx={{ 
+                 maxWidth: { xs: '180px', sm: '300px', md: '400px' },
+                 overflow: 'hidden'
+               }}>
+                 <ResponsiveTypography 
+                   variant="h6" 
+                   noWrap 
+                   component="div" 
+                   sx={{ 
+                     fontWeight: 'bold',
+                     overflow: 'hidden',
+                     textOverflow: 'ellipsis',
+                     whiteSpace: 'nowrap'
+                   }}
+                 >
+                   {portfolio.name}
+                 </ResponsiveTypography>
+                 <ResponsiveTypography 
+                   variant="caption" 
+                   color="text.secondary"
+                   sx={{
+                     overflow: 'hidden',
+                     textOverflow: 'ellipsis',
+                     whiteSpace: 'nowrap'
+                   }}
+                 >
+                   {t('portfolio.title')}
+                 </ResponsiveTypography>
+               </Box>
+            ) : (
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <ResponsiveTypography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold', }}>
+                  Portfolio Management System
+                </ResponsiveTypography>
+                <ResponsiveTypography variant="caption" color="text.secondary">
+                  {new Date().toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
                     day: 'numeric' 
-                  })
-                )}
-              </Typography>
-            </Box>
+                  })}
+                </ResponsiveTypography>
+              </Box>
+            )}
           </Box>
           
           <Box sx={{ 
@@ -1073,9 +1102,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             gap: { xs: 1, sm: 2 },
             flexWrap: 'nowrap'
           }}>
-            {/* Current Account Info */}
+            {/* Current Account Info - Hide when viewing portfolio detail */}
             <Box sx={{ 
-              display: 'flex',
+              display: portfolioId && isMobile && !isTablet ? 'none' : 'flex',
               alignItems: 'center', 
               gap: { xs: 0.5, sm: 1 }, 
               mr: { xs: 1, sm: 2 }

@@ -15,6 +15,12 @@ import {
   CardContent,
   Tooltip,
   IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Alert,
+  Portal,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -33,9 +39,11 @@ import {
   Person as InvestorIcon,
   Business as FundManagerIcon,
   Security as SecurityIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
+import { snapshotService } from '../services/snapshot.service';
 import { useAccount } from '../contexts/AccountContext';
 import { useQueryClient } from 'react-query';
 import { invalidatePortfolioQueries, forceRefreshPortfolioData } from '../utils/queryUtils';
@@ -59,6 +67,7 @@ import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 import PermissionBadge from '../components/Common/PermissionBadge';
 import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
+import { RecalculateConfirmModal } from '../components/Snapshot/RecalculateConfirmModal';
 import './PortfolioDetail.styles.css';
 
 interface TabPanelProps {
@@ -97,6 +106,18 @@ const PortfolioDetail: React.FC = () => {
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
   const [viewMode, setViewMode] = useState<'investor' | 'fund-manager'>('fund-manager');
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [moreActionsAnchorEl, setMoreActionsAnchorEl] = useState<null | HTMLElement>(null);
+  const [isRecalculatingSnapshots, setIsRecalculatingSnapshots] = useState(false);
+  const [recalculateConfirmOpen, setRecalculateConfirmOpen] = useState(false);
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
   const { accountId } = useAccount();
   const queryClient = useQueryClient();
   
@@ -185,6 +206,16 @@ const PortfolioDetail: React.FC = () => {
     }
   };
 
+  // Auto-hide toast after 4 seconds
+  useEffect(() => {
+    if (toast.open) {
+      const timer = setTimeout(() => {
+        handleToastClose();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.open]);
+
   const handleRefreshAll = async () => {
     if (!portfolioId) return;
     
@@ -224,6 +255,63 @@ const PortfolioDetail: React.FC = () => {
 
   const handleBack = () => {
     window.history.back();
+  };
+
+  const handleMoreActionsOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMoreActionsAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreActionsClose = () => {
+    setMoreActionsAnchorEl(null);
+  };
+
+  const handleManagePermissions = () => {
+    setPermissionModalOpen(true);
+    handleMoreActionsClose();
+  };
+
+  const handleRecalculateSnapshots = () => {
+    setRecalculateConfirmOpen(true);
+    handleMoreActionsClose();
+  };
+
+  const handleConfirmRecalculate = async () => {
+    setRecalculateConfirmOpen(false);
+    setIsRecalculatingSnapshots(true);
+    
+    try {
+      await snapshotService.bulkRecalculateSnapshots(portfolioId!, accountId!);
+      
+      // Show success message immediately
+      showToast(t('snapshots.recalculateSuccess'), 'success');
+      
+      // Refresh portfolio data in background (non-blocking)
+      setTimeout(() => {
+        refetchPortfolio().catch(error => {
+          console.warn('Failed to refresh portfolio data:', error);
+        });
+      }, 100);
+      
+    } catch (error) {
+      console.error('Failed to recalculate snapshots:', error);
+      showToast(t('snapshots.recalculateFailed'), 'error');
+    } finally {
+      setTimeout(() => {
+        setIsRecalculatingSnapshots(false);
+      }, 100);
+    }
+  };
+
+  const handleCancelRecalculate = () => {
+    setRecalculateConfirmOpen(false);
+  };
+
+  const showToast = (message: string, severity: 'success' | 'error' | 'warning' | 'info') => {
+    setToast({ open: true, message, severity });
+  };
+
+  const handleToastClose = () => {
+    setToast(prev => ({ ...prev, open: false }));
   };
 
   if (isPortfolioLoading) {
@@ -302,8 +390,17 @@ const PortfolioDetail: React.FC = () => {
             flexDirection: { xs: 'row', sm: 'column' },
             gap: { xs: 1, sm: 0 }
           }}>
-            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-              <ResponsiveTypography variant="pageTitle" gutterBottom={false}>
+            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ minWidth: 0, flex: 1 }}>
+              <ResponsiveTypography 
+                variant="pageTitle" 
+                gutterBottom={false}
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: { xs: '180px', sm: '300px', md: '400px', lg: '500px' }
+                }}
+              >
                 {portfolio.name}
               </ResponsiveTypography>
               {portfolio.userPermission && (
@@ -378,30 +475,31 @@ const PortfolioDetail: React.FC = () => {
                   {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
                 </IconButton>
               </Tooltip>
-              {isOwner && (
-                <Tooltip title="Manage Portfolio Permissions">
-                  <IconButton
-                    onClick={() => setPermissionModalOpen(true)}
-                    color="primary"
-                    size="medium"
-                    sx={{
-                      borderRadius: 2,
-                      width: 40,
-                      height: 40,
-                      flexShrink: 0,
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                        backgroundColor: 'primary.light',
-                        color: 'primary.contrastText',
-                      },
-                    }}
-                  >
-                    <SecurityIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
+            {/* More Actions Menu */}
+            <Tooltip title={t('common.moreActions')}>
+              <IconButton
+                onClick={handleMoreActionsOpen}
+                color="primary"
+                size="medium"
+                sx={{
+                  borderRadius: 2,
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  border: '1px solid',
+                  borderColor: 'primary.main',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                  },
+                }}
+              >
+                {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
+              </IconButton>
+            </Tooltip>
             </Box>
           </Box>
           <Box 
@@ -413,6 +511,7 @@ const PortfolioDetail: React.FC = () => {
               flexShrink: 0,
               flexWrap: 'nowrap',
               overflow: 'hidden',
+              pt:0.5
             }}
           >
             <Tooltip title={t('portfolio.backToPortfolios')}>
@@ -464,30 +563,31 @@ const PortfolioDetail: React.FC = () => {
                 {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
               </IconButton>
             </Tooltip>
-            {isOwner && (
-              <Tooltip title="Manage Portfolio Permissions">
-                <IconButton
-                  onClick={() => setPermissionModalOpen(true)}
-                  color="primary"
-                  size="medium"
-                  sx={{
-                    borderRadius: 2,
-                    width: 40,
-                    height: 40,
-                    flexShrink: 0,
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                      backgroundColor: 'primary.light',
-                      color: 'primary.contrastText',
-                    },
-                  }}
-                >
-                  <SecurityIcon />
-                </IconButton>
-              </Tooltip>
-            )}
+            {/* More Actions Menu */}
+            <Tooltip title={t('common.moreActions')}>
+              <IconButton
+                onClick={handleMoreActionsOpen}
+                color="primary"
+                size="medium"
+                sx={{
+                  borderRadius: 2,
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  border: '1px solid',
+                  borderColor: 'primary.main',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                  },
+                }}
+              >
+                {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
       </Box>
@@ -1107,6 +1207,78 @@ const PortfolioDetail: React.FC = () => {
           </TabPanel>
         </Box>
       )}
+      {/* More Actions Menu */}
+      <Menu
+        anchorEl={moreActionsAnchorEl}
+        open={Boolean(moreActionsAnchorEl)}
+        onClose={handleMoreActionsClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 200,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            borderRadius: 2,
+          }
+        }}
+      >
+        {isOwner && (
+          <MenuItem onClick={handleManagePermissions}>
+            <ListItemIcon>
+              <SecurityIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t('portfolio.managePermissions')}</ListItemText>
+          </MenuItem>
+        )}
+        <MenuItem onClick={handleRecalculateSnapshots} disabled={isRecalculatingSnapshots}>
+          <ListItemIcon>
+            {isRecalculatingSnapshots ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>
+            {isRecalculatingSnapshots ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
+          </ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* Recalculate Snapshots Confirmation Modal */}
+      <RecalculateConfirmModal
+        open={recalculateConfirmOpen}
+        onClose={handleCancelRecalculate}
+        onConfirm={handleConfirmRecalculate}
+        isRecalculating={isRecalculatingSnapshots}
+      />
+
+      {/* Toast Notification */}
+      {toast.open && (
+        <Portal container={document.body}>
+          <Alert
+            onClose={handleToastClose}
+            severity={toast.severity}
+            sx={{ 
+              position: 'fixed',
+              top: 24,
+              right: 24,
+              zIndex: 9999,
+              minWidth: 300,
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              '& .MuiAlert-message': {
+                fontWeight: 500,
+              }
+            }}
+          >
+            {toast.message}
+          </Alert>
+        </Portal>
+      )}
+
       {/* Create Trade Modal */}
       <TradeForm
         open={showCreateForm}
