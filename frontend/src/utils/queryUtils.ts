@@ -11,8 +11,6 @@ import { QueryClient } from 'react-query';
  */
 export const invalidatePortfolioQueries = async (queryClient: QueryClient, portfolioId: string) => {
   
-  
-  
   // Invalidate the queries
   const result = await queryClient.invalidateQueries({
     predicate: (query: any) => {

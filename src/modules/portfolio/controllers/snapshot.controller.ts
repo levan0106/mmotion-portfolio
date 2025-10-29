@@ -45,7 +45,7 @@ import {
   SnapshotAggregationDto,
 } from '../dto/snapshot.dto';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
-import { SnapshotTrackingType } from '../entities/snapshot-tracking.entity';
+import { SnapshotTrackingType, SnapshotTrackingStatus } from '../entities/snapshot-tracking.entity';
 import { normalizeDateToString } from '../utils/date-normalization.util';
 import { randomUUID } from 'crypto';
 
@@ -506,34 +506,14 @@ export class SnapshotController {
   @ApiQuery({ name: 'snapshotDate', description: 'Specific snapshot date to recalculate (optional)', required: false })
   @ApiQuery({ name: 'useDateRange', description: 'Calculate from first transaction date to current date (default: true)', required: false })
   @ApiOkResponse({
-    description: 'Snapshots recalculated successfully',
+    description: 'Bulk recalculate job started successfully',
     schema: {
       type: 'object',
       properties: {
         message: { type: 'string' },
-        updatedCount: { type: 'number' },
         trackingId: { type: 'string' },
-        summary: {
-          type: 'object',
-          properties: {
-            totalDates: { type: 'number' },
-            successfulDates: { type: 'number' },
-            failedDates: { type: 'number' },
-            totalSnapshots: { type: 'number' }
-          }
-        },
-        results: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              date: { type: 'string' },
-              success: { type: 'boolean' },
-              snapshotsCreated: { type: 'number' },
-              error: { type: 'string' }
-            }
-          }
-        },
+        status: { type: 'string' },
+        estimatedDuration: { type: 'string' },
         dateRange: { 
           type: 'object',
           properties: {
@@ -584,12 +564,17 @@ export class SnapshotController {
         if (firstTransactionDate) {
           startDate = new Date(firstTransactionDate.setHours(12, 0, 0, 0));
           endDate = new Date();
+
+          // 1 năm trước từ ngày hiện tại
+          const lastYearAgo = new Date(endDate.getFullYear() - 1, endDate.getMonth(), endDate.getDate());
+          startDate = new Date(Math.max(startDate.getTime(), lastYearAgo.getTime()));
+
           dateRange = {
             startDate: startDate.toISOString().split('T')[0],
             endDate: endDate.toISOString().split('T')[0]
           };
           
-          // this.logger.log(`Using date range from first transaction (${dateRange.startDate}) to (${dateRange.endDate}) for portfolio ${portfolioId}`);
+          this.logger.log(`Using date range from first transaction (${dateRange.startDate}) to (${dateRange.endDate}) for portfolio ${portfolioId}`);
         } else {
           // Fallback to current date if no transactions found
           startDate = new Date();
@@ -604,32 +589,177 @@ export class SnapshotController {
       }
     }
     
-    // Use common method to create snapshots for date range
+    // Calculate date range for estimation
+    const datesToProcess = this.generateDateRange(startDate, endDate);
+    const estimatedDurationMinutes = Math.ceil(datesToProcess.length * 0.016); // Estimate 1 seconds per date
+    
+    // Start asynchronous processing
     const executionId = randomUUID();
-    const snapshotResult = await this.createSnapshotsForDateRange(
+    this.processBulkRecalculateAsync(
       portfolioId,
       portfolioName,
       startDate,
       endDate,
-      SnapshotGranularity.DAILY,
       executionId,
-      accountId || 'api-recalculation',
-      SnapshotTrackingType.MANUAL
-    );
+      accountId || 'api-recalculation'
+    ).catch(error => {
+      this.logger.error(`Bulk recalculate async processing failed for portfolio ${portfolioId}:`, error);
+    });
     
     return {
-      message: `Successfully recalculated ${snapshotResult.totalSnapshots} snapshots across ${snapshotResult.successfulDates} dates`,
-      updatedCount: snapshotResult.totalSnapshots,
+      message: `Bulk recalculate job started for ${datesToProcess.length} dates. Processing in background.`,
       trackingId: executionId,
-      summary: {
-        totalDates: snapshotResult.results.length,
-        successfulDates: snapshotResult.successfulDates,
-        failedDates: snapshotResult.failedDates,
-        totalSnapshots: snapshotResult.totalSnapshots
-      },
-      results: snapshotResult.results,
+      status: 'PROCESSING',
+      estimatedDuration: `${estimatedDurationMinutes} minutes`,
       ...(dateRange && { dateRange }),
     };
+  }
+
+  @Get('bulk-recalculate/:portfolioId/status/:trackingId')
+  @ApiOperation({ summary: 'Get status of bulk recalculate job' })
+  @ApiParam({ name: 'portfolioId', description: 'Portfolio ID' })
+  @ApiParam({ name: 'trackingId', description: 'Tracking ID from bulk recalculate response' })
+  @ApiOkResponse({
+    description: 'Bulk recalculate job status',
+    schema: {
+      type: 'object',
+      properties: {
+        trackingId: { type: 'string' },
+        status: { type: 'string' },
+        message: { type: 'string' },
+        summary: {
+          type: 'object',
+          properties: {
+            totalDates: { type: 'number' },
+            successfulDates: { type: 'number' },
+            failedDates: { type: 'number' },
+            totalSnapshots: { type: 'number' }
+          }
+        },
+        results: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              date: { type: 'string' },
+              success: { type: 'boolean' },
+              snapshotsCreated: { type: 'number' },
+              error: { type: 'string' }
+            }
+          }
+        }
+      },
+    },
+  })
+  async getBulkRecalculateStatus(
+    @Param('portfolioId', ParseUUIDPipe) portfolioId: string,
+    @Param('trackingId') trackingId: string
+  ) {
+    try {
+      // Get tracking record from snapshot tracking service
+      const trackingRecord = await this.snapshotTrackingService.getTrackingByExecutionId(trackingId);
+      
+      if (!trackingRecord) {
+        return {
+          trackingId,
+          status: 'NOT_FOUND',
+          message: 'Tracking record not found'
+        };
+      }
+      
+      // Get detailed results from tracking record
+      const results = trackingRecord.metadata?.results || [];
+      const summary = {
+        totalDates: results.length,
+        successfulDates: results.filter((r: any) => r.success).length,
+        failedDates: results.filter((r: any) => !r.success).length,
+        totalSnapshots: results.reduce((sum: number, r: any) => sum + (r.snapshotsCreated || 0), 0)
+      };
+      
+      return {
+        trackingId,
+        status: trackingRecord.status,
+        message: trackingRecord.status === SnapshotTrackingStatus.COMPLETED 
+          ? `Successfully processed ${summary.totalSnapshots} snapshots across ${summary.successfulDates} dates`
+          : trackingRecord.status === SnapshotTrackingStatus.FAILED
+          ? 'Bulk recalculate job failed'
+          : 'Bulk recalculate job is still processing',
+        summary,
+        results
+      };
+      
+    } catch (error) {
+      this.logger.error(`Error getting bulk recalculate status for tracking ID ${trackingId}:`, error);
+      return {
+        trackingId,
+        status: 'ERROR',
+        message: 'Error retrieving job status'
+      };
+    }
+  }
+
+  /**
+   * Process bulk recalculate asynchronously to avoid timeout
+   */
+  private async processBulkRecalculateAsync(
+    portfolioId: string,
+    portfolioName: string,
+    startDate: Date,
+    endDate: Date,
+    executionId: string,
+    createdBy: string
+  ): Promise<void> {
+    try {
+      this.logger.log(`Starting async bulk recalculate for portfolio ${portfolioId} with execution ID ${executionId}`);
+      
+      // Create parent tracking record for the entire bulk operation
+      const datesToProcess = this.generateDateRange(startDate, endDate);
+      await this.snapshotTrackingService.createTracking({
+        executionId: executionId,
+        portfolioId,
+        portfolioName,
+        type: SnapshotTrackingType.MANUAL,
+        createdBy,
+        metadata: {
+          operation: 'bulk-recalculate',
+          dateRange: {
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+          },
+          totalDates: datesToProcess.length,
+          results: []
+        }
+      });
+      
+      const snapshotResult = await this.createSnapshotsForDateRange(
+        portfolioId,
+        portfolioName,
+        startDate,
+        endDate,
+        SnapshotGranularity.DAILY,
+        executionId,
+        createdBy,
+        SnapshotTrackingType.MANUAL
+      );
+      
+      this.logger.log(`Async bulk recalculate completed for portfolio ${portfolioId}: ${snapshotResult.totalSnapshots} snapshots across ${snapshotResult.successfulDates} dates`);
+      
+    } catch (error) {
+      this.logger.error(`Async bulk recalculate failed for portfolio ${portfolioId}:`, error);
+      
+      // Update tracking record with error status
+      try {
+        await this.snapshotTrackingService.updateTracking(executionId, {
+          status: SnapshotTrackingStatus.FAILED,
+          metadata: {
+            error: error.message,
+            operation: 'bulk-recalculate'
+          }
+        });
+      } catch (updateError) {
+        this.logger.error(`Failed to update tracking record with error status:`, updateError);
+      }
+    }
   }
 
   /**
@@ -727,6 +857,29 @@ export class SnapshotController {
     }
     
     this.logger.log(`Completed processing for portfolio ${portfolioId}: ${successfulDates} successful dates, ${failedDates} failed dates, ${totalSnapshots} total snapshots created`);
+    
+    // Update tracking record with final results
+    if (finalExecutionId) {
+      try {
+        await this.snapshotTrackingService.updateTracking(finalExecutionId, {
+          status: failedDates === 0 ? SnapshotTrackingStatus.COMPLETED : SnapshotTrackingStatus.FAILED,
+          totalSnapshots,
+          successfulSnapshots: totalSnapshots,
+          failedSnapshots: 0,
+          metadata: {
+            results,
+            summary: {
+              totalDates: results.length,
+              successfulDates,
+              failedDates,
+              totalSnapshots
+            }
+          }
+        });
+      } catch (error) {
+        this.logger.error(`Failed to update tracking record ${finalExecutionId}:`, error);
+      }
+    }
     
     return {
       totalSnapshots,

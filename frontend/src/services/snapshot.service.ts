@@ -197,6 +197,16 @@ export class UnifiedSnapshotService {
   }
 
   /**
+   * Get bulk recalculate status
+   */
+  async getBulkRecalculateStatus(
+    portfolioId: string,
+    trackingId: string
+  ): Promise<any> {
+    return await apiService.getBulkRecalculateStatus(portfolioId, trackingId);
+  }
+
+  /**
    * Delete snapshot (soft delete)
    */
   async deleteSnapshot(id: string): Promise<void> {

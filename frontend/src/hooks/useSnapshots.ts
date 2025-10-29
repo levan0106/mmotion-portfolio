@@ -11,6 +11,7 @@ import {
   SnapshotStatistics,
   SnapshotAggregation,
   SnapshotTimelineQuery,
+  BulkRecalculateResponse,
 } from '../types/snapshot.types';
 
 export interface UseSnapshotsState {
@@ -32,7 +33,7 @@ export interface UseSnapshotsActions {
   updateSnapshot: (id: string, data: UpdateSnapshotRequest) => Promise<SnapshotResponse>;
   deleteSnapshot: (id: string) => Promise<void>;
   recalculateSnapshot: (id: string) => Promise<SnapshotResponse>;
-  bulkRecalculateSnapshots: (portfolioId: string, accountId: string, snapshotDate?: string) => Promise<void>;
+  bulkRecalculateSnapshots: (portfolioId: string, accountId: string, snapshotDate?: string) => Promise<BulkRecalculateResponse>;
   createBulkPortfolioSnapshots: (portfolioIds: string[], options?: { startDate?: string; endDate?: string; granularity?: string; createdBy?: string }) => Promise<any>;
   refreshSnapshots: () => Promise<void>;
   clearError: () => void;
@@ -184,14 +185,14 @@ export const useSnapshots = (initialParams?: SnapshotQueryParams) => {
     }
   }, []);
 
-  const bulkRecalculateSnapshots = useCallback(async (portfolioId: string, accountId: string, snapshotDate?: string): Promise<void> => {
+  const bulkRecalculateSnapshots = useCallback(async (portfolioId: string, accountId: string, snapshotDate?: string): Promise<BulkRecalculateResponse> => {
     setLoading(true);
     setError(null);
     
     try {
-      await snapshotService.bulkRecalculateSnapshots(portfolioId, accountId, snapshotDate);
-      // Refresh snapshots after bulk recalculate
-      await fetchSnapshots(params);
+      const response = await snapshotService.bulkRecalculateSnapshots(portfolioId, accountId, snapshotDate);
+      // Don't refresh snapshots immediately for async operations
+      return response;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to bulk recalculate snapshots';
       setError(errorMessage);

@@ -124,6 +124,14 @@ const customTypography = {
     lg: '1.1rem',    // 17.6px
     xl: '1.2rem',    // 19.2px
   },
+
+  medium: {
+    xs: '0.875rem',  // 14px (increased for mobile readability)
+    sm: '0.9rem',   // 14.4px
+    md: '0.95rem',     // 15.2px
+    lg: '1.0rem',   // 16px
+    xl: '1.05rem',   // 16.8px
+  },
   
   // Small text variants
   small: {

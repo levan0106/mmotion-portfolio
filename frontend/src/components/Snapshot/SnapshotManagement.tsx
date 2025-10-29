@@ -21,10 +21,12 @@ import { PortfolioSelector } from './PortfolioSelector';
 import SnapshotModals from './SnapshotModals';
 import BulkSnapshotModalV2 from './BulkSnapshotModalV2';
 import { SnapshotResponse } from '../../types/snapshot.types';
+import { BulkRecalculateResponse } from '../../types/snapshot.types';
 import { useSnapshots } from '../../hooks/useSnapshots';
 import { usePortfolioSnapshots } from '../../hooks/usePortfolioSnapshots';
 import { useAccount } from '../../contexts/AccountContext';
 import { useTranslation } from 'react-i18next';
+import { snapshotService } from '../../services/snapshot.service';
 
 interface SnapshotManagementProps {
   portfolioId?: string;
@@ -101,15 +103,54 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
     setIsRecalculating(true);
     showSnackbar(t('snapshots.recalculating'), 'info');
     try {
-      await bulkRecalculateSnapshots(selectedPortfolioId!, accountId);
-      await refreshSnapshots();
-      await refreshPortfolioSnapshots();
-      setRefreshTrigger(prev => prev + 1);
-      showSnackbar(t('snapshots.recalculateSuccess'), 'success');
+      const response: BulkRecalculateResponse = await bulkRecalculateSnapshots(selectedPortfolioId!, accountId);
+      
+      if (response.status === 'PROCESSING') {
+        showSnackbar(
+          `Bulk recalculate started. Processing ${response.dateRange ? 
+            `${response.dateRange.startDate} to ${response.dateRange.endDate}` : 
+            'snapshots'} in background. Estimated duration: ${response.estimatedDuration}`,
+          'info'
+        );
+        
+        // Start polling for status updates
+        const pollStatus = async () => {
+          try {
+            const statusResponse = await snapshotService.getBulkRecalculateStatus(selectedPortfolioId!, response.trackingId);
+            
+            if (statusResponse.status === 'completed') {
+              showSnackbar(
+                `Bulk recalculate completed: ${statusResponse.summary.totalSnapshots} snapshots across ${statusResponse.summary.successfulDates} dates`,
+                'success'
+              );
+              await refreshSnapshots();
+              await refreshPortfolioSnapshots();
+              setRefreshTrigger(prev => prev + 1);
+              setIsRecalculating(false);
+            } else if (statusResponse.status === 'failed') {
+              showSnackbar('Bulk recalculate failed. Please try again.', 'error');
+              setIsRecalculating(false);
+            } else if (statusResponse.status === 'in_progress' || statusResponse.status === 'started') {
+              // Continue polling
+              setTimeout(pollStatus, 5000); // Poll every 5 seconds
+            } else {
+              showSnackbar('Bulk recalculate status unknown. Please check manually.', 'warning');
+              setIsRecalculating(false);
+            }
+          } catch (error) {
+            console.error('Failed to get bulk recalculate status:', error);
+            showSnackbar('Failed to get recalculate status. Please check manually.', 'error');
+            setIsRecalculating(false);
+          }
+        };
+        
+        // Start polling after a short delay
+        setTimeout(pollStatus, 2000);
+        
+      } 
     } catch (error) {
       console.error('Failed to bulk recalculate snapshots:', error);
       showSnackbar(t('snapshots.recalculateFailed'), 'error');
-    } finally {
       setIsRecalculating(false);
     }
   };
@@ -354,12 +395,23 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{ 
+          mt: 6, // Add margin top for better spacing from the top
+          '& .MuiSnackbarContent-root': {
+            minWidth: '300px',
+            maxWidth: '500px'
+          }
+        }}
       >
         <Alert
           onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ 
+            width: '100%',
+            fontSize: '0.875rem',
+            fontWeight: 500
+          }}
         >
           {snackbar.message}
         </Alert>

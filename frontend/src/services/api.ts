@@ -873,6 +873,11 @@ class ApiService {
     return response.data;
   }
 
+  async getBulkRecalculateStatus(portfolioId: string, trackingId: string): Promise<any> {
+    const response = await this.api.get(`/api/v1/snapshots/bulk-recalculate/${portfolioId}/status/${trackingId}`);
+    return response.data;
+  }
+
   async deleteSnapshotsByDateRange(
     portfolioId: string,
     startDate: string,

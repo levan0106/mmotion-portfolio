@@ -87,7 +87,9 @@ export const RecalculateConfirmModal: React.FC<RecalculateConfirmModalProps> = (
       titleColor="warning"
       size="medium"
     >
-      <ResponsiveTypography variant="cardLabel" ellipsis={true} sx={{ mb: 3, mt: 3 }}>
+      <ResponsiveTypography variant="labelMedium" ellipsis={false} 
+      sx={{ mb: 3, mt: 3 
+      }}>
         {t('snapshots.recalculateConfirm')}
       </ResponsiveTypography>
       <Alert 

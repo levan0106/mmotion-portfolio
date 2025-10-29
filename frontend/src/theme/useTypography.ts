@@ -95,6 +95,13 @@ export const useTypography = () => {
       ...overrides,
     }),
 
+    labelMedium: (overrides: any = {}) => getTypographySx('medium', {
+      fontWeight: 400,
+      lineHeight: 1.3,
+      color: 'text.primary',
+      ...overrides,
+    }),
+
     labelSmall: (overrides: any = {}) => getTypographySx('labelSmall', {
       fontWeight: 400,
       lineHeight: 1.3,

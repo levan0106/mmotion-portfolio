@@ -654,7 +654,13 @@ export interface PaginatedResponse<T> {
 
 export interface BulkRecalculateResponse {
   message: string;
-  updatedCount: number;
+  trackingId: string;
+  status: string;
+  estimatedDuration?: string;
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
 export interface CleanupResponse {

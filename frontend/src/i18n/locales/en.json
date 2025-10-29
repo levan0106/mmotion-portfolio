@@ -276,6 +276,7 @@
     "fundManagerView": "Fund Manager View",
     "backToPortfolios": "Back to Portfolios",
     "refreshAllData": "Refresh all portfolio data",
+    "calculatingPerformance": "Calculating performance...",
     "refreshAll": "Refresh All",
     "refreshing": "Refreshing...",
     "portfolioValue": "Portfolio Value",

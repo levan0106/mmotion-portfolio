@@ -63,6 +63,7 @@ import {
   formatNumberWithSeparators 
 } from '../utils/format';
 import { CreateTradeDto } from '../types';
+import { BulkRecalculateResponse } from '../types/snapshot.types';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 import PermissionBadge from '../components/Common/PermissionBadge';
@@ -221,12 +222,70 @@ const PortfolioDetail: React.FC = () => {
     
     setIsRefreshingAll(true);
     try {
+      // Tạo snapshot cho ngày hiện tại trước
+      const today = new Date().toISOString().split('T')[0];
       
+      try {
+        const response: BulkRecalculateResponse = await snapshotService.bulkRecalculateSnapshots(portfolioId, accountId!, today);
+        
+        if (response.status === 'PROCESSING') {
+          
+          // Start polling for status updates
+          const pollStatus = async () => {
+            try {
+              const statusResponse = await snapshotService.getBulkRecalculateStatus(portfolioId, response.trackingId);
+              
+              if (statusResponse.status === 'completed') {
+                
+                // Refresh portfolio data after snapshot is created
+                await refreshPortfolioData();
+                
+              } else if (statusResponse.status === 'failed') {
+                showToast('Failed to calculate performance.', 'warning');
+                await refreshPortfolioData();
+              } else if (statusResponse.status === 'in_progress' || statusResponse.status === 'started') {
+                // Continue polling
+                setTimeout(pollStatus, 3000); // Poll every 3 seconds
+              } else {
+                showToast('Performance status unknown.', 'warning');
+                // await refreshPortfolioData();
+              }
+            } catch (error) {
+              console.error('Failed to get snapshot status:', error);
+              showToast('Failed to get performance status. Refreshing data anyway.', 'warning');
+              await refreshPortfolioData();
+            }
+          };
+          
+          // Start polling after a short delay
+          setTimeout(pollStatus, 2000);
+          
+        } else {
+          // Fallback for immediate completion
+          showToast('Performance calculated successfully', 'success');
+          await refreshPortfolioData();
+        }
+      } catch (snapshotError) {
+        console.error('Failed to calculate performance:', snapshotError);
+        showToast('Failed to calculate performance. Refreshing data anyway.', 'warning');
+        await refreshPortfolioData();
+      }
+      
+    } catch (error) {
+      console.error('❌ Error refreshing data:', error);
+      showToast('Failed to refresh data', 'error');
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
+  const refreshPortfolioData = async () => {
+    try {
       // Method 1: Use utility function
-      await invalidatePortfolioQueries(queryClient, portfolioId);
+      await invalidatePortfolioQueries(queryClient, portfolioId!);
       
       // Method 2: Force refresh (nuclear option)
-      await forceRefreshPortfolioData(queryClient, portfolioId);
+      await forceRefreshPortfolioData(queryClient, portfolioId!);
       
       // Method 3: Also manually invalidate specific patterns as backup
       await Promise.all([
@@ -240,10 +299,10 @@ const PortfolioDetail: React.FC = () => {
         queryClient.invalidateQueries(['cash-flow', portfolioId]),
       ]);
       
+      // showToast('Portfolio data refreshed successfully', 'success');
     } catch (error) {
-      console.error('❌ Error refreshing data:', error);
-    } finally {
-      setIsRefreshingAll(false);
+      console.error('❌ Error refreshing portfolio data:', error);
+      showToast('Failed to refresh data.', 'error');
     }
   };
 
@@ -278,27 +337,63 @@ const PortfolioDetail: React.FC = () => {
   const handleConfirmRecalculate = async () => {
     setRecalculateConfirmOpen(false);
     setIsRecalculatingSnapshots(true);
+    // showToast(t('snapshots.recalculating'), 'info');
     
     try {
-      await snapshotService.bulkRecalculateSnapshots(portfolioId!, accountId!);
+      const response: BulkRecalculateResponse = await snapshotService.bulkRecalculateSnapshots(portfolioId!, accountId!);
       
-      // Show success message immediately
-      showToast(t('snapshots.recalculateSuccess'), 'success');
-      
-      // Refresh portfolio data in background (non-blocking)
-      setTimeout(() => {
-        refetchPortfolio().catch(error => {
-          console.warn('Failed to refresh portfolio data:', error);
-        });
-      }, 100);
-      
+      if (response.status === 'PROCESSING') {
+        showToast(
+          `Processing ${response.dateRange ? 
+            `${response.dateRange.startDate} to ${response.dateRange.endDate}` : 
+            'snapshots'} in background. Estimated duration: ${response.estimatedDuration}`,
+          'info'
+        );
+        
+        // Start polling for status updates
+        const pollStatus = async () => {
+          try {
+            const statusResponse = await snapshotService.getBulkRecalculateStatus(portfolioId!, response.trackingId);
+            
+            if (statusResponse.status === 'completed') {
+              showToast(
+                `Completed: ${statusResponse.summary.totalSnapshots} snapshots across ${statusResponse.summary.successfulDates} dates`,
+                'success'
+              );
+              
+              // Refresh portfolio data
+              setTimeout(() => {
+                refetchPortfolio().catch(error => {
+                  console.warn('Failed to refresh portfolio data:', error);
+                });
+              }, 100);
+              
+              setIsRecalculatingSnapshots(false);
+            } else if (statusResponse.status === 'failed') {
+              showToast('Recalculate failed. Please try again.', 'error');
+              setIsRecalculatingSnapshots(false);
+            } else if (statusResponse.status === 'in_progress' || statusResponse.status === 'started') {
+              // Continue polling
+              setTimeout(pollStatus, 5000); // Poll every 5 seconds
+            } else {
+              showToast('Recalculate status unknown. Please check manually.', 'warning');
+              setIsRecalculatingSnapshots(false);
+            }
+          } catch (error) {
+            console.error('Failed to get bulk recalculate status:', error);
+            showToast('Failed to get recalculate status. Please check manually.', 'error');
+            setIsRecalculatingSnapshots(false);
+          }
+        };
+        
+        // Start polling after a short delay
+        setTimeout(pollStatus, 2000);
+        
+      }
     } catch (error) {
-      console.error('Failed to recalculate snapshots:', error);
+      console.error('Failed to bulk recalculate snapshots:', error);
       showToast(t('snapshots.recalculateFailed'), 'error');
-    } finally {
-      setTimeout(() => {
-        setIsRecalculatingSnapshots(false);
-      }, 100);
+      setIsRecalculatingSnapshots(false);
     }
   };
 
@@ -450,7 +545,8 @@ const PortfolioDetail: React.FC = () => {
                   <ArrowBackIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={t('portfolio.refreshAllData')}>
+            <Tooltip title={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}>
+              <span>
                 <IconButton
                   onClick={handleRefreshAll}
                   disabled={isRefreshingAll}
@@ -470,11 +566,16 @@ const PortfolioDetail: React.FC = () => {
                       backgroundColor: 'primary.light',
                       color: 'primary.contrastText',
                     },
+                    '&:disabled': {
+                      opacity: 0.7,
+                      cursor: 'not-allowed',
+                    }
                   }}
                 >
-                  {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
+                  {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
                 </IconButton>
-              </Tooltip>
+              </span>
+            </Tooltip>
             {/* More Actions Menu */}
             <Tooltip title={t('common.moreActions')}>
               <IconButton
@@ -538,30 +639,36 @@ const PortfolioDetail: React.FC = () => {
                 <ArrowBackIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('portfolio.refreshAllData')}>
-              <IconButton
-                onClick={handleRefreshAll}
-                disabled={isRefreshingAll}
-                color="primary"
-                size="medium"
-                sx={{
-                  borderRadius: 2,
-                  width: 40,
-                  height: 40,
-                  flexShrink: 0,
-                  border: '1px solid',
-                  borderColor: 'primary.main',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    backgroundColor: 'primary.light',
-                    color: 'primary.contrastText',
-                  },
-                }}
-              >
-                {isRefreshingAll ? <CircularProgress size={20} /> : <RefreshIcon />}
-              </IconButton>
+            <Tooltip title={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}>
+              <span>
+                <IconButton
+                  onClick={handleRefreshAll}
+                  disabled={isRefreshingAll}
+                  color="primary"
+                  size="medium"
+                  sx={{
+                    borderRadius: 2,
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
+                    border: '1px solid',
+                    borderColor: 'primary.main',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                      backgroundColor: 'primary.light',
+                      color: 'primary.contrastText',
+                    },
+                    '&:disabled': {
+                      opacity: 0.7,
+                      cursor: 'not-allowed',
+                    }
+                  }}
+                >
+                  {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
+                </IconButton>
+              </span>
             </Tooltip>
             {/* More Actions Menu */}
             <Tooltip title={t('common.moreActions')}>
