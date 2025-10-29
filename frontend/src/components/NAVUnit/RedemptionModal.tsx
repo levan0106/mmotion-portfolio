@@ -27,6 +27,7 @@ import NumberInput from '../Common/NumberInput';
 import AccountAutocomplete from '../Common/AccountAutocomplete';
 import ModalWrapper from '../Common/ModalWrapper';
 import { useAccountsWithHoldings } from '../../hooks/useAccountsWithHoldings';
+import { useTranslation } from 'react-i18next';
 
 interface RedemptionModalProps {
   open: boolean;
@@ -49,6 +50,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
   portfolio,
   onRedemptionSuccess,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<RedemptionFormData>({
     accountId: '',
     amount: 0,
@@ -87,15 +89,15 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
     const newErrors: typeof errors = {};
 
     if (!formData.accountId) {
-      newErrors.accountId = 'Please select an account';
+      newErrors.accountId = t('holdings.redemptionModal.validation.accountRequired');
     }
 
     if (!formData.units || formData.units <= 0) {
-      newErrors.units = 'Units must be greater than 0';
+      newErrors.units = t('holdings.redemptionModal.validation.unitsRequired');
     }
 
     if (!formData.transactionDate) {
-      newErrors.transactionDate = 'Transaction date is required';
+      newErrors.transactionDate = t('holdings.redemptionModal.validation.dateRequired');
     }
 
     setErrors(newErrors);
@@ -126,7 +128,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       console.error('Error creating redemption:', err);
       setError(
         err.response?.data?.message || 
-        'Failed to create redemption. Please try again.'
+        t('holdings.redemptionModal.error.createFailed')
       );
     } finally {
       setLoading(false);
@@ -161,21 +163,22 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       <ResponsiveButton 
         onClick={handleClose}
         disabled={loading}
-        size="large"
+        size="medium"
       >
-        Cancel
+        {t('common.cancel')}
       </ResponsiveButton>
       <ResponsiveButton 
         onClick={handleSubmit} 
         variant="contained" 
         color="error"
         disabled={!isFormValid}
-        size="large"
+        size="medium"
         icon={loading ? <CircularProgress size={20} /> : <RemoveIcon />}
-        mobileText="Process"
-        desktopText="Process Redemption"
+        mobileText={t('holdings.redemptionModal.processRedemption')}
+        desktopText={t('holdings.redemptionModal.processRedemption')}
+        forceTextOnly={true}
       >
-        {loading ? 'Processing...' : 'Process Redemption'}
+        {loading ? t('holdings.redemptionModal.processing') : t('holdings.redemptionModal.processRedemption')}
       </ResponsiveButton>
     </>
   );
@@ -184,7 +187,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title="Process Fund Redemption"
+      title={t('holdings.redemptionModal.title')}
       icon={<RemoveIcon color="error" />}
       actions={modalActions}
       loading={loading}
@@ -196,23 +199,23 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       <Box sx={{ pt: 1 }}>
         {/* Fund Information */}
         <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
-          <ResponsiveTypography variant="pageTitle" sx={{ color: 'text.secondary' }} gutterBottom>
-            Fund Information
+          <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary' }} gutterBottom>
+            {t('holdings.redemptionModal.fundInformation')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Fund Name
+                {t('holdings.redemptionModal.fundName')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ color: 'primary' }}>
                 {portfolio.name}
               </ResponsiveTypography>
             </Grid>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                NAV per Unit
+                {t('holdings.redemptionModal.navPerUnit')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
               </ResponsiveTypography>
             </Grid>
@@ -225,14 +228,16 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
             <AccountAutocomplete
               value={formData.accountId}
               onChange={(accountId) => {
-                setFormData(prev => ({ ...prev, accountId }));
+                // Ensure accountId is always a string
+                const accountIdString = typeof accountId === 'string' ? accountId : String(accountId || '');
+                setFormData(prev => ({ ...prev, accountId: accountIdString }));
                 if (errors.accountId) {
                   setErrors(prev => ({ ...prev, accountId: undefined }));
                 }
               }}
-              label="Investor Account (With Holdings)"
-              placeholder="Search for an investor with holdings in this fund..."
-              helperText={accountsError ? `Error: ${accountsError}` : "Only accounts with holdings in this fund are shown"}
+              label={t('holdings.redemptionModal.investorAccount')}
+              placeholder={t('holdings.redemptionModal.investorAccountPlaceholder')}
+              helperText={accountsError ? `Error: ${accountsError}` : t('holdings.redemptionModal.investorAccountHelper')}
               error={!!errors.accountId || !!accountsError}
               disabled={loading || accountsLoading}
               accounts={accountsWithHoldings}
@@ -244,9 +249,8 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
             <MoneyInput
               value={calculatedAmount}
               onChange={() => {}} // Disabled - auto-calculated
-              label="Redemption Amount (Auto-calculated)"
-              placeholder="Amount will be calculated automatically"
-              helperText="Amount is calculated automatically based on units and NAV per unit"
+              label={t('holdings.redemptionModal.redemptionAmount')}
+              placeholder={t('holdings.redemptionModal.redemptionAmountPlaceholder')}
               error={!!errors.amount}
               disabled={true} // Always disabled
               currency="VND"
@@ -265,8 +269,8 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
                   setErrors(prev => ({ ...prev, units: undefined }));
                 }
               }}
-              label="Units to Redeem"
-              placeholder="Enter number of units to redeem"
+              label={t('holdings.redemptionModal.unitsToRedeem')}
+              placeholder={t('holdings.redemptionModal.unitsPlaceholder')}
               helperText={errors.units}
               error={!!errors.units}
               disabled={loading}
@@ -282,7 +286,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
           <Grid item xs={12} md={6}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                label="Transaction Date"
+                label={t('holdings.redemptionModal.transactionDate')}
                 value={formData.transactionDate ? new Date(formData.transactionDate) : null}
                 onChange={(date) => {
                   const dateString = date ? date.toISOString().split('T')[0] : '';
@@ -296,7 +300,6 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
                   textField: {
                     fullWidth: true,
                     error: !!errors.transactionDate,
-                    helperText: errors.transactionDate || 'Select the date for this redemption',
                     required: true,
                   },
                 }}
@@ -307,13 +310,11 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Description"
+              label={t('holdings.redemptionModal.description')}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               disabled={loading}
-              placeholder="Optional description for this redemption"
-              multiline
-              rows={2}
+              placeholder={t('holdings.redemptionModal.descriptionPlaceholder')}
             />
           </Grid>
         </Grid>
@@ -321,41 +322,41 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
         {/* Calculation Summary */}
         <Card variant="outlined" sx={{ mt: 3, p: 2, backgroundColor: 'warning.50', border: '1px solid', borderColor: 'warning.200' }}>
           <ResponsiveTypography variant="pageTitle" sx={{ color: 'warning.main' }} gutterBottom>
-            Redemption Summary
+            {t('holdings.redemptionModal.redemptionSummary')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={6} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                NAV per Unit
+                {t('holdings.redemptionModal.navPerUnit')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
               </ResponsiveTypography>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Units to Redeem
+                {t('holdings.redemptionModal.unitsToRedeemLabel')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatNumberWithSeparators(formData.units, 3)}
               </ResponsiveTypography>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Calculated Amount
+                {t('holdings.redemptionModal.calculatedAmount')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(calculatedAmount, 'VND')}
               </ResponsiveTypography>
             </Grid>
           </Grid>
-          {calculatedAmount > 0 && (
+          {/* {calculatedAmount > 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
               <ResponsiveTypography variant="labelSmall">
-                Amount is automatically calculated based on the units you enter and current NAV per unit.
+                {t('holdings.redemptionModal.calculationNotice')}
               </ResponsiveTypography>
             </Alert>
-          )}
+          )} */}
         </Card>
 
         {/* Error Alert */}
@@ -366,26 +367,23 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
         )}
 
         {/* Date Awareness Notice */}
-        <Alert severity="warning" sx={{ mt: 2 }}>
-          <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 500 }}>
-            ⚠️ Data Impact Notice
-          </ResponsiveTypography>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
-            Processing this redemption will automatically update:
+        <Alert sx={{ mt: 2 }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }} ellipsis={false}>
+            {t('holdings.redemptionModal.dataImpactMessage')}
           </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Portfolio NAV per unit and total outstanding units
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.redemptionModal.dataImpactItem1')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Investor holding metrics (units, investment, P&L)
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.redemptionModal.dataImpactItem2')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Cash flow records and portfolio balance
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.redemptionModal.dataImpactItem3')}
             </ResponsiveTypography>
           </Box>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
-            All calculations will be based on current date and current NAV per unit
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }} ellipsis={false}>
+            {t('holdings.redemptionModal.dataImpactNote')}
           </ResponsiveTypography>
         </Alert>
       </Box>

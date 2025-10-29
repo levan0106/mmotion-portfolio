@@ -145,12 +145,12 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
         setSelectedAccount(isExistingAccount);
         setIsCustomMode(false);
         setCustomAccountId('');
-        onChange(isExistingAccount.accountId);
+        onChange(isExistingAccount.accountId.trim());
       } else if (allowCustomAccountId && isValidUUID(inputValue)) {
         // Custom UUID - valid format
         setIsCustomMode(true);
         setCustomAccountId(inputValue);
-        onChange(inputValue);
+        onChange(inputValue.trim());
       } else {
         // Invalid format - clear everything
         setSelectedAccount(null);
@@ -176,21 +176,21 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
     if (typeof newValue === 'string') {
       // Custom account ID entered
       setSelectedAccount(null);
-      onChange(newValue);
       setIsCustomMode(true);
       setCustomAccountId(newValue);
+      onChange(newValue.trim());
     } else if (newValue && typeof newValue === 'object') {
       // Account object selected
       setSelectedAccount(newValue);
-      onChange(newValue.accountId);
       setIsCustomMode(false);
       setCustomAccountId('');
+      onChange(newValue.accountId);
     } else {
       // Cleared or undefined
       setSelectedAccount(null);
-      onChange('');
       setIsCustomMode(false);
       setCustomAccountId('');
+      onChange('');
     }
   };
 
@@ -218,12 +218,12 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
         setSelectedAccount(isExistingAccount);
         setIsCustomMode(false);
         setCustomAccountId('');
-        onChange(isExistingAccount.accountId);
+        onChange(isExistingAccount.accountId.trim());
       } else if (allowCustomAccountId && isValidUUID(newInputValue)) {
         // Custom UUID - valid format
         setIsCustomMode(true);
         setCustomAccountId(newInputValue);
-        onChange(newInputValue);
+        onChange(newInputValue.trim());
       } else {
         // Invalid format - clear everything
         setSelectedAccount(null);
@@ -350,7 +350,7 @@ const AccountAutocomplete: React.FC<AccountAutocompleteProps> = ({
             ID: {option.accountId}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Email: {option.email || 'N/A'} • Currency: {option.baseCurrency || 'N/A'}
+            Email: {option.email || 'N/A'}
           </Typography>
         </Box>
       </Box>

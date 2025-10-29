@@ -26,6 +26,7 @@ import MoneyInput from '../Common/MoneyInput';
 import NumberInput from '../Common/NumberInput';
 import AccountAutocomplete from '../Common/AccountAutocomplete';
 import ModalWrapper from '../Common/ModalWrapper';
+import { useTranslation } from 'react-i18next';
 
 interface SubscriptionModalProps {
   open: boolean;
@@ -48,6 +49,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   portfolio,
   onSubscriptionSuccess,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<SubscriptionFormData>({
     accountId: '',
     amount: 0,
@@ -97,20 +99,20 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
     const newErrors: typeof errors = {};
 
     if (!formData.accountId || formData.accountId.trim() === '') {
-      newErrors.accountId = 'Please select an account or enter an account ID';
+      newErrors.accountId = t('holdings.subscriptionModal.validation.accountRequired');
     }
 
     if (!formData.amount || formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = t('holdings.subscriptionModal.validation.amountRequired');
     }
 
     // Units are auto-calculated, so no need to validate them
     if (calculatedUnits <= 0) {
-      newErrors.units = 'Units must be greater than 0';
+      newErrors.units = t('holdings.subscriptionModal.validation.unitsRequired');
     }
 
     if (!formData.transactionDate) {
-      newErrors.transactionDate = 'Transaction date is required';
+      newErrors.transactionDate = t('holdings.subscriptionModal.validation.dateRequired');
     }
 
     setErrors(newErrors);
@@ -146,16 +148,16 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       console.error('Error status:', err.response?.status);
       
       // Handle specific error cases
-      let errorMessage = 'Failed to create subscription. Please try again.';
+      let errorMessage = t('holdings.subscriptionModal.error.createFailed');
       
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.status === 403) {
-        errorMessage = 'Account is not authorized to invest in this fund. Please contact administrator.';
+        errorMessage = t('holdings.subscriptionModal.error.unauthorized');
       } else if (err.response?.status === 400) {
-        errorMessage = 'Invalid subscription data. Please check your input.';
+        errorMessage = t('holdings.subscriptionModal.error.invalidData');
       } else if (err.response?.status === 404) {
-        errorMessage = 'Portfolio or account not found. Please refresh and try again.';
+        errorMessage = t('holdings.subscriptionModal.error.notFound');
       }
       
       setError(errorMessage);
@@ -185,29 +187,26 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                      formData.amount > 0 && 
                      !loading;
 
-  if (formData.accountId && formData.accountId.trim() !== '') {
-  } else {
-  }
-
   const modalActions = (
     <>
       <ResponsiveButton 
         onClick={handleClose}
         disabled={loading}
-        size="large"
+        size="medium"
       >
-        Cancel
+        {t('common.cancel')}
       </ResponsiveButton>
       <ResponsiveButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={!isFormValid}
-        size="large"
+        size="medium"
         icon={loading ? <CircularProgress size={20} /> : <AddIcon />}
-        mobileText="Create"
-        desktopText="Create Subscription"
+        mobileText={t('holdings.subscriptionModal.createSubscription')}
+        desktopText={t('holdings.subscriptionModal.createSubscription')}
+        forceTextOnly={true}
       >
-        {loading ? 'Creating...' : 'Create Subscription'}
+        {loading ? t('holdings.subscriptionModal.creating') : t('holdings.subscriptionModal.createSubscription')}
       </ResponsiveButton>
     </>
   );
@@ -216,7 +215,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title="New Fund Subscription"
+      title={t('holdings.subscriptionModal.title')}
       icon={<AddIcon color="primary" />}
       actions={modalActions}
       loading={loading}
@@ -228,23 +227,23 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       <Box sx={{ pt: 1 }}>
         {/* Fund Information */}
         <Card variant="outlined" sx={{ mb: 3, p: 2, backgroundColor: 'grey.50' }}>
-          <ResponsiveTypography variant="pageTitle" sx={{ color: 'text.secondary' }} gutterBottom>
-            Fund Information
+          <ResponsiveTypography variant="cardTitle" sx={{ color: 'text.secondary' }} gutterBottom>
+            {t('holdings.subscriptionModal.fundInformation')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Fund Name
+                {t('holdings.subscriptionModal.fundName')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ color: 'primary' }}>
                 {portfolio.name}
               </ResponsiveTypography>
             </Grid>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                NAV per Unit
+                {t('holdings.subscriptionModal.navPerUnit')}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
+              <ResponsiveTypography variant="cardTitle" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
               </ResponsiveTypography>
             </Grid>
@@ -257,13 +256,15 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             <AccountAutocomplete
               value={formData.accountId}
               onChange={(accountId) => {
-                setFormData(prev => ({ ...prev, accountId }));
+                // Ensure accountId is always a string
+                const accountIdString = typeof accountId === 'string' ? accountId : String(accountId || '');
+                setFormData(prev => ({ ...prev, accountId: accountIdString }));
                 if (errors.accountId) {
                   setErrors(prev => ({ ...prev, accountId: undefined }));
                 }
               }}
-              label="Account"
-              placeholder="Search for an account or enter new account ID..."
+              label={t('holdings.subscriptionModal.account')}
+              placeholder={t('holdings.subscriptionModal.accountPlaceholder')}
               helperText={errors.accountId}
               error={!!errors.accountId}
               disabled={loading}
@@ -284,8 +285,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   setErrors(prev => ({ ...prev, amount: undefined }));
                 }
               }}
-              label="Investment Amount"
-              placeholder="Enter investment amount (e.g., 1,000,000)"
+              label={t('holdings.subscriptionModal.investmentAmount')}
+              placeholder={t('holdings.subscriptionModal.investmentAmountPlaceholder')}
               helperText={errors.amount}
               error={!!errors.amount}
               disabled={loading}
@@ -300,9 +301,9 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             <NumberInput
               value={calculatedUnits}
               onChange={() => {}} // Disabled - auto-calculated
-              label="Units (Auto-calculated)"
-              placeholder="Units will be calculated automatically"
-              helperText="Units are calculated automatically based on amount and NAV per unit"
+              label={t('holdings.subscriptionModal.unitsAutoCalculated')}
+              placeholder={t('holdings.subscriptionModal.unitsPlaceholder')}
+            
               error={!!errors.units}
               disabled={true} // Always disabled
               decimalPlaces={3}
@@ -317,7 +318,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
           <Grid item xs={12} md={6}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                label="Transaction Date"
+                label={t('holdings.subscriptionModal.transactionDate')}
                 value={formData.transactionDate ? new Date(formData.transactionDate) : null}
                 onChange={(date) => {
                   const dateString = date ? date.toISOString().split('T')[0] : '';
@@ -331,7 +332,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   textField: {
                     fullWidth: true,
                     error: !!errors.transactionDate,
-                    helperText: errors.transactionDate || 'Select the date for this subscription',
+                    
                     required: true,
                   },
                 }}
@@ -342,13 +343,10 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Description"
+              label={t('holdings.subscriptionModal.description')}
               value={formData.description}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               disabled={loading}
-              placeholder="Optional description for this subscription"
-              multiline
-              rows={2}
             />
           </Grid>
         </Grid>
@@ -356,41 +354,34 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
         {/* Calculation Summary */}
         <Card variant="outlined" sx={{ mt: 3, p: 2, backgroundColor: 'info.50', border: '1px solid', borderColor: 'info.200' }}>
           <ResponsiveTypography variant="pageTitle" sx={{ color: 'info.main' }} gutterBottom>
-            Calculation Summary
+            {t('holdings.subscriptionModal.calculationSummary')}
           </ResponsiveTypography>
           <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={6} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                NAV per Unit
+                {t('holdings.subscriptionModal.navPerUnit')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(navPerUnit, 'VND')}
               </ResponsiveTypography>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Calculated Units
+                {t('holdings.subscriptionModal.calculatedUnits')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatNumberWithSeparators(calculatedUnits, 3)}
               </ResponsiveTypography>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
               <ResponsiveTypography variant="labelSmall" sx={{ color: 'text.secondary' }}>
-                Investment Amount
+                {t('holdings.subscriptionModal.investmentAmountLabel')}
               </ResponsiveTypography>
               <ResponsiveTypography variant="cardValue" sx={{ color: 'primary' }}>
                 {formatCurrency(formData.amount, 'VND')}
               </ResponsiveTypography>
             </Grid>
           </Grid>
-          {calculatedUnits > 0 && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <ResponsiveTypography variant="labelSmall">
-                Units are automatically calculated based on the investment amount and current NAV per unit.
-              </ResponsiveTypography>
-            </Alert>
-          )}
         </Card>
 
         {/* Error Alert */}
@@ -401,26 +392,23 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
         )}
 
         {/* Date Awareness Notice */}
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <ResponsiveTypography variant="labelSmall" sx={{ fontWeight: 500 }}>
-            📅 Data Impact Notice
-          </ResponsiveTypography>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }}>
-            Creating this subscription will automatically update:
+        <Alert sx={{ mt: 2 }}>
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1 }} ellipsis={false}>
+            {t('holdings.subscriptionModal.dataImpactMessage')}
           </ResponsiveTypography>
           <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Portfolio NAV per unit and total outstanding units
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.subscriptionModal.dataImpactItem1')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Investor holding metrics (units, investment, P&L)
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.subscriptionModal.dataImpactItem2')}
             </ResponsiveTypography>
-            <ResponsiveTypography component="li" variant="labelSmall">
-              Cash flow records and portfolio balance
+            <ResponsiveTypography component="li" variant="labelSmall" ellipsis={false}>
+              {t('holdings.subscriptionModal.dataImpactItem3')}
             </ResponsiveTypography>
           </Box>
-          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }}>
-            All calculations will be based on current date and current NAV per unit
+          <ResponsiveTypography variant="labelSmall" sx={{ mt: 1, fontStyle: 'italic' }} ellipsis={false}>
+            {t('holdings.subscriptionModal.dataImpactNote')}
           </ResponsiveTypography>
         </Alert>
       </Box>
