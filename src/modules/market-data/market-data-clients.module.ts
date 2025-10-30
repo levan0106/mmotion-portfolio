@@ -15,7 +15,7 @@ import { AssetModule } from '../asset/asset.module';
 @Module({
   imports: [
     HttpModule.register({
-      timeout: 10000, // 10 seconds
+      timeout: 30000, // 30 seconds
       maxRedirects: 3,
       headers: {
         'User-Agent': 'Portfolio/1.0'

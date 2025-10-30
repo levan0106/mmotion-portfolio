@@ -5,6 +5,7 @@
 import { useQuery } from 'react-query';
 import { useAccount } from '../contexts/AccountContext';
 import apiService from '../services/api';
+import { formatCurrency } from '@/utils/format';
 
 interface PortfolioChangeData {
   change: string;
@@ -116,7 +117,7 @@ export const usePortfolioChangeForAllPortfolios = (portfolios: any[], period: st
 
         const oldestValue = parseFloat((sortedData[0] as any).value?.toString() || sortedData[0].navValue?.toString() || (sortedData[0] as any).nav?.toString() || '0');
         const latestValue = parseFloat((sortedData[sortedData.length - 1] as any).value?.toString() || sortedData[sortedData.length - 1].navValue?.toString() || (sortedData[sortedData.length - 1] as any).nav?.toString() || '0');
-
+// console.log('oldestValue', sortedData[0].date, oldestValue);
         totalOldestValue += oldestValue;
         totalLatestValue += latestValue;
       }
@@ -129,7 +130,7 @@ export const usePortfolioChangeForAllPortfolios = (portfolios: any[], period: st
     const percentageChange = ((totalLatestValue - totalOldestValue) / totalOldestValue) * 100;
     const sign = percentageChange >= 0 ? '+' : '';
     
-    return `${sign}${percentageChange.toFixed(1)}%`;
+    return `${sign}${percentageChange.toFixed(1)}%-${formatCurrency(totalOldestValue, 'VND')}-${formatCurrency(totalLatestValue, 'VND')}`;
   };
 
   return {

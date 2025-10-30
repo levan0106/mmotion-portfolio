@@ -15,7 +15,7 @@ import { ApiResult } from '../interfaces/api-tracking.interface';
 @Injectable()
 export class FundPriceAPIClient extends ApiTrackingBase {
   private readonly baseUrl = 'https://api.fmarket.vn';
-  private readonly timeout = 10000; // 10 seconds
+  private readonly timeout = 30000; // 30 seconds
 
   constructor(
     private readonly httpService: HttpService,
