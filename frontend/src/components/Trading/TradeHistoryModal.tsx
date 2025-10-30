@@ -37,7 +37,8 @@ const TradeHistoryModal: React.FC<TradeHistoryModalProps> = ({
     setTrades([]);
     try {
       const res = await apiService.getTrades(portfolioId, accountId, { assetId });
-      setTrades(Array.isArray(res) ? res : []);
+      res.sort((a: any, b: any) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime());
+      setTrades(res);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load trade history');
     } finally {
@@ -82,16 +83,16 @@ const TradeHistoryModal: React.FC<TradeHistoryModalProps> = ({
               {t('common.noData')}
             </ResponsiveTypography>
           ) : (
-            <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
+            <TableContainer component={Paper}>
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: 'text.secondary' }}>{t('trading.date')}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, color: 'text.secondary' }}>{t('trading.side')}</TableCell>
-                    <TableCell align="right" sx={{ color: 'text.secondary' }}>{t('common.quantity')}</TableCell>
-                    <TableCell align="right" sx={{ color: 'text.secondary' }}>{t('common.price')}</TableCell>
-                    <TableCell align="right" sx={{ color: 'text.secondary' }}>{t('common.total')}</TableCell>
-                    <TableCell align="right" sx={{ color: 'text.secondary' }}>P/L</TableCell>
+                    <TableCell align="left">{t('trading.date')}</TableCell>
+                    <TableCell align="left" sx={{ display: { xs: 'none', sm: 'table-cell' }}}>{t('trading.side')}</TableCell>
+                    <TableCell align="right">{t('common.quantity')}</TableCell>
+                    <TableCell align="right">{t('common.price')}</TableCell>
+                    <TableCell align="right">{t('common.total')}</TableCell>
+                    <TableCell align="right">P/L</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -115,10 +116,10 @@ const TradeHistoryModal: React.FC<TradeHistoryModalProps> = ({
                         </TableCell>
                         <TableCell align="right">{qty.toLocaleString()}</TableCell>
                         <TableCell align="right">{formatCurrency(price, baseCurrency)}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, color: side === 'BUY' ? 'success.main' : (side === 'SELL' ? 'error.main' : 'text.primary') }}>
+                        <TableCell align="right" sx={{ color: side === 'BUY' ? 'success.main' : (side === 'SELL' ? 'error.main' : 'text.primary') }}>
                           {formatCurrency(total, baseCurrency)}
                         </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: realizedPl !== undefined ? 700 : undefined, color: realizedPl !== undefined ? (realizedPl >= 0 ? 'success.main' : 'error.main') : 'text.secondary' }}>
+                        <TableCell align="right" sx={{color: realizedPl !== undefined ? (realizedPl >= 0 ? 'success.main' : 'error.main') : 'text.secondary' }}>
                           {realizedPl !== undefined ? formatCurrency(realizedPl, baseCurrency) : '-'}
                         </TableCell>
                       </TableRow>
