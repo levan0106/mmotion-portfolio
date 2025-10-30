@@ -566,7 +566,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                 </Box>
                 
                 {/* Growth Icon */}
-                <Box sx={{ 
+                {/* <Box sx={{ 
                   position: 'absolute',
                   top: isCompactMode ? 8 : 12,
                   right: isCompactMode ? 8 : 12,
@@ -582,7 +582,7 @@ const NAVSummary: React.FC<NAVSummaryProps> = ({
                     fontSize: isCompactMode ? 14 : 16, 
                     color: '#1976d2' 
                   }} />
-                </Box>
+                </Box> */}
               </Box>
             </Grid>
           )}

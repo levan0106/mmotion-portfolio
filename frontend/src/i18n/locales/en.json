@@ -550,6 +550,51 @@
       "createPortfolioFirst": "Create Portfolio",
       "error": "Error",
       "noPortfoliosFoundError": "No portfolios found. Please check if the backend is running and try again."
+    },
+    "tradeDetails": {
+      "title": "Trade Details",
+      "tradeInformation": "Trade Information",
+      "basicInformation": "Basic Information",
+      "modal": {
+        "title": "Trade Details",
+        "loadingMessage": "Loading trade details...",
+        "editTrade": "Edit Trade"
+      },
+      "financialDetails": "Financial Details",
+      "tradeId": "Trade ID",
+      "dateTime": "Date & Time",
+      "asset": "Asset",
+      "type": "Type",
+      "source": "Source",
+      "quantity": "Quantity",
+      "pricePerUnit": "Price per Unit",
+      "totalValue": "Total Value",
+      "feesTaxes": "Fees & Taxes",
+      "totalCost": "Total Cost",
+      "realizedPL": "Realized P&L",
+      "notes": "Notes",
+      "tradeMatchingDetails": "Trade Matching Details",
+      "totalMatched": "Total Matched",
+      "remaining": "Remaining",
+      "totalRealizedPL": "Total Realized P&L",
+      "buyTradeId": "Buy Trade ID",
+      "matchedQty": "Matched Qty",
+      "buyPrice": "Buy Price",
+      "sellPrice": "Sell Price",
+      "pl": "P&L",
+      "matchedDate": "Matched Date",
+      "unmatchedTradeWarning": "⚠️ This sell trade has <strong>{{quantity}} units</strong> remaining unmatched. Consider matching with available buy trades to realize P&L.",
+      "loadingTradeDetails": "Loading trade details...",
+      "tradeTypes": {
+        "MARKET": "Market Order",
+        "LIMIT": "Limit Order",
+        "STOP": "Stop Order"
+      },
+      "tradeSources": {
+        "MANUAL": "Manual",
+        "API": "API",
+        "IMPORT": "Import"
+      }
     }
   },
   "assets": {
@@ -885,6 +930,7 @@
     },
     "subscriptionModal": {
       "title": "New Fund Subscription",
+      "redemptionTitle": "New Fund Redemption",
       "fundInformation": "Fund Information",
       "fundName": "Fund Name",
       "navPerUnit": "NAV per Unit",
@@ -910,7 +956,9 @@
       "dataImpactItem3": "Cash flow records and portfolio balance",
       "dataImpactNote": "All calculations will be based on current date and current NAV per unit",
       "createSubscription": "Create Subscription",
+      "createRedemption": "Create Redemption",
       "creating": "Creating...",
+      "creatingRedemption": "Creating Redemption...",
       "validation": {
         "accountRequired": "Please select an account or enter an account ID",
         "amountRequired": "Amount must be greater than 0",

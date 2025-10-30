@@ -33,6 +33,7 @@ interface SubscriptionModalProps {
   onClose: () => void;
   portfolio: Portfolio | null;
   onSubscriptionSuccess: () => void;
+  preselectedAccountId?: string;
 }
 
 interface SubscriptionFormData {
@@ -48,6 +49,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   onClose,
   portfolio,
   onSubscriptionSuccess,
+  preselectedAccountId
 }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<SubscriptionFormData>({
@@ -91,9 +93,17 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   useEffect(() => {
     if (open && portfolio) {
       // Reset form when modal opens
-      clearFormData();
+      setFormData({
+        accountId: preselectedAccountId || '',
+        amount: 0,
+        units: 0,
+        description: '',
+        transactionDate: new Date().toISOString().split('T')[0],
+      });
+      setError(null);
+      setErrors({});
     }
-  }, [open, portfolio]);
+  }, [open, portfolio, preselectedAccountId]);
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};

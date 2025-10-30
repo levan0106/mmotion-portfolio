@@ -70,7 +70,7 @@ export class InvestorHoldingService {
    * FIXED: Removed double update, fixed average cost calculation, added transaction wrapper
    */
   async subscribeToFund(dto: SubscribeToFundDto, subscriptionDate?: string): Promise<SubscriptionResult> {
-    this.logger.log(`Processing fund subscription: ${dto.accountId} -> ${dto.portfolioId}, amount: ${dto.amount}`);
+    // this.logger.log(`Processing fund subscription: ${dto.accountId} -> ${dto.portfolioId}, amount: ${dto.amount}`);
 
     // Fix timezone issue: append 'T12:00:00' to ensure local time interpretation
     const subDate = subscriptionDate ? new Date(subscriptionDate + 'T12:00:00') : new Date();
@@ -94,7 +94,10 @@ export class InvestorHoldingService {
     }
 
     // 3. Calculate NAV per unit
-    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId, subDate));
+    // Ngày nhận tiền hôm nay thì tính theo nav của ngày trước
+    // VD: khách đăng ký: 20/10, ghi nhận cash in: 21/10, NAV/Unit: 20/10
+    const navDate = new Date(subDate.getTime() - (24 * 60 * 60 * 1000));
+    const navPerUnit = Number(await this.calculateNavPerUnit(dto.portfolioId, navDate));
     if (navPerUnit <= 0) {
       throw new BadRequestException('Invalid NAV per unit. Fund may not be properly initialized.');
     }
@@ -653,8 +656,8 @@ export class InvestorHoldingService {
     const realTimeNavValue = await this.calculateRealTimeNavValue(portfolioId, snapshotDate);
     const navPerUnit = realTimeNavValue / Number(portfolio.totalOutstandingUnits);
 
-    this.logger.debug(`Nav per unit for portfolio ${portfolioId} at snapshot date ${snapshotDate ? snapshotDate.toISOString() : new Date().toISOString()} :
-    ${navPerUnit} (Real-time NAV: ${realTimeNavValue} / Total outstanding units: ${portfolio.totalOutstandingUnits})`);
+    // this.logger.debug(`Nav per unit for portfolio ${portfolioId} at snapshot date ${snapshotDate ? snapshotDate.toISOString() : new Date().toISOString()} :
+    // ${navPerUnit} (Real-time NAV: ${realTimeNavValue} / Total outstanding units: ${portfolio.totalOutstandingUnits})`);
 
     // Round to 3 decimal places to avoid precision issues
     return Math.round(navPerUnit * 1000) / 1000;
@@ -1161,7 +1164,7 @@ export class InvestorHoldingService {
         if (updateData.description !== undefined) {
           cashFlow.description = updateData.description;
         }
-        this.logger.log(`🔍 DEBUG: updateData.transactionDate: ${updateData.transactionDate}`, cashFlow.flowDate);
+        // this.logger.log(`🔍 DEBUG: updateData.transactionDate: ${updateData.transactionDate}`, cashFlow.flowDate);
         if (transactionDate !== undefined) {       
           cashFlow.flowDate = transactionDate;        
         }
@@ -1193,11 +1196,11 @@ export class InvestorHoldingService {
         // Then recalculate holding metrics with updated NAV
         await this.recalculateHoldingMetrics(transaction.holdingId);
         
-        this.logger.log(`Updated portfolio metrics after transaction ${transactionId} edit`);
+        // this.logger.log(`Updated portfolio metrics after transaction ${transactionId} edit`);
       }
     }
 
-    this.logger.log(`Updated fund unit transaction ${transactionId}`);
+    // this.logger.log(`Updated fund unit transaction ${transactionId}`);
     return updatedTransaction;
   }
 

@@ -34,6 +34,7 @@ interface RedemptionModalProps {
   onClose: () => void;
   portfolio: Portfolio | null;
   onRedemptionSuccess: () => void;
+  preselectedAccountId?: string;
 }
 
 interface RedemptionFormData {
@@ -49,6 +50,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
   onClose,
   portfolio,
   onRedemptionSuccess,
+  preselectedAccountId,
 }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<RedemptionFormData>({
@@ -74,7 +76,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
   useEffect(() => {
     if (portfolio) {
       setFormData({
-        accountId: '',
+        accountId: preselectedAccountId || '',
         amount: 0,
         units: 0,
         description: '',
@@ -83,7 +85,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       setError(null);
       setErrors({});
     }
-  }, [portfolio]);
+  }, [portfolio, preselectedAccountId]);
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};

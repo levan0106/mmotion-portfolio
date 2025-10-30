@@ -165,7 +165,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
     <ModalWrapper
       open={open}
       onClose={handleClose}
-      title={t('holdings.edit.title', { type: isSubscription ? t('holdings.transaction.subscription') : t('holdings.transaction.redemption') })}
+      title={t('holdings.edit.title', { type: '' })}
       icon={<EditIcon color="primary" />}
       actions={modalActions}
       loading={loading}
@@ -176,10 +176,10 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
     >
       <Box sx={{ pt: 1 }}>
         {/* Transaction Info */}
-        <Box sx={{ mb: 3, backgroundColor: 'grey.50', borderRadius: 2 }}>
-          <ResponsiveTypography variant="pageTitle" color="text.secondary" gutterBottom>
+        <Box sx={{ mb: 3, backgroundColor: 'grey.50', borderRadius: 2, p: 2 }}>
+          {/* <ResponsiveTypography variant="pageTitle" color="text.secondary" gutterBottom>
             {t('holdings.edit.transactionInfo')}
-          </ResponsiveTypography>
+          </ResponsiveTypography> */}
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <ResponsiveTypography variant="labelSmall" color="text.secondary">

@@ -1,17 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
-  IconButton,
-  Typography,
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Close as CloseIcon, Edit as EditIcon } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { Edit as EditIcon } from '@mui/icons-material';
+import { ResponsiveButton, ModalWrapper } from '../Common';
+import ResponsiveTypography from '../Common/ResponsiveTypography';
 import TradeDetails from './TradeDetails';
 
 export interface TradeDetailsModalProps {
@@ -37,57 +33,64 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
   isLoading = false,
   error,
 }) => {
+  const { t } = useTranslation();
+  
   if (!trade) return null;
 
+  // Build modal title with trade info
+  const modalTitle = (
+    <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+      <ResponsiveTypography variant="cardTitle" fontWeight="bold">
+        {t('trading.tradeDetails.modal.title')}
+      </ResponsiveTypography>
+      {/* {trade && (
+        <ResponsiveTypography variant="labelSmall" color="text.secondary">
+          {trade.assetSymbol} - {trade.assetName}
+        </ResponsiveTypography>
+      )} */}
+    </Box>
+  );
+
+  // Build actions
+  const modalActions = (
+    <Box display="flex" justifyContent="flex-end" gap={1} width="100%">
+      <ResponsiveButton 
+        onClick={onClose}
+        variant="text"
+        mobileText={t('common.close')}
+        desktopText={t('common.close')}
+        sx={{ textTransform: 'none', px: 3 }}
+      >
+        {t('common.close')}
+      </ResponsiveButton>
+      {onEdit && (
+        <ResponsiveButton 
+          onClick={() => onEdit(trade)}
+          variant="contained"
+          icon={<EditIcon />}
+          mobileText={t('common.edit')}
+          desktopText={t('trading.tradeDetails.modal.editTrade')}
+          sx={{ textTransform: 'none', px: 3 }}
+          forceTextOnly={true}
+        >
+          {t('trading.tradeDetails.modal.editTrade')}
+        </ResponsiveButton>
+      )}
+    </Box>
+  );
+
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={onClose}
+      title={modalTitle}
       maxWidth="lg"
-      fullWidth
-      PaperProps={{
-        sx: { 
-          maxHeight: '90vh',
-          borderRadius: 2,
-          boxShadow: 24,
-        }
-      }}
+      loading={isLoading}
+      actions={modalActions}
     >
-      <DialogTitle sx={{ 
-        bgcolor: 'grey.50', 
-        borderBottom: 1, 
-        borderColor: 'divider',
-        py: 1.5
-      }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="h6" fontWeight="bold">
-              Trade Details
-            </Typography>
-            {trade && (
-              <Typography variant="body2" color="text.secondary">
-                {trade.assetSymbol} - {trade.assetName}
-              </Typography>
-            )}
-          </Box>
-          <IconButton 
-            onClick={onClose} 
-            size="small"
-            sx={{
-              '&:hover': {
-                bgcolor: 'error.main',
-                color: 'white',
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
+      <Box>
         {error && (
-          <Alert severity="error" sx={{ m: 2, mb: 0 }}>
+          <Alert severity="error" sx={{ m: 2, mb: 2 }}>
             {error}
           </Alert>
         )}
@@ -96,13 +99,13 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
             <Box textAlign="center">
               <CircularProgress size={40} />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                Loading trade details...
-              </Typography>
+              <ResponsiveTypography variant="cardTitle" sx={{ mt: 2 }}>
+                {t('trading.tradeDetails.modal.loadingMessage')}
+              </ResponsiveTypography>
             </Box>
           </Box>
         ) : (
-          <Box sx={{ p: 2, overflow: 'auto', maxHeight: 'calc(70vh - 120px)' }}>
+          <Box sx={{ overflow: 'auto' }}>
             <TradeDetails
               trade={trade}
               tradeDetails={tradeDetails}
@@ -110,41 +113,8 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
             />
           </Box>
         )}
-      </DialogContent>
-
-      <DialogActions sx={{ 
-        bgcolor: 'grey.50', 
-        borderTop: 1, 
-        borderColor: 'divider',
-        py: 1.5,
-        px: 2,
-        justifyContent: 'flex-end',
-        gap: 1
-      }}>
-        <ResponsiveButton 
-          onClick={onClose}
-          variant="outlined"
-          icon={<CloseIcon />}
-          mobileText="Close"
-          desktopText="Close"
-          sx={{ textTransform: 'none', px: 3 }}
-        >
-          Close
-        </ResponsiveButton>
-        {onEdit && (
-          <ResponsiveButton 
-            onClick={() => onEdit(trade)}
-            variant="contained"
-            icon={<EditIcon />}
-            mobileText="Edit"
-            desktopText="Edit Trade"
-            sx={{ textTransform: 'none', px: 3 }}
-          >
-            Edit Trade
-          </ResponsiveButton>
-        )}
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ModalWrapper>
   );
 };
 

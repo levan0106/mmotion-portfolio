@@ -245,7 +245,7 @@ const PortfolioDetail: React.FC = () => {
                 await refreshPortfolioData();
               } else if (statusResponse.status === 'in_progress' || statusResponse.status === 'started') {
                 // Continue polling
-                setTimeout(pollStatus, 3000); // Poll every 3 seconds
+                setTimeout(pollStatus, 1000); // Poll every 1 second
               } else {
                 showToast('Performance status unknown.', 'warning');
                 // await refreshPortfolioData();
@@ -258,7 +258,7 @@ const PortfolioDetail: React.FC = () => {
           };
           
           // Start polling after a short delay
-          setTimeout(pollStatus, 2000);
+          setTimeout(pollStatus, 500);
           
         } else {
           // Fallback for immediate completion
@@ -275,7 +275,9 @@ const PortfolioDetail: React.FC = () => {
       console.error('❌ Error refreshing data:', error);
       showToast('Failed to refresh data', 'error');
     } finally {
-      setIsRefreshingAll(false);
+      // setTimeout(() => {
+      //   setIsRefreshingAll(false);
+      // }, 500);
     }
   };
 
@@ -299,10 +301,15 @@ const PortfolioDetail: React.FC = () => {
         queryClient.invalidateQueries(['cash-flow', portfolioId]),
       ]);
       
-      // showToast('Portfolio data refreshed successfully', 'success');
+      showToast('Data refreshed successfully', 'success');
     } catch (error) {
       console.error('❌ Error refreshing portfolio data:', error);
-      showToast('Failed to refresh data.', 'error');
+      showToast('Failed to refresh data', 'error');
+    }
+    finally {
+      setTimeout(() => {
+        setIsRefreshingAll(false);
+      }, 500);
     }
   };
 
@@ -368,13 +375,16 @@ const PortfolioDetail: React.FC = () => {
                 });
               }, 100);
               
+              // Refresh portfolio data after snapshot is created
+              await refreshPortfolioData();
+
               setIsRecalculatingSnapshots(false);
             } else if (statusResponse.status === 'failed') {
               showToast('Recalculate failed. Please try again.', 'error');
               setIsRecalculatingSnapshots(false);
             } else if (statusResponse.status === 'in_progress' || statusResponse.status === 'started') {
               // Continue polling
-              setTimeout(pollStatus, 5000); // Poll every 5 seconds
+              setTimeout(pollStatus, 1000); // Poll every 1 second
             } else {
               showToast('Recalculate status unknown. Please check manually.', 'warning');
               setIsRecalculatingSnapshots(false);
@@ -387,7 +397,7 @@ const PortfolioDetail: React.FC = () => {
         };
         
         // Start polling after a short delay
-        setTimeout(pollStatus, 2000);
+        setTimeout(pollStatus, 500);
         
       }
     } catch (error) {

@@ -40,6 +40,8 @@ import {
   Assessment,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { apiService } from '../services/api';
@@ -50,6 +52,8 @@ import {
   formatPercentage 
 } from '../utils/format';
 import EditHoldingTransactionModal from '../components/NAVUnit/EditHoldingTransactionModal';
+import SubscriptionModal from '../components/NAVUnit/SubscriptionModal';
+import RedemptionModal from '../components/NAVUnit/RedemptionModal';
 
 const HoldingDetail: React.FC = () => {
   const { t } = useTranslation();
@@ -65,6 +69,8 @@ const HoldingDetail: React.FC = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<FundUnitTransactionWithCashFlow | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [recalculateLoading, setRecalculateLoading] = useState(false);
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
+  const [redemptionModalOpen, setRedemptionModalOpen] = useState(false);
 
   useEffect(() => {
     if (holdingId) {
@@ -164,6 +170,16 @@ const HoldingDetail: React.FC = () => {
     }
   };
 
+  const handleSubscriptionSuccess = () => {
+    setSubscriptionModalOpen(false);
+    fetchHoldingDetail();
+  };
+
+  const handleRedemptionSuccess = () => {
+    setRedemptionModalOpen(false);
+    fetchHoldingDetail();
+  };
+
   const getPnLIcon = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return null;
     const num = typeof value === 'string' ? parseFloat(value) : value;
@@ -217,7 +233,17 @@ const HoldingDetail: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ mt: 0.5, mb: 1 }}>
       {/* Header */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ 
+        mb: 2,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backgroundColor: '#ffffff',
+        pt: 1,
+        pb: 1,
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+      }}>
         <ResponsiveButton
           variant="text"
           icon={<ArrowBack />}
@@ -232,18 +258,20 @@ const HoldingDetail: React.FC = () => {
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          mb: 1,
+          mx: {xs: 1, sm: 2},
           p: { xs: 1.5, sm: 2 },
           borderRadius: 2,
-          background: '#f8f9fa',
-          border: '1px solid #e9ecef'
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #e9ecef',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ 
               bgcolor: 'primary.main', 
               width: 48, 
               height: 48,
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              display: { xs: 'none', sm: 'flex' },
             }}>
               <AccountBalance />
             </Avatar>
@@ -251,32 +279,74 @@ const HoldingDetail: React.FC = () => {
               <ResponsiveTypography variant="pageTitle" sx={{ fontWeight: 700, color: 'primary.main' }}>
                 {holding.account?.name}
               </ResponsiveTypography>
-              <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ fontWeight: 500 }}>
+              <ResponsiveTypography variant="pageSubtitle" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
                 {t('holdings.detail.investmentIn', { portfolioName: holding.portfolio?.name })}
               </ResponsiveTypography>
             </Box>
           </Box>
           
-          <ResponsiveButton
-            variant="contained"
-            color="primary"
-            icon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
-            onClick={handleRecalculateNav}
-            disabled={recalculateLoading}
-            mobileText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculate')}
-            desktopText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
-            sx={{
-              minWidth: '160px',
-              textTransform: 'none',
-              fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
-              }
-            }}
-          >
-            {recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
-          </ResponsiveButton>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+            <ResponsiveButton
+              size="small"
+              variant="contained"
+              color="success"
+              icon={<AddIcon />}
+              onClick={() => setSubscriptionModalOpen(true)}
+              mobileText={t('nav.holdings.newSubscription')}
+              desktopText={t('nav.holdings.newSubscription')}
+              sx={{
+                minWidth: '120px',
+                textTransform: 'none',
+                boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(34, 197, 94, 0.4)',
+                }
+              }}
+            >
+              {t('nav.holdings.newSubscription')}
+            </ResponsiveButton>
+            
+            <ResponsiveButton
+              size="small"
+              variant="contained"
+              color="warning"
+              icon={<RemoveIcon />}
+              onClick={() => setRedemptionModalOpen(true)}
+              mobileText={t('nav.holdings.processRedemption')}
+              desktopText={t('nav.holdings.processRedemption')}
+              sx={{
+                minWidth: '120px',
+                textTransform: 'none',
+                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)',
+                }
+              }}
+            >
+              {t('nav.holdings.processRedemption')}
+            </ResponsiveButton>
+            
+            <ResponsiveButton
+              size="small"
+              variant="contained"
+              color="primary"
+              icon={recalculateLoading ? <CircularProgress size={20} /> : <ShowChart />}
+              onClick={handleRecalculateNav}
+              disabled={recalculateLoading}
+              mobileText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculate')}
+              desktopText={recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
+              sx={{
+                minWidth: '160px',
+                textTransform: 'none',
+                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                }
+              }}
+            >
+              {recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
+            </ResponsiveButton>
+          </Box>
         </Box>
       </Box>
 
@@ -302,7 +372,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>
                         {formatCurrency(holding.currentValue, 'VND')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -316,7 +386,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
                         {formatCurrency(holding.totalInvestment, 'VND')}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -332,7 +402,7 @@ const HoldingDetail: React.FC = () => {
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                         {getPnLIcon(holding.unrealizedPnL)}
-                        <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: holding.unrealizedPnL >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
                           {formatCurrency(holding.unrealizedPnL, 'VND')}
                         </ResponsiveTypography>
                       </Box>
@@ -349,7 +419,7 @@ const HoldingDetail: React.FC = () => {
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                         {getPnLIcon(summary.returnPercentage)}
-                        <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: summary.returnPercentage >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: summary.returnPercentage >= 0 ? 'success.main' : 'error.main', ml: 0.5 }}>
                           {formatPercentage(summary.returnPercentage, 2)}
                         </ResponsiveTypography>
                       </Box>
@@ -379,7 +449,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'primary.main' }}>
                         {summary.totalTransactions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -393,7 +463,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'success.main' }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'success.main' }}>
                         {summary.totalSubscriptions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -407,7 +477,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'warning.main' }}>
                         {summary.totalRedemptions}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -421,7 +491,7 @@ const HoldingDetail: React.FC = () => {
                       p: 1.5,
                       borderRadius: 2,
                     }}>
-                      <ResponsiveTypography variant="cardValueLarge" sx={{ fontWeight: 700, color: 'info.main' }}>
+                      <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 700, color: 'info.main' }}>
                         {formatNumberWithSeparators(summary.totalUnitsSubscribed, 3)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="cardLabel" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -650,6 +720,24 @@ const HoldingDetail: React.FC = () => {
         }}
         transaction={selectedTransaction}
         onTransactionUpdated={handleTransactionUpdated}
+      />
+
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        open={subscriptionModalOpen}
+        onClose={() => setSubscriptionModalOpen(false)}
+        portfolio={holding?.portfolio || null}
+        onSubscriptionSuccess={handleSubscriptionSuccess}
+        preselectedAccountId={holding?.account?.accountId}
+      />
+
+      {/* Redemption Modal */}
+      <RedemptionModal
+        open={redemptionModalOpen}
+        onClose={() => setRedemptionModalOpen(false)}
+        portfolio={holding?.portfolio || null}
+        onRedemptionSuccess={handleRedemptionSuccess}
+        preselectedAccountId={holding?.account?.accountId}
       />
 
       {/* Delete Confirmation Modal */}
