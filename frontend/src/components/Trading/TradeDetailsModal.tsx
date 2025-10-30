@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
-  CircularProgress,
   Alert,
 } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
@@ -95,24 +94,15 @@ export const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({
           </Alert>
         )}
 
-        {isLoading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-            <Box textAlign="center">
-              <CircularProgress size={40} />
-              <ResponsiveTypography variant="cardTitle" sx={{ mt: 2 }}>
-                {t('trading.tradeDetails.modal.loadingMessage')}
-              </ResponsiveTypography>
-            </Box>
-          </Box>
-        ) : (
-          <Box sx={{ overflow: 'auto' }}>
+        <Box sx={{ overflow: 'auto' }}>
+          {!isLoading && (
             <TradeDetails
               trade={trade}
               tradeDetails={tradeDetails}
               isLoading={isLoading}
             />
-          </Box>
-        )}
+          )}
+        </Box>
       </Box>
     </ModalWrapper>
   );

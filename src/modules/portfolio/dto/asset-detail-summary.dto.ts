@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AssetDetailSummaryDto {
+  @ApiProperty({ description: 'Asset ID' })
+  assetId: string;
+
   @ApiProperty({ description: 'Asset symbol' })
   symbol: string;
 

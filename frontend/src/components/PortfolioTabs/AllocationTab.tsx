@@ -144,6 +144,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
     fetchAssetDetailData();
   }, [portfolioId]);
 
+  // Removed symbol->assetId mapping; API now returns assetId directly in asset-detail-summary
+
   return (
     <Box sx={{ 
       backgroundColor: 'background.paper',
@@ -662,6 +664,8 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
             baseCurrency={portfolio.baseCurrency}
             title={t('portfolio.individualAssetHoldings')}
             compact={isCompactMode}
+            accountId={(portfolio?.accountId || portfolio?.ownerAccountId || (() => { try { const s = localStorage.getItem('current_account'); if (!s) return ''; const p = JSON.parse(s); return p?.accountId || p?.id || ''; } catch { return ''; } })())}
+            portfolioId={portfolioId}
           />
         )}
       </Box>

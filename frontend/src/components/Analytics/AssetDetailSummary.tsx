@@ -18,6 +18,7 @@ import { Box, Grid, Card, CardContent, Chip, useMediaQuery, useTheme } from '@mu
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { getPnLColor, getPnLLightColor } from '../../config/chartColors';
+import TradeHistoryModal from '../Trading/TradeHistoryModal';
 
 interface AssetDetail {
   symbol: string;
@@ -29,6 +30,7 @@ interface AssetDetail {
   percentage: number;
   unrealizedPl: number;
   unrealizedPlPercentage: number;
+  assetId?: string; // provided by API now
 }
 
 interface AssetDetailSummaryProps {
@@ -36,6 +38,8 @@ interface AssetDetailSummaryProps {
   baseCurrency: string;
   title?: string;
   compact?: boolean;
+  accountId: string;
+  portfolioId: string;
 }
 
 const COLORS = [
@@ -49,10 +53,22 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
   baseCurrency,
   title = 'Asset Detail Summary',
   compact = false,
+  accountId,
+  portfolioId,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [tradeModalOpen, setTradeModalOpen] = React.useState(false);
+  const [selectedSymbol, setSelectedSymbol] = React.useState<string | null>(null);
+  const [selectedAssetId, setSelectedAssetId] = React.useState<string | null>(null);
+  const handleOpenTrades = (symbol: string, assetId: string | undefined | null) => {
+    if (!assetId) return; // require assetId to ensure accuracy
+    setSelectedSymbol(symbol);
+    setSelectedAssetId(assetId);
+    setTradeModalOpen(true);
+  };
+  const handleCloseTrades = () => setTradeModalOpen(false);
   // Add null checks
   if (!data || data.length === 0) {
     return (
@@ -66,6 +82,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   // Transform data for the chart
   const chartData = data.map((asset, index) => ({
+    assetId: asset.assetId,
     symbol: asset.symbol,
     name: asset.name,
     assetType: asset.assetType,
@@ -461,6 +478,16 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
 
   return (
     <Box>
+      {/* Trade History Modal */}
+      <TradeHistoryModal
+        open={tradeModalOpen}
+        onClose={handleCloseTrades}
+        symbol={selectedSymbol}
+        baseCurrency={baseCurrency}
+        accountId={accountId}
+        portfolioId={portfolioId}
+        assetId={selectedAssetId || ""}
+      />
       {!compact && (
         <>
           <ResponsiveTypography variant="pageTitle">
@@ -586,7 +613,11 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
                         mr: 0.75,
                       }}
                     />
-                    <ResponsiveTypography variant="cardValueMedium" >
+                    <ResponsiveTypography 
+                      variant="cardValueMedium"
+                      sx={{ cursor: asset.assetId ? 'pointer' : 'default', textDecoration: asset.assetId ? 'underline' : 'none', textUnderlineOffset: '2px' }}
+                      onClick={() => asset.assetId && handleOpenTrades(asset.symbol, asset.assetId)}
+                    >
                       {asset.symbol}
                     </ResponsiveTypography>
                   </Box>

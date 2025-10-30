@@ -338,6 +338,7 @@ export class PortfolioAnalyticsService {
     // Get asset names and types from database
     const assetInfoQuery = `
       SELECT DISTINCT
+        asset.id as "assetId",
         asset.symbol,
         asset.name,
         asset.type as "assetType"
@@ -361,6 +362,7 @@ export class PortfolioAnalyticsService {
       const unrealizedPlPercentage = position.avgCost > 0 ? (position.unrealizedPl / (position.quantity * position.avgCost)) * 100 : 0;
 
       return {
+        assetId: (assetInfo as any)?.assetId || position.assetId,
         symbol: position.symbol,
         name: (assetInfo as any).name,
         assetType: (assetInfo as any).assetType,
@@ -370,7 +372,7 @@ export class PortfolioAnalyticsService {
         percentage: percentage,
         unrealizedPl: position.unrealizedPl,
         unrealizedPlPercentage: unrealizedPlPercentage,
-      };
+      } as AssetDetailSummaryDto;
     });
 
     return {

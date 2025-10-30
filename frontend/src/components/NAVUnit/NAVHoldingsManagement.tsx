@@ -211,7 +211,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
           </Box>
 
           <Grid container spacing={getUltraSpacing(2, 1)}>
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid item xs={6} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   {t('nav.holdings.navPerUnit')}
@@ -221,7 +221,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </ResponsiveTypography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid item xs={6} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   {t('nav.holdings.totalOutstandingUnits')}
@@ -231,7 +231,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </ResponsiveTypography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid item xs={6} sm={6} md={2.4} sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   {t('nav.holdings.numberOfInvestors')}
@@ -241,7 +241,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </ResponsiveTypography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid item xs={6} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   {t('nav.holdings.totalPnL')}
@@ -257,7 +257,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 </ResponsiveTypography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid item xs={6} sm={6} md={2.4}>
               <Box sx={{ textAlign: 'center', p: 1 }}>
                 <ResponsiveTypography variant="labelSmall" color="text.secondary">
                   {t('nav.holdings.lastNavUpdate')}

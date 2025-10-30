@@ -21,6 +21,7 @@ import {
   ListItemText,
   Alert,
   Portal,
+  Button,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -40,6 +41,7 @@ import {
   Business as FundManagerIcon,
   Security as SecurityIcon,
   MoreVert as MoreVertIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
@@ -110,6 +112,7 @@ const PortfolioDetail: React.FC = () => {
   const [moreActionsAnchorEl, setMoreActionsAnchorEl] = useState<null | HTMLElement>(null);
   const [isRecalculatingSnapshots, setIsRecalculatingSnapshots] = useState(false);
   const [recalculateConfirmOpen, setRecalculateConfirmOpen] = useState(false);
+  const [mobileTabsAnchorEl, setMobileTabsAnchorEl] = useState<null | HTMLElement>(null);
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -307,9 +310,7 @@ const PortfolioDetail: React.FC = () => {
       showToast('Failed to refresh data', 'error');
     }
     finally {
-      setTimeout(() => {
-        setIsRefreshingAll(false);
-      }, 500);
+      setIsRefreshingAll(false);
     }
   };
 
@@ -1139,7 +1140,89 @@ const PortfolioDetail: React.FC = () => {
             gap: { xs: 1, sm: 2 },
             flexWrap: 'nowrap'
           }}>
-            {/* Tabs */}
+            {/* Tabs (desktop) and Menu (mobile) */}
+            {/* Mobile: Professional menu for tabs */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, width: '100%', mr: 1, alignItems: 'center', gap: 1 }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={(e) => setMobileTabsAnchorEl(e.currentTarget)}
+                sx={{ textTransform: 'none', borderRadius: 1, minWidth: 40, px: 1 }}
+              >
+                <MenuIcon />
+              </Button>
+              <ResponsiveTypography
+                component="div"
+                variant="pageTitle"
+                sx={{
+                  display: { xs: 'flex', sm: 'none' },
+                  width: '100%',
+                  mr: 1,
+                  justifyContent: 'center',
+                }}
+              >
+                {
+                  // icon + text
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {
+                      [
+                        <TrendingUpIcon key="i0" />, 
+                        <AllocationIcon key="i1" />, 
+                        <TradingIcon key="i2" />, 
+                        <DepositIcon key="i3" />, 
+                        <CashFlowIcon key="i4" />, 
+                        <HoldingsIcon key="i5" />,
+                      ][tabValue]
+                    }
+                    {
+                      [
+                        t('portfolio.performance'),
+                        t('portfolio.allocation'),
+                        t('portfolio.trading'),
+                        t('portfolio.deposit'),
+                        t('portfolio.cashFlow'),
+                        t('navigation.holdings'),
+                      ][tabValue]
+                    }
+                  </Box>
+                  
+                }
+              </ResponsiveTypography>
+              <Menu
+                anchorEl={mobileTabsAnchorEl}
+                open={Boolean(mobileTabsAnchorEl)}
+                onClose={() => setMobileTabsAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              >
+                <MenuItem onClick={() => { setTabValue(0); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><TrendingUpIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('portfolio.performance')}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setTabValue(1); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><AllocationIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('portfolio.allocation')}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setTabValue(2); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><TradingIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('portfolio.trading')}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setTabValue(3); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><DepositIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('portfolio.deposit')}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setTabValue(4); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><CashFlowIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('portfolio.cashFlow')}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setTabValue(5); setMobileTabsAnchorEl(null); }}>
+                  <ListItemIcon><HoldingsIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{t('navigation.holdings')}</ListItemText>
+                </MenuItem>
+              </Menu>
+            </Box>
+
+            {/* Desktop: Tabs */}
             <Tabs 
               value={tabValue} 
               onChange={handleTabChange} 
@@ -1149,9 +1232,9 @@ const PortfolioDetail: React.FC = () => {
               allowScrollButtonsMobile
               sx={{
                 minHeight: '40px',
-                width: { xs: 'calc(100% - 50px)', sm: 'auto' },
-                overflow: 'auto',
-                flex: 1,
+              width: { xs: 'calc(100% - 50px)', sm: 'auto' },
+              overflow: 'auto',
+              flex: 1,
                 '& .MuiTabs-flexContainer': {
                   gap: { xs: 0.5, sm: 1 },
                 },
@@ -1182,46 +1265,26 @@ const PortfolioDetail: React.FC = () => {
                 },
               }}
             >
-              {/* Fund Manager View - Show all management tabs */}
-              <Tab 
-                icon={<TrendingUpIcon />} 
-                iconPosition="start" 
-                label={t('portfolio.performance')} 
-              />
-              <Tab 
-                icon={<AllocationIcon />} 
-                iconPosition="start" 
-                label={t('portfolio.allocation')} 
-              />
-              <Tab 
-                icon={<TradingIcon />} 
-                iconPosition="start" 
-                label={t('portfolio.trading')} 
-              />
-              <Tab 
-                icon={<DepositIcon />} 
-                iconPosition="start" 
-                label={t('portfolio.deposit')} 
-              />
-              <Tab 
-                icon={<CashFlowIcon />} 
-                iconPosition="start" 
-                label={t('portfolio.cashFlow')} 
-              />
-              <Tab 
-                icon={<HoldingsIcon />} 
-                iconPosition="start" 
-                label={t('navigation.holdings')} 
-              />
+              <Tab icon={<TrendingUpIcon />} iconPosition="start" label={t('portfolio.performance')} />
+              <Tab icon={<AllocationIcon />} iconPosition="start" label={t('portfolio.allocation')} />
+              <Tab icon={<TradingIcon />} iconPosition="start" label={t('portfolio.trading')} />
+              <Tab icon={<DepositIcon />} iconPosition="start" label={t('portfolio.deposit')} />
+              <Tab icon={<CashFlowIcon />} iconPosition="start" label={t('portfolio.cashFlow')} />
+              <Tab icon={<HoldingsIcon />} iconPosition="start" label={t('navigation.holdings')} />
             </Tabs>
             
-            {/* Compact Mode Toggle */}
-            <Tooltip title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}>
+            {/* Compact Mode Toggle - pinned to right */}
+            <Tooltip 
+              title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}
+              sx={{ ml: 'auto' }}
+            >
               <IconButton
                 onClick={() => setIsCompactMode(!isCompactMode)}
                 color="primary"
                 size="small"
                 sx={{
+                  ml: 'auto',
+                  flexShrink: 0,
                   p: 1,
                   borderRadius: 1,
                   backgroundColor: isCompactMode ? 'primary.main' : 'transparent',

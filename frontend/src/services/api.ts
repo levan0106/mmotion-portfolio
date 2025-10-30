@@ -348,6 +348,24 @@ class ApiService {
     return response.data;
   }
 
+  // Convenience: fetch trades filtered by symbol (and optionally account/portfolio)
+  async getTradesBySymbol(
+    symbol: string,
+    params?: { accountId?: string; portfolioId?: string; page?: number; limit?: number; side?: string; startDate?: string; endDate?: string }
+  ): Promise<any[]> {
+    const query = new URLSearchParams();
+    query.append('symbol', symbol);
+    if (params?.accountId) query.append('accountId', params.accountId);
+    if (params?.portfolioId) query.append('portfolioId', params.portfolioId);
+    if (params?.page !== undefined) query.append('page', String(params.page));
+    if (params?.limit !== undefined) query.append('limit', String(params.limit));
+    if (params?.side) query.append('side', params.side);
+    if (params?.startDate) query.append('startDate', params.startDate);
+    if (params?.endDate) query.append('endDate', params.endDate);
+    const response = await this.api.get(`/api/v1/trades?${query.toString()}`);
+    return response.data;
+  }
+
   // New method to get all trades for a specific asset across all portfolios
   async getAllTradesForAsset(assetId: string, accountId: string): Promise<any[]> {
     const params = new URLSearchParams({ accountId, assetId });
@@ -500,8 +518,16 @@ class ApiService {
     page?: number;
     limit?: number;
   }): Promise<any[]> {
-    const params = { portfolioId, accountId, ...filters };
-    const response = await this.api.get('/api/v1/trades', { params });
+    const query = new URLSearchParams();
+    query.append('portfolioId', portfolioId);
+    query.append('accountId', accountId);
+    if (filters?.assetId) query.append('assetId', filters.assetId);
+    if (filters?.side) query.append('side', filters.side);
+    if (filters?.startDate) query.append('startDate', filters.startDate);
+    if (filters?.endDate) query.append('endDate', filters.endDate);
+    if (filters?.page !== undefined) query.append('page', String(filters.page));
+    if (filters?.limit !== undefined) query.append('limit', String(filters.limit));
+    const response = await this.api.get(`/api/v1/trades?${query.toString()}`);
     return response.data;
   }
 

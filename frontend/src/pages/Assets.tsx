@@ -425,6 +425,7 @@ const SummaryMetrics = memo(({
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <ResponsiveTypography 
+                    component="div"
                     variant="cardValue" 
                     sx={{ 
                       color: `${metric.color}.main`,
