@@ -1236,6 +1236,7 @@ const PortfolioDetail: React.FC = () => {
               overflow: 'auto',
               flex: 1,
                 '& .MuiTabs-flexContainer': {
+                  justifyContent: 'center',
                   gap: { xs: 0.5, sm: 1 },
                 },
                 '& .MuiTab-root': {
