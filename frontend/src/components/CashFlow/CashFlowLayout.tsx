@@ -61,6 +61,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { formatCurrency, formatDate } from '../../utils/format';
+import { scrollToTop } from '../Common/ScrollToTop';
 import CashFlowChart from './CashFlowChart';
 import FundingSourceSummary from './FundingSourceSummary';
 
@@ -320,6 +321,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // Scroll to top when changing tabs
+    scrollToTop();
   };
 
 

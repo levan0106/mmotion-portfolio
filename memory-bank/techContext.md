@@ -48,6 +48,10 @@
 - **Component Typography Migration**: Migrated all major components to use ResponsiveTypography system ✅
 - **Event Handler Fixes**: Fixed ResponsiveFormControl event handlers across all components ✅
 - **Typography Consistency Achievement**: Unified typography system across entire application ✅
+- **Scroll To Top Functionality**: Automatic scroll to top on route changes and tab switching for better UX ✅
+- **Unified Scroll System**: Single ScrollToTop component with exported utility function for route and tab changes ✅
+- **Container Detection**: Data attribute pattern for identifying correct scrollable container in AppLayout ✅
+- **Smooth Scrolling**: Smooth scroll behavior for better user experience across all navigation ✅
 - **Date Normalization Utility**: Unified date normalization function with automatic type detection and timezone safety ✅
 - **DatePicker Integration**: DatePicker components use normalizeDate() for consistent date handling ✅
 - **Timezone Handling**: Direct date extraction from ISO strings prevents timezone conversion issues ✅

@@ -40,6 +40,29 @@ flowchart LR
 - **Files**: ResponsiveCard.tsx, ResponsiveCard.types.ts, index.ts (Common components export)
 - **Pattern**: Unified card component system with responsive design, multiple variants, and comprehensive functionality
 
+### Scroll To Top Pattern - **IMPLEMENTED** ✅
+- **Unified Component & Utility**: ScrollToTop component with exported scrollToTop utility function in single file
+- **Route Change Detection**: Uses useLocation hook from react-router-dom to detect route changes automatically
+- **Container Detection**: Finds scrollable container using data attribute [data-scrollable-container="true"]
+- **Fallback Support**: Falls back to window.scrollTo if scrollable container not found
+- **Smooth Scrolling**: Uses smooth scroll behavior for better user experience
+- **App Integration**: Added ScrollToTop component to App.tsx Router wrapper for automatic route change detection
+- **Tab Switching Integration**: scrollToTop function called in all handleTabChange handlers across application
+- **Mobile Menu Support**: Mobile menu items also trigger scroll to top on click
+- **Single File Pattern**: Component and utility function consolidated in single file for consistency
+- **Export Pattern**: ScrollToTop component (default export) + scrollToTop function (named export)
+- **Import Consistency**: All components import from single source (components/Common/ScrollToTop)
+- **Data Attribute Pattern**: AppLayout scrollable Box uses data-scrollable-container="true" for identification
+- **Container Query**: Uses querySelector to find container by data attribute instead of complex DOM traversal
+- **Timeout Pattern**: Small delay (100ms) to ensure DOM is updated before scrolling
+- **File Location**: frontend/src/components/Common/ScrollToTop.tsx
+- **Usage Pattern**:
+  - Route changes: Automatic via ScrollToTop component in App.tsx
+  - Tab changes: `scrollToTop()` called in handleTabChange handlers
+  - Mobile menu: `scrollToTop()` called in onClick handlers
+- **Files**: ScrollToTop.tsx, App.tsx, AppLayout.tsx, PortfolioDetail.tsx, Portfolios.tsx, AdminManagement.tsx, Trading.tsx, DepositManagement.tsx, CashFlowLayout.tsx
+- **Pattern**: Unified scroll to top system with component for route changes and utility function for tab/menu changes
+
 ### Date Normalization Utility Pattern - **IMPLEMENTED** ✅
 - **Unified Function**: Single `normalizeDate()` function handles all date conversion cases
 - **Auto Type Detection**: Automatically detects input type (string/Date/null) and returns appropriate output

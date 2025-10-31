@@ -36,6 +36,7 @@ import { AccountProvider, useAccount } from './contexts/AccountContext';
 import { ToastProvider } from './components/Common/ToastProvider';
 import { NotificationProvider } from './contexts/NotificationContext';
 import RedirectHandler from './components/Common/RedirectHandler';
+import ScrollToTop from './components/Common/ScrollToTop';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -238,6 +239,7 @@ const App: React.FC = () => {
           <ToastProvider>
             <NotificationProvider>
               <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <ScrollToTop />
                 <RedirectHandler>
                   <AppContent />
                 </RedirectHandler>

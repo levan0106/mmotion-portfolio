@@ -64,6 +64,7 @@ import {
   formatPercentage, 
   formatNumberWithSeparators 
 } from '../utils/format';
+import { scrollToTop } from '../components/Common/ScrollToTop';
 import { CreateTradeDto } from '../types';
 import { BulkRecalculateResponse } from '../types/snapshot.types';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
@@ -135,7 +136,7 @@ const PortfolioDetail: React.FC = () => {
 
   // Scroll to top when component mounts or portfolioId changes
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   }, [portfolioId]);
 
   // Handle tab parameter from URL (only for fund-manager view)
@@ -162,12 +163,12 @@ const PortfolioDetail: React.FC = () => {
           tabIndex = parseInt(tabParam, 10);
         }
         
-        // Validate tab index (0-5 for fund-manager)
-        if (tabIndex >= 0 && tabIndex <= 5) {
-          setTabValue(tabIndex);
-          // Scroll to top when tab is set from URL
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+          // Validate tab index (0-5 for fund-manager)
+          if (tabIndex >= 0 && tabIndex <= 5) {
+            setTabValue(tabIndex);
+            // Scroll to top when tab is set from URL
+            scrollToTop();
+          }
       }
     }
   }, [searchParams, viewMode]);
@@ -197,7 +198,7 @@ const PortfolioDetail: React.FC = () => {
       const validTabIndex = Math.min(Math.max(newValue, 0), 5);
       setTabValue(validTabIndex);
       // Scroll to top when changing tabs
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTop();
     }
   };
 
@@ -1195,27 +1196,27 @@ const PortfolioDetail: React.FC = () => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
               >
-                <MenuItem onClick={() => { setTabValue(0); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(0); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><TrendingUpIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('portfolio.performance')}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setTabValue(1); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(1); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><AllocationIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('portfolio.allocation')}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setTabValue(2); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(2); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><TradingIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('portfolio.trading')}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setTabValue(3); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(3); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><DepositIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('portfolio.deposit')}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setTabValue(4); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(4); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><CashFlowIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('portfolio.cashFlow')}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setTabValue(5); setMobileTabsAnchorEl(null); }}>
+                <MenuItem onClick={() => { setTabValue(5); setMobileTabsAnchorEl(null); scrollToTop(); }}>
                   <ListItemIcon><HoldingsIcon fontSize="small" /></ListItemIcon>
                   <ListItemText>{t('navigation.holdings')}</ListItemText>
                 </MenuItem>

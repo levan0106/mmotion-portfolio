@@ -27,6 +27,7 @@ import DepositManagement from './DepositManagement';
 import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../types';
 import { usePortfolios } from '../hooks/usePortfolios';
 import { useAccount } from '../contexts/AccountContext';
+import { scrollToTop } from '../components/Common/ScrollToTop';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { apiService } from '../services/api';
 
@@ -223,6 +224,8 @@ const Portfolios: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+    // Scroll to top when changing tabs
+    scrollToTop();
   };
 
   const handleRefreshData = async () => {

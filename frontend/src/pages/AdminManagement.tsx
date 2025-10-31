@@ -43,6 +43,7 @@ import { Role } from '../services/api.role';
 import { User, UserApi } from '../services/api.user';
 import { UserRoleApi } from '../services/api.role';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { scrollToTop } from '../components/Common/ScrollToTop';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -110,6 +111,8 @@ const AdminManagementContent: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // Scroll to top when changing tabs
+    scrollToTop();
   };
 
   // Pagination handlers for roles

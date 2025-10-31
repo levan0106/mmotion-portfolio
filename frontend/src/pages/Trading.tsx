@@ -31,6 +31,7 @@ import { TradeAnalysisContainer } from '../components/Trading/TradeAnalysis';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
 import { CreateTradeDto, TradeFormData } from '../types';
 import { formatCurrency } from '../utils/format';
+import { scrollToTop } from '../components/Common/ScrollToTop';
 import { ResponsiveButton } from '../components/Common';
 
 interface TabPanelProps {
@@ -71,6 +72,8 @@ const Trading: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    // Scroll to top when changing tabs
+    scrollToTop();
   };
 
   const handleBackToPortfolio = () => {

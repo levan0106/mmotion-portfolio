@@ -1282,13 +1282,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         }}
       >
         <Toolbar />
-        <Box sx={{ 
-          p: { xs: 1, sm: 2, md: 2.5 },
-          position: 'relative',
-          zIndex: 1,
-          height: 'calc(100vh - 64px)',
-          overflow: 'auto',
-        }}>
+        <Box 
+          data-scrollable-container="true"
+          sx={{ 
+            p: { xs: 1, sm: 2, md: 2.5 },
+            position: 'relative',
+            zIndex: 1,
+            height: 'calc(100vh - 64px)',
+            overflow: 'auto',
+          }}>
           {children}
           {currentUser && <NotificationManager userId={currentUser.userId} />}
         </Box>

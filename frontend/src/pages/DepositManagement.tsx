@@ -34,6 +34,7 @@ import DepositSettlementModal from '../components/Deposit/DepositSettlementModal
 import DepositDetailsModal from '../components/Deposit/DepositDetailsModal';
 import { apiService } from '../services/api';
 import { formatCurrency, formatPercentage } from '../utils/format';
+import { scrollToTop } from '../components/Common/ScrollToTop';
 import { useAccount } from '../contexts/AccountContext';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 
@@ -502,7 +503,10 @@ const DepositManagement: React.FC = () => {
       <Paper sx={{ mb: 2 }}>
         <Tabs
           value={tabValue}
-          onChange={(_, newValue) => setTabValue(newValue)}
+          onChange={(_, newValue) => {
+            setTabValue(newValue);
+            scrollToTop();
+          }}
           sx={{ px: 2 }}
         >
           <Tab label={`${t('deposit.all')} (${deposits.length})`} />

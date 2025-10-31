@@ -1,13 +1,50 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 29, 2025  
-**Session Type**: Date Normalization Utility + TradeForm Date Handling Fix  
-**Primary Goal**: Create unified date normalization utility and fix timezone issues in TradeForm DatePicker
+**Date**: October 31, 2025  
+**Session Type**: Scroll To Top Functionality Implementation  
+**Primary Goal**: Implement automatic scroll to top on route changes and tab switching for better user experience
 
 ## Recent Achievements
 
-### ✅ Date Normalization Utility Implementation + TradeForm Date Fix (Current Session - October 29, 2025)
+### ✅ Scroll To Top Functionality Implementation (Current Session - October 31, 2025)
+1. **ScrollToTop Component Creation**
+   - **Unified Component & Utility**: Created ScrollToTop component with exported scrollToTop utility function in single file
+   - **Route Change Detection**: Uses useLocation hook to detect route changes and automatically scroll to top
+   - **Container Detection**: Finds scrollable container using data attribute [data-scrollable-container="true"]
+   - **Fallback Support**: Falls back to window.scrollTo if container not found
+   - **Smooth Scrolling**: Uses smooth scroll behavior for better UX
+   - **Files Created**: ScrollToTop.tsx (component + utility function)
+
+2. **AppLayout Scroll Container Integration**
+   - **Data Attribute**: Added data-scrollable-container="true" to scrollable Box in AppLayout
+   - **Proper Container**: Identifies correct scrollable container (not window)
+   - **Container Query**: Uses querySelector to find container by data attribute
+   - **Files Updated**: AppLayout.tsx
+
+3. **Tab Switching Scroll Integration**
+   - **Universal Implementation**: Added scroll to top functionality for all tab changes
+   - **Pages Updated**: PortfolioDetail, Portfolios, AdminManagement, Trading, DepositManagement
+   - **Components Updated**: CashFlowLayout
+   - **Menu Items**: Mobile menu items in PortfolioDetail also trigger scroll to top
+   - **Consistent Behavior**: All tab changes now scroll to top automatically
+   - **Files Updated**: PortfolioDetail.tsx, Portfolios.tsx, AdminManagement.tsx, Trading.tsx, DepositManagement.tsx, CashFlowLayout.tsx
+
+4. **Code Consolidation**
+   - **Single File Pattern**: Consolidated scrollUtils.ts into ScrollToTop.tsx for consistency
+   - **Export Pattern**: ScrollToTop component (default) + scrollToTop function (named export)
+   - **Import Updates**: Updated all imports from utils/scrollUtils to components/Common/ScrollToTop
+   - **File Deletion**: Removed scrollUtils.ts after consolidation
+   - **Files Deleted**: utils/scrollUtils.ts
+   - **Files Updated**: utils/index.ts (removed export), all pages with tab functionality
+
+5. **Code Cleanup**
+   - **Unused Export Removal**: Removed unused ScrollToTop export from components/Common/index.ts
+   - **Import Consistency**: All components import from single source (ScrollToTop.tsx)
+   - **Code Quality**: Clean, maintainable code with no duplication
+   - **Files Updated**: components/Common/index.ts
+
+### ✅ Date Normalization Utility Implementation + TradeForm Date Fix (Previous Session - October 29, 2025)
 1. **Date Normalization Utility Creation**
    - **Unified Function**: Created single `normalizeDate()` function to handle all date conversion cases
    - **Auto Type Detection**: Automatically detects input type (string/Date/null) and returns appropriate output
