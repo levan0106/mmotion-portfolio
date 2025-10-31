@@ -31,33 +31,33 @@ const FloatingMenuButton: React.FC<FloatingMenuButtonProps> = ({
       onClick={onClick}
       sx={{
         position: 'fixed',
-        bottom: 16,
+        top: '30%',
         left: 16,
         zIndex: theme.zIndex.speedDial,
-        width: 56,
-        height: 56,
+        width: 48,
+        height: 48,
          background: 'transparent',
          boxShadow: `0 4px 20px ${theme.palette.primary.light}40`,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+        transform: isOpen ? 'translate(-50%, -50%) rotate(45deg)' : 'translate(-50%, -50%) rotate(0deg)',
          '&:hover': {
            background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-           transform: isOpen ? 'rotate(45deg) scale(1.1)' : 'rotate(0deg) scale(1.1)',
+           transform: isOpen ? 'translate(-50%, -50%) rotate(45deg) scale(1.1)' : 'translate(-50%, -50%) rotate(0deg) scale(1.1)',
            boxShadow: `0 6px 25px ${theme.palette.primary.main}60`,
          },
         '&:active': {
-          transform: isOpen ? 'rotate(45deg) scale(0.95)' : 'rotate(0deg) scale(0.95)',
+          transform: isOpen ? 'translate(-50%, -50%) rotate(45deg) scale(0.95)' : 'translate(-50%, -50%) rotate(0deg) scale(0.95)',
         },
         // Animation for first appearance
         animation: 'fadeInUp 0.5s ease-out',
         '@keyframes fadeInUp': {
           from: {
             opacity: 0,
-            transform: 'translateY(20px)',
+            transform: 'translate(-50%, calc(-50% + 20px))',
           },
           to: {
             opacity: 1,
-            transform: 'translateY(0)',
+            transform: 'translate(-50%, -50%)',
           },
         },
         // Pulse animation when drawer is closed

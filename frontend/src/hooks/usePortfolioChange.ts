@@ -130,7 +130,7 @@ export const usePortfolioChangeForAllPortfolios = (portfolios: any[], period: st
     const percentageChange = ((totalLatestValue - totalOldestValue) / totalOldestValue) * 100;
     const sign = percentageChange >= 0 ? '+' : '';
     
-    return `${sign}${percentageChange.toFixed(1)}%-${formatCurrency(totalOldestValue, 'VND')}-${formatCurrency(totalLatestValue, 'VND')}`;
+    return `${sign}${percentageChange.toFixed(1)}%`;
   };
 
   return {
