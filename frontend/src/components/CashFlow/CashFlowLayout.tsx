@@ -372,7 +372,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
     <Box>
       {/* Header Section */}
-      <Box sx={{ mb: compact ? 1 : 3 }}>
+      <Box sx={{ mb: compact ? 1 : 3, display: { xs: 'none', sm: 'block' } }}>
         <Box 
           display="flex" 
           justifyContent="space-between" 
@@ -524,7 +524,103 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       </Box>
 
       {/* Soft & Gentle Financial Summary Cards */}
-      <Grid container spacing={compact ? 1.5 : 3} sx={{ mb: compact ? 1.5 : 4 }}>
+      {/* Mobile: Table List 2 Columns */}
+      <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+        <TableContainer component={Paper} sx={{ boxShadow: 2, borderRadius: 2 }}>
+          <Table size="small">
+            <TableBody>
+              <TableRow>
+                <TableCell 
+                  align="center"
+                  sx={{ 
+                    borderRight: '1px solid',
+                    borderColor: 'divider',
+                    width: '50%',
+                    py: 1.5,
+                    px: 2
+                  }}
+                >
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    mb: 0.5
+                  }}>
+                    {t('cashflow.summary.totalInflows')}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#1e40af',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}>
+                    {formatCurrency(totalDeposits)}
+                  </ResponsiveTypography>
+                </TableCell>
+                <TableCell 
+                align="center"
+                sx={{ width: '50%', py: 1.5, px: 2 }}>
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    mb: 0.5
+                  }}>
+                    {t('cashflow.summary.totalOutflows')}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#dc2626',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}>
+                    {formatCurrency(totalWithdrawals)}
+                  </ResponsiveTypography>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell 
+                align="center"
+                  sx={{ 
+                    borderRight: '1px solid',
+                    borderColor: 'divider',
+                    width: '50%',
+                    py: 1.5,
+                    px: 2
+                  }}
+                >
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    mb: 0.5
+                  }}>
+                    {t('cashflow.summary.netCashFlow')}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: netCashFlow >= 0 ? "#15803d" : "#dc2626",
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}>
+                    {formatCurrency(netCashFlow)}
+                  </ResponsiveTypography>
+                </TableCell>
+                <TableCell 
+                align="center"
+                sx={{ width: '50%', py: 1.5, px: 2 }}>
+                  <ResponsiveTypography variant="cardLabel" sx={{ 
+                    mb: 0.5
+                  }}>
+                    {t('cashflow.summary.transactions')}
+                  </ResponsiveTypography>
+                  <ResponsiveTypography variant="cardValueLarge" sx={{ 
+                    color: '#7c3aed',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}>
+                    {allCashFlows?.length || 0}
+                  </ResponsiveTypography>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {/* Desktop/Tablet: Cards */}
+      <Grid container spacing={compact ? 1.5 : 3} sx={{ 
+        mb: compact ? 1.5 : 4,
+        display: { xs: 'none', md: 'flex' }
+      }}>
         <Grid item xs={12} sm={6} lg={3}>
           <Card sx={{ 
             height: '100%', 

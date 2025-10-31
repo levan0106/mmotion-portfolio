@@ -268,7 +268,7 @@ export class SnapshotService {
         portfolioId,
         snapshotDate,
         granularity,
-        createdBy ? `${createdBy}-portfolio-snapshot` : 'portfolio-snapshot'
+        createdBy ? createdBy : null
       );
     } catch (error) {
       // Don't throw error here to avoid breaking asset snapshot creation

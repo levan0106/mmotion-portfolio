@@ -1622,6 +1622,7 @@ export class PortfolioService {
         status: sourceDeposit.status, // Copy original status
         actualInterest: sourceDeposit.actualInterest, // Copy original actual interest
         notes: sourceDeposit.notes,
+        settledAt: sourceDeposit.settledAt, // Copy original settled at
         createdAt: new Date(), // reset creation timestamp
         updatedAt: new Date(), // reset update timestamp
       });

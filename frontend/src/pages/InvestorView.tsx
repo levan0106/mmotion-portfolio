@@ -211,8 +211,8 @@ const InvestorView: React.FC = () => {
   } 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
             <ResponsiveTypography 
               variant="pageHeader" 
@@ -226,7 +226,7 @@ const InvestorView: React.FC = () => {
             >
               {t('investorView.title', 'Góc nhìn nhà đầu tư')}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle">
+            <ResponsiveTypography variant="pageSubtitle" sx={{ display: { xs: 'none', sm: 'block' } }}>
               {t('investorView.subtitle', 'Tổng quan tất cả danh mục đầu tư của bạn')}
             </ResponsiveTypography>
           </Box>
@@ -656,7 +656,7 @@ const InvestorView: React.FC = () => {
 
           {/* Detailed Report Section - Compact Navigation */}
           {selectedPortfolio && (
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ mt: 0 }}>
               {/* Compact Navigation Bar */}
               <Box sx={{ 
                 mb: 3, 

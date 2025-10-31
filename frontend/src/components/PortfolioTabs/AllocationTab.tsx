@@ -394,9 +394,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="cardValue" sx={{ 
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: '#1976d2'
+                  color: 'primary.main'
                 }}>
                   {formatCurrency(portfolio.totalInvestValue || 0, portfolio.baseCurrency)}
                 </ResponsiveTypography>
@@ -412,8 +410,6 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="cardValue" sx={{ 
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
                   color: (portfolio.unrealizedInvestPnL || 0) >= 0 ? '#4caf50' : '#f44336'
                 }}>
                   {formatCurrency(portfolio.unrealizedInvestPnL || 0, portfolio.baseCurrency)}
@@ -430,9 +426,7 @@ const AllocationTab: React.FC<AllocationTabProps> = ({
                   </ResponsiveTypography>
                 </Box>
                 <ResponsiveTypography variant="cardValue" sx={{ 
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: '#9c27b0'
+                  color: (portfolio.cashBalance || 0) >= 0 ? '#4caf50' : '#f44336'
                 }}>
                   {formatCurrency(portfolio.cashBalance, portfolio.baseCurrency)}
                 </ResponsiveTypography>

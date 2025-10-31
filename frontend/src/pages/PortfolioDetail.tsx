@@ -1232,12 +1232,21 @@ const PortfolioDetail: React.FC = () => {
               allowScrollButtonsMobile
               sx={{
                 minHeight: '40px',
-              width: { xs: 'calc(100% - 50px)', sm: 'auto' },
-              overflow: 'auto',
-              flex: 1,
+                width: { xs: 'calc(100% - 50px)', sm: 'auto' },
+                overflow: 'auto',
+                flex: 1,
+                // Add padding to scroller to prevent tabs from being hidden by scroll buttons
+                '& .MuiTabs-scroller': {
+                  paddingLeft: { xs: '0px', sm: '0px', md: '0px' },
+                  paddingRight: { xs: '0px', sm: '0px', md: '0px' },
+                },
                 '& .MuiTabs-flexContainer': {
                   justifyContent: 'center',
                   gap: { xs: 0.5, sm: 1 },
+                  // Add padding to prevent first tab from being hidden by left scroll button
+                  paddingLeft: { xs: '0px', sm: '40px', md: '40px' },
+                  paddingRight: { xs: '0px', sm: '40px', md: '40px' },
+                  minWidth: 'fit-content',
                 },
                 '& .MuiTab-root': {
                   minHeight: '40px',
@@ -1256,6 +1265,8 @@ const PortfolioDetail: React.FC = () => {
                 },
                 '& .MuiTabs-scrollButtons': {
                   display: { xs: 'flex', sm: 'flex' },
+                  width: { xs: '32px', sm: '40px', md: '40px' },
+                  zIndex: 1,
                   '&.Mui-disabled': {
                     opacity: 0.3,
                   },

@@ -31,11 +31,11 @@ const FloatingMenuButton: React.FC<FloatingMenuButtonProps> = ({
       onClick={onClick}
       sx={{
         position: 'fixed',
-        top: '30%',
+        top: '40%',
         left: 16,
         zIndex: theme.zIndex.speedDial,
-        width: 48,
-        height: 48,
+        width: 40,
+        height: 40,
          background: 'transparent',
          boxShadow: `0 4px 20px ${theme.palette.primary.light}40`,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

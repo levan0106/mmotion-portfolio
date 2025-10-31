@@ -78,7 +78,7 @@
 
 .portfolio-list__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -296,10 +296,10 @@
     align-self: flex-end;
   }
 
-  .portfolio-list__grid {
+  /* .portfolio-list__grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
-  }
+  } */
 }
 
 @media (max-width: 768px) {
