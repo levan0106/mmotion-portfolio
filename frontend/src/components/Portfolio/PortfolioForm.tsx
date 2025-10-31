@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Divider,
   Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -184,6 +185,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
             variant="contained"
             disabled={isLoading || (creationMode === 'copy' && !selectedPublicPortfolio)}
             forceTextOnly={true}
+            startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : undefined}
             mobileText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
             desktopText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
           >

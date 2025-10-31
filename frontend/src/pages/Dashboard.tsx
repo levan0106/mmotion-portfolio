@@ -44,8 +44,11 @@ import { useLastUpdateTime } from '../hooks/useSystemStatus';
 import { formatCurrency, formatPercentage, normalizeAmount } from '../utils/format';
 import PortfolioCardWithPermissions from '../components/Portfolio/PortfolioCardWithPermissions';
 import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
+import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
+import { apiService } from '../services/api';
+import { Portfolio, UpdatePortfolioDto } from '../types';
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -60,6 +63,10 @@ const Dashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPortfolio, setEditingPortfolio] = useState<Portfolio | null>(null);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -128,7 +135,35 @@ const Dashboard: React.FC = () => {
   };
 
   const handlePortfolioEdit = (portfolioId: string) => {
-    navigate(`/portfolios/${portfolioId}/edit`);
+    const portfolio = portfolios.find(p => p.portfolioId === portfolioId);
+    if (portfolio) {
+      setEditingPortfolio(portfolio);
+      setEditModalOpen(true);
+      setEditError(null);
+    }
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+    setEditingPortfolio(null);
+    setEditError(null);
+  };
+
+  const handleEditSubmit = async (data: UpdatePortfolioDto) => {
+    if (!editingPortfolio || !accountId) return;
+    
+    setIsSubmittingEdit(true);
+    setEditError(null);
+    
+    try {
+      await apiService.updatePortfolio(editingPortfolio.portfolioId, accountId, data);
+      await refetchPortfolios();
+      handleEditModalClose();
+    } catch (error: any) {
+      setEditError(error?.response?.data?.message || error?.message || t('portfolio.form.updateFailed'));
+    } finally {
+      setIsSubmittingEdit(false);
+    }
   };
 
   const handleCreatePortfolio = () => {
@@ -616,6 +651,25 @@ const Dashboard: React.FC = () => {
             }}
           />
         )}
+
+        {/* Portfolio Edit Modal */}
+        <PortfolioForm
+          open={editModalOpen}
+          onClose={handleEditModalClose}
+          onSubmit={handleEditSubmit}
+          initialData={editingPortfolio ? {
+            name: editingPortfolio.name,
+            baseCurrency: editingPortfolio.baseCurrency,
+            fundingSource: editingPortfolio.fundingSource || '',
+            accountId: editingPortfolio.accountId,
+            visibility: editingPortfolio.visibility,
+            description: editingPortfolio.description || '',
+            templateName: editingPortfolio.templateName || '',
+          } : undefined}
+          isEditing={true}
+          isLoading={isSubmittingEdit}
+          error={editError || undefined}
+        />
       </Box>
     </Fade>
   );
