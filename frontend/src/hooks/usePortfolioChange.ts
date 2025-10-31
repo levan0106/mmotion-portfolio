@@ -5,7 +5,6 @@
 import { useQuery } from 'react-query';
 import { useAccount } from '../contexts/AccountContext';
 import apiService from '../services/api';
-import { formatCurrency } from '@/utils/format';
 
 interface PortfolioChangeData {
   change: string;
