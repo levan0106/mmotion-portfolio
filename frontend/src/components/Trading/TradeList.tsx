@@ -48,7 +48,7 @@ import {
   ExpandLess as ExpandLessIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
-import { FIFOTooltip, ResponsiveButton } from '../Common';
+import { FIFOTooltip, ResponsiveButton, ActionButton } from '../Common';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { format, parseISO } from 'date-fns';
 import { TradeSide, TradeType, TradeSource } from '../../types';
@@ -106,6 +106,7 @@ export interface TradeListProps {
   currentPage?: number;
   totalPages?: number;
   isCompactMode?: boolean;
+  isReadOnly?: boolean;
 }
 
 /**
@@ -123,7 +124,9 @@ export const TradeList: React.FC<TradeListProps> = ({
   currentPage = 1,
   totalPages = 1,
   isCompactMode = false,
+  isReadOnly = false,
 }) => {
+  // isReadOnly is used by child components and handlers
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -1038,7 +1041,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                     <ResponsiveTypography variant="cardLabel" color="text.secondary">
                       {t('trading.noTradesMatchFilter')}
                     </ResponsiveTypography>
-                    <ResponsiveButton
+                    <ActionButton
                       variant="outlined"
                       icon={<AddIcon />}
                       onClick={onCreate}
@@ -1047,7 +1050,7 @@ export const TradeList: React.FC<TradeListProps> = ({
                       sx={{ mt: 1 }}
                     >
                       {t('trading.createFirstTrade')}
-                    </ResponsiveButton>
+                    </ActionButton>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -1260,6 +1263,7 @@ export const TradeList: React.FC<TradeListProps> = ({
         </MenuItem>
         <MenuItem 
           onClick={() => handleAction('edit')}
+          disabled={isReadOnly}
           sx={{ py: 1.5 }}
         >
           <ListItemIcon>
@@ -1269,6 +1273,7 @@ export const TradeList: React.FC<TradeListProps> = ({
         </MenuItem>
         <MenuItem 
           onClick={() => handleAction('delete')}
+          disabled={isReadOnly}
           sx={{ py: 1.5, color: 'error.main' }}
         >
           <ListItemIcon>
@@ -1282,7 +1287,7 @@ export const TradeList: React.FC<TradeListProps> = ({
 };
 
 // Wrapper component that uses the hook
-export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () => void; isCompactMode?: boolean }> = ({ portfolioId, onCreate, isCompactMode = false }) => {
+export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () => void; isCompactMode?: boolean; isReadOnly?: boolean }> = ({ portfolioId, onCreate, isCompactMode = false, isReadOnly = false }) => {
   const { t } = useTranslation();
   const [filters, setFilters] = useState({
     assetId: '',
@@ -1376,6 +1381,7 @@ export const TradeListContainer: React.FC<{ portfolioId: string; onCreate?: () =
         onFiltersChange={handleFiltersChange}
         filters={filters}
         isCompactMode={isCompactMode}
+        isReadOnly={isReadOnly}
       />
       
       {/* Edit Trade Modal */}

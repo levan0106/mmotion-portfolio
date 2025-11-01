@@ -24,7 +24,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -44,6 +43,7 @@ import {
 import { useAdminPortfolios } from '../hooks/useAdminPortfolios';
 import { PermissionGuard } from '../components/Common/PermissionGuard';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import { ResponsiveButton, ActionButton } from '../components/Common';
 import { formatCurrency } from '../utils/format';
 import { apiService } from '../services/api';
 
@@ -414,19 +414,25 @@ const AdminPortfolioListContent: React.FC = () => {
             </ResponsiveTypography>
           </DialogContent>
           <DialogActions>
-            <Button 
+            <ResponsiveButton 
               onClick={() => setDeleteDialogOpen(false)}
-              color="primary"
+              variant="outlined"
+              forceTextOnly={true}
+              mobileText={t('common.cancel')}
+              desktopText={t('common.cancel')}
             >
               {t('common.cancel')}
-            </Button>
-            <Button 
+            </ResponsiveButton>
+            <ActionButton 
               onClick={handleDeletePortfolio}
               color="error"
               variant="contained"
+              forceTextOnly={true}
+              mobileText={t('common.delete')}
+              desktopText={t('common.delete')}
             >
               {t('common.delete')}
-            </Button>
+            </ActionButton>
           </DialogActions>
         </Dialog>
       </Box>

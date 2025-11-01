@@ -19,8 +19,6 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  IconButton,
-  Tooltip,
   alpha,
   useTheme,
 } from '@mui/material';
@@ -50,7 +48,7 @@ import { assetService } from '../services/asset.service';
 import { globalAssetService } from '../services/global-asset.service';
 import { getAssetTypeColor } from '../config/chartColors';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
-import { ResponsiveButton } from '../components/Common';
+import { ResponsiveButton, ActionButton, ActionIconButton } from '../components/Common';
 
 // Memoized table row component for better performance
 const AssetTableRow = memo(({ 
@@ -230,41 +228,47 @@ const AssetTableRow = memo(({
       </TableCell>
       <TableCell sx={{ textAlign: 'center', maxWidth: { xs: '120px', sm: '140px' }, minWidth: '100px' }}>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-          <Tooltip title={t('assets.actions.editAsset')}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(asset);
-              }}
-              sx={{ 
-                color: 'info.main',
-                '&:hover': { 
-                  backgroundColor: alpha(theme.palette.info.main, 0.1) 
-                }
-              }}
-            >
-              <Edit />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t('assets.actions.deleteAsset')}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(asset);
-              }}
-              disabled={isLoadingDeleteInfo}
-              sx={{ 
-                color: 'error.main',
-                '&:hover': { 
-                  backgroundColor: alpha(theme.palette.error.main, 0.1) 
-                }
-              }}
-            >
-              {isLoadingDeleteInfo ? <CircularProgress size={16} /> : <Delete />}
-            </IconButton>
-          </Tooltip>
+          <ActionIconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(asset);
+            }}
+            tooltip={t('assets.actions.editAsset')}
+            readOnlyTooltip={t('common.readOnlyMode')}
+            sx={{ 
+              color: 'info.main',
+              '&:hover': { 
+                backgroundColor: alpha(theme.palette.info.main, 0.1) 
+              },
+              '&.Mui-disabled': {
+                opacity: 0.5,
+              }
+            }}
+          >
+            <Edit />
+          </ActionIconButton>
+          <ActionIconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(asset);
+            }}
+            disabled={isLoadingDeleteInfo}
+            tooltip={t('assets.actions.deleteAsset')}
+            readOnlyTooltip={t('common.readOnlyMode')}
+            sx={{ 
+              color: 'error.main',
+              '&:hover': { 
+                backgroundColor: alpha(theme.palette.error.main, 0.1) 
+              },
+              '&.Mui-disabled': {
+                opacity: 0.5,
+              }
+            }}
+          >
+            {isLoadingDeleteInfo ? <CircularProgress size={16} /> : <Delete />}
+          </ActionIconButton>
         </Box>
       </TableCell>
     </TableRow>
@@ -943,35 +947,29 @@ const Assets: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Tooltip title={t('assets.actions.quickCreateTooltip')}>
-                <span>
-                  <ResponsiveButton
-                    variant="outlined"
-                    icon={<Add />}
-                    onClick={handleBulkCreateClick}
-                    sx={{ 
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 500
-                    }}
-                  >
-                    {t('assets.actions.quickCreate')}
-                  </ResponsiveButton>
-                </span>
-              </Tooltip>
-              <Tooltip title={t('assets.actions.addAssetTooltip')}>
-                <span>
-                  <ResponsiveButton
-                    variant="contained"
-                    icon={<Add />}
-                    onClick={handleCreateAsset}
-                    mobileText={t('assets.actions.add')}
-                    desktopText={t('assets.actions.addAsset')}
-                  >
-                    {t('assets.actions.addAsset')}
-                  </ResponsiveButton>
-                </span>
-              </Tooltip>
+              <ActionButton
+                variant="outlined"
+                icon={<Add />}
+                onClick={handleBulkCreateClick}
+                readOnlyTooltip={t('assets.actions.quickCreateTooltip')}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500
+                }}
+              >
+                {t('assets.actions.quickCreate')}
+              </ActionButton>
+              <ActionButton
+                variant="contained"
+                icon={<Add />}
+                onClick={handleCreateAsset}
+                readOnlyTooltip={t('assets.actions.addAssetTooltip')}
+                mobileText={t('assets.actions.add')}
+                desktopText={t('assets.actions.addAsset')}
+              >
+                {t('assets.actions.addAsset')}
+              </ActionButton>
 
             </Box>
           </Box>

@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Box,
   Typography,
   Chip,
@@ -26,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import { Role, Permission } from '../../services/api.role';
 import { userRolesApi } from '../../services/api.userRoles';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface PermissionManagerProps {
   open: boolean;
@@ -192,22 +192,28 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                 {totalSelected} of {totalPermissions} permissions selected
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
+                <ResponsiveButton
                   size="small"
                   variant="outlined"
                   onClick={() => handleSelectAll(true)}
                   disabled={isLoading}
+                  forceTextOnly={true}
+                  mobileText="Select All"
+                  desktopText="Select All"
                 >
                   Select All
-                </Button>
-                <Button
+                </ResponsiveButton>
+                <ResponsiveButton
                   size="small"
                   variant="outlined"
                   onClick={() => handleSelectAll(false)}
                   disabled={isLoading}
+                  forceTextOnly={true}
+                  mobileText="Clear All"
+                  desktopText="Clear All"
                 >
                   Clear All
-                </Button>
+                </ResponsiveButton>
               </Box>
             </Box>
           </Box>
@@ -273,7 +279,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                             color={isAllSelected ? 'primary' : isPartiallySelected ? 'warning' : 'default'}
                             sx={{ height: 20, fontSize: '0.7rem' }}
                           />
-                          <Button
+                          <ResponsiveButton
                             size="small"
                             variant="text"
                             onClick={(e) => {
@@ -281,10 +287,13 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                               handleSelectAllInCategory(category.name, !isAllSelected);
                             }}
                             disabled={isLoading}
+                            forceTextOnly={true}
+                            mobileText={isAllSelected ? 'Clear' : 'Select All'}
+                            desktopText={isAllSelected ? 'Clear' : 'Select All'}
                             sx={{ minWidth: 'auto', px: 1 }}
                           >
                             {isAllSelected ? 'Clear' : 'Select All'}
-                          </Button>
+                          </ResponsiveButton>
                         </Box>
                       </Box>
                     </AccordionSummary>
@@ -352,18 +361,29 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2, pt: 1 }}>
-        <Button onClick={onClose} disabled={isLoading} size="small">
+        <ResponsiveButton 
+          onClick={onClose} 
+          disabled={isLoading} 
+          size="small"
+          variant="outlined"
+          forceTextOnly={true}
+          mobileText="Cancel"
+          desktopText="Cancel"
+        >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ActionButton
           onClick={handleSave}
           variant="contained"
           size="small"
           disabled={isLoading || selectedPermissions.length === 0}
-          startIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+          icon={isLoading ? <CircularProgress size={16} /> : undefined}
+          forceTextOnly={true}
+          mobileText={isLoading ? 'Saving...' : `Save (${selectedPermissions.length})`}
+          desktopText={isLoading ? 'Saving...' : `Save (${selectedPermissions.length})`}
         >
           {isLoading ? 'Saving...' : `Save (${selectedPermissions.length})`}
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );

@@ -56,6 +56,7 @@ import { LanguageSwitcher } from '../LanguageSwitcher';
 import DataDisplayToggle from '../Common/DataDisplayToggle';
 import FloatingTradingButton from '../Common/FloatingTradingButton';
 import FloatingMenuButton from '../Common/FloatingMenuButton';
+import { DemoAccountBanner } from '../Common/DemoAccountBanner';
 
 // Responsive drawer widths based on screen size
 const getDrawerWidth = (_theme: any, isCollapsed: boolean) => {
@@ -99,7 +100,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [drawerCollapsed, setDrawerCollapsed] = useState(isTablet);
-  const { currentAccount, currentUser, logout, loading: accountLoading } = useAccount();
+  const { currentAccount, currentUser, logout, loading: accountLoading, isDemoAccount } = useAccount();
   
   // Get portfolio ID from current path
   const portfolioId = getPortfolioIdFromPath();
@@ -1178,9 +1179,26 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       MAIN
                     </Box>
                   )}
+                  {/* {isDemoAccount && (
+                    <Chip
+                      label={t('accountSwitcher.demoAccount', 'Demo')}
+                      size="small"
+                      color="warning"
+                      sx={{
+                        height: 20,
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                      }}
+                    />
+                  )} */}
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                   {accountLoading ? '...' : `${t('common.account')}`}
+                  {isDemoAccount && (
+                    <Box component="span" sx={{ ml: 0.5, color: 'warning.main', fontWeight: 600 }}>
+                      • {t('common.readOnlyMode', 'Read-only')}
+                    </Box>
+                  )}
                 </Typography>
               </Box>
             </Box>
@@ -1282,6 +1300,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         }}
       >
         <Toolbar />
+        {/* Demo Account Banner - shows when using demo account */}
+        <DemoAccountBanner />
         <Box 
           data-scrollable-container="true"
           sx={{ 
@@ -1290,6 +1310,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             zIndex: 1,
             height: 'calc(100vh - 64px)',
             overflow: 'auto',
+            // Adjust height dynamically based on demo banner visibility
+            ...(isDemoAccount && !localStorage.getItem('demoAccountBannerDismissed') && {
+              height: 'calc(100vh - 64px - 100px)', // Subtract estimated banner height
+            }),
           }}>
           {children}
           {currentUser && <NotificationManager userId={currentUser.userId} />}

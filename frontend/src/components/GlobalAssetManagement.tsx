@@ -35,7 +35,7 @@ import GlobalAssetForm from './GlobalAssetForm';
 import GlobalAssetList from './GlobalAssetList';
 import GlobalAssetTrackingDashboard from './GlobalAssetTrackingDashboard';
 import GlobalAssetPriceManagementModal from './GlobalAssetManagement/GlobalAssetPriceManagementModal';
-import { ResponsiveButton } from './Common';
+import { ResponsiveButton, ActionButton } from './Common';
 
 // Import hooks
 import { useDeleteGlobalAsset } from '../hooks/useGlobalAssets';
@@ -356,7 +356,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
               >
                 Refresh
               </ResponsiveButton>
-              <ResponsiveButton
+              <ActionButton
                 variant="outlined"
                 icon={isUpdatingAllPrices ? <CircularProgress size={20} color="inherit" /> : <SyncIcon />}
                 onClick={handleUpdateAllPrices}
@@ -378,8 +378,8 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 }}
               >
                 {isUpdatingAllPrices ? 'Updating...' : 'Update All Prices'}
-              </ResponsiveButton>
-              <ResponsiveButton
+              </ActionButton>
+              <ActionButton
                 variant="contained"
                 icon={<AddIcon />}
                 onClick={handleCreateAsset}
@@ -402,7 +402,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
                 }}
               >
                 Add Asset
-              </ResponsiveButton>
+              </ActionButton>
             </Box>
           </Box>
         </CardContent>
@@ -713,7 +713,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
           >
             Cancel
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleConfirmDelete}
             variant="contained"
             color="error"
@@ -730,7 +730,7 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
             }}
           >
             {deleteLoading ? 'Deleting...' : 'Delete Asset'}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       </Dialog>
 

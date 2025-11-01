@@ -36,6 +36,7 @@ export interface Account extends BaseEntity {
   baseCurrency: string;
   isInvestor?: boolean;
   isMainAccount?: boolean;
+  isDemoAccount?: boolean;
 }
 
 // Asset types

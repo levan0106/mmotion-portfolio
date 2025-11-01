@@ -18,7 +18,7 @@ import {
   Phone as PhoneIcon
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface ContactAdminModalProps {
   open: boolean;
@@ -136,14 +136,17 @@ export const ContactAdminModal: React.FC<ContactAdminModalProps> = ({
           <ResponsiveButton onClick={handleClose}>
             {t('forgetPassword.contactAdmin.modal.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             variant="contained"
             onClick={handleSubmit}
             disabled={loading || !message.trim()}
-            startIcon={loading ? <CircularProgress size={20} /> : <EmailIcon />}
+            icon={loading ? <CircularProgress size={20} /> : <EmailIcon />}
+            forceTextOnly={true}
+            mobileText={loading ? t('forgetPassword.contactAdmin.modal.sending') : t('forgetPassword.contactAdmin.modal.send')}
+            desktopText={loading ? t('forgetPassword.contactAdmin.modal.sending') : t('forgetPassword.contactAdmin.modal.send')}
           >
             {loading ? t('forgetPassword.contactAdmin.modal.sending') : t('forgetPassword.contactAdmin.modal.send')}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       )}
     </Dialog>

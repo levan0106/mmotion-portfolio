@@ -14,10 +14,10 @@ import {
   Divider,
   Paper,
   Slider,
-  Button,
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ModalWrapper } from '../Common/ModalWrapper';
+import { ResponsiveButton, ActionButton } from '../Common';
 import {
   MoreVert as MoreVertIcon,
   TrendingUp as TrendingUpIcon,
@@ -635,24 +635,30 @@ export const GoalCard: React.FC<GoalCardProps> = ({
         </Box>
 
         <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <Button
+          <ResponsiveButton
             variant="outlined"
             onClick={handleDeleteCancel}
             disabled={isDeleting}
+            forceTextOnly={true}
+            mobileText={t('common.cancel', 'Hủy')}
+            desktopText={t('common.cancel', 'Hủy')}
             sx={{ minWidth: 100 }}
           >
             {t('common.cancel', 'Hủy')}
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ActionButton
             variant="contained"
             color="error"
             onClick={handleDeleteConfirm}
             disabled={isDeleting}
-            startIcon={isDeleting ? undefined : <DeleteIcon />}
+            icon={isDeleting ? undefined : <DeleteIcon />}
+            forceTextOnly={true}
+            mobileText={isDeleting ? t('common.deleting', 'Đang xóa...') : t('goals.delete', 'Xóa')}
+            desktopText={isDeleting ? t('common.deleting', 'Đang xóa...') : t('goals.delete', 'Xóa')}
             sx={{ minWidth: 120 }}
           >
             {isDeleting ? t('common.deleting', 'Đang xóa...') : t('goals.delete', 'Xóa')}
-          </Button>
+          </ActionButton>
         </Stack>
       </ModalWrapper>
     </Card>

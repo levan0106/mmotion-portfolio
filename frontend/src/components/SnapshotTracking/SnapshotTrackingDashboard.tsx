@@ -17,7 +17,6 @@ import {
   Tooltip,
   Alert,
   CircularProgress,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -51,6 +50,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { SnapshotTrackingApiService, SnapshotTrackingRecord } from '../../services/api.snapshot-tracking';
 import { format } from 'date-fns';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -432,30 +432,36 @@ const SnapshotTrackingDashboard: React.FC = () => {
             }
             label="Group by Parent Execution"
           />
-          <Button
+          <ResponsiveButton
             variant="outlined"
-            startIcon={<FilterListIcon />}
+            icon={<FilterListIcon />}
             onClick={() => setFilterDialogOpen(true)}
+            mobileText="Filters"
+            desktopText="Filters"
             sx={{ mr: 1 }}
           >
             Filters
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ResponsiveButton
             variant="outlined"
-            startIcon={<RefreshIcon />}
+            icon={<RefreshIcon />}
             onClick={handleRefresh}
+            mobileText="Refresh"
+            desktopText="Refresh"
             sx={{ mr: 1 }}
           >
             Refresh
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ActionButton
             variant="outlined"
             color="warning"
             onClick={handleCleanup}
             disabled={cleanupMutation.isLoading}
+            mobileText="Cleanup"
+            desktopText="Cleanup Old Records"
           >
             Cleanup Old Records
-          </Button>
+          </ActionButton>
         </Box>
       </Box>
 
@@ -1174,8 +1180,24 @@ const SnapshotTrackingDashboard: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setFilterDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleApplyFilters} variant="contained">Apply Filters</Button>
+          <ResponsiveButton 
+            onClick={() => setFilterDialogOpen(false)}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton 
+            onClick={handleApplyFilters} 
+            variant="contained"
+            forceTextOnly={true}
+            mobileText="Apply"
+            desktopText="Apply Filters"
+          >
+            Apply Filters
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -1279,7 +1301,15 @@ const SnapshotTrackingDashboard: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDetail}>Close</Button>
+          <ResponsiveButton 
+            onClick={handleCloseDetail}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Close"
+            desktopText="Close"
+          >
+            Close
+          </ResponsiveButton>
         </DialogActions>
       </Dialog>
 
@@ -1324,15 +1354,27 @@ const SnapshotTrackingDashboard: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelCleanup}>Cancel</Button>
-          <Button 
+          <ResponsiveButton 
+            onClick={handleCancelCleanup}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ActionButton 
             onClick={handleConfirmCleanup} 
             variant="contained" 
             color={(cleanupDays === 0 || cleanupDays === '0') ? "error" : "warning"}
             disabled={cleanupMutation.isLoading}
+            icon={cleanupMutation.isLoading ? undefined : undefined}
+            forceTextOnly={true}
+            mobileText={cleanupMutation.isLoading ? 'Cleaning...' : (cleanupDays === 0 || cleanupDays === '0') ? 'Delete ALL' : 'Clean Up'}
+            desktopText={cleanupMutation.isLoading ? 'Cleaning...' : (cleanupDays === 0 || cleanupDays === '0') ? 'Delete ALL Records' : 'Clean Up'}
           >
             {cleanupMutation.isLoading ? 'Cleaning...' : (cleanupDays === 0 || cleanupDays === '0') ? 'Delete ALL Records' : 'Clean Up'}
-          </Button>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

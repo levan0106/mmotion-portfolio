@@ -14,7 +14,7 @@ import {
   SwapHoriz as TransferIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ResponsiveButton, ActionButton } from '../Common';
 import MoneyInput from '../Common/MoneyInput';
 import FundingSourceInput from '../Common/FundingSourceInput';
 import { formatCurrency } from '../../utils/format';
@@ -297,7 +297,7 @@ const TransferCashForm: React.FC<TransferCashFormProps> = ({
               {t('common.cancel')}
             </ResponsiveButton>
           )}
-          <ResponsiveButton
+          <ActionButton
             onClick={handleFormSubmit}
             variant="contained"
             color="secondary"
@@ -307,7 +307,7 @@ const TransferCashForm: React.FC<TransferCashFormProps> = ({
             disabled={isLoading || !isFormValid()}
           >
             {isLoading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       )}
     </Box>

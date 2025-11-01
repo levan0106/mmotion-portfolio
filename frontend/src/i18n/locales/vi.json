@@ -48,6 +48,7 @@
     "new": "Mới",
     "noData": "Không có dữ liệu",
     "actions": "",
+    "readOnlyMode": "Chế độ chỉ đọc",
     "moreActions": "Thêm hành động",
     "retry": "Thử lại",
     "na": "N/A",
@@ -213,7 +214,7 @@
     "fundManagement": {
       "title": "Quản lý quỹ",
       "portfolios": "Danh mục",
-      "assets": "Tài sản đầu tư",
+      "assets": "Sản phẩm",
       "deposits": "Tiền gửi",
       "reports": "Báo cáo"
     },
@@ -2135,6 +2136,15 @@
     "loadingAccounts": "Đang tải tài khoản...",
     "noAccounts": "Không có tài khoản nào",
     "mainAccount": "Tài khoản chính",
+    "demoAccount": "Tài khoản Demo",
+    "demoAccountBanner": {
+      "title": "Bạn đang sử dụng tài khoản Demo",
+      "demoMode": "Chế độ Demo",
+      "message": "Tài khoản Demo chỉ cho phép xem dữ liệu (read-only). Để có đầy đủ quyền chỉnh sửa và quản lý, vui lòng chuyển sang tài khoản chính của bạn.",
+      "switchToMainAccount": "Chuyển sang tài khoản chính",
+      "switchToAccount": "Chuyển tài khoản",
+      "noOtherAccounts": "Lưu ý: Bạn chưa có tài khoản chính. Vui lòng liên hệ quản trị viên để tạo tài khoản."
+    },
     "investor": "Nhà đầu tư",
     "protectedAccount": "Tài khoản được bảo vệ",
     "updateAccountInfo": "Cập nhật thông tin tài khoản",

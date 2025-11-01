@@ -10,7 +10,7 @@ import {
 import { ContentCopy } from '@mui/icons-material';
 import { apiService } from '../../services/api';
 import { Portfolio } from '../../types';
-import { ResponsiveButton, ModalWrapper } from '../Common';
+import { ResponsiveButton, ActionButton, ModalWrapper } from '../Common';
 
 interface CopyPortfolioModalProps {
   open: boolean;
@@ -101,20 +101,21 @@ export const CopyPortfolioModal: React.FC<CopyPortfolioModalProps> = ({
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleCopy}
             variant="contained"
             disabled={loading || !newPortfolioName.trim()}
             icon={loading ? <CircularProgress size={16} /> : <ContentCopy />}
             mobileText={loading ? t('portfolio.copy.copying') : t('portfolio.copy.copy')}
             desktopText={loading ? t('portfolio.copy.copying') : t('portfolio.copy.copyPortfolio')}
+            forceTextOnly={true}
             sx={{
               borderRadius: 1,
               px: 3,
             }}
           >
             {loading ? t('portfolio.copy.copying') : t('portfolio.copy.copyPortfolio')}
-          </ResponsiveButton>
+          </ActionButton>
         </>
       }
     >

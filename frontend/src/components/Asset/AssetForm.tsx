@@ -22,7 +22,7 @@ import {
   Divider,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { ResponsiveButton, ResponsiveTypography, MoneyInput } from '../Common';
+import { ResponsiveButton, ResponsiveTypography, MoneyInput, ActionButton } from '../Common';
 import { CreateAssetRequest, Asset, AssetType, PriceMode, AssetTypeLabels, PriceModeLabels } from '../../types/asset.types';
 import { useAssetTypes } from '../../hooks/useAssetTypes';
 import { useAccount } from '../../contexts/AccountContext';
@@ -541,7 +541,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
               {t('common.cancel')}
             </ResponsiveButton>
           )}
-          <ResponsiveButton
+          <ActionButton
             type="submit"
             variant="contained"
             size="large"
@@ -552,7 +552,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({
             desktopText={_loading ? t('common.processing') : submitText}
           >
             {_loading ? t('common.processing') : submitText}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       </Box>
   );

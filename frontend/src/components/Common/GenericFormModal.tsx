@@ -31,6 +31,7 @@ import {
 import { ModalWrapper } from './ModalWrapper';
 import { ResponsiveTypography } from './ResponsiveTypography';
 import { ResponsiveButton } from './ResponsiveButton';
+import { ActionButton } from './ActionButton';
 import DepositForm from '../Deposit/DepositForm';
 import { TradeForm } from '../Trading/TradeForm';
 import CashFlowForm from '../CashFlow/CashFlowForm';
@@ -545,13 +546,13 @@ const GenericFormModal: React.FC<GenericFormModalProps> = ({
             >
               {t('common.cancel', 'Hủy')}
             </ResponsiveButton>
-            <ResponsiveButton 
+            <ActionButton 
               variant="contained"
               onClick={handleFormSubmit}
               disabled={loading}
             >
               {loading ? t('common.processing', 'Đang xử lý...') : t('genericForm.create', 'Tạo')}
-            </ResponsiveButton>
+            </ActionButton>
           </>
         ) : (
           <ResponsiveButton onClick={onClose}>

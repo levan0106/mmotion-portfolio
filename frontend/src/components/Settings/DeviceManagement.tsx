@@ -23,7 +23,7 @@ import {
   Tooltip
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ResponsiveButton, ActionButton } from '../Common';
 import {
   Security as SecurityIcon,
   Delete as DeleteIcon,
@@ -278,14 +278,16 @@ export const DeviceManagement: React.FC = () => {
           {/* Actions */}
           {devices.length > 0 && (
             <Box mt={3} display="flex" gap={2}>
-                    <ResponsiveButton
+                    <ActionButton
                       variant="outlined"
                       color="error"
-                      startIcon={<DeleteSweepIcon />}
+                      icon={<DeleteSweepIcon />}
                       onClick={() => setRevokeAllDialogOpen(true)}
+                      mobileText={t('deviceManagement.device.revokeAll')}
+                      desktopText={t('deviceManagement.device.revokeAll')}
                     >
                       {t('deviceManagement.device.revokeAll')}
-                    </ResponsiveButton>
+                    </ActionButton>
                     <ResponsiveButton
                       variant="outlined"
                       onClick={loadData}
@@ -309,14 +311,18 @@ export const DeviceManagement: React.FC = () => {
                 <ResponsiveButton onClick={() => setRevokeDialogOpen(false)}>
                   {t('deviceManagement.dialogs.revokeDevice.cancel')}
                 </ResponsiveButton>
-                <ResponsiveButton
+                <ActionButton
                   variant="contained"
                   color="error"
                   onClick={() => handleRevokeDevice(selectedDeviceId || '')}
                   disabled={revokingDeviceId !== null}
+                  icon={revokingDeviceId ? undefined : undefined}
+                  forceTextOnly={true}
+                  mobileText={t('deviceManagement.dialogs.revokeDevice.confirm')}
+                  desktopText={t('deviceManagement.dialogs.revokeDevice.confirm')}
                 >
                   {t('deviceManagement.dialogs.revokeDevice.confirm')}
-                </ResponsiveButton>
+                </ActionButton>
         </DialogActions>
       </Dialog>
 
@@ -337,14 +343,18 @@ export const DeviceManagement: React.FC = () => {
                 <ResponsiveButton onClick={() => setRevokeAllDialogOpen(false)}>
                   {t('deviceManagement.dialogs.revokeAll.cancel')}
                 </ResponsiveButton>
-                <ResponsiveButton
+                <ActionButton
                   variant="contained"
                   color="error"
                   onClick={handleRevokeAllDevices}
                   disabled={revokingDeviceId !== null}
+                  icon={revokingDeviceId === 'all' ? undefined : undefined}
+                  forceTextOnly={true}
+                  mobileText={revokingDeviceId === 'all' ? t('deviceManagement.dialogs.revokeAll.revoking') : t('deviceManagement.dialogs.revokeAll.confirm')}
+                  desktopText={revokingDeviceId === 'all' ? t('deviceManagement.dialogs.revokeAll.revoking') : t('deviceManagement.dialogs.revokeAll.confirm')}
                 >
                   {revokingDeviceId === 'all' ? t('deviceManagement.dialogs.revokeAll.revoking') : t('deviceManagement.dialogs.revokeAll.confirm')}
-                </ResponsiveButton>
+                </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

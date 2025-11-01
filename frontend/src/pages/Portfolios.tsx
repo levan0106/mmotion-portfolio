@@ -30,6 +30,8 @@ import { useAccount } from '../contexts/AccountContext';
 import { scrollToTop } from '../components/Common/ScrollToTop';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { apiService } from '../services/api';
+import { usePermissions } from '@/hooks/usePermissions';
+import { UserRole } from '@/services/api.userRoles';
 
 const Portfolios: React.FC = () => {
   const { t } = useTranslation();
@@ -43,7 +45,10 @@ const Portfolios: React.FC = () => {
   const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
 
-  const { accountId } = useAccount();
+  const { accountId, isReadOnly } = useAccount();
+  const { userRoles } = usePermissions();
+  const hasWritePermission = userRoles.some((role: UserRole) => role.roleName === 'super_admin');
+  const accountReadOnly = isReadOnly && !hasWritePermission;
 
   const {
     portfolios,
@@ -312,6 +317,7 @@ const Portfolios: React.FC = () => {
             onCreatePortfolio={handleCreatePortfolio}
             onManagePermissions={handleManagePermissions}
             onRefresh={handleRefreshData}
+            isReadOnly={accountReadOnly}
           />
         </Box>
       )}

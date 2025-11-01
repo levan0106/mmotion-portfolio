@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   Alert,
@@ -14,6 +13,7 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import { User } from '../../services/api.user';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface DeleteUserDialogProps {
   open: boolean;
@@ -93,18 +93,28 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} disabled={isLoading}>
+        <ResponsiveButton 
+          onClick={onClose} 
+          disabled={isLoading}
+          variant="outlined"
+          forceTextOnly={true}
+          mobileText="Cancel"
+          desktopText="Cancel"
+        >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ActionButton
           onClick={handleConfirm}
           variant="contained"
           color="error"
           disabled={isLoading}
-          startIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+          icon={isLoading ? <CircularProgress size={16} /> : undefined}
+          forceTextOnly={true}
+          mobileText={isLoading ? 'Deleting...' : 'Delete'}
+          desktopText={isLoading ? 'Deleting...' : 'Delete User'}
         >
           {isLoading ? 'Deleting...' : 'Delete User'}
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );

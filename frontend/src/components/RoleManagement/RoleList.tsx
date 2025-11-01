@@ -20,7 +20,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Alert,
   CircularProgress,
 } from '@mui/material';
@@ -34,6 +33,7 @@ import {
 } from '@mui/icons-material';
 // import { useRoles } from '../../hooks/useRoles'; // Removed - using props instead
 import { Role } from '../../services/api.role';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface RoleListProps {
   onEditRole?: (role: Role) => void;
@@ -295,15 +295,27 @@ export const RoleList: React.FC<RoleListProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteCancel}>Cancel</Button>
-          <Button
+          <ResponsiveButton 
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ActionButton
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
             disabled={isDeleting}
+            icon={isDeleting ? <CircularProgress size={20} /> : undefined}
+            forceTextOnly={true}
+            mobileText={isDeleting ? 'Deleting...' : 'Delete'}
+            desktopText={isDeleting ? 'Deleting...' : 'Delete'}
           >
             {isDeleting ? <CircularProgress size={20} /> : 'Delete'}
-          </Button>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

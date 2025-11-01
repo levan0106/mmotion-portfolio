@@ -68,7 +68,7 @@ import { scrollToTop } from '../components/Common/ScrollToTop';
 import { CreateTradeDto } from '../types';
 import { BulkRecalculateResponse } from '../types/snapshot.types';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
-import { ResponsiveButton } from '../components/Common';
+import { ResponsiveButton, ActionIconButton } from '../components/Common';
 import PermissionBadge from '../components/Common/PermissionBadge';
 import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
 import { RecalculateConfirmModal } from '../components/Snapshot/RecalculateConfirmModal';
@@ -557,62 +557,58 @@ const PortfolioDetail: React.FC = () => {
                   <ArrowBackIcon />
                 </IconButton>
               </Tooltip>
-            <Tooltip title={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}>
-              <span>
-                <IconButton
-                  onClick={handleRefreshAll}
-                  disabled={isRefreshingAll}
-                  color="primary"
-                  size="medium"
-                  sx={{
-                    borderRadius: 2,
-                    width: 40,
-                    height: 40,
-                    flexShrink: 0,
-                    border: '1px solid',
-                    borderColor: 'primary.main',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                      backgroundColor: 'primary.light',
-                      color: 'primary.contrastText',
-                    },
-                    '&:disabled': {
-                      opacity: 0.7,
-                      cursor: 'not-allowed',
-                    }
-                  }}
-                >
-                  {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
-                </IconButton>
-              </span>
-            </Tooltip>
+            <ActionIconButton
+              onClick={handleRefreshAll}
+              disabled={isRefreshingAll}
+              color="primary"
+              size="medium"
+              tooltip={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}
+              sx={{
+                borderRadius: 2,
+                width: 40,
+                height: 40,
+                flexShrink: 0,
+                border: '1px solid',
+                borderColor: 'primary.main',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  backgroundColor: 'primary.light',
+                  color: 'primary.contrastText',
+                },
+                '&:disabled': {
+                  opacity: 0.7,
+                  cursor: 'not-allowed',
+                }
+              }}
+            >
+              {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
+            </ActionIconButton>
             {/* More Actions Menu */}
-            <Tooltip title={t('common.moreActions')}>
-              <IconButton
-                onClick={handleMoreActionsOpen}
-                color="primary"
-                size="medium"
-                sx={{
-                  borderRadius: 2,
-                  width: 40,
-                  height: 40,
-                  flexShrink: 0,
-                  border: '1px solid',
-                  borderColor: 'primary.main',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    backgroundColor: 'primary.light',
-                    color: 'primary.contrastText',
-                  },
-                }}
-              >
-                {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
-              </IconButton>
-            </Tooltip>
+            <ActionIconButton
+              onClick={handleMoreActionsOpen}
+              color="primary"
+              size="medium"
+              tooltip={t('common.moreActions')}
+              sx={{
+                borderRadius: 2,
+                width: 40,
+                height: 40,
+                flexShrink: 0,
+                border: '1px solid',
+                borderColor: 'primary.main',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  backgroundColor: 'primary.light',
+                  color: 'primary.contrastText',
+                },
+              }}
+            >
+              {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
+            </ActionIconButton>
             </Box>
           </Box>
           <Box 
@@ -651,62 +647,58 @@ const PortfolioDetail: React.FC = () => {
                 <ArrowBackIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}>
-              <span>
-                <IconButton
-                  onClick={handleRefreshAll}
-                  disabled={isRefreshingAll}
-                  color="primary"
-                  size="medium"
-                  sx={{
-                    borderRadius: 2,
-                    width: 40,
-                    height: 40,
-                    flexShrink: 0,
-                    border: '1px solid',
-                    borderColor: 'primary.main',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                      backgroundColor: 'primary.light',
-                      color: 'primary.contrastText',
-                    },
-                    '&:disabled': {
-                      opacity: 0.7,
-                      cursor: 'not-allowed',
-                    }
-                  }}
-                >
-                  {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
-                </IconButton>
-              </span>
-            </Tooltip>
+            <ActionIconButton
+              onClick={handleRefreshAll}
+              disabled={isRefreshingAll}
+              color="primary"
+              size="medium"
+              tooltip={isRefreshingAll ? t('portfolio.calculatingPerformance') : t('portfolio.refreshAllData')}
+              sx={{
+                borderRadius: 2,
+                width: 40,
+                height: 40,
+                flexShrink: 0,
+                border: '1px solid',
+                borderColor: 'primary.main',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  backgroundColor: 'primary.light',
+                  color: 'primary.contrastText',
+                },
+                '&:disabled': {
+                  opacity: 0.7,
+                  cursor: 'not-allowed',
+                }
+              }}
+            >
+              {isRefreshingAll ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
+            </ActionIconButton>
             {/* More Actions Menu */}
-            <Tooltip title={t('common.moreActions')}>
-              <IconButton
-                onClick={handleMoreActionsOpen}
-                color="primary"
-                size="medium"
-                sx={{
-                  borderRadius: 2,
-                  width: 40,
-                  height: 40,
-                  flexShrink: 0,
-                  border: '1px solid',
-                  borderColor: 'primary.main',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    backgroundColor: 'primary.light',
-                    color: 'primary.contrastText',
-                  },
-                }}
-              >
-                {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
-              </IconButton>
-            </Tooltip>
+            <ActionIconButton
+              onClick={handleMoreActionsOpen}
+              color="primary"
+              size="medium"
+              tooltip={t('common.moreActions')}
+              sx={{
+                borderRadius: 2,
+                width: 40,
+                height: 40,
+                flexShrink: 0,
+                border: '1px solid',
+                borderColor: 'primary.main',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  backgroundColor: 'primary.light',
+                  color: 'primary.contrastText',
+                },
+              }}
+            >
+              {isRecalculatingSnapshots ? <CircularProgress size={20} /> : <MoreVertIcon />}
+            </ActionIconButton>
           </Box>
         </Box>
       </Box>

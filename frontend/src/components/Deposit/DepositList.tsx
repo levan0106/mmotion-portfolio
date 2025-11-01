@@ -24,7 +24,7 @@ import {
   Avatar,
   Stack,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ResponsiveTypography } from '../Common';
 import {
   MoreVert as MoreVertIcon,
@@ -273,7 +273,7 @@ const DepositList: React.FC<DepositListProps> = ({
                   <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
                     {/* Settle Button */}
                     {deposit.canBeSettled && onSettle && (
-                      <ResponsiveButton
+                      <ActionButton
                         size="small"
                         variant="contained"
                         color="success"
@@ -304,7 +304,7 @@ const DepositList: React.FC<DepositListProps> = ({
                         }}
                       >
                         {t('deposit.settle')}
-                      </ResponsiveButton>
+                      </ActionButton>
                     )}
                     
                     {/* More Actions Menu - Always on the right */}
@@ -472,7 +472,7 @@ const DepositList: React.FC<DepositListProps> = ({
           >
             {t('deposit.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleDeleteConfirm}
             variant="contained"
             color="error"
@@ -480,9 +480,10 @@ const DepositList: React.FC<DepositListProps> = ({
             icon={<DeleteIcon />}
             mobileText={t('deposit.deletePermanently')}
             desktopText={t('deposit.deletePermanently')}
+            forceTextOnly={true}
           >
             {t('deposit.deletePermanently')}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </TableContainer>

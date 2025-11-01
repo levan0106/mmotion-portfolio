@@ -16,7 +16,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { ResponsiveButton, ResponsiveTypography } from '../components/Common';
+import { ResponsiveButton, ActionButton, ResponsiveTypography } from '../components/Common';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
@@ -488,7 +488,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
           {/* Action Buttons */}
           {isEditing && (
             <Box sx={{ display: 'flex', gap: 2, my: 1 }}>
-              <ResponsiveButton
+              <ActionButton
                 variant="contained"
                 onClick={handleSave}
                 disabled={saving}
@@ -498,7 +498,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                 forceTextOnly={true}
               >
                 {saving ? t('profile.saving') : t('profile.saveChanges')}
-              </ResponsiveButton>
+              </ActionButton>
               <ResponsiveButton
                 variant="outlined"
                 onClick={handleCancel}
@@ -570,7 +570,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                       sx={{ mb: 2 }}
                     />
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <ResponsiveButton
+                      <ActionButton
                         variant="contained"
                         type="submit"
                         disabled={saving || !passwordData.password}
@@ -580,7 +580,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                         forceTextOnly={true}
                       >
                         {saving ? t('profile.setting') : t('profile.setPassword')}
-                      </ResponsiveButton>
+                      </ActionButton>
                       <ResponsiveButton
                         icon={<CancelIcon />}
                         variant="outlined"
@@ -673,7 +673,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                       sx={{ mb: 2 }}
                     />
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <ResponsiveButton
+                      <ActionButton
                         variant="contained"
                         type="submit"
                         disabled={saving || !changePasswordData.currentPassword || !changePasswordData.newPassword}
@@ -683,7 +683,7 @@ export const Profile: React.FC<ProfileProps> = ({ embedded = false, maxWidth = '
                         forceTextOnly={true}
                       >
                         {saving ? t('profile.changing') : t('profile.changePassword')}
-                      </ResponsiveButton>
+                      </ActionButton>
                       <ResponsiveButton
                         variant="outlined"
                         type="button"

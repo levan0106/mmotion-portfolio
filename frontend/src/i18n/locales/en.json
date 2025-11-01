@@ -47,6 +47,7 @@
     "new": "New",
     "noData": "No data",
     "actions": "Actions",
+    "readOnlyMode": "Read-only mode - Demo Account",
     "retry": "Retry",
     "na": "N/A",
     "selectAll": "Select All",
@@ -2051,6 +2052,15 @@
     "loadingAccounts": "Loading accounts...",
     "noAccounts": "No accounts available",
     "mainAccount": "Main Account",
+    "demoAccount": "Demo Account",
+    "demoAccountBanner": {
+      "title": "You are using a Demo Account",
+      "demoMode": "Demo Mode",
+      "message": "Demo Account allows read-only access. To get full editing and management permissions, please switch to your main account.",
+      "switchToMainAccount": "Switch to Main Account",
+      "switchToAccount": "Switch Account",
+      "noOtherAccounts": "Note: You don't have a main account yet. Please contact an administrator to create one."
+    },
     "investor": "Investor",
     "protectedAccount": "Protected Account",
     "updateAccountInfo": "Update account information",

@@ -474,8 +474,8 @@ export class PortfolioService {
   }
 
   /**
-   * Get all portfolios accessible by an account (owned + shared with permissions).
-   * This includes portfolios owned by the account and portfolios shared with the account.
+   * Get all portfolios accessible by an account (owned + shared with permissions + demo account portfolios).
+   * This includes portfolios owned by the account, portfolios shared with the account, and demo account portfolios (accessible by all users).
    * @param accountId - Account ID
    * @returns Promise<Portfolio[]>
    */
@@ -511,6 +511,23 @@ export class PortfolioService {
       'shared-portfolios'
     );
     
+    // Get demo account portfolios (accessible by all users)
+    const demoAccount = await this.accountRepository.findOne({
+      where: { isDemoAccount: true },
+    });
+    
+    let demoPortfoliosWithRealTime: any[] = [];
+    if (demoAccount && demoAccount.accountId !== accountId) {
+      // Only include demo portfolios if current account is not the demo account itself
+      // (to avoid duplication if user switches to demo account)
+      const demoPortfoliosRaw = await this.portfolioRepository.findByAccountId(demoAccount.accountId);
+      demoPortfoliosWithRealTime = await this.getPortfoliosWithRealTimeCalculation(
+        accountId,
+        demoPortfoliosRaw,
+        'demo-portfolios'
+      );
+    }
+    
     // Combine and deduplicate portfolios
     const allPortfolios = [...ownedPortfoliosWithRealTime];
     const ownedPortfolioIds = new Set(ownedPortfoliosWithRealTime.map(p => p.portfolioId));
@@ -518,6 +535,13 @@ export class PortfolioService {
     for (const sharedPortfolio of sharedPortfoliosWithRealTime) {
       if (!ownedPortfolioIds.has(sharedPortfolio.portfolioId)) {
         allPortfolios.push(sharedPortfolio as any);
+      }
+    }
+
+    // Add demo portfolios (accessible by all users)
+    for (const demoPortfolio of demoPortfoliosWithRealTime) {
+      if (!ownedPortfolioIds.has(demoPortfolio.portfolioId)) {
+        allPortfolios.push(demoPortfolio as any);
       }
     }
 

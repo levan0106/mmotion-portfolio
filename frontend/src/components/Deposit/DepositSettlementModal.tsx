@@ -9,7 +9,7 @@ import {
   CardContent,
   Divider,
 } from '@mui/material';
-import { ResponsiveTypography, ResponsiveButton, ModalWrapper } from '../Common';
+import { ResponsiveTypography, ResponsiveButton, ActionButton, ModalWrapper } from '../Common';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -140,19 +140,25 @@ const DepositSettlementModal: React.FC<DepositSettlementModalProps> = ({
         disabled={isSubmitting}
         variant="outlined"
         size="medium"
+        forceTextOnly={true}
+        mobileText={t('common.cancel')}
+        desktopText={t('common.cancel')}
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton 
+      <ActionButton 
         onClick={handleSubmit(handleFormSubmit)}
         variant="contained" 
         color="success"
         disabled={isSubmitting || (actualInterest || 0) < 0}
         size="medium"
-        startIcon={isSubmitting ? undefined : <CheckIcon />}
+        icon={isSubmitting ? undefined : <CheckIcon />}
+        forceTextOnly={true}
+        mobileText={isSubmitting ? t('deposit.settlement.processing') : t('deposit.settlement.confirmSettlement')}
+        desktopText={isSubmitting ? t('deposit.settlement.processing') : t('deposit.settlement.confirmSettlement')}
       >
         {isSubmitting ? t('deposit.settlement.processing') : t('deposit.settlement.confirmSettlement')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

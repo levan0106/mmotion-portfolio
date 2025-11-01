@@ -7,7 +7,7 @@ import {
   SwapHoriz as TransferIcon,
 } from '@mui/icons-material';
 import { ModalWrapper } from '../Common/ModalWrapper';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ResponsiveButton, ActionButton } from '../Common';
 import TransferCashForm, { TransferCashData } from './TransferCashForm';
 
 interface TransferCashModalProps {
@@ -73,17 +73,18 @@ const TransferCashModal: React.FC<TransferCashModalProps> = ({
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleSubmit}
             variant="contained"
             color="secondary"
-            icon={<TransferIcon />}
+            icon={loading ? undefined : <TransferIcon />}
             mobileText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transfer')}
             desktopText={loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
             disabled={loading || !isFormValid()}
+            forceTextOnly={true}
           >
             {loading ? t('cashflow.transfer.transferring') : t('cashflow.transfer.transferCash')}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       }
     >

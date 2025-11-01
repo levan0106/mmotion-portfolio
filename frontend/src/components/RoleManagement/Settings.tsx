@@ -38,7 +38,7 @@ import { useRoles } from '../../hooks/useRoles';
 import { usePermissions } from '../../hooks/usePermissions';
 import { SettingsApi, SystemSettings } from '../../services/api.settings';
 import { ToastService } from '../../services/toast';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface SettingsProps {
   // Props for settings configuration
@@ -56,6 +56,8 @@ export const Settings: React.FC<SettingsProps> = () => {
   const [sessionTimeout, setSessionTimeout] = useState<number>(30);
   const [maxLoginAttempts, setMaxLoginAttempts] = useState<number>(5);
   const [passwordExpiry, setPasswordExpiry] = useState<number>(90);
+  const [demoAccountEnabled, setDemoAccountEnabled] = useState<boolean>(false);
+  const [demoAccountInfo, setDemoAccountInfo] = useState<{ accountId?: string; accountName?: string }>({});
   
   // Loading settings from API
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
@@ -83,7 +85,10 @@ export const Settings: React.FC<SettingsProps> = () => {
         setIsLoadingSettings(true);
         setSettingsError(null);
         
-        const settings = await SettingsApi.getSettings();
+        const [settings, demoAccountStatus] = await Promise.all([
+          SettingsApi.getSettings(),
+          SettingsApi.getDemoAccountStatus().catch(() => ({ enabled: false })),
+        ]);
         
         if (settings) {
           setRoleHierarchyEnabled(settings.roleHierarchyEnabled ?? true);
@@ -93,6 +98,19 @@ export const Settings: React.FC<SettingsProps> = () => {
           setSessionTimeout(settings.sessionTimeout ?? 30);
           setMaxLoginAttempts(settings.maxLoginAttempts ?? 5);
           setPasswordExpiry(settings.passwordExpiry ?? 90);
+        }
+
+        // Load demo account status
+        if (demoAccountStatus) {
+          setDemoAccountEnabled(demoAccountStatus.enabled);
+          if (demoAccountStatus.enabled && 'accountId' in demoAccountStatus) {
+            setDemoAccountInfo({
+              accountId: demoAccountStatus.accountId,
+              accountName: demoAccountStatus.accountName,
+            });
+          } else {
+            setDemoAccountInfo({});
+          }
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -259,6 +277,62 @@ export const Settings: React.FC<SettingsProps> = () => {
                     </Select>
                   </FormControl>
                 )}
+
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={demoAccountEnabled}
+                        onChange={async (e) => {
+                          const newValue = e.target.checked;
+                          const previousValue = demoAccountEnabled;
+                          try {
+                            setIsSaving(true);
+                            const result = await SettingsApi.toggleDemoAccount(newValue);
+                            
+                            if (result && typeof result.enabled === 'boolean') {
+                              setDemoAccountEnabled(result.enabled);
+                              if (result.enabled && result.accountId) {
+                                setDemoAccountInfo({
+                                  accountId: result.accountId,
+                                  accountName: result.accountName,
+                                });
+                              } else {
+                                setDemoAccountInfo({});
+                              }
+                              ToastService.success(
+                                result.enabled 
+                                  ? 'Demo account enabled successfully' 
+                                  : 'Demo account disabled successfully'
+                              );
+                            } else {
+                              throw new Error('Invalid response from server');
+                            }
+                          } catch (error) {
+                            console.error('Error toggling demo account:', error);
+                            const errorMessage = error instanceof Error ? error.message : 'Failed to toggle demo account';
+                            ToastService.error(errorMessage);
+                            // Revert UI state on error
+                            setDemoAccountEnabled(previousValue);
+                          } finally {
+                            setIsSaving(false);
+                          }
+                        }}
+                        disabled={isSaving}
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="body1">Enable Demo Account</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {demoAccountEnabled 
+                            ? `Demo account is active${demoAccountInfo.accountName ? `: ${demoAccountInfo.accountName}` : ''}`
+                            : 'Demo account is disabled. All users can access demo portfolios when enabled.'}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -528,16 +602,17 @@ export const Settings: React.FC<SettingsProps> = () => {
                   >
                     Bulk Actions
                   </ResponsiveButton>
-                  <ResponsiveButton
+                  <ActionButton
                     variant="contained"
-                    icon={<SaveIcon />}
-                    mobileText="Save Settings"
-                    desktopText="Save Settings"
+                    icon={isSaving ? undefined : <SaveIcon />}
+                    mobileText={isSaving ? 'Saving...' : 'Save Settings'}
+                    desktopText={isSaving ? 'Saving...' : 'Save Settings'}
                     onClick={handleSaveSettings}
                     disabled={isSaving}
+                    forceTextOnly={true}
                   >
                     {isSaving ? 'Saving...' : 'Save Settings'}
-                  </ResponsiveButton>
+                  </ActionButton>
                 </Box>
               </Box>
               
@@ -573,8 +648,24 @@ export const Settings: React.FC<SettingsProps> = () => {
           />
         </DialogContent>
         <DialogActions>
-          <ResponsiveButton onClick={() => setCreateRoleDialogOpen(false)}>Cancel</ResponsiveButton>
-          <ResponsiveButton onClick={handleCreateRole} variant="contained">Create</ResponsiveButton>
+          <ResponsiveButton 
+            onClick={() => setCreateRoleDialogOpen(false)}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ActionButton 
+            onClick={handleCreateRole} 
+            variant="contained"
+            forceTextOnly={true}
+            mobileText="Create"
+            desktopText="Create"
+          >
+            Create
+          </ActionButton>
         </DialogActions>
       </Dialog>
 
@@ -593,8 +684,24 @@ export const Settings: React.FC<SettingsProps> = () => {
           />
         </DialogContent>
         <DialogActions>
-          <ResponsiveButton onClick={() => setCreatePermissionDialogOpen(false)}>Cancel</ResponsiveButton>
-          <ResponsiveButton onClick={handleCreatePermission} variant="contained">Create</ResponsiveButton>
+          <ResponsiveButton 
+            onClick={() => setCreatePermissionDialogOpen(false)}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ActionButton 
+            onClick={handleCreatePermission} 
+            variant="contained"
+            forceTextOnly={true}
+            mobileText="Create"
+            desktopText="Create"
+          >
+            Create
+          </ActionButton>
         </DialogActions>
       </Dialog>
 
@@ -616,8 +723,24 @@ export const Settings: React.FC<SettingsProps> = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <ResponsiveButton onClick={() => setBulkActionDialogOpen(false)}>Cancel</ResponsiveButton>
-          <ResponsiveButton onClick={handleBulkAction} variant="contained">Execute</ResponsiveButton>
+          <ResponsiveButton 
+            onClick={() => setBulkActionDialogOpen(false)}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
+            Cancel
+          </ResponsiveButton>
+          <ActionButton 
+            onClick={handleBulkAction} 
+            variant="contained"
+            forceTextOnly={true}
+            mobileText="Execute"
+            desktopText="Execute"
+          >
+            Execute
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

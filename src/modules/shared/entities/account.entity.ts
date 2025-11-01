@@ -56,6 +56,12 @@ export class Account {
   isMainAccount: boolean;
 
   /**
+   * Whether this is a demo account (accessible by all users)
+   */
+  @Column({ type: 'boolean', default: false, name: 'is_demo_account' })
+  isDemoAccount: boolean;
+
+  /**
    * ID of the user who owns this account.
    */
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })

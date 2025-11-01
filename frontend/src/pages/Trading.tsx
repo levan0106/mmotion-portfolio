@@ -9,7 +9,6 @@ import {
   Tabs,
   Tab,
   Paper,
-  // Fab,
   Grid,
   Card,
   CardContent,
@@ -340,26 +339,6 @@ const Trading: React.FC = () => {
           </Box>
         </TabPanel>
       </Paper>
-
-      {/* Floating Action Button for Quick Create */}
-      {/* <Fab
-        color="primary"
-        aria-label="add trade"
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          boxShadow: 3,
-          '&:hover': {
-            boxShadow: 6,
-            transform: 'scale(1.05)',
-          },
-          transition: 'all 0.2s ease-in-out',
-        }}
-        onClick={() => setShowCreateForm(true)}
-      >
-        <AddIcon />
-      </Fab> */}
 
       {/* Create Trade Modal */}
       <TradeForm

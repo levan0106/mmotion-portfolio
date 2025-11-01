@@ -5,7 +5,6 @@ import {
   CardContent,
   Grid,
   Typography,
-  Button,
   Chip,
   LinearProgress,
   Alert,
@@ -38,6 +37,7 @@ import { ToastService } from '../../services/toast';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface AutomatedSnapshotManagementProps {
   // Add any props if needed
@@ -252,27 +252,33 @@ export const AutomatedSnapshotManagement: React.FC<AutomatedSnapshotManagementPr
 
                   <Box display="flex" gap={1} mt={2}>
                     {status.isEnabled ? (
-                      <Button
+                      <ActionButton
                         variant="outlined"
                         color="error"
-                        startIcon={<PowerOffIcon />}
+                        icon={<PowerOffIcon />}
                         onClick={handleDisableService}
                         disabled={disableMutation.isLoading}
                         size="small"
+                        forceTextOnly={true}
+                        mobileText={disableMutation.isLoading ? 'Disabling...' : 'Disable'}
+                        desktopText={disableMutation.isLoading ? 'Disabling...' : 'Disable Service'}
                       >
                         {disableMutation.isLoading ? 'Disabling...' : 'Disable Service'}
-                      </Button>
+                      </ActionButton>
                     ) : (
-                      <Button
+                      <ActionButton
                         variant="outlined"
                         color="success"
-                        startIcon={<PowerIcon />}
+                        icon={<PowerIcon />}
                         onClick={handleEnableService}
                         disabled={enableMutation.isLoading}
                         size="small"
+                        forceTextOnly={true}
+                        mobileText={enableMutation.isLoading ? 'Enabling...' : 'Enable'}
+                        desktopText={enableMutation.isLoading ? 'Enabling...' : 'Enable Service'}
                       >
                         {enableMutation.isLoading ? 'Enabling...' : 'Enable Service'}
-                      </Button>
+                      </ActionButton>
                     )}
                   </Box>
                 </>
@@ -389,33 +395,40 @@ export const AutomatedSnapshotManagement: React.FC<AutomatedSnapshotManagementPr
               </Typography>
               
               <Box display="flex" gap={2} flexWrap="wrap">
-                <Button
+                <ActionButton
                   variant="contained"
-                  startIcon={<PlayIcon />}
+                  icon={<PlayIcon />}
                   onClick={handleManualTrigger}
                   disabled={status?.isRunning || triggerMutation.isLoading || !status?.isEnabled}
                   color="primary"
+                  forceTextOnly={true}
+                  mobileText={triggerMutation.isLoading ? 'Triggering...' : 'Trigger'}
+                  desktopText={triggerMutation.isLoading ? 'Triggering...' : 'Trigger Manual Snapshot'}
                 >
                   {triggerMutation.isLoading ? 'Triggering...' : 'Trigger Manual Snapshot'}
-                </Button>
+                </ActionButton>
 
-                <Button
+                <ResponsiveButton
                   variant="outlined"
-                  startIcon={<TestIcon />}
+                  icon={<TestIcon />}
                   onClick={() => setTestDialogOpen(true)}
                   color="secondary"
+                  mobileText="Test"
+                  desktopText="Test Portfolio"
                 >
                   Test Portfolio
-                </Button>
+                </ResponsiveButton>
 
-                <Button
+                <ResponsiveButton
                   variant="outlined"
-                  startIcon={<RefreshIcon />}
+                  icon={<RefreshIcon />}
                   onClick={handleRefresh}
                   color="info"
+                  mobileText="Refresh"
+                  desktopText="Refresh Status"
                 >
                   Refresh Status
-                </Button>
+                </ResponsiveButton>
               </Box>
             </CardContent>
           </Card>
@@ -471,16 +484,26 @@ export const AutomatedSnapshotManagement: React.FC<AutomatedSnapshotManagementPr
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setTestDialogOpen(false)}>
+          <ResponsiveButton
+            onClick={() => setTestDialogOpen(false)}
+            variant="outlined"
+            forceTextOnly={true}
+            mobileText="Cancel"
+            desktopText="Cancel"
+          >
             Cancel
-          </Button>
-          <Button
+          </ResponsiveButton>
+          <ActionButton
             onClick={handleTestPortfolio}
             variant="contained"
             disabled={!selectedPortfolioId || testMutation.isLoading}
+            icon={testMutation.isLoading ? <CircularProgress size={16} /> : undefined}
+            forceTextOnly={true}
+            mobileText={testMutation.isLoading ? 'Testing...' : 'Test'}
+            desktopText={testMutation.isLoading ? 'Testing...' : 'Test'}
           >
             {testMutation.isLoading ? 'Testing...' : 'Test'}
-          </Button>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

@@ -31,7 +31,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { CreatePortfolioDto, UpdatePortfolioDto, Portfolio } from '../../types';
 import { useAccount } from '../../contexts/AccountContext';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { PublicPortfolioSelector } from './PublicPortfolioSelector';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -180,7 +180,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
           <ResponsiveButton onClick={handleClose} disabled={isLoading} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleSubmit(handleFormSubmit)}
             variant="contained"
             disabled={isLoading || (creationMode === 'copy' && !selectedPublicPortfolio)}
@@ -190,7 +190,7 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({
             desktopText={isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
           >
             {isLoading ? t('portfolio.form.saving') : isEditing ? t('common.update') : t('common.create')}
-          </ResponsiveButton>
+          </ActionButton>
         </>
       }
     >

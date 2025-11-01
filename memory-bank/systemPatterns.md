@@ -941,7 +941,57 @@ erDiagram
 - **Update Completeness**: Comprehensive review and update of all memory bank components - **COMPLETED**
 - **Production Ready**: Clean, maintainable documentation system ready for ongoing development - **COMPLETED**
 
-### 37. Funding Source Management Pattern - **IMPLEMENTED ✅**
+### 37. Demo Account Banner Pattern - **IMPLEMENTED ✅**
+- **Banner Component System**: Comprehensive banner component for demo account indication - **COMPLETED**
+- **Collapse/Expand Functionality**: Full collapse/expand with smooth Material-UI Collapse animations - **COMPLETED**
+- **Default Collapsed State**: Banner defaults to collapsed for minimal UI intrusion - **COMPLETED**
+- **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner toggles expansion - **COMPLETED**
+- **Account Switching**: Integrated account switching with main account detection - **COMPLETED**
+- **LocalStorage Persistence**: User preference for collapse state saved to localStorage - **COMPLETED**
+- **Responsive Design**: Fully responsive with mobile-optimized layouts and button placement - **COMPLETED**
+- **Mobile Button Strategy**: Different button placement for mobile (absolute positioning) vs desktop (action prop) - **COMPLETED**
+- **Touch-Friendly Design**: Large touch targets (48px) and proper spacing for mobile interaction - **COMPLETED**
+- **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar when in demo account - **COMPLETED**
+- **Translation Support**: Complete i18n support with correct namespace (accountSwitcher.demoAccountBanner.*) - **COMPLETED**
+- **Account Context Integration**: Uses AccountContext for demo account detection and switching - **COMPLETED**
+- **Height Adjustment**: Scrollable content area adjusts for banner height when visible - **COMPLETED**
+- **Button Deduplication**: Single collapse/expand button per state (no duplicates) - **COMPLETED**
+- **Action Prop Optimization**: Smart action prop logic for different screen sizes and states - **COMPLETED**
+- **Icon Management**: Icons hidden on mobile to save space, shown on desktop - **COMPLETED**
+- **Font Sizing**: Responsive font sizes with mobile-optimized typography - **COMPLETED**
+- **Background Styling**: Subtle background with warning color theme and proper opacity - **COMPLETED**
+- **Hover Effects**: Cursor pointer when collapsed, hover effects for better UX - **COMPLETED**
+- **Stop Propagation**: Button clicks use stopPropagation to prevent banner click triggers - **COMPLETED**
+- **File Location**: frontend/src/components/Common/DemoAccountBanner.tsx - **COMPLETED**
+- **AppLayout Integration**: Seamlessly integrated below Toolbar in main content area - **COMPLETED**
+- **Production Ready**: Clean, maintainable code with comprehensive error handling - **COMPLETED**
+
+### 38. Demo Account Management Pattern - **IMPLEMENTED ✅**
+- **Backend API Endpoints**: GET and POST endpoints for demo account status management - **COMPLETED**
+- **AccountService Methods**: getDemoAccountStatus() and toggleDemoAccount() with fixed demo account ID - **COMPLETED**
+- **Fixed Demo Account ID**: Uses UUID ffffffff-ffff-4fff-bfff-ffffffffffff for demo account identification - **COMPLETED**
+- **Permission-Based Access**: GET requires settings.read, POST requires settings.update permissions - **COMPLETED**
+- **Frontend API Integration**: SettingsApi methods with robust response validation - **COMPLETED**
+- **System Settings UI**: Toggle switch in System Settings card with state management - **COMPLETED**
+- **Error Handling**: Comprehensive error handling with UI state recovery - **COMPLETED**
+- **Toast Notifications**: Success/error messages using ToastService - **COMPLETED**
+- **Status Display**: Shows demo account name and status when enabled - **COMPLETED**
+- **Response Validation**: Robust validation to ensure enabled is boolean - **COMPLETED**
+- **Files**: account.service.ts, settings.controller.ts, api.settings.ts, Settings.tsx - **COMPLETED**
+- **Production Ready**: Complete demo account management system ready for production - **COMPLETED**
+
+### 39. Permission-Based Report Access Pattern - **IMPLEMENTED ✅**
+- **PermissionCheckService Integration**: ReportService uses PermissionCheckService for accessible portfolios - **COMPLETED**
+- **UPDATE Permission Support**: Accounts with UPDATE permissions can view report data - **COMPLETED**
+- **Portfolio Filtering**: Filters requested portfolioIds based on accessibility - **COMPLETED**
+- **API Consistency**: All report endpoints use permission-based filtering - **COMPLETED**
+- **Report Endpoints Updated**: getReportData, getCashBalanceReport, getDepositsReport, getAssetsReport - **COMPLETED**
+- **Module Integration**: PortfolioModule imported to make PermissionCheckService available - **COMPLETED**
+- **Query Optimization**: Efficient portfolio filtering using IN clause with accessible portfolioIds - **COMPLETED**
+- **Files**: report.service.ts, report.module.ts - **COMPLETED**
+- **Production Ready**: Permission-based report access fully functional - **COMPLETED**
+
+### 40. Funding Source Management Pattern - **IMPLEMENTED ✅**
 - **Portfolio Funding Source Field**: Added optional funding source field to Portfolio entity for capital source tracking - **COMPLETED**
 - **Database Schema Enhancement**: Added `funding_source` column with varchar(100) type and nullable constraint - **COMPLETED**
 - **DTO Integration**: Updated CreatePortfolioDto and UpdatePortfolioDto with optional free text funding source validation - **COMPLETED**

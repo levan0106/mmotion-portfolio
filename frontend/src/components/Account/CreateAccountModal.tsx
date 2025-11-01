@@ -8,7 +8,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { AccountBalance as AccountIcon } from '@mui/icons-material';
@@ -136,17 +136,18 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.name}
-            icon={loading && <CircularProgress size={16} />}
+            icon={loading ? <CircularProgress size={16} /> : undefined}
             mobileText={loading ? t('createAccountModal.creating') : t('createAccountModal.create')}
             desktopText={loading ? t('createAccountModal.creating') : t('createAccountModal.createAccount')}
+            forceTextOnly={true}
             sx={{ width: 'auto' }}
           >
             {loading ? t('createAccountModal.creating') : t('createAccountModal.createAccount')}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       }
     >

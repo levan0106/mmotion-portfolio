@@ -19,7 +19,7 @@ import {
   Assessment as AssessmentIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import PortfolioCardWithPermissions from './PortfolioCardWithPermissions';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
@@ -33,6 +33,7 @@ interface PortfolioListProps {
   onCreatePortfolio?: () => void;
   onManagePermissions?: (portfolioId: string) => void;
   onRefresh?: () => void;
+  isReadOnly?: boolean;
 }
 
 const PortfolioList: React.FC<PortfolioListProps> = ({
@@ -42,6 +43,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
   onCreatePortfolio,
   onManagePermissions,
   onRefresh,
+  isReadOnly = false,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -111,7 +113,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
             </Tooltip>
           )}
           {onCreatePortfolio && (
-            <ResponsiveButton
+            <ActionButton
               className="portfolio-list__create-btn"
               onClick={onCreatePortfolio}
               icon={<AddIcon />}
@@ -119,7 +121,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
               desktopText={t('portfolio.create')}
             >
               {t('portfolio.create')}
-            </ResponsiveButton>
+            </ActionButton>
           )}
         </div>
       </div>
@@ -176,7 +178,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
           
           {onCreatePortfolio && portfolios.length === 0 && (
             <div className="portfolio-list__empty-actions">
-              <ResponsiveButton
+              <ActionButton
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--primary"
                 onClick={onCreatePortfolio}
                 icon={<AddIcon />}
@@ -184,7 +186,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
                 desktopText={t('portfolio.createFirst')}
               >
                 {t('portfolio.createFirst')}
-              </ResponsiveButton>
+              </ActionButton>
               <ResponsiveButton
                 className="portfolio-list__empty-btn portfolio-list__empty-btn--secondary"
                 onClick={() => {/* Add help/tutorial action */}}
@@ -204,6 +206,7 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
               onEdit={onEditPortfolio}
               onDelete={onDeletePortfolio}
               onManagePermissions={onManagePermissions}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>
@@ -211,14 +214,19 @@ const PortfolioList: React.FC<PortfolioListProps> = ({
 
       {/* Floating Action Button for mobile */}
       {onCreatePortfolio && (
-        <Fab
-          color="primary"
-          aria-label="add portfolio"
-          onClick={onCreatePortfolio}
-          className="portfolio-list__fab"
-        >
-          <AddIcon />
-        </Fab>
+        <Tooltip title={isReadOnly ? t('common.readOnlyMode') : t('portfolio.create')}>
+          <span>
+            <Fab
+              color="primary"
+              aria-label="add portfolio"
+              onClick={isReadOnly ? undefined : onCreatePortfolio}
+              disabled={isReadOnly}
+              className="portfolio-list__fab"
+            >
+              <AddIcon />
+            </Fab>
+          </span>
+        </Tooltip>
       )}
     </div>
   );

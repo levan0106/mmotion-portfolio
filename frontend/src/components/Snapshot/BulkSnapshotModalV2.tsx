@@ -31,7 +31,7 @@ import {
   SelectAll as SelectAllIcon,
   Deselect as DeselectIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { useAccount } from '../../contexts/AccountContext';
 import { SnapshotGranularity } from '../../types/snapshot.types';
@@ -439,10 +439,10 @@ export const BulkSnapshotModalV2: React.FC<BulkSnapshotModalV2Props> = ({
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton
+      <ActionButton
         variant="contained"
         color="primary"
-        startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+        icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
         mobileText={t('snapshots.modals.createSnapshot.create')}
         desktopText={t('snapshots.modals.createSnapshot.createSnapshot')}
         onClick={handleCreateSnapshot}
@@ -453,10 +453,11 @@ export const BulkSnapshotModalV2: React.FC<BulkSnapshotModalV2Props> = ({
           isCreating || 
           isLoadingPortfolios
         }
+        forceTextOnly={true}
         sx={{ textTransform: 'none', minWidth: 140 }}
       >
         {isCreating ? t('snapshots.modals.createSnapshot.creating') : t('snapshots.modals.createSnapshot.createSnapshot')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 
@@ -468,7 +469,7 @@ export const BulkSnapshotModalV2: React.FC<BulkSnapshotModalV2Props> = ({
       icon={modalIcon}
       actions={modalActions}
       loading={isCreating}
-      maxWidth="sm"
+      maxWidth="md"
       titleColor="primary"
       size="medium"
     >

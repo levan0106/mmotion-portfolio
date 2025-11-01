@@ -18,7 +18,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { ResponsiveButton } from './Common';
+import { ResponsiveButton, ActionButton } from './Common';
 import { useAccount } from '../contexts/AccountContext';
 
 // Types
@@ -565,7 +565,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
             <ResponsiveButton onClick={handleClose} disabled={loading} mobileText="Cancel" desktopText="Cancel">
               Cancel
             </ResponsiveButton>
-            <ResponsiveButton
+            <ActionButton
               type="submit"
               variant="contained"
               disabled={loading || !symbolValidation.isValid}
@@ -574,7 +574,7 @@ const GlobalAssetForm: React.FC<GlobalAssetFormProps> = ({
               desktopText={loading ? 'Saving...' : mode === 'create' ? 'Create Asset' : 'Update Asset'}
             >
               {loading ? 'Saving...' : mode === 'create' ? 'Create Asset' : 'Update Asset'}
-            </ResponsiveButton>
+            </ActionButton>
           </DialogActions>
         </form>
       </Dialog>

@@ -51,14 +51,30 @@ export class AccountService {
 
   /**
    * Get accounts by user ID.
+   * Includes the demo account (accessible by all users).
    * @param userId - User ID
    * @returns Promise<Account[]>
    */
   async getAccountsByUserId(userId: string): Promise<Account[]> {
-    return await this.accountRepository.find({
+    // Get user's own accounts
+    const userAccounts = await this.accountRepository.find({
       where: { userId },
       order: { createdAt: 'DESC' },
     });
+
+    // Get demo account (accessible by all users)
+    const demoAccount = await this.accountRepository.findOne({
+      where: { isDemoAccount: true },
+    });
+
+    // Combine user accounts with demo account (if exists)
+    const accounts = [...userAccounts];
+    if (demoAccount) {
+      // Add demo account at the beginning
+      accounts.unshift(demoAccount);
+    }
+
+    return accounts;
   }
 
   /**
@@ -81,21 +97,29 @@ export class AccountService {
 
   /**
    * Get account by ID for a specific user.
+   * Allows access to demo account (accessible by all users).
    * @param accountId - Account ID
    * @param userId - User ID
    * @returns Promise<Account>
    */
   async getAccountByIdForUser(accountId: string, userId: string): Promise<Account> {
     const account = await this.accountRepository.findOne({
-      where: { accountId, userId },
+      where: { accountId },
       relations: ['portfolios', 'investorHoldings'],
     });
 
     if (!account) {
-      throw new NotFoundException(`Account with ID "${accountId}" not found or you don't have access to it`);
+      throw new NotFoundException(`Account with ID "${accountId}" not found`);
     }
 
-    return account;
+    // Allow access if:
+    // 1. Account belongs to the user, OR
+    // 2. Account is a demo account (accessible by all users)
+    if (account.userId === userId || account.isDemoAccount) {
+      return account;
+    }
+
+    throw new NotFoundException(`Account with ID "${accountId}" not found or you don't have access to it`);
   }
 
   /**
@@ -233,6 +257,83 @@ export class AccountService {
       totalInvestors,
       isInvestor: account.isInvestor,
     };
+  }
+
+  /**
+   * Get demo account status
+   * @returns Promise with demo account information and enabled status
+   */
+  async getDemoAccountStatus(): Promise<{
+    enabled: boolean;
+    accountId?: string;
+    accountName?: string;
+  }> {
+    const demoAccount = await this.accountRepository.findOne({
+      where: { isDemoAccount: true },
+    });
+
+    return {
+      enabled: !!demoAccount,
+      accountId: demoAccount?.accountId,
+      accountName: demoAccount?.name,
+    };
+  }
+
+  /**
+   * Toggle demo account status (enable/disable)
+   * @param enabled - Whether to enable or disable demo account
+   * @returns Promise with demo account information and enabled status
+   */
+  async toggleDemoAccount(enabled: boolean): Promise<{
+    enabled: boolean;
+    accountId?: string;
+    accountName?: string;
+  }> {
+    const demoAccountId = 'ffffffff-ffff-4fff-bfff-ffffffffffff';
+    
+    if (enabled) {
+      // Enable demo account - create or update account to be demo account
+      let demoAccount = await this.accountRepository.findOne({
+        where: { accountId: demoAccountId },
+      });
+
+      if (!demoAccount) {
+        // Create new demo account
+        demoAccount = this.accountRepository.create({
+          accountId: demoAccountId,
+          name: 'Demo Account',
+          email: 'demo@mmotion.com',
+          baseCurrency: 'VND',
+          isInvestor: false,
+          isDemoAccount: true,
+        });
+      } else {
+        // Update existing account to be demo account
+        demoAccount.isDemoAccount = true;
+      }
+
+      await this.accountRepository.save(demoAccount);
+
+      return {
+        enabled: true,
+        accountId: demoAccount.accountId,
+        accountName: demoAccount.name,
+      };
+    } else {
+      // Disable demo account - remove demo account flag
+      const demoAccount = await this.accountRepository.findOne({
+        where: { isDemoAccount: true },
+      });
+
+      if (demoAccount) {
+        demoAccount.isDemoAccount = false;
+        await this.accountRepository.save(demoAccount);
+      }
+
+      return {
+        enabled: false,
+      };
+    }
   }
 }
 

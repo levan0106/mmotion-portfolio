@@ -15,6 +15,8 @@ interface AccountContextType {
   updateAuthState: () => Promise<void>;
   accountId: string;
   baseCurrency: string;
+  isDemoAccount: boolean;
+  isReadOnly: boolean;
 }
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -182,6 +184,10 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  // Check if current account is demo account (read-only)
+  const isDemoAccount = currentAccount?.isDemoAccount === true;
+  const isReadOnly = isDemoAccount; // Demo account is read-only
+
   const value: AccountContextType = {
     currentAccount,
     currentUser,
@@ -194,6 +200,8 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     accountId: currentAccount?.accountId || '',
     baseCurrency: currentAccount?.baseCurrency || 'VND',
     loading,
+    isDemoAccount,
+    isReadOnly,
   };
 
   return (

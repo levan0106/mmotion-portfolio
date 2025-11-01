@@ -153,4 +153,39 @@ export class SettingsApi {
     const response = await api.post('/api/v1/settings/cleanup-expired-roles');
     return response;
   }
+
+  /**
+   * Get demo account status
+   */
+  static async getDemoAccountStatus(): Promise<{
+    enabled: boolean;
+    accountId?: string;
+    accountName?: string;
+  }> {
+    const response = await api.get('/api/v1/settings/demo-account');
+    // Handle both response.data and direct response
+    const data = response.data || response;
+    if (!data || typeof data.enabled !== 'boolean') {
+      // Return default if invalid response
+      return { enabled: false };
+    }
+    return data;
+  }
+
+  /**
+   * Toggle demo account (enable/disable)
+   */
+  static async toggleDemoAccount(enabled: boolean): Promise<{
+    enabled: boolean;
+    accountId?: string;
+    accountName?: string;
+  }> {
+    const response = await api.post('/api/v1/settings/demo-account/toggle', { enabled });
+    // Handle both response.data and direct response
+    const data = response.data || response;
+    if (!data || typeof data.enabled !== 'boolean') {
+      throw new Error('Invalid response format from server');
+    }
+    return data;
+  }
 }

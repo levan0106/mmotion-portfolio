@@ -12,7 +12,7 @@ import {
   Paper,
   useTheme,
 } from '@mui/material';
-import { ResponsiveButton } from '../components/Common';
+import { ActionButton } from '../components/Common';
 import {
   Add as AddIcon,
   Security as SecurityIcon,
@@ -391,7 +391,7 @@ const AdminManagementContent: React.FC = () => {
                   <ResponsiveTypography variant="cardTitle">
                     System Roles
                   </ResponsiveTypography>
-                  <ResponsiveButton
+                  <ActionButton
                     variant="contained"
                     icon={<AddIcon />}
                     onClick={handleCreateRole}
@@ -399,7 +399,7 @@ const AdminManagementContent: React.FC = () => {
                     desktopText="Create Role"
                   >
                     Create Role
-                  </ResponsiveButton>
+                  </ActionButton>
                 </Box>
                 <RoleList
                   onEditRole={handleEditRole}
@@ -433,7 +433,7 @@ const AdminManagementContent: React.FC = () => {
                   <ResponsiveTypography variant="cardTitle">
                     System Users
                   </ResponsiveTypography>
-                  <ResponsiveButton
+                  <ActionButton
                     variant="contained"
                     icon={<AddIcon />}
                     onClick={handleCreateUser}
@@ -441,7 +441,7 @@ const AdminManagementContent: React.FC = () => {
                     desktopText="Create User"
                   >
                     Create User
-                  </ResponsiveButton>
+                  </ActionButton>
                 </Box>
                 <UserList
                   onEditUser={handleEditUser}

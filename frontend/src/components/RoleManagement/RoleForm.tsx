@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Box,
   Typography,
@@ -28,6 +27,7 @@ import {
 import { useRoles } from '../../hooks/useRoles';
 import { userRolesApi } from '../../services/api.userRoles';
 import { Role, CreateRoleRequest, UpdateRoleRequest } from '../../services/api.role';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface RoleFormProps {
   open: boolean;
@@ -388,7 +388,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                   sx={{ flexGrow: 1 }}
                   placeholder="Search by name, display name, or category..."
                 />
-                <Button
+                <ResponsiveButton
                   size="small"
                   variant="outlined"
                   onClick={() => {
@@ -396,17 +396,23 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                     setFormData(prev => ({ ...prev, permissionIds: allPermissionIds }));
                   }}
                   disabled={isLoading}
+                  forceTextOnly={true}
+                  mobileText="Select All"
+                  desktopText="Select All"
                 >
                   Select All
-                </Button>
-                <Button
+                </ResponsiveButton>
+                <ResponsiveButton
                   size="small"
                   variant="outlined"
                   onClick={() => setFormData(prev => ({ ...prev, permissionIds: [] }))}
                   disabled={isLoading}
+                  forceTextOnly={true}
+                  mobileText="Clear All"
+                  desktopText="Clear All"
                 >
                   Clear All
-                </Button>
+                </ResponsiveButton>
               </Box>
               {isLoadingPermissions ? (
                 <Box display="flex" justifyContent="center" p={4}>
@@ -469,17 +475,27 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isLoading}>
+        <ResponsiveButton 
+          onClick={onClose} 
+          disabled={isLoading}
+          variant="outlined"
+          forceTextOnly={true}
+          mobileText="Cancel"
+          desktopText="Cancel"
+        >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ActionButton
           onClick={handleSubmit}
           variant="contained"
           disabled={isLoading}
-          startIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+          icon={isLoading ? <CircularProgress size={16} /> : undefined}
+          forceTextOnly={true}
+          mobileText={isLoading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Role' : 'Update Role')}
+          desktopText={isLoading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Role' : 'Update Role')}
         >
           {isLoading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Role' : 'Update Role')}
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );

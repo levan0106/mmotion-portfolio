@@ -26,9 +26,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
 } from '@mui/material';
-import { ResponsiveButton } from '../components/Common';
+import { ResponsiveButton, ActionIconButton, ActionButton } from '../components/Common';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import {
   ArrowBack,
@@ -286,7 +285,7 @@ const HoldingDetail: React.FC = () => {
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            <ResponsiveButton
+            <ActionButton
               size="small"
               variant="contained"
               color="success"
@@ -304,9 +303,9 @@ const HoldingDetail: React.FC = () => {
               }}
             >
               {t('nav.holdings.newSubscription')}
-            </ResponsiveButton>
+            </ActionButton>
             
-            <ResponsiveButton
+            <ActionButton
               size="small"
               variant="contained"
               color="warning"
@@ -324,9 +323,9 @@ const HoldingDetail: React.FC = () => {
               }}
             >
               {t('nav.holdings.processRedemption')}
-            </ResponsiveButton>
+            </ActionButton>
             
-            <ResponsiveButton
+            <ActionButton
               size="small"
               variant="contained"
               color="primary"
@@ -345,7 +344,7 @@ const HoldingDetail: React.FC = () => {
               }}
             >
               {recalculateLoading ? t('holdings.actions.recalculating') : t('holdings.actions.recalculateNav')}
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
         </Box>
       </Box>
@@ -667,9 +666,10 @@ const HoldingDetail: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
-                        <IconButton
+                        <ActionIconButton
                           size="small"
                           onClick={() => handleEditTransaction({ transaction, cashFlow })}
+                          tooltip="Edit Transaction"
                           sx={{ 
                             width: 50, 
                             height: 50,
@@ -683,10 +683,11 @@ const HoldingDetail: React.FC = () => {
                           }}
                         >
                           <EditIcon />
-                        </IconButton>
-                        <IconButton
+                        </ActionIconButton>
+                        <ActionIconButton
                           size="small"
                           onClick={() => handleDeleteTransaction({ transaction, cashFlow })}
+                          tooltip="Delete Transaction"
                           sx={{ 
                             width: 50, 
                             height: 50,
@@ -700,7 +701,7 @@ const HoldingDetail: React.FC = () => {
                           }}
                         >
                           <DeleteIcon />
-                        </IconButton>
+                        </ActionIconButton>
                       </Stack>
                     </TableCell>
                   </TableRow>
@@ -815,18 +816,19 @@ const HoldingDetail: React.FC = () => {
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleConfirmDelete}
             variant="contained"
             color="error"
             disabled={deleteLoading}
             size="large"
             icon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+            forceTextOnly={true}
             mobileText={deleteLoading ? t('holdings.delete.deleting') : t('common.delete')}
             desktopText={deleteLoading ? t('holdings.delete.deleting') : t('holdings.delete.deleteTransaction')}
           >
             {deleteLoading ? t('holdings.delete.deleting') : t('holdings.delete.deleteTransaction')}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Container>

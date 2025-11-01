@@ -20,7 +20,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
 
 // Validation schema
@@ -435,7 +435,7 @@ export const AlertSettings: React.FC<AlertSettingsProps> = ({
                     Cancel
                   </ResponsiveButton>
                 )}
-                <ResponsiveButton
+                <ActionButton
                   type="submit"
                   variant="contained"
                   size="large"
@@ -443,9 +443,10 @@ export const AlertSettings: React.FC<AlertSettingsProps> = ({
                   mobileText="Save"
                   desktopText="Save Alert Settings"
                   disabled={!isValid || isLoading}
+                  forceTextOnly={true}
                 >
                   {isLoading ? 'Saving...' : 'Save Alert Settings'}
-                </ResponsiveButton>
+                </ActionButton>
               </Box>
             </Grid>
           </Grid>

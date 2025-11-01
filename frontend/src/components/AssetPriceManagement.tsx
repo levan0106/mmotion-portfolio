@@ -34,7 +34,7 @@ import {
   Refresh as RefreshIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from './Common';
+import { ResponsiveButton, ActionButton } from './Common';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useForm, Controller } from 'react-hook-form';
@@ -417,7 +417,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     >
                       Refresh
                     </ResponsiveButton>
-                    <ResponsiveButton
+                    <ActionButton
                       onClick={() => setUpdateDialogOpen(true)}
                       variant="contained"
                       icon={<EditIcon />}
@@ -438,7 +438,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                       }}
                     >
                       Update Price
-                    </ResponsiveButton>
+                    </ActionButton>
                   </Box>
                 </Box>
 
@@ -853,13 +853,14 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
               borderTop: '1px solid rgba(0,0,0,0.1)',
               justifyContent: 'flex-end'
             }}>
-              <ResponsiveButton
+              <ActionButton
                 type="submit"
                 variant="contained"
                 disabled={loading}
                 icon={loading ? <CircularProgress size={20} /> : <EditIcon />}
                 mobileText={loading ? 'Updating...' : 'Update'}
                 desktopText={loading ? 'Updating...' : 'Update Price'}
+                forceTextOnly={true}
                 sx={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   fontWeight: 700,
@@ -873,7 +874,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                 }}
               >
                 {loading ? 'Updating...' : 'Update Price'}
-              </ResponsiveButton>
+              </ActionButton>
             </DialogActions>
           </form>
         </Dialog>

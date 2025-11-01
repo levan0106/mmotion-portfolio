@@ -22,7 +22,7 @@ import {
   Error as ErrorIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { apiService } from '../../services/api';
 import { useAccount } from '../../contexts/AccountContext';
@@ -325,17 +325,18 @@ export const BulkSnapshotModal: React.FC<BulkSnapshotModalProps> = ({
       >
         {t('snapshots.modals.createSnapshot.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton
+      <ActionButton
         variant="contained"
         icon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
         mobileText={t('snapshots.modals.createSnapshot.create')}
         desktopText={t('snapshots.modals.createSnapshot.createSnapshot')}
         onClick={handleCreateSnapshot}
         disabled={!selectedPortfolioIdState || !startDate || !granularity || isCreating || isLoadingPortfolios}
+        forceTextOnly={true}
         sx={{ textTransform: 'none', minWidth: 140 }}
       >
         {isCreating ? t('snapshots.modals.createSnapshot.creating') : t('snapshots.modals.createSnapshot.createSnapshot')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import MoneyInput from '../Common/MoneyInput';
 import NumberInput from '../Common/NumberInput';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { Save, AccountBalance } from '@mui/icons-material';
 
@@ -328,7 +328,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
               <ResponsiveButton onClick={onClose} disabled={isSubmitting}>
                 {t('deposit.form.cancel')}
               </ResponsiveButton>
-              <ResponsiveButton 
+              <ActionButton 
                 variant="contained" 
                 disabled={isSubmitting}
                 icon={<Save />}
@@ -346,7 +346,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
                 }}
               >
                 {isSubmitting ? t('deposit.form.processing') : (isEdit ? t('deposit.form.update') : t('deposit.form.create'))}
-              </ResponsiveButton>
+              </ActionButton>
             </>
           ) : undefined
         }

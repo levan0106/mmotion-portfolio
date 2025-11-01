@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
 
-interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
+export interface ResponsiveButtonProps extends Omit<ButtonProps, 'children'> {
   children: React.ReactNode;
   icon?: React.ReactNode;
   endIcon?: React.ReactNode;

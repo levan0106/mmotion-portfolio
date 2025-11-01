@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
-import { ResponsiveButton, ResponsiveCard } from '../Common';
+import { ResponsiveButton, ActionButton, ResponsiveCard } from '../Common';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -441,7 +441,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton
+      <ActionButton
         onClick={handleFormSubmit}
         variant="contained"
         disabled={isLoading}
@@ -449,7 +449,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         icon={mode === 'create' ? <AddIcon /> : <EditIcon />}
       >
         {isLoading ? t('trading.form.processing') : mode === 'create' ? t('common.add') : t('common.update')}
-      </ResponsiveButton>
+      </ActionButton>
     </Box>
   ), [onClose, isLoading, mode, t, handleFormSubmit]);
 
@@ -925,7 +925,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
             {/* Submit Button */}
             {showSubmitButton && (
               <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-                <ResponsiveButton
+                <ActionButton
                   type="submit"
                   variant="contained"
                   disabled={!isValid || isLoading}
@@ -935,7 +935,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
                 >
                   {isLoading ? t('trading.form.processing') : mode === 'create' ? t('trading.form.createTrade') : t('trading.form.updateTrade')}
-                </ResponsiveButton>
+                </ActionButton>
               </Box>
             )}
           </form>
@@ -972,7 +972,9 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     assetFormError,
     accountId,
     portfoliosLoading,
-    portfoliosError
+    portfoliosError,
+    defaultPortfolioId,
+    portfolios
   ]);
 
   // Show loading state

@@ -12,7 +12,7 @@ import {
   Paper,
   Grid,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import {
   DatePicker,
   LocalizationProvider,
@@ -321,16 +321,17 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
           </Box>
 
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               onClick={() => setStep('confirm')}
               disabled={assets.filter(a => a.selected).length === 0}
               icon={<CheckCircle />}
               mobileText={`Tiếp tục (${assets.filter(a => a.selected).length})`}
               desktopText={`Tiếp tục (${assets.filter(a => a.selected).length} tài sản)`}
+              forceTextOnly={true}
             >
               Tiếp tục ({assets.filter(a => a.selected).length} tài sản)
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
         </Box>
       )}
@@ -514,16 +515,17 @@ export const UpdatePriceByDateModal: React.FC<UpdatePriceByDateModalProps> = ({
             >
               Quay lại
             </ResponsiveButton>
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               onClick={handleBulkUpdate}
               disabled={loading || assetsWithData.length === 0}
               icon={loading ? <CircularProgress size={20} /> : <Refresh />}
               mobileText={loading ? 'Đang cập nhật...' : 'Cập nhật'}
               desktopText={loading ? 'Đang cập nhật...' : 'Cập nhật giá'}
+              forceTextOnly={true}
             >
               {loading ? 'Đang cập nhật...' : 'Cập nhật giá'}
-            </ResponsiveButton>
+            </ActionButton>
           </>
         );
       

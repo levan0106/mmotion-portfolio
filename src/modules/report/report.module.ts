@@ -8,6 +8,7 @@ import { Asset } from '../asset/entities/asset.entity';
 import { Trade } from '../trading/entities/trade.entity';
 import { CashFlow } from '../portfolio/entities/cash-flow.entity';
 import { AssetModule } from '../asset/asset.module';
+import { PortfolioModule } from '../portfolio/portfolio.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AssetModule } from '../asset/asset.module';
       CashFlow,
     ]),
     AssetModule,
+    PortfolioModule,
   ],
   controllers: [ReportController],
   providers: [ReportService],

@@ -11,7 +11,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ResponsiveButton, ActionButton } from '../Common';
 import MoneyInput from '../Common/MoneyInput';
 import { formatCurrency } from '../../utils/format';
 
@@ -310,7 +310,7 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
               {t('common.cancel')}
             </ResponsiveButton>
           )}
-          <ResponsiveButton
+          <ActionButton
             type="submit"
             variant="contained"
             size="large"
@@ -321,7 +321,7 @@ const CashFlowForm: React.FC<CashFlowFormProps> = ({
             desktopText={loading ? t('common.processing') : (editingCashFlow ? t('common.update') : t('common.create'))}
           >
             {loading ? t('common.processing') : (editingCashFlow ? t('common.update') : t('common.create'))}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       )}
     </Box>

@@ -18,7 +18,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Remove as RemoveIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton, ResponsiveTypography } from '../Common';
+import { ResponsiveButton, ActionButton, ResponsiveTypography } from '../Common';
 import { RedeemFromFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -169,7 +169,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton 
+      <ActionButton 
         onClick={handleSubmit} 
         variant="contained" 
         color="error"
@@ -181,7 +181,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
         forceTextOnly={true}
       >
         {loading ? t('holdings.redemptionModal.processing') : t('holdings.redemptionModal.processRedemption')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

@@ -42,7 +42,7 @@ import {
   TrendingDown as TrendingDownIcon,
   AccountBalance as BalanceIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { formatCurrency, formatDate } from '../../utils/format';
 import CashFlowChart from './CashFlowChart';
 
@@ -574,15 +574,16 @@ const CashFlowDashboard: React.FC<CashFlowDashboardProps> = ({
           <ResponsiveButton onClick={() => setDialogOpen(false)} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.amount || !formData.description}
+            forceTextOnly={true}
             mobileText={loading ? t('cashflow.modal.creating') : t('common.create')}
             desktopText={loading ? t('cashflow.modal.creating') : t('common.create')}
           >
             {loading ? t('cashflow.modal.creating') : t('common.create')}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       </Dialog>
     </Box>

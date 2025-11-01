@@ -25,10 +25,9 @@ import {
   Checkbox,
   useTheme,
   useMediaQuery,
-  IconButton,
   Tooltip,
 } from '@mui/material';
-import { ResponsiveButton, ModalWrapper } from '../Common';
+import { ResponsiveButton, ActionButton, ActionIconButton, ModalWrapper } from '../Common';
 import { Portfolio } from '../../types';
 import { formatCurrency } from '../../utils/format';
 import { CopyPortfolioModal } from './CopyPortfolioModal';
@@ -43,6 +42,7 @@ interface PortfolioCardProps {
   onPortfolioCopied?: (newPortfolio: Portfolio) => void;
   onManagePermissions?: (portfolioId: string) => void;
   hideActions?: boolean;
+  isReadOnly?: boolean;
   // Permission stats
   permissionStats?: {
     totalAccounts: number;
@@ -60,6 +60,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
   onPortfolioCopied,
   onManagePermissions,
   hideActions = false,
+  isReadOnly = false,
   permissionStats,
 }) => {
   const { t } = useTranslation();
@@ -263,78 +264,76 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         </div>
       </div>
 
-      {!hideActions && (
+      {!hideActions && !isReadOnly && (
         <div className="portfolio-card__actions">
           <Box display="flex" gap={0.5} alignItems="center">
-            {onEdit && (
-              <Tooltip title={t('common.edit') || 'Edit'}>
-                <IconButton
-                  onClick={handleEdit}
-                  color="primary"
-                  size="small"
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'primary.light',
-                      color: 'white',
-                    },
-                  }}
-                >
-                  <Edit />
-                </IconButton>
-              </Tooltip>
+            {onEdit && !isReadOnly && (
+              <ActionIconButton
+                onClick={handleEdit}
+                color="primary"
+                size="small"
+                tooltip={t('common.edit') || 'Edit'}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.light',
+                    color: 'white',
+                  }
+                }}
+              >
+                <Edit />
+              </ActionIconButton>
             )}
-            <Tooltip title={t('common.copy') || 'Copy'}>
-              <IconButton
+            {!isReadOnly && (
+              <ActionIconButton
                 onClick={handleCopy}
                 color="secondary"
                 size="small"
+                tooltip={t('common.copy') || 'Copy'}
                 sx={{
                   '&:hover': {
                     backgroundColor: 'secondary.light',
                     color: 'white',
-                  },
+                  }
                 }}
               >
                 <ContentCopy />
-              </IconButton>
-            </Tooltip>
-            {onManagePermissions && (
-              <Tooltip title="Manage Permissions">
-                <IconButton
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onManagePermissions(portfolio.portfolioId);
-                  }}
-                  color="info"
-                  size="small"
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'info.light',
-                      color: 'white',
-                    },
-                  }}
-                >
-                  <SecurityIcon />
-                </IconButton>
-              </Tooltip>
+              </ActionIconButton>
             )}
-            {onDelete && (
-              <Tooltip title={t('common.delete') || 'Delete'}>
-                <IconButton
-                  onClick={handleDelete}
-                  color="error"
-                  size="small"
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'error.light',
-                      color: 'white',
-                    },
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+            {onManagePermissions && !isReadOnly && (
+              <ActionIconButton
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onManagePermissions(portfolio.portfolioId);
+                }}
+                color="info"
+                size="small"
+                tooltip="Manage Permissions"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'info.light',
+                    color: 'white',
+                  }
+                }}
+              >
+                <SecurityIcon />
+              </ActionIconButton>
+            )}
+            {onDelete && !isReadOnly && (
+              <ActionIconButton
+                onClick={handleDelete}
+                color="error"
+                size="small"
+                tooltip={t('common.delete') || 'Delete'}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'error.light',
+                    color: 'white',
+                  }
+                }}
+              >
+                <DeleteIcon />
+              </ActionIconButton>
             )}
           </Box>
           
@@ -392,7 +391,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
             >
               {t('common.cancel')}
             </ResponsiveButton>
-            <ResponsiveButton
+            <ActionButton
               onClick={handleDeleteConfirm}
               disabled={isDeleting || !deleteConfirmationChecked}
               color="error"
@@ -402,7 +401,7 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               desktopText={t('portfolio.delete')}
             >
               {isDeleting ? t('portfolio.deleting') : t('portfolio.delete')}
-            </ResponsiveButton>
+            </ActionButton>
           </>
         }
       >

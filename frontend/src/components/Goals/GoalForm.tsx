@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -25,6 +24,7 @@ import { goalApi } from '../../services/api.goal';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import MoneyInput from '../Common/MoneyInput';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { useTranslation } from 'react-i18next';
 
 interface GoalFormProps {
@@ -197,30 +197,33 @@ export const GoalForm: React.FC<GoalFormProps> = ({
 
   const actions = (
     <Stack direction="row" gap={2}>
-      <Button 
+      <ResponsiveButton 
         onClick={handleClose} 
         disabled={loading}
+        variant="outlined"
+        forceTextOnly={true}
+        mobileText={t('common.cancel')}
+        desktopText={t('common.cancel')}
         sx={{ 
-          textTransform: 'none',
-          fontWeight: 500,
           px: 3
         }}
       >
         {t('common.cancel')}
-      </Button>
-      <Button 
+      </ResponsiveButton>
+      <ActionButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={loading}
+        forceTextOnly={true}
+        mobileText={loading ? t('goals.form.saving') : (goal ? t('goals.form.update') : t('goals.form.create'))}
+        desktopText={loading ? t('goals.form.saving') : (goal ? t('goals.form.update') : t('goals.form.create'))}
         sx={{ 
-          textTransform: 'none',
-          fontWeight: 500,
           px: 3,
           borderRadius: 2
         }}
       >
         {loading ? t('goals.form.saving') : (goal ? t('goals.form.update') : t('goals.form.create'))}
-      </Button>
+      </ActionButton>
     </Stack>
   );
 

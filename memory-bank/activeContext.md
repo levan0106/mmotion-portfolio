@@ -1,13 +1,80 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: October 31, 2025  
-**Session Type**: Scroll To Top Functionality Implementation  
-**Primary Goal**: Implement automatic scroll to top on route changes and tab switching for better user experience
+**Date**: November 1, 2025  
+**Session Type**: Demo Account Banner & Management System Implementation  
+**Primary Goal**: Implement demo account toggle functionality, banner component with collapse/expand, and improve mobile UX for demo account indication
 
 ## Recent Achievements
 
-### ✅ Scroll To Top Functionality Implementation (Current Session - October 31, 2025)
+### ✅ Demo Account Banner & Management System Implementation (Current Session - November 1, 2025)
+1. **Demo Account Toggle System**
+   - **Backend API Endpoints**: Created GET `/api/v1/settings/demo-account` and POST `/api/v1/settings/demo-account/toggle` endpoints
+   - **AccountService Enhancement**: Added `getDemoAccountStatus()` and `toggleDemoAccount()` methods
+   - **Fixed Demo Account ID**: Uses UUID `ffffffff-ffff-4fff-bfff-ffffffffffff` for demo account identification
+   - **Permission-Based Access**: GET requires `settings.read`, POST requires `settings.update` permissions
+   - **Files Updated**: account.service.ts, settings.controller.ts
+
+2. **Frontend API Integration**
+   - **SettingsApi Enhancement**: Added `getDemoAccountStatus()` and `toggleDemoAccount()` methods
+   - **Response Validation**: Robust validation to ensure `enabled` is boolean and handle invalid responses
+   - **Error Handling**: Proper error handling with default fallback state
+   - **Files Updated**: api.settings.ts
+
+3. **System Settings UI Integration**
+   - **Toggle Switch**: Added "Enable Demo Account" switch in System Settings card
+   - **State Management**: Integrated with SettingsApi for real-time status updates
+   - **Toast Notifications**: Success/error messages using ToastService
+   - **Error Recovery**: UI state reverts if API call fails
+   - **Status Display**: Shows demo account name and status when enabled
+   - **Files Updated**: Settings.tsx
+
+4. **DemoAccountBanner Component**
+   - **Component Creation**: Created comprehensive banner component for demo account indication
+   - **Collapse/Expand Functionality**: Full collapse/expand with smooth animations
+   - **Default State**: Banner defaults to collapsed state for minimal UI intrusion
+   - **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner toggles expansion
+   - **Account Switching**: Integrated with AccountContext for account switching functionality
+   - **LocalStorage Persistence**: Collapse state saved to localStorage for user preference
+   - **Files Created**: DemoAccountBanner.tsx
+
+5. **Mobile Responsive Design**
+   - **Mobile Optimization**: Fully responsive design with mobile-specific layouts
+   - **Button Placement**: Different button placement strategies for mobile vs desktop
+   - **Touch-Friendly**: Large touch targets and proper spacing for mobile interaction
+   - **Action Positioning**: Absolute positioning for mobile buttons to ensure visibility
+   - **Icon Management**: Icons hidden on mobile to save space, shown on desktop
+   - **Font Sizing**: Responsive font sizes with mobile-optimized typography
+   - **Files Updated**: DemoAccountBanner.tsx
+
+6. **AppLayout Integration**
+   - **Banner Placement**: Integrated DemoAccountBanner below Toolbar in main content area
+   - **Visual Indicators**: Added "Demo" chip and "Read-only" text in AppBar when in demo account
+   - **Height Adjustment**: Scrollable content area adjusts for banner height
+   - **Context Integration**: Uses AccountContext for demo account detection
+   - **Files Updated**: AppLayout.tsx
+
+7. **Translation Keys & i18n**
+   - **Namespace Fix**: Fixed translation keys to use correct namespace `accountSwitcher.demoAccountBanner.*`
+   - **Comprehensive Translations**: Added all banner-related keys in both en.json and vi.json
+   - **Key Consistency**: All keys updated throughout component for consistency
+   - **Files Updated**: DemoAccountBanner.tsx, en.json, vi.json
+
+8. **Report Service Fix**
+   - **Permission Integration**: Updated ReportService to use PermissionCheckService for accessible portfolios
+   - **UPDATE Permission Support**: Accounts with UPDATE permissions can now view report data
+   - **Portfolio Filtering**: Filters requested portfolioIds based on accessibility
+   - **API Consistency**: All report endpoints (getReportData, getCashBalanceReport, etc.) use permission-based filtering
+   - **Files Updated**: report.service.ts, report.module.ts
+
+9. **Code Quality & Bug Fixes**
+   - **Syntax Fixes**: Fixed duplicate closing tags and syntax errors
+   - **Button Deduplication**: Removed duplicate collapse/expand buttons
+   - **Action Prop Optimization**: Optimized action prop logic for better mobile/desktop handling
+   - **Linter Compliance**: All code passes linting with no errors
+   - **Files Updated**: DemoAccountBanner.tsx
+
+### ✅ Scroll To Top Functionality Implementation (Previous Session - October 31, 2025)
 1. **ScrollToTop Component Creation**
    - **Unified Component & Utility**: Created ScrollToTop component with exported scrollToTop utility function in single file
    - **Route Change Detection**: Uses useLocation hook to detect route changes and automatically scroll to top
@@ -591,10 +658,16 @@
 - **Migration Management**: Consolidated and optimized database migrations
 
 ### Key Components Modified (Current Session)
-- `frontend/src/components/Common/FloatingMenuButton.tsx` - Mobile floating menu button with animations and responsive design
-- `frontend/src/components/Layout/AppLayout.tsx` - Integration of FloatingMenuButton and user profile click handlers
-- `frontend/src/components/Portfolio/PortfolioList.styles.css` - Fixed mobile header layout to keep title and buttons on same row
-- `frontend/src/pages/Profile.tsx` - Enhanced password forms with accessibility features and show/hide functionality
+- `frontend/src/components/Common/DemoAccountBanner.tsx` - Comprehensive banner component with collapse/expand and mobile optimization
+- `frontend/src/components/Layout/AppLayout.tsx` - Integration of DemoAccountBanner with visual indicators in AppBar
+- `frontend/src/components/RoleManagement/Settings.tsx` - Added demo account toggle switch in System Settings
+- `frontend/src/services/api.settings.ts` - Added getDemoAccountStatus() and toggleDemoAccount() methods
+- `src/modules/shared/services/account.service.ts` - Added demo account status management methods
+- `src/modules/shared/controllers/settings.controller.ts` - Added demo account API endpoints
+- `src/modules/report/services/report.service.ts` - Updated to use PermissionCheckService for accessible portfolios
+- `src/modules/report/report.module.ts` - Added PortfolioModule import for PermissionCheckService access
+- `frontend/src/i18n/locales/en.json` - Added demo account banner translation keys
+- `frontend/src/i18n/locales/vi.json` - Added demo account banner translation keys
 
 ### Key Components Modified (Previous Session - Generic Form Modal)
 - `frontend/src/services/deviceFingerprintService.ts` - Advanced device fingerprinting with incognito detection
@@ -619,14 +692,18 @@
 - `frontend/src/components/Reports/InvestorReport.tsx` - Updated to use ResponsiveTable
 
 ### User Experience Improvements (Current Session)
-- **Mobile Navigation**: Floating menu button provides easy access to navigation on mobile devices
-- **Touch-Friendly Design**: 48x48px floating button optimized for mobile thumb interaction
-- **Consistent Mobile Layout**: Portfolio list header maintains title and buttons on same row on mobile
-- **Password Visibility**: Show/hide password functionality for all password fields on mobile
-- **Form Accessibility**: Proper form structure with autocomplete attributes and hidden username fields
-- **Standards Compliance**: Full HTML5 and accessibility standards compliance
-- **Visual Feedback**: Smooth animations and visual feedback for better user experience
-- **Non-Intrusive Design**: Floating button only appears on mobile, doesn't affect desktop experience
+- **Demo Account Awareness**: Prominent banner indicates when user is in demo account mode
+- **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar for persistent indication
+- **Collapse/Expand**: Banner can be collapsed for minimal UI intrusion, expands on click
+- **Mobile Optimization**: Fully responsive banner with mobile-specific button placement
+- **Touch-Friendly**: Large touch targets and proper spacing for mobile interaction
+- **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+- **Account Switching**: Easy account switching to main account from banner
+- **State Persistence**: User collapse preference saved to localStorage
+- **Smooth Animations**: Material-UI Collapse component for smooth expand/collapse animations
+- **Permission-Based Reports**: Accounts with UPDATE permissions can now view report data
+- **Clear Status Display**: Shows demo account name and status in System Settings
+- **Toast Feedback**: Success/error messages for demo account toggle operations
 
 ### User Experience Improvements (Previous Session - Generic Form Modal)
 - **Seamless Login Experience**: No error messages when password is required, smooth transition to password step
@@ -742,16 +819,16 @@
 ## Next Steps
 
 ### Completed Tasks (Current Session)
-1. ✅ **FloatingMenuButton Implementation**: Created mobile floating menu button with animations and responsive design
-2. ✅ **AppLayout Integration**: Integrated FloatingMenuButton with existing drawer toggle logic
-3. ✅ **PortfolioList Mobile Layout Fix**: Fixed mobile header to keep title and buttons on same row
-4. ✅ **Profile Form Accessibility**: Added proper form structure with autocomplete attributes
-5. ✅ **Password Visibility Toggle**: Implemented show/hide password functionality for all password fields
-6. ✅ **DOM Compliance Fixes**: Resolved all DOM warnings for better accessibility
-7. ✅ **Hidden Username Fields**: Added hidden username fields for password manager compatibility
-8. ✅ **Form Submission Enhancement**: Proper form submission with preventDefault() and type attributes
-9. ✅ **Mobile UX Optimization**: Touch-friendly design optimized for mobile thumb interaction
-10. ✅ **Standards Compliance**: Full HTML5 and accessibility standards compliance
+1. ✅ **Demo Account Toggle System**: Implemented backend API endpoints and frontend integration
+2. ✅ **System Settings UI**: Added demo account toggle switch with state management
+3. ✅ **DemoAccountBanner Component**: Created comprehensive banner with collapse/expand functionality
+4. ✅ **Mobile Responsive Design**: Fully responsive banner with mobile-optimized layouts
+5. ✅ **Click Anywhere Toggle**: Implemented click-anywhere functionality when banner is collapsed
+6. ✅ **AppLayout Integration**: Integrated banner with visual indicators in AppBar
+7. ✅ **Translation Support**: Fixed all translation keys to use correct namespace
+8. ✅ **Report Service Fix**: Updated to support UPDATE permissions for report access
+9. ✅ **Code Quality**: Fixed all syntax errors and removed duplicate buttons
+10. ✅ **Error Handling**: Comprehensive error handling with UI state recovery
 
 ### Completed Tasks (Previous Session)
 1. ✅ **Device Trust System Implementation**: Complete backend and frontend implementation
@@ -769,16 +846,16 @@
 13. ✅ **Build Verification**: Both frontend and backend build successfully
 
 ### Future Enhancements (Current Session)
-1. **Advanced Mobile Features**: Gesture-based navigation and mobile-specific interactions
-2. **Enhanced Accessibility**: Screen reader optimization and keyboard navigation improvements
-3. **Mobile Performance**: Optimized animations and touch response for better mobile performance
-4. **Form Validation**: Enhanced validation rules and real-time validation for mobile forms
-5. **Mobile Notifications**: Push notifications and mobile-specific notification handling
-6. **Offline Support**: Offline form capabilities and data synchronization
-7. **Mobile Analytics**: Track mobile usage patterns and user behavior
-8. **Progressive Web App**: PWA features for mobile app-like experience
-9. **Mobile Testing**: Comprehensive mobile device testing and optimization
-10. **Accessibility Compliance**: WCAG 2.1 AA compliance and accessibility audit
+1. **Advanced Banner Features**: Auto-dismiss after time period, customizable messages
+2. **Banner Analytics**: Track banner interaction patterns and user preferences
+3. **Enhanced Visual Design**: More prominent visual indicators for demo account mode
+4. **Banner Customization**: Admin-configurable banner messages and appearance
+5. **Account Quick Switch**: Quick account switcher directly from banner
+6. **Banner Themes**: Different banner themes for different account states
+7. **Banner Animation**: More sophisticated animations for expand/collapse
+8. **Banner Notifications**: Optional push notifications when switching to demo account
+9. **Banner History**: Track when users switch accounts and why
+10. **Banner A/B Testing**: Test different banner designs and messages
 
 ### Future Enhancements (Previous Session)
 1. **Advanced Permissions**: More granular permission levels
@@ -802,6 +879,7 @@ frontend/src/
 │   │   ├── GenericFormModal.tsx (Centralized form modal with tabbed interface)
 │   │   ├── ModalWrapper.tsx (Enhanced with fullScreen support)
 │   │   ├── FloatingTradingButton.tsx (Updated to open GenericFormModal)
+│   │   ├── DemoAccountBanner.tsx (Demo account banner with collapse/expand)
 │   │   ├── FloatingMenuButton.tsx (Mobile floating menu button)
 │   │   ├── ResponsiveTable.tsx (Reusable table component)
 │   │   ├── ResponsiveTableWithActions.tsx (Table with actions)

@@ -33,7 +33,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionIconButton } from '../Common';
 import CashFlowFormModal from './CashFlowFormModal';
 import CashflowDeleteConfirmationModal from './CashflowDeleteConfirmationModal';
 import TransferCashModal from './TransferCashModal';
@@ -1462,33 +1462,29 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                               </TableCell>
                               <TableCell>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                  <Tooltip title={cashFlow.status === 'CANCELLED' ? t('cashflow.tooltips.cannotEditCancelled') : t('cashflow.tooltips.edit')}>
-                                    <span>
-                                      <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleEditCashFlow(cashFlow);
-                                        }}
-                                        color="primary"
-                                        disabled={cashFlow.status === 'CANCELLED'}
-                                      >
-                                        <EditIcon fontSize="small" />
-                                      </IconButton>
-                                    </span>
-                                  </Tooltip>
-                                  <Tooltip title={t('cashflow.tooltips.delete')}>
-                                    <IconButton
-                                      size="small"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteCashFlow(cashFlow);
-                                      }}
-                                      color="error"
-                                    >
-                                      <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
+                                  <ActionIconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditCashFlow(cashFlow);
+                                    }}
+                                    color="primary"
+                                    disabled={cashFlow.status === 'CANCELLED'}
+                                    tooltip={cashFlow.status === 'CANCELLED' ? t('cashflow.tooltips.cannotEditCancelled') : t('cashflow.tooltips.edit')}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </ActionIconButton>
+                                  <ActionIconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteCashFlow(cashFlow);
+                                    }}
+                                    color="error"
+                                    tooltip={t('cashflow.tooltips.delete')}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </ActionIconButton>
                                 </Box>
                               </TableCell>
                             </TableRow>

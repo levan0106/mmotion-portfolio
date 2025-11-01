@@ -46,7 +46,7 @@ import PortfolioCardWithPermissions from '../components/Portfolio/PortfolioCardW
 import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissionModal';
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
-import { ResponsiveButton } from '../components/Common';
+import { ResponsiveButton, ActionButton } from '../components/Common';
 import { apiService } from '../services/api';
 import { Portfolio, UpdatePortfolioDto } from '../types';
 
@@ -67,6 +67,7 @@ const Dashboard: React.FC = () => {
   const [editingPortfolio, setEditingPortfolio] = useState<Portfolio | null>(null);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const { isReadOnly } = useAccount();
 
   if (isLoading) {
     return (
@@ -552,10 +553,9 @@ const Dashboard: React.FC = () => {
                 {t('dashboard.managePortfolios')}
               </ResponsiveTypography>
             </Box>
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               icon={<AddIcon />}
-              startIcon={<AddIcon />}
               onClick={handleCreatePortfolio}
               size="large"
               mobileText={t('common.create')}
@@ -569,7 +569,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               {t('dashboard.createNewPortfolio')}
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
           
           {portfolios.length === 0 ? (
@@ -595,10 +595,9 @@ const Dashboard: React.FC = () => {
               <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
                 {t('dashboard.startInvestment')}
               </ResponsiveTypography>
-              <ResponsiveButton
+              <ActionButton
                 variant="contained"
                 icon={<AddIcon />}
-                startIcon={<AddIcon />}
                 onClick={handleCreatePortfolio}
                 size="large"
                 mobileText={t('common.create')}
@@ -614,7 +613,7 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 {t('dashboard.createFirstPortfolio')}
-              </ResponsiveButton>
+              </ActionButton>
             </Card>
           ) : (
             <Grid container spacing={3}>
@@ -628,6 +627,7 @@ const Dashboard: React.FC = () => {
                         onEdit={handlePortfolioEdit}
                         onPortfolioCopied={handlePortfolioCopied}
                         onManagePermissions={handleManagePermissions}
+                        isReadOnly={isReadOnly}
                       />
                     </Box>
                   </Slide>

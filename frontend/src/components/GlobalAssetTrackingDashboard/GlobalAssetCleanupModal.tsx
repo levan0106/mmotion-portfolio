@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Alert,
   Box,
@@ -14,6 +13,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 interface CleanupModalProps {
   open: boolean;
@@ -86,21 +86,28 @@ export default function GlobalAssetCleanupModal({
       </DialogContent>
       
       <DialogActions>
-        <Button 
+        <ResponsiveButton 
           onClick={handleClose}
           disabled={loading}
+          variant="outlined"
+          forceTextOnly={true}
+          mobileText="Cancel"
+          desktopText="Cancel"
         >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ActionButton
           onClick={handleCleanup}
           color="warning"
           variant="contained"
           disabled={loading}
-          startIcon={loading ? <CircularProgress size={16} /> : <DeleteIcon />}
+          icon={loading ? <CircularProgress size={16} /> : <DeleteIcon />}
+          forceTextOnly={true}
+          mobileText={loading ? 'Cleaning...' : 'Cleanup'}
+          desktopText={loading ? 'Cleaning...' : 'Cleanup'}
         >
           {loading ? 'Cleaning...' : 'Cleanup'}
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );

@@ -45,8 +45,12 @@ export const AccountSwitcher: React.FC = () => {
       setLoading(true);
       const accountsData = await apiService.getAccounts();
       
-      // Sort accounts: main account first, then by creation date
+      // Sort accounts: demo account first, then main account, then by creation date
       const sortedAccounts = accountsData.sort((a: Account, b: Account) => {
+        // Demo account first
+        if (a.isDemoAccount && !b.isDemoAccount) return -1;
+        if (!a.isDemoAccount && b.isDemoAccount) return 1;
+        // Main account second
         if (a.isMainAccount && !b.isMainAccount) return -1;
         if (!a.isMainAccount && b.isMainAccount) return 1;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -251,10 +255,25 @@ export const AccountSwitcher: React.FC = () => {
                     backgroundColor: 'primary.100',
                   },
                 }),
-                '&.Mui-selected': {
-                  backgroundColor: account.isMainAccount ? 'primary.200' : 'primary.light',
+                // Special styling for demo account
+                ...(account.isDemoAccount && {
+                  backgroundColor: 'success.50',
                   '&:hover': {
-                    backgroundColor: account.isMainAccount ? 'primary.200' : 'primary.light',
+                    backgroundColor: 'success.100',
+                  },
+                }),
+                '&.Mui-selected': {
+                  backgroundColor: account.isDemoAccount 
+                    ? 'success.200' 
+                    : account.isMainAccount 
+                      ? 'primary.200' 
+                      : 'primary.light',
+                  '&:hover': {
+                    backgroundColor: account.isDemoAccount 
+                      ? 'success.200' 
+                      : account.isMainAccount 
+                        ? 'primary.200' 
+                        : 'primary.light',
                   },
                 },
                 '&.Mui-disabled': {
@@ -268,7 +287,12 @@ export const AccountSwitcher: React.FC = () => {
                     width: 32, 
                     height: 32, 
                     fontSize: '0.875rem',
-                    ...(account.isMainAccount && {
+                    ...(account.isDemoAccount && {
+                      background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                      border: '2px solid',
+                      borderColor: 'success.main',
+                    }),
+                    ...(account.isMainAccount && !account.isDemoAccount && {
                       background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                       border: '2px solid',
                       borderColor: 'primary.main',
@@ -276,14 +300,14 @@ export const AccountSwitcher: React.FC = () => {
                   }}>
                     {getAccountInitials(account.name)}
                   </Avatar>
-                  {account.isMainAccount && (
+                  {(account.isMainAccount || account.isDemoAccount) && (
                     <StarIcon 
                       sx={{ 
                         position: 'absolute',
                         top: -2,
                         right: -2,
                         fontSize: '0.75rem',
-                        color: 'primary.main',
+                        color: account.isDemoAccount ? 'success.main' : 'primary.main',
                         backgroundColor: 'white',
                         borderRadius: '50%',
                         p: 0.25,
@@ -298,7 +322,25 @@ export const AccountSwitcher: React.FC = () => {
                     <Typography variant="body2" noWrap>
                       {account.name}
                     </Typography>
-                    {account.isMainAccount && (
+                    {account.isDemoAccount && (
+                      <Chip
+                        label={t('accountSwitcher.demoAccount')}
+                        size="small"
+                        color="success"
+                        variant="filled"
+                        sx={{ 
+                          height: 20, 
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                          color: 'white',
+                          '& .MuiChip-label': {
+                            px: 1,
+                          }
+                        }}
+                      />
+                    )}
+                    {account.isMainAccount && !account.isDemoAccount && (
                       <Chip
                         label={t('accountSwitcher.mainAccount')}
                         size="small"

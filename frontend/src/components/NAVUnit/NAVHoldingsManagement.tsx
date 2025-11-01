@@ -35,7 +35,7 @@ import {
   Calculate as CalculateIcon,
   Transform as ConvertIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ActionButton } from '../Common';
 import { 
   formatCurrency, 
   formatPercentage, 
@@ -146,7 +146,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
             <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
               {t('nav.holdings.notFundMessage')}
             </ResponsiveTypography>
-            <ResponsiveButton 
+            <ActionButton 
               variant="contained" 
               icon={<AccountBalanceIcon />}
               mobileText={t('nav.holdings.convert')}
@@ -155,7 +155,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
               disabled={loading}
             >
               {loading ? <CircularProgress size={20} /> : t('nav.holdings.convertToFund')}
-            </ResponsiveButton>
+            </ActionButton>
           </CardContent>
         </Card>
 
@@ -285,7 +285,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
         <CardContent sx={{ p: getUltraSpacing(2, 1.5) }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <ResponsiveButton
+              <ActionButton
                 variant="contained"
                 icon={<AddIcon />}
                 mobileText={t('nav.holdings.new')}
@@ -294,8 +294,8 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 sx={{ minWidth: 150 }}
               >
                 {t('nav.holdings.newSubscription')}
-              </ResponsiveButton>
-              <ResponsiveButton
+              </ActionButton>
+              <ActionButton
                 variant="outlined"
                 icon={<RemoveIcon />}
                 mobileText={t('nav.holdings.process')}
@@ -304,9 +304,9 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
                 sx={{ minWidth: 150 }}
               >
                 {t('nav.holdings.processRedemption')}
-              </ResponsiveButton>
+              </ActionButton>
             </Box>
-            <ResponsiveButton
+            <ActionButton
               variant="outlined"
               color="warning"
               icon={<ConvertIcon />}
@@ -316,7 +316,7 @@ const NAVHoldingsManagement: React.FC<NAVHoldingsManagementProps> = ({
               sx={{ minWidth: 150 }}
             >
               {t('nav.holdings.convertToPortfolio')}
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
         </CardContent>
       </Card>

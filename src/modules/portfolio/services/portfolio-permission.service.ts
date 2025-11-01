@@ -244,6 +244,7 @@ export class PortfolioPermissionService {
 
   /**
    * Check if account has permission to perform action on portfolio
+   * Allows access to portfolios owned by demo account (accessible by all users).
    */
   async checkPortfolioPermission(
     portfolioId: string,
@@ -253,10 +254,22 @@ export class PortfolioPermissionService {
     // First check if account is the owner
     const portfolio = await this.portfolioRepository.findOne({
       where: { portfolioId },
+      relations: ['account'],
     });
 
     if (!portfolio) {
       return false;
+    }
+
+    // Check if portfolio belongs to demo account (accessible by all users for view only)
+    if (portfolio.account?.isDemoAccount) {
+      // Demo account portfolios: allow view access to all users
+      // But restrict update/delete/manage_permissions to demo account only
+      if (action === 'view') {
+        return true;
+      }
+      // For other actions, only demo account itself can perform
+      return portfolio.accountId === accountId;
     }
 
     // If account is the owner, they have all permissions

@@ -25,7 +25,7 @@ import {
   DialogContentText,
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -65,8 +65,12 @@ export const AccountManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await apiService.api.get('/api/v1/accounts');
+      
+      // remove demo account in main account list
+      const filteredAccounts = response.data.filter((account: Account) => !account.isDemoAccount);
+
       // Sort accounts: main account first, then by creation date
-      const sortedAccounts = sortAccounts(response.data);
+      const sortedAccounts = sortAccounts(filteredAccounts);
       setAccounts(sortedAccounts);
     } catch (err: any) {
       console.error('Error loading accounts:', err);
@@ -203,7 +207,7 @@ export const AccountManagement: React.FC = () => {
       <Card>
         <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               icon={<AddIcon />}
               onClick={() => setCreateModalOpen(true)}
@@ -211,7 +215,7 @@ export const AccountManagement: React.FC = () => {
               desktopText={t('accountManagement.createAccount')}
             >
               {t('accountManagement.createAccount')}
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
 
           {error && (
@@ -559,15 +563,18 @@ export const AccountManagement: React.FC = () => {
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleConfirmDelete}
             disabled={deleting}
             variant="contained"
             color="error"
-            startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+            icon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+            forceTextOnly={true}
+            mobileText={deleting ? t('accountManagement.deleteConfirm.deleting') : t('common.delete')}
+            desktopText={deleting ? t('accountManagement.deleteConfirm.deleting') : t('common.delete')}
           >
             {deleting ? t('accountManagement.deleteConfirm.deleting') : t('common.delete')}
-          </ResponsiveButton>
+          </ActionButton>
         </DialogActions>
       </Dialog>
 

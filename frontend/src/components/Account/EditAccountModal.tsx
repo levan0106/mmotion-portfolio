@@ -8,7 +8,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { AccountBalance as AccountIcon } from '@mui/icons-material';
 import { Account } from '../../types';
@@ -133,17 +133,18 @@ export const EditAccountModal: React.FC<EditAccountModalProps> = ({
           >
             {t('common.cancel')}
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleSubmit}
             variant="contained"
             disabled={loading || !formData.name || !formData.email}
-            icon={loading && <CircularProgress size={16} />}
+            icon={loading ? <CircularProgress size={16} /> : undefined}
             mobileText={loading ? t('editAccountModal.updating') : t('editAccountModal.update')}
             desktopText={loading ? t('editAccountModal.updating') : t('editAccountModal.updateAccount')}
+            forceTextOnly={true}
             sx={{ width: 'auto' }}
           >
             {loading ? t('editAccountModal.updating') : t('editAccountModal.updateAccount')}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       }
     >

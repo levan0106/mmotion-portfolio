@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   TextField,
-  Button,
   Grid,
   Alert,
   CircularProgress,
@@ -18,6 +17,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { PositionResponseDto } from '../../types/trading';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 // Validation schema
 const riskTargetsSchema = yup.object({
@@ -365,23 +365,29 @@ export const RiskTargetsForm: React.FC<RiskTargetsFormProps> = ({
             <Grid item xs={12}>
               <Box display="flex" gap={2} justifyContent="flex-end">
                 {onCancel && (
-                  <Button
+                  <ResponsiveButton
                     variant="outlined"
                     onClick={onCancel}
                     disabled={isLoading}
+                    forceTextOnly={true}
+                    mobileText="Cancel"
+                    desktopText="Cancel"
                   >
                     Cancel
-                  </Button>
+                  </ResponsiveButton>
                 )}
-                <Button
+                <ActionButton
                   type="submit"
                   variant="contained"
                   size="large"
                   disabled={!isValid || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} /> : null}
+                  icon={isLoading ? <CircularProgress size={20} /> : undefined}
+                  forceTextOnly={true}
+                  mobileText={isLoading ? 'Saving...' : 'Save Risk Targets'}
+                  desktopText={isLoading ? 'Saving...' : 'Save Risk Targets'}
                 >
                   {isLoading ? 'Saving...' : 'Save Risk Targets'}
-                </Button>
+                </ActionButton>
               </Box>
             </Grid>
           </Grid>

@@ -20,7 +20,7 @@ import {
   Divider,
 } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
-import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { ActionButton } from '../Common';
 import {
   Send as SendIcon,
   People as PeopleIcon,
@@ -344,7 +344,7 @@ export const AdminMessageSender: React.FC = () => {
 
               <Divider sx={{ my: 2 }} />
 
-              <ResponsiveButton
+              <ActionButton
                 fullWidth
                 variant="contained"
                 icon={<SendIcon />}
@@ -353,9 +353,10 @@ export const AdminMessageSender: React.FC = () => {
                 sx={{ mt: 2 }}
                 mobileText={sending ? t('adminMessage.sending') : t('adminMessage.send')}
                 desktopText={sending ? t('adminMessage.sending') : t('adminMessage.sendMessage')}
+                forceTextOnly={true}
               >
                 {sending ? t('adminMessage.sending') : t('adminMessage.sendMessage')}
-              </ResponsiveButton>
+              </ActionButton>
             </CardContent>
           </Card>
         </Grid>

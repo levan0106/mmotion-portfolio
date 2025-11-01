@@ -14,7 +14,7 @@ import {
   CameraAlt as SnapshotIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ActionButton } from '../Common';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { SnapshotSimpleList } from './SnapshotSimpleList';
 import { PortfolioSelector } from './PortfolioSelector';
@@ -204,7 +204,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               color="secondary"
               icon={<SnapshotIcon />}
@@ -215,7 +215,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
               sx={{ textTransform: 'none', fontWeight: 600 }}
             >
               {t('snapshots.createForAllPortfolios')}
-            </ResponsiveButton>
+            </ActionButton>
             
             {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Tooltip title={t('snapshots.refreshDataTooltip')}>
@@ -252,7 +252,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
           flexWrap: 'wrap',
           alignItems: 'center'
         }}>
-          <ResponsiveButton
+          <ActionButton
             variant="contained"
             icon={<SnapshotIcon />}
             mobileText={t('snapshots.createSnapshots')}
@@ -262,9 +262,9 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             sx={{ textTransform: 'none', fontWeight: 600 }}
           >
             {t('snapshots.createSnapshots')}
-          </ResponsiveButton>
+          </ActionButton>
           
-          <ResponsiveButton
+          <ActionButton
             variant="outlined"
             color="warning"
             icon={isRecalculating ? <CircularProgress size={20} /> : <RefreshIcon />}
@@ -276,9 +276,9 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             sx={{ textTransform: 'none' }}
           >
             {isRecalculating ? t('snapshots.recalculating') : t('snapshots.recalculateAll')}
-          </ResponsiveButton>
+          </ActionButton>
           
-          <ResponsiveButton
+          <ActionButton
             variant="outlined"
             color="error"
             icon={<DeleteIcon />}
@@ -289,7 +289,7 @@ export const SnapshotManagement: React.FC<SnapshotManagementProps> = ({
             sx={{ textTransform: 'none' }}
           >
             {t('snapshots.deleteSnapshots')}
-          </ResponsiveButton>
+          </ActionButton>
         </Box>
       )}
 

@@ -9,6 +9,7 @@ import { Trade } from '../../trading/entities/trade.entity';
 import { CashFlow } from '../../portfolio/entities/cash-flow.entity';
 import { AssetGlobalSyncService } from '../../asset/services/asset-global-sync.service';
 import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
+import { PermissionCheckService } from '../../shared/services/permission-check.service';
 
 @Injectable()
 export class ReportService {
@@ -27,6 +28,7 @@ export class ReportService {
     private cashFlowRepository: Repository<CashFlow>,
     private assetGlobalSyncService: AssetGlobalSyncService,
     private assetValueCalculator: AssetValueCalculatorService,
+    private permissionCheckService: PermissionCheckService,
   ) {}
 
   /**
@@ -107,11 +109,43 @@ export class ReportService {
    */
   async getReportData(accountId: string, portfolioId?: string): Promise<ReportDataDto> {
     try {
+      // Get all accessible portfolios for the account (includes owned and shared with permissions)
+      const { portfolios: accessiblePortfolios } = await this.permissionCheckService.getAccessiblePortfoliosWithPermissions(
+        accountId,
+        'api'
+      );
+      
+      const accessiblePortfolioIds = accessiblePortfolios.map(p => p.portfolioId);
+      
+      if (accessiblePortfolioIds.length === 0) {
+        this.logger.warn(`No accessible portfolios found for accountId: ${accountId}`);
+        // Return empty reports if no accessible portfolios
+        return {
+          cashBalance: { total: 0, byExchange: [], byFundingSource: [], byAssetGroup: [] },
+          deposits: { total: 0, totalValue: 0, byExchange: [], byFundingSource: [], byAssetGroup: [] },
+          assets: { total: 0, totalValue: 0, byExchange: [], byFundingSource: [], byAssetGroup: [] },
+        };
+      }
+
       // Parse multiple portfolio IDs if provided as comma-separated string
       let portfolioIds: string[] | undefined;
       if (portfolioId && portfolioId !== 'all') {
-        portfolioIds = portfolioId.split(',').map(id => id.trim()).filter(id => id.length > 0);
-        this.logger.debug(`Processing multiple portfolio IDs: ${portfolioIds.join(', ')}`);
+        const requestedPortfolioIds = portfolioId.split(',').map(id => id.trim()).filter(id => id.length > 0);
+        
+        // Verify all requested portfolios are accessible
+        const invalidPortfolioIds = requestedPortfolioIds.filter(id => !accessiblePortfolioIds.includes(id));
+        if (invalidPortfolioIds.length > 0) {
+          this.logger.warn(`Some requested portfolios are not accessible: ${invalidPortfolioIds.join(', ')}`);
+          // Filter to only include accessible portfolios
+          portfolioIds = requestedPortfolioIds.filter(id => accessiblePortfolioIds.includes(id));
+        } else {
+          portfolioIds = requestedPortfolioIds;
+        }
+        
+        this.logger.debug(`Processing portfolio IDs: ${portfolioIds ? portfolioIds.join(', ') : 'all'}`);
+      } else {
+        // If no specific portfolio requested, use all accessible portfolios
+        portfolioIds = accessiblePortfolioIds;
       }
 
       const [cashBalanceReport, depositsReport, assetsReport] = await Promise.all([
@@ -135,13 +169,18 @@ export class ReportService {
    * Get cash balance report data
    */
   private async getCashBalanceReport(accountId: string, portfolioIds?: string[]): Promise<CashBalanceReportDto> {
-    // Get portfolios for the account, optionally filtered by portfolioIds
-    let portfolioQuery = this.portfolioRepository.createQueryBuilder('portfolio')
-      .where('portfolio.accountId = :accountId', { accountId });
-    
-    if (portfolioIds && portfolioIds.length > 0) {
-      portfolioQuery = portfolioQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
+    // Get portfolios filtered by accessible portfolioIds (includes owned and shared portfolios)
+    if (!portfolioIds || portfolioIds.length === 0) {
+      return {
+        total: 0,
+        byExchange: [],
+        byFundingSource: [],
+        byAssetGroup: [],
+      };
     }
+    
+    const portfolioQuery = this.portfolioRepository.createQueryBuilder('portfolio')
+      .where('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     
     const portfolios = await portfolioQuery.getMany();
 
@@ -151,15 +190,11 @@ export class ReportService {
     }, 0);
 
     // Get cash flows to analyze funding sources
-    // Get cash flows for these portfolios
-    let cashFlowQuery = this.cashFlowRepository
+    // Get cash flows for these accessible portfolios
+    const cashFlowQuery = this.cashFlowRepository
       .createQueryBuilder('cashFlow')
       .leftJoin('cashFlow.portfolio', 'portfolio')
-      .where('portfolio.accountId = :accountId', { accountId });
-    
-    if (portfolioIds && portfolioIds.length > 0) {
-      cashFlowQuery = cashFlowQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
-    }
+      .where('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
     
     const cashFlows = await cashFlowQuery.getMany();
 
@@ -201,16 +236,22 @@ export class ReportService {
    * Get deposits report data
    */
   private async getDepositsReport(accountId: string, portfolioIds?: string[]): Promise<DepositsReportDto> {
-    // Get only active deposits (not settled) for portfolios belonging to this account
-    let depositQuery = this.depositRepository
+    // Get only active deposits (not settled) for accessible portfolios
+    if (!portfolioIds || portfolioIds.length === 0) {
+      return {
+        total: 0,
+        totalValue: 0,
+        byExchange: [],
+        byFundingSource: [],
+        byAssetGroup: [],
+      };
+    }
+    
+    const depositQuery = this.depositRepository
       .createQueryBuilder('deposit')
       .leftJoin('deposit.portfolio', 'portfolio')
-      .where('portfolio.accountId = :accountId', { accountId })
+      .where('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds })
       .andWhere('deposit.status = :status', { status: 'ACTIVE' });
-    
-    if (portfolioIds && portfolioIds.length > 0) {
-      depositQuery = depositQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
-    }
     
     const deposits = await depositQuery.getMany();
 
@@ -284,17 +325,23 @@ export class ReportService {
    * Get assets report data
    */
   private async getAssetsReport(accountId: string, portfolioIds?: string[]): Promise<AssetsReportDto> {
-    // Get trades for the specific portfolio to calculate actual holdings
-    let tradeQuery = this.tradeRepository
+    // Get trades for accessible portfolios to calculate actual holdings
+    if (!portfolioIds || portfolioIds.length === 0) {
+      return {
+        total: 0,
+        totalValue: 0,
+        byExchange: [],
+        byFundingSource: [],
+        byAssetGroup: [],
+      };
+    }
+    
+    const tradeQuery = this.tradeRepository
       .createQueryBuilder('trade')
       .leftJoin('trade.portfolio', 'portfolio')
       .leftJoin('trade.asset', 'asset')
-      .where('portfolio.accountId = :accountId', { accountId })
+      .where('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds })
       .addSelect(['asset.id', 'asset.symbol', 'asset.type', 'asset.initialValue']);
-    
-    if (portfolioIds && portfolioIds.length > 0) {
-      tradeQuery = tradeQuery.andWhere('portfolio.portfolioId IN (:...portfolioIds)', { portfolioIds });
-    }
     
     const trades = await tradeQuery.getMany();
     

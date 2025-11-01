@@ -23,6 +23,7 @@ export interface Account {
   baseCurrency: string;
   isInvestor: boolean;
   isMainAccount: boolean;
+  isDemoAccount?: boolean;
 }
 
 export interface AuthResponse {

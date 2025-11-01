@@ -17,7 +17,7 @@ import ResponsiveTypography from '../Common/ResponsiveTypography';
 import {
   Edit as EditIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { FundUnitTransactionWithCashFlow } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -147,7 +147,7 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton 
+      <ActionButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={loading}
@@ -155,9 +155,10 @@ export const EditHoldingTransactionModal: React.FC<EditHoldingTransactionModalPr
         icon={loading ? <CircularProgress size={20} /> : <EditIcon />}
         mobileText={t('common.update')}
         desktopText={t('holdings.edit.updateTransaction')}
+        forceTextOnly={true}
       >
         {loading ? t('holdings.edit.updating') : t('holdings.edit.updateTransaction')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

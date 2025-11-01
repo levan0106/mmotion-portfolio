@@ -20,7 +20,7 @@ import {
   Schedule as ScheduleIcon,
   DateRange as DateRangeIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ModalWrapper } from '../Common/ModalWrapper';
 import { SnapshotGranularity } from '../../types/snapshot.types';
@@ -189,7 +189,7 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
       >
         {t('snapshots.modals.deleteSnapshots.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton
+      <ActionButton
         variant="contained"
         color="error"
         icon={isDeleting ? undefined : <DeleteIcon />}
@@ -197,10 +197,11 @@ const DeleteSnapshotsModal: React.FC<DeleteSnapshotsModalProps> = ({
         desktopText={t('snapshots.modals.deleteSnapshots.deleteSnapshots')}
         onClick={handleDelete}
         disabled={isDeleting}
+        forceTextOnly={true}
         sx={{ textTransform: 'none', minWidth: 140 }}
       >
         {isDeleting ? t('snapshots.modals.deleteSnapshots.deleting') : t('snapshots.modals.deleteSnapshots.deleteSnapshots')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

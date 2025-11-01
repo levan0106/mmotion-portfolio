@@ -18,7 +18,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Add as AddIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton, ResponsiveTypography } from '../Common';
+import { ResponsiveButton, ActionButton, ResponsiveTypography } from '../Common';
 import { SubscribeToFundDto, Portfolio } from '../../types';
 import { apiService } from '../../services/api';
 import { formatCurrency, formatNumberWithSeparators } from '../../utils/format';
@@ -206,7 +206,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       >
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton 
+      <ActionButton 
         onClick={handleSubmit} 
         variant="contained" 
         disabled={!isFormValid}
@@ -217,7 +217,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
         forceTextOnly={true}
       >
         {loading ? t('holdings.subscriptionModal.creating') : t('holdings.subscriptionModal.createSubscription')}
-      </ResponsiveButton>
+      </ActionButton>
     </>
   );
 

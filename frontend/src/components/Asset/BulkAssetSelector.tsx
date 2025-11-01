@@ -19,7 +19,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ResponsiveTypography } from '../Common';
 import {
   Search as SearchIcon,
@@ -201,7 +201,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
       <ResponsiveButton onClick={onClose} icon={<></>} mobileText={t('common.cancel')} desktopText={t('common.cancel')}>
         {t('common.cancel')}
       </ResponsiveButton>
-      <ResponsiveButton
+      <ActionButton
         variant="contained"
         onClick={handleBulkCreate}
         disabled={selectedAssets.length === 0 || isCreating}
@@ -211,7 +211,7 @@ export const BulkAssetSelector: React.FC<BulkAssetSelectorProps> = ({
         desktopText={isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createAssets', { count: selectedAssets.length })}
       >
         {isCreating ? t('bulkAssetSelector.creating') : t('bulkAssetSelector.createAssets', { count: selectedAssets.length })}
-      </ResponsiveButton>
+      </ActionButton>
     </Box>
   );
 

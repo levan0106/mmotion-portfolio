@@ -28,7 +28,7 @@ import {
   TrendingDown as TrendingDownIcon,
   Remove as RemoveIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 
 export interface AssetCardProps {
   asset: Asset;
@@ -214,7 +214,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
           >
             Edit
           </ResponsiveButton>
-          <ResponsiveButton
+          <ActionButton
             onClick={handleDeleteClick}
             icon={<DeleteIcon />}
             mobileText="Delete"
@@ -222,9 +222,10 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             variant="outlined"
             color="error"
             size="small"
+            forceTextOnly={true}
           >
             Delete
-          </ResponsiveButton>
+          </ActionButton>
         </CardActions>
       )}
 

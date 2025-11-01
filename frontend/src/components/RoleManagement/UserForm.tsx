@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Box,
   Typography,
@@ -16,6 +15,7 @@ import {
   Paper,
 } from '@mui/material';
 import { User } from '../../services/api.user';
+import { ResponsiveButton, ActionButton } from '../Common';
 //import { AutoRoleAssignmentService } from '../../services/autoRoleAssignment';
 //import { ToastService } from '../../services/toast';
 
@@ -293,20 +293,36 @@ export const UserForm: React.FC<UserFormProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3 }}>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <ResponsiveButton 
+          onClick={handleClose} 
+          disabled={isLoading}
+          variant="outlined"
+          forceTextOnly={true}
+          mobileText="Cancel"
+          desktopText="Cancel"
+        >
           Cancel
-        </Button>
-        <Button
+        </ResponsiveButton>
+        <ActionButton
           onClick={handleSubmit}
           variant="contained"
           disabled={isLoading}
-          startIcon={isLoading ? <CircularProgress size={16} /> : undefined}
+          icon={isLoading ? <CircularProgress size={16} /> : undefined}
+          forceTextOnly={true}
+          mobileText={isLoading 
+            ? (mode === 'create' ? 'Creating...' : 'Updating...') 
+            : (mode === 'create' ? 'Create User' : 'Update User')
+          }
+          desktopText={isLoading 
+            ? (mode === 'create' ? 'Creating...' : 'Updating...') 
+            : (mode === 'create' ? 'Create User' : 'Update User')
+          }
         >
           {isLoading 
             ? (mode === 'create' ? 'Creating...' : 'Updating...') 
             : (mode === 'create' ? 'Create User' : 'Update User')
           }
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );

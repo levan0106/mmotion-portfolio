@@ -2,7 +2,54 @@
 
 ## What Works
 ### ✅ Completed
-- **SCROLL TO TOP FUNCTIONALITY - COMPLETED** (Current Session - October 31, 2025)
+- **DEMO ACCOUNT BANNER & MANAGEMENT SYSTEM - COMPLETED** (Current Session - November 1, 2025)
+  - **Demo Account Toggle System**: Complete backend and frontend implementation
+    - **Backend API Endpoints**: GET and POST endpoints for demo account status management
+    - **AccountService Methods**: getDemoAccountStatus() and toggleDemoAccount() with fixed demo account ID
+    - **Permission-Based Access**: Proper permission checks (settings.read, settings.update)
+    - **Response Validation**: Robust validation for API responses with error handling
+    - **Files Updated**: account.service.ts, settings.controller.ts, api.settings.ts
+  - **System Settings UI Integration**: Complete UI for demo account management
+    - **Toggle Switch**: "Enable Demo Account" switch in System Settings card
+    - **State Management**: Real-time status updates with error recovery
+    - **Toast Notifications**: Success/error messages for user feedback
+    - **Status Display**: Shows demo account name and status information
+    - **Files Updated**: Settings.tsx
+  - **DemoAccountBanner Component**: Comprehensive banner component with advanced features
+    - **Collapse/Expand Functionality**: Full collapse/expand with smooth Collapse animations
+    - **Default Collapsed**: Banner defaults to collapsed for minimal UI intrusion
+    - **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+    - **Account Switching**: Integrated account switching with main account detection
+    - **LocalStorage Persistence**: User preference for collapse state saved to localStorage
+    - **Responsive Design**: Fully responsive with mobile-optimized layouts
+    - **Mobile Button Placement**: Different button strategies for mobile vs desktop
+    - **Touch-Friendly Design**: Large touch targets and proper spacing
+    - **Files Created**: DemoAccountBanner.tsx
+  - **AppLayout Integration**: Seamless integration with main layout
+    - **Banner Placement**: Positioned below Toolbar in main content area
+    - **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar when in demo account
+    - **Height Adjustment**: Scrollable content area adjusts for banner visibility
+    - **Context Integration**: Uses AccountContext for demo account detection
+    - **Files Updated**: AppLayout.tsx
+  - **Translation & i18n Support**: Complete translation support
+    - **Namespace Fix**: Fixed all keys to use `accountSwitcher.demoAccountBanner.*` namespace
+    - **Comprehensive Keys**: All banner-related keys in en.json and vi.json
+    - **Key Consistency**: All translation keys consistent throughout component
+    - **Files Updated**: DemoAccountBanner.tsx, en.json, vi.json
+  - **Report Service Enhancement**: Permission-based report access
+    - **PermissionCheckService Integration**: Uses PermissionCheckService for accessible portfolios
+    - **UPDATE Permission Support**: Accounts with UPDATE permissions can view report data
+    - **Portfolio Filtering**: Filters portfolioIds based on accessibility
+    - **API Consistency**: All report endpoints use permission-based filtering
+    - **Files Updated**: report.service.ts, report.module.ts
+  - **Code Quality & Bug Fixes**: Production-ready code
+    - **Syntax Fixes**: Fixed all syntax errors and duplicate elements
+    - **Button Deduplication**: Removed duplicate collapse/expand buttons
+    - **Action Optimization**: Optimized action prop logic for mobile/desktop
+    - **Linter Compliance**: All code passes linting checks
+    - **Mobile UX**: Excellent mobile experience with proper button placement
+
+- **SCROLL TO TOP FUNCTIONALITY - COMPLETED** (Previous Session - October 31, 2025)
   - **ScrollToTop Component Implementation**: Complete scroll to top system for route changes
     - **Unified Component**: ScrollToTop component with exported scrollToTop utility function in single file
     - **Route Change Detection**: Uses useLocation hook to detect route changes automatically
@@ -482,6 +529,18 @@
 
 ## Current Status
 ### 🎯 Active Development
+- **Demo Account Management**: Complete demo account toggle system with backend and frontend integration
+- **DemoAccountBanner**: Comprehensive banner component with collapse/expand and mobile optimization
+- **Mobile Responsive**: Fully responsive banner with mobile-specific button placement and touch-friendly design
+- **Account Switching**: Easy account switching functionality from banner to main account
+- **Permission-Based Reports**: Accounts with UPDATE permissions can view report data
+- **Translation Support**: Complete i18n support with correct namespace for all banner keys
+- **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar for persistent indication
+- **State Persistence**: User collapse preference saved to localStorage
+- **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+- **Smooth Animations**: Material-UI Collapse component for smooth expand/collapse animations
+- **Code Quality**: Production-ready code with comprehensive error handling
+- **Mobile UX**: Excellent mobile experience with proper button placement and touch targets
 - **Generic Form Modal**: Complete centralized form modal with tabbed interface and responsive design
 - **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm into unified modal
 - **Form Submission**: Centralized submission handling with formRef system and comprehensive fallback logic
@@ -605,32 +664,25 @@
 - `docker-compose.yml` - Added ADMIN_USERNAME environment variable support
 
 ## System Health
-- ✅ **Database**: Fully operational with GenericFormModal and centralized form system
+- ✅ **Database**: Fully operational with demo account management and permission-based report access
 - ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
-- ✅ **Frontend**: Responsive with GenericFormModal and centralized form system
-- ✅ **Backend**: Stable API endpoints with device trust management and public endpoints
+- ✅ **Frontend**: Responsive with DemoAccountBanner and demo account management UI
+- ✅ **Backend**: Stable API endpoints with demo account toggle and permission-based report access
 - ✅ **Deployment**: Production-ready configuration with Docker
-- ✅ **Generic Form Modal**: Centralized form modal with tabbed interface and responsive design
-- ✅ **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm
-- ✅ **Form Submission**: Centralized submission handling with formRef system and fallback logic
-- ✅ **API Integration**: Fixed API calls to use effectivePortfolioId for proper portfolio handling
-- ✅ **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
-- ✅ **Portfolio Management**: Context-aware portfolio selection and auto-selection
-- ✅ **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
-- ✅ **Device Trust System**: Complete implementation with incognito detection
-- ✅ **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
-- ✅ **Incognito Protection**: Incognito/private mode sessions are never trusted for security
-- ✅ **Device Management**: Complete UI for viewing and managing trusted devices
-- ✅ **Smooth Login Flow**: No error messages for password requirements, proper error display for invalid credentials
-- ✅ **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
-- ✅ **Security Enhancement**: Comprehensive device trust security with incognito protection
-- ✅ **Password Security**: Device expiry on password change/set for enhanced security
-- ✅ **Responsive Design**: DeviceManagement component uses ResponsiveTypography and ResponsiveButton
+- ✅ **Demo Account Management**: Complete toggle system with backend and frontend integration
+- ✅ **DemoAccountBanner**: Comprehensive banner component with collapse/expand and mobile optimization
+- ✅ **Mobile Responsive**: Fully responsive banner with mobile-specific layouts and touch-friendly design
+- ✅ **Account Switching**: Easy account switching functionality from banner to main account
+- ✅ **Permission-Based Reports**: Accounts with UPDATE permissions can view report data
+- ✅ **Translation Support**: Complete i18n support with correct namespace (accountSwitcher.demoAccountBanner.*)
+- ✅ **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar for persistent indication
+- ✅ **State Persistence**: User collapse preference saved to localStorage
+- ✅ **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+- ✅ **Smooth Animations**: Material-UI Collapse component for smooth expand/collapse animations
+- ✅ **Report Service Enhancement**: Permission-based report access using PermissionCheckService
+- ✅ **Code Quality**: Production-ready code with comprehensive error handling and no duplicate buttons
+- ✅ **Mobile UX**: Excellent mobile experience with proper button placement and large touch targets
 - ✅ **Build System**: Both frontend and backend build successfully without errors
-- ✅ **Code Quality**: All TypeScript errors resolved, unused imports cleaned up
 - ✅ **Event-Driven Architecture**: Auto asset creation using event-driven pattern
 - ✅ **Code Cleanup**: All debug logs removed, code is clean and production-ready
-- ✅ **Mobile UI**: Admin management tabs now scroll properly on mobile devices
-- ✅ **TypeScript Build**: All compilation errors resolved, build system working perfectly
-- ✅ **Environment Config**: ADMIN_USERNAME configuration added to all environment files
 - ✅ **Production Ready**: Code is clean, professional, and ready for production deployment

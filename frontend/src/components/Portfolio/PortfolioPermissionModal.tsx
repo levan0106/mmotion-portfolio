@@ -29,7 +29,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -48,7 +47,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import ModalWrapper from '../Common/ModalWrapper';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { ToastService } from '../../services/toast';
 
 
@@ -314,16 +313,17 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
               </Select>
             </FormControl>
             
-            <ResponsiveButton
+            <ActionButton
               variant="contained"
               onClick={handleAddPermission}
               disabled={!selectedAccountId || isAddingPermission}
-              startIcon={isAddingPermission ? <CircularProgress size={16} /> : <AddIcon />}
+              icon={isAddingPermission ? <CircularProgress size={16} /> : <AddIcon />}
               mobileText={selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
               desktopText={selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
+              forceTextOnly={true}
             >
               {selectedPermissionType === PortfolioPermissionType.CREATOR ? t('permissions.transferCreator') : t('permissions.addPermission')}
-            </ResponsiveButton>
+            </ActionButton>
           </Box>
         </Paper>
 
@@ -431,12 +431,25 @@ const PortfolioPermissionModal: React.FC<PortfolioPermissionModalProps> = ({
             </ResponsiveTypography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={cancelDeletePermission} color="primary">
+            <ResponsiveButton 
+              onClick={cancelDeletePermission} 
+              variant="outlined"
+              forceTextOnly={true}
+              mobileText={t('common.cancel')}
+              desktopText={t('common.cancel')}
+            >
               {t('common.cancel')}
-            </Button>
-            <Button onClick={confirmDeletePermission} color="error" variant="contained">
+            </ResponsiveButton>
+            <ActionButton 
+              onClick={confirmDeletePermission} 
+              color="error" 
+              variant="contained"
+              forceTextOnly={true}
+              mobileText={t('permissions.removePermission')}
+              desktopText={t('permissions.removePermission')}
+            >
               {t('permissions.removePermission')}
-            </Button>
+            </ActionButton>
           </DialogActions>
         </Dialog>
     </ModalWrapper>

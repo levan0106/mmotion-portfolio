@@ -23,7 +23,7 @@ import {
   AccountBalance as AccountBalanceIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
-import { ResponsiveButton } from '../Common';
+import { ResponsiveButton, ActionButton } from '../Common';
 import { Portfolio } from '../../types';
 
 interface ConvertToFundModalProps {
@@ -203,7 +203,7 @@ export const ConvertToFundModal: React.FC<ConvertToFundModalProps> = ({
         >
           Cancel
         </ResponsiveButton>
-        <ResponsiveButton 
+        <ActionButton 
           onClick={handleConvert} 
           variant="contained" 
           disabled={loading || (useSnapshotDate && !snapshotDate)}
@@ -211,9 +211,10 @@ export const ConvertToFundModal: React.FC<ConvertToFundModalProps> = ({
           icon={loading ? <CircularProgress size={20} /> : <AccountBalanceIcon />}
           mobileText="Convert"
           desktopText="Convert to Fund"
+          forceTextOnly={true}
         >
           {loading ? 'Converting...' : 'Convert to Fund'}
-        </ResponsiveButton>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );
