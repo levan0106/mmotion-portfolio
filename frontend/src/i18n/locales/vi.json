@@ -2535,7 +2535,7 @@
   "login": {
     "title": "MMOTION",
     "subtitle": {
-      "enterUsername": "Nền tảng quản lý toàn diện tài sản của bạn",
+      "enterUsername": "Nền tảng quản lý toàn diện đa tài sản",
       "welcomeBack": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)",
       "signIn": "Nhập tên người dùng và mật khẩu để đăng nhập",
       "continue": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)"
@@ -2880,20 +2880,20 @@
     "subtitle": "Nền tảng quản lý toàn diện tài sản của bạn",
     "sections": {
       "assetTypes": {
-        "title": "Các Loại Tài Sản Đang Hỗ Trợ",
+        "title": "Đa Dạng Tài Sản",
         "subtitle": "Đa dạng các loại tài sản để đa dạng hóa danh mục đầu tư"
       },
       "stockFunds": {
-        "title": "Danh Sách Chứng Chỉ Quỹ Cổ Phiếu",
-        "subtitle": "Các quỹ đầu tư vào cổ phiếu với hiệu suất tốt nhất"
+        "title": "Chứng Chỉ Quỹ Cổ Phiếu",
+        "subtitle": "Các quỹ đầu tư vào cổ phiếu"
       },
       "bondFunds": {
-        "title": "Danh Sách Chứng Chỉ Quỹ Trái Phiếu",
-        "subtitle": "Các quỹ đầu tư vào trái phiếu an toàn và ổn định"
+        "title": "Chứng Chỉ Quỹ Trái Phiếu",
+        "subtitle": "Các quỹ đầu tư vào trái phiếu"
       },
       "topStocks": {
         "title": "Top Cổ Phiếu",
-        "subtitle": "Những cổ phiếu có khối lượng giao dịch và biến động giá cao nhất"
+        "subtitle": "Những cổ phiếu có khối lượng giao dịch lớn"
       }
     },
     "assetTypes": {

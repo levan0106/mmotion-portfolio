@@ -307,7 +307,7 @@ const Home: React.FC = () => {
         const [stockFundsData, bondFundsData, topStocksData] = await Promise.all([
           marketDataService.getStockFunds(5),
           marketDataService.getBondFunds(5),
-          marketDataService.getTopStocks(10),
+          marketDataService.getTopStocks(5),
         ]);
 
         setStockFunds(stockFundsData.slice(0, 10)); // Limit to 10
@@ -777,7 +777,7 @@ const Home: React.FC = () => {
                 flexDirection: 'row',
                 justifyContent: 'center',
                 alignItems: 'center',
-                gap: { xs: 1, sm: 2, md: 4 },
+                gap: { xs: 0.5, sm: 2, md: 4 },
                 mt: { xs: 2, md: 3 },
                 flexWrap: 'nowrap',
                 width: '100%',
@@ -789,7 +789,7 @@ const Home: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: { xs: 0.75, sm: 1.5 },
-                  px: { xs: 1, sm: 2, md: 3 },
+                  px: { xs: 0.5, sm: 2, md: 3 },
                   py: { xs: 0.75, sm: 1.5, md: 2 },
                   background: alpha(theme.palette.common.white, 0.15),
                   backdropFilter: 'blur(10px)',
@@ -844,7 +844,7 @@ const Home: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: { xs: 0.75, sm: 1.5 },
-                  px: { xs: 1, sm: 2, md: 3 },
+                  px: { xs: 0.5, sm: 2, md: 3 },
                   py: { xs: 0.75, sm: 1.5, md: 2 },
                   background: alpha(theme.palette.common.white, 0.15),
                   backdropFilter: 'blur(10px)',
@@ -1127,17 +1127,25 @@ const Home: React.FC = () => {
 
         
         {/* Trust & Safety Section - Move before market data */}
-        <AnimatedSection id="trust-section" delay={0.3}  alwaysVisible={true}>
+      </Container>
+      
+      {/* Trust & Safety Section - Full width background */}
+      <AnimatedSection id="trust-section" delay={0.3}  alwaysVisible={true}>
             <Box
             sx={{
+                width: '100%',
                 mb: { xs: 5, md: 6 },
                 py: { xs: 4, md: 5 },
                 px: { xs: 2, md: 4 },
                 background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
-                borderRadius: 3,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                borderRadius: 0,
+                border: 'none',
+                borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                display: { xs: 'none', sm: 'block' },
             }}
             >
+              <Container maxWidth="lg">
             <Box sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
                 <ResponsiveTypography
                 variant="cardTitle"
@@ -1228,8 +1236,11 @@ const Home: React.FC = () => {
                 </Grow>
                 ))}
             </Box>
+              </Container>
             </Box>
         </AnimatedSection>
+      
+      <Container maxWidth="lg">
 
         {/* Asset Types Section */}
         <AnimatedSection id="asset-types-section" delay={0.1} alwaysVisible={true}>
@@ -1243,14 +1254,15 @@ const Home: React.FC = () => {
                     mb: 0.5,
                 }}
                 >
-                {t('home.sections.assetTypes.title', 'Các Loại Tài Sản Đang Hỗ Trợ')}
+                {t('home.sections.assetTypes.title', 'Đa Dạng Tài Sản')}
                 </ResponsiveTypography>
                 <ResponsiveTypography
                 variant="cardLabel"
                 color="text.secondary"
                 sx={{
-                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                    fontSize: { xs: '0.8rem', sm: '0.95rem' },
                 }}
+                ellipsis={false}
                 >
                 {t('home.sections.assetTypes.subtitle', 'Đa dạng các loại tài sản để đa dạng hóa danh mục đầu tư')}
                 </ResponsiveTypography>
@@ -1303,8 +1315,8 @@ const Home: React.FC = () => {
                 >
                 <Card
                     sx={{
-                    minWidth: isMobile ? 150 : 200,
-                    maxWidth: isMobile ? 150 : 200,
+                    minWidth: isMobile ? 130 : 210,
+                    maxWidth: isMobile ? 130 : 210,
                     height: '100%',
                     flexShrink: 0,
                     background: `linear-gradient(135deg, ${alpha(getPaletteColor(assetType.color), 0.05)} 0%, ${alpha(getPaletteColor(assetType.color), 0.02)} 100%)`,
@@ -1357,7 +1369,7 @@ const Home: React.FC = () => {
                   <FundIcon sx={{ mr: 2, color: 'primary.main', fontSize: { xs: 28, md: 32 } }} />
                   <Box>
                     <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, fontSize: { xs: '1.1rem', md: '1.3rem' } }}>
-                      {t('home.sections.stockFunds.title', 'Danh Sách Chứng Chỉ Quỹ Cổ Phiếu')}
+                      {t('home.sections.stockFunds.title', 'Chứng Chỉ Quỹ Cổ Phiếu')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 0.5 }}>
                       {t('home.sections.stockFunds.subtitle', 'Các quỹ đầu tư vào cổ phiếu với hiệu suất tốt nhất')}
@@ -1416,8 +1428,8 @@ const Home: React.FC = () => {
                         >
                           <Card
                             sx={{
-                              minWidth: 160,
-                              maxWidth: 160,
+                              minWidth: 140,
+                              maxWidth: 140,
                               flexShrink: 0,
                               borderRadius: 2,
                               border: `1.5px solid ${borderColor}`,
@@ -1632,7 +1644,7 @@ const Home: React.FC = () => {
                   <FundIcon sx={{ mr: 2, color: 'success.main', fontSize: { xs: 28, md: 32 } }} />
                   <Box>
                     <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, fontSize: { xs: '1.1rem', md: '1.3rem' } }}>
-                      {t('home.sections.bondFunds.title', 'Danh Sách Chứng Chỉ Quỹ Trái Phiếu')}
+                      {t('home.sections.bondFunds.title', 'Chứng Chỉ Quỹ Trái Phiếu')}
                     </ResponsiveTypography>
                     <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 0.5 }}>
                       {t('home.sections.bondFunds.subtitle', 'Các quỹ đầu tư vào trái phiếu an toàn và ổn định')}
@@ -1691,8 +1703,8 @@ const Home: React.FC = () => {
                         >
                           <Card
                             sx={{
-                              minWidth: 160,
-                              maxWidth: 160,
+                              minWidth: 140,
+                              maxWidth: 140,
                               flexShrink: 0,
                               borderRadius: 2,
                               border: `1.5px solid ${borderColor}`,
@@ -1911,7 +1923,10 @@ const Home: React.FC = () => {
                     <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600, fontSize: { xs: '1.1rem', md: '1.3rem' } }}>
                       {t('home.sections.topStocks.title', 'Top Cổ Phiếu')}
                     </ResponsiveTypography>
-                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 0.5 }}>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" 
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 0.5 }}
+                    ellipsis={false}
+                    >
                       {t('home.sections.topStocks.subtitle', 'Những cổ phiếu có khối lượng giao dịch và biến động giá cao nhất')}
                     </ResponsiveTypography>
                   </Box>
@@ -1974,8 +1989,8 @@ const Home: React.FC = () => {
                         >
                           <Card
                             sx={{
-                              minWidth: isMobile ? 160 : 200,
-                              maxWidth: isMobile ? 160 : 200,
+                              minWidth: isMobile ? 140 : 200,
+                              maxWidth: isMobile ? 140 : 200,
                               flexShrink: 0,
                               borderRadius: 2,
                               border: `1.5px solid ${borderColor}`,
@@ -1999,7 +2014,7 @@ const Home: React.FC = () => {
                               },
                             }}
                           >
-                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                            <CardContent sx={{ p: 2, '&:last-child': { pb: 0 } }}>
                               <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                                 <ResponsiveTypography 
                                   variant="cardTitle" 
@@ -2016,7 +2031,7 @@ const Home: React.FC = () => {
                                     variant="outlined"
                                     sx={{ 
                                       fontSize: '0.65rem!important', 
-                                      height: 18, 
+                                      height: 16, 
                                       textTransform: 'none',
                                       borderColor: alpha(rankColor, 0.5),
                                       color: rankColor,
@@ -2061,16 +2076,15 @@ const Home: React.FC = () => {
                                       size="small"
                                       color={stock.changePercent >= 0 ? 'success' : 'error'}
                                       sx={{ 
-                                        fontWeight: 600, 
                                         height: 20, 
-                                        fontSize: '0.7rem!important', 
+                                        fontSize: '0.65rem!important', 
                                         textTransform: 'none',
                                         background: stock.changePercent >= 0 
                                           ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
                                           : `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
                                         color: 'white',
                                         '& .MuiChip-label': { 
-                                          padding: '0 6px',
+                                          padding: '0 4px',
                                           textTransform: 'none',
                                         },
                                       }}
@@ -2214,10 +2228,13 @@ const Home: React.FC = () => {
 
             </>
         )}
-            {/* 3 Steps to Start Section */}
-            <AnimatedSection id="steps-section" delay={0.1} alwaysVisible={true}>
+      </Container>
+      
+      {/* 3 Steps to Start Section - Full width background */}
+      <AnimatedSection id="steps-section" delay={0.1} alwaysVisible={true}>
               <Box
                 sx={{
+                  width: '100%',
                   mb: { xs: 5, md: 6 },
                   position: 'relative',
                   overflow: 'hidden',
@@ -2232,7 +2249,7 @@ const Home: React.FC = () => {
                     right: 0,
                     bottom: 0,
                     background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 50%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
-                    borderRadius: { xs: 2, md: 4 },
+                    borderRadius: 0,
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -2259,6 +2276,7 @@ const Home: React.FC = () => {
                 />
                 
                 <Box sx={{ position: 'relative', zIndex: 1, py: { xs: 5, md: 7 }, px: { xs: 2, md: 4 } }}>
+                  <Container maxWidth="lg">
                   {/* Header */}
                   <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
                     <Box
@@ -2298,6 +2316,7 @@ const Home: React.FC = () => {
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                       }}
+                      ellipsis={false}
                     >
                       {t('home.steps.title', 'Bắt đầu ngay chỉ với 3 bước')}
                     </ResponsiveTypography>
@@ -2515,11 +2534,10 @@ const Home: React.FC = () => {
                       </Grow>
                     ))}
                   </Box>
+                  </Container>
                 </Box>
               </Box>
             </AnimatedSection>
-
-      </Container>
 
       {/* Fixed Login Button */}
       <Box
@@ -2540,7 +2558,7 @@ const Home: React.FC = () => {
         <Container maxWidth="xs">
           <Button
             variant="contained"
-            size="large"
+            size={isMobile ? "small" : "large"}
             fullWidth
             startIcon={<LoginIcon />}
             endIcon={<ArrowForwardIcon />}
