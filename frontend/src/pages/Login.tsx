@@ -387,6 +387,7 @@ export const Login: React.FC = () => {
               icon={loading ? <CircularProgress size={20} /> : <LoginIcon />}
               mobileText={loading ? t('login.buttons.signingIn') : (currentStep === 'password' ? t('login.buttons.signIn') : getFormTitle())}
               desktopText={loading ? t('login.buttons.signingIn') : (currentStep === 'password' ? t('login.buttons.signIn') : getFormTitle())}
+              forceTextOnly={true}
               sx={{
                 py: 1.5,
                 fontSize: '1.1rem',

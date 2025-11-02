@@ -2817,5 +2817,120 @@
       "invalidEmail": "Invalid email format",
       "submitFailed": "Failed to send request"
     }
+  },
+  "home": {
+    "title": "Portfolio Management System",
+    "subtitle": "Track and manage your investment portfolio professionally",
+    "sections": {
+      "assetTypes": {
+        "title": "Supported Asset Types",
+        "subtitle": "Diverse asset types to diversify your investment portfolio"
+      },
+      "stockFunds": {
+        "title": "Stock Fund Certificates",
+        "subtitle": "Equity funds with the best performance"
+      },
+      "bondFunds": {
+        "title": "Bond Fund Certificates",
+        "subtitle": "Safe and stable bond investment funds"
+      },
+      "topStocks": {
+        "title": "Top 5 Stocks",
+        "subtitle": "Stocks with the highest trading volume and price volatility"
+      }
+    },
+    "assetTypes": {
+      "stock": "Stocks",
+      "stockDesc": "Invest in stocks on exchanges",
+      "bond": "Bonds",
+      "bondDesc": "Invest in government and corporate bonds",
+      "gold": "Gold",
+      "goldDesc": "Invest in gold and precious metals",
+      "crypto": "Cryptocurrency",
+      "cryptoDesc": "Invest in cryptocurrency and digital assets",
+      "commodity": "Commodities",
+      "commodityDesc": "Invest in commodities and raw materials",
+      "realEstate": "Real Estate",
+      "realEstateDesc": "Invest in real estate and REITs",
+      "other": "Other",
+      "otherDesc": "Other asset types"
+    },
+    "table": {
+      "symbol": "Symbol",
+      "name": "Name",
+      "price": "NAV Price",
+      "change": "Change",
+      "exchange": "Exchange"
+    },
+    "noData": "No data available",
+    "cta": {
+      "title": "Ready to start managing your investment portfolio?",
+      "description": "Login or sign up now to experience the full range of professional portfolio management features",
+      "button": "Login / Sign Up"
+    },
+    "stats": {
+      "products": "Fund Products",
+      "users": "Users",
+      "portfolios": "Investment Portfolios"
+    },
+    "projectName": "MMO",
+    "menu": {
+      "home": "Home",
+      "features": "Features",
+      "features.portfolio": "Portfolio Management",
+      "features.tracking": "Daily Tracking",
+      "features.security": "Security",
+      "contact": "Contact"
+    },
+    "register": {
+      "short": "Sign Up",
+      "full": "Sign Up"
+    },
+    "login": {
+      "short": "Start",
+      "full": "Get Started"
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "Powerful tools for efficient investment management"
+    },
+    "trust": {
+      "title": "Safe and Transparent Investment",
+      "subtitle": "Professional portfolio management system with high security",
+      "safe": {
+        "title": "Absolute Security",
+        "description": "Money and assets are managed and monitored closely"
+      },
+      "transparent": {
+        "title": "Transparent",
+        "description": "Track and manage assets transparently"
+      },
+      "professional": {
+        "title": "Professional",
+        "description": "Professional investment portfolio management system"
+      }
+    },
+    "steps": {
+      "badge": "Guide",
+      "title": "Get Started in Just 3 Steps",
+      "subtitle": "Investing has never been easier. Start your investment journey today",
+      "register": {
+        "title": "Login",
+        "description": "Login to the system to start using"
+      },
+      "invest": {
+        "title": "Create Investment Goal",
+        "description": "Create investment goals according to your investment objectives"
+      },
+      "manage": {
+        "title": "Manage Assets",
+        "description": "Convenient asset tracking and easy trading"
+      }
+    },
+    "vision": {
+      "title": "Turn Your Goals Into Reality",
+      "easyManagement": "Easy Management",
+      "free": "Completely Free"
+    }
   }
 }

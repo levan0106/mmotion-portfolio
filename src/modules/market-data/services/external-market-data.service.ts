@@ -36,6 +36,17 @@ export interface PriceUpdateResult {
 export class ExternalMarketDataService {
   private readonly logger = new Logger(ExternalMarketDataService.name);
 
+  // In-memory cache for market data by type
+  private readonly marketDataCache = new Map<string, {
+    data: any[];
+    timestamp: number;
+    ttl: number;
+  }>();
+
+  // Cache configuration
+  private readonly CACHE_TTL = parseInt(process.env.MARKET_DATA_CACHE_TTL || '600000', 10); // Default 10 minutes
+  private readonly CACHE_ENABLED = true; // process.env.MARKET_DATA_CACHE_ENABLED !== 'false'; // Default enabled
+
   constructor(
     private readonly fundPriceAPIClient: FundPriceAPIClient,
     private readonly goldPriceAPIClient: GoldPriceAPIClient,
@@ -44,7 +55,10 @@ export class ExternalMarketDataService {
     private readonly cryptoPriceAPIClient: CryptoPriceAPIClient,
     private readonly apiCallDetailService: ApiCallDetailService,
     private readonly apiTrackingHelper: ApiTrackingHelper,
-  ) {}
+  ) {
+    // Clean up expired cache entries periodically
+    setInterval(() => this.cleanupExpiredCache(), 60000); // Every minute
+  }
 
   /**
    * Fetch all market data from external APIs with detailed tracking
@@ -351,9 +365,23 @@ export class ExternalMarketDataService {
   }
 
   /**
-   * Get specific market data by type
+   * Get specific market data by type with caching
    */
   async getMarketDataByType(type: 'funds' | 'gold' | 'exchangeRates' | 'stocks' | 'crypto'): Promise<any[]> {
+    const cacheKey = `market_data:${type}`;
+
+    // Try to get from cache first
+    if (this.CACHE_ENABLED) {
+      const cached = this.marketDataCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp) < cached.ttl) {
+        this.logger.debug(`Cache hit for market data type: ${type} (${cached.data.length} items)`);
+        return cached.data;
+      }
+    }
+
+    // Cache miss or disabled - fetch from API
+    this.logger.log(`Cache miss for market data type: ${type}, fetching from API...`);
+    
     const apiClients = {
       funds: () => this.fundPriceAPIClient.getAllFundPrices(),
       gold: () => this.goldPriceAPIClient.getAllGoldPrices(),
@@ -367,7 +395,89 @@ export class ExternalMarketDataService {
       throw new Error(`Unsupported market data type: ${type}`);
     }
 
-    const result = await fetchFn();
-    return result.data;
+    try {
+      const result = await fetchFn();
+      const data = result.data || [];
+
+      // Store in cache
+      if (this.CACHE_ENABLED && data.length > 0) {
+        this.marketDataCache.set(cacheKey, {
+          data,
+          timestamp: Date.now(),
+          ttl: this.CACHE_TTL,
+        });
+        this.logger.log(`Cached ${data.length} items for market data type: ${type} (TTL: ${this.CACHE_TTL}ms)`);
+      }
+
+      return data;
+    } catch (error) {
+      this.logger.error(`Failed to fetch market data for type ${type}:`, error.message);
+      
+      // Try to return stale cache if available (graceful degradation)
+      if (this.CACHE_ENABLED) {
+        const staleCache = this.marketDataCache.get(cacheKey);
+        if (staleCache && staleCache.data.length > 0) {
+          this.logger.warn(`Returning stale cache for ${type} due to API error`);
+          return staleCache.data;
+        }
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Clear cache for a specific market data type
+   */
+  clearCache(type?: 'funds' | 'gold' | 'exchangeRates' | 'stocks' | 'crypto'): void {
+    if (type) {
+      const cacheKey = `market_data:${type}`;
+      this.marketDataCache.delete(cacheKey);
+      this.logger.log(`Cleared cache for market data type: ${type}`);
+    } else {
+      // Clear all cache
+      this.marketDataCache.clear();
+      this.logger.log('Cleared all market data cache');
+    }
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): {
+    enabled: boolean;
+    ttl: number;
+    entries: number;
+    types: string[];
+  } {
+    return {
+      enabled: this.CACHE_ENABLED,
+      ttl: this.CACHE_TTL,
+      entries: this.marketDataCache.size,
+      types: Array.from(this.marketDataCache.keys()),
+    };
+  }
+
+  /**
+   * Clean up expired cache entries
+   */
+  private cleanupExpiredCache(): void {
+    if (!this.CACHE_ENABLED) {
+      return;
+    }
+
+    const now = Date.now();
+    let cleaned = 0;
+
+    for (const [key, cached] of this.marketDataCache.entries()) {
+      if (now - cached.timestamp > cached.ttl) {
+        this.marketDataCache.delete(key);
+        cleaned++;
+      }
+    }
+
+    if (cleaned > 0) {
+      this.logger.debug(`Cleaned up ${cleaned} expired cache entries`);
+    }
   }
 }

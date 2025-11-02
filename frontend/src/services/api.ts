@@ -66,6 +66,14 @@ class ApiService {
             return Promise.reject(error);
           }
           
+          // Don't redirect if user is on a public page (home, welcome, etc.)
+          const currentPath = window.location.pathname;
+          const publicRoutes = ['/home', '/welcome', '/forget-password', '/login'];
+          if (publicRoutes.some(route => currentPath.startsWith(route))) {
+            // For public routes, just reject the error without redirecting
+            return Promise.reject(error);
+          }
+          
           // For other endpoints, redirect to login
           localStorage.removeItem('jwt_token');
           localStorage.removeItem('user_session');

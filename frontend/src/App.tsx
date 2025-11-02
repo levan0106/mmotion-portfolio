@@ -27,6 +27,7 @@ import Goals from './pages/Goals';
 import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import Welcome from './pages/Welcome';
+import Home from './pages/Home';
 import SystemGuide from './pages/SystemGuide';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -73,7 +74,9 @@ const AppContent: React.FC = () => {
       {/* Public routes - no authentication required */}
       {!isAuthenticated ? (
         <>
+          <Route path="/" element={<Home />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
           <Route path="*" element={<Login />} />
         </>
@@ -90,6 +93,13 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <Welcome />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/home" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <Home />
               </Box>
             </AppLayout>
           } />

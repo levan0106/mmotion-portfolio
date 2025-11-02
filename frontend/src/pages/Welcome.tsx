@@ -25,6 +25,13 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from '@mui/material';
 import {
   AccountBalance as PortfolioIcon,
@@ -42,9 +49,26 @@ import {
   Dashboard as DashboardIcon,
   TouchApp as TouchIcon,
   AttachMoney as CashFlowIcon,
+  TableChart as TableIcon,
+  ShowChart as ChartIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../components/Common';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
+import { formatCurrency, formatPercentage, formatNumber } from '../utils/format';
+import { getAssetTypeColor } from '../config/chartColors';
 
 // Helper function to safely get palette colors
 const getPaletteColor = (theme: any, color: string, variant: 'main' | 'dark' = 'main') => {
@@ -512,6 +536,310 @@ const Welcome: React.FC = () => {
             </Box>
           </Box>
 
+          {/* Example Data Section */}
+          <Box sx={{ mb: 6 }}>
+            <Box sx={{ textAlign: 'center', mb: 2 }}>
+              <ResponsiveTypography variant="pageTitle" sx={{ mb: 2 }}>
+                {t('welcome.examples.title')}
+              </ResponsiveTypography>
+              {/* <ResponsiveTypography variant="pageSubtitle" color="text.secondary">
+                {t('welcome.examples.subtitle')}
+              </ResponsiveTypography> */}
+            </Box>
+
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* Example Portfolio Table */}
+              <Grid item xs={12} lg={6}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <TableIcon sx={{ mr: 2, color: 'primary.main' }} />
+                      <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600 }}>
+                        {t('welcome.examples.portfolioTable.title')}
+                      </ResponsiveTypography>
+                    </Box>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 2 }}>
+                      {t('welcome.examples.portfolioTable.description')}
+                    </ResponsiveTypography>
+                    
+                    <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow sx={{ bgcolor: 'primary.50' }}>
+                            <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.name')}</ResponsiveTypography></TableCell>
+                            <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.currency')}</ResponsiveTypography></TableCell>
+                            <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.totalValue')}</ResponsiveTypography></TableCell>
+                            <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.return')}</ResponsiveTypography></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {[
+                            { name: 'Danh mục Cổ phiếu', currency: 'VND', totalValue: 2500000000, return: 15.5 },
+                            { name: 'Danh mục Trái phiếu', currency: 'VND', totalValue: 1500000000, return: 8.2 },
+                            { name: 'Danh mục Đa dạng', currency: 'USD', totalValue: 50000, return: 12.8 },
+                          ].map((portfolio, index) => (
+                            <TableRow key={index} hover>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <PortfolioIcon sx={{ fontSize: 18, color: 'primary.main', mr: 1 }} />
+                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>{portfolio.name}</ResponsiveTypography>
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Chip label={portfolio.currency} size="small" variant="outlined" />
+                              </TableCell>
+                              <TableCell align="right">
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                                  {formatCurrency(portfolio.totalValue, portfolio.currency)}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Chip
+                                  label={`+${portfolio.return.toFixed(1)}%`}
+                                  size="small"
+                                  color={portfolio.return >= 10 ? 'success' : 'default'}
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Example Trading Table */}
+              <Grid item xs={12} lg={6}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.success.main, 0.15)}`,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <TradingIcon2 sx={{ mr: 2, color: 'success.main' }} />
+                      <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600 }}>
+                        {t('welcome.examples.tradingTable.title')}
+                      </ResponsiveTypography>
+                    </Box>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 2 }}>
+                      {t('welcome.examples.tradingTable.description')}
+                    </ResponsiveTypography>
+                    
+                    <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow sx={{ bgcolor: 'success.50' }}>
+                            <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.tradingTable.columns.symbol')}</ResponsiveTypography> </TableCell>
+                            <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.tradingTable.columns.side')}</ResponsiveTypography></TableCell>
+                            <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.tradingTable.columns.quantity')}</ResponsiveTypography></TableCell>
+                            <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.tradingTable.columns.price')}</ResponsiveTypography></TableCell>
+                            <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.tradingTable.columns.total')}</ResponsiveTypography></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {[
+                            { symbol: 'VIC', side: 'BUY', quantity: 1000, price: 75000, total: 75000000 },
+                            { symbol: 'VNM', side: 'BUY', quantity: 500, price: 82000, total: 41000000 },
+                            { symbol: 'VCB', side: 'SELL', quantity: 200, price: 95000, total: 19000000 },
+                          ].map((trade, index) => (
+                            <TableRow key={index} hover>
+                              <TableCell>
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 600 }}>
+                                  {trade.symbol}
+                                </ResponsiveTypography>
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={trade.side}
+                                  size="small"
+                                  color={trade.side === 'BUY' ? 'success' : 'error'}
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </TableCell>
+                              <TableCell align="right">
+                                {formatNumber(trade.quantity)}
+                              </TableCell>
+                              <TableCell align="right">
+                                {formatCurrency(trade.price, 'VND')}
+                              </TableCell>
+                              <TableCell align="right">
+                                <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
+                                  {formatCurrency(trade.total, 'VND')}
+                                </ResponsiveTypography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Example Charts Section */}
+            <Grid container spacing={3}>
+              {/* Asset Allocation Chart */}
+              <Grid item xs={12} md={6}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.info.main, 0.15)}`,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <ChartIcon sx={{ mr: 2, color: 'info.main' }} />
+                      <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600 }}>
+                        {t('welcome.examples.allocationChart.title')}
+                      </ResponsiveTypography>
+                    </Box>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
+                      {t('welcome.examples.allocationChart.description')}
+                    </ResponsiveTypography>
+                    
+                    <Box sx={{ width: '100%', height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'STOCK', value: 45, marketValue: 1125000000 },
+                              { name: 'BOND', value: 30, marketValue: 750000000 },
+                              { name: 'CASH', value: 15, marketValue: 375000000 },
+                              { name: 'OTHER', value: 10, marketValue: 250000000 },
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {[
+                              { name: 'STOCK', value: 45 },
+                              { name: 'BOND', value: 30 },
+                              { name: 'CASH', value: 15 },
+                              { name: 'OTHER', value: 10 },
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={getAssetTypeColor(entry.name.toLowerCase())} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: any, name: any) => {
+                              const marketValueMap: Record<string, number> = {
+                                'STOCK': 1125000000,
+                                'BOND': 750000000,
+                                'CASH': 375000000,
+                                'OTHER': 250000000,
+                              };
+                              const marketValue = marketValueMap[name] || 0;
+                              return [
+                                `${formatPercentage(value)} (${formatCurrency(marketValue, 'VND')})`,
+                                t('welcome.examples.allocationChart.allocation')
+                              ];
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Performance Chart */}
+              <Grid item xs={12} md={6}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.warning.main, 0.15)}`,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <AnalyticsIcon sx={{ mr: 2, color: 'warning.main' }} />
+                      <ResponsiveTypography variant="cardTitle" sx={{ fontWeight: 600 }}>
+                        {t('welcome.examples.performanceChart.title')}
+                      </ResponsiveTypography>
+                    </Box>
+                    <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 3 }}>
+                      {t('welcome.examples.performanceChart.description')}
+                    </ResponsiveTypography>
+                    
+                    <Box sx={{ width: '100%', height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { month: 'T1', return: 5.2, unrealizedPl: 130000000 },
+                            { month: 'T2', return: 8.5, unrealizedPl: 212500000 },
+                            { month: 'T3', return: 12.1, unrealizedPl: 302500000 },
+                            { month: 'T4', return: 15.5, unrealizedPl: 387500000 },
+                            { month: 'T5', return: 18.2, unrealizedPl: 455000000 },
+                            { month: 'T6', return: 22.3, unrealizedPl: 557500000 },
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                          <XAxis dataKey="month" />
+                          <YAxis tickFormatter={(value) => `${value}%`} />
+                          <Tooltip
+                            formatter={(value: any) => [
+                              `${value}%`,
+                              t('welcome.examples.performanceChart.return')
+                            ]}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="return" 
+                            fill={theme.palette.primary.main}
+                            radius={[8, 8, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
           {/* Features Section */}
           <Box sx={{ mb: 8 }}>
             <ResponsiveTypography variant="pageTitle" sx={{ textAlign: 'center', mb: 4 }}>
@@ -747,6 +1075,8 @@ const Welcome: React.FC = () => {
             </Card>
           </Box>
 
+          <Box>
+            <Divider sx={{ mb: 3 }} />
           {/* System Capabilities */}
           <Box sx={{ mb: 6 }}>
             <ResponsiveTypography variant="pageTitle" sx={{ textAlign: 'center', mb: 4 }}>
@@ -802,6 +1132,7 @@ const Welcome: React.FC = () => {
                 {t('welcome.footer.portfolios')}
               </ResponsiveButton>
             </Box>
+          </Box>
           </Box>
         </Container>
       </Box>

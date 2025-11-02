@@ -33,6 +33,9 @@ export enum MarketDataSource {
 
 export interface FundData extends BaseMarketData {
   // Inherits all fields from BaseMarketData
+  fundAssetType?: 'STOCK' | 'BOND' | 'BALANCED';
+  nav?: number;
+  changePercent?: number;
 }
 
 export interface GoldData extends BaseMarketData {
@@ -47,6 +50,9 @@ export interface ExchangeRateData extends BaseMarketData {
 export interface StockData extends BaseMarketData {
   exchange: 'HOSE' | 'HNX' | 'UPCOM' | 'ETF';
   board?: string;
+  changePercent?: number;
+  volume?: number;
+  marketCap?: number;
 }
 
 export interface CryptoData extends BaseMarketData {

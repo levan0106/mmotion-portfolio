@@ -2535,7 +2535,7 @@
   "login": {
     "title": "MMOTION",
     "subtitle": {
-      "enterUsername": "Lập kế hoạch, phân tích và quản lý tài sản của bạn",
+      "enterUsername": "Nền tảng quản lý toàn diện tài sản của bạn",
       "welcomeBack": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)",
       "signIn": "Nhập tên người dùng và mật khẩu để đăng nhập",
       "continue": "Nhập tên người dùng để tiếp tục (không cần mật khẩu)"
@@ -2589,7 +2589,7 @@
     }
   },
   "welcome": {
-    "title": "Chào mừng đến với MMOTION",
+    "title": "MMOTION",
     "subtitle": "Quản lý toàn diện với phân tích thời gian thực và báo cáo nâng cao",
     "buttons": {
       "getStarted": "Bắt đầu",
@@ -2726,6 +2726,41 @@
           "action": "Xem Bảng điều khiển"
         }
       }
+    },
+    "examples": {
+      "title": "Dữ liệu và Biểu đồ",
+      "subtitle": "Xem trước các tính năng phân tích và báo cáo của hệ thống",
+      "portfolioTable": {
+        "title": "Bảng Danh mục",
+        "description": "Theo dõi nhiều danh mục đầu tư với giá trị tổng và hiệu suất",
+        "columns": {
+          "name": "Tên",
+          "currency": "Tiền tệ",
+          "totalValue": "Tổng giá trị",
+          "return": "Lợi nhuận"
+        }
+      },
+      "tradingTable": {
+        "title": "Bảng Giao dịch",
+        "description": "Quản lý các giao dịch mua/bán với theo dõi chi tiết",
+        "columns": {
+          "symbol": "Mã",
+          "side": "Loại",
+          "quantity": "Số lượng",
+          "price": "Giá",
+          "total": "Tổng"
+        }
+      },
+      "allocationChart": {
+        "title": "Biểu đồ Phân bổ Tài sản",
+        "description": "Trực quan hóa phân bổ danh mục theo loại tài sản",
+        "allocation": "Phân bổ"
+      },
+      "performanceChart": {
+        "title": "Biểu đồ Hiệu suất",
+        "description": "Theo dõi hiệu suất danh mục theo thời gian",
+        "return": "Lợi nhuận"
+      }
     }
   },
   "permissions": {
@@ -2838,6 +2873,121 @@
       "emailRequired": "Vui lòng nhập email",
       "invalidEmail": "Email không hợp lệ",
       "submitFailed": "Gửi yêu cầu thất bại"
+    }
+  },
+  "home": {
+    "title": "MMOTION",
+    "subtitle": "Nền tảng quản lý toàn diện tài sản của bạn",
+    "sections": {
+      "assetTypes": {
+        "title": "Các Loại Tài Sản Đang Hỗ Trợ",
+        "subtitle": "Đa dạng các loại tài sản để đa dạng hóa danh mục đầu tư"
+      },
+      "stockFunds": {
+        "title": "Danh Sách Chứng Chỉ Quỹ Cổ Phiếu",
+        "subtitle": "Các quỹ đầu tư vào cổ phiếu với hiệu suất tốt nhất"
+      },
+      "bondFunds": {
+        "title": "Danh Sách Chứng Chỉ Quỹ Trái Phiếu",
+        "subtitle": "Các quỹ đầu tư vào trái phiếu an toàn và ổn định"
+      },
+      "topStocks": {
+        "title": "Top Cổ Phiếu",
+        "subtitle": "Những cổ phiếu có khối lượng giao dịch và biến động giá cao nhất"
+      }
+    },
+    "assetTypes": {
+      "stock": "Cổ phiếu",
+      "stockDesc": "Đầu tư vào cổ phiếu trên các sàn giao dịch",
+      "bond": "Trái phiếu",
+      "bondDesc": "Đầu tư vào trái phiếu chính phủ và doanh nghiệp",
+      "gold": "Vàng",
+      "goldDesc": "Đầu tư vào vàng và kim loại quý",
+      "crypto": "Tiền điện tử",
+      "cryptoDesc": "Đầu tư vào tiền điện tử và tài sản số",
+      "commodity": "Hàng hóa",
+      "commodityDesc": "Đầu tư vào hàng hóa và nguyên liệu",
+      "realEstate": "Bất động sản",
+      "realEstateDesc": "Đầu tư vào bất động sản và REIT",
+      "other": "Khác",
+      "otherDesc": "Các loại tài sản khác"
+    },
+    "table": {
+      "symbol": "Mã",
+      "name": "Tên",
+      "price": "Giá NAV",
+      "change": "Thay Đổi",
+      "exchange": "Sàn"
+    },
+    "noData": "Không có dữ liệu",
+    "cta": {
+      "title": "Sẵn sàng bắt đầu quản lý danh mục đầu tư của bạn?",
+      "description": "Đăng nhập hoặc đăng ký ngay để trải nghiệm đầy đủ các tính năng quản lý danh mục đầu tư chuyên nghiệp",
+      "button": "Đăng nhập miễn phí"
+    },
+    "stats": {
+      "products": "Sản phẩm quỹ",
+      "users": "Người dùng",
+      "portfolios": "Danh mục đầu tư"
+    },
+    "projectName": "MMO",
+    "menu": {
+      "home": "Trang chủ",
+      "features": "Tính năng",
+      "features.portfolio": "Quản lý danh mục",
+      "features.tracking": "Theo dõi hàng ngày",
+      "features.security": "Bảo mật",
+      "contact": "Liên hệ"
+    },
+    "register": {
+      "short": "Đăng ký",
+      "full": "Đăng ký"
+    },
+    "login": {
+      "short": "Bắt đầu",
+      "full": "Bắt đầu ngay"
+    },
+    "features": {
+      "title": "Tính năng nổi bật",
+      "subtitle": "Công cụ mạnh mẽ cho quản lý đầu tư hiệu quả"
+    },
+    "trust": {
+      "title": "Đầu tư an toàn và minh bạch",
+      "subtitle": "Hệ thống quản lý danh mục đầu tư chuyên nghiệp với độ bảo mật cao",
+      "safe": {
+        "title": "An toàn tuyệt đối",
+        "description": "Tiền và tài sản được quản lý và giám sát chặt chẽ"
+      },
+      "transparent": {
+        "title": "Minh bạch",
+        "description": "Theo dõi và quản lý tài sản một cách minh bạch"
+      },
+      "professional": {
+        "title": "Chuyên nghiệp",
+        "description": "Hệ thống quản lý danh mục đầu tư chuyên nghiệp"
+      }
+    },
+    "steps": {
+      "badge": "Hướng dẫn",
+      "title": "Bắt đầu ngay chỉ với 3 bước",
+      "subtitle": "Đầu tư chưa bao giờ dễ dàng hơn. Bắt đầu hành trình đầu tư của bạn ngay hôm nay",
+      "register": {
+        "title": "Đăng nhập",
+        "description": "Đăng nhập vào hệ thống để bắt đầu sử dụng"
+      },
+      "invest": {
+        "title": "Tạo mục tiêu đầu tư",
+        "description": "Tạo mục tiêu đầu tư theo mục tiêu đầu tư của bạn"
+      },
+      "manage": {
+        "title": "Quản lý tài sản",
+        "description": "Theo dõi tài sản thuận tiện và giao dịch dễ dàng"
+      }
+    },
+    "vision": {
+      "title": "Biến mục tiêu của bạn thành hiện thực",
+      "easyManagement": "Quản lý dễ dàng",
+      "free": "Hoàn toàn miễn phí"
     }
   }
 }

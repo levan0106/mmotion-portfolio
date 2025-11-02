@@ -269,6 +269,30 @@ export class FundPriceAPIClient extends ApiTrackingBase {
               }
             }
             
+            // Extract fund asset type from API response
+            // FMarket API may have: fundAssetType, assetType, category, or fundType
+            let fundAssetType: 'STOCK' | 'BOND' | 'BALANCED' | undefined;
+            if (item.fundAssetType) {
+              const assetType = item.fundAssetType.toUpperCase();
+              if (['STOCK', 'BOND', 'BALANCED'].includes(assetType)) {
+                fundAssetType = assetType as 'STOCK' | 'BOND' | 'BALANCED';
+              }
+            } else if (item.assetType) {
+              const assetType = item.assetType.toUpperCase();
+              if (['STOCK', 'BOND', 'BALANCED'].includes(assetType)) {
+                fundAssetType = assetType as 'STOCK' | 'BOND' | 'BALANCED';
+              }
+            } else if (item.category) {
+              const category = item.category.toUpperCase();
+              if (category.includes('STOCK') || category.includes('CỔ PHIẾU')) {
+                fundAssetType = 'STOCK';
+              } else if (category.includes('BOND') || category.includes('TRÁI PHIẾU')) {
+                fundAssetType = 'BOND';
+              } else if (category.includes('BALANCED') || category.includes('CÂN BẰNG')) {
+                fundAssetType = 'BALANCED';
+              }
+            }
+
             const fund: FundData = {
               symbol: item.shortName || item.symbol || item.code || '',
               buyPrice: price,
@@ -276,7 +300,10 @@ export class FundPriceAPIClient extends ApiTrackingBase {
               lastUpdated: lastUpdated,
               source: 'FMARKET',
               type: 'FUND',
-              name: item.name || item.productName || ''
+              name: item.name || item.productName || '',
+              fundAssetType: fundAssetType,
+              nav: price,
+              changePercent: item.changePercent || item.changePercent24h || item.navChangePercent,
             };
 
             // Only add funds with valid data
