@@ -827,7 +827,7 @@ const Home: React.FC = () => {
                   variant="cardTitle"
                   sx={{
                     fontWeight: 600,
-                    fontSize: { xs: '0.75rem', sm: '1rem', md: '1.2rem' },
+                    fontSize: { xs: '0.65rem', sm: '1rem', md: '1.2rem' },
                     color: 'white',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -882,7 +882,7 @@ const Home: React.FC = () => {
                   variant="cardTitle"
                   sx={{
                     fontWeight: 600,
-                    fontSize: { xs: '0.75rem', sm: '1rem', md: '1.2rem' },
+                    fontSize: { xs: '0.65rem', sm: '1rem', md: '1.2rem' },
                     color: 'white',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -1127,7 +1127,7 @@ const Home: React.FC = () => {
 
         
         {/* Trust & Safety Section - Move before market data */}
-        <AnimatedSection id="trust-section" delay={0.1}>
+        <AnimatedSection id="trust-section" delay={0.3}  alwaysVisible={true}>
             <Box
             sx={{
                 mb: { xs: 5, md: 6 },
@@ -2310,7 +2310,7 @@ const Home: React.FC = () => {
                         fontSize: { xs: '0.9rem', md: '1.05rem' },
                         lineHeight: 1.7,
                       }}
-                      ellipsis={true}
+                      ellipsis={false}
                     >
                       {t('home.steps.subtitle', 'Đầu tư chưa bao giờ dễ dàng hơn. Bắt đầu hành trình đầu tư của bạn ngay hôm nay')}
                     </ResponsiveTypography>
