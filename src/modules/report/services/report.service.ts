@@ -5,7 +5,7 @@ import { ReportDataDto, CashBalanceReportDto, DepositsReportDto, AssetsReportDto
 import { Portfolio } from '../../portfolio/entities/portfolio.entity';
 import { Deposit } from '../../portfolio/entities/deposit.entity';
 import { Asset } from '../../asset/entities/asset.entity';
-import { Trade } from '../../trading/entities/trade.entity';
+import { Trade, TradeSide } from '../../trading/entities/trade.entity';
 import { CashFlow } from '../../portfolio/entities/cash-flow.entity';
 import { AssetGlobalSyncService } from '../../asset/services/asset-global-sync.service';
 import { AssetValueCalculatorService } from '../../asset/services/asset-value-calculator.service';
@@ -383,17 +383,17 @@ export class ReportService {
       }
     }
     
-    this.logger.debug(`Found ${assets.length} assets for accountId: ${accountId}, portfolioIds: ${portfolioIds ? portfolioIds.join(', ') : 'all'}`);
-    this.logger.debug('Assets with FIFO calculated holdings:', assets.map(a => ({ 
-      id: a.id, 
-      symbol: a.symbol, 
-      type: a.type, 
-      currentQuantity: a.currentQuantity,
-      tradesCount: a.trades?.length || 0,
-      fifoRemainingQuantity: a.fifoPosition?.quantity,
-      fifoRealizedPnl: a.fifoPosition?.realizedPnl,
-      fifoUnrealizedPnl: a.fifoPosition?.unrealizedPnl
-    })));
+    // this.logger.debug(`Found ${assets.length} assets for accountId: ${accountId}, portfolioIds: ${portfolioIds ? portfolioIds.join(', ') : 'all'}`);
+    // this.logger.debug('Assets with FIFO calculated holdings:', assets.map(a => ({ 
+    //   id: a.id, 
+    //   symbol: a.symbol, 
+    //   type: a.type, 
+    //   currentQuantity: a.currentQuantity,
+    //   tradesCount: a.trades?.length || 0,
+    //   fifoRemainingQuantity: a.fifoPosition?.quantity,
+    //   fifoRealizedPnl: a.fifoPosition?.realizedPnl,
+    //   fifoUnrealizedPnl: a.fifoPosition?.unrealizedPnl
+    // })));
 
     const totalAssets = assets.length;
     let totalValue = 0;
@@ -431,38 +431,120 @@ export class ReportService {
     // Group by exchange/platform using asset data
     const exchangeMap = new Map<string, { total: number; count: number; value: number; capitalValue: number }>();
     
-    this.logger.debug(`Processing ${assets.length} assets for exchange grouping`);
+    // this.logger.debug(`Processing ${assets.length} assets for exchange grouping`);
 
-    // Create a map of asset ID to exchange from trades (already loaded with assets)
-    const assetExchangeMap = new Map<string, string>();
-    assets.forEach(asset => {
-      if (asset.trades && asset.trades.length > 0) {
-        // Use the first trade's exchange for this asset
-        const exchangeValue = asset.trades[0].exchange && asset.trades[0].exchange.trim() !== '' 
-          ? asset.trades[0].exchange 
-          : 'UNKNOWN';
-        assetExchangeMap.set(asset.id, exchangeValue);
-      } else {
-        assetExchangeMap.set(asset.id, 'UNKNOWN');
+    // Helper function to calculate remaining BUY trades after FIFO
+    const getRemainingBuyTrades = (trades: Trade[]) => {
+      const buyTrades: Array<{
+        trade: Trade;
+        quantity: number;
+        price: number;
+        fee: number;
+        tax: number;
+        remainingQuantity: number;
+      }> = [];
+
+      // Sort trades by date (FIFO - oldest first)
+      const sortedTrades = [...trades].sort((a, b) => a.tradeDate.getTime() - b.tradeDate.getTime());
+
+      for (const trade of sortedTrades) {
+        const quantity = parseFloat(trade.quantity.toString());
+        const price = parseFloat(trade.price.toString());
+        const fee = parseFloat(trade.fee?.toString() || '0');
+        const tax = parseFloat(trade.tax?.toString() || '0');
+
+        if (trade.side === TradeSide.BUY && price > 0) {
+          buyTrades.push({
+            trade,
+            quantity,
+            price,
+            fee,
+            tax,
+            remainingQuantity: quantity,
+          });
+        } else if (trade.side === TradeSide.BONUS || price === 0) {
+          // Distribute bonus to remaining lots proportionally
+          const totalRemaining = buyTrades.reduce((sum, b) => sum + b.remainingQuantity, 0);
+          if (totalRemaining === 0) continue;
+
+          for (const b of buyTrades) {
+            if (b.remainingQuantity <= 0) continue;
+            const bonusForLot = quantity * (b.remainingQuantity / totalRemaining);
+            b.remainingQuantity += bonusForLot;
+            b.quantity += bonusForLot;
+            b.price = (b.price * (b.remainingQuantity - bonusForLot)) / b.remainingQuantity;
+          }
+        } else if (trade.side === TradeSide.SELL) {
+          // Apply SELL using FIFO
+          let remainingToSell = Math.abs(quantity);
+          for (const buyTrade of buyTrades) {
+            if (remainingToSell <= 0) break;
+            if (buyTrade.remainingQuantity <= 0) continue;
+            const sellFromThisTrade = Math.min(remainingToSell, buyTrade.remainingQuantity);
+            buyTrade.remainingQuantity -= sellFromThisTrade;
+            remainingToSell -= sellFromThisTrade;
+          }
+        }
       }
-    });
 
-    // Group assets by exchange
+      // Return only trades with remaining quantity > 0
+      return buyTrades.filter(b => b.remainingQuantity > 0);
+    };
+
+    // Group assets by exchange based on remaining BUY trades
     for (const asset of assets) {
-      const exchange = assetExchangeMap.get(asset.id) || 'UNKNOWN';
-      const value = asset.fifoPosition?.currentValue || 0;
-      const capitalValue = (asset.fifoPosition?.avgCost || 0) * (asset.fifoPosition?.quantity || 0);
-      const quantity = asset.fifoPosition?.quantity || 0;
+      if (!asset.trades || asset.trades.length === 0) {
+        continue;
+      }
+
+      const remainingBuyTrades = getRemainingBuyTrades(asset.trades);
       
-      this.logger.debug(`Asset ${asset.symbol}: exchange=${exchange}, quantity=${quantity}, value=${value}, capitalValue=${capitalValue}`);
-      
-      const existing = exchangeMap.get(exchange) || { total: 0, count: 0, value: 0, capitalValue: 0 };
-      exchangeMap.set(exchange, {
-        total: existing.total + 1,
-        count: existing.count + 1,
-        value: existing.value + value,
-        capitalValue: existing.capitalValue + capitalValue
-      });
+      if (remainingBuyTrades.length === 0) {
+        // No remaining trades, skip this asset (shouldn't happen due to quantity > 0 check, but just in case)
+        continue;
+      }
+
+      const totalRemainingQuantity = remainingBuyTrades.reduce((sum, b) => sum + b.remainingQuantity, 0);
+      const totalValue = asset.fifoPosition?.currentValue || 0;
+      const totalCapitalValue = (asset.fifoPosition?.avgCost || 0) * (asset.fifoPosition?.quantity || 0);
+
+      // Group remaining trades by exchange
+      const exchangeQuantities = new Map<string, number>();
+      const exchangeCapitalValues = new Map<string, number>();
+
+      for (const buyTrade of remainingBuyTrades) {
+        const exchange = buyTrade.trade.exchange && buyTrade.trade.exchange.trim() !== ''
+          ? buyTrade.trade.exchange
+          : 'UNKNOWN';
+
+        // Calculate capital value for this lot
+        const lotCapitalValue = buyTrade.remainingQuantity * buyTrade.price +
+          (buyTrade.fee * (buyTrade.remainingQuantity / buyTrade.quantity)) +
+          (buyTrade.tax * (buyTrade.remainingQuantity / buyTrade.quantity));
+
+        const existingQty = exchangeQuantities.get(exchange) || 0;
+        const existingCap = exchangeCapitalValues.get(exchange) || 0;
+
+        exchangeQuantities.set(exchange, existingQty + buyTrade.remainingQuantity);
+        exchangeCapitalValues.set(exchange, existingCap + lotCapitalValue);
+      }
+
+      // Add to exchange map
+      for (const [exchange, quantity] of exchangeQuantities.entries()) {
+        const proportion = quantity / totalRemainingQuantity;
+        const exchangeValue = totalValue * proportion;
+        const exchangeCapitalValue = exchangeCapitalValues.get(exchange) || 0;
+
+        // this.logger.debug(`Asset ${asset.symbol}: exchange=${exchange}, quantity=${quantity}, value=${exchangeValue}, capitalValue=${exchangeCapitalValue}`);
+
+        const existing = exchangeMap.get(exchange) || { total: 0, count: 0, value: 0, capitalValue: 0 };
+        exchangeMap.set(exchange, {
+          total: existing.total + 1,
+          count: existing.count + 1,
+          value: existing.value + exchangeValue,
+          capitalValue: existing.capitalValue + exchangeCapitalValue
+        });
+      }
     }
 
     const byExchange: ReportSummaryDto[] = Array.from(exchangeMap.entries()).map(([exchange, data]) => ({

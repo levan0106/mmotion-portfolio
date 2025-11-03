@@ -348,7 +348,7 @@ export class SnapshotTrackingService {
           },
         });
         createdParentTrackingRecord = true;
-        this.logger.log(`createSnapshotsWithTracking: ✅ Created parent tracking record for executionId ${executionId}`);
+        // this.logger.log(`createSnapshotsWithTracking: ✅ Created parent tracking record for executionId ${executionId}`);
       } else {
         this.logger.log(`createSnapshotsWithTracking: ✅ Parent tracking record already exists for executionId ${executionId}`);
       }
@@ -357,7 +357,7 @@ export class SnapshotTrackingService {
     const trackingId = randomUUID(); // create a new tracking id
     const date = typeof snapshotDate === 'string' ? new Date(snapshotDate) : snapshotDate;
     
-    this.logger.log(`createSnapshotsWithTracking: 📸 Creating snapshots for portfolio ${portfolioName} (${portfolioId}) with tracking ${trackingId} and executionId ${executionId}`);
+    // this.logger.log(`createSnapshotsWithTracking: 📸 Creating snapshots for portfolio ${portfolioName} (${portfolioId}) with tracking ${trackingId} and executionId ${executionId}`);
 
     // Create tracking record
     let trackingRecord = null;
@@ -392,7 +392,7 @@ export class SnapshotTrackingService {
         )
       ]) as any[];
 
-      this.logger.log(`createSnapshotsWithTracking: ✅ Created ${assetSnapshots.length} asset snapshots for portfolio ${portfolioName}`);
+      // this.logger.log(`createSnapshotsWithTracking: ✅ Created ${assetSnapshots.length} asset snapshots for portfolio ${portfolioName}`);
 
       let performanceSnapshots = null;
       
@@ -411,7 +411,7 @@ export class SnapshotTrackingService {
             )
           ]);
 
-          this.logger.log(`createSnapshotsWithTracking: ✅ Created performance snapshots for portfolio ${portfolioName} with tracking ${trackingId} and executionId ${executionId}`);
+          // this.logger.log(`createSnapshotsWithTracking: ✅ Created performance snapshots for portfolio ${portfolioName} with tracking ${trackingId} and executionId ${executionId}`);
         } catch (performanceError) {
           this.logger.error(`createSnapshotsWithTracking: ⚠️ Asset snapshots created but performance snapshots failed for portfolio ${portfolioName}:`, performanceError);
           

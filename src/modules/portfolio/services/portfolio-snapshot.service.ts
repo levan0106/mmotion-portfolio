@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, LessThanOrEqual, LessThan } from 'typeorm';
+import { Repository, DataSource, LessThanOrEqual, LessThan, Between } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { PortfolioSnapshotRepository, PortfolioSnapshotQueryOptions, PortfolioSnapshotAggregationResult } from '../repositories/portfolio-snapshot.repository';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
@@ -1377,17 +1377,25 @@ export class PortfolioSnapshotService {
     date: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    // Get the last day of the previous week (Sunday)
-    const currentDay = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const daysToSubtract = currentDay + 7; // Go back to previous Sunday
-    const lastDayOfPreviousWeek = new Date(date);
-    lastDayOfPreviousWeek.setDate(lastDayOfPreviousWeek.getDate() - daysToSubtract);
+    // Get the last day of the previous week (Sunday) using UTC methods
+    const currentDay = date.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    // Calculate days to subtract to get to previous Sunday:
+    // - If today is Sunday (0), subtract 7 days to get last Sunday
+    // - If today is Monday-Saturday (1-6), subtract currentDay + 7 to get previous Sunday
+    //   (subtract currentDay to get to this Sunday, then subtract 7 more for previous week)
+    const daysToSubtract = currentDay === 0 ? 7 : currentDay;
     
+    // Use UTC methods to avoid timezone issues
+    // Calculate timestamp and subtract days in milliseconds to handle month/year boundaries correctly
+    const previousWeekTimestamp = date.getTime() - (daysToSubtract * 24 * 60 * 60 * 1000);
+    const previousWeekDate = new Date(previousWeekTimestamp);
+    // console.log('calculateWeeklyReturn: previousWeekDate', previousWeekDate);
+
     // Find the last snapshot of the previous week
     const weekAgoSnapshot = await this.portfolioSnapshotRepository.findOne({
       where: {
         portfolioId,
-        snapshotDate: LessThanOrEqual(lastDayOfPreviousWeek),
+        snapshotDate: LessThanOrEqual(previousWeekDate),
         granularity,
         isActive: true,
       },
@@ -1395,7 +1403,9 @@ export class PortfolioSnapshotService {
     });
 
     if (!weekAgoSnapshot || weekAgoSnapshot.totalPortfolioValue === 0) return 0;
-    
+
+    // console.log('calculateWeeklyReturn: currentNav', currentNav);
+    // console.log('calculateWeeklyReturn: weekAgoSnapshot', weekAgoSnapshot);
     return Number((((currentNav - weekAgoSnapshot.totalPortfolioValue) / weekAgoSnapshot.totalPortfolioValue) * 100).toFixed(4));
   }
 
@@ -1408,11 +1418,14 @@ export class PortfolioSnapshotService {
     date: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    // Get the last day of the previous month
-    const currentMonth = date.getMonth();
-    const currentYear = date.getFullYear();
-    const lastDayOfPreviousMonth = new Date(currentYear, currentMonth - 1, 0); // Last day of previous month
+    const currentMonth = date.getUTCMonth(); // 0-11 (0=Jan, 1=Feb, ..., 9=Oct, 10=Nov, 11=Dec)
+    const currentYear = date.getUTCFullYear();
     
+    // To get last day of previous month in UTC
+    const lastDayOfPreviousMonth = new Date(Date.UTC(currentYear, currentMonth, 0)); // Last day of previous month in UTC
+    
+    // console.log('calculateMonthlyReturn: currentMonth (UTC)', currentMonth, 'date (UTC)', date.toISOString());
+    // console.log('calculateMonthlyReturn: lastDayOfPreviousMonth (UTC)', lastDayOfPreviousMonth.toISOString());
     // Find the last snapshot of the previous month
     const monthAgoSnapshot = await this.portfolioSnapshotRepository.findOne({
       where: {
@@ -1423,6 +1436,8 @@ export class PortfolioSnapshotService {
       },
       order: { snapshotDate: 'DESC' }
     });
+
+    // console.log('calculateMonthlyReturn: monthAgoSnapshot', monthAgoSnapshot);
 
     if (!monthAgoSnapshot || monthAgoSnapshot.totalPortfolioValue === 0) return 0;
     
@@ -1438,14 +1453,20 @@ export class PortfolioSnapshotService {
     date: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    // Get the earliest snapshot in the current year
-    const yearStart = new Date(date.getFullYear(), 0, 1);
-    const yearEnd = new Date(date.getFullYear(), 11, 31);
+    // Get the earliest snapshot in the current year using UTC
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1)); // January 1st, 00:00:00 UTC
+    const currentDateEnd = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23, 59, 59, 999 // End of current day
+    ));
     
+    // Find the earliest snapshot from the start of the year up to current date
     const yearStartSnapshot = await this.portfolioSnapshotRepository.findOne({
       where: {
         portfolioId,
-        snapshotDate: LessThanOrEqual(yearEnd),
+        snapshotDate: Between(yearStart, currentDateEnd),
         granularity,
         isActive: true,
       },
