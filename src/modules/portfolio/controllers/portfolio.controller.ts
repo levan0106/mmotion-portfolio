@@ -32,6 +32,7 @@ import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
 import { SubscribeToFundDto } from '../dto/subscribe-to-fund.dto';
 import { RedeemFromFundDto } from '../dto/redeem-from-fund.dto';
 import { CopyPortfolioDto } from '../dto/copy-portfolio.dto';
+import { GetPortfolioReturnRequestDto, GetPortfolioReturnResponseDto } from '../dto/portfolio-return.dto';
 import { Portfolio } from '../entities/portfolio.entity';
 import { InvestorHolding } from '../entities/investor-holding.entity';
 
@@ -719,6 +720,25 @@ export class PortfolioController {
     startDate.setMonth(endDate.getMonth() - monthsToLookBack);
 
     return this.portfolioAnalyticsService.getNavHistory(id, startDate, endDate, granularity);
+  }
+
+  /**
+   * Get portfolio returns for multiple portfolios.
+   * Compares current NAV with the latest snapshot NAV.
+   * Currently returns daily return, but can be extended to support other return periods.
+   */
+  @Post('portfolio-returns')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get portfolio returns for multiple portfolios' })
+  @ApiBody({ type: GetPortfolioReturnRequestDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Portfolio returns data retrieved successfully',
+    type: GetPortfolioReturnResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  async getPortfolioReturns(@Body() request: GetPortfolioReturnRequestDto): Promise<GetPortfolioReturnResponseDto> {
+    return await this.portfolioAnalyticsService.getReturnsForPortfolios(request.portfolioIds);
   }
 
   /**

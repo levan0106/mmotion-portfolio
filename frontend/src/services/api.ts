@@ -10,8 +10,6 @@ import {
   UpdatePortfolioDto,
   AssetAllocationResponse,
   PerformanceMetrics,
-  PerformanceHistoryResponse,
-  NavSnapshot,
   CashFlow,
   ApiResponse,
   Asset,
@@ -245,12 +243,6 @@ class ApiService {
     return response.data;
   }
 
-  async getPortfolioPerformanceHistory(portfolioId: string, period?: string): Promise<PerformanceHistoryResponse> {
-    const params = period ? { period } : {};
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/performance-history`, { params });
-    return response.data;
-  }
-
   async getPortfolioRiskReturn(portfolioId: string, period?: string): Promise<any> {
     const params = new URLSearchParams();
     if (period) params.append('period', period);
@@ -329,13 +321,6 @@ class ApiService {
 
   async getPortfolioAnalyticsAllocation(portfolioId: string): Promise<any> {
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/allocation`);
-    return response.data;
-  }
-
-  async getPortfolioAnalyticsHistory(portfolioId: string, period?: string): Promise<NavSnapshot[]> {
-    const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/analytics/performance-history`, {
-      params: { period },
-    });
     return response.data;
   }
 
@@ -739,6 +724,31 @@ class ApiService {
     if (options?.granularity) params.append('granularity', options.granularity);
     
     const response = await this.api.get(`/api/v1/portfolios/${portfolioId}/nav/history?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
+   * Get portfolio returns for multiple portfolios
+   * Compares current NAV with the latest snapshot NAV
+   * Currently returns daily return, but can be extended to support other return periods
+   * @param portfolioIds - Array of portfolio IDs
+   * @returns Portfolio return data for each portfolio (currently daily return)
+   */
+  async getPortfolioReturns(portfolioIds: string[]): Promise<{
+    portfolios: Array<{
+      portfolioId: string;
+      name: string;
+      totalNav: number;
+      dailyPercent: number;
+      dailyValue: number;
+      snapshotNav?: number;
+      snapshotDate?: string;
+    }>;
+    calculatedAt: string;
+  }> {
+    const response = await this.api.post('/api/v1/portfolios/portfolio-returns', {
+      portfolioIds,
+    });
     return response.data;
   }
 

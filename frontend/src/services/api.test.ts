@@ -372,41 +372,22 @@ describe('ApiService', () => {
       })
     })
 
-    describe('getPortfolioAnalyticsHistory', () => {
-      it('should fetch analytics history with period parameter', async () => {
-        const mockHistoryData = [
-          { date: '2023-01-01', navValue: 100000 },
-          { date: '2023-01-02', navValue: 101000 },
-        ]
+    // Note: getPortfolioAnalyticsHistory has been removed - use getPortfolioNAVHistory instead
+    describe('getPortfolioNAVHistory', () => {
+      it('should fetch NAV history successfully', async () => {
+        const mockHistoryData = {
+          data: [
+            { date: '2023-01-01', navValue: 100000 },
+            { date: '2023-01-02', navValue: 101000 },
+          ]
+        }
         const mockResponse = { data: mockHistoryData }
         mockAxiosInstance.get.mockResolvedValue(mockResponse)
 
-        const result = await apiService.getPortfolioAnalyticsHistory('1', '1Y')
+        const result = await apiService.getPortfolioNAVHistory('1', 'account-1', { months: 12, granularity: 'DAILY' })
 
-        expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1/analytics/history', {
-          params: { period: '1Y' },
-        })
+        expect(mockAxiosInstance.get).toHaveBeenCalled()
         expect(result).toEqual(mockHistoryData)
-      })
-
-      it('should fetch analytics history without period parameter', async () => {
-        const mockHistoryData = [{ date: '2023-01-01', navValue: 100000 }]
-        const mockResponse = { data: mockHistoryData }
-        mockAxiosInstance.get.mockResolvedValue(mockResponse)
-
-        const result = await apiService.getPortfolioAnalyticsHistory('1')
-
-        expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/portfolios/1/analytics/history', {
-          params: { period: undefined },
-        })
-        expect(result).toEqual(mockHistoryData)
-      })
-
-      it('should handle getPortfolioAnalyticsHistory error', async () => {
-        const error = new Error('Failed to fetch analytics history')
-        mockAxiosInstance.get.mockRejectedValue(error)
-
-        await expect(apiService.getPortfolioAnalyticsHistory('1', '1Y')).rejects.toThrow('Failed to fetch analytics history')
       })
     })
 

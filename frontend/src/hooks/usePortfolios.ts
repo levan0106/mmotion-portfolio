@@ -228,24 +228,49 @@ export const usePortfolioAnalytics = (portfolioId: string) => {
 };
 
 export const usePortfolioHistory = (portfolioId: string, period?: string) => {
+  const { accountId } = useAccount();
+  const { months, granularity } = convertPeriodToNavHistoryParams(period || '1M');
+
   const {
-    data: historyData,
+    data: navHistoryResponse,
     isLoading,
     error,
   } = useQuery(
-    ['portfolio-history', portfolioId, period],
-    () => apiService.getPortfolioAnalyticsHistory(portfolioId, period),
+    ['portfolio-history', portfolioId, period, accountId],
+    () => apiService.getPortfolioNAVHistory(portfolioId, accountId || '', { months, granularity }),
     {
-      enabled: !!portfolioId,
+      enabled: !!portfolioId && !!accountId,
       staleTime: 10 * 60 * 1000, // 10 minutes
     }
   );
 
   return {
-    historyData: historyData || [],
+    historyData: navHistoryResponse?.data || [],
     isLoading,
     error,
   };
+};
+
+/**
+ * Convert period string to months and granularity for NAV history API
+ */
+const convertPeriodToNavHistoryParams = (period: string): { months: number; granularity: string } => {
+  switch (period) {
+    case '1D':
+      return { months: 1, granularity: 'DAILY' };
+    case '1W':
+      return { months: 1, granularity: 'DAILY' };
+    case '1M':
+      return { months: 1, granularity: 'DAILY' };
+    case '3M':
+      return { months: 3, granularity: 'DAILY' };
+    case '6M':
+      return { months: 6, granularity: 'DAILY' };
+    case '1Y':
+      return { months: 12, granularity: 'DAILY' };
+    default:
+      return { months: 1, granularity: 'DAILY' };
+  }
 };
 
 export const usePortfolioAssetPerformance = (portfolioId: string) => {

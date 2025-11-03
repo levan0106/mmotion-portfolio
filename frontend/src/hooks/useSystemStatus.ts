@@ -58,7 +58,7 @@ export const useSystemStatus = (): SystemStatus => {
       }
     },
     {
-      refetchInterval: 30000, // Refetch every 30 seconds
+      refetchInterval: false, // Disable automatic refetching
       staleTime: 10000, // Consider data stale after 10 seconds
       retry: 1, // Only retry once
     }

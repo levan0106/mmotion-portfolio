@@ -17,6 +17,7 @@ import { Box, Typography, Paper, FormControl, InputLabel, Select, MenuItem, Circ
 import { PerformanceHistoryDataPoint } from '../../types';
 import { formatCurrency, formatDateFns as formatDate } from '../../utils/format';
 import { apiService } from '../../services/api';
+import { useAccount } from '../../contexts/AccountContext';
 
 interface PerformanceChartProps {
   portfolioId: string;
@@ -37,14 +38,46 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   const [data, setData] = useState<PerformanceHistoryDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { accountId } = useAccount();
 
   useEffect(() => {
     const fetchPerformanceData = async () => {
+      if (!accountId) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
-        const response = await apiService.getPortfolioPerformanceHistory(portfolioId, timeframe);
-        setData(response.data);
+        
+        // Convert timeframe to months
+        const monthsMap: Record<string, number> = {
+          '1M': 1,
+          '3M': 3,
+          '6M': 6,
+          '1Y': 12,
+          '2Y': 24,
+          '5Y': 60,
+          'ALL': 120, // 10 years max
+        };
+        
+        const months = monthsMap[timeframe] || 12;
+        
+        // Use NAV history API instead of performance-history
+        const response = await apiService.getPortfolioNAVHistory(portfolioId, accountId, {
+          months,
+          granularity: 'DAILY',
+        });
+        
+        // Transform NAV history data to PerformanceHistoryDataPoint format
+        const transformedData = (response.data || []).map((item: any) => ({
+          date: item.date,
+          value: item.navValue || item.totalValue || 0,
+          return: item.portfolioDailyReturn || 0,
+        }));
+        
+        setData(transformedData);
       } catch (err) {
         console.error('Error fetching performance data:', err);
         setError('Failed to load performance data');
@@ -54,7 +87,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
     };
 
     fetchPerformanceData();
-  }, [portfolioId, timeframe]);
+  }, [portfolioId, timeframe, accountId]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

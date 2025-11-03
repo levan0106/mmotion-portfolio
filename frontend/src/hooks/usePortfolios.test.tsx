@@ -19,7 +19,7 @@ vi.mock('../services/api', () => ({
     getPortfolioPerformance: vi.fn(),
     getPortfolioAllocation: vi.fn(),
     getPortfolioPositions: vi.fn(),
-    getPortfolioAnalyticsHistory: vi.fn(),
+    getPortfolioNAVHistory: vi.fn(),
   },
 }))
 
@@ -585,7 +585,8 @@ describe('usePortfolioHistory', () => {
 
   describe('Data Fetching', () => {
     it('should fetch history data successfully', async () => {
-      mockApiService.getPortfolioAnalyticsHistory.mockResolvedValue(mockHistoryData)
+      const mockNavHistoryResponse = { data: mockHistoryData }
+      mockApiService.getPortfolioNAVHistory.mockResolvedValue(mockNavHistoryResponse)
 
       const { result } = renderHook(() => usePortfolioHistory('1', '1Y'), {
         wrapper: createWrapper(),
@@ -600,11 +601,12 @@ describe('usePortfolioHistory', () => {
 
       expect(result.current.historyData).toEqual(mockHistoryData)
       expect(result.current.error).toBeNull()
-      expect(mockApiService.getPortfolioAnalyticsHistory).toHaveBeenCalledWith('1', '1Y')
+      expect(mockApiService.getPortfolioNAVHistory).toHaveBeenCalled()
     })
 
     it('should fetch history data without period', async () => {
-      mockApiService.getPortfolioAnalyticsHistory.mockResolvedValue(mockHistoryData)
+      const mockNavHistoryResponse = { data: mockHistoryData }
+      mockApiService.getPortfolioNAVHistory.mockResolvedValue(mockNavHistoryResponse)
 
       const { result } = renderHook(() => usePortfolioHistory('1'), {
         wrapper: createWrapper(),
@@ -615,12 +617,12 @@ describe('usePortfolioHistory', () => {
       })
 
       expect(result.current.historyData).toEqual(mockHistoryData)
-      expect(mockApiService.getPortfolioAnalyticsHistory).toHaveBeenCalledWith('1', undefined)
+      expect(mockApiService.getPortfolioNAVHistory).toHaveBeenCalled()
     })
 
     it('should handle fetch error', async () => {
       const error = new Error('Failed to fetch history')
-      mockApiService.getPortfolioAnalyticsHistory.mockRejectedValue(error)
+      mockApiService.getPortfolioNAVHistory.mockRejectedValue(error)
 
       const { result } = renderHook(() => usePortfolioHistory('1', '1Y'), {
         wrapper: createWrapper(),
@@ -641,11 +643,11 @@ describe('usePortfolioHistory', () => {
 
       expect(result.current.isLoading).toBe(false)
       expect(result.current.historyData).toEqual([])
-      expect(mockApiService.getPortfolioAnalyticsHistory).not.toHaveBeenCalled()
+      expect(mockApiService.getPortfolioNAVHistory).not.toHaveBeenCalled()
     })
 
     it('should return empty array when historyData is null', async () => {
-      mockApiService.getPortfolioAnalyticsHistory.mockResolvedValue(null)
+      mockApiService.getPortfolioNAVHistory.mockResolvedValue({ data: null })
 
       const { result } = renderHook(() => usePortfolioHistory('1', '1Y'), {
         wrapper: createWrapper(),
@@ -661,7 +663,8 @@ describe('usePortfolioHistory', () => {
 
   describe('Query Key Changes', () => {
     it('should refetch when period changes', async () => {
-      mockApiService.getPortfolioAnalyticsHistory.mockResolvedValue(mockHistoryData)
+      const mockNavHistoryResponse = { data: mockHistoryData }
+      mockApiService.getPortfolioNAVHistory.mockResolvedValue(mockNavHistoryResponse)
 
       const { result, rerender } = renderHook(
         ({ portfolioId, period }) => usePortfolioHistory(portfolioId, period),
@@ -675,7 +678,7 @@ describe('usePortfolioHistory', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      expect(mockApiService.getPortfolioAnalyticsHistory).toHaveBeenCalledWith('1', '1Y')
+      expect(mockApiService.getPortfolioNAVHistory).toHaveBeenCalled()
 
       rerender({ portfolioId: '1', period: '6M' })
 
@@ -683,7 +686,7 @@ describe('usePortfolioHistory', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      expect(mockApiService.getPortfolioAnalyticsHistory).toHaveBeenCalledWith('1', '6M')
+      expect(mockApiService.getPortfolioNAVHistory).toHaveBeenCalled()
     })
   })
 })

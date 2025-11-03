@@ -20,6 +20,13 @@ import {
   Fade,
   Slide,
   useMediaQuery,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from '@mui/material';
 import {
   AccountBalance,
@@ -28,7 +35,6 @@ import {
   Add as AddIcon,
   Assessment,
   Timeline,
-  PieChart,
   ShowChart,
   Security,
   AccountBalanceWallet,
@@ -50,6 +56,119 @@ import { ResponsiveButton, ActionButton } from '../components/Common';
 import DemoAccountSuggestionBanner from '../components/Common/DemoAccountSuggestionBanner';
 import { apiService } from '../services/api';
 import { Portfolio, UpdatePortfolioDto } from '../types';
+import { useQuery } from 'react-query';
+
+// Component for portfolio growth row in Quick Insights table
+const PortfolioGrowthRow: React.FC<{ 
+  portfolio: Portfolio; 
+  displayCurrency: string;
+  dailyReturnData?: {
+    dailyPercent: number;
+    totalNav: number; 
+    dailyValue: number;
+  };
+  isLoadingDaily?: boolean;
+}> = ({ portfolio, displayCurrency, dailyReturnData, isLoadingDaily }) => {
+  // Ensure portfolio has valid ID
+  if (!portfolio || !portfolio.portfolioId) {
+    return null;
+  }
+
+  // YTD return: get from performance API (correct YTD from beginning of year)
+  const { data: performanceData, isLoading: isLoadingYtd } = useQuery(
+    ['portfolio-performance', portfolio.portfolioId],
+    () => apiService.getPortfolioPerformance(portfolio.portfolioId),
+    {
+      enabled: !!portfolio.portfolioId,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    }
+  );
+
+  // Daily return: use data from portfolio-returns API if available
+  const dailyPercent = dailyReturnData?.dailyPercent ?? 0;
+  const dailyValue = dailyReturnData?.dailyValue ?? 0;
+  const dailyChange = dailyPercent !== 0 
+    ? `${dailyPercent >= 0 ? '+' : ''}${dailyPercent.toFixed(2)}%`
+    : '+0.0%';
+  const dailyGrowth = dailyPercent;
+
+  // Use totalNav from API if available, otherwise fallback to portfolio.totalAllValue
+  const displayNav = dailyReturnData?.totalNav ?? parseFloat(portfolio.totalAllValue?.toString() || '0');
+  
+  // YTD return: get from performance API (already in percentage number)
+  // Convert to string format with sign for display
+  // Ensure ytdReturnValue is a number
+  const ytdReturnValue = performanceData?.ytdReturn != null 
+    ? parseFloat(performanceData.ytdReturn.toString()) || 0
+    : 0;
+  const ytdChange = ytdReturnValue !== 0 
+    ? `${ytdReturnValue >= 0 ? '+' : ''}${ytdReturnValue.toFixed(2)}%`
+    : '+0.0%';
+  const ytdGrowth = ytdReturnValue;
+
+  return (
+    <TableRow hover>
+      <TableCell sx={{ maxWidth: { xs: 120, sm: 120, md: 150, lg: 250 } }}>
+        <ResponsiveTypography 
+          variant="tableCell"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {portfolio.name}
+        </ResponsiveTypography>
+      </TableCell>
+      <TableCell align="right">
+        <ResponsiveTypography variant="tableCell" sx={{ fontSize: '0.75rem' }}>
+          {formatCurrency(displayNav, displayCurrency)}
+        </ResponsiveTypography>
+      </TableCell>
+      <TableCell align="right">
+        {isLoadingDaily ? (
+          <CircularProgress size={14} />
+        ) : (
+          <>
+          <Chip
+            label={dailyChange}
+            size="small"
+            color={dailyGrowth >= 0 ? 'success' : 'error'}
+            sx={{ 
+              fontSize: '0.7rem',
+              height: 22,
+              '& .MuiChip-label': { px: 1 }
+            }}
+          />
+          <ResponsiveTypography variant="tableCell" sx={{ 
+            fontSize: '0.7rem!important',
+            color: dailyValue >= 0 ? 'success.main' : 'error.main'
+            }}>
+          {formatCurrency(dailyValue, displayCurrency)}
+          </ResponsiveTypography>
+          </>
+        )}
+      </TableCell>
+      <TableCell align="right">
+        {isLoadingYtd ? (
+          <CircularProgress size={14} />
+        ) : (
+          <Chip
+            label={ytdChange}
+            size="small"
+            color={ytdGrowth >= 0 ? 'success' : 'error'}
+            sx={{ 
+              fontSize: '0.7rem',
+              height: 22,
+              '& .MuiChip-label': { px: 1 }
+            }}
+          />
+        )}
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -60,7 +179,41 @@ const Dashboard: React.FC = () => {
   const { portfolios, isLoading, error, refetch: refetchPortfolios } = usePortfolios(accountId);
   const { formattedLastUpdateTime, isLoading: isSystemStatusLoading, isAutoSyncEnabled } = useLastUpdateTime();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(portfolios || [], '1M');
+  
+  // Ensure portfolios is always an array
+  const safePortfolios = Array.isArray(portfolios) ? portfolios : [];
+  const { change: totalChange, isLoading: isChangeLoading } = usePortfolioChangeForAllPortfolios(safePortfolios, '1M');
+  
+  // Fetch portfolio returns for all portfolios using the new API
+  const validPortfolioIds = safePortfolios
+    .filter(p => p && p.portfolioId)
+    .map(p => p.portfolioId);
+  
+  const { data: portfolioReturnsData, isLoading: isLoadingPortfolioReturns, refetch: refetchPortfolioReturns } = useQuery(
+    ['portfolio-returns', validPortfolioIds.join(',')],
+    () => apiService.getPortfolioReturns(validPortfolioIds),
+    {
+      enabled: validPortfolioIds.length > 0,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    }
+  );
+
+  // Create a map for quick lookup of portfolio return data
+  const portfolioReturnsMap = React.useMemo(() => {
+    const map = new Map<string, { dailyPercent: number; totalNav: number; dailyValue: number }>();
+    if (portfolioReturnsData?.portfolios) {
+      portfolioReturnsData.portfolios.forEach((item) => {
+        map.set(item.portfolioId, {
+          dailyPercent: item.dailyPercent,
+          totalNav: item.totalNav,
+          dailyValue: item.dailyValue,
+        });
+      });
+    }
+    return map;
+  }, [portfolioReturnsData]);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [selectedPortfolioForPermission, setSelectedPortfolioForPermission] = useState<string | null>(null);
@@ -116,11 +269,11 @@ const Dashboard: React.FC = () => {
   }
 
   // Calculate comprehensive financial metrics
-  const totalPortfolios = portfolios.length;
-  const totalValue = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.totalInvestValue?.toString()) || 0), 0);
-  const totalUnrealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.unrealizedInvestPnL?.toString()) || 0), 0);
-  const totalRealizedPL = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.realizedInvestPnL?.toString()) || 0), 0);
-  const totalCashBalance = portfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio.cashBalance?.toString()) || 0), 0);
+  const totalPortfolios = safePortfolios.length;
+  const totalValue = safePortfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio?.totalAllValue?.toString() || '0') || 0), 0);
+  const totalUnrealizedPL = safePortfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio?.unrealizedAllPnL?.toString() || '0') || 0), 0);
+  const totalRealizedPL = safePortfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio?.realizedAllPnL?.toString() || '0') || 0), 0);
+  const totalCashBalance = safePortfolios.reduce((sum, portfolio) => sum + (parseFloat(portfolio?.cashBalance?.toString() || '0') || 0), 0);
 
   // Advanced performance metrics
   const totalPL = totalUnrealizedPL + totalRealizedPL;
@@ -129,7 +282,7 @@ const Dashboard: React.FC = () => {
   const averagePortfolioValue = totalPortfolios > 0 ? totalValue / totalPortfolios : 0;
   
   // Determine the display currency for aggregated values (use first portfolio's currency or VND as default)
-  const displayCurrency = portfolios.find(p => p.baseCurrency)?.baseCurrency || 'VND';
+  const displayCurrency = safePortfolios.find(p => p?.baseCurrency)?.baseCurrency || 'VND';
 
   // Handler functions
   const handlePortfolioView = (portfolioId: string) => {
@@ -137,7 +290,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handlePortfolioEdit = (portfolioId: string) => {
-    const portfolio = portfolios.find(p => p.portfolioId === portfolioId);
+    const portfolio = safePortfolios.find(p => p?.portfolioId === portfolioId);
     if (portfolio) {
       setEditingPortfolio(portfolio);
       setEditModalOpen(true);
@@ -194,11 +347,19 @@ const Dashboard: React.FC = () => {
     try {
       // Refresh portfolios data
       await refetchPortfolios();
+      // Refresh portfolio returns data
+      if (validPortfolioIds.length > 0) {
+        await refetchPortfolioReturns();
+      }
       // Invalidate and refetch system status queries
       queryClient.invalidateQueries('autoSyncStatus');
       queryClient.invalidateQueries('latestPriceUpdate');
       // Invalidate portfolio change queries
       queryClient.invalidateQueries(['portfolio-change']);
+      // Invalidate portfolio returns queries
+      queryClient.invalidateQueries(['portfolio-returns']);
+      // Invalidate portfolio performance queries
+      queryClient.invalidateQueries(['portfolio-performance']);
     } catch (error) {
       console.error('Failed to refresh data:', error);
     } finally {
@@ -253,9 +414,12 @@ const Dashboard: React.FC = () => {
     },
   ];
 
-  const bestPortfolio = portfolios.length > 0 ? portfolios.reduce((best, current) => 
-    (current.unrealizedInvestPnL/current.totalInvestValue || 0) > (best.unrealizedInvestPnL/best.totalInvestValue || 0) ? current : best
-  ) : null;
+  const bestPortfolio = safePortfolios.length > 0 ? safePortfolios.reduce((best, current) => {
+    if (!best) return current;
+    const bestRatio = best?.unrealizedInvestPnL && best?.totalInvestValue ? (best.unrealizedInvestPnL / best.totalInvestValue) : 0;
+    const currentRatio = current?.unrealizedInvestPnL && current?.totalInvestValue ? (current.unrealizedInvestPnL / current.totalInvestValue) : 0;
+    return currentRatio > bestRatio ? current : best;
+  }) : null;
 
   return (
     <Fade in timeout={800}>
@@ -296,23 +460,6 @@ const Dashboard: React.FC = () => {
               >
                 {isRefreshing ? t('dashboard.refreshing') : t('dashboard.refreshData')}
               </ResponsiveButton>
-              {/* <ResponsiveButton
-                variant="contained"
-                icon={<AddIcon />}
-                startIcon={<AddIcon />}
-                onClick={handleCreatePortfolio}
-                mobileText={t('common.new')}
-                desktopText={t('portfolio.create')}
-                sx={{ 
-                  borderRadius: 2,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                  }
-                }}
-              >
-                {t('portfolio.create')}
-              </ResponsiveButton> */}
             </Box>
           </Box>
           
@@ -434,9 +581,9 @@ const Dashboard: React.FC = () => {
         </Grid>
 
         {/* Professional Analytics Section */}
-        {portfolios.length > 0 && (
+        {safePortfolios.length > 0 && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} lg={8}>
+            <Grid item xs={12} sm={6} lg={7}>
               <Card sx={{ 
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
@@ -488,60 +635,75 @@ const Dashboard: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} lg={4}>
-              { !isMobile && (<Card sx={{ 
+            <Grid item xs={12} sm={6} lg={5}>
+              <Card sx={{ 
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
                 border: `0.5px solid ${alpha(theme.palette.divider, 0.08)}`,
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                maxHeight: '400px',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
               }}>
-                <CardContent sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <PieChart sx={{ mr: 2, color: 'secondary.main' }} />
+                <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexShrink: 0 }}>
+                    <Assessment sx={{ mr: 2, color: 'secondary.main' }} />
                     <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
                       {t('dashboard.quickInsights')}
                     </ResponsiveTypography>
                   </Box>
                   
-                  <Box sx={{ space: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {t('dashboard.averagePortfolioValueLabel')}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography variant="cardValueMedium">
-                        {formatCurrency(averagePortfolioValue, displayCurrency)}
-                      </ResponsiveTypography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {t('dashboard.totalReturn')}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography 
-                        variant="cardValueMedium" 
-                        sx={{ 
-                          color: totalReturnPercentage >= 0 ? 'success.main' : 'error.main'
-                        }}
-                      >
-                        {formatPercentage(totalReturnPercentage)}
-                      </ResponsiveTypography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {t('dashboard.activePortfolios')}
-                      </ResponsiveTypography>
-                      <ResponsiveTypography variant="cardValueMedium">
-                        {totalPortfolios}
-                      </ResponsiveTypography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5 }}>
-                      <ResponsiveTypography variant="tableCell">
-                        {t('dashboard.systemHealth')}
-                      </ResponsiveTypography>
-                      <Chip label={t('dashboard.excellent')} color="success" size="small" />
-                    </Box>
-                  </Box>
+                  {safePortfolios.length > 0 ? (
+                    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none', bgcolor: 'transparent', maxHeight: '450px', overflow: 'auto', flex: 1 }}>
+                      <Table size="small" stickyHeader sx={{ '& .MuiTableCell-root': { py: 1 } }}>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), maxWidth: { xs:120, sm: 120, md: 150, lg: 250 } }}>
+                              <ResponsiveTypography variant="tableHeader">
+                                {t('dashboard.portfolioList.name', 'Tên')}
+                              </ResponsiveTypography>
+                            </TableCell>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                              <ResponsiveTypography variant="tableHeader">
+                                {t('dashboard.portfolioList.totalValue', 'Giá trị')}
+                              </ResponsiveTypography>
+                            </TableCell>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                              <ResponsiveTypography variant="tableHeader" >
+                                {t('dashboard.portfolioList.dailyGrowth', 'Hôm nay')}
+                              </ResponsiveTypography>
+                            </TableCell>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                              <ResponsiveTypography variant="tableHeader" >
+                                {t('dashboard.portfolioList.ytdGrowth', 'YTD')}
+                              </ResponsiveTypography>
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {safePortfolios.filter(p => p && p.portfolioId).map((portfolio) => {
+                            const dailyReturnData = portfolioReturnsMap.get(portfolio.portfolioId);
+                            return (
+                              <PortfolioGrowthRow 
+                                key={portfolio.portfolioId} 
+                                portfolio={portfolio} 
+                                displayCurrency={displayCurrency}
+                                dailyReturnData={dailyReturnData}
+                                isLoadingDaily={isLoadingPortfolioReturns}
+                              />
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  ) : (
+                    <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                      {t('dashboard.noPortfolios')}
+                    </ResponsiveTypography>
+                  )}
                 </CardContent>
-              </Card>)}
+              </Card>
             </Grid>
           </Grid>
         )}
@@ -576,7 +738,7 @@ const Dashboard: React.FC = () => {
             </ActionButton>
           </Box>
           
-          {portfolios.length === 0 ? (
+          {safePortfolios.length === 0 ? (
             <Card sx={{ 
               p: 6, 
               textAlign: 'center',
@@ -621,7 +783,7 @@ const Dashboard: React.FC = () => {
             </Card>
           ) : (
             <Grid container spacing={3}>
-              {portfolios.map((portfolio, index) => (
+              {safePortfolios.filter(p => p && p.portfolioId).map((portfolio, index) => (
                 <Grid item xs={12} sm={6} lg={4} xl={3} key={portfolio.portfolioId}>
                   <Slide direction="up" in timeout={800 + index * 100}>
                     <Box>
@@ -647,8 +809,8 @@ const Dashboard: React.FC = () => {
             open={permissionModalOpen}
             onClose={handlePermissionModalClose}
             portfolioId={selectedPortfolioForPermission}
-            portfolioName={portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.name || ''}
-            creatorAccountId={portfolios.find(p => p.portfolioId === selectedPortfolioForPermission)?.accountId || ''}
+            portfolioName={safePortfolios.find(p => p?.portfolioId === selectedPortfolioForPermission)?.name || ''}
+            creatorAccountId={safePortfolios.find(p => p?.portfolioId === selectedPortfolioForPermission)?.accountId || ''}
             onPermissionUpdated={() => {
               // Refresh portfolios when permissions are updated
               refetchPortfolios();

@@ -15,6 +15,10 @@ import { SnapshotService } from './snapshot.service';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { PortfolioSnapshotService } from './portfolio-snapshot.service';
 import { PerformanceSnapshotService } from './performance-snapshot.service';
+import { PortfolioValueCalculatorService } from './portfolio-value-calculator.service';
+import { CashFlowService } from './cash-flow.service';
+import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
+import { GetPortfolioReturnResponseDto, PortfolioReturnItemDto } from '../dto/portfolio-return.dto';
 
 /**
  * Service class for Portfolio analytics and performance calculations.
@@ -35,6 +39,9 @@ export class PortfolioAnalyticsService {
     private readonly snapshotService: SnapshotService,
     private readonly portfolioSnapshotService: PortfolioSnapshotService,
     private readonly performanceSnapshotService: PerformanceSnapshotService,
+    private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
+    private readonly cashFlowService: CashFlowService,
+    private readonly depositCalculationService: DepositCalculationService,
   ) {}
 
   // /**
@@ -880,6 +887,144 @@ export class PortfolioAnalyticsService {
       endDate,
       granularity
     );
+  }
+
+  /**
+   * Calculate portfolio return for multiple portfolios
+   * Compares current NAV with the latest snapshot NAV
+   * @param portfolioIds - Array of portfolio IDs
+   * @returns GetPortfolioReturnResponseDto with return data for each portfolio
+   */
+  async getReturnsForPortfolios(portfolioIds: string[]): Promise<GetPortfolioReturnResponseDto> {
+    // this.logger.log(`Calculating daily returns for ${portfolioIds.length} portfolios`);
+    const portfoliosData: PortfolioReturnItemDto[] = [];
+
+    // Process all portfolios in parallel
+    const portfolioPromises = portfolioIds.map(async (portfolioId) => {
+      try {
+        // Get portfolio info
+        const portfolio = await this.portfolioRepository.findByIdWithAssets(portfolioId);
+
+        if (!portfolio) {
+          this.logger.warn(`Portfolio ${portfolioId} not found`);
+          return null;
+        }
+
+        // this.logger.debug(`Processing portfolio ${portfolioId} (${portfolio.name})`);
+
+        // Calculate current NAV: asset value + cash balance + deposit value
+        let currentNav = 0;
+        try {
+          // Calculate asset value (this includes assets only, not cash or deposits)
+          const assetValue = await this.portfolioValueCalculator.calculateAssetValue(portfolioId);
+          
+          // Get cash balance from cash flow service
+          let cashBalance = 0;
+          try {
+            cashBalance = await this.cashFlowService.getCashBalance(portfolioId);
+            // this.logger.debug(`Portfolio ${portfolioId} cash balance: ${cashBalance}`);
+          } catch (cashError) {
+            this.logger.warn(`Error getting cash balance for portfolio ${portfolioId}:`, cashError);
+            // Continue with 0 cash balance
+          }
+
+          // Get total deposit value from deposit calculation service
+          let totalDepositValue = 0;
+          try {
+            const depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId);
+            totalDepositValue = depositData.totalDepositValue;
+            // this.logger.debug(`Portfolio ${portfolioId} total deposit value: ${totalDepositValue}`);
+          } catch (depositError) {
+            this.logger.warn(`Error calculating deposit value for portfolio ${portfolioId}:`, depositError);
+            // Continue with 0 deposit value
+          }
+
+          // NAV = asset value + cash balance + deposit value
+          currentNav = assetValue + cashBalance + totalDepositValue;
+          // this.logger.debug(`Portfolio ${portfolioId} current NAV: ${currentNav} (asset: ${assetValue}, cash: ${cashBalance}, deposit: ${totalDepositValue})`);
+        } catch (navError) {
+          this.logger.error(`Error calculating current NAV for portfolio ${portfolioId}:`, navError);
+          // Still return portfolio data with 0 NAV
+          currentNav = 0;
+        }
+
+        // Get latest snapshot (DAILY granularity)
+        let latestSnapshot = null;
+        try {
+          latestSnapshot = await this.portfolioSnapshotService.getLatestPortfolioSnapshot(
+            portfolioId,
+            SnapshotGranularity.DAILY
+          );
+          if (latestSnapshot) {
+            this.logger.debug(`Portfolio ${portfolioId} latest snapshot found: ${latestSnapshot.snapshotDate}`);
+          }
+        } catch (snapshotError) {
+          this.logger.warn(`Error getting snapshot for portfolio ${portfolioId}:`, snapshotError);
+          // Continue without snapshot
+        }
+
+        // Calculate daily return
+        let dailyPercent = 0;
+        let dailyValue = 0;
+        let snapshotNav = 0;
+        let snapshotDate: string | undefined;
+
+        if (latestSnapshot) {
+          snapshotNav = parseFloat(latestSnapshot.totalPortfolioValue.toString());
+          
+          // Handle snapshotDate - it might be a Date object or a string
+          if (latestSnapshot.snapshotDate instanceof Date) {
+            snapshotDate = latestSnapshot.snapshotDate.toISOString();
+          } else if (typeof latestSnapshot.snapshotDate === 'string') {
+            snapshotDate = latestSnapshot.snapshotDate;
+          } else {
+            // If it's already an ISO string or other format, try to convert
+            snapshotDate = new Date(latestSnapshot.snapshotDate).toISOString();
+          }
+
+          if (snapshotNav > 0) {
+            dailyValue = currentNav - snapshotNav;
+            dailyPercent = (dailyValue / snapshotNav) * 100;
+            this.logger.debug(`Portfolio ${portfolioId} daily return: ${dailyPercent.toFixed(2)}% (${dailyValue.toFixed(2)})`);
+          } else {
+            this.logger.warn(`Portfolio ${portfolioId} snapshot NAV is 0 or invalid`);
+          }
+        } else {
+          this.logger.warn(`No snapshot found for portfolio ${portfolioId}, daily return will be 0`);
+        }
+
+        // Always return portfolio data, even if snapshot is missing or NAV calculation failed
+        const result = {
+          portfolioId: portfolio.portfolioId,
+          name: portfolio.name,
+          totalNav: currentNav,
+          dailyPercent: parseFloat(dailyPercent.toFixed(2)),
+          dailyValue: parseFloat(dailyValue.toFixed(2)),
+          snapshotNav: snapshotNav > 0 ? snapshotNav : undefined,
+          snapshotDate: snapshotDate,
+        } as PortfolioReturnItemDto;
+
+        this.logger.debug(`Portfolio ${portfolioId} result:`, result);
+        return result;
+      } catch (error) {
+        this.logger.error(`Error calculating daily return for portfolio ${portfolioId}:`, error);
+        this.logger.error(`Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+        // Return null to exclude this portfolio from results
+        return null;
+      }
+    });
+
+    const results = await Promise.all(portfolioPromises);
+
+    // Filter out null results (portfolios that failed or were not found)
+    portfoliosData.push(...results.filter((r): r is PortfolioReturnItemDto => r !== null));
+
+    this.logger.log(`Successfully calculated daily returns for ${portfoliosData.length} out of ${portfolioIds.length} portfolios`);
+
+    return {
+      portfolios: portfoliosData,
+      calculatedAt: new Date().toISOString(),
+    };
   }
 }
 

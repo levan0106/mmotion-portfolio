@@ -212,6 +212,8 @@ export class PortfolioSnapshotService {
     let unrealizedAssetPl = 0;
     let realizedAssetPl = 0;
     
+    // this.logger.debug('calculate portfolio-level metrics', { assetSnapshots });
+
     assetSnapshots.forEach(snapshot => {
       totalAssetValue = Number((totalAssetValue + Number(snapshot.currentValue || 0)).toFixed(8));
       totalAssetPl = Number((totalAssetPl + Number(snapshot.totalPl || 0)).toFixed(8));
@@ -1454,7 +1456,7 @@ export class PortfolioSnapshotService {
     granularity: SnapshotGranularity
   ): Promise<number> {
     // Get the earliest snapshot in the current year using UTC
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1)); // January 1st, 00:00:00 UTC
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear()-1, 11, 31)); // December 31st, 23:59:59 UTC of previous year
     const currentDateEnd = new Date(Date.UTC(
       date.getUTCFullYear(),
       date.getUTCMonth(),

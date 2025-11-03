@@ -1806,7 +1806,7 @@
     "navPerUnitGrowth": "Tăng trưởng NAV/Unit",
     "navGrowth": "Tăng trưởng NAV",
     "recent": "Gần nhất",
-    "fromStart": "Từ đầu",
+    "fromStart": "Từ đầu năm",
     "infoNote": "💡 NAV Tổng = Tiền mặt + Giá trị tài sản | NAV/Unit = NAV Tổng ÷ Số đơn vị quỹ"
   },
   "asset": {
