@@ -2595,8 +2595,8 @@
     }
   },
   "welcome": {
-    "title": "GIỚI THIỆU VỀ NỀN TẢNG",
-    "subtitle": "Quản lý toàn diện với phân tích thời gian thực và báo cáo nâng cao",
+    "title": "XEM NHANH VỀ NỀN TẢNG",
+    "subtitle": "Nền tảng quản lý toàn diện đa tài sản với phân tích và báo cáo nâng cao",
     "buttons": {
       "getStarted": "Bắt đầu",
       "viewDashboard": "Xem Tổng quan"
@@ -2605,7 +2605,7 @@
       "title": "Tính năng chính",
       "portfolio": {
         "title": "Quản lý Danh mục",
-        "description": "Tạo và quản lý nhiều danh mục đầu tư với theo dõi hiệu suất",
+        "description": "Tạo và quản lý nhiều danh mục với theo dõi hiệu suất",
         "feature1": "Hỗ trợ đa danh mục",
         "feature2": "Theo dõi hiệu suất thời gian thực",
         "feature3": "Trực quan hóa phân bổ tài sản",
@@ -2613,7 +2613,7 @@
       },
       "trading": {
         "title": "Quản lý Giao dịch",
-        "description": "Công cụ quản lý nâng cao với khớp lệnh FIFO/LIFO và quản lý rủi ro",
+        "description": "Công cụ quản lý nâng cao và quản lý rủi ro",
         "feature1": "Khớp lệnh FIFO/LIFO",
         "feature2": "Quản lý vị thế",
         "feature3": "Công cụ quản lý rủi ro",
@@ -2629,7 +2629,7 @@
       },
       "assets": {
         "title": "Quản lý Tài sản",
-        "description": "Quản lý đa dạng loại tài sản với dữ liệu thị trường thời gian thực",
+        "description": "Quản lý đa dạng tài sản với dữ liệu thị trường thực",
         "feature1": "Hỗ trợ nhiều loại tài sản",
         "feature2": "Dữ liệu thị trường thời gian thực",
         "feature3": "Theo dõi lịch sử giá",

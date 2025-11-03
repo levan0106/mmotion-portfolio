@@ -66,7 +66,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Legend,
 } from 'recharts';
 import { formatCurrency, formatPercentage, formatNumber } from '../utils/format';
 import { getAssetTypeColor } from '../config/chartColors';
@@ -131,7 +130,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
             </ResponsiveTypography>
           </Box>
           
-          <ResponsiveTypography variant="cardLabel" color="text.secondary" sx={{ mb: 2 }}>
+          <ResponsiveTypography variant="labelXSmall" color="text.secondary" sx={{ mb: 2 }} ellipsis={false}>
             {description}
           </ResponsiveTypography>
           
@@ -461,19 +460,6 @@ const Welcome: React.FC = () => {
 
           {/* Header Section */}
           <Box sx={{ textAlign: 'center', mb: 6, position: 'relative' }}>
-            {/* <IconButton
-              onClick={handleCloseWelcome}
-              sx={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                bgcolor: 'background.paper',
-                boxShadow: 2,
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
-            >
-              <CloseIcon />
-            </IconButton> */}
             
             <Box sx={{ mb: 4 }}>
               <Avatar
@@ -502,41 +488,9 @@ const Welcome: React.FC = () => {
                {t('welcome.title')}
               </ResponsiveTypography>
               
-              <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
+              <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 3, maxWidth: 600, mx: 'auto' }} ellipsis={false}>
                 {t('welcome.subtitle')}
               </ResponsiveTypography>
-              
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <ResponsiveButton
-                  variant="contained"
-                  size="large"
-                  onClick={handleGetStarted}
-                  startIcon={<PlayIcon />}
-                  sx={{
-                    borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                    },
-                  }}
-                  forceTextOnly
-                >
-                  {t('welcome.buttons.getStarted')}
-                </ResponsiveButton>
-                
-                <ResponsiveButton
-                  variant="outlined"
-                  size="large"
-                  onClick={handleViewDashboard}
-                  startIcon={<LanguageIcon />}
-                  sx={{ borderRadius: 3, px: 4, py: 1.5 }}
-                  forceTextOnly
-                >
-                  {t('welcome.buttons.viewDashboard')}
-                </ResponsiveButton>
-              </Box>
             </Box>
           </Box>
 
@@ -1116,11 +1070,46 @@ const Welcome: React.FC = () => {
 
           {/* Footer */}
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Divider sx={{ mb: 3 }} />
-            <ResponsiveTypography variant="formHelper" color="text.secondary">
+            <Divider sx={{ mb: 4 }} />
+            <ResponsiveTypography variant="formHelper" color="text.secondary" sx={{ mb: 4 }}>
               {t('welcome.footer.message')}
             </ResponsiveTypography>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
+            
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', mb: 4 }}>
+              <ResponsiveButton
+                variant="contained"
+                size="large"
+                onClick={handleGetStarted}
+                startIcon={<PlayIcon />}
+                sx={{
+                  borderRadius: 3,
+                  px: 4,
+                  py: 1.5,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                  },
+                }}
+                forceTextOnly
+              >
+                {t('welcome.buttons.getStarted')}
+              </ResponsiveButton>
+              
+              <ResponsiveButton
+                variant="outlined"
+                size="large"
+                onClick={handleViewDashboard}
+                startIcon={<LanguageIcon />}
+                sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+                forceTextOnly
+              >
+                {t('welcome.buttons.viewDashboard')}
+              </ResponsiveButton>
+            </Box>
+
+            {/* Footer Links */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <ResponsiveButton
                 variant="text"
                 onClick={handleViewDashboard}

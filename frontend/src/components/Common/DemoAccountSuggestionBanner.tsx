@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   AlertTitle,
@@ -17,7 +16,6 @@ import {
 import {
   PlayArrow as PlayIcon,
   Close as CloseIcon,
-  SwapHoriz as SwapIcon,
   Lightbulb as LightbulbIcon,
 } from '@mui/icons-material';
 import { useAccount } from '../../contexts/AccountContext';
@@ -34,9 +32,8 @@ const STORAGE_KEY = 'demoAccountSuggestionBannerDismissed';
 export const DemoAccountSuggestionBanner: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isDemoAccount, switchAccount, currentAccount } = useAccount();
+  const { isDemoAccount, switchAccount } = useAccount();
   const [dismissed, setDismissed] = useState(true); // Default to dismissed
   const [demoAccount, setDemoAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(false);
@@ -199,6 +196,7 @@ export const DemoAccountSuggestionBanner: React.FC = () => {
                 lineHeight: 1.6,
                 mb: { xs: 1.5, sm: 0 },
               }}
+              ellipsis={false}
             >
               {t(
                 'accountSwitcher.demoAccountSuggestion.message',

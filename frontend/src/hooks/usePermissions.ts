@@ -1,6 +1,7 @@
 import { useAccount } from '../contexts/AccountContext';
-import { useMemo, useState, useEffect } from 'react';
-import { userRolesApi, UserPermission, UserRole } from '../services/api.userRoles';
+import { useMemo } from 'react';
+import { useQuery } from 'react-query';
+import { userRolesApi } from '../services/api.userRoles';
 
 export interface Permission {
   resource: string;
@@ -9,49 +10,48 @@ export interface Permission {
 
 export const usePermissions = () => {
   const { currentUser } = useAccount();
-  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [userPermissions, setUserPermissions] = useState<UserPermission[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch user roles and permissions when user changes
-  useEffect(() => {
-    const fetchUserRoles = async () => {
+  // Use React Query for caching and deduplication
+  // This ensures the API is only called once even if multiple components use this hook
+  const {
+    data: userRolesData,
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ['currentUserRoles', currentUser?.userId],
+    queryFn: async () => {
       if (!currentUser?.userId) {
-        setUserRoles([]);
-        setUserPermissions([]);
-        return;
+        return { userRoles: [], permissions: [] };
       }
-
-      setIsLoading(true);
-      setError(null);
 
       try {
         const response = await userRolesApi.getUserRoles();
         
         // Handle different response structures
         if (response && typeof response === 'object' && response.userRoles && response.permissions) {
-          setUserRoles(response.userRoles);
-          setUserPermissions(response.permissions);
-          setError(null);
+          return {
+            userRoles: response.userRoles,
+            permissions: response.permissions,
+          };
         } else {
           console.warn('Unexpected API response structure:', response);
-          setUserRoles([]);
-          setUserPermissions([]);
-          setError('Invalid API response structure');
+          return { userRoles: [], permissions: [] };
         }
       } catch (err) {
         console.error('Error fetching user roles:', err);
-        setError('Failed to load user permissions');
-        setUserRoles([]);
-        setUserPermissions([]);
-      } finally {
-        setIsLoading(false);
+        throw err;
       }
-    };
+    },
+    enabled: !!currentUser?.userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+  });
 
-    fetchUserRoles();
-  }, [currentUser?.userId]);
+  // Extract userRoles and userPermissions from query data
+  const userRoles = userRolesData?.userRoles || [];
+  const userPermissions = userRolesData?.permissions || [];
+  const error = queryError ? 'Failed to load user permissions' : null;
 
   const permissions = useMemo(() => {
     return userPermissions.map(permission => ({
