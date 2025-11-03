@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Typography, Grid, Card, CardContent } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, useMediaQuery, useTheme } from '@mui/material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 import { AssetAllocationResponse } from '../../types';
 
@@ -34,6 +34,8 @@ const AssetSummaryChart: React.FC<AssetSummaryChartProps> = ({
   baseCurrency,
   title = 'Asset Summary',
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Transform data for the chart
   const chartData = Object.entries(data.allocation).map(([assetType, allocation], index) => ({
     assetType: assetType.toUpperCase(),
@@ -102,6 +104,7 @@ const AssetSummaryChart: React.FC<AssetSummaryChartProps> = ({
             <YAxis
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: 12 }}
+              hide={isMobile}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>

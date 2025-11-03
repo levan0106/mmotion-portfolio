@@ -244,7 +244,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+        mx: { xs: 0, sm: 0 } // Negative margin on mobile to extend to edges
       }}>
         <ResponsiveContainer width="100%" height={compact ? 200 : 250}>
         <BarChart data={chartData} margin={{ 

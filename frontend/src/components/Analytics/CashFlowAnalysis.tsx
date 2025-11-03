@@ -15,7 +15,7 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
-import { Box, Typography, Paper, Grid, Card, CardContent } from '@mui/material';
+import { Box, Typography, Paper, Grid, Card, CardContent, useMediaQuery, useTheme } from '@mui/material';
 import { formatCurrency, formatDateFns as formatDate } from '../../utils/format';
 import { TrendingUp, TrendingDown, AccountBalance } from '@mui/icons-material';
 
@@ -38,6 +38,8 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
   baseCurrency,
   title = 'Cash Flow Analysis',
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -167,6 +169,7 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
             <YAxis
               tickFormatter={(value) => formatCurrency(value, baseCurrency, { compact: true })}
               tick={{ fontSize: 12 }}
+              hide={isMobile}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="inflow" fill="#4caf50" name="Inflow" />
@@ -199,6 +202,7 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
             <YAxis
               tickFormatter={(value) => formatCurrency(value, baseCurrency, { compact: true })}
               tick={{ fontSize: 12 }}
+              hide={isMobile}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area

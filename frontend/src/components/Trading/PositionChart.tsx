@@ -9,6 +9,8 @@ import {
   Select,
   MenuItem,
   Grid,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   PieChart,
@@ -44,6 +46,8 @@ export const PositionChart: React.FC<PositionChartProps> = ({
   dataType = 'value',
   height = 400,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedChartType, setSelectedChartType] = React.useState(chartType);
   const [selectedDataType, setSelectedDataType] = React.useState(dataType);
 
@@ -172,6 +176,7 @@ export const PositionChart: React.FC<PositionChartProps> = ({
         />
         <YAxis 
           tickFormatter={selectedDataType === 'weight' ? formatPercentage : formatCurrency}
+          hide={isMobile}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
@@ -196,6 +201,7 @@ export const PositionChart: React.FC<PositionChartProps> = ({
         />
         <YAxis 
           tickFormatter={selectedDataType === 'weight' ? formatPercentage : formatCurrency}
+          hide={isMobile}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
