@@ -47,6 +47,7 @@ import PortfolioPermissionModal from '../components/Portfolio/PortfolioPermissio
 import PortfolioForm from '../components/Portfolio/PortfolioForm';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton, ActionButton } from '../components/Common';
+import DemoAccountSuggestionBanner from '../components/Common/DemoAccountSuggestionBanner';
 import { apiService } from '../services/api';
 import { Portfolio, UpdatePortfolioDto } from '../types';
 
@@ -259,6 +260,9 @@ const Dashboard: React.FC = () => {
   return (
     <Fade in timeout={800}>
       <Box>
+        {/* Demo Account Suggestion Banner */}
+        <DemoAccountSuggestionBanner />
+
         {/* Professional Header Section */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>

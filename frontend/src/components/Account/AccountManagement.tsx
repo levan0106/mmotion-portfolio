@@ -40,6 +40,8 @@ import { Account } from '../../types';
 import { apiService } from '../../services/api';
 import CreateAccountModal from './CreateAccountModal';
 import EditAccountModal from './EditAccountModal';
+import { usePermissions } from '@/hooks/usePermissions';
+import { UserRole } from '@/services/api.userRoles';
 
 export const AccountManagement: React.FC = () => {
   const { t } = useTranslation();
@@ -55,19 +57,32 @@ export const AccountManagement: React.FC = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
   const [deleting, setDeleting] = useState(false);
+  
+  const { userRoles, isLoading: isLoadingRoles } = usePermissions();
 
   useEffect(() => {
-    loadAccounts();
-  }, []);
+    // Wait for userRoles to be loaded before loading accounts
+    if (!isLoadingRoles && userRoles !== null && userRoles !== undefined) {
+      setTimeout(() => {
+        loadAccounts();
+      }, 100);
+    }
+  }, [isLoadingRoles, userRoles]);
 
   const loadAccounts = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await apiService.api.get('/api/v1/accounts');
-      
+
       // remove demo account in main account list
-      const filteredAccounts = response.data.filter((account: Account) => !account.isDemoAccount);
+      let filteredAccounts: Account[] = [];
+      // Check if userRoles exists and is an array before using it
+      if (!userRoles || !Array.isArray(userRoles) || !userRoles.some((role: UserRole) => role.roleName.toLowerCase() === 'super_admin')) {
+        filteredAccounts = response.data.filter((account: Account) => !account.isDemoAccount);
+      } else {
+        filteredAccounts = response.data;
+      }
 
       // Sort accounts: main account first, then by creation date
       const sortedAccounts = sortAccounts(filteredAccounts);

@@ -2145,6 +2145,12 @@
       "switchToAccount": "Chuyển tài khoản",
       "noOtherAccounts": "Lưu ý: Bạn chưa có tài khoản chính. Vui lòng liên hệ quản trị viên để tạo tài khoản."
     },
+    "demoAccountSuggestion": {
+      "title": "Khám phá tài khoản Demo",
+      "newFeature": "Tính năng mới",
+      "message": "Thử nghiệm hệ thống với tài khoản Demo để xem các tính năng và dữ liệu mẫu. Tài khoản Demo cung cấp dữ liệu thực tế và cho phép bạn khám phá hệ thống một cách an toàn.",
+      "tryDemo": "Thử Demo"
+    },
     "investor": "Nhà đầu tư",
     "protectedAccount": "Tài khoản được bảo vệ",
     "updateAccountInfo": "Cập nhật thông tin tài khoản",
@@ -2589,7 +2595,7 @@
     }
   },
   "welcome": {
-    "title": "MMOTION",
+    "title": "GIỚI THIỆU VỀ NỀN TẢNG",
     "subtitle": "Quản lý toàn diện với phân tích thời gian thực và báo cáo nâng cao",
     "buttons": {
       "getStarted": "Bắt đầu",

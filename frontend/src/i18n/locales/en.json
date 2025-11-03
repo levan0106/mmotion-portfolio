@@ -2061,6 +2061,12 @@
       "switchToAccount": "Switch Account",
       "noOtherAccounts": "Note: You don't have a main account yet. Please contact an administrator to create one."
     },
+    "demoAccountSuggestion": {
+      "title": "Explore Demo Account",
+      "newFeature": "New Feature",
+      "message": "Try out the system with the Demo Account to see features and sample data. The Demo Account provides real data and allows you to explore the system safely.",
+      "tryDemo": "Try Demo"
+    },
     "investor": "Investor",
     "protectedAccount": "Protected Account",
     "updateAccountInfo": "Update account information",

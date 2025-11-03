@@ -54,6 +54,7 @@ import {
 } from '@mui/icons-material';
 import { ResponsiveButton } from '../components/Common';
 import ResponsiveTypography from '../components/Common/ResponsiveTypography';
+import DemoAccountSuggestionBanner from '../components/Common/DemoAccountSuggestionBanner';
 import {
   PieChart,
   Pie,
@@ -455,6 +456,9 @@ const Welcome: React.FC = () => {
         }}
       >
         <Container maxWidth="lg">
+          {/* Demo Account Suggestion Banner */}
+          {isAuthenticated && <DemoAccountSuggestionBanner />}
+
           {/* Header Section */}
           <Box sx={{ textAlign: 'center', mb: 6, position: 'relative' }}>
             {/* <IconButton
@@ -579,7 +583,7 @@ const Welcome: React.FC = () => {
                         <TableHead>
                           <TableRow sx={{ bgcolor: 'primary.50' }}>
                             <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.name')}</ResponsiveTypography></TableCell>
-                            <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.currency')}</ResponsiveTypography></TableCell>
+                            {/* <TableCell><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.currency')}</ResponsiveTypography></TableCell> */}
                             <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.totalValue')}</ResponsiveTypography></TableCell>
                             <TableCell align="right"><ResponsiveTypography variant="tableHeader" sx={{ fontWeight: 600 }}>{t('welcome.examples.portfolioTable.columns.return')}</ResponsiveTypography></TableCell>
                           </TableRow>
@@ -594,12 +598,12 @@ const Welcome: React.FC = () => {
                               <TableCell>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                   <PortfolioIcon sx={{ fontSize: 18, color: 'primary.main', mr: 1 }} />
-                                  <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>{portfolio.name}</ResponsiveTypography>
+                                  <ResponsiveTypography variant="tableCell">{portfolio.name}</ResponsiveTypography>
                                 </Box>
                               </TableCell>
-                              <TableCell>
+                              {/* <TableCell>
                                 <Chip label={portfolio.currency} size="small" variant="outlined" />
-                              </TableCell>
+                              </TableCell> */}
                               <TableCell align="right">
                                 <ResponsiveTypography variant="tableCell" sx={{ fontWeight: 500 }}>
                                   {formatCurrency(portfolio.totalValue, portfolio.currency)}
@@ -825,7 +829,7 @@ const Welcome: React.FC = () => {
                               t('welcome.examples.performanceChart.return')
                             ]}
                           />
-                          <Legend />
+                          {/* <Legend /> */}
                           <Bar 
                             dataKey="return" 
                             fill={theme.palette.primary.main}
