@@ -338,7 +338,7 @@
     "individualAssetHoldings": "Chi tiết tài sản",
     "individualAssetHoldingsDescription": "Cổ phần tài sản cá nhân với giá trị và hiệu suất",
     "riskPerformanceAnalysis": "Phân tích rủi ro & Hiệu suất",
-    "riskReturnAnalysis": "Phân tích rủi ro-lợi nhuận",
+    "riskReturnAnalysis": "Phân tích Rủi ro(X) - Lợi nhuận(Y)",
     "assetPerformanceComparison": "So sánh hiệu suất tài sản",
     "diversificationTimeline": "Đa dạng hóa & Dòng thời gian",
     "diversificationHeatmap": "Bản đồ nhiệt đa dạng hóa",

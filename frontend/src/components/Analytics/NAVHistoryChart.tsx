@@ -5,7 +5,9 @@ import {
   Card,
   CardContent,
   Grid,
-  CircularProgress
+  CircularProgress,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   TrendingUp,
@@ -71,6 +73,8 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
 }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [data, setData] = useState<NAVHistoryData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -458,6 +462,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   axisLine={false}
                   domain={[navDomainMin, navDomainMax]}
                   tick={{ fill: '#1976d2' }}
+                  hide={isMobile}
                 />
                 <YAxis
                   yAxisId="pnl"
@@ -469,6 +474,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   axisLine={false}
                   domain={[pnlDomainMin, pnlDomainMax]}
                   tick={{ fill: '#ff9800' }}
+                  hide={isMobile}
                 />
                 <Legend 
                   verticalAlign="top" 

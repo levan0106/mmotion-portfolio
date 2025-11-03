@@ -11,6 +11,8 @@ import {
   MenuItem,
   ToggleButton,
   ToggleButtonGroup,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   LineChart,
@@ -44,6 +46,8 @@ export const TradePerformanceChart: React.FC<TradePerformanceChartProps> = ({
   height = 400,
   currency = 'VND',
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'composed'>('line');
   const [timeframe, setTimeframe] = useState<'1M' | '3M' | '6M' | '1Y' | 'ALL'>('ALL');
 
@@ -105,8 +109,8 @@ export const TradePerformanceChart: React.FC<TradePerformanceChartProps> = ({
           textAnchor="end"
           height={80}
         />
-        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} />
-        <YAxis yAxisId="right" orientation="right" tickFormatter={formatPercentage} />
+        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} hide={isMobile} />
+        <YAxis yAxisId="right" orientation="right" tickFormatter={formatPercentage} hide={isMobile} />
         <Tooltip content={<CustomTooltip />} />
         <Line 
           yAxisId="left"
@@ -138,7 +142,7 @@ export const TradePerformanceChart: React.FC<TradePerformanceChartProps> = ({
           textAnchor="end"
           height={80}
         />
-        <YAxis tickFormatter={formatCurrencyForChart} />
+        <YAxis tickFormatter={formatCurrencyForChart} hide={isMobile} />
         <Tooltip content={<CustomTooltip />} />
         <Area 
           type="monotone" 
@@ -162,8 +166,8 @@ export const TradePerformanceChart: React.FC<TradePerformanceChartProps> = ({
           textAnchor="end"
           height={80}
         />
-        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} />
-        <YAxis yAxisId="right" orientation="right" tickFormatter={formatNumber} />
+        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} hide={isMobile} />
+        <YAxis yAxisId="right" orientation="right" tickFormatter={formatNumber} hide={isMobile} />
         <Tooltip content={<CustomTooltip />} />
         <Bar 
           yAxisId="left"
@@ -191,8 +195,8 @@ export const TradePerformanceChart: React.FC<TradePerformanceChartProps> = ({
           textAnchor="end"
           height={80}
         />
-        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} />
-        <YAxis yAxisId="right" orientation="right" tickFormatter={formatNumber} />
+        <YAxis yAxisId="left" tickFormatter={formatCurrencyForChart} hide={isMobile} />
+        <YAxis yAxisId="right" orientation="right" tickFormatter={formatNumber} hide={isMobile} />
         <Tooltip content={<CustomTooltip />} />
         <Bar 
           yAxisId="right"

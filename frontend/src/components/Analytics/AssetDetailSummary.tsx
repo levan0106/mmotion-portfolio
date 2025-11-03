@@ -236,6 +236,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <YAxis
             tickFormatter={(value) => formatPercentage(value)}
             tick={{ fontSize: compact ? 10 : 12 }}
+            hide={isMobile}
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
@@ -373,6 +374,7 @@ const AssetDetailSummary: React.FC<AssetDetailSummaryProps> = ({
           <YAxis
             tickFormatter={(value) => formatCurrency(value, baseCurrency)}
             tick={{ fontSize: compact ? 10 : 12 }}
+            hide={isMobile}
           />
           <Tooltip 
             content={({ active, payload }) => {

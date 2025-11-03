@@ -720,8 +720,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                 </ResponsiveTypography>
                 <Box display="flex" gap={isCompactMode ? 0.5 : 1}>
                   <Chip
-                    label={t('tradeAnalysis.totalPnL')}
-                    size={isCompactMode ? "small" : "medium"}
+                    label={t('tradeAnalysis.totalPnL', 'Tổng P&L')}
+                    size={isCompactMode || isMobile ? "small" : "medium"}
                     color={pnlLines.total ? 'primary' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, total: !prev.total }))}
                     sx={{ 
@@ -730,8 +730,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     }}
                   />
                   <Chip
-                    label={t('tradeAnalysis.realizedPnL')}
-                    size={isCompactMode ? "small" : "medium"}
+                    label={isMobile ? 'Thực hiện' : t('tradeAnalysis.realizedPnL', 'P&L đã thực hiện')}
+                    size={isCompactMode || isMobile ? "small" : "medium"}
                     color={pnlLines.realized ? 'success' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, realized: !prev.realized }))}
                     sx={{ 
@@ -740,8 +740,8 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     }}
                   />
                   <Chip
-                    label={t('tradeAnalysis.unrealizedPnL')}
-                    size={isCompactMode ? "small" : "medium"}
+                    label={isMobile ? 'Chưa thực hiện' : t('tradeAnalysis.unrealizedPnL', 'P&L chưa thực hiện')}
+                    size={isCompactMode || isMobile ? "small" : "medium"}
                     color={pnlLines.unrealized ? 'warning' : 'default'}
                     onClick={() => setPnlLines(prev => ({ ...prev, unrealized: !prev.unrealized }))}
                     sx={{ 
@@ -764,6 +764,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                     tick={{ fontSize: isCompactMode ? 9 : 12 }}
                     axisLine={{ stroke: '#e0e0e0' }}
                     tickFormatter={(value) => formatCurrency(value, currency, {}, locale)}
+                    hide={isMobile}
                   />
                   <Tooltip 
                     content={<CustomTooltip />}
@@ -783,8 +784,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       dataKey="pnl"
                       stroke="#1976d2"
                       strokeWidth={isCompactMode ? 2 : 3}
-                      dot={{ r: isCompactMode ? 3 : 4, fill: '#1976d2', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: isCompactMode ? 4 : 6, stroke: '#1976d2', strokeWidth: 2 }}
+                      dot={false}
                       name={t('tradeAnalysis.totalPnL')}
                     />
                   )}
@@ -796,8 +796,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       dataKey="realizedPnl"
                       stroke="#00C49F"
                       strokeWidth={isCompactMode ? 1.5 : 2}
-                      dot={{ r: isCompactMode ? 2 : 3, fill: '#00C49F', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#00C49F', strokeWidth: 2 }}
+                      dot={false}
                       name={t('tradeAnalysis.realizedPnL')}
                     />
                   )}
@@ -809,8 +808,7 @@ export const TradeAnalysis: React.FC<TradeAnalysisProps> = ({
                       dataKey="unrealizedPnl"
                       stroke="#FF8042"
                       strokeWidth={isCompactMode ? 1.5 : 2}
-                      dot={{ r: isCompactMode ? 2 : 3, fill: '#FF8042', stroke: '#fff', strokeWidth: 2 }}
-                      activeDot={{ r: isCompactMode ? 3 : 5, stroke: '#FF8042', strokeWidth: 2 }}
+                      dot={false}
                       name={t('tradeAnalysis.unrealizedPnL')}
                     />
                   )}

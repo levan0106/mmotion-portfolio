@@ -318,7 +318,7 @@
     "individualAssetHoldings": "Individual Asset Holdings",
     "individualAssetHoldingsDescription": "Individual asset holdings with values and performance",
     "riskPerformanceAnalysis": "Risk & Performance Analysis",
-    "riskReturnAnalysis": "Risk-Return Analysis",
+    "riskReturnAnalysis": "Risk(X) - Return(Y) Analysis",
     "assetPerformanceComparison": "Asset Performance Comparison",
     "diversificationTimeline": "Diversification & Timeline",
     "diversificationHeatmap": "Diversification Heatmap",

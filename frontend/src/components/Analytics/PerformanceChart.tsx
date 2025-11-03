@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import { Box, Typography, Paper, FormControl, InputLabel, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper, FormControl, InputLabel, Select, MenuItem, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { PerformanceHistoryDataPoint } from '../../types';
 import { formatCurrency, formatDateFns as formatDate } from '../../utils/format';
 import { apiService } from '../../services/api';
@@ -39,6 +39,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { accountId } = useAccount();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     const fetchPerformanceData = async () => {
@@ -177,6 +179,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
             <YAxis
               tickFormatter={(value) => formatCurrency(value, baseCurrency, { compact: true })}
               tick={{ fontSize: 12 }}
+              hide={isMobile}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line

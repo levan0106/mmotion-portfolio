@@ -5,7 +5,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { TrendingUp, TrendingDown } from '@mui/icons-material';
 import { formatCurrency, formatPercentage } from '../../utils/format';
@@ -34,6 +34,8 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
   colorScheme = 'default',
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Ensure data is an array
   const safeData = Array.isArray(data) ? data : [];
   
@@ -262,6 +264,7 @@ const UnrealizedPnLChart: React.FC<UnrealizedPnLChartProps> = ({
           <YAxis
             tickFormatter={(value) => formatCurrency(value, baseCurrency)}
             tick={{ fontSize: compact ? 8 : 10 }}
+            hide={isMobile}
           />
           <Tooltip content={<CustomTooltip pnlColors={pnlColors} />} />
           <Bar dataKey="unrealizedPnL" radius={compact ? [2, 2, 0, 0] : [4, 4, 0, 0]}>

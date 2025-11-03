@@ -776,7 +776,7 @@ const Welcome: React.FC = () => {
                         >
                           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                           <XAxis dataKey="month" />
-                          <YAxis tickFormatter={(value) => `${value}%`} />
+                          <YAxis tickFormatter={(value) => `${value}%`} hide={isMobile} />
                           <Tooltip
                             formatter={(value: any) => [
                               `${value}%`,

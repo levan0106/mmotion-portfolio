@@ -118,9 +118,9 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   };
 
   // Calculate performance metrics
-  const portfolioReturn = data.length > 0 ? data[data.length - 1].portfolio - data[0].portfolio : 0;
-  const benchmarkReturn = data.length > 0 ? data[data.length - 1].benchmark - data[0].benchmark : 0;
-  const excessReturn = portfolioReturn - benchmarkReturn;
+  const portfolioReturn = data.length > 0 ? data[data.length - 1].portfolio : 0;
+  const benchmarkReturn = data.length > 0 ? data[data.length - 1].benchmark : 0;
+  const excessReturn = data.length > 0 ? data[data.length - 1].difference : 0;
   const trackingError = Math.sqrt(
     data.reduce((sum, item) => sum + Math.pow(item.difference, 2), 0) / data.length
   );
@@ -362,6 +362,7 @@ const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             <YAxis
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: 12 }}
+              hide={isMobile}
             />
             <RechartsTooltip content={<CustomTooltip />} />
             <Legend />

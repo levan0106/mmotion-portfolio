@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Paper } from '@mui/material';
+import { Box, Paper, useMediaQuery, useTheme } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { formatCurrency, formatPercentage } from '../../utils/format';
 
@@ -39,6 +39,8 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
   compact = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Ensure data is an array
   const safeData = Array.isArray(data) ? data : [];
   
@@ -245,6 +247,7 @@ const AssetPerformanceChart: React.FC<AssetPerformanceChartProps> = ({
             <YAxis
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: compact ? 10 : 12 }}
+              hide={isMobile}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="performance" radius={compact ? [2, 2, 0, 0] : [4, 4, 0, 0]}>

@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { Box, Paper } from '@mui/material';
+import { Box, Paper, useMediaQuery, useTheme } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveFormSelect } from '../Common/ResponsiveFormControl';
 import { formatCurrency, formatPercentage } from '../../utils/format';
@@ -45,6 +45,8 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
   selectedPeriod = '1Y',
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [localPeriod, setLocalPeriod] = useState(selectedPeriod);
 
   const handlePeriodChange = (value: string | number) => {
@@ -338,6 +340,7 @@ const RiskReturnChart: React.FC<RiskReturnChartProps> = ({
               name="Return"
               tickFormatter={(value) => formatPercentage(value)}
               tick={{ fontSize: compact ? 10 : 12 }}
+              hide={isMobile}
               label={{ 
                 value: t('portfolio.return'), 
                 angle: -90, 

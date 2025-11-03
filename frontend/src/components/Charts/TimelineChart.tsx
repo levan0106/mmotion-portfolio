@@ -220,6 +220,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
           tickFormatter={yAxisFormatter}
           tick={{ fontSize: compact ? 10 : 12 }}
           domain={yAxisDomain}
+          hide={isMobile}
         />
       ),
       grid: showGrid ? <CartesianGrid strokeDasharray="3 3" /> : null,

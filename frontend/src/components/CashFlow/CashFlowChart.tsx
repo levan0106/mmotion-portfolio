@@ -18,6 +18,8 @@ import {
   Alert,
   IconButton,
   Tooltip as MuiTooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   LineChart,
@@ -84,6 +86,8 @@ interface MonthlyData {
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('bar');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
   const [lineData, setLineData] = useState<CashFlowData[]>([]);
@@ -307,6 +311,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
                   tick={{ fontSize: 12, fill: COLORS.text }}
                   axisLine={{ stroke: COLORS.grid }}
                   tickLine={{ stroke: COLORS.grid }}
+                  hide={isMobile}
                 />
                 <Tooltip 
                   formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
@@ -406,6 +411,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
                   tick={{ fontSize: 12, fill: COLORS.text }}
                   axisLine={{ stroke: COLORS.grid }}
                   tickLine={{ stroke: COLORS.grid }}
+                  hide={isMobile}
                 />
                 <Tooltip 
                   formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
@@ -513,7 +519,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
             <Typography variant="h5" fontWeight="600" color="text.primary" gutterBottom>
               {t('cashflow.chart.title')}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" display={{ xs: 'none', sm: 'block' }}>
               {t('cashflow.chart.subtitle')}
             </Typography>
           </Box>
@@ -533,7 +539,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
               </IconButton>
             </MuiTooltip>
             
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+            <FormControl size="small" sx={{ display: { xs: 'none', sm: 'block' } }}>
               <InputLabel>{t('cashflow.chart.chartType')}</InputLabel>
               <Select
                 value={chartType}
@@ -561,7 +567,7 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ portfolioId }) => {
               </Select>
             </FormControl>
             
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+            <FormControl size="small" sx={{ display: { xs: 'none', sm: 'block' } }}>
               <InputLabel>{t('cashflow.chart.timeRange')}</InputLabel>
               <Select
                 value={timeRange}

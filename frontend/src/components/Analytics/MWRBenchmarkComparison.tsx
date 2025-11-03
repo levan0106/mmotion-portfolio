@@ -299,6 +299,7 @@ const MWRBenchmarkComparison: React.FC<MWRBenchmarkComparisonProps> = ({
               <YAxis
                 tickFormatter={(value) => formatPercentage(value)}
                 tick={{ fontSize: 12 }}
+                hide={isMobile}
               />
               <RechartsTooltip content={<CustomTooltip />} />
               <Legend />
