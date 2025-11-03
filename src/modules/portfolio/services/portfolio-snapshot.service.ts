@@ -545,9 +545,10 @@ export class PortfolioSnapshotService {
    */
   async getLatestPortfolioSnapshot(
     portfolioId: string,
-    granularity?: SnapshotGranularity
+    granularity?: SnapshotGranularity,
+    date?: Date
   ): Promise<PortfolioSnapshot | null> {
-    return await this.portfolioSnapshotRepo.findLatest(portfolioId, granularity);
+    return await this.portfolioSnapshotRepo.findLatest(portfolioId, granularity, date);
   }
 
   /**

@@ -365,7 +365,8 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                       >
                         {formatPercentageValue(data.performance.ytdGrowth || 0, 2)}
                       </ResponsiveTypography>
-                      <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}
+                      ellipsis={false}>
                         {t('investorReport.ytdGrowth', 'Từ đầu năm')}
                       </ResponsiveTypography>
                     </Box>

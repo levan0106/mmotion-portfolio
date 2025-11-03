@@ -636,7 +636,9 @@ const InvestorView: React.FC = () => {
                                   >
                                     {formatPercentageValue(portfolio.performance.ytdGrowth, 2)}
                                   </ResponsiveTypography>
-                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem!important', display: 'block' }}>
+                                  <ResponsiveTypography variant="caption" color="text.secondary" 
+                                  sx={{ fontSize: '0.75rem!important', display: 'block' }}
+                                  ellipsis={false}>
                                     {t('investorView.ytd', 'Từ đầu năm (TWR)')}
                                   </ResponsiveTypography>
                                 </Box>

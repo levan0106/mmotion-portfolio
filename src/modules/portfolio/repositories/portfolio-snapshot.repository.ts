@@ -107,7 +107,8 @@ export class PortfolioSnapshotRepository {
    */
   async findLatest(
     portfolioId: string,
-    granularity?: SnapshotGranularity
+    granularity?: SnapshotGranularity,
+    date?: Date
   ): Promise<PortfolioSnapshot | null> {
     const queryBuilder = this.repository
       .createQueryBuilder('snapshot')
@@ -118,6 +119,10 @@ export class PortfolioSnapshotRepository {
 
     if (granularity) {
       queryBuilder.andWhere('snapshot.granularity = :granularity', { granularity });
+    }
+
+    if (date) {
+      queryBuilder.andWhere('snapshot.snapshotDate <= :date', { date: normalizeDateToString(date) });
     }
 
     return await queryBuilder.getOne();

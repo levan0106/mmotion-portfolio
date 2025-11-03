@@ -953,7 +953,8 @@ export class PortfolioAnalyticsService {
         try {
           latestSnapshot = await this.portfolioSnapshotService.getLatestPortfolioSnapshot(
             portfolioId,
-            SnapshotGranularity.DAILY
+            SnapshotGranularity.DAILY,
+            new Date(Date.now() - 24 * 60 * 60 * 1000) // previous day in UTC
           );
           if (latestSnapshot) {
             this.logger.debug(`Portfolio ${portfolioId} latest snapshot found: ${latestSnapshot.snapshotDate}`);
