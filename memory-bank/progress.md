@@ -2,7 +2,59 @@
 
 ## What Works
 ### ✅ Completed
-- **DEMO ACCOUNT BANNER & MANAGEMENT SYSTEM - COMPLETED** (Current Session - November 1, 2025)
+- **MTD (MONTH-TO-DATE) FIELDS IMPLEMENTATION FOR PERFORMANCE SNAPSHOTS - COMPLETED** (Current Session - November 3, 2025)
+  - **Database Schema Enhancement**: Complete MTD fields migration
+    - **Portfolio Snapshots**: Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD columns
+    - **Asset Snapshots**: Added assetTWRMTD, assetIRRMTD columns
+    - **Asset Group Snapshots**: Added groupTWRMTD, groupIRRMTD columns
+    - **Migration File**: 1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+    - **Proper Rollback**: Complete rollback functionality for all MTD fields
+    - **Files Created**: src/migrations/1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+  - **Entity Updates**: Complete entity updates with MTD fields
+    - **TypeORM Decorators**: Proper @Column decorators with decimal(15,6) precision
+    - **Default Values**: All MTD fields default to 0
+    - **Helper Methods**: Updated getTWROnPeriod, getMWROnPeriod, getIRROnPeriod to support 'MTD' period
+    - **Period Support**: MTD period added to all period selection logic
+    - **Files Updated**: portfolio-performance-snapshot.entity.ts, asset-performance-snapshot.entity.ts, asset-group-performance-snapshot.entity.ts
+  - **TWR Calculation Service Enhancement**: Complete MTD calculation implementation
+    - **Portfolio MTD**: calculateMTD() method for portfolio month-to-date TWR calculation
+    - **Asset MTD**: calculateAssetMTD() method for asset month-to-date TWR calculation
+    - **Asset Group MTD**: calculateAssetGroupMTD() method for asset group month-to-date TWR calculation
+    - **Date Range Logic**: Proper calculation from first day of month to snapshot date
+    - **Integration**: MTD calculations integrated into main calculatePortfolioTWR, calculateAssetTWR, calculateAssetGroupTWR methods
+    - **Return Interface**: Updated TWROptions interface to include twrMTD field
+    - **Files Updated**: twr-calculation.service.ts
+  - **MWR/IRR Calculation Service Enhancement**: Complete MTD MWR/IRR implementation
+    - **Portfolio MTD MWR/IRR**: calculateMTD() and calculateIRRMTD() methods for portfolio month-to-date calculations
+    - **Asset MTD MWR/IRR**: calculateAssetMWRMTD() and calculateAssetIRRMTD() methods
+    - **Asset Group MTD MWR/IRR**: calculateAssetGroupMWRMTD() and calculateAssetGroupIRRMTD() methods
+    - **Date Range Logic**: Proper calculation from first day of month to snapshot date with cash flow handling
+    - **Integration**: MTD calculations integrated into main calculatePortfolioMWRIRR, calculateAssetMWRIRR, calculateAssetGroupMWRIRR methods
+    - **Return Interface**: Updated to include mwrMTD and irrMTD fields
+    - **Files Updated**: mwr-irr-calculation.service.ts
+  - **Performance Snapshot Service Integration**: Complete MTD value saving
+    - **Portfolio Snapshots**: Updated to save portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD during snapshot creation
+    - **Asset Snapshots**: Updated to save assetTWRMTD, assetIRRMTD during snapshot creation
+    - **Asset Group Snapshots**: Updated to save groupTWRMTD, groupIRRMTD during snapshot creation
+    - **Calculation Flow**: All MTD values calculated and saved automatically during snapshot creation
+    - **Transaction Safety**: All MTD values saved within database transaction
+    - **Files Updated**: performance-snapshot.service.ts
+  - **Investor Report Controller Update**: Monthly growth metric enhancement
+    - **Monthly Growth**: Changed from portfolioTWR1M to portfolioTWRMTD for monthlyGrowth metric
+    - **Metric Parsing**: Updated parseMetric function to properly handle MTD values
+    - **API Response**: Monthly growth now returns MTD value (month-to-date) instead of 1-month rolling value
+    - **Backward Compatibility**: Maintained dailyGrowth and ytdGrowth metrics
+    - **Files Updated**: investor-report.controller.ts
+  - **Code Quality & Implementation**: Production-ready implementation
+    - **Consistent Naming**: All MTD fields follow consistent naming convention
+    - **Proper Precision**: All MTD fields use decimal(15,6) for financial precision
+    - **Default Values**: All MTD fields default to 0 for new records
+    - **Calculation Accuracy**: MTD calculations use proper date range (first day of month to snapshot date)
+    - **Type Safety**: All TypeScript interfaces updated with MTD fields
+    - **Helper Methods**: Period-based helper methods updated to support MTD period
+    - **Production Ready**: Clean, maintainable code with proper error handling
+
+- **DEMO ACCOUNT BANNER & MANAGEMENT SYSTEM - COMPLETED** (Previous Session - November 1, 2025)
   - **Demo Account Toggle System**: Complete backend and frontend implementation
     - **Backend API Endpoints**: GET and POST endpoints for demo account status management
     - **AccountService Methods**: getDemoAccountStatus() and toggleDemoAccount() with fixed demo account ID
@@ -529,6 +581,12 @@
 
 ## Current Status
 ### 🎯 Active Development
+- **MTD Fields Implementation**: Complete MTD (Month-to-Date) fields for all performance snapshots
+  - **Database Migration**: MTD fields added to portfolio, asset, and asset group snapshot tables
+  - **Calculation Services**: TWR, MWR, and IRR MTD calculations implemented
+  - **Service Integration**: Performance snapshot service saves MTD values automatically
+  - **API Updates**: Investor report controller uses MTD for monthly growth metric
+  - **Code Quality**: Production-ready code with proper type safety and precision
 - **Demo Account Management**: Complete demo account toggle system with backend and frontend integration
 - **DemoAccountBanner**: Comprehensive banner component with collapse/expand and mobile optimization
 - **Mobile Responsive**: Fully responsive banner with mobile-specific button placement and touch-friendly design
@@ -664,7 +722,10 @@
 - `docker-compose.yml` - Added ADMIN_USERNAME environment variable support
 
 ## System Health
-- ✅ **Database**: Fully operational with demo account management and permission-based report access
+- ✅ **Database**: Fully operational with MTD fields for all performance snapshots and demo account management
+- ✅ **Performance Snapshots**: Complete MTD calculation support for portfolio, asset, and asset group levels
+- ✅ **Calculation Services**: TWR, MWR, and IRR MTD calculations working correctly
+- ✅ **Investor Reports**: Monthly growth metric now uses MTD (month-to-date) values
 - ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
 - ✅ **Frontend**: Responsive with DemoAccountBanner and demo account management UI
 - ✅ **Backend**: Stable API endpoints with demo account toggle and permission-based report access

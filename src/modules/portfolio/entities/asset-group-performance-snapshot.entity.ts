@@ -70,6 +70,9 @@ export class AssetGroupPerformanceSnapshot {
   @Column({ name: 'group_twr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   groupTWRYTD: number;
 
+  @Column({ name: 'group_twr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  groupTWRMTD: number;
+
   // Group Risk Metrics
   @Column({ name: 'group_sharpe_ratio_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   groupSharpeRatio1M: number;
@@ -123,6 +126,9 @@ export class AssetGroupPerformanceSnapshot {
 
   @Column({ name: 'group_irr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   groupIRRYTD: number;
+
+  @Column({ name: 'group_irr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  groupIRRMTD: number;
 
   // Group Alpha (vs Benchmark)
   @Column({ name: 'group_alpha_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
@@ -194,6 +200,7 @@ export class AssetGroupPerformanceSnapshot {
       case '6M': return this.groupTWR6M;
       case '1Y': return this.groupTWR1Y;
       case 'YTD': return this.groupTWRYTD;
+      case 'MTD': return this.groupTWRMTD;
       default: return 0;
     }
   }

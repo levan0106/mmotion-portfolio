@@ -1,13 +1,65 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: November 1, 2025  
-**Session Type**: Demo Account Banner & Management System Implementation  
-**Primary Goal**: Implement demo account toggle functionality, banner component with collapse/expand, and improve mobile UX for demo account indication
+**Date**: November 3, 2025  
+**Session Type**: MTD (Month-to-Date) Fields Implementation for Performance Snapshots  
+**Primary Goal**: Add MTD calculation fields (TWR, MWR, IRR) to all performance snapshot entities and update calculation services
 
 ## Recent Achievements
 
-### ✅ Demo Account Banner & Management System Implementation (Current Session - November 1, 2025)
+### ✅ MTD (Month-to-Date) Fields Implementation for Performance Snapshots (Current Session - November 3, 2025)
+1. **Database Schema Enhancement**
+   - **Migration Creation**: Created comprehensive migration for MTD fields
+   - **Portfolio Snapshots**: Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD fields
+   - **Asset Snapshots**: Added assetTWRMTD, assetIRRMTD fields
+   - **Asset Group Snapshots**: Added groupTWRMTD, groupIRRMTD fields
+   - **Migration File**: 1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+   - **Files Created**: src/migrations/1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+
+2. **Entity Updates**
+   - **PortfolioPerformanceSnapshot**: Added MTD columns with proper TypeORM decorators
+   - **AssetPerformanceSnapshot**: Added MTD columns with decimal precision (15,6)
+   - **AssetGroupPerformanceSnapshot**: Added MTD columns with default value 0
+   - **Helper Methods**: Updated getTWROnPeriod, getMWROnPeriod, getIRROnPeriod methods to support 'MTD' period
+   - **Files Updated**: portfolio-performance-snapshot.entity.ts, asset-performance-snapshot.entity.ts, asset-group-performance-snapshot.entity.ts
+
+3. **TWR Calculation Service Enhancement**
+   - **Portfolio MTD Calculation**: Added calculateMTD() method for portfolio month-to-date TWR
+   - **Asset MTD Calculation**: Added calculateAssetMTD() method for asset month-to-date TWR
+   - **Asset Group MTD Calculation**: Added calculateAssetGroupMTD() method for asset group month-to-date TWR
+   - **MTD Integration**: Integrated MTD calculations into main calculation methods
+   - **Date Range Logic**: Proper calculation from first day of month to snapshot date
+   - **Files Updated**: twr-calculation.service.ts
+
+4. **MWR/IRR Calculation Service Enhancement**
+   - **Portfolio MTD Calculation**: Added calculateMTD() and calculateIRRMTD() methods for portfolio month-to-date MWR/IRR
+   - **Asset MTD Calculation**: Added calculateAssetMWRMTD() and calculateAssetIRRMTD() methods
+   - **Asset Group MTD Calculation**: Added calculateAssetGroupMWRMTD() and calculateAssetGroupIRRMTD() methods
+   - **MTD Integration**: Integrated MTD calculations into main calculation methods
+   - **Return Interface**: Updated to include mwrMTD and irrMTD fields
+   - **Files Updated**: mwr-irr-calculation.service.ts
+
+5. **Performance Snapshot Service Integration**
+   - **Portfolio Snapshots**: Updated to save portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD
+   - **Asset Snapshots**: Updated to save assetTWRMTD, assetIRRMTD
+   - **Asset Group Snapshots**: Updated to save groupTWRMTD, groupIRRMTD
+   - **Calculation Integration**: All MTD values calculated and saved during snapshot creation
+   - **Files Updated**: performance-snapshot.service.ts
+
+6. **Investor Report Controller Update**
+   - **Monthly Growth**: Changed from portfolioTWR1M to portfolioTWRMTD for monthlyGrowth metric
+   - **Metric Parsing**: Updated parseMetric function to handle MTD values
+   - **API Response**: Monthly growth now returns MTD value instead of 1-month value
+   - **Files Updated**: investor-report.controller.ts
+
+7. **Code Quality & Implementation**
+   - **Consistent Naming**: All MTD fields follow consistent naming convention (TWRMTD, MWRMTD, IRRMTD)
+   - **Proper Precision**: All MTD fields use decimal(15,6) for financial precision
+   - **Default Values**: All MTD fields default to 0
+   - **Calculation Accuracy**: MTD calculations use proper date range (first day of month to snapshot date)
+   - **Type Safety**: All TypeScript interfaces updated with MTD fields
+
+### ✅ Demo Account Banner & Management System Implementation (Previous Session - November 1, 2025)
 1. **Demo Account Toggle System**
    - **Backend API Endpoints**: Created GET `/api/v1/settings/demo-account` and POST `/api/v1/settings/demo-account/toggle` endpoints
    - **AccountService Enhancement**: Added `getDemoAccountStatus()` and `toggleDemoAccount()` methods
@@ -657,7 +709,17 @@
 - **Global Asset Tracking**: Comprehensive sync operation monitoring system
 - **Migration Management**: Consolidated and optimized database migrations
 
-### Key Components Modified (Current Session)
+### Key Components Modified (Current Session - MTD Implementation)
+- `src/migrations/1761500000000-AddMTDFieldsToPerformanceSnapshots.ts` - Database migration for MTD fields
+- `src/modules/portfolio/entities/portfolio-performance-snapshot.entity.ts` - Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD fields
+- `src/modules/portfolio/entities/asset-performance-snapshot.entity.ts` - Added assetTWRMTD, assetIRRMTD fields
+- `src/modules/portfolio/entities/asset-group-performance-snapshot.entity.ts` - Added groupTWRMTD, groupIRRMTD fields
+- `src/modules/portfolio/services/twr-calculation.service.ts` - Added MTD calculation methods for portfolio, asset, and asset group
+- `src/modules/portfolio/services/mwr-irr-calculation.service.ts` - Added MTD calculation methods for portfolio, asset, and asset group
+- `src/modules/portfolio/services/performance-snapshot.service.ts` - Updated to save MTD values during snapshot creation
+- `src/modules/portfolio/controllers/investor-report.controller.ts` - Updated monthlyGrowth to use portfolioTWRMTD
+
+### Key Components Modified (Previous Session)
 - `frontend/src/components/Common/DemoAccountBanner.tsx` - Comprehensive banner component with collapse/expand and mobile optimization
 - `frontend/src/components/Layout/AppLayout.tsx` - Integration of DemoAccountBanner with visual indicators in AppBar
 - `frontend/src/components/RoleManagement/Settings.tsx` - Added demo account toggle switch in System Settings

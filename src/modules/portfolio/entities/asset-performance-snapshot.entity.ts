@@ -75,6 +75,9 @@ export class AssetPerformanceSnapshot {
   @Column({ name: 'asset_twr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetTWRYTD: number;
 
+  @Column({ name: 'asset_twr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  assetTWRMTD: number;
+
   // Asset Risk Metrics
   @Column({ name: 'asset_volatility_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetVolatility1M: number;
@@ -128,6 +131,9 @@ export class AssetPerformanceSnapshot {
 
   @Column({ name: 'asset_irr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   assetIRRYTD: number;
+
+  @Column({ name: 'asset_irr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  assetIRRMTD: number;
 
   // Asset Alpha (vs Benchmark)
   @Column({ name: 'asset_alpha_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
@@ -193,6 +199,7 @@ export class AssetPerformanceSnapshot {
       case '6M': return this.assetTWR6M;
       case '1Y': return this.assetTWR1Y;
       case 'YTD': return this.assetTWRYTD;
+      case 'MTD': return this.assetTWRMTD;
       default: return 0;
     }
   }

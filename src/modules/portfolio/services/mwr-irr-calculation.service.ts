@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PortfolioSnapshot } from '../entities/portfolio-snapshot.entity';
 import { SnapshotGranularity } from '../enums/snapshot-granularity.enum';
 import { CashFlowService } from './cash-flow.service';
+import { CashFlowType } from '../entities/cash-flow.entity';
 
 export interface MWRIRRCalculationResult {
   mwr1M: number;
@@ -11,11 +12,13 @@ export interface MWRIRRCalculationResult {
   mwr6M: number;
   mwr1Y: number;
   mwrYTD: number;
+  mwrMTD: number;
   irr1M: number;
   irr3M: number;
   irr6M: number;
   irr1Y: number;
   irrYTD: number;
+  irrMTD: number;
 }
 
 export interface CashFlow {
@@ -56,12 +59,14 @@ export class MWRIRRCalculationService {
       const mwr6M = await this.calculateMWRForPeriod(portfolioId, snapshotDate, 180, granularity);
       const mwr1Y = await this.calculateMWRForPeriod(portfolioId, snapshotDate, 365, granularity);
       const mwrYTD = await this.calculateYTD(portfolioId, snapshotDate, granularity);
+      const mwrMTD = await this.calculateMTD(portfolioId, snapshotDate, granularity);
 
       const irr1M = await this.calculateIRRForPeriod(portfolioId, snapshotDate, 30, granularity);
       const irr3M = await this.calculateIRRForPeriod(portfolioId, snapshotDate, 90, granularity);
       const irr6M = await this.calculateIRRForPeriod(portfolioId, snapshotDate, 180, granularity);
       const irr1Y = await this.calculateIRRForPeriod(portfolioId, snapshotDate, 365, granularity);
       const irrYTD = await this.calculateIRRYTD(portfolioId, snapshotDate, granularity);
+      const irrMTD = await this.calculateIRRMTD(portfolioId, snapshotDate, granularity);
 
       return {
         mwr1M: Number(mwr1M.toFixed(4)),
@@ -69,11 +74,13 @@ export class MWRIRRCalculationService {
         mwr6M: Number(mwr6M.toFixed(4)),
         mwr1Y: Number(mwr1Y.toFixed(4)),
         mwrYTD: Number(mwrYTD.toFixed(4)),
+        mwrMTD: Number(mwrMTD.toFixed(4)),
         irr1M: Number(irr1M.toFixed(4)),
         irr3M: Number(irr3M.toFixed(4)),
         irr6M: Number(irr6M.toFixed(4)),
         irr1Y: Number(irr1Y.toFixed(4)),
         irrYTD: Number(irrYTD.toFixed(4)),
+        irrMTD: Number(irrMTD.toFixed(4)),
       };
     } catch (error) {
       this.logger.error(`Error calculating portfolio MWR/IRR: ${error.message}`);
@@ -98,6 +105,7 @@ export class MWRIRRCalculationService {
       const mwr6M = await this.calculateAssetMWRForPeriod(portfolioId, assetId, snapshotDate, 180, granularity);
       const mwr1Y = await this.calculateAssetMWRForPeriod(portfolioId, assetId, snapshotDate, 365, granularity);
       const mwrYTD = await this.calculateAssetMWRYTD(portfolioId, assetId, snapshotDate, granularity);
+      const mwrMTD = await this.calculateAssetMWRMTD(portfolioId, assetId, snapshotDate, granularity);
 
       // Calculate IRR for different periods
       const irr1M = await this.calculateAssetIRRForPeriod(portfolioId, assetId, snapshotDate, 30, granularity);
@@ -105,6 +113,7 @@ export class MWRIRRCalculationService {
       const irr6M = await this.calculateAssetIRRForPeriod(portfolioId, assetId, snapshotDate, 180, granularity);
       const irr1Y = await this.calculateAssetIRRForPeriod(portfolioId, assetId, snapshotDate, 365, granularity);
       const irrYTD = await this.calculateAssetIRRYTD(portfolioId, assetId, snapshotDate, granularity);
+      const irrMTD = await this.calculateAssetIRRMTD(portfolioId, assetId, snapshotDate, granularity);
 
       return {
         mwr1M: Number(mwr1M.toFixed(4)),
@@ -112,11 +121,13 @@ export class MWRIRRCalculationService {
         mwr6M: Number(mwr6M.toFixed(4)),
         mwr1Y: Number(mwr1Y.toFixed(4)),
         mwrYTD: Number(mwrYTD.toFixed(4)),
+        mwrMTD: Number(mwrMTD.toFixed(4)),
         irr1M: Number(irr1M.toFixed(4)),
         irr3M: Number(irr3M.toFixed(4)),
         irr6M: Number(irr6M.toFixed(4)),
         irr1Y: Number(irr1Y.toFixed(4)),
         irrYTD: Number(irrYTD.toFixed(4)),
+        irrMTD: Number(irrMTD.toFixed(4)),
       };
     } catch (error) {
       this.logger.error(`Error calculating asset MWR/IRR: ${error.message}`);
@@ -203,7 +214,53 @@ export class MWRIRRCalculationService {
   }
 
   /**
+   * Calculate MTD (Month-to-Date) MWR
+   * Calculates MWR from the last day of the previous month to the snapshot date
+   */
+  private async calculateMTD(
+    portfolioId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateMWRForPeriod(portfolioId, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
+   * Calculate MTD (Month-to-Date) IRR
+   * Calculates IRR from the last day of the previous month to the snapshot date
+   */
+  private async calculateIRRMTD(
+    portfolioId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateIRRForPeriod(portfolioId, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
    * Get cash flows for period using CashFlowService
+   * MWR phản ánh lợi nhuận thực tế của nhà đầu tư, chỉ bao gồm external cash flows (tiền từ nhà đầu tư vào/ra)
+   * KHÔNG bao gồm internal cash flows (mua/bán cổ phiếu - đây là quyết định đầu tư của quỹ)
    */
   private async getCashFlowsForPeriod(
     portfolioId: string,
@@ -217,21 +274,33 @@ export class MWRIRRCalculationService {
         startDate,
         endDate,
         1, // page
-        1000 // limit - get all cash flows for the period
+        10000 // limit - get all cash flows for the period
       );
 
+      // CHỈ lấy external cash flows (tiền từ nhà đầu tư vào/ra)
+      // Loại trừ: BUY_TRADE, SELL_TRADE, TRADE_SETTLEMENT (giao dịch đầu tư - không phải từ nhà đầu tư)
+      // Loại trừ: DIVIDEND, INTEREST (investment income - đã được phản ánh trong portfolio value)
+      // Loại trừ: FEE, TAX (đã được phản ánh trong portfolio value)
+      // Loại trừ: DEPOSIT_CREATION, DEPOSIT_SETTLEMENT (nếu không phải tiền từ nhà đầu tư)
+      const externalTypes = [
+        CashFlowType.DEPOSIT,
+        CashFlowType.WITHDRAWAL,
+      ];
+
       // Convert to our CashFlow interface format
-      const cashFlows: CashFlow[] = result.data.map(cf => {
-        const date = cf.flowDate instanceof Date ? cf.flowDate : new Date(cf.flowDate);
-        const amount = cf.netAmount; // netAmount already has correct sign based on type
-        const type = cf.netAmount >= 0 ? 'INFLOW' : 'OUTFLOW';
-        
-        return {
-          date,
-          amount,
-          type
-        };
-      });
+      const cashFlows: CashFlow[] = result.data
+        .filter(cf => externalTypes.includes(cf.type))
+        .map(cf => {
+          const date = cf.flowDate instanceof Date ? cf.flowDate : new Date(cf.flowDate);
+          const amount = cf.netAmount; // netAmount already has correct sign based on type
+          const type = cf.netAmount >= 0 ? 'INFLOW' : 'OUTFLOW';
+          
+          return {
+            date,
+            amount,
+            type
+          };
+        });
       
       return cashFlows;
     } catch (error) {
@@ -299,6 +368,8 @@ export class MWRIRRCalculationService {
 
   /**
    * Calculate MWR from cash flows and portfolio values
+   * MWR phản ánh lợi nhuận thực tế của nhà đầu tư, có tính đến thời điểm nạp/rút vốn
+   * Sử dụng time-weighted average return với cash flows từ nhà đầu tư (DEPOSIT, WITHDRAWAL)
    */
   private calculateMWRFromData(
     cashFlows: CashFlow[],
@@ -316,7 +387,8 @@ export class MWRIRRCalculationService {
       return 0;
     }
 
-    // Calculate weighted average return considering cash flows
+    // Calculate weighted average return considering external cash flows (tiền từ nhà đầu tư vào/ra)
+    // MWR phản ánh lợi nhuận thực tế của nhà đầu tư, có tính đến timing của nạp/rút vốn
     let totalWeightedReturn = 0;
     let totalWeight = 0;
 
@@ -325,38 +397,53 @@ export class MWRIRRCalculationService {
       const currValue = portfolioValues[i].value;
       const prevDate = portfolioValues[i - 1].date;
       const currDate = portfolioValues[i].date;
-      const endofPrevDate = new Date(prevDate.getTime() + 24 * 60 * 60 * 1000);
-      const endofCurrDate = new Date(currDate.getTime() + 24 * 60 * 60 * 1000);
       
-      // Calculate net cash flow for this specific period only
-      const periodCashFlows = cashFlows.filter(cf => 
-        cf.date > endofPrevDate && cf.date <= endofCurrDate
-      );
+      // Get snapshot dates as date strings for comparison
+      const prevDateStr = prevDate instanceof Date 
+        ? prevDate.toISOString().split('T')[0]
+        : new Date(prevDate).toISOString().split('T')[0];
+      const currDateStr = currDate instanceof Date
+        ? currDate.toISOString().split('T')[0]
+        : new Date(currDate).toISOString().split('T')[0];
+      
+      // Calculate EXTERNAL cash flows (tiền từ nhà đầu tư vào/ra) in this period
+      // Cash flows on currDate are included if snapshot is at end of day
+      const periodCashFlows = cashFlows.filter(cf => {
+        const cfDate = cf.date instanceof Date ? cf.date : new Date(cf.date);
+        const cfDateStr = cfDate.toISOString().split('T')[0];
+        // Include cash flows that occur after previous snapshot date and on/before current snapshot date
+        return cfDateStr > prevDateStr && cfDateStr <= currDateStr;
+      });
 
+      // Calculate net EXTERNAL cash flow for this period (chỉ tiền từ nhà đầu tư vào/ra)
       const netCashFlow = periodCashFlows.reduce((sum, cf) => {
         const amount = cf.type === 'INFLOW' ? cf.amount : -cf.amount;
         return sum + amount;
       }, 0);
 
-
-      // Calculate period return with proper logic
+      // Calculate period return considering external cash flows
+      // Period Return = (End Value - Start Value - External Cash Flow) / Start Value
+      // Điều này phản ánh lợi nhuận thực tế của nhà đầu tư, có tính đến timing của nạp/rút vốn
       let periodReturn = 0;
-      if (prevValue === currValue && netCashFlow !== 0) {
-        // Portfolio value unchanged but cash flows occurred - this means 
+      if (prevValue <= 0) {
+        periodReturn = 0;
+      } else if (prevValue === currValue && netCashFlow !== 0) {
+        // Portfolio value unchanged but external cash flows occurred - this means 
         // the cash flows were offset by market movements, so return is 0
         periodReturn = 0;
       } else {
-        // Normal calculation: (End Value - Start Value - Net Cash Flow) / Start Value
+        // Normal calculation: (End Value - Start Value - External Cash Flow) / Start Value
         periodReturn = (currValue - prevValue - netCashFlow) / prevValue;
       }
       
-      // Weight by time period
+      // Weight by time period (tính đến timing của cash flows)
       const timeWeight = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
       
       totalWeightedReturn += periodReturn * timeWeight;
       totalWeight += timeWeight;
     }
 
+    // Calculate final MWR as time-weighted average
     const finalMWR = totalWeight > 0 ? (totalWeightedReturn / totalWeight) * 100 : 0;
 
     return finalMWR;
@@ -533,6 +620,52 @@ export class MWRIRRCalculationService {
   }
 
   /**
+   * Calculate Asset MWR MTD
+   * Calculates MWR from the last day of the previous month to the snapshot date
+   */
+  private async calculateAssetMWRMTD(
+    portfolioId: string,
+    assetId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateAssetMWRForPeriod(portfolioId, assetId, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
+   * Calculate Asset IRR MTD
+   * Calculates IRR from the last day of the previous month to the snapshot date
+   */
+  private async calculateAssetIRRMTD(
+    portfolioId: string,
+    assetId: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateAssetIRRForPeriod(portfolioId, assetId, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
    * Get asset cash flows for period (from trades)
    */
   private async getAssetCashFlowsForPeriod(
@@ -639,6 +772,7 @@ export class MWRIRRCalculationService {
       const mwr6M = await this.calculateAssetGroupMWRForPeriod(portfolioId, assetType, snapshotDate, 180, granularity);
       const mwr1Y = await this.calculateAssetGroupMWRForPeriod(portfolioId, assetType, snapshotDate, 365, granularity);
       const mwrYTD = await this.calculateAssetGroupMWRYTD(portfolioId, assetType, snapshotDate, granularity);
+      const mwrMTD = await this.calculateAssetGroupMWRMTD(portfolioId, assetType, snapshotDate, granularity);
 
       // Calculate IRR for different periods
       const irr1M = await this.calculateAssetGroupIRRForPeriod(portfolioId, assetType, snapshotDate, 30, granularity);
@@ -646,6 +780,7 @@ export class MWRIRRCalculationService {
       const irr6M = await this.calculateAssetGroupIRRForPeriod(portfolioId, assetType, snapshotDate, 180, granularity);
       const irr1Y = await this.calculateAssetGroupIRRForPeriod(portfolioId, assetType, snapshotDate, 365, granularity);
       const irrYTD = await this.calculateAssetGroupIRRYTD(portfolioId, assetType, snapshotDate, granularity);
+      const irrMTD = await this.calculateAssetGroupIRRMTD(portfolioId, assetType, snapshotDate, granularity);
 
       return {
         mwr1M: Number(mwr1M.toFixed(4)),
@@ -653,11 +788,13 @@ export class MWRIRRCalculationService {
         mwr6M: Number(mwr6M.toFixed(4)),
         mwr1Y: Number(mwr1Y.toFixed(4)),
         mwrYTD: Number(mwrYTD.toFixed(4)),
+        mwrMTD: Number(mwrMTD.toFixed(4)),
         irr1M: Number(irr1M.toFixed(4)),
         irr3M: Number(irr3M.toFixed(4)),
         irr6M: Number(irr6M.toFixed(4)),
         irr1Y: Number(irr1Y.toFixed(4)),
         irrYTD: Number(irrYTD.toFixed(4)),
+        irrMTD: Number(irrMTD.toFixed(4)),
       };
     } catch (error) {
       this.logger.error(`Error calculating asset group MWR/IRR: ${error.message}`);
@@ -745,6 +882,52 @@ export class MWRIRRCalculationService {
     const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
     return await this.calculateAssetGroupIRRForPeriod(portfolioId, assetType, snapshotDate, 
       Math.ceil((snapshotDate.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
+   * Calculate Asset Group MWR MTD
+   * Calculates MWR from the last day of the previous month to the snapshot date
+   */
+  private async calculateAssetGroupMWRMTD(
+    portfolioId: string,
+    assetType: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateAssetGroupMWRForPeriod(portfolioId, assetType, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
+  }
+
+  /**
+   * Calculate Asset Group IRR MTD
+   * Calculates IRR from the last day of the previous month to the snapshot date
+   */
+  private async calculateAssetGroupIRRMTD(
+    portfolioId: string,
+    assetType: string,
+    snapshotDate: Date,
+    granularity: SnapshotGranularity
+  ): Promise<number> {
+    // Get last day of previous month at 00:00:00 UTC
+    const currentYear = snapshotDate.getUTCFullYear();
+    const currentMonth = snapshotDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(
+      currentYear,
+      currentMonth,
+      0, // Day 0 of current month = last day of previous month
+      0, 0, 0, 0
+    ));
+    return await this.calculateAssetGroupIRRForPeriod(portfolioId, assetType, snapshotDate, 
+      Math.ceil((snapshotDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
   }
 
   /**

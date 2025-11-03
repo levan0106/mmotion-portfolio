@@ -493,7 +493,7 @@ export class InvestorReportController {
       
       return {
         dailyGrowth: parseMetric(latestSnapshot.portfolioTWR1D),
-        monthlyGrowth: parseMetric(latestSnapshot.portfolioTWR1M),
+        monthlyGrowth: parseMetric(latestSnapshot.portfolioTWRMTD),
         ytdGrowth: parseMetric(latestSnapshot.portfolioTWRYTD),
         lastUpdated: latestSnapshot.snapshotDate,
       };

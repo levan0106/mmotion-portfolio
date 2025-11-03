@@ -68,6 +68,9 @@ export class PortfolioPerformanceSnapshot {
   @Column({ name: 'portfolio_twr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioTWRYTD: number;
 
+  @Column({ name: 'portfolio_twr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  portfolioTWRMTD: number;
+
   // Portfolio MWR/IRR Metrics (Money-Weighted Returns)
   @Column({ name: 'portfolio_mwr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWR1M: number;
@@ -84,6 +87,9 @@ export class PortfolioPerformanceSnapshot {
   @Column({ name: 'portfolio_mwr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioMWRYTD: number;
 
+  @Column({ name: 'portfolio_mwr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  portfolioMWRMTD: number;
+
   @Column({ name: 'portfolio_irr_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRR1M: number;
 
@@ -98,6 +104,9 @@ export class PortfolioPerformanceSnapshot {
 
   @Column({ name: 'portfolio_irr_ytd', type: 'decimal', precision: 15, scale: 6, default: 0 })
   portfolioIRRYTD: number;
+
+  @Column({ name: 'portfolio_irr_mtd', type: 'decimal', precision: 15, scale: 6, default: 0 })
+  portfolioIRRMTD: number;
 
   // Portfolio Alpha Metrics (vs Benchmark)
   @Column({ name: 'portfolio_alpha_1m', type: 'decimal', precision: 15, scale: 6, default: 0 })
@@ -206,6 +215,7 @@ export class PortfolioPerformanceSnapshot {
       case '6M': return this.portfolioTWR6M;
       case '1Y': return this.portfolioTWR1Y;
       case 'YTD': return this.portfolioTWRYTD;
+      case 'MTD': return this.portfolioTWRMTD;
       default: return 0;
     }
   }
@@ -220,6 +230,7 @@ export class PortfolioPerformanceSnapshot {
       case '6M': return this.portfolioMWR6M;
       case '1Y': return this.portfolioMWR1Y;
       case 'YTD': return this.portfolioMWRYTD;
+      case 'MTD': return this.portfolioMWRMTD;
       default: return 0;
     }
   }
@@ -234,6 +245,7 @@ export class PortfolioPerformanceSnapshot {
       case '6M': return this.portfolioIRR6M;
       case '1Y': return this.portfolioIRR1Y;
       case 'YTD': return this.portfolioIRRYTD;
+      case 'MTD': return this.portfolioIRRMTD;
       default: return 0;
     }
   }

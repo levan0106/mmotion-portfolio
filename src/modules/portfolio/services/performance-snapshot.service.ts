@@ -176,17 +176,20 @@ export class PerformanceSnapshotService {
       portfolioTWR6M: twrMetrics.twr6M,
       portfolioTWR1Y: twrMetrics.twr1Y,
       portfolioTWRYTD: twrMetrics.twrYTD,
+      portfolioTWRMTD: twrMetrics.twrMTD,
       // MWR/IRR Metrics
       portfolioMWR1M: mwrMetrics.mwr1M,
       portfolioMWR3M: mwrMetrics.mwr3M,
       portfolioMWR6M: mwrMetrics.mwr6M,
       portfolioMWR1Y: mwrMetrics.mwr1Y,
       portfolioMWRYTD: mwrMetrics.mwrYTD,
+      portfolioMWRMTD: mwrMetrics.mwrMTD,
       portfolioIRR1M: mwrMetrics.irr1M,
       portfolioIRR3M: mwrMetrics.irr3M,
       portfolioIRR6M: mwrMetrics.irr6M,
       portfolioIRR1Y: mwrMetrics.irr1Y,
       portfolioIRRYTD: mwrMetrics.irrYTD,
+      portfolioIRRMTD: mwrMetrics.irrMTD,
       // Alpha/Beta Metrics
       portfolioAlpha1M: alphaBetaMetrics.alpha1M,
       portfolioAlpha3M: alphaBetaMetrics.alpha3M,
@@ -287,6 +290,7 @@ export class PerformanceSnapshotService {
         assetTWR6M: twrMetrics.twr6M,
         assetTWR1Y: twrMetrics.twr1Y,
         assetTWRYTD: twrMetrics.twrYTD,
+        assetTWRMTD: twrMetrics.twrMTD,
         // Asset Risk Metrics
         assetVolatility1M: riskMetrics.volatility1M,
         assetVolatility3M: riskMetrics.volatility3M,
@@ -307,6 +311,7 @@ export class PerformanceSnapshotService {
         assetIRR6M: mwrMetrics.irr6M,
         assetIRR1Y: mwrMetrics.irr1Y,
         assetIRRYTD: mwrMetrics.irrYTD,
+        assetIRRMTD: mwrMetrics.irrMTD,
         // Asset Alpha/Beta Metrics
         assetAlpha1M: alphaBetaMetrics.alpha1M,
         assetAlpha3M: alphaBetaMetrics.alpha3M,
@@ -400,6 +405,7 @@ export class PerformanceSnapshotService {
         groupTWR6M: twrMetrics.twr6M,
         groupTWR1Y: twrMetrics.twr1Y,
         groupTWRYTD: twrMetrics.twrYTD,
+        groupTWRMTD: twrMetrics.twrMTD,
         // Group Risk Metrics
         groupSharpeRatio1M: riskMetrics.sharpeRatio1M,
         groupSharpeRatio3M: riskMetrics.sharpeRatio3M,
@@ -420,6 +426,7 @@ export class PerformanceSnapshotService {
         groupIRR6M: mwrMetrics.irr6M,
         groupIRR1Y: mwrMetrics.irr1Y,
         groupIRRYTD: mwrMetrics.irrYTD,
+        groupIRRMTD: mwrMetrics.irrMTD,
         // Group Alpha/Beta Metrics
         groupAlpha1M: alphaBetaMetrics.alpha1M,
         groupAlpha3M: alphaBetaMetrics.alpha3M,

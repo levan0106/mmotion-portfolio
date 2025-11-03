@@ -1,5 +1,82 @@
 # Portfolio Management System - Version History
 
+## Version 1.3.7 - MTD (Month-to-Date) Fields Implementation for Performance Snapshots
+**Release Date: November 3, 2025**
+
+### 📊 Database Schema Enhancement
+- **MTD Fields Migration**
+  - Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD to portfolio_performance_snapshots
+  - Added assetTWRMTD, assetIRRMTD to asset_performance_snapshots
+  - Added groupTWRMTD, groupIRRMTD to asset_group_performance_snapshots
+  - All fields use decimal(15,6) precision with default value 0
+  - Complete rollback functionality included
+  - **Migration File**: 1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+
+### 🔧 Entity Updates
+- **PortfolioPerformanceSnapshot**
+  - Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD columns
+  - Updated getTWROnPeriod(), getMWROnPeriod(), getIRROnPeriod() to support 'MTD' period
+  
+- **AssetPerformanceSnapshot**
+  - Added assetTWRMTD, assetIRRMTD columns
+  - Updated period selection logic to include MTD
+
+- **AssetGroupPerformanceSnapshot**
+  - Added groupTWRMTD, groupIRRMTD columns
+  - Updated period selection logic to include MTD
+
+### 🧮 Calculation Service Enhancements
+- **TWR Calculation Service**
+  - Added calculateMTD() for portfolio month-to-date TWR
+  - Added calculateAssetMTD() for asset month-to-date TWR
+  - Added calculateAssetGroupMTD() for asset group month-to-date TWR
+  - Proper date range calculation (first day of month to snapshot date)
+  - Integrated into main calculation methods
+
+- **MWR/IRR Calculation Service**
+  - Added calculateMTD() and calculateIRRMTD() for portfolio month-to-date
+  - Added calculateAssetMWRMTD() and calculateAssetIRRMTD() for asset level
+  - Added calculateAssetGroupMWRMTD() and calculateAssetGroupIRRMTD() for asset group level
+  - Proper cash flow handling for month-to-date calculations
+  - Integrated into main calculation methods
+
+### 📈 Performance Snapshot Service Integration
+- **Automatic MTD Calculation**
+  - All MTD values calculated and saved during snapshot creation
+  - Portfolio, asset, and asset group snapshots include MTD metrics
+  - Transaction-safe operations for data consistency
+
+### 📊 Investor Report Controller Update
+- **Monthly Growth Metric Enhancement**
+  - Changed from portfolioTWR1M to portfolioTWRMTD for monthlyGrowth
+  - More accurate monthly growth representation (month-to-date vs rolling 1-month)
+  - Updated parseMetric function to handle MTD values properly
+
+### ✅ Technical Improvements
+- **Code Quality**: Consistent naming convention for all MTD fields
+- **Type Safety**: All TypeScript interfaces updated with MTD fields
+- **Precision**: All MTD fields use decimal(15,6) for financial accuracy
+- **Calculation Accuracy**: Proper date range handling for month-to-date calculations
+- **Production Ready**: Clean, maintainable code with proper error handling
+
+### 🎯 Key Benefits
+- **Accurate Monthly Metrics**: Month-to-date calculations provide more accurate monthly performance
+- **Consistent API**: All performance snapshot APIs now include MTD fields
+- **Better Reporting**: Monthly growth metric now reflects actual month-to-date performance
+- **Scalable Architecture**: MTD calculations integrated seamlessly into existing snapshot system
+
+### 📁 Files Modified
+- `src/migrations/1761500000000-AddMTDFieldsToPerformanceSnapshots.ts` - Migration file
+- `src/modules/portfolio/entities/portfolio-performance-snapshot.entity.ts` - Entity update
+- `src/modules/portfolio/entities/asset-performance-snapshot.entity.ts` - Entity update
+- `src/modules/portfolio/entities/asset-group-performance-snapshot.entity.ts` - Entity update
+- `src/modules/portfolio/services/twr-calculation.service.ts` - TWR MTD calculations
+- `src/modules/portfolio/services/mwr-irr-calculation.service.ts` - MWR/IRR MTD calculations
+- `src/modules/portfolio/services/performance-snapshot.service.ts` - MTD value saving
+- `src/modules/portfolio/controllers/investor-report.controller.ts` - Monthly growth metric update
+
+---
+
 ## Version 1.3.6 - Frontend Build Error Fix & Code Cleanup
 **Release Date: October 23, 2025**
 
