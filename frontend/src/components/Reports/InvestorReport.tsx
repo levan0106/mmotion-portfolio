@@ -98,7 +98,10 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
               <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
                 <Box display="flex" alignItems="center" gap={0.5}>
                   <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                    {t('investorReport.dailyGrowth', 'Hôm nay')}:
+                  {data.lastUpdated && formatDate(data.lastUpdated) !== formatDate(new Date()) 
+                                    ? t('investorView.lastestDaily', 'Gần nhất')
+                                    : t('investorView.daily', 'Hôm nay')
+                                    }:
                   </ResponsiveTypography>
                   <ResponsiveTypography 
                     variant="caption" 
@@ -334,7 +337,10 @@ const InvestorReport: React.FC<InvestorReportProps> = ({
                         {formatPercentageValue(data.performance.dailyGrowth || 0, 2)}
                       </ResponsiveTypography>
                       <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        {t('investorReport.dailyGrowth', 'Hôm nay')}
+                      {data.lastUpdated && formatDate(data.lastUpdated) !== formatDate(new Date()) 
+                                    ? t('investorView.lastestDaily', 'Gần nhất')
+                                    : t('investorView.daily', 'Hôm nay')
+                                    }
                       </ResponsiveTypography>
                     </Box>
                     <Box sx={{ textAlign: 'center', flex: 1 }}>

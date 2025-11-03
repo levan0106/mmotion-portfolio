@@ -109,7 +109,11 @@ const PortfolioGrowthRow: React.FC<{
 
   return (
     <TableRow hover>
-      <TableCell sx={{ maxWidth: { xs: 120, sm: 120, md: 150, lg: 250 } }}>
+      <TableCell sx={{ 
+        maxWidth: { xs: 120, sm: 120, md: 150, lg: 250 },
+        py: { xs: 0.5, sm: 0.75, md: 1 },
+        px: { xs: 0.75, sm: 1, md: 1.5 }
+      }}>
         <ResponsiveTypography 
           variant="tableCell"
           sx={{
@@ -121,12 +125,18 @@ const PortfolioGrowthRow: React.FC<{
           {portfolio.name}
         </ResponsiveTypography>
       </TableCell>
-      <TableCell align="right">
-        <ResponsiveTypography variant="tableCell" sx={{ fontSize: '0.75rem' }}>
+      <TableCell align="right" sx={{ 
+        py: { xs: 0.5, sm: 0.75, md: 1 },
+        px: { xs: 0.75, sm: 1, md: 1.5 }
+      }}>
+        <ResponsiveTypography variant="tableCell" sx={{ fontSize: '0.75rem', maxWidth: { xs:110, sm: '100%' } }}>
           {formatCurrency(displayNav, displayCurrency)}
         </ResponsiveTypography>
       </TableCell>
-      <TableCell align="right">
+      <TableCell align="right" sx={{ 
+        py: { xs: 0.5, sm: 0.75, md: 1 },
+        px: { xs: 0.75, sm: 1, md: 1.5 }
+      }}>
         {isLoadingDaily ? (
           <CircularProgress size={14} />
         ) : (
@@ -150,7 +160,10 @@ const PortfolioGrowthRow: React.FC<{
           </>
         )}
       </TableCell>
-      <TableCell align="right">
+      <TableCell align="right" sx={{ 
+        py: { xs: 0.5, sm: 0.75, md: 1 },
+        px: { xs: 0.75, sm: 1, md: 1.5 }
+      }}>
         {isLoadingYtd ? (
           <CircularProgress size={14} />
         ) : (
@@ -583,7 +596,7 @@ const Dashboard: React.FC = () => {
         {/* Professional Analytics Section */}
         {safePortfolios.length > 0 && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} lg={7}>
+            <Grid item xs={12} sm={12} md={6} lg={7}>
               <Card sx={{ 
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
@@ -635,7 +648,7 @@ const Dashboard: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={5}>
+            <Grid item xs={12} sm={12} md={6} lg={5}>
               <Card sx={{ 
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
@@ -646,37 +659,43 @@ const Dashboard: React.FC = () => {
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}>
-                <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexShrink: 0 }}>
-                    <Assessment sx={{ mr: 2, color: 'secondary.main' }} />
+                <CardContent sx={{ p: { xs: 1, sm: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, sm: 1.5, md: 2 }, flexShrink: 0 }}>
+                    <Assessment sx={{ mr: { xs: 1, sm: 1.5, md: 2 }, color: 'secondary.main' }} />
                     <ResponsiveTypography variant="chartTitle" sx={{ fontWeight: "500" }}>
-                      {t('dashboard.quickInsights')}
+                      {t('dashboard.quickInsights.title')}
                     </ResponsiveTypography>
                   </Box>
                   
                   {safePortfolios.length > 0 ? (
-                    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none', bgcolor: 'transparent', maxHeight: '450px', overflow: 'auto', flex: 1 }}>
-                      <Table size="small" stickyHeader sx={{ '& .MuiTableCell-root': { py: 1 } }}>
+                    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none', bgcolor: 'transparent', 
+                    maxHeight: '450px', overflow: 'auto', flex: 1 }}>
+                      <Table size="small" stickyHeader sx={{ 
+                        '& .MuiTableCell-root': { 
+                          py: { xs: 0.5, sm: 0.75, md: 1 },
+                          px: { xs: 0.75, sm: 1, md: 1.5 },
+                        } 
+                      }}>
                         <TableHead>
                           <TableRow>
-                            <TableCell sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), maxWidth: { xs:120, sm: 120, md: 150, lg: 250 } }}>
+                            <TableCell sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), maxWidth: { xs:120, sm: '100%' }, px: { xs: 0.75, sm: 1, md: 1.5 } }}>
                               <ResponsiveTypography variant="tableHeader">
-                                {t('dashboard.portfolioList.name', 'Tên')}
+                                {t('dashboard.quickInsights.name', 'Danh mục')}
                               </ResponsiveTypography>
                             </TableCell>
-                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), maxWidth: { xs:110, sm: 110, md: 150, lg: 250 }, px: { xs: 0.75, sm: 1, md: 1.5 } }}>
                               <ResponsiveTypography variant="tableHeader">
-                                {t('dashboard.portfolioList.totalValue', 'Giá trị')}
+                                {t('dashboard.quickInsights.totalValue', 'Giá trị')}
                               </ResponsiveTypography>
                             </TableCell>
-                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), px: { xs: 0.75, sm: 1, md: 1.5 } }}>
                               <ResponsiveTypography variant="tableHeader" >
-                                {t('dashboard.portfolioList.dailyGrowth', 'Hôm nay')}
+                                {t('dashboard.quickInsights.dailyGrowth', 'Hôm nay')}
                               </ResponsiveTypography>
                             </TableCell>
-                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8) }}>
+                            <TableCell align="right" sx={{ bgcolor: alpha(theme.palette.background.paper, 0.8), px: { xs: 0.75, sm: 1, md: 1.5 } }}>
                               <ResponsiveTypography variant="tableHeader" >
-                                {t('dashboard.portfolioList.ytdGrowth', 'YTD')}
+                                {t('dashboard.quickInsights.ytdGrowth', 'YTD')}
                               </ResponsiveTypography>
                             </TableCell>
                           </TableRow>

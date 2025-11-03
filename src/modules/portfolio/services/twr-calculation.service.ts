@@ -251,7 +251,7 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(snapshotDate);
     endDate.setHours(23, 59, 59, 999);
@@ -282,7 +282,7 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(snapshotDate);
     endDate.setHours(23, 59, 59, 999);
@@ -314,7 +314,7 @@ export class TWRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const startDate = new Date(snapshotDate.getFullYear(), 0, 1);
+    const startDate = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(snapshotDate);
     endDate.setHours(23, 59, 59, 999);

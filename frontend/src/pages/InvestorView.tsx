@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { formatCurrency, formatPercentageValue } from '../utils/format';
+import { formatCurrency, formatPercentageValue, formatDate } from '../utils/format';
 import { apiService } from '../services/api';
 import InvestorReportWrapper from '../components/Reports/InvestorReportWrapper';
 import { useAccount } from '../contexts/AccountContext';
@@ -603,8 +603,11 @@ const InvestorView: React.FC = () => {
                                   >
                                     {formatPercentageValue(portfolio.performance.dailyGrowth, 2)}
                                   </ResponsiveTypography>
-                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
-                                    {t('investorView.daily', 'Hôm nay')}
+                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem!important', display: 'block' }}>
+                                    {portfolio.lastUpdated && formatDate(portfolio.lastUpdated) !== formatDate(new Date()) 
+                                    ? formatDate(portfolio.lastUpdated, 'dd/MM/yyyy') 
+                                    : t('investorView.daily', 'Hôm nay')
+                                    }
                                   </ResponsiveTypography>
                                 </Box>
                               </Grid>
@@ -618,7 +621,7 @@ const InvestorView: React.FC = () => {
                                   >
                                     {formatPercentageValue(portfolio.performance.monthlyGrowth, 2)}
                                   </ResponsiveTypography>
-                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
+                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem!important', display: 'block' }}>
                                     {t('investorView.monthly', 'Tháng này')}
                                   </ResponsiveTypography>
                                 </Box>
@@ -633,8 +636,8 @@ const InvestorView: React.FC = () => {
                                   >
                                     {formatPercentageValue(portfolio.performance.ytdGrowth, 2)}
                                   </ResponsiveTypography>
-                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
-                                    {t('investorView.ytd', 'Từ đầu năm')}
+                                  <ResponsiveTypography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem!important', display: 'block' }}>
+                                    {t('investorView.ytd', 'Từ đầu năm (TWR)')}
                                   </ResponsiveTypography>
                                 </Box>
                               </Grid>

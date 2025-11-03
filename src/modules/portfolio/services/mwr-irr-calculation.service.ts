@@ -184,7 +184,7 @@ export class MWRIRRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const yearStart = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     return await this.calculateMWRForPeriod(portfolioId, snapshotDate, 
       Math.ceil((snapshotDate.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
   }
@@ -197,7 +197,7 @@ export class MWRIRRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const yearStart = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     return await this.calculateIRRForPeriod(portfolioId, snapshotDate, 
       Math.ceil((snapshotDate.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
   }
@@ -527,7 +527,7 @@ export class MWRIRRCalculationService {
     snapshotDate: Date,
     granularity: SnapshotGranularity
   ): Promise<number> {
-    const yearStart = new Date(snapshotDate.getFullYear(), 0, 1);
+    const yearStart = new Date(snapshotDate.getUTCFullYear()-1, 11, 31); // December 31st, 00:00:00 UTC of last day of previous year
     return await this.calculateAssetIRRForPeriod(portfolioId, assetId, snapshotDate, 
       Math.ceil((snapshotDate.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24)), granularity);
   }

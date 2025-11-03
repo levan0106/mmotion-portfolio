@@ -729,7 +729,13 @@
     "portfolioPerformance": "Portfolio Performance Analytics",
     "bestPerforming": "Best Performing Portfolio",
     "bestPortfolioCash": "Best Portfolio Cash",
-    "quickInsights": "Quick Insights",
+    "quickInsights": {
+      "title": "Quick Insights",
+      "name": "Portfolio",
+      "totalValue": "Value",
+      "dailyGrowth": "Today",
+      "ytdGrowth": "YTD"
+    },
     "averagePortfolioValueLabel": "Average Portfolio Value:",
     "totalReturn": "Total Return:",
     "activePortfolios": "Active Portfolios:",
@@ -2008,6 +2014,7 @@
     "investments": "Investments",
     "deposits": "Deposits",
     "performance": "Performance",
+    "lastestDaily": "Lastest Daily",
     "daily": "Daily",
     "monthly": "Monthly",
     "ytd": "YTD",

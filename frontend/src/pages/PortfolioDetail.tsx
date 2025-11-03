@@ -845,19 +845,6 @@ const PortfolioDetail: React.FC = () => {
                }}>
                  <Box sx={{ flex: 1, minWidth: 0 }}>
                    <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
-                     {t('portfolio.totalReturn')}
-                   </ResponsiveTypography>
-                   <ResponsiveTypography 
-                     variant="cardValue"
-                     sx={{ 
-                       color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
-                     }}
-                   >
-                     {performanceData ? formatPercentage(performanceData.totalReturn) : t('common.noData')}
-                   </ResponsiveTypography>
-                 </Box>
-                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
                      {t('portfolio.ytdReturn')}
                    </ResponsiveTypography>
                    <ResponsiveTypography 
@@ -867,6 +854,19 @@ const PortfolioDetail: React.FC = () => {
                      }}
                    >
                      {performanceData ? formatPercentage(performanceData.ytdReturn) : t('common.noData')}
+                   </ResponsiveTypography>
+                 </Box>
+                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                   <ResponsiveTypography variant="cardLabel" sx={{ mb: { xs: 0.5, sm: 0.8 } }}>
+                     {t('portfolio.totalReturn')}
+                   </ResponsiveTypography>
+                   <ResponsiveTypography 
+                     variant="cardValue"
+                     sx={{ 
+                       color: (performanceData?.totalReturn || 0) >= 0 ? '#059669' : '#dc2626'
+                     }}
+                   >
+                     {performanceData ? formatPercentage(performanceData.totalReturn) : t('common.noData')}
                    </ResponsiveTypography>
                  </Box>
                </Box>

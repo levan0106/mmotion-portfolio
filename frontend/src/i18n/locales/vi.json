@@ -303,7 +303,7 @@
     "assetValueNav": "Giá trị tài sản & NAV",
     "currentNav": "Giá trị hiện tại (NAV)",
     "totalAnnualReturns": "Tổng & Lợi nhuận hàng năm",
-    "totalReturn": "Từ đầu",
+    "totalReturn": "Toàn bộ",
     "annualized": "Hàng năm",
     "ytdReturn": "Từ đầu năm",
     "tradingActivity": "Hoạt động giao dịch",
@@ -754,7 +754,13 @@
     "portfolioPerformance": "Phân tích hiệu suất danh mục",
     "bestPerforming": "Lợi nhuận danh mục tốt nhất",
     "bestPortfolioCash": "Tiền mặt danh mục tốt nhất",
-    "quickInsights": "Thông tin nhanh",
+    "quickInsights": {
+      "title": "Thông tin nhanh",
+      "name": "Danh mục",
+      "totalValue": "Giá trị",
+      "dailyGrowth": "Hôm nay",
+      "ytdGrowth": "YTD"
+    },
     "averagePortfolioValueLabel": "Giá trị trung bình:",
     "totalReturn": "Tổng lợi nhuận:",
     "activePortfolios": "Danh mục hoạt động:",
@@ -2074,7 +2080,7 @@
     "growthMetrics": "Chỉ số tăng trưởng",
     "dailyGrowth": "Hôm nay",
     "monthlyGrowth": "Tháng này",
-    "ytdGrowth": "Từ đầu năm",
+    "ytdGrowth": "Từ đầu năm (TWR)",
     "error": {
       "loadFailed": "Không thể tải báo cáo đầu tư. Vui lòng thử lại sau."
     }
@@ -2092,9 +2098,10 @@
     "investments": "Tiền đầu tư",
     "deposits": "Tiền gửi",
     "performance": "Hiệu suất",
+    "lastestDaily": "Gần nhất",
     "daily": "Hôm nay",
     "monthly": "Tháng này",
-    "ytd": "Từ đầu năm",
+    "ytd": "Từ đầu năm (TWR)",
     "lastUpdated": "Cập nhật lần cuối",
     "noPortfolios": "Chưa có danh mục nào",
     "previous": "Trước",
