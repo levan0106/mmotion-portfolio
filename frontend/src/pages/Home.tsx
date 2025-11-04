@@ -108,6 +108,23 @@ const Home: React.FC = () => {
     }
   }, [isAuthenticated, accountLoading, navigate]);
 
+  // Don't render if logout is in progress (prevents flash during logout)
+  // When window.location.href = '/login' is called, this prevents Home from rendering
+  useEffect(() => {
+    // Clear logout flag if it exists (cleanup after redirect)
+    const logoutFlag = localStorage.getItem('_logout_in_progress');
+    if (logoutFlag === 'true') {
+      localStorage.removeItem('_logout_in_progress');
+    }
+  }, []);
+
+  // Check if logout is in progress
+  const isLoggingOut = localStorage.getItem('_logout_in_progress') === 'true';
+  if (!accountLoading && !isAuthenticated && isLoggingOut) {
+    // Return null to prevent flash before window.location.href redirect completes
+    return null;
+  }
+
   // Intersection Observer for scroll animations
   const observerRef = useRef<IntersectionObserver | null>(null);
 

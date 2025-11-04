@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   CircularProgress,
@@ -104,6 +104,8 @@ const PortfolioDetail: React.FC = () => {
   const { t } = useTranslation();
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [tabValue, setTabValue] = useState(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCompactMode, setIsCompactMode] = useState(false);
@@ -322,7 +324,30 @@ const PortfolioDetail: React.FC = () => {
   const totalTradeRealizedPL = trades.reduce((sum, trade) => sum + (Number(trade.realizedPl) || 0), 0);
 
   const handleBack = () => {
-    window.history.back();
+    // Check if navigated from investor page
+    // Method 1: Check location state (preferred - most reliable)
+    const locationState = location.state as any;
+    const fromInvestorState = locationState?.from === 'investor' || 
+                               locationState?.fromInvestor === true;
+    
+    // Method 2: Check search params (second priority)
+    const fromParam = searchParams.get('from');
+    const isFromInvestorParam = fromParam === 'investor';
+    
+    // Method 3: Check referrer as fallback (least reliable, but works for direct navigation)
+    const referrer = document.referrer;
+    const isFromInvestorReferrer = referrer && (
+      referrer.includes('/investor') || 
+      referrer.endsWith('/investor')
+    );
+    
+    // If any method indicates coming from investor page, navigate to /investor
+    if (fromInvestorState || isFromInvestorParam || isFromInvestorReferrer) {
+      navigate('/investor');
+    } else {
+      // Default: navigate back to portfolios page
+      navigate('/portfolios');
+    }
   };
 
   const handleMoreActionsOpen = (event: React.MouseEvent<HTMLElement>) => {

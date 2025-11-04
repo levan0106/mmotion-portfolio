@@ -148,6 +148,8 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const logout = () => {
+    // Set a flag to indicate logout is in progress (prevents Home from rendering)
+    localStorage.setItem('_logout_in_progress', 'true');
     authService.logout();
     setCurrentUser(null);
     setIsAuthenticated(false);

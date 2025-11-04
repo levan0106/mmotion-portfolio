@@ -158,7 +158,9 @@ const InvestorView: React.FC = () => {
     
     // Only allow navigation if user has owner or update permission
     if (portfolio.userPermission.isOwner || portfolio.userPermission.canUpdate) {
-      navigate(`/portfolios/${portfolioId}`);
+      navigate(`/portfolios/${portfolioId}`, { 
+        state: { from: 'investor', fromInvestor: true } 
+      });
     } else {
       console.warn('Insufficient permissions to access portfolio detail:', portfolioId);
       // Optionally show a toast or alert to user
@@ -255,7 +257,8 @@ const InvestorView: React.FC = () => {
             <ResponsiveTypography variant="pageTitle" sx={{ mb: 2, color: 'text.primary' }}>
               {t('investorView.noPortfolios', 'Chưa có danh mục đầu tư nào')}
             </ResponsiveTypography>
-            <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+            <ResponsiveTypography variant="pageSubtitle" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }} 
+            ellipsis={false} paragraph>
               {t('investorView.noPortfoliosDesc', 'Bạn chưa có quyền truy cập vào bất kỳ danh mục đầu tư nào. Hãy xem cổ phần của bạn hoặc liên hệ với quản trị viên để được cấp quyền.')}
             </ResponsiveTypography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>

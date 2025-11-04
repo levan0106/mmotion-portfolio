@@ -483,7 +483,7 @@ const Dashboard: React.FC = () => {
               label={isAutoSyncEnabled ? t('dashboard.systemStatus') : t('dashboard.dataUpdateStatus.systemPaused')}
               color={isAutoSyncEnabled ? "success" : "warning"}
               variant="outlined"
-              sx={{ borderRadius: 2 }}
+              sx={{ borderRadius: 2, display: { xs: 'none', sm: 'block' } }}
             />
             <Chip
               icon={<Timeline />}

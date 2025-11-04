@@ -108,12 +108,12 @@ export const Login: React.FC = () => {
       await updateAuthState();
       
       // Redirect based on user state
-      if (authResponse.user?.authState === 'DEMO') {
-        navigate('/welcome');
-      } else {
-        navigate(getRedirectUrl());
-      }
-      
+      // if (authResponse.user?.authState === 'DEMO') {
+      //   navigate('/welcome');
+      // } else {
+      //   navigate(getRedirectUrl());
+      // }
+      navigate(getRedirectUrl());
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || t('login.errors.loginFailed');
       const statusCode = err.response?.status;
@@ -171,11 +171,12 @@ export const Login: React.FC = () => {
       await updateAuthState();
       
       // Redirect based on user state
-      if (authResponse.user?.authState === 'DEMO') {
-        navigate('/welcome');
-      } else {
-        navigate(getRedirectUrl());
-      }
+      // if (authResponse.user?.authState === 'DEMO') {
+      //   navigate('/welcome');
+      // } else {
+      //   navigate(getRedirectUrl());
+      // }
+      navigate(getRedirectUrl());
       
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || t('login.errors.loginFailed');
