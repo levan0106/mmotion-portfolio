@@ -842,7 +842,7 @@ export class InvestorHoldingService {
     //this.logger.log(`Portfolio ${portfolioId} converted to fund with ${initialUnits} units at ${navPerUnit.toFixed(3)} NAV per unit (Real-time NAV: ${realTimeNavValue})`);
 
 
-    // 5. Create initial investor holding
+    // 5. Create or update initial investor holding
     // Format snapshotDate properly: if it's a Date object, convert to ISO string first
     let formattedSnapshotDate: Date | undefined;
     if (snapshotDate) {
@@ -858,30 +858,84 @@ export class InvestorHoldingService {
       formattedSnapshotDate = new Date(dateStr + 'T12:00:00');
     }
 
-    const initialInvestorHolding = await this.investorHoldingRepository.save({
-      portfolioId: portfolioId,
-      accountId: portfolio.accountId,
-      totalUnits: initialUnits,
-      avgCostPerUnit: navPerUnit,
-      totalInvestment: realTimeNavValue,
-      currentValue: realTimeNavValue,
-      unrealizedPnL: 0,
-      realizedPnL: 0,
-      createdAt: formattedSnapshotDate || new Date(),
-      updatedAt: formattedSnapshotDate || new Date(),
+    // Check if investor holding already exists (to avoid unique constraint violation)
+    let initialInvestorHolding = await this.investorHoldingRepository.findOne({
+      where: {
+        portfolioId: portfolioId,
+        accountId: portfolio.accountId,
+      }
     });
 
-    // 6. Create FundUnitTransaction record
-    const transaction = await this.fundUnitTransactionRepository.save({
-      holdingId: initialInvestorHolding.holdingId,
-      holdingType: HoldingType.SUBSCRIBE,
-      units: Math.round(initialUnits * 1000) / 1000,
-      navPerUnit: Math.round(navPerUnit * 1000) / 1000,
-      amount: Math.round(realTimeNavValue * 1000) / 1000,
-      createdAt: formattedSnapshotDate || new Date(),
-      updatedAt: formattedSnapshotDate || new Date(),
-      description: `Initial investment for portfolio.`,
-    });
+    if (initialInvestorHolding) {
+      // Update existing holding
+      initialInvestorHolding.totalUnits = initialUnits;
+      initialInvestorHolding.avgCostPerUnit = navPerUnit;
+      initialInvestorHolding.totalInvestment = realTimeNavValue;
+      initialInvestorHolding.currentValue = realTimeNavValue;
+      initialInvestorHolding.unrealizedPnL = 0;
+      initialInvestorHolding.realizedPnL = 0;
+      if (formattedSnapshotDate) {
+        initialInvestorHolding.createdAt = formattedSnapshotDate;
+        initialInvestorHolding.updatedAt = formattedSnapshotDate;
+      }
+      initialInvestorHolding = await this.investorHoldingRepository.save(initialInvestorHolding);
+    } else {
+      // Create new holding
+      initialInvestorHolding = await this.investorHoldingRepository.save({
+        portfolioId: portfolioId,
+        accountId: portfolio.accountId,
+        totalUnits: initialUnits,
+        avgCostPerUnit: navPerUnit,
+        totalInvestment: realTimeNavValue,
+        currentValue: realTimeNavValue,
+        unrealizedPnL: 0,
+        realizedPnL: 0,
+        createdAt: formattedSnapshotDate || new Date(),
+        updatedAt: formattedSnapshotDate || new Date(),
+      });
+    }
+
+    // 6. Create FundUnitTransaction record if units > 0
+    // Only create transaction if there are initial units (portfolio has value)
+    if (initialUnits > 0) {
+      // Check if initial transaction already exists for this holding
+      // Look for the first SUBSCRIBE transaction for this holding (likely the initial one)
+      const existingTransactions = await this.fundUnitTransactionRepository.find({
+        where: {
+          holdingId: initialInvestorHolding.holdingId,
+          holdingType: HoldingType.SUBSCRIBE,
+        },
+        order: {
+          createdAt: 'ASC'
+        },
+        take: 1
+      });
+
+      if (existingTransactions.length > 0) {
+        // Update existing transaction (likely the initial one)
+        const existingTransaction = existingTransactions[0];
+        existingTransaction.units = Math.round(initialUnits * 1000) / 1000;
+        existingTransaction.navPerUnit = Math.round(navPerUnit * 1000) / 1000;
+        existingTransaction.amount = Math.round(realTimeNavValue * 1000) / 1000;
+        if (formattedSnapshotDate) {
+          existingTransaction.createdAt = formattedSnapshotDate;
+          existingTransaction.updatedAt = formattedSnapshotDate;
+        }
+        await this.fundUnitTransactionRepository.save(existingTransaction);
+      } else {
+        // Create new transaction
+        await this.fundUnitTransactionRepository.save({
+          holdingId: initialInvestorHolding.holdingId,
+          holdingType: HoldingType.SUBSCRIBE,
+          units: Math.round(initialUnits * 1000) / 1000,
+          navPerUnit: Math.round(navPerUnit * 1000) / 1000,
+          amount: Math.round(realTimeNavValue * 1000) / 1000,
+          createdAt: formattedSnapshotDate || new Date(),
+          updatedAt: formattedSnapshotDate || new Date(),
+          description: `Initial investment for portfolio.`,
+        });
+      }
+    }
     
     // 7. Don't add cash flow for initial investment
 

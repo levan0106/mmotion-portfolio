@@ -1759,6 +1759,26 @@ export class PortfolioService {
       throw new BadRequestException(`Portfolio ${portfolioId} is not a fund and cannot be converted`);
     }
 
+    // Get all investor holdings for this portfolio
+    const holdings = await this.investorHoldingRepository.find({
+      where: { portfolioId }
+    });
+
+    // Delete all fund unit transactions for these holdings
+    if (holdings.length > 0) {
+      const holdingIds = holdings.map(h => h.holdingId);
+      await this.fundUnitTransactionRepository.delete({
+        holdingId: In(holdingIds)
+      });
+    }
+
+    // Delete all investor holdings
+    await this.investorHoldingRepository.delete({ portfolioId });
+
+    // Delete cash flows related to fund unit transactions
+    // Note: Cash flows with type related to fund units should be deleted
+    // This is handled by cascade delete or can be done explicitly if needed
+
     // Convert fund to regular portfolio
     portfolio.isFund = false;
     portfolio.totalOutstandingUnits = 0;
@@ -1771,6 +1791,8 @@ export class PortfolioService {
     // Clear cache
     await this.clearPortfolioCache(portfolioId);
     await this.clearAccountCache(portfolio.accountId);
+
+    this.logger.log(`Fund ${portfolioId} converted to portfolio. Deleted ${holdings.length} investor holdings and their transactions.`);
 
     return updatedPortfolio;
   }
