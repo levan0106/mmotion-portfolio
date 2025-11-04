@@ -843,6 +843,21 @@ export class InvestorHoldingService {
 
 
     // 5. Create initial investor holding
+    // Format snapshotDate properly: if it's a Date object, convert to ISO string first
+    let formattedSnapshotDate: Date | undefined;
+    if (snapshotDate) {
+      // Ensure snapshotDate is a valid Date object, then set time to noon to avoid timezone issues
+      let dateStr: string;
+      if (snapshotDate instanceof Date) {
+        dateStr = snapshotDate.toISOString().split('T')[0];
+      } else {
+        // If it's already a string, extract the date part
+        const dateStrValue = String(snapshotDate);
+        dateStr = dateStrValue.includes('T') ? dateStrValue.split('T')[0] : dateStrValue;
+      }
+      formattedSnapshotDate = new Date(dateStr + 'T12:00:00');
+    }
+
     const initialInvestorHolding = await this.investorHoldingRepository.save({
       portfolioId: portfolioId,
       accountId: portfolio.accountId,
@@ -852,8 +867,8 @@ export class InvestorHoldingService {
       currentValue: realTimeNavValue,
       unrealizedPnL: 0,
       realizedPnL: 0,
-      createdAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
+      createdAt: formattedSnapshotDate || new Date(),
+      updatedAt: formattedSnapshotDate || new Date(),
     });
 
     // 6. Create FundUnitTransaction record
@@ -863,8 +878,8 @@ export class InvestorHoldingService {
       units: Math.round(initialUnits * 1000) / 1000,
       navPerUnit: Math.round(navPerUnit * 1000) / 1000,
       amount: Math.round(realTimeNavValue * 1000) / 1000,
-      createdAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
-      updatedAt: snapshotDate ? new Date(snapshotDate + 'T12:00:00') : new Date(),
+      createdAt: formattedSnapshotDate || new Date(),
+      updatedAt: formattedSnapshotDate || new Date(),
       description: `Initial investment for portfolio.`,
     });
     

@@ -1093,7 +1093,52 @@
       "currentValue": "Current Value",
       "unrealizedPnL": "Unrealized P&L",
       "returnPercent": "Return %",
-      "viewDetails": "View Details"
+      "viewDetails": "View Details",
+      "convertToFundModal": {
+        "title": "Convert Portfolio to Fund",
+        "portfolioInformation": "Portfolio Information",
+        "portfolioName": "Portfolio Name",
+        "baseCurrency": "Base Currency",
+        "conversionOptions": "Conversion Options",
+        "useSnapshotDate": "Use historical snapshot date for conversion",
+        "snapshotDate": "Snapshot Date",
+        "snapshotDateHelper": "Select the historical date to use for NAV calculation during conversion",
+        "conversionInformation": "Conversion Information",
+        "conversionInfoWithDate": "This will convert the portfolio to a fund using the portfolio's state as of {{date}}. The NAV per unit will be calculated based on the portfolio's value at that specific date.",
+        "conversionInfoCurrent": "This will convert the portfolio to a fund using the current portfolio state. The NAV per unit will be calculated based on the current portfolio value.",
+        "conversionInfoAfter": "After conversion, you'll be able to manage fund subscriptions, redemptions, and track investor holdings.",
+        "converting": "Converting...",
+        "convert": "Convert",
+        "convertToFund": "Convert to Fund",
+        "validation": {
+          "invalidDateFormat": "Invalid date format. Please use YYYY-MM-DD format.",
+          "dateInFuture": "Snapshot date cannot be in the future.",
+          "snapshotDateRequired": "Snapshot date is required when using historical snapshot."
+        },
+        "error": {
+          "convertFailed": "Failed to convert portfolio to fund"
+        }
+      },
+      "convertToPortfolioModal": {
+        "title": "Convert Fund to Portfolio",
+        "warningTitle": "This action will permanently remove all fund-related data!",
+        "confirmationQuestion": "Are you sure you want to convert the fund \"{{name}}\" back to a regular portfolio?",
+        "willDelete": "This will permanently delete:",
+        "deleteItem1": "All investor holdings and their transaction history",
+        "deleteItem2": "All fund unit transactions (subscriptions and redemptions)",
+        "deleteItem3": "All cash flows related to fund unit transactions",
+        "deleteItem4": "NAV per unit and total outstanding units will be reset to 0",
+        "deleteItem5": "Number of investors will be reset to 0",
+        "willRetain": "The portfolio will retain:",
+        "retainItem1": "All trades and their history",
+        "retainItem2": "All deposits and cash flows not related to fund units",
+        "retainItem3": "All performance snapshots and analytics data",
+        "retainItem4": "Cash balance will be recalculated from remaining cash flows",
+        "confirmationLabel": "I understand that this action will permanently delete all fund-related data and cannot be undone",
+        "converting": "Converting...",
+        "convert": "Convert",
+        "convertToPortfolio": "Convert to Portfolio"
+      }
     }
   },
   "deposit": {

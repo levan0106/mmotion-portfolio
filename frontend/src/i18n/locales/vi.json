@@ -1171,7 +1171,52 @@
       "currentValue": "Giá trị hiện tại",
       "unrealizedPnL": "P&L chưa thực hiện",
       "returnPercent": "Lợi nhuận %",
-      "viewDetails": "Xem chi tiết"
+      "viewDetails": "Xem chi tiết",
+      "convertToFundModal": {
+        "title": "Chuyển đổi Danh mục thành Quỹ",
+        "portfolioInformation": "Thông tin Danh mục",
+        "portfolioName": "Tên Danh mục",
+        "baseCurrency": "Tiền tệ cơ sở",
+        "conversionOptions": "Tùy chọn Chuyển đổi",
+        "useSnapshotDate": "Sử dụng ngày snapshot lịch sử để chuyển đổi",
+        "snapshotDate": "Ngày Snapshot",
+        "snapshotDateHelper": "Chọn ngày lịch sử để sử dụng tính toán NAV trong quá trình chuyển đổi",
+        "conversionInformation": "Thông tin Chuyển đổi",
+        "conversionInfoWithDate": "Điều này sẽ chuyển đổi danh mục thành quỹ sử dụng trạng thái danh mục tính đến ngày {{date}}. NAV mỗi đơn vị sẽ được tính dựa trên giá trị danh mục tại ngày cụ thể đó.",
+        "conversionInfoCurrent": "Điều này sẽ chuyển đổi danh mục thành quỹ sử dụng trạng thái danh mục hiện tại. NAV mỗi đơn vị sẽ được tính dựa trên giá trị danh mục hiện tại.",
+        "conversionInfoAfter": "Sau khi chuyển đổi, bạn sẽ có thể quản lý đăng ký quỹ, mua lại và theo dõi danh mục nhà đầu tư.",
+        "converting": "Đang chuyển đổi...",
+        "convert": "Chuyển đổi",
+        "convertToFund": "Chuyển đổi thành Quỹ",
+        "validation": {
+          "invalidDateFormat": "Định dạng ngày không hợp lệ. Vui lòng sử dụng định dạng YYYY-MM-DD.",
+          "dateInFuture": "Ngày snapshot không thể là ngày trong tương lai.",
+          "snapshotDateRequired": "Ngày snapshot là bắt buộc khi sử dụng snapshot lịch sử."
+        },
+        "error": {
+          "convertFailed": "Không thể chuyển đổi danh mục thành quỹ"
+        }
+      },
+      "convertToPortfolioModal": {
+        "title": "Chuyển đổi Quỹ thành Danh mục",
+        "warningTitle": "Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan đến quỹ!",
+        "confirmationQuestion": "Bạn có chắc chắn muốn chuyển đổi quỹ \"{{name}}\" trở lại thành danh mục thông thường?",
+        "willDelete": "Điều này sẽ xóa vĩnh viễn:",
+        "deleteItem1": "Tất cả danh mục nhà đầu tư và lịch sử giao dịch của họ",
+        "deleteItem2": "Tất cả giao dịch đơn vị quỹ (đăng ký và mua lại)",
+        "deleteItem3": "Tất cả dòng tiền liên quan đến giao dịch đơn vị quỹ",
+        "deleteItem4": "NAV mỗi đơn vị và tổng đơn vị đang lưu hành sẽ được đặt lại về 0",
+        "deleteItem5": "Số nhà đầu tư sẽ được đặt lại về 0",
+        "willRetain": "Danh mục sẽ giữ lại:",
+        "retainItem1": "Tất cả giao dịch và lịch sử của chúng",
+        "retainItem2": "Tất cả tiền gửi và dòng tiền không liên quan đến đơn vị quỹ",
+        "retainItem3": "Tất cả snapshot hiệu suất và dữ liệu phân tích",
+        "retainItem4": "Số dư tiền mặt sẽ được tính lại từ các dòng tiền còn lại",
+        "confirmationLabel": "Tôi hiểu rằng hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan đến fund và không thể hoàn tác",
+        "converting": "Đang chuyển đổi...",
+        "convert": "Chuyển đổi",
+        "convertToPortfolio": "Chuyển đổi thành Danh mục"
+      }
     }
   },
   "deposit": {

@@ -31,6 +31,8 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
 import { ResponsiveButton, ActionIconButton } from '../Common';
@@ -90,6 +92,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   onCashFlowUpdate,
   compact = false,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { t } = useTranslation();
   const { accountId } = useAccount();
   const { portfolio } = usePortfolio(portfolioId);
@@ -396,6 +400,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
         >
           <ResponsiveTypography 
             variant="pageTitle" 
+            sx={{ display: { xs: 'none', md: 'block' } }}
           >
             {t('cashflow.title')}
           </ResponsiveTypography>
@@ -408,18 +413,17 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             <ResponsiveButton
               variant="contained"
               color="success"
-              icon={<DepositIcon />}
-              startIcon={<DepositIcon />}
+              icon={isMobile ? undefined : <DepositIcon />}
               onClick={() => handleCreateCashFlow('deposit')}
-              size={compact ? "small" : "medium"}
+              size={compact || isMobile ? "small" : "medium"}
               mobileText={t('cashflow.deposit')}
               desktopText={t('cashflow.deposit')}
               sx={{ 
                 borderRadius: 2, 
-                mr: compact ? 0.5 : 1,
-                px: compact ? 1 : 2,
-                py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem!important' } : {
+                mr: compact || isMobile ? 0.5 : 1,
+                px: compact || isMobile ? 1 : 2,
+                py: compact || isMobile ? 0.5 : 1,
+                ...(compact || isMobile ? { fontSize: '0.7rem!important' } : {
                   fontSize:{
                   xs: '0.65rem!important',
                   sm: '0.65rem!important',
@@ -430,23 +434,22 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? t('cashflow.deposit') : t('cashflow.createDeposit')}
+              {compact || isMobile ? t('cashflow.deposit') : t('cashflow.createDeposit')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
               color="error"
-              icon={<WithdrawIcon />}
-              startIcon={<WithdrawIcon />}
+              icon={isMobile ? undefined : <WithdrawIcon />}
               onClick={() => handleCreateCashFlow('withdrawal')}
-              size={compact ? "small" : "medium"}
+              size={compact || isMobile ? "small" : "medium"}
               mobileText={t('cashflow.withdraw')}
               desktopText={t('cashflow.withdrawal')}
               sx={{ 
                 borderRadius: 2, 
-                mr: compact ? 0.5 : 1,
-                px: compact ? 1 : 2,
-                py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem!important' } : {
+                mr: compact || isMobile ? 0.5 : 1,
+                px: compact || isMobile ? 1 : 2,
+                py: compact || isMobile ? 0.5 : 1,
+                ...(compact || isMobile ? { fontSize: '0.7rem!important' } : {
                   fontSize:{
                   xs: '0.65rem!important',
                   sm: '0.65rem!important',
@@ -457,23 +460,22 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? t('cashflow.withdraw') : t('cashflow.createWithdrawal')}
+              {compact || isMobile ? t('cashflow.withdraw') : t('cashflow.createWithdrawal')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
               color="info"
-              icon={<DividendIcon />}
-              startIcon={<DividendIcon />}
+              icon={isMobile ? undefined : <DividendIcon />}
               onClick={() => handleCreateCashFlow('dividend')}
-              size={compact ? "small" : "medium"}
+              size={compact || isMobile ? "small" : "medium"}
               mobileText={t('cashflow.dividend')}
               desktopText={t('cashflow.dividend')}
               sx={{ 
                 borderRadius: 2, 
-                mr: compact ? 0.5 : 1,
-                px: compact ? 1 : 2,
-                py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem!important' } : {
+                mr: compact || isMobile ? 0.5 : 1,
+                px: compact || isMobile ? 1 : 2,
+                py: compact || isMobile ? 0.5 : 1,
+                ...(compact || isMobile ? { fontSize: '0.7rem!important' } : {
                   fontSize:{
                   xs: '0.65rem!important',
                   sm: '0.65rem!important',
@@ -485,23 +487,23 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 }}
               
             >
-              {compact ? t('cashflow.dividend') : t('cashflow.createDividend')}
+              {compact || isMobile ? t('cashflow.dividend') : t('cashflow.createDividend')}
             </ResponsiveButton>
             <ResponsiveButton
               variant="contained"
               color="secondary"
-              icon={<TransferIcon />}
+              icon={isMobile ? undefined : <TransferIcon />}
               mobileText={t('cashflow.transfer')}
               desktopText={t('cashflow.transferCash')}
               onClick={() => {
                 setTransferDialogOpen(true);
               }}
-              size={compact ? "small" : "medium"}
+              size={compact || isMobile ? "small" : "medium"}
               sx={{ 
                 borderRadius: 2,
-                px: compact ? 1 : 2,
-                py: compact ? 0.5 : 1,
-                ...(compact ? { fontSize: '0.7rem!important' } : {
+                px: compact || isMobile ? 1 : 2,
+                py: compact || isMobile ? 0.5 : 1,
+                ...(compact || isMobile ? { fontSize: '0.7rem!important' } : {
                   fontSize:{
                   xs: '0.65rem!important',
                   sm: '0.65rem!important',
@@ -512,7 +514,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact ? t('cashflow.transfer') : t('cashflow.transferCash')}
+              {compact || isMobile ? t('cashflow.transfer') : t('cashflow.transferCash')}
             </ResponsiveButton>
           </Box>
         </Box>

@@ -5,11 +5,6 @@
 
 import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
   Box,
   Alert,
   CircularProgress,
@@ -19,7 +14,10 @@ import {
 import {
   Transform as ConvertIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { ResponsiveButton, ActionButton } from '../Common';
+import { ModalWrapper } from '../Common/ModalWrapper';
+import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { Portfolio } from '../../types';
 
 interface ConvertToPortfolioModalProps {
@@ -35,6 +33,7 @@ const ConvertToPortfolioModal: React.FC<ConvertToPortfolioModalProps> = ({
   portfolio,
   onConvert
 }) => {
+  const { t } = useTranslation();
   const [isConverting, setIsConverting] = useState(false);
   const [confirmationChecked, setConfirmationChecked] = useState(false);
 
@@ -57,65 +56,112 @@ const ConvertToPortfolioModal: React.FC<ConvertToPortfolioModalProps> = ({
     onClose();
   };
 
+  const modalActions = (
+    <>
+      <ResponsiveButton
+        onClick={handleClose}
+        disabled={isConverting}
+        color="inherit"
+        size="medium"
+      >
+        {t('common.cancel')}
+      </ResponsiveButton>
+      <ActionButton
+        onClick={handleConvert}
+        disabled={isConverting || !confirmationChecked}
+        color="warning"
+        variant="contained"
+        icon={isConverting ? <CircularProgress size={20} /> : <ConvertIcon />}
+        mobileText={t('nav.holdings.convertToPortfolioModal.convert')}
+        desktopText={t('nav.holdings.convertToPortfolioModal.convertToPortfolio')}
+        forceTextOnly={true}
+        size="medium"
+      >
+        {isConverting ? t('nav.holdings.convertToPortfolioModal.converting') : t('nav.holdings.convertToPortfolioModal.convertToPortfolio')}
+      </ActionButton>
+    </>
+  );
+
   return (
-    <Dialog
+    <ModalWrapper
       open={open}
       onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
+      title={t('nav.holdings.convertToPortfolioModal.title')}
+      icon={<ConvertIcon color="warning" />}
+      actions={modalActions}
+      loading={isConverting}
+      maxWidth="md"
+      titleColor="warning"
+      size="medium"
     >
-      <DialogTitle>
-        <Box display="flex" alignItems="center" gap={1}>
-          <ConvertIcon color="warning" />
-          <Typography variant="h6">Convert Fund to Portfolio</Typography>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
+      <Box sx={{ pt: 1 }}>
         <Alert severity="warning" sx={{ mb: 2 }}>
-          <Typography variant="body2" fontWeight="bold">
-            This action will permanently remove all fund-related data!
-          </Typography>
+          <ResponsiveTypography variant="body2" fontWeight="bold" ellipsis={false}>
+            {t('nav.holdings.convertToPortfolioModal.warningTitle')}
+          </ResponsiveTypography>
         </Alert>
-        <Typography variant="body1" paragraph>
-          Are you sure you want to convert the fund <strong>"{portfolio.name}"</strong> back to a regular portfolio?
-        </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          This will permanently delete:
-        </Typography>
+        
+        <ResponsiveTypography variant="labelMedium" paragraph ellipsis={false}>
+          {t('nav.holdings.convertToPortfolioModal.confirmationQuestion', { name: portfolio.name })}
+        </ResponsiveTypography>
+        
+        <ResponsiveTypography variant="cardTitle" paragraph>
+          {t('nav.holdings.convertToPortfolioModal.willDelete')}
+        </ResponsiveTypography>
+        
         <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All investor holdings and their transaction history
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All fund unit transactions (subscriptions and redemptions)
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All cash flows related to fund unit transactions
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            NAV per unit and total outstanding units will be reset to 0
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Number of investors will be reset to 0
-          </Typography>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.deleteItem1')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.deleteItem2')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.deleteItem3')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.deleteItem4')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.deleteItem5')}
+            </ResponsiveTypography>
+          </Box>
         </Box>
         
-        <Typography variant="body2" color="text.secondary" paragraph>
-          The portfolio will retain:
-        </Typography>
+        <ResponsiveTypography variant="cardTitle" paragraph>
+          {t('nav.holdings.convertToPortfolioModal.willRetain')}
+        </ResponsiveTypography>
+        
         <Box component="ul" sx={{ pl: 2, m: 0, mb: 3 }}>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All trades and their history
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All deposits and cash flows not related to fund units
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            All performance snapshots and analytics data
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Cash balance will be recalculated from remaining cash flows
-          </Typography>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.retainItem1')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.retainItem2')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.retainItem3')}
+            </ResponsiveTypography>
+          </Box>
+          <Box component="li">
+            <ResponsiveTypography variant="body2" color="text.secondary" ellipsis={false}>
+              {t('nav.holdings.convertToPortfolioModal.retainItem4')}
+            </ResponsiveTypography>
+          </Box>
         </Box>
         
         {/* Confirmation Checkbox */}
@@ -132,38 +178,18 @@ const ConvertToPortfolioModal: React.FC<ConvertToPortfolioModalProps> = ({
                 checked={confirmationChecked}
                 onChange={(e) => setConfirmationChecked(e.target.checked)}
                 color="warning"
+                disabled={isConverting}
               />
             }
             label={
-              <Typography variant="body2" color="warning.main" fontWeight="bold">
-                Tôi hiểu rằng hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan đến fund và không thể hoàn tác
-              </Typography>
+              <ResponsiveTypography variant="body2" color="warning.main" fontWeight="bold" ellipsis={false}>
+                {t('nav.holdings.convertToPortfolioModal.confirmationLabel')}
+              </ResponsiveTypography>
             }
           />
         </Box>
-      </DialogContent>
-      <DialogActions>
-        <ResponsiveButton
-          onClick={handleClose}
-          disabled={isConverting}
-          color="inherit"
-        >
-          Cancel
-        </ResponsiveButton>
-        <ActionButton
-          onClick={handleConvert}
-          disabled={isConverting || !confirmationChecked}
-          color="warning"
-          variant="contained"
-          icon={isConverting ? <CircularProgress size={16} /> : <ConvertIcon />}
-          mobileText="Convert"
-          desktopText="Convert to Portfolio"
-          forceTextOnly={true}
-        >
-          {isConverting ? 'Converting...' : 'Convert to Portfolio'}
-        </ActionButton>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ModalWrapper>
   );
 };
 
