@@ -79,7 +79,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState('12');
-  const [granularity, setGranularity] = useState('DAILY');
+  const [granularity] = useState('DAILY');
 
   const timeframeOptions = [
     { value: '3', label: '3M' },
@@ -87,12 +87,6 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
     { value: '12', label: '12M' },
     { value: '24', label: '24M' },
     { value: '36', label: '36M' }
-  ];
-
-  const granularityOptions = [
-    { value: 'DAILY', label: 'Daily' },
-    { value: 'WEEKLY', label: 'Weekly' },
-    { value: 'MONTHLY', label: 'Monthly' }
   ];
 
   const fetchNAVHistory = async () => {
@@ -118,10 +112,6 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
 
   const handleTimeframeChange = (event: any) => {
     setTimeframe(event.target.value);
-  };
-
-  const handleGranularityChange = (event: any) => {
-    setGranularity(event.target.value);
   };
 
   const formatXAxisLabel = (tickItem: string) => {
@@ -206,9 +196,9 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          mb: getUltraSpacing(3, 1.5),
-          pb: getUltraSpacing(2, 1),
-          borderBottom: '2px solid #f1f3f4'
+          mb: { xs: getUltraSpacing(1.5, 1), sm: getUltraSpacing(2, 1.5) },
+          pb: { xs: getUltraSpacing(0.5, 1), sm: getUltraSpacing(2, 1) },
+          borderBottom: { xs: 'none', sm: '2px solid #f1f3f4' }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: compact ? 1 : 1.5 }}>
             <Box sx={{ 
@@ -253,7 +243,7 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
               }}
             />
 
-            <ResponsiveFormSelect
+            {/* <ResponsiveFormSelect
               compact={compact}
               size="small"
               options={granularityOptions}
@@ -268,12 +258,12 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
                   borderColor: '#1976d2'
                 }
               }}
-            />
+            /> */}
           </Box>
         </Box>
 
         {/* Professional Summary Cards */}
-        <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(3, 1.5) }}>
+        <Grid container spacing={getUltraSpacing(2, 1)} sx={{ mb: getUltraSpacing(3, 1.5), display: { xs: 'none', sm: 'flex' } }}>
           <Grid item xs={6} sm={3}>
             <Card sx={{ 
               height: compact ? 70 : 90, 
@@ -433,12 +423,11 @@ const NAVHistoryChart: React.FC<NAVHistoryChartProps> = ({
             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
             borderRadius: 2,
             p: { xs: 0.5, sm: getUltraSpacing(2, 1) },
-            border: '1px solid #e0e0e0',
             mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={processedData} margin={{ 
-                top: compact ? 15 : 20, 
+                top: compact ? 0 : 0, 
                 right: compact ? 0 : 30, 
                 left: compact ? 0 : 20, 
                 bottom: compact ? 15 : 20 

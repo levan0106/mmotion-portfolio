@@ -493,8 +493,8 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
               variant="contained"
               color="secondary"
               icon={isMobile ? undefined : <TransferIcon />}
-              mobileText={t('cashflow.transfer')}
-              desktopText={t('cashflow.transferCash')}
+              mobileText={t('cashflow.transfer.transfer')}
+              desktopText={t('cashflow.transfer.transferCash')}
               onClick={() => {
                 setTransferDialogOpen(true);
               }}
@@ -514,7 +514,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                 })
               }}
             >
-              {compact || isMobile ? t('cashflow.transfer') : t('cashflow.transferCash')}
+              {compact || isMobile ? t('cashflow.transfer.transfer') : t('cashflow.transfer.transferCash')}
             </ResponsiveButton>
           </Box>
         </Box>

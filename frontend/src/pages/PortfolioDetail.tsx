@@ -2,7 +2,7 @@
  * Portfolio detail page component
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,7 +21,8 @@ import {
   ListItemText,
   Alert,
   Portal,
-  Button,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -41,7 +42,6 @@ import {
   Business as FundManagerIcon,
   Security as SecurityIcon,
   MoreVert as MoreVertIcon,
-  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { usePortfolio, usePortfolioAnalytics } from '../hooks/usePortfolios';
 import { useCreateTrade, useTrades } from '../hooks/useTrading';
@@ -115,7 +115,7 @@ const PortfolioDetail: React.FC = () => {
   const [moreActionsAnchorEl, setMoreActionsAnchorEl] = useState<null | HTMLElement>(null);
   const [isRecalculatingSnapshots, setIsRecalculatingSnapshots] = useState(false);
   const [recalculateConfirmOpen, setRecalculateConfirmOpen] = useState(false);
-  const [mobileTabsAnchorEl, setMobileTabsAnchorEl] = useState<null | HTMLElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -127,7 +127,9 @@ const PortfolioDetail: React.FC = () => {
   });
   const { accountId } = useAccount();
   const queryClient = useQueryClient();
-  
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Reset tab value when switching view modes (only for fund-manager)
   useEffect(() => {
@@ -174,6 +176,62 @@ const PortfolioDetail: React.FC = () => {
       }
     }
   }, [searchParams, viewMode]);
+
+  // Auto-scroll selected tab to center when tabValue changes
+  useEffect(() => {
+    if (viewMode === 'fund-manager' && tabsRef.current) {
+      // Use requestAnimationFrame to ensure DOM is fully rendered
+      const scrollToCenter = () => {
+        // Find the tab element by index
+        const tabsContainer = tabsRef.current?.querySelector('.MuiTabs-flexContainer') as HTMLElement;
+        if (tabsContainer) {
+          const tabElements = tabsContainer.querySelectorAll('.MuiTab-root');
+          const selectedTab = tabElements[tabValue] as HTMLElement;
+          
+          if (selectedTab) {
+            // Get the scrollable container (scroller) - this is the actual scrollable element
+            const scroller = tabsRef.current?.querySelector('.MuiTabs-scroller') as HTMLElement;
+            if (scroller) {
+              // Get the flexContainer to calculate relative positions
+              const flexContainer = tabsRef.current?.querySelector('.MuiTabs-flexContainer') as HTMLElement;
+              
+              if (flexContainer) {
+                // Get dimensions
+                const scrollerWidth = scroller.clientWidth;
+                
+                // Get tab position relative to flexContainer
+                const tabLeft = selectedTab.offsetLeft;
+                const tabWidth = selectedTab.offsetWidth;
+                
+                // Calculate the center position
+                // Center of tab should align with center of scroller viewport
+                const tabCenter = tabLeft + (tabWidth / 2);
+                const scrollerCenter = scrollerWidth / 2;
+                const targetScrollLeft = tabCenter - scrollerCenter;
+                
+                // Ensure we don't scroll beyond bounds
+                const maxScrollLeft = scroller.scrollWidth - scrollerWidth;
+                const finalScrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScrollLeft));
+                
+                // Smooth scroll to center
+                scroller.scrollTo({
+                  left: finalScrollLeft,
+                  behavior: 'smooth'
+                });
+              }
+            }
+          }
+        }
+      };
+      
+      // Use double requestAnimationFrame to ensure layout is complete
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(scrollToCenter, 200);
+        });
+      });
+    }
+  }, [tabValue, viewMode]);
 
   // Ultra compact mode - gấp đôi compact
   const getUltraSpacing = (normal: number, ultra: number) => 
@@ -1160,7 +1218,7 @@ const PortfolioDetail: React.FC = () => {
           }}>
             {/* Tabs (desktop) and Menu (mobile) */}
             {/* Mobile: Professional menu for tabs */}
-            <Box sx={{ display: { xs: 'flex', sm: 'none' }, width: '100%', mr: 1, alignItems: 'center', gap: 1 }}>
+            {/* <Box sx={{ display: { xs: 'none', sm: 'none' }, width: '100%', mr: 1, alignItems: 'center', gap: 1 }}>
               <Button
                 variant="outlined"
                 color="primary"
@@ -1238,10 +1296,11 @@ const PortfolioDetail: React.FC = () => {
                   <ListItemText>{t('navigation.holdings')}</ListItemText>
                 </MenuItem>
               </Menu>
-            </Box>
+            </Box> */}
 
             {/* Desktop: Tabs */}
             <Tabs 
+              ref={tabsRef}
               value={tabValue} 
               onChange={handleTabChange} 
               aria-label="portfolio tabs"
@@ -1255,35 +1314,35 @@ const PortfolioDetail: React.FC = () => {
                 flex: 1,
                 // Add padding to scroller to prevent tabs from being hidden by scroll buttons
                 '& .MuiTabs-scroller': {
-                  paddingLeft: { xs: '0px', sm: '0px', md: '0px' },
-                  paddingRight: { xs: '0px', sm: '0px', md: '0px' },
+                  paddingLeft: { xs: '0px!important', sm: '0px', md: '0px' },
+                  paddingRight: { xs: '0px!important', sm: '0px', md: '0px' },
                 },
                 '& .MuiTabs-flexContainer': {
                   justifyContent: 'center',
                   gap: { xs: 0.5, sm: 1 },
                   // Add padding to prevent first tab from being hidden by left scroll button
-                  paddingLeft: { xs: '0px', sm: '40px', md: '40px' },
-                  paddingRight: { xs: '0px', sm: '40px', md: '40px' },
+                  paddingLeft: { xs: '0px!important', sm: '40px', md: '40px' },
+                  paddingRight: { xs: '0px!important', sm: '40px', md: '40px' },
                   minWidth: 'fit-content',
                 },
                 '& .MuiTab-root': {
                   minHeight: '40px',
                   fontWeight: 600,
                   textTransform: 'none',
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
-                  minWidth: { xs: '80px', sm: '100px', md: '120px' },
-                  px: { xs: 0.75, sm: 1.5, md: 2 },
+                  fontSize: { xs: '0.75rem!important', sm: '0.85rem', md: '0.9rem' },
+                  minWidth: { xs: '80px!important', sm: '100px', md: '120px' },
+                  px: { xs: 0, sm: 1.5, md: 2 },
                   py: { xs: 0.5, sm: 1 },
                   flexShrink: 0,
                   whiteSpace: 'nowrap',
                   '& .MuiTab-iconWrapper': {
-                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    fontSize: { xs: '1rem!important', sm: '1.1rem', md: '1.2rem' },
                     marginRight: { xs: 0.25, sm: 0.5 },
                   },
                 },
                 '& .MuiTabs-scrollButtons': {
                   display: { xs: 'flex', sm: 'flex' },
-                  width: { xs: '32px', sm: '40px', md: '40px' },
+                  width: { xs: '32px!important', sm: '40px', md: '40px' },
                   zIndex: 1,
                   '&.Mui-disabled': {
                     opacity: 0.3,
@@ -1295,16 +1354,22 @@ const PortfolioDetail: React.FC = () => {
                 },
               }}
             >
-              <Tab icon={<TrendingUpIcon />} iconPosition="start" label={t('portfolio.performance')} />
-              <Tab icon={<AllocationIcon />} iconPosition="start" label={t('portfolio.allocation')} />
-              <Tab icon={<TradingIcon />} iconPosition="start" label={t('portfolio.trading')} />
-              <Tab icon={<DepositIcon />} iconPosition="start" label={t('portfolio.deposit')} />
-              <Tab icon={<CashFlowIcon />} iconPosition="start" label={t('portfolio.cashFlow')} />
-              <Tab icon={<HoldingsIcon />} iconPosition="start" label={t('navigation.holdings')} />
+              <Tab icon={isMobile ? undefined : <TrendingUpIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('portfolio.performance')} />
+              <Tab icon={isMobile ? undefined : <AllocationIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('portfolio.allocation')} />
+              <Tab icon={isMobile ? undefined : <TradingIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('portfolio.trading')} />
+              <Tab icon={isMobile ? undefined : <DepositIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('portfolio.deposit')} />
+              <Tab icon={isMobile ? undefined : <CashFlowIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('portfolio.cashFlow')} />
+              <Tab icon={isMobile ? undefined : <HoldingsIcon />} iconPosition={isMobile ? undefined : "start"} 
+              label={t('navigation.holdings')} />
             </Tabs>
             
             {/* Compact Mode Toggle - pinned to right */}
-            <Tooltip 
+            {!isMobile && ( <Tooltip 
               title={isCompactMode ? t('portfolio.switchToNormal') : t('portfolio.switchToCompact')}
               sx={{ ml: 'auto' }}
             >
@@ -1328,6 +1393,7 @@ const PortfolioDetail: React.FC = () => {
                 {isCompactMode ? <ViewListIcon /> : <ViewModuleIcon />}
               </IconButton>
             </Tooltip>
+            )}
           </Box>
         </Box>
       )}

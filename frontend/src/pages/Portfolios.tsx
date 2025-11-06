@@ -11,7 +11,9 @@ import {
   Tabs, 
   Tab, 
   Paper,
-  Container
+  Container,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   AccountBalance as PortfolioIcon,
@@ -37,6 +39,8 @@ const Portfolios: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPortfolio, setEditingPortfolio] = useState<string | null>(null);
   const [formError, setFormError] = useState<string>('');
@@ -291,19 +295,19 @@ const Portfolios: React.FC = () => {
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
           <Tab 
-            icon={<PortfolioIcon />} 
+            icon={isMobile ? undefined : <PortfolioIcon />} 
             label={t('navigation.fundManagement.portfolios')}
-            iconPosition="start"
+            iconPosition={isMobile ? undefined : "start"}
           />
           <Tab 
-            icon={<AssetIcon />} 
+            icon={isMobile ? undefined : <AssetIcon />} 
             label={t('navigation.fundManagement.assets')}
-            iconPosition="start"
+            iconPosition={isMobile ? undefined : "start"}
           />
           <Tab 
-            icon={<DepositIcon />} 
+            icon={isMobile ? undefined : <DepositIcon />} 
             label={t('navigation.fundManagement.deposits')}
-            iconPosition="start"
+            iconPosition={isMobile ? undefined : "start"}
           />
         </Tabs>
       </Paper>
