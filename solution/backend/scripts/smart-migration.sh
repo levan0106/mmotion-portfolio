@@ -26,9 +26,35 @@ fi
 
 echo "✅ Backend container detected: $CONTAINER_NAME"
 
+# Wait for container to be running (not restarting)
+echo "⏳ Waiting for container to be ready..."
+MAX_WAIT=60
+WAIT_COUNT=0
+while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+    CONTAINER_STATUS=$(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME 2>/dev/null || echo "unknown")
+    if [ "$CONTAINER_STATUS" = "running" ]; then
+        echo "✅ Container is running"
+        break
+    fi
+    echo "⏳ Container status: $CONTAINER_STATUS, waiting..."
+    sleep 2
+    WAIT_COUNT=$((WAIT_COUNT + 2))
+done
+
+if [ "$CONTAINER_STATUS" != "running" ]; then
+    echo "❌ Container is not running after $MAX_WAIT seconds. Status: $CONTAINER_STATUS"
+    echo "📋 Container logs:"
+    docker logs --tail 50 $CONTAINER_NAME
+    exit 1
+fi
+
 # Check if migrations table exists
 echo "🔍 Checking migrations table..."
 MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -c "migrations" || echo "0")
+
+# Ensure MIGRATIONS_EXIST is a number
+MIGRATIONS_EXIST=${MIGRATIONS_EXIST:-0}
+MIGRATIONS_EXIST=$((MIGRATIONS_EXIST + 0))  # Convert to integer
 
 if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     echo "📋 Migrations table not found. This is a fresh database."
@@ -97,6 +123,10 @@ fi
 # Verify accounts table exists (critical check)
 echo "🔍 Verifying critical tables..."
 ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME npm run typeorm -- query "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'" -d /app/dist/src/config/database.config.js 2>/dev/null | grep -c "accounts" || echo "0")
+
+# Ensure ACCOUNTS_EXIST is a number
+ACCOUNTS_EXIST=${ACCOUNTS_EXIST:-0}
+ACCOUNTS_EXIST=$((ACCOUNTS_EXIST + 0))  # Convert to integer
 
 if [ "$ACCOUNTS_EXIST" -eq 0 ]; then
     echo "❌ Error: Accounts table not found! Running emergency migration..."
