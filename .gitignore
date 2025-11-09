@@ -192,7 +192,8 @@ test_with_original.json
 # Backend test files
 backend.py
 server.js
-package.json
+# Only ignore package.json at root level, not in solution/backend or solution/frontend
+/package.json
 backend.env
 
 # Deployment test files
