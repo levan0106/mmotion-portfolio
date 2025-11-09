@@ -300,7 +300,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.backend.yml,production.env,scripts/smart-migration.sh"
+        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh"
         target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
     - name: Deploy Backend to EC2
@@ -364,8 +364,8 @@ jobs:
           
           # Ensure project directory exists
           echo "📁 Setting up project directory..."
-          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio
-          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio
+          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio/solution/backend
+          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio/solution/backend
           
           # Copy production environment file
           if [ ! -f .env ]; then
@@ -378,11 +378,11 @@ jobs:
           
           # Stop existing backend containers
           echo "🛑 Stopping existing backend containers..."
-          docker-compose -f docker-compose.backend.yml down || echo "⚠️ No existing containers to stop"
+          docker-compose -f docker-compose.yml down || echo "⚠️ No existing containers to stop"
           
           # Start backend services
           echo "🚀 Starting backend services..."
-          docker-compose -f docker-compose.backend.yml up -d || {
+          docker-compose -f docker-compose.yml up -d || {
             echo "❌ Failed to start backend services"
             exit 1
           }
