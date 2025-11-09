@@ -7,9 +7,10 @@ set -e
 
 echo "🧠 Smart Migration Check..."
 
-# Check if we're in the backend directory
+# Check if we're in the backend root directory
+# This script should be run from the backend root (where docker-compose.yml exists)
 if [ ! -f "docker-compose.yml" ]; then
-    echo "❌ Error: docker-compose.yml not found. Please run from solution/backend directory."
+    echo "❌ Error: docker-compose.yml not found. Please run from backend root directory."
     exit 1
 fi
 

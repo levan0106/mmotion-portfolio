@@ -320,8 +320,15 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh"
-        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
+        # Note: Source paths are from repository structure (solution/backend/...)
+        # SCP action will strip common prefix and preserve relative paths
+        # Result on EC2: portfolio-backend/ becomes the root (equivalent to solution/backend/ in repo)
+        # Files will be placed as:
+        #   solution/backend/docker-compose.yml → portfolio-backend/docker-compose.yml
+        #   solution/backend/scripts/smart-migration.sh → portfolio-backend/scripts/smart-migration.sh
+        #   solution/backend/init-scripts/ → portfolio-backend/init-scripts/
+        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/init-scripts"
+        target: "/home/${{ secrets.EC2_USER }}/portfolio-backend/"
 
     - name: Deploy Backend to EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -427,18 +434,35 @@ jobs:
             exit 1
           fi
           
-          # Ensure project directory exists
-          echo "📁 Setting up project directory..."
-          mkdir -p /home/${{ secrets.EC2_USER }}/mmotion-portfolio/solution/backend
-          cd /home/${{ secrets.EC2_USER }}/mmotion-portfolio/solution/backend
+          # ============================================
+          # Backend Deployment Root Setup
+          # ============================================
+          # Note: solution/backend from the repo is deployed as the root directory
+          # All paths in this script are relative to the backend root
+          # This makes deployment independent of the repository structure
+          # ============================================
+          
+          # Ensure project directory exists (backend root)
+          echo "📁 Setting up backend root directory..."
+          BACKEND_ROOT="/home/${{ secrets.EC2_USER }}/portfolio-backend"
+          mkdir -p $BACKEND_ROOT
+          cd $BACKEND_ROOT
+          
+          echo "📂 Current directory: $(pwd)"
+          echo "📋 Files in backend root:"
+          ls -la || echo "Directory is empty"
           
           # Copy production environment file
           if [ ! -f .env ]; then
-            cp production.env .env || {
-              echo "❌ Failed to copy production.env to .env"
-              exit 1
-            }
-            echo "📝 Created .env file from production.env"
+            if [ -f production.env ]; then
+              cp production.env .env || {
+                echo "❌ Failed to copy production.env to .env"
+                exit 1
+              }
+              echo "📝 Created .env file from production.env"
+            else
+              echo "⚠️ Warning: production.env not found, .env may need to be created manually"
+            fi
           fi
           
           # Stop and remove existing backend containers
@@ -461,15 +485,18 @@ jobs:
           sleep 60
           
           # Run smart database migrations (only when needed)
+          # Script runs from backend root, all paths are relative
           echo "🧠 Running smart database migrations..."
-          chmod +x scripts/smart-migration.sh
-          
-          # Try smart migration first
-          if ./scripts/smart-migration.sh; then
-            echo "✅ Smart migration completed successfully"
+          if [ -f scripts/smart-migration.sh ]; then
+            chmod +x scripts/smart-migration.sh
+            if ./scripts/smart-migration.sh; then
+              echo "✅ Smart migration completed successfully"
+            else
+              echo "❌ All migration attempts failed"
+              exit 1
+            fi
           else
-            echo "❌ All migration attempts failed"
-            exit 1
+            echo "⚠️ Warning: scripts/smart-migration.sh not found, skipping migration"
           fi
           
           # Check backend health
