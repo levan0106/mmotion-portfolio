@@ -43,15 +43,15 @@ import { TestLoggingController } from './test-logging.controller';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'portfolio_db',
       entities: [
-        // Handle both development (src/) and production (dist/) paths
-        // In production: __dirname = /app/dist, so we need to add 'src' to path
-        // In development: __dirname = /app/src, so paths work directly
-        // Check if __dirname contains 'dist' to determine if we're in production build
-        join(__dirname, __dirname.includes('dist') ? 'src' : '', 'modules', '**', '*.entity{.ts,.js}'),
-        join(__dirname, __dirname.includes('dist') ? 'src' : '', 'modules', 'shared', 'entities', '*.entity{.ts,.js}'),
-        join(__dirname, __dirname.includes('dist') ? 'src' : '', 'notification', '*.entity{.ts,.js}'),
+        // Handle both development (src/) and production (dist/src/) paths
+        // In production: __dirname = /app/dist/src, entities are at /app/dist/src/modules/**/*.entity.js
+        // In development: __dirname = /app/src, entities are at /app/src/modules/**/*.entity.ts
+        // Both cases: entities are relative to __dirname, no need to add 'src'
+        join(__dirname, 'modules', '**', '*.entity{.ts,.js}'),
+        join(__dirname, 'modules', 'shared', 'entities', '*.entity{.ts,.js}'),
+        join(__dirname, 'notification', '*.entity{.ts,.js}'),
       ],
-      migrations: [join(__dirname, __dirname.includes('dist') ? 'src' : '', 'migrations', '*.{.ts,.js}')],
+      migrations: [join(__dirname, 'migrations', '*.{.ts,.js}')],
       synchronize: false, // Disable synchronize, use migrations only
       logging: process.env.NODE_ENV === 'development',
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,

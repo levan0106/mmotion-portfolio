@@ -74,4 +74,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 CMD curl -f http://localhost:3000/health || exit 1
 
 # Start the application
-CMD ["dumb-init", "node", "dist/main"]
+CMD ["dumb-init", "node", "dist/src/main"]
