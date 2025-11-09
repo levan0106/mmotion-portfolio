@@ -52,6 +52,14 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    - name: Cleanup Docker before build
+      run: |
+        echo "🧹 Cleaning up Docker to free space..."
+        docker system prune -af --volumes || true
+        docker builder prune -af || true
+        echo "💾 Available disk space:"
+        df -h
+
     - name: Build, tag, and push backend image
       id: build
       env:
@@ -60,17 +68,15 @@ jobs:
       run: |
         set -e  # Exit on any error
         
-        # Build backend image
+        # Build backend image (use tag instead of rebuild for latest)
         echo "🔨 Building backend image..."
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG -f solution/backend/Dockerfile solution/backend || {
           echo "❌ Backend image build failed"
           exit 1
         }
         
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest -f solution/backend/Dockerfile solution/backend || {
-          echo "❌ Backend latest image build failed"
-          exit 1
-        }
+        # Tag as latest (no need to rebuild)
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
         
         # Push backend images
         echo "📤 Pushing backend images..."
@@ -83,6 +89,10 @@ jobs:
           echo "❌ Backend latest image push failed"
           exit 1
         }
+        
+        # Cleanup local images after push to free space
+        echo "🧹 Cleaning up local images..."
+        docker rmi $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest || true
         
         echo "✅ Backend images built and pushed successfully"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT

@@ -13,7 +13,7 @@ COPY package.json ./
 COPY package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci && npm cache clean --force
+RUN npm ci --prefer-offline --no-audit && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -36,8 +36,10 @@ WORKDIR /app
 
 # Copy only necessary files from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+# Install only production dependencies (exclude dev dependencies)
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json* ./
+RUN npm ci --only=production --prefer-offline --no-audit && npm cache clean --force
 # Create default .env if it doesn't exist
 RUN if [ ! -f .env ]; then echo "NODE_ENV=production" > .env; fi
 

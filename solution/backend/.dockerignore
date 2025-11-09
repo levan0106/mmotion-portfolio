@@ -46,6 +46,20 @@ scripts
 # Backups
 backups
 
+# Additional files to reduce build context
+*.map
+*.tsbuildinfo
+.eslintcache
+.cache
+.temp
+tmp
+temp
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
 # Docker
 Dockerfile.dev
 docker-compose.yml
