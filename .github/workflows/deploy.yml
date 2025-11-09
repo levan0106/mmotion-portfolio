@@ -376,9 +376,13 @@ jobs:
             echo "📝 Created .env file from production.env"
           fi
           
-          # Stop existing backend containers
+          # Stop and remove existing backend containers
           echo "🛑 Stopping existing backend containers..."
-          docker-compose -f docker-compose.yml down || echo "⚠️ No existing containers to stop"
+          docker-compose -f docker-compose.yml down -v --remove-orphans || echo "⚠️ No existing containers to stop"
+          
+          # Force remove containers by name if they still exist
+          echo "🧹 Force removing any remaining containers..."
+          docker rm -f portfolio-backend portfolio-postgres portfolio-redis 2>/dev/null || true
           
           # Start backend services
           echo "🚀 Starting backend services..."
