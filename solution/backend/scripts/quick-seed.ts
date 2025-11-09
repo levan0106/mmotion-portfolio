@@ -1,4 +1,4 @@
-import { AppDataSource } from '../src/config/database.config';
+import AppDataSource from '../src/config/database.config';
 import { Account } from '../src/modules/shared/entities/account.entity';
 import { Asset } from '../src/modules/asset/entities/asset.entity';
 import { AssetType } from '../src/modules/asset/enums/asset-type.enum';

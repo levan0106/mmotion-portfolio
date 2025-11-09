@@ -84,10 +84,11 @@ else
         echo "🔄 Found pending migrations. Running migrations..."
         
         # Try different approaches to run migration
-        # First, find the correct config file path (look for .js file in production)
-        CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1)
-        
-        if [ -n "$CONFIG_PATH" ]; then
+        # First, try with the standard database.config.js path
+        if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d /app/dist/src/config/database.config.js; then
+            echo "✅ Migration successful with database.config.js"
+        # Fallback: try to find the config file
+        elif CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1) && [ -n "$CONFIG_PATH" ]; then
             echo "🔍 Found config file at: $CONFIG_PATH"
             if docker exec $CONTAINER_NAME npm run typeorm:migration:run -d "$CONFIG_PATH"; then
                 echo "✅ Migration successful with found config path"

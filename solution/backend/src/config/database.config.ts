@@ -9,7 +9,7 @@ config();
 // In development: __dirname = /app/src/config, basePath should be /app/src
 const basePath = join(__dirname, '..');
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -27,5 +27,7 @@ export const AppDataSource = new DataSource({
   },
 });
 
-// Export default for TypeORM CLI compatibility
+// Export default for TypeORM CLI and application code
+// TypeORM CLI expects default export
+// Application code can import as: import AppDataSource from './config/database.config'
 export default AppDataSource;
