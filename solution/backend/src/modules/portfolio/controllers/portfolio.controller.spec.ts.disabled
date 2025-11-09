@@ -1,0 +1,626 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { PortfolioController } from './portfolio.controller';
+import { PortfolioService } from '../services/portfolio.service';
+import { PortfolioAnalyticsService } from '../services/portfolio-analytics.service';
+import { PositionManagerService } from '../services/position-manager.service';
+import { CreatePortfolioDto } from '../dto/create-portfolio.dto';
+import { UpdatePortfolioDto } from '../dto/update-portfolio.dto';
+import { testUtils } from '../../../../test/utils/test-helpers';
+
+describe('PortfolioController', () => {
+  let controller: PortfolioController;
+  let mockPortfolioService: any;
+  let mockPortfolioAnalyticsService: any;
+  let mockPositionManagerService: any;
+
+  beforeEach(async () => {
+    // Create mocks with specific methods
+    mockPortfolioService = {
+      getPortfoliosByAccount: jest.fn(),
+      createPortfolio: jest.fn(),
+      getPortfolioDetails: jest.fn(),
+      updatePortfolio: jest.fn(),
+      deletePortfolio: jest.fn(),
+      getAssetAllocation: jest.fn(),
+    };
+
+    mockPortfolioAnalyticsService = {
+      calculateNAV: jest.fn(),
+      getPerformanceSummary: jest.fn(),
+    };
+
+    mockPositionManagerService = {
+      getCurrentPositions: jest.fn(),
+      getPositionAggregation: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PortfolioController],
+      providers: [
+        {
+          provide: PortfolioService,
+          useValue: mockPortfolioService,
+        },
+        {
+          provide: PortfolioAnalyticsService,
+          useValue: mockPortfolioAnalyticsService,
+        },
+        {
+          provide: PositionManagerService,
+          useValue: mockPositionManagerService,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<PortfolioController>(PortfolioController);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAllPortfolios', () => {
+    it('should return array of portfolios for valid accountId', async () => {
+      // Arrange
+      const accountId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedPortfolios = [
+        testUtils.fixtures.portfolio({ account_id: accountId }),
+        testUtils.fixtures.portfolio({ account_id: accountId }),
+      ];
+
+      mockPortfolioService.getPortfoliosByAccount.mockResolvedValue(expectedPortfolios);
+
+      // Act
+      const result = await controller.getAllPortfolios(accountId);
+
+      // Assert
+      expect(result).toEqual(expectedPortfolios);
+      expect(mockPortfolioService.getPortfoliosByAccount).toHaveBeenCalledWith(accountId);
+    });
+
+    it('should throw BadRequestException when accountId is missing', async () => {
+      // Arrange
+      const accountId = '';
+
+      // Act & Assert
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow(BadRequestException);
+      
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow('accountId query parameter is required');
+    });
+
+    it('should throw BadRequestException when accountId is null', async () => {
+      // Arrange
+      const accountId = null;
+
+      // Act & Assert
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow(BadRequestException);
+      
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow('accountId query parameter is required');
+    });
+
+    it('should throw BadRequestException when accountId is undefined', async () => {
+      // Arrange
+      const accountId = undefined;
+
+      // Act & Assert
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow(BadRequestException);
+      
+      await expect(controller.getAllPortfolios(accountId))
+        .rejects
+        .toThrow('accountId query parameter is required');
+    });
+
+    it('should return empty array when no portfolios found', async () => {
+      // Arrange
+      const accountId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedPortfolios = [];
+
+      mockPortfolioService.getPortfoliosByAccount.mockResolvedValue(expectedPortfolios);
+
+      // Act
+      const result = await controller.getAllPortfolios(accountId);
+
+      // Assert
+      expect(result).toEqual(expectedPortfolios);
+      expect(mockPortfolioService.getPortfoliosByAccount).toHaveBeenCalledWith(accountId);
+    });
+  });
+
+  describe('createPortfolio', () => {
+    it('should create portfolio successfully', async () => {
+      // Arrange
+      const createDto: CreatePortfolioDto = {
+        name: 'Test Portfolio',
+        base_currency: 'VND',
+        account_id: '550e8400-e29b-41d4-a716-446655440000',
+        description: 'Test portfolio description',
+      };
+
+      const expectedPortfolio = testUtils.fixtures.portfolio({
+        name: createDto.name,
+        base_currency: createDto.base_currency,
+        account_id: createDto.account_id,
+      });
+
+      mockPortfolioService.createPortfolio.mockResolvedValue(expectedPortfolio);
+
+      // Act
+      const result = await controller.createPortfolio(createDto);
+
+      // Assert
+      expect(result).toEqual(expectedPortfolio);
+      expect(mockPortfolioService.createPortfolio).toHaveBeenCalledWith(createDto);
+    });
+
+    it('should handle service errors', async () => {
+      // Arrange
+      const createDto: CreatePortfolioDto = {
+        name: 'Duplicate Portfolio',
+        base_currency: 'VND',
+        account_id: '550e8400-e29b-41d4-a716-446655440000',
+        description: 'Test description',
+      };
+
+      const serviceError = new BadRequestException('Portfolio with name "Duplicate Portfolio" already exists for this account');
+      mockPortfolioService.createPortfolio.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.createPortfolio(createDto))
+        .rejects
+        .toThrow(BadRequestException);
+      
+      await expect(controller.createPortfolio(createDto))
+        .rejects
+        .toThrow('Portfolio with name "Duplicate Portfolio" already exists for this account');
+    });
+  });
+
+  describe('getPortfolioById', () => {
+    it('should return portfolio by id', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedPortfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+      });
+
+      mockPortfolioService.getPortfolioDetails.mockResolvedValue(expectedPortfolio);
+
+      // Act
+      const result = await controller.getPortfolioById(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedPortfolio);
+      expect(mockPortfolioService.getPortfolioDetails).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should throw NotFoundException when portfolio not found', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioService.getPortfolioDetails.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getPortfolioById(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+      
+      await expect(controller.getPortfolioById(portfolioId))
+        .rejects
+        .toThrow(`Portfolio with ID ${portfolioId} not found`);
+    });
+  });
+
+  describe('updatePortfolio', () => {
+    it('should update portfolio successfully', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const updateDto: UpdatePortfolioDto = {
+        name: 'Updated Portfolio',
+      };
+
+      const expectedPortfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        name: updateDto.name,
+      });
+
+      mockPortfolioService.updatePortfolio.mockResolvedValue(expectedPortfolio);
+
+      // Act
+      const result = await controller.updatePortfolio(portfolioId, updateDto);
+
+      // Assert
+      expect(result).toEqual(expectedPortfolio);
+      expect(mockPortfolioService.updatePortfolio).toHaveBeenCalledWith(portfolioId, updateDto);
+    });
+
+    it('should throw NotFoundException when updating non-existent portfolio', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const updateDto: UpdatePortfolioDto = {
+        name: 'Updated Name',
+      };
+
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioService.updatePortfolio.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.updatePortfolio(portfolioId, updateDto))
+        .rejects
+        .toThrow(NotFoundException);
+      
+      await expect(controller.updatePortfolio(portfolioId, updateDto))
+        .rejects
+        .toThrow(`Portfolio with ID ${portfolioId} not found`);
+    });
+  });
+
+  describe('deletePortfolio', () => {
+    it('should delete portfolio successfully', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      mockPortfolioService.deletePortfolio.mockResolvedValue(undefined);
+
+      // Act
+      const result = await controller.deletePortfolio(portfolioId);
+
+      // Assert
+      expect(result).toBeUndefined();
+      expect(mockPortfolioService.deletePortfolio).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should throw NotFoundException when deleting non-existent portfolio', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioService.deletePortfolio.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.deletePortfolio(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+      
+      await expect(controller.deletePortfolio(portfolioId))
+        .rejects
+        .toThrow(`Portfolio with ID ${portfolioId} not found`);
+    });
+  });
+
+  describe('getCurrentNAV', () => {
+    it('should return current NAV for portfolio', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedNAV = 1500000000;
+
+      mockPortfolioAnalyticsService.calculateNAV.mockResolvedValue(expectedNAV);
+
+      // Act
+      const result = await controller.getCurrentNAV(portfolioId);
+
+      // Assert
+      expect(result).toEqual({ nav: expectedNAV });
+      expect(mockPortfolioAnalyticsService.calculateNAV).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle analytics service errors', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioAnalyticsService.calculateNAV.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getCurrentNAV(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+  });
+
+  describe('getNavHistory', () => {
+    it('should return NAV history for portfolio', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedHistory = {
+        portfolioId: portfolioId,
+        performance_summary: {
+          total_return: 15.5,
+          annualized_return: 12.3,
+          volatility: 8.7,
+        },
+        nav_history: [
+          { date: '2024-11-19', nav: 1400000000 },
+          { date: '2024-12-19', nav: 1500000000 },
+        ],
+      };
+
+      mockPortfolioAnalyticsService.getPerformanceSummary.mockResolvedValue(expectedHistory);
+
+      // Act
+      const result = await controller.getNavHistory(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedHistory);
+      expect(mockPortfolioAnalyticsService.getPerformanceSummary).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle analytics service errors', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioAnalyticsService.getPerformanceSummary.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getNavHistory(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPerformanceMetrics', () => {
+    it('should return performance metrics for portfolio', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const expectedMetrics = {
+        portfolioId: portfolioId,
+        total_return: 15.5,
+        annualized_return: 12.3,
+        volatility: 8.7,
+        sharpe_ratio: 1.4,
+        max_drawdown: -5.2,
+        calculated_at: '2024-12-19T10:30:00.000Z',
+      };
+
+      mockPortfolioAnalyticsService.getPerformanceSummary.mockResolvedValue(expectedMetrics);
+
+      // Act
+      const result = await controller.getPerformanceMetrics(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedMetrics);
+      expect(mockPortfolioAnalyticsService.getPerformanceSummary).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle analytics service errors', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioAnalyticsService.getPerformanceSummary.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getPerformanceMetrics(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+  });
+
+  describe('getAssetAllocation', () => {
+    it('should return asset allocation for portfolio', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockAllocation = [
+        { assetType: 'STOCK', totalValue: 5000000, percentage: 80 },
+        { assetType: 'BOND', totalValue: 1250000, percentage: 20 },
+      ];
+
+      const expectedResult = {
+        portfolioId: portfolioId,
+        allocation: {
+          stock: 80,
+          bond: 20,
+        },
+        calculated_at: expect.any(String),
+      };
+
+      mockPortfolioService.getAssetAllocation.mockResolvedValue(mockAllocation);
+
+      // Act
+      const result = await controller.getAssetAllocation(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedResult);
+      expect(result.calculated_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(mockPortfolioService.getAssetAllocation).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle empty allocation', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockAllocation = [];
+
+      const expectedResult = {
+        portfolioId: portfolioId,
+        allocation: {},
+        calculated_at: expect.any(String),
+      };
+
+      mockPortfolioService.getAssetAllocation.mockResolvedValue(mockAllocation);
+
+      // Act
+      const result = await controller.getAssetAllocation(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedResult);
+      expect(mockPortfolioService.getAssetAllocation).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle service errors', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPortfolioService.getAssetAllocation.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getAssetAllocation(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+  });
+
+  describe('getCurrentPositions', () => {
+    it('should return current positions for portfolio', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockPositions = [
+        {
+          assetId: '86c2ae61-8f69-4608-a5fd-8fecb44ed2c5',
+          symbol: 'HPG',
+          quantity: 1000,
+          market_value: 30000000,
+          unrealized_pl: 5000000,
+        },
+      ];
+
+      const mockAggregation = {
+        total_positions: 1,
+        total_market_value: 30000000,
+        total_unrealized_pl: 5000000,
+      };
+
+      const expectedResult = {
+        portfolioId: portfolioId,
+        positions: mockPositions,
+        summary: mockAggregation,
+        retrieved_at: expect.any(String),
+      };
+
+      mockPositionManagerService.getCurrentPositions.mockResolvedValue(mockPositions);
+      mockPositionManagerService.getPositionAggregation.mockResolvedValue(mockAggregation);
+
+      // Act
+      const result = await controller.getCurrentPositions(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedResult);
+      expect(result.retrieved_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(mockPositionManagerService.getCurrentPositions).toHaveBeenCalledWith(portfolioId);
+      expect(mockPositionManagerService.getPositionAggregation).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle empty positions', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockPositions = [];
+      const mockAggregation = {
+        total_positions: 0,
+        total_market_value: 0,
+        total_unrealized_pl: 0,
+      };
+
+      const expectedResult = {
+        portfolioId: portfolioId,
+        positions: mockPositions,
+        summary: mockAggregation,
+        retrieved_at: expect.any(String),
+      };
+
+      mockPositionManagerService.getCurrentPositions.mockResolvedValue(mockPositions);
+      mockPositionManagerService.getPositionAggregation.mockResolvedValue(mockAggregation);
+
+      // Act
+      const result = await controller.getCurrentPositions(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedResult);
+      expect(mockPositionManagerService.getCurrentPositions).toHaveBeenCalledWith(portfolioId);
+      expect(mockPositionManagerService.getPositionAggregation).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle position manager service errors', async () => {
+      // Arrange
+      const portfolioId = 'non-existent-id';
+      const serviceError = new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+      mockPositionManagerService.getCurrentPositions.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getCurrentPositions(portfolioId))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should propagate service errors correctly', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const serviceError = new Error('Database connection failed');
+      mockPortfolioService.getPortfolioDetails.mockRejectedValue(serviceError);
+
+      // Act & Assert
+      await expect(controller.getPortfolioById(portfolioId))
+        .rejects
+        .toThrow('Database connection failed');
+    });
+
+    it('should handle multiple service dependencies', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockPositions = [{ assetId: 'test', symbol: 'TEST', quantity: 100 }];
+      const mockAggregation = { total_positions: 1 };
+
+      mockPositionManagerService.getCurrentPositions.mockResolvedValue(mockPositions);
+      mockPositionManagerService.getPositionAggregation.mockResolvedValue(mockAggregation);
+
+      // Act
+      const result = await controller.getCurrentPositions(portfolioId);
+
+      // Assert
+      expect(result.positions).toEqual(mockPositions);
+      expect(result.summary).toEqual(mockAggregation);
+      expect(mockPositionManagerService.getCurrentPositions).toHaveBeenCalledWith(portfolioId);
+      expect(mockPositionManagerService.getPositionAggregation).toHaveBeenCalledWith(portfolioId);
+    });
+  });
+
+  describe('Data Transformation', () => {
+    it('should transform asset allocation data correctly', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockAllocation = [
+        { assetType: 'STOCK', totalValue: 5000000, percentage: 80 },
+        { assetType: 'BOND', totalValue: 1250000, percentage: 20 },
+        { assetType: 'CASH', totalValue: 0, percentage: 0 },
+      ];
+
+      mockPortfolioService.getAssetAllocation.mockResolvedValue(mockAllocation);
+
+      // Act
+      const result = await controller.getAssetAllocation(portfolioId);
+
+      // Assert
+      expect(result.allocation).toEqual({
+        stock: 80,
+        bond: 20,
+        cash: 0,
+      });
+    });
+
+    it('should handle mixed case asset types', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockAllocation = [
+        { assetType: 'Stock', totalValue: 5000000, percentage: 80 },
+        { assetType: 'Bond', totalValue: 1250000, percentage: 20 },
+      ];
+
+      mockPortfolioService.getAssetAllocation.mockResolvedValue(mockAllocation);
+
+      // Act
+      const result = await controller.getAssetAllocation(portfolioId);
+
+      // Assert
+      expect(result.allocation).toEqual({
+        stock: 80,
+        bond: 20,
+      });
+    });
+  });
+});

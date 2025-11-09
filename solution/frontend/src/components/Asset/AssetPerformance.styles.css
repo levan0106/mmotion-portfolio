@@ -1,0 +1,131 @@
+/**
+ * Asset Performance Component Styles
+ * Compact and clean performance metrics display
+ */
+
+.asset-performance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.asset-performance--compact {
+  gap: 0.375rem;
+}
+
+.performance-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  min-width: fit-content;
+}
+
+.performance-metric--compact {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+}
+
+.performance-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+}
+
+.performance-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.performance-value--compact {
+  font-size: 0.6875rem;
+}
+
+/* Color classes for performance values */
+.performance-value--positive {
+  color: #059669;
+}
+
+.performance-value--negative {
+  color: #dc2626;
+}
+
+.performance-value--neutral {
+  color: #6b7280;
+}
+
+/* Grid layout for non-compact mode */
+.asset-performance--grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.asset-performance--grid .performance-metric {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5rem;
+  text-align: left;
+  min-width: auto;
+}
+
+.asset-performance--grid .performance-label {
+  font-size: 0.625rem;
+  margin-bottom: 0.25rem;
+}
+
+.asset-performance--grid .performance-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .asset-performance {
+    gap: 0.375rem;
+  }
+  
+  .performance-metric {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .performance-value {
+    font-size: 0.6875rem;
+  }
+  
+  .asset-performance--grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .asset-performance {
+    gap: 0.25rem;
+  }
+  
+  .performance-metric {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.6875rem;
+  }
+  
+  .performance-value {
+    font-size: 0.625rem;
+  }
+  
+  .performance-label {
+    font-size: 0.5625rem;
+  }
+}

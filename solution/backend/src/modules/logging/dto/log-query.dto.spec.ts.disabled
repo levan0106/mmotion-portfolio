@@ -1,0 +1,90 @@
+import { validate } from 'class-validator';
+import { LogQueryDto, LogLevel, SortOrder } from './log-query.dto';
+
+describe('LogQueryDto', () => {
+  let dto: LogQueryDto;
+
+  beforeEach(() => {
+    dto = new LogQueryDto();
+  });
+
+  describe('validation', () => {
+    it('should pass validation with valid data', async () => {
+      dto.level = LogLevel.ERROR;
+      dto.serviceName = 'portfolio-service';
+      dto.moduleName = 'authentication';
+      dto.userId = 'user-123';
+      dto.requestId = 'req-456';
+      dto.startDate = '2024-01-01T00:00:00.000Z';
+      dto.endDate = '2024-12-31T23:59:59.999Z';
+      dto.page = 1;
+      dto.limit = 20;
+      dto.sortOrder = SortOrder.DESC;
+      dto.search = 'error occurred';
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should pass validation with minimal data', async () => {
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation with invalid log level', async () => {
+      dto.level = 'invalid-level' as LogLevel;
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('level');
+    });
+
+    it('should fail validation with invalid sort order', async () => {
+      dto.sortOrder = 'invalid-order' as SortOrder;
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('sortOrder');
+    });
+
+    it('should fail validation with invalid page number', async () => {
+      dto.page = 0;
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('page');
+    });
+
+    it('should fail validation with invalid limit', async () => {
+      dto.limit = 101;
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('limit');
+    });
+
+    it('should fail validation with invalid date format', async () => {
+      dto.startDate = 'invalid-date';
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('startDate');
+    });
+
+    it('should fail validation with non-string values for string fields', async () => {
+      dto.serviceName = 123 as any;
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('serviceName');
+    });
+  });
+
+  describe('default values', () => {
+    it('should have correct default values', () => {
+      expect(dto.page).toBe(1);
+      expect(dto.limit).toBe(20);
+      expect(dto.sortOrder).toBe(SortOrder.DESC);
+    });
+  });
+});

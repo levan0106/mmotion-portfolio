@@ -117,12 +117,12 @@ jobs:
         
         # Build frontend image
         echo "🔨 Building frontend image..."
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG ./frontend || {
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG -f solution/frontend/Dockerfile solution/frontend || {
           echo "❌ Frontend image build failed"
           exit 1
         }
         
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest ./frontend || {
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest -f solution/frontend/Dockerfile solution/frontend || {
           echo "❌ Frontend latest image build failed"
           exit 1
         }

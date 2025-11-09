@@ -11,7 +11,7 @@ services:
       - "5432:5432" # Cho phép host (npm run start:dev) truy cập DB
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./solution/backend/init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -33,13 +33,13 @@ services:
 
   app:
     build:
-      context: .
+      context: ./solution/backend
       dockerfile: Dockerfile.dev
     container_name: portfolio_app
     ports:
       - "3000:3000"
     env_file:
-      - env.example
+      - ./solution/backend/env.example
     environment:
       # Timezone Configuration
       - TZ=Asia/Ho_Chi_Minh
@@ -150,9 +150,9 @@ services:
       # Admin Configuration
       - ADMIN_USERNAME=${ADMIN_USERNAME:-tungle}
     volumes:
-      - .:/app
+      - ./solution/backend:/app
       - /app/node_modules
-      - ./logs:/app/logs
+      - ./solution/backend/logs:/app/logs
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     depends_on:
@@ -169,7 +169,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./solution/frontend
       dockerfile: Dockerfile.dev
     container_name: portfolio_frontend
     ports:
@@ -180,12 +180,12 @@ services:
       - REACT_APP_ENV=development
       - CHOKIDAR_USEPOLLING=true
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-      - ./frontend/index.html:/app/index.html
-      - ./frontend/vite.config.ts:/app/vite.config.ts
-      - ./frontend/tsconfig.json:/app/tsconfig.json
-      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json
+      - ./solution/frontend/src:/app/src
+      - ./solution/frontend/public:/app/public
+      - ./solution/frontend/index.html:/app/index.html
+      - ./solution/frontend/vite.config.ts:/app/vite.config.ts
+      - ./solution/frontend/tsconfig.json:/app/tsconfig.json
+      - ./solution/frontend/tsconfig.node.json:/app/tsconfig.node.json
     depends_on:
       - app
     command: npm run dev -- --host 0.0.0.0 --port 3001
@@ -218,7 +218,7 @@ services:
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - ./logs:/usr/share/logstash/logs
+      - ./solution/backend/logs:/usr/share/logstash/logs
     environment:
       - LS_JAVA_OPTS=-Xmx256m -Xms256m
     depends_on:

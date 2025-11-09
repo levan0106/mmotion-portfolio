@@ -1,0 +1,962 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TradingService, TradeMatchingResult } from '../trading.service';
+import { CreateTradeDto, UpdateTradeDto } from '../../dto/trade.dto';
+import { Trade, TradeSide, TradeType, TradeSource } from '../../entities/trade.entity';
+import { TradeDetail } from '../../entities/trade-detail.entity';
+import { PortfolioAsset } from '../../../portfolio/entities/portfolio-asset.entity';
+import { TradeRepository } from '../../repositories/trade.repository';
+import { TradeDetailRepository } from '../../repositories/trade-detail.repository';
+import { FIFOEngine } from '../../engines/fifo-engine';
+import { LIFOEngine } from '../../engines/lifo-engine';
+import { PositionManager } from '../../managers/position-manager';
+
+describe('TradingService', () => {
+  let service: TradingService;
+  let tradeRepository: Repository<Trade>;
+  let tradeDetailRepository: Repository<TradeDetail>;
+  let portfolioAssetRepository: Repository<PortfolioAsset>;
+  let tradeRepo: TradeRepository;
+  let tradeDetailRepo: TradeDetailRepository;
+  let fifoEngine: FIFOEngine;
+  let lifoEngine: LIFOEngine;
+  let positionManager: PositionManager;
+
+  const mockTradeRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    findOne: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const mockTradeDetailRepository = {
+    save: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const mockPortfolioAssetRepository = {
+    findOne: jest.fn(),
+    save: jest.fn(),
+    create: jest.fn(),
+  };
+
+  const mockTradeRepo = {
+    findTradesBySide: jest.fn(),
+    findTradesByAssetAndPortfolio: jest.fn(),
+    findTradesByDateRange: jest.fn(),
+    findTradesByPortfolio: jest.fn(),
+    findUnmatchedBuyTrades: jest.fn(),
+    getTradeStatistics: jest.fn(),
+  };
+
+  const mockTradeDetailRepo = {
+    getPnlSummary: jest.fn(),
+    getPortfolioPnlSummary: jest.fn(),
+    getTopPerformingTrades: jest.fn(),
+    getWorstPerformingTrades: jest.fn(),
+  };
+
+  const mockFifoEngine = {
+    matchTrades: jest.fn(),
+  };
+
+  const mockLifoEngine = {
+    matchTrades: jest.fn(),
+  };
+
+  const mockPositionManager = {
+    calculatePositionMetrics: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TradingService,
+        {
+          provide: getRepositoryToken(Trade),
+          useValue: mockTradeRepository,
+        },
+        {
+          provide: getRepositoryToken(TradeDetail),
+          useValue: mockTradeDetailRepository,
+        },
+        {
+          provide: getRepositoryToken(PortfolioAsset),
+          useValue: mockPortfolioAssetRepository,
+        },
+        {
+          provide: TradeRepository,
+          useValue: mockTradeRepo,
+        },
+        {
+          provide: TradeDetailRepository,
+          useValue: mockTradeDetailRepo,
+        },
+        {
+          provide: FIFOEngine,
+          useValue: mockFifoEngine,
+        },
+        {
+          provide: LIFOEngine,
+          useValue: mockLifoEngine,
+        },
+        {
+          provide: PositionManager,
+          useValue: mockPositionManager,
+        },
+      ],
+    }).compile();
+
+    service = module.get<TradingService>(TradingService);
+    tradeRepository = module.get<Repository<Trade>>(getRepositoryToken(Trade));
+    tradeDetailRepository = module.get<Repository<TradeDetail>>(getRepositoryToken(TradeDetail));
+    portfolioAssetRepository = module.get<Repository<PortfolioAsset>>(getRepositoryToken(PortfolioAsset));
+    tradeRepo = module.get<TradeRepository>(TradeRepository);
+    tradeDetailRepo = module.get<TradeDetailRepository>(TradeDetailRepository);
+    fifoEngine = module.get<FIFOEngine>(FIFOEngine);
+    lifoEngine = module.get<LIFOEngine>(LIFOEngine);
+    positionManager = module.get<PositionManager>(PositionManager);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('createTrade', () => {
+    const createTradeDto: CreateTradeDto = {
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: '2024-01-01',
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+    };
+
+    const mockTrade: Trade = {
+      trade_id: 'trade-1',
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      notes: undefined,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    it('should create a buy trade successfully', async () => {
+      mockTradeRepository.create.mockReturnValue(mockTrade);
+      mockTradeRepository.save.mockResolvedValue(mockTrade);
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 100,
+        averageCost: 50.0,
+        marketValue: 5000,
+        unrealizedPl: 0,
+        realizedPl: 0,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue(null);
+      mockPortfolioAssetRepository.create.mockReturnValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      const result = await service.createTrade(createTradeDto);
+
+      expect(result).toEqual(mockTrade);
+      expect(mockTradeRepository.create).toHaveBeenCalledWith({
+        ...createTradeDto,
+        fee: 5.0,
+        tax: 2.5,
+        trade_type: TradeType.NORMAL,
+      });
+      expect(mockTradeRepository.save).toHaveBeenCalledWith(mockTrade);
+      expect(mockFifoEngine.matchTrades).not.toHaveBeenCalled();
+    });
+
+    it('should create a sell trade and process matching', async () => {
+      const sellTradeDto = { ...createTradeDto, side: TradeSide.SELL };
+      const sellTrade = { ...mockTrade, side: TradeSide.SELL };
+      const mockBuyTrades = [mockTrade];
+      const mockMatchResult: TradeMatchingResult = {
+        trade: { ...sellTrade, get total_amount() { return this.quantity * this.price; }, get total_cost() { return this.total_amount + this.fee + this.tax; } },
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 100,
+      };
+
+      mockTradeRepository.create.mockReturnValue(sellTrade);
+      mockTradeRepository.save.mockResolvedValue(sellTrade);
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue(mockBuyTrades);
+      mockFifoEngine.matchTrades.mockReturnValue(mockMatchResult);
+      mockTradeDetailRepository.save.mockResolvedValue({});
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 0,
+        averageCost: 0,
+        marketValue: 0,
+        unrealizedPl: 0,
+        realizedPl: 100,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      const result = await service.createTrade(sellTradeDto);
+
+      expect(result).toEqual(sellTrade);
+      expect(mockTradeRepo.findUnmatchedBuyTrades).toHaveBeenCalledWith('asset-1', 'portfolio-1');
+      expect(mockFifoEngine.matchTrades).toHaveBeenCalledWith(sellTrade, mockBuyTrades);
+    });
+
+    it('should throw BadRequestException for invalid trade data', async () => {
+      const invalidDto = { ...createTradeDto, quantity: -1 };
+
+      await expect(service.createTrade(invalidDto)).rejects.toThrow(BadRequestException);
+      expect(mockTradeRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException for missing required fields', async () => {
+      const invalidDto = { ...createTradeDto, portfolioId: '' };
+
+      await expect(service.createTrade(invalidDto)).rejects.toThrow(BadRequestException);
+      expect(mockTradeRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('should set default values for optional fields', async () => {
+      const dtoWithoutDefaults = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+      };
+
+      mockTradeRepository.create.mockReturnValue(mockTrade);
+      mockTradeRepository.save.mockResolvedValue(mockTrade);
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 100,
+        averageCost: 50.0,
+        marketValue: 5000,
+        unrealizedPl: 0,
+        realizedPl: 0,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue(null);
+      mockPortfolioAssetRepository.create.mockReturnValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      await service.createTrade(dtoWithoutDefaults);
+
+      expect(mockTradeRepository.create).toHaveBeenCalledWith({
+        ...dtoWithoutDefaults,
+        fee: 0,
+        tax: 0,
+        trade_type: TradeType.NORMAL,
+      });
+    });
+  });
+
+  describe('updateTrade', () => {
+    const tradeId = 'trade-1';
+    const updateDto: UpdateTradeDto = {
+      quantity: 150,
+      price: 55.0,
+      fee: 7.5,
+    };
+
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    it('should update trade successfully', async () => {
+      const updatedTrade = { ...mockTrade, ...updateDto };
+      
+      mockTradeRepository.findOne.mockResolvedValue(mockTrade);
+      mockTradeRepository.save.mockResolvedValue(updatedTrade);
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 150,
+        averageCost: 55.0,
+        marketValue: 8250,
+        unrealizedPl: 0,
+        realizedPl: 0,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      const result = await service.updateTrade(tradeId, updateDto);
+
+      expect(result).toEqual(updatedTrade);
+      expect(mockTradeRepository.findOne).toHaveBeenCalledWith({
+        where: { trade_id: tradeId },
+        relations: ['asset', 'portfolio'],
+      });
+      expect(mockTradeRepository.save).toHaveBeenCalledWith(expect.objectContaining(updateDto));
+    });
+
+    it('should throw NotFoundException for non-existent trade', async () => {
+      mockTradeRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.updateTrade(tradeId, updateDto)).rejects.toThrow(NotFoundException);
+      expect(mockTradeRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException for invalid quantity', async () => {
+      const invalidDto = { quantity: -1 };
+      mockTradeRepository.findOne.mockResolvedValue(mockTrade);
+
+      await expect(service.updateTrade(tradeId, invalidDto)).rejects.toThrow(BadRequestException);
+      expect(mockTradeRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException for invalid price', async () => {
+      const invalidDto = { price: -1 };
+      mockTradeRepository.findOne.mockResolvedValue(mockTrade);
+
+      await expect(service.updateTrade(tradeId, invalidDto)).rejects.toThrow(BadRequestException);
+      expect(mockTradeRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should reprocess trade matching for sell trades', async () => {
+      const sellTrade = { ...mockTrade, side: TradeSide.SELL };
+      const updatedSellTrade = { ...sellTrade, ...updateDto };
+      const mockMatchResult: TradeMatchingResult = {
+        trade: { ...updatedSellTrade, trade_date: new Date(updatedSellTrade.trade_date), get total_amount() { return this.quantity * this.price; }, get total_cost() { return this.total_amount + this.fee + this.tax; } },
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 100,
+      };
+
+      mockTradeRepository.findOne.mockResolvedValue(sellTrade);
+      mockTradeRepository.save.mockResolvedValue(updatedSellTrade);
+      mockTradeDetailRepository.delete.mockResolvedValue({});
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue([]);
+      mockFifoEngine.matchTrades.mockReturnValue(mockMatchResult);
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 0,
+        averageCost: 0,
+        marketValue: 0,
+        unrealizedPl: 0,
+        realizedPl: 100,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      const result = await service.updateTrade(tradeId, updateDto);
+
+      expect(result).toEqual(updatedSellTrade);
+      expect(mockTradeDetailRepository.delete).toHaveBeenCalledWith({
+        sell_trade_id: tradeId,
+      });
+    });
+  });
+
+  describe('deleteTrade', () => {
+    const tradeId = 'trade-1';
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    it('should delete trade successfully', async () => {
+      mockTradeRepository.findOne.mockResolvedValue(mockTrade);
+      mockTradeDetailRepository.delete.mockResolvedValue({});
+      mockTradeRepository.delete.mockResolvedValue({});
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 0,
+        averageCost: 0,
+        marketValue: 0,
+        unrealizedPl: 0,
+        realizedPl: 0,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      await service.deleteTrade(tradeId);
+
+      expect(mockTradeRepository.findOne).toHaveBeenCalledWith({
+        where: { trade_id: tradeId },
+        relations: ['sell_details', 'buy_details'],
+      });
+      expect(mockTradeRepository.delete).toHaveBeenCalledWith(tradeId);
+    });
+
+    it('should throw NotFoundException for non-existent trade', async () => {
+      mockTradeRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteTrade(tradeId)).rejects.toThrow(NotFoundException);
+      expect(mockTradeRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it('should delete associated trade details', async () => {
+      const tradeWithDetails = {
+        ...mockTrade,
+        sell_details: [{ trade_detail_id: 'detail-1' }],
+        buy_details: [{ trade_detail_id: 'detail-2' }],
+      };
+
+      mockTradeRepository.findOne.mockResolvedValue(tradeWithDetails);
+      mockTradeDetailRepository.delete.mockResolvedValue({});
+      mockTradeRepository.delete.mockResolvedValue({});
+      mockPositionManager.calculatePositionMetrics.mockReturnValue({
+        totalQuantity: 0,
+        averageCost: 0,
+        marketValue: 0,
+        unrealizedPl: 0,
+        realizedPl: 0,
+      });
+      mockPortfolioAssetRepository.findOne.mockResolvedValue({});
+      mockPortfolioAssetRepository.save.mockResolvedValue({});
+
+      await service.deleteTrade(tradeId);
+
+      expect(mockTradeDetailRepository.delete).toHaveBeenCalledWith({
+        sell_trade_id: tradeId,
+      });
+      expect(mockTradeDetailRepository.delete).toHaveBeenCalledWith({
+        buy_trade_id: tradeId,
+      });
+    });
+  });
+
+  describe('getTrades', () => {
+    const portfolioId = 'portfolio-1';
+    const mockTrades: Trade[] = [
+      {
+        trade_id: 'trade-1',
+        portfolioId: portfolioId,
+        assetId: 'asset-1',
+        trade_date: new Date('2024-01-01'),
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: 5.0,
+        tax: 2.5,
+        trade_type: TradeType.NORMAL,
+        source: TradeSource.MANUAL,
+        notes: undefined,
+        created_at: new Date(),
+        updated_at: new Date(),
+        asset: null,
+        portfolio: null,
+        sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+        buy_details: [],
+      },
+    ];
+
+    it('should get trades by portfolio', async () => {
+      mockTradeRepo.findTradesByPortfolio.mockResolvedValue(mockTrades);
+
+      const result = await service.getTrades(portfolioId);
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradeRepo.findTradesByPortfolio).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should get trades by asset and side', async () => {
+      const assetId = 'asset-1';
+      const side = TradeSide.BUY;
+
+      mockTradeRepo.findTradesBySide.mockResolvedValue(mockTrades);
+
+      const result = await service.getTrades(portfolioId, assetId, side);
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradeRepo.findTradesBySide).toHaveBeenCalledWith(side, portfolioId, assetId);
+    });
+
+    it('should get trades by asset only', async () => {
+      const assetId = 'asset-1';
+
+      mockTradeRepo.findTradesByAssetAndPortfolio.mockResolvedValue(mockTrades);
+
+      const result = await service.getTrades(portfolioId, assetId);
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradeRepo.findTradesByAssetAndPortfolio).toHaveBeenCalledWith(assetId, portfolioId);
+    });
+
+    it('should get trades by date range', async () => {
+      const startDate = '2024-01-01';
+      const endDate = '2024-01-31';
+
+      mockTradeRepo.findTradesByDateRange.mockResolvedValue(mockTrades);
+
+      const result = await service.getTrades(portfolioId, undefined, undefined, new Date(startDate), new Date(endDate));
+
+      expect(result).toEqual(mockTrades);
+      expect(mockTradeRepo.findTradesByDateRange).toHaveBeenCalledWith(startDate, endDate, portfolioId, undefined);
+    });
+  });
+
+  describe('getTradeDetails', () => {
+    const tradeId = 'trade-1';
+    const mockTrade: Trade = {
+      trade_id: tradeId,
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.BUY,
+      quantity: 100,
+      price: 50.0,
+      fee: 5.0,
+      tax: 2.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    it('should get trade details successfully', async () => {
+      mockTradeRepository.findOne.mockResolvedValue(mockTrade);
+
+      const result = await service.getTradeDetails(tradeId);
+
+      expect(result).toEqual(mockTrade);
+      expect(mockTradeRepository.findOne).toHaveBeenCalledWith({
+        where: { trade_id: tradeId },
+        relations: ['asset', 'portfolio', 'sell_details', 'buy_details'],
+      });
+    });
+
+    it('should throw NotFoundException for non-existent trade', async () => {
+      mockTradeRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.getTradeDetails(tradeId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('processTradeMatching', () => {
+    const mockSellTrade: Trade = {
+      trade_id: 'sell-trade-1',
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.SELL,
+      quantity: 50,
+      price: 60.0,
+      fee: 3.0,
+      tax: 1.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      notes: undefined,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    const mockBuyTrades: Trade[] = [
+      {
+        trade_id: 'buy-trade-1',
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: new Date('2024-01-01'),
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: 5.0,
+        tax: 2.5,
+        trade_type: TradeType.NORMAL,
+        source: TradeSource.MANUAL,
+        notes: undefined,
+        created_at: new Date(),
+        updated_at: new Date(),
+        asset: null,
+        portfolio: null,
+        sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+        buy_details: [],
+      },
+    ];
+
+    it('should process trade matching with FIFO', async () => {
+      const mockMatchResult: TradeMatchingResult = {
+        trade: mockSellTrade,
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 500,
+      };
+
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue(mockBuyTrades);
+      mockFifoEngine.matchTrades.mockReturnValue(mockMatchResult);
+      mockTradeDetailRepository.save.mockResolvedValue({});
+
+      const result = await service.processTradeMatching(mockSellTrade);
+
+      expect(result).toEqual(mockMatchResult);
+      expect(mockTradeRepo.findUnmatchedBuyTrades).toHaveBeenCalledWith('asset-1', 'portfolio-1');
+      expect(mockFifoEngine.matchTrades).toHaveBeenCalledWith(mockSellTrade, mockBuyTrades);
+    });
+
+    it('should handle no matching buy trades', async () => {
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue([]);
+
+      const result = await service.processTradeMatching(mockSellTrade);
+
+      expect(result).toEqual({
+        trade: mockSellTrade,
+        matchedDetails: [],
+        remainingQuantity: 50,
+        totalPnl: 0,
+      });
+      expect(mockFifoEngine.matchTrades).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('processTradeMatchingLIFO', () => {
+    const mockSellTrade: Trade = {
+      trade_id: 'sell-trade-1',
+      portfolioId: 'portfolio-1',
+      assetId: 'asset-1',
+      trade_date: new Date('2024-01-01'),
+      side: TradeSide.SELL,
+      quantity: 50,
+      price: 60.0,
+      fee: 3.0,
+      tax: 1.5,
+      trade_type: TradeType.NORMAL,
+      source: TradeSource.MANUAL,
+      notes: undefined,
+      created_at: new Date(),
+      updated_at: new Date(),
+      asset: null,
+      portfolio: null,
+      sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+      buy_details: [],
+    };
+
+    const mockBuyTrades: Trade[] = [
+      {
+        trade_id: 'buy-trade-1',
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: new Date('2024-01-01'),
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: 5.0,
+        tax: 2.5,
+        trade_type: TradeType.NORMAL,
+        source: TradeSource.MANUAL,
+        notes: undefined,
+        created_at: new Date(),
+        updated_at: new Date(),
+        asset: null,
+        portfolio: null,
+        sell_details: [],
+      get total_amount() { return this.quantity * this.price; },
+      get total_cost() { return this.total_amount + this.fee + this.tax; },
+        buy_details: [],
+      },
+    ];
+
+    it('should process trade matching with LIFO', async () => {
+      const mockMatchResult: TradeMatchingResult = {
+        trade: mockSellTrade,
+        matchedDetails: [],
+        remainingQuantity: 0,
+        totalPnl: 500,
+      };
+
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue(mockBuyTrades);
+      mockLifoEngine.matchTrades.mockReturnValue(mockMatchResult);
+      mockTradeDetailRepository.save.mockResolvedValue({});
+
+      const result = await service.processTradeMatchingLIFO(mockSellTrade);
+
+      expect(result).toEqual(mockMatchResult);
+      expect(mockTradeRepo.findUnmatchedBuyTrades).toHaveBeenCalledWith('asset-1', 'portfolio-1');
+      expect(mockLifoEngine.matchTrades).toHaveBeenCalledWith(mockSellTrade, mockBuyTrades);
+    });
+
+    it('should handle no matching buy trades with LIFO', async () => {
+      mockTradeRepo.findUnmatchedBuyTrades.mockResolvedValue([]);
+
+      const result = await service.processTradeMatchingLIFO(mockSellTrade);
+
+      expect(result).toEqual({
+        trade: mockSellTrade,
+        matchedDetails: [],
+        remainingQuantity: 50,
+        totalPnl: 0,
+      });
+      expect(mockLifoEngine.matchTrades).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getTradeAnalysis', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const startDate = new Date('2024-01-01');
+    const endDate = new Date('2024-01-31');
+
+    const mockStatistics = {
+      totalTrades: 10,
+      totalVolume: 1000,
+      totalPnl: 500,
+    };
+
+    const mockPnlSummary = [
+      {
+        assetId: 'asset-1',
+        assetSymbol: 'AAPL',
+        totalPnl: 500,
+        totalVolume: 1000,
+        tradeCount: 5,
+        winRate: 80,
+      },
+      {
+        assetId: 'asset-2',
+        assetSymbol: 'GOOGL',
+        totalPnl: 200,
+        totalVolume: 500,
+        tradeCount: 3,
+        winRate: 66.67,
+      },
+    ];
+
+    const mockTopTrades = [];
+    const mockWorstTrades = [];
+
+    it('should get trade analysis successfully', async () => {
+      mockTradeRepo.getTradeStatistics.mockResolvedValue(mockStatistics);
+      mockTradeDetailRepo.getPortfolioPnlSummary.mockResolvedValue(mockPnlSummary);
+      mockTradeDetailRepo.getTopPerformingTrades.mockResolvedValue(mockTopTrades);
+      mockTradeDetailRepo.getWorstPerformingTrades.mockResolvedValue(mockWorstTrades);
+
+      const result = await service.getTradeAnalysis(portfolioId, assetId, startDate, endDate);
+
+      expect(result).toEqual({
+        statistics: mockStatistics,
+        pnlSummary: {
+          totalPnl: 700, // 500 + 200
+          totalVolume: 1500, // 1000 + 500
+          averagePnl: 350, // 700 / 2
+          winCount: 2, // Both assets have winRate > 50
+          lossCount: 0, // No assets have winRate <= 50
+          winRate: 73.335, // (80 + 66.67) / 2
+        },
+        topTrades: mockTopTrades,
+        worstTrades: mockWorstTrades,
+      });
+      expect(mockTradeRepo.getTradeStatistics).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        startDate,
+        endDate,
+      );
+      expect(mockTradeDetailRepo.getPortfolioPnlSummary).toHaveBeenCalledWith(portfolioId, startDate, endDate);
+      expect(mockTradeDetailRepo.getTopPerformingTrades).toHaveBeenCalledWith(10, portfolioId);
+      expect(mockTradeDetailRepo.getWorstPerformingTrades).toHaveBeenCalledWith(10, portfolioId);
+    });
+  });
+
+  describe('validateTradeData', () => {
+    it('should validate trade data successfully', () => {
+      const validDto: CreateTradeDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: 5.0,
+        tax: 2.5,
+      };
+
+      expect(() => service['validateTradeData'](validDto)).not.toThrow();
+    });
+
+    it('should throw BadRequestException for missing portfolio_id', () => {
+      const invalidDto = {
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for missing asset_id', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for missing trade_date', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for invalid side', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: 'INVALID' as TradeSide,
+        quantity: 100,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for zero quantity', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 0,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for negative quantity', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: -100,
+        price: 50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for zero price', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for negative price', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: -50.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for negative fee', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        fee: -5.0,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for negative tax', () => {
+      const invalidDto = {
+        portfolioId: 'portfolio-1',
+        assetId: 'asset-1',
+        trade_date: '2024-01-01',
+        side: TradeSide.BUY,
+        quantity: 100,
+        price: 50.0,
+        tax: -2.5,
+      } as CreateTradeDto;
+
+      expect(() => service['validateTradeData'](invalidDto)).toThrow(BadRequestException);
+    });
+  });
+});

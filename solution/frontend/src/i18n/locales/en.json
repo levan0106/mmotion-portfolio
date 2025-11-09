@@ -1,0 +1,2997 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "copy": "Copy",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "export": "Export",
+    "import": "Import",
+    "back": "Back",
+    "thisAsset": "this asset",
+    "groupByDate": "Group by Date",
+    "grid": "Grid",
+    "list": "List",
+    "group": "Group",
+    "add": "Add",
+    "createFirstTrade": "Create First Trade",
+    "user": "User",
+    "name": "Name",
+    "description": "Description",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "date": "Date",
+    "time": "Time",
+    "amount": "Amount",
+    "quantity": "Quantity",
+    "price": "Price",
+    "total": "Total",
+    "currency": "Currency",
+    "type": "Type",
+    "status": "Status",
+    "notes": "Notes",
+    "account": "Account",
+    "new": "New",
+    "noData": "No data",
+    "actions": "Actions",
+    "readOnlyMode": "Read-only mode - Demo Account",
+    "retry": "Retry",
+    "na": "N/A",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "year": "year",
+    "errorOccurred": "An error occurred",
+    "noDescription": "No description",
+    "currentDate": "Current date",
+    "processing": "Processing..."
+  },
+  "dataDisplay": {
+    "toggle": {
+      "title": "Toggle data display format",
+      "masked": "Data is masked - Click to show full values",
+      "full": "Showing full values - Click to mask data",
+      "compact": "Showing compact format - Click to show full values",
+      "modes": {
+        "mask": "Mask Data",
+        "full": "Show Full",
+        "compact": "Compact Format"
+      }
+    }
+  },
+  "goals": {
+    "title": "Investment Goals",
+    "subtitle": "Manage and track your financial goals",
+    "create": "Create New Goal",
+    "createFirst": "Create First Goal",
+    "edit": "Edit Goal",
+    "delete": "Delete Goal",
+    "setPrimary": "Set as Primary Goal",
+    "viewDetails": "View Details",
+    "options": "Options",
+    "form": {
+      "title": "Set up a new investment goal",
+      "editTitle": "Update your goal information",
+      "name": "Goal Name",
+      "namePlaceholder": "Enter goal name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter goal description",
+      "targetValue": "Target Value",
+      "targetValuePlaceholder": "Enter target value (VND)",
+      "targetDate": "Target Date",
+      "priority": "Priority",
+      "status": "Status",
+      "isPrimary": "Primary Goal",
+      "autoTrack": "Auto Track",
+      "linkedPortfolios": "Linked Portfolios",
+      "noPortfolios": "You don't have any portfolios",
+      "noPortfoliosEdit": "No portfolios available",
+      "selectPortfolio": "Please select at least one portfolio",
+      "nameRequired": "Please enter goal name",
+      "valueRequired": "Please enter target value greater than 0",
+      "saving": "Saving...",
+      "create": "Create",
+      "update": "Update"
+    },
+    "card": {
+      "progress": "Progress",
+      "currentValue": "Current Value",
+      "target": "Target",
+      "primary": "Primary",
+      "daysRemaining": "days remaining",
+      "date": "Date",
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "remaining": "remaining",
+      "days": "days",
+      "day": "day",
+      "weeks": "weeks",
+      "week": "week",
+      "months": "months",
+      "month": "month",
+      "years": "years",
+      "year": "year",
+      "status": {
+        "overdue": "Overdue",
+        "completed": "Completed",
+        "dangerous": "Dangerous",
+        "urgent": "Urgent",
+        "attention": "Attention",
+        "excellent": "Excellent",
+        "good": "Good",
+        "okay": "Okay"
+      },
+      "tooltip": {
+        "overdue": "Goal has exceeded the target date",
+        "completed": "Goal has been completed 100%",
+        "noTargetDate": "No target date set. Progress: {{progress}}%, Remaining: {{remaining}}%",
+        "warning": "WARNING: Time remaining {{timePercent}}% ({{days}} days) is less than the percentage needed to complete {{progressPercent}}%",
+        "safe": "SAFE: Time remaining {{timePercent}}% ({{days}} days) is sufficient to complete the remaining {{progressPercent}}%"
+      },
+      "priority": {
+        "highest": "Highest",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low",
+        "lowest": "Lowest"
+      }
+    },
+    "list": {
+      "title": "Investment Goals",
+      "subtitle": "Manage and track your financial goals",
+      "create": "Create New Goal",
+      "createFirst": "Create First Goal",
+      "filters": "Filters",
+      "clearFilters": "Clear Filters",
+      "search": "Search Goals",
+      "searchPlaceholder": "Enter goal name or description...",
+      "status": "Status",
+      "allStatuses": "All Statuses",
+      "overview": "Overview",
+      "noGoals": "No goals yet",
+      "noGoalsFiltered": "No goals found matching criteria",
+      "noGoalsMessage": "Start creating your first investment goal",
+      "noGoalsFilteredMessage": "Try changing filters or search keywords",
+      "clearFiltersAction": "Clear Filters",
+      "createFirstAction": "Create First Goal",
+      "loading": "Loading...",
+      "error": "Unable to load goals list. Please try again later."
+    },
+    "status": {
+      "active": "Active",
+      "achieved": "Achieved",
+      "paused": "Paused",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "highest": "Highest",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "lowest": "Lowest"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "investor": {
+      "title": "Investor",
+      "reports": "Reports",
+      "holdings": "Holdings",
+      "goals": "Goals"
+    },
+    "fundManagement": {
+      "title": "Fund Management",
+      "portfolios": "Portfolios",
+      "assets": "Assets",
+      "deposits": "Deposits",
+      "reports": "Reports"
+    },
+    "settings": "Settings",
+    "systemExplanation": "System Guide",
+    "priceManagement": "Price Management",
+    "dataManagement": "Data Management",
+    "systemAdmin": "System Administration",
+    "language": "Language",
+    "snapshots": "Snapshots",
+    "holdings": "Holdings",
+    "globalAssets": "Global Assets",
+    "adminManagement": "System Administration",
+    "transactions": "Transactions",
+    "logout": "Sign Out",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "profileIncomplete": "Profile incomplete - Click to update",
+    "profileComplete": "Profile complete",
+    "passwordSet": "Password set, profile optional",
+    "profileNeedsCompletion": "Profile needs completion",
+    "completeYourProfile": "Complete your profile",
+    "clickToGoToHome": "Click to go to Home"
+  },
+  "portfolio": {
+    "title": "Portfolio Management",
+    "portfolioOverview": "Portfolio Overview",
+    "create": "Create Portfolio",
+    "edit": "Edit Portfolio",
+    "delete": "Delete Portfolio",
+    "name": "Portfolio Name",
+    "description": "Description",
+    "baseCurrency": "Base Currency",
+    "value": "Total Value",
+    "currentValue": "Current Value",
+    "quantity": "Quantity",
+    "change": "Change",
+    "changePercent": "Change %",
+    "allocation": "Allocation",
+    "marketValue": "Market Value",
+    "trading": "Trading Management",
+    "deposits": "Deposit Management",
+    "cashFlow": "Cash Flow",
+    "navHoldings": "NAV Holdings",
+    "loading": "Loading data...",
+    "creating": "Creating portfolio...",
+    "updating": "Updating portfolio...",
+    "deleting": "Deleting portfolio...",
+    "failedToLoad": "Failed to load portfolios. Please try again.",
+    "startJourney": "Start Your Investment Journey",
+    "noMatch": "No portfolios match your search criteria.",
+    "createFirstDescription": "Create your first portfolio to begin tracking your investments, monitor performance, and make informed financial decisions.",
+    "trackPerformance": "Track Performance",
+    "monitorReturns": "Monitor Returns",
+    "analyzeTrends": "Analyze Trends",
+    "adjustSearch": "Try adjusting your search criteria or filters to find the portfolio you're looking for.",
+    "createFirst": "Create Your First Portfolio",
+    "learnMore": "Learn More",
+    "copyPortfolio": "Copy Portfolio",
+    "publicTooltip": "Public Portfolio - Can be copied by other users",
+    "fund": "Fund",
+    "individual": "Individual",
+    "capitalValue": "Capital Value",
+    "investmentValue": "Investment Value",
+    "unrealizedPL": "Unrealized P&L",
+    "realizedPL": "Realized P&L",
+    "cashBalance": "Cash Balance",
+    "cannotUndo": "This action cannot be undone!",
+    "confirmDelete": "Are you sure you want to delete the portfolio \"{{name}}\"?",
+    "willPermanentlyDelete": "This will permanently delete",
+    "deleteTrades": "All trades and trade details",
+    "deleteCashFlows": "All cash flows and deposits",
+    "deleteSnapshots": "All performance snapshots and analytics data",
+    "deleteHoldings": "All investor holdings (if this is a fund)",
+    "deleteHistorical": "All historical data and reports",
+    "managementTrading": "Portfolio Management & Trading",
+    "investorView": "Investor View",
+    "fundManagerView": "Fund Manager View",
+    "backToPortfolios": "Back to Portfolios",
+    "refreshAllData": "Refresh all portfolio data",
+    "calculatingPerformance": "Calculating performance...",
+    "refreshAll": "Refresh All",
+    "refreshing": "Refreshing...",
+    "portfolioValue": "Portfolio Value",
+    "assetValueNav": "Asset Value & NAV",
+    "currentNav": "Current NAV (+cash)",
+    "totalAnnualReturns": "Total & Annual Returns",
+    "totalReturn": "Total Return",
+    "annualized": "Annualized",
+    "tradingActivity": "Trading Activity",
+    "tradingVolume": "Trading & Volume",
+    "totalTrades": "Total Trades",
+    "totalTradedValue": "Total Value Traded",
+    "plCosts": "P&L & Costs",
+    "profitCosts": "Profit & Costs",
+    "feesTaxes": "Fees & Taxes",
+    "performance": "Performance",
+    "deposit": "Deposit",
+    "switchToNormal": "Switch to Normal View",
+    "switchToCompact": "Switch to Compact View",
+    "createNewTrade": "Create New Trade",
+    "totalInvestment": "Total Investment",
+    "assetsDepositsValue": "Assets + Deposits Value",
+    "currentUnrealizedPL": "Current Unrealized Profit/Loss",
+    "availableCash": "Available Cash",
+    "assetClasses": "Asset Classes",
+    "differentAssetTypes": "Different Asset Types",
+    "assetTypeAllocation": "Asset Type Allocation",
+    "assetAllocation": "Asset Allocation",
+    "assetAllocationPie": "Asset Allocation",
+    "failedToLoadAllocation": "Failed to load allocation data",
+    "failedToLoadPL": "Failed to load P&L data",
+    "allocationSummary": "Allocation Summary",
+    "totalAssetsValue": "Total Assets Value",
+    "totalDepositsValue": "Total Deposits Value",
+    "noAllocationData": "No allocation data available",
+    "assetDetailSummary": "Asset Detail Summary",
+    "tradeHistory": "Trade History",
+    "individualAssetHoldings": "Individual Asset Holdings",
+    "individualAssetHoldingsDescription": "Individual asset holdings with values and performance",
+    "riskPerformanceAnalysis": "Risk & Performance Analysis",
+    "riskReturnAnalysis": "Risk(X) - Return(Y) Analysis",
+    "assetPerformanceComparison": "Asset Performance Comparison",
+    "diversificationTimeline": "Diversification & Timeline",
+    "diversificationHeatmap": "Diversification Heatmap",
+    "allocationTimeline": "Allocation Timeline",
+    "twrDescription": "TWR - Pure investment management performance",
+    "twrPerformance": "TWR Performance",
+    "portfolioPerformanceTWR": "Portfolio Performance (TWR)",
+    "individualInvestorView": "Individual Investor View",
+    "mwrDescription": "MWR - Actual investor returns with cash flows",
+    "mwrPerformance": "MWR Performance",
+    "portfolioPerformanceMWR": "Portfolio Performance (MWR)",
+    "riskMetricsDashboard": "Risk Metrics Dashboard",
+    "summarySnapshots": "Portfolio Summary Snapshots",
+    "cashBalanceNote": "Cash balance được lấy từ bảng portfolio_snapshots.cash_balance có thể khác với cách tính trong tab Portfolio Performance.",
+    "management": "Deposit Management",
+    "createNew": "Create New",
+    "createNewDeposit": "Create New Deposit",
+    "createSuccess": "Deposit created successfully!",
+    "createError": "Error occurred while creating deposit",
+    "updateSuccess": "Deposit updated successfully!",
+    "updateError": "Error occurred while updating deposit",
+    "settleSuccess": "Deposit settled successfully!",
+    "settleError": "Error occurred while settling deposit",
+    "deleteSuccess": "Deposit deleted successfully!",
+    "deleteError": "Error occurred while deleting deposit",
+    "loadError": "Error occurred while loading deposit data",
+    "unrealizedPLByAssetType": "Unrealized P&L by Asset Type",
+    "portfolioPerformanceSummary": "Portfolio Performance Summary",
+    "totalUnrealizedPL": "Total Unrealized P&L",
+    "profitableAssets": "Profitable Assets",
+    "bestPerformer": "Best Performer",
+    "totalAssets": "Total Assets",
+    "totalAssetValue": "Total Asset Value",
+    "totalPL": "Total P&L",
+    "assetTypes": "Asset Types",
+    "qty": "Qty",
+    "marketPrice": "Market Price",
+    "profit": "Profit",
+    "loss": "Loss",
+    "riskVsReturnAnalysis": "Risk vs Return analysis of portfolio assets",
+    "performanceComparison": "Performance comparison across asset types",
+    "correlationMatrix": "Correlation matrix showing diversification between asset types",
+    "returnBubbleSize": "Return (Bubble Size)",
+    "bubbleSizeDescription": "Larger bubble = Higher return performance (better investment)",
+    "riskVolatility": "Risk (Volatility)",
+    "performanceRating": "Performance Rating",
+    "excellent": "Excellent",
+    "good": "Good",
+    "positive": "Positive",
+    "poor": "Poor",
+    "veryPoor": "Very Poor",
+    "highReturn": "HIGH RETURN",
+    "lowReturn": "LOW RETURN",
+    "noRiskReturnData": "No risk-return data available",
+    "return": "Return",
+    "performanceUnrealizedPL": "Performance (Unrealized P&L)",
+    "totalValue": "Total Value",
+    "positions": "Positions",
+    "position": "position",
+    "noPerformanceData": "No performance data available",
+    "noDiversificationData": "No diversification data available",
+    "correlationLevel": "Correlation Level",
+    "correlationHigh": "High (≥0.8)",
+    "correlationMediumHigh": "Medium-High (0.6-0.8)",
+    "correlationMedium": "Medium (0.4-0.6)",
+    "correlationLow": "Low (0.2-0.4)",
+    "correlationVeryLow": "Very Low (<0.2)",
+    "form": {
+      "editTitle": "Edit Portfolio",
+      "createTitle": "Create New Portfolio",
+      "saving": "Saving...",
+      "creationMode": {
+        "title": "How would you like to create this portfolio?",
+        "createNew": "Create New",
+        "copyFromTemplate": "Copy from Template"
+      },
+      "templateSelector": {
+        "selectTemplate": "Select a public portfolio template to copy from",
+        "browseTemplates": "Browse Templates"
+      },
+      "fields": {
+        "name": "Portfolio Name",
+        "namePlaceholder": "e.g., Growth Portfolio, Retirement Fund",
+        "fundingSource": "Funding Source (Optional)",
+        "fundingSourcePlaceholder": "VIETCOMBANK, TPBANK, etc.",
+        "baseCurrency": "Base Currency",
+        "templateName": "Template Name",
+        "templateNamePlaceholder": "Enter template name for public portfolio",
+        "templateNameHelper": "This name will be shown to other users when browsing public portfolios",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe this portfolio template...",
+        "descriptionHelper": "Optional description for the public portfolio template"
+      },
+      "visibility": {
+        "public": "Public Portfolio",
+        "private": "Private Portfolio"
+      }
+    },
+    "copy": {
+      "title": "Copy Portfolio",
+      "copying": "Copying...",
+      "copy": "Copy",
+      "copyPortfolio": "Copy Portfolio",
+      "copyingFrom": "Copying from",
+      "newPortfolioName": "New Portfolio Name",
+      "newPortfolioNamePlaceholder": "Enter name for the copied portfolio",
+      "whatWillBeCopied": "What will be copied",
+      "copyItems": {
+        "trades": "All trades and trade history",
+        "cashFlows": "Cash flows and transactions",
+        "deposits": "Deposits and interest settings",
+        "settings": "Portfolio settings and configuration"
+      },
+      "note": "Note: The new portfolio will start with zero cash balance and current market values.",
+      "validation": {
+        "nameRequired": "Please enter a portfolio name"
+      },
+      "error": {
+        "copyFailed": "Failed to copy portfolio"
+      }
+    },
+    "error": {
+      "deleteFailed": "Failed to delete portfolio. Please try again.",
+      "nameAlreadyExists": "Portfolio name \"{{name}}\" is already taken. Please choose a different name.",
+      "templateNameAlreadyExists": "Portfolio name \"{{name}}\" is already taken. Please try a different template.",
+      "saveFailed": "An error occurred while saving the portfolio. Please try again.",
+      "copyTemplateFailed": "Failed to copy portfolio template. Please try again."
+    }
+  },
+  "trading": {
+    "title": "Trading",
+    "tradeSummary": "Trade Summary",
+    "manageAndTrack": "Manage and track all your trading activities",
+    "totalVolume": "Total Volume",
+    "trades": "Trades",
+    "trade": "trade",
+    "fees": "Fees",
+    "pl": "P&L",
+    "return": "Return",
+    "returnPercent": "Return %",
+    "buy": "Buy",
+    "sell": "Sell",
+    "exchange": "Exchange",
+    "noExchangeData": "No exchange data available",
+    "exchangeInfoDescription": "Exchange information will appear here when trades are recorded",
+    "tradeHistory": "Trade History",
+    "searchPlaceholder": "Search trades by symbol, name, or notes...",
+    "side": "Side",
+    "allSides": "All Sides",
+    "groupByDate": "Group by Date",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "total": "Total",
+    "fundingSource": "Funding Source",
+    "totalValue": "Total Value",
+    "totalCost": "Total Cost",
+    "loadingTrades": "Loading trades...",
+    "noTradesFound": "No trades found",
+    "noTradesMatchFilter": "No trades match your current filter criteria.",
+    "createFirstTrade": "Create First Trade",
+    "viewDetails": "View Details",
+    "editTrade": "Edit Trade",
+    "deleteTrade": "Delete Trade",
+    "modal": {
+      "editTrade": "Edit Trade",
+      "createTrade": "Create Trade"
+    },
+    "floatingButton": {
+      "tooltip": "Quick Create Trade",
+      "ariaLabel": "Create Trade",
+      "createPortfolioFirst": "Create Portfolio First",
+      "creatingPortfolio": "Creating Portfolio..."
+    },
+    "autoCreatePortfolio": {
+      "name": "My Portfolio"
+    },
+    "deleteTradeConfirm": "Are you sure you want to delete this trade for {{asset}}? This action cannot be undone.",
+    "failedToLoadTrades": "Failed to load trades",
+    "asset": "Asset",
+    "type": "Type",
+    "status": "Status",
+    "taxes": "Taxes",
+    "quantity": "Quantity",
+    "price": "Price",
+    "date": "Date",
+    "symbol": "Symbol",
+    "form": {
+      "basicInformation": "Basic Information",
+      "portfolio": "Portfolio",
+      "loadingPortfolios": "Loading portfolios...",
+      "noPortfoliosFound": "No portfolios found",
+      "asset": "Asset",
+      "searchAsset": "Search and select asset...",
+      "tradeDate": "Trade Date",
+      "tradeDetails": "Trade Details",
+      "tradeSide": "Trade Side",
+      "buy": "BUY",
+      "sell": "SELL",
+      "quantity": "Quantity",
+      "pricePerUnit": "Price per Unit",
+      "refreshMarketPrice": "Refresh market price",
+      "additionalInformation": "Additional Information (Fees & Taxes)",
+      "tradingFee": "Trading Fee",
+      "tax": "Tax",
+      "tradeType": "Trade Type",
+      "marketOrder": "Market Order",
+      "limitOrder": "Limit Order",
+      "stopOrder": "Stop Order",
+      "exchangeFundingNotes": "Exchange, Funding & Notes",
+      "exchangeFunding": "Exchange & Funding",
+      "exchangePlatform": "Exchange/Platform",
+      "enterExchangePlatform": "Enter exchange or platform name",
+      "fundingSource": "Funding Source",
+      "enterFundingSource": "Enter funding source",
+      "notes": "Notes",
+      "enterNotes": "Enter any additional notes about this trade",
+      "tradeSummary": "Trade Summary",
+      "totalValue": "Total Value",
+      "feesTaxes": "Fees & Taxes",
+      "amountReceived": "Amount Received",
+      "amountPaid": "Amount Paid",
+      "processing": "Processing...",
+      "create": "Create",
+      "update": "Update",
+      "createTrade": "Create Trade",
+      "updateTrade": "Update Trade",
+      "loadingTradeForm": "Loading trade form...",
+      "noPortfoliosAvailable": "No portfolios available. Please create a portfolio first.",
+      "createPortfolioFirst": "Create Portfolio",
+      "error": "Error",
+      "noPortfoliosFoundError": "No portfolios found. Please check if the backend is running and try again."
+    },
+    "tradeDetails": {
+      "title": "Trade Details",
+      "tradeInformation": "Trade Information",
+      "basicInformation": "Basic Information",
+      "modal": {
+        "title": "Trade Details",
+        "loadingMessage": "Loading trade details...",
+        "editTrade": "Edit Trade"
+      },
+      "financialDetails": "Financial Details",
+      "tradeId": "Trade ID",
+      "dateTime": "Date & Time",
+      "asset": "Asset",
+      "type": "Type",
+      "source": "Source",
+      "quantity": "Quantity",
+      "pricePerUnit": "Price per Unit",
+      "totalValue": "Total Value",
+      "feesTaxes": "Fees & Taxes",
+      "totalCost": "Total Cost",
+      "realizedPL": "Realized P&L",
+      "notes": "Notes",
+      "tradeMatchingDetails": "Trade Matching Details",
+      "totalMatched": "Total Matched",
+      "remaining": "Remaining",
+      "totalRealizedPL": "Total Realized P&L",
+      "buyTradeId": "Buy Trade ID",
+      "matchedQty": "Matched Qty",
+      "buyPrice": "Buy Price",
+      "sellPrice": "Sell Price",
+      "pl": "P&L",
+      "matchedDate": "Matched Date",
+      "unmatchedTradeWarning": "⚠️ This sell trade has <strong>{{quantity}} units</strong> remaining unmatched. Consider matching with available buy trades to realize P&L.",
+      "loadingTradeDetails": "Loading trade details...",
+      "tradeTypes": {
+        "MARKET": "Market Order",
+        "LIMIT": "Limit Order",
+        "STOP": "Stop Order"
+      },
+      "tradeSources": {
+        "MANUAL": "Manual",
+        "API": "API",
+        "IMPORT": "Import"
+      }
+    }
+  },
+  "assets": {
+    "title": "Asset Portfolio",
+    "pageTitle": "Assets",
+    "pageSubtitle": "Manage your portfolio assets",
+    "subtitle": "Detailed view of your assets across all portfolios",
+    "name": "Asset Name",
+    "type": "Asset Type",
+    "currentPrice": "Current Price",
+    "change": "Price Change",
+    "changePercent": "Change %",
+    "quantity": "Quantity",
+    "value": "Value",
+    "profit": "Profit",
+    "profitPercent": "Profit %",
+    "table": {
+      "asset": "Asset",
+      "type": "Type",
+      "symbol": "Symbol",
+      "quantity": "Quantity",
+      "priceComparison": "Price Comparison",
+      "totalValue": "Total Value",
+      "lastUpdated": "Last Updated",
+      "priceMode": "Update Price"
+    },
+    "metrics": {
+      "totalAssets": "Total Assets",
+      "assetsInPortfolio": "Assets in portfolio",
+      "totalValue": "Total Value",
+      "combinedAssetValue": "Combined asset value",
+      "averageValue": "Average Value",
+      "perAssetAverage": "Per asset average",
+      "assetTypes": "Asset Types",
+      "differentCategories": "Different categories"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "editAsset": "Edit Asset",
+      "deleteAsset": "Delete Asset",
+      "refreshData": "Refresh Data",
+      "quickCreate": "Quick Create",
+      "quickCreateTooltip": "Select multiple assets from sample list - Fast and easy",
+      "addAsset": "Add Asset",
+      "addAssetTooltip": "Create new asset with detailed information",
+      "add": "Add"
+    },
+    "filters": {
+      "title": "Filters",
+      "active": "Active",
+      "activeFilters": "Filters",
+      "clearAll": "Clear All",
+      "search": "Search",
+      "type": "Asset Type",
+      "portfolio": "Portfolio"
+    },
+    "noAssets": {
+      "title": "No Assets Found",
+      "description": "You don't have any assets in your portfolio yet. Start by adding assets to track your investments."
+    },
+    "withTrades": {
+      "title": "Assets with Trades",
+      "subtitle": "Assets that have been traded (bought/sold)",
+      "noAssets": {
+        "title": "No Active Assets",
+        "description": "You don't have any assets with trading activity yet."
+      }
+    },
+    "withoutTrades": {
+      "title": "Assets without Trades",
+      "subtitle": "Assets that haven't been traded yet",
+      "noAssets": {
+        "title": "No Inactive Assets",
+        "description": "All your assets have trading activity."
+      }
+    },
+    "errors": {
+      "loadingError": "Error loading assets"
+    }
+  },
+  "language": {
+    "english": "English",
+    "vietnamese": "Tiếng Việt",
+    "selectLanguage": "Select Language"
+  },
+  "dashboard": {
+    "title": "Financial Dashboard",
+    "subtitle": "Comprehensive portfolio management and investment analytics",
+    "overview": "Overview",
+    "totalValue": "Total Value",
+    "totalChange": "Total Change",
+    "totalChangePercent": "Total Change %",
+    "portfolioCount": "Portfolio Count",
+    "assetCount": "Asset Count",
+    "recentActivity": "Recent Activity",
+    "performance": "Performance",
+    "allocation": "Allocation",
+    "topPerformers": "Top Performers",
+    "worstPerformers": "Worst Performers",
+    "noData": "No data available",
+    "loading": "Loading dashboard...",
+    "failedToLoad": "Failed to load dashboard data",
+    "checkConnection": "Please check your connection and try again.",
+    "totalAssets": "Total Assets Under Management",
+    "totalPL": "Total P&L",
+    "cashPosition": "Cash Position",
+    "averagePortfolioValue": "Average Portfolio Value",
+    "portfolio": "Portfolio",
+    "portfolios": "Portfolios",
+    "profitable": "Profitable",
+    "loss": "Loss",
+    "ofTotal": "of total",
+    "liquid": "Liquid",
+    "perPortfolio": "Per portfolio",
+    "balanced": "Balanced",
+    "refreshData": "Refresh Data",
+    "systemStatus": "System Status: Active",
+    "lastUpdated": "Last Updated",
+    "dataUpdateStatus": {
+      "justUpdated": "Just updated",
+      "minutesAgo": "{{minutes}} minutes ago",
+      "hoursAgo": "{{hours}} hours ago",
+      "daysAgo": "{{days}} days ago", 
+      "noData": "No data available",
+      "loading": "Loading...",
+      "systemPaused": "Auto sync disabled",
+      "systemPausedMessage": "System paused due to auto sync disabled"
+    },
+    "portfoliosActive": "Portfolios Active",
+    "portfolioPerformance": "Portfolio Performance Analytics",
+    "bestPerforming": "Best Performing Portfolio",
+    "bestPortfolioCash": "Best Portfolio Cash",
+    "quickInsights": {
+      "title": "Quick Insights",
+      "name": "Portfolio",
+      "totalValue": "Value",
+      "dailyGrowth": "Today",
+      "ytdGrowth": "YTD"
+    },
+    "averagePortfolioValueLabel": "Average Portfolio Value:",
+    "totalReturn": "Total Return:",
+    "activePortfolios": "Active Portfolios:",
+    "systemHealth": "System Health:",
+    "excellent": "Excellent",
+    "investmentPortfolios": "Investment Portfolios",
+    "managePortfolios": "Manage and monitor your investment portfolios",
+    "createNewPortfolio": "Create New Portfolio",
+    "noPortfoliosFound": "No Portfolios Found",
+    "startInvestment": "Start your investment journey by creating your first portfolio to track and manage your assets",
+    "createFirstPortfolio": "Create Your First Portfolio",
+    "active": "Active"
+  },
+  "forms": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidNumber": "Invalid number",
+    "invalidDate": "Invalid date",
+    "minLength": "Minimum length is {{min}} characters",
+    "maxLength": "Maximum length is {{max}} characters",
+    "minValue": "Minimum value is {{min}}",
+    "maxValue": "Maximum value is {{max}}",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "tables": {
+    "noData": "No data available",
+    "loading": "Loading...",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "rowsPerPage": "Rows per page",
+    "of": "of",
+    "date": "Date",
+    "actions": "Actions",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "copy": "Copy",
+    "download": "Download"
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "portfolioCreated": "Portfolio created successfully",
+    "portfolioUpdated": "Portfolio updated successfully",
+    "portfolioDeleted": "Portfolio deleted successfully",
+    "assetAdded": "Asset added successfully",
+    "assetUpdated": "Asset updated successfully",
+    "assetDeleted": "Asset deleted successfully",
+    "tradeExecuted": "Trade executed successfully",
+    "depositAdded": "Deposit added successfully",
+    "settingsSaved": "Settings saved successfully",
+    "operationFailed": "Operation failed",
+    "networkError": "Network error occurred",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "url": "Please enter a valid URL",
+    "number": "Please enter a valid number",
+    "integer": "Please enter a valid integer",
+    "positive": "Please enter a positive number",
+    "negative": "Please enter a negative number",
+    "min": "Value must be at least {{min}}",
+    "max": "Value must be at most {{max}}",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Must be no more than {{max}} characters",
+    "pattern": "Please match the requested format",
+    "unique": "This value must be unique",
+    "exists": "This value must exist",
+    "date": "Please enter a valid date",
+    "time": "Please enter a valid time",
+    "currency": "Please enter a valid currency amount"
+  },
+  "errors": {
+    "general": "An error occurred",
+    "network": "Network error",
+    "server": "Server error",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "timeout": "Request timeout",
+    "validation": "Validation error",
+    "unknown": "Unknown error"
+  },
+  "holdings": {
+    "title": "Investment Holdings",
+    "subtitle": "Your investment portfolio holdings and performance",
+    "loading": "Loading your investment holdings...",
+    "error": {
+      "loadFailed": "Failed to load holdings data",
+      "loadDetailsFailed": "Failed to load holding details",
+      "fetchDetailsFailed": "Failed to fetch holding details",
+      "deleteTransactionFailed": "Failed to delete transaction",
+      "recalculateNavFailed": "Failed to recalculate NAV. Please try again.",
+      "noDetailsFound": "No holding details found"
+    },
+    "summary": {
+      "totalInvestment": "Total Investment",
+      "currentValue": "Current Value",
+      "totalPnL": "Total P&L",
+      "totalReturn": "Total Return",
+      "holdingsCount": "{{count}} Holding",
+      "holdingsCount_other": "{{count}} Holdings",
+      "marketValue": "Market value",
+      "profitable": "Profitable",
+      "loss": "Loss",
+      "performance": "Performance"
+    },
+    "table": {
+      "title": "Investment Holdings",
+      "subtitle": "Detailed view of your investment holdings across all portfolios",
+      "portfolio": "Portfolio",
+      "units": "Units",
+      "avgCostPerUnit": "Avg Cost/Unit",
+      "totalInvestment": "Total Investment",
+      "currentValue": "Current Value",
+      "unrealizedPnL": "Unrealized P&L",
+      "realizedPnL": "Realized P&L",
+      "totalPnL": "Total P&L",
+      "returnPercent": "Return %",
+      "date": "Date",
+      "type": "Type",
+      "navPerUnit": "NAV per Unit",
+      "amount": "Amount",
+      "description": "Description",
+      "source": "Source"
+    },
+    "empty": {
+      "title": "No Holdings Found",
+      "message": "You don't have any investment holdings yet. Start investing by subscribing to available funds."
+    },
+    "actions": {
+      "viewPortfolio": "View Portfolio",
+      "backToPortfolio": "Back to Portfolio",
+      "recalculate": "Recalculate",
+      "recalculateNav": "Recalculate NAV",
+      "recalculating": "Recalculating..."
+    },
+    "detail": {
+      "investmentIn": "Investment in {{portfolioName}}",
+      "portfolioPerformance": "Portfolio Performance",
+      "currentValue": "Current Value",
+      "totalInvestment": "Total Investment",
+      "unrealizedPnL": "Unrealized P&L",
+      "returnPercent": "Return %",
+      "transactionSummary": "Transaction Summary",
+      "totalTransactions": "Total Transactions",
+      "totalFundUnits": "Total Fund Units",
+      "subscriptions": "Subscriptions",
+      "redemptions": "Redemptions",
+      "unitsSubscribed": "Units Subscribed",
+      "holdingDetails": "Holding Details",
+      "totalUnits": "Total Units",
+      "avgCostPerUnit": "Avg Cost per Unit",
+      "currentNav": "Current NAV",
+      "transactionHistory": "Transaction History"
+    },
+    "modal": {
+      "subtitle": "Subscription & Redemption History",
+      "summary": "Summary",
+      "totalFundUnits": "Total Fund Units",
+      "totalUnitsHeld": "Total units held",
+      "totalSubscriptions": "Total Subscriptions",
+      "subscriptionCount": "Subscription count",
+      "totalRedemptions": "Total Redemptions",
+      "redemptionCount": "Redemption count",
+      "totalInvested": "Total Invested",
+      "amountInvested": "Amount invested",
+      "noTransactions": "No transactions found",
+      "noTransactionsMessage": "This holding doesn't have any subscription or redemption transactions yet."
+    },
+    "transaction": {
+      "subscription": "Subscription",
+      "redemption": "Redemption"
+    },
+    "subscriptionModal": {
+      "title": "New Fund Subscription",
+      "redemptionTitle": "New Fund Redemption",
+      "fundInformation": "Fund Information",
+      "fundName": "Fund Name",
+      "navPerUnit": "NAV per Unit",
+      "account": "Account",
+      "accountPlaceholder": "Search for an account or enter new account ID...",
+      "investmentAmount": "Investment Amount",
+      "investmentAmountPlaceholder": "Enter investment amount (e.g., 1,000,000)",
+      "unitsAutoCalculated": "Units (Auto-calculated)",
+      "unitsPlaceholder": "Units will be calculated automatically",
+      "unitsHelperText": "Units are calculated automatically based on amount and NAV per unit",
+      "transactionDate": "Transaction Date",
+      "transactionDateHelper": "Select the date for this subscription",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for this subscription",
+      "calculationSummary": "Calculation Summary",
+      "calculatedUnits": "Calculated Units",
+      "investmentAmountLabel": "Investment Amount",
+      "calculationNotice": "Units are automatically calculated based on the investment amount and current NAV per unit.",
+      "dataImpactNotice": "📅 Data Impact Notice",
+      "dataImpactMessage": "Creating this subscription will automatically update:",
+      "dataImpactItem1": "Portfolio NAV per unit and total outstanding units",
+      "dataImpactItem2": "Investor holding metrics (units, investment, P&L)",
+      "dataImpactItem3": "Cash flow records and portfolio balance",
+      "dataImpactNote": "All calculations will be based on current date and current NAV per unit",
+      "createSubscription": "Create Subscription",
+      "createRedemption": "Create Redemption",
+      "creating": "Creating...",
+      "creatingRedemption": "Creating Redemption...",
+      "validation": {
+        "accountRequired": "Please select an account or enter an account ID",
+        "amountRequired": "Amount must be greater than 0",
+        "unitsRequired": "Units must be greater than 0",
+        "dateRequired": "Transaction date is required"
+      },
+      "error": {
+        "createFailed": "Failed to create subscription. Please try again.",
+        "unauthorized": "Account is not authorized to invest in this fund. Please contact administrator.",
+        "invalidData": "Invalid subscription data. Please check your input.",
+        "notFound": "Portfolio or account not found. Please refresh and try again."
+      }
+    },
+    "redemptionModal": {
+      "title": "Process Fund Redemption",
+      "fundInformation": "Fund Information",
+      "fundName": "Fund Name",
+      "navPerUnit": "NAV per Unit",
+      "investorAccount": "Investor Account (With Holdings)",
+      "investorAccountPlaceholder": "Search for an investor with holdings in this fund...",
+      "investorAccountHelper": "Only accounts with holdings in this fund are shown",
+      "redemptionAmount": "Redemption Amount (Auto-calculated)",
+      "redemptionAmountPlaceholder": "Amount will be calculated automatically",
+      "redemptionAmountHelper": "Amount is calculated automatically based on units and NAV per unit",
+      "unitsToRedeem": "Units to Redeem",
+      "unitsPlaceholder": "Enter number of units to redeem",
+      "transactionDate": "Transaction Date",
+      "transactionDateHelper": "Select the date for this redemption",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for this redemption",
+      "redemptionSummary": "Redemption Summary",
+      "unitsToRedeemLabel": "Units to Redeem",
+      "calculatedAmount": "Calculated Amount",
+      "calculationNotice": "Amount is automatically calculated based on the units you enter and current NAV per unit.",
+      "dataImpactNotice": "⚠️ Data Impact Notice",
+      "dataImpactMessage": "Processing this redemption will automatically update:",
+      "dataImpactItem1": "Portfolio NAV per unit and total outstanding units",
+      "dataImpactItem2": "Investor holding metrics (units, investment, P&L)",
+      "dataImpactItem3": "Cash flow records and portfolio balance",
+      "dataImpactNote": "All calculations will be based on current date and current NAV per unit",
+      "processRedemption": "Process Redemption",
+      "processing": "Processing...",
+      "validation": {
+        "accountRequired": "Please select an account",
+        "unitsRequired": "Units must be greater than 0",
+        "dateRequired": "Transaction date is required"
+      },
+      "error": {
+        "createFailed": "Failed to create redemption. Please try again."
+      }
+    },
+    "edit": {
+      "title": "Edit {{type}} Transaction",
+      "transactionInfo": "Transaction Information",
+      "transactionType": "Transaction Type",
+      "navPerUnit": "NAV per Unit",
+      "units": "Units",
+      "unitsPlaceholder": "Enter number of units",
+      "amount": "Amount",
+      "amountPlaceholder": "Enter amount (e.g., 1,000,000)",
+      "transactionDate": "Transaction Date",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for this transaction",
+      "calculationSummary": "Calculation Summary",
+      "calculatedAmount": "Calculated Amount",
+      "amountDifferenceNote": "Note: The calculated amount ({{calculated}}) differs from the entered amount ({{entered}}). This may be due to fees or rounding differences.",
+      "recalculationNotice": "📅 Data Recalculation Notice",
+      "recalculationMessage": "When you update this transaction, the system will automatically recalculate:",
+      "recalculationItem1": "Portfolio NAV per unit and total outstanding units",
+      "recalculationItem2": "Holding metrics (units, investment, P&L) as of the transaction date",
+      "recalculationItem3": "All related cash flow records",
+      "recalculationDate": "Recalculation will be based on the transaction date: {{date}}",
+      "updateTransaction": "Update Transaction",
+      "updating": "Updating...",
+      "error": {
+        "updateFailed": "Failed to update transaction. Please try again."
+      },
+      "validation": {
+        "unitsRequired": "Units must be greater than 0",
+        "amountRequired": "Amount must be greater than 0",
+        "dateRequired": "Transaction date is required"
+      }
+    },
+    "delete": {
+      "title": "Confirm Delete Transaction",
+      "message": "Are you sure you want to delete this transaction? This action cannot be undone.",
+      "transactionDetails": "Transaction Details",
+      "recalculationImpact": "⚠️ Data Recalculation Impact",
+      "recalculationMessage": "Deleting this transaction will trigger automatic recalculation of:",
+      "recalculationItem1": "Portfolio NAV per unit and total outstanding units",
+      "recalculationItem2": "All holding metrics (units, investment, P&L) will be recalculated from remaining transactions",
+      "recalculationItem3": "Associated cash flow records will be removed",
+      "recalculationDate": "Recalculation will be based on the original transaction date: {{date}}",
+      "deleting": "Deleting...",
+      "deleteTransaction": "Delete Transaction"
+    }
+  },
+  "nav": {
+    "holdings": {
+      "notFund": "Portfolio is not a Fund",
+      "notFundMessage": "This portfolio is not configured as a fund. Convert it to a fund to enable NAV/Unit management.",
+      "convert": "Convert",
+      "convertToFund": "Convert to Fund",
+      "fundSummary": "Fund Summary",
+      "recalculateNav": "Recalculate NAV per Unit",
+      "refreshHoldings": "Refresh Holdings & Fund Summary",
+      "navPerUnit": "NAV per Unit",
+      "totalOutstandingUnits": "Total Outstanding Units",
+      "numberOfInvestors": "Number of Investors",
+      "totalPnL": "Total P&L (current value - capital)",
+      "lastNavUpdate": "Last NAV Update",
+      "new": "New",
+      "newSubscription": "New Subscription",
+      "process": "Process",
+      "processRedemption": "Process Redemption",
+      "convertToPortfolio": "Convert to Portfolio",
+      "investorHoldings": "Investor Holdings",
+      "noHoldings": "No investor holdings found",
+      "noHoldingsMessage": "Create the first subscription to start tracking investor holdings",
+      "investor": "Investor",
+      "units": "Units",
+      "avgCost": "Avg Cost",
+      "totalInvestment": "Total Investment",
+      "currentValue": "Current Value",
+      "unrealizedPnL": "Unrealized P&L",
+      "returnPercent": "Return %",
+      "viewDetails": "View Details",
+      "convertToFundModal": {
+        "title": "Convert Portfolio to Fund",
+        "portfolioInformation": "Portfolio Information",
+        "portfolioName": "Portfolio Name",
+        "baseCurrency": "Base Currency",
+        "conversionOptions": "Conversion Options",
+        "useSnapshotDate": "Use historical snapshot date for conversion",
+        "snapshotDate": "Snapshot Date",
+        "snapshotDateHelper": "Select the historical date to use for NAV calculation during conversion",
+        "conversionInformation": "Conversion Information",
+        "conversionInfoWithDate": "This will convert the portfolio to a fund using the portfolio's state as of {{date}}. The NAV per unit will be calculated based on the portfolio's value at that specific date.",
+        "conversionInfoCurrent": "This will convert the portfolio to a fund using the current portfolio state. The NAV per unit will be calculated based on the current portfolio value.",
+        "conversionInfoAfter": "After conversion, you'll be able to manage fund subscriptions, redemptions, and track investor holdings.",
+        "converting": "Converting...",
+        "convert": "Convert",
+        "convertToFund": "Convert to Fund",
+        "validation": {
+          "invalidDateFormat": "Invalid date format. Please use YYYY-MM-DD format.",
+          "dateInFuture": "Snapshot date cannot be in the future.",
+          "snapshotDateRequired": "Snapshot date is required when using historical snapshot."
+        },
+        "error": {
+          "convertFailed": "Failed to convert portfolio to fund"
+        }
+      },
+      "convertToPortfolioModal": {
+        "title": "Convert Fund to Portfolio",
+        "warningTitle": "This action will permanently remove all fund-related data!",
+        "confirmationQuestion": "Are you sure you want to convert the fund \"{{name}}\" back to a regular portfolio?",
+        "willDelete": "This will permanently delete:",
+        "deleteItem1": "All investor holdings and their transaction history",
+        "deleteItem2": "All fund unit transactions (subscriptions and redemptions)",
+        "deleteItem3": "All cash flows related to fund unit transactions",
+        "deleteItem4": "NAV per unit and total outstanding units will be reset to 0",
+        "deleteItem5": "Number of investors will be reset to 0",
+        "willRetain": "The portfolio will retain:",
+        "retainItem1": "All trades and their history",
+        "retainItem2": "All deposits and cash flows not related to fund units",
+        "retainItem3": "All performance snapshots and analytics data",
+        "retainItem4": "Cash balance will be recalculated from remaining cash flows",
+        "confirmationLabel": "I understand that this action will permanently delete all fund-related data and cannot be undone",
+        "converting": "Converting...",
+        "convert": "Convert",
+        "convertToPortfolio": "Convert to Portfolio"
+      }
+    }
+  },
+  "deposit": {
+    "title": "Deposit Management",
+    "management": "Deposit Management",
+    "createNew": "Create New",
+    "createNewDeposit": "Create New Deposit",
+    "createSuccess": "Deposit created successfully!",
+    "createError": "Error occurred while creating deposit",
+    "updateSuccess": "Deposit updated successfully!",
+    "updateError": "Error occurred while updating deposit",
+    "settleSuccess": "Deposit settled successfully!",
+    "settleError": "Error occurred while settling deposit",
+    "deleteSuccess": "Deposit deleted successfully!",
+    "deleteError": "Error occurred while deleting deposit",
+    "loadError": "Error occurred while loading deposit data",
+    "noDeposits": "No deposits found. Create your first deposit!",
+    "bank": "Bank",
+    "accountNumber": "Account Number",
+    "principal": "Principal Amount",
+    "interestRate": "Interest Rate",
+    "term": "Term",
+    "totalValue": "Total Value",
+    "viewDetails": "View Details",
+    "actions": "Actions",
+    "status": "Status",
+    "edit": "Edit",
+    "delete": "Delete",
+    "settle": "Settle",
+    "active": "Active",
+    "settled": "Settled",
+    "matured": "Matured",
+    "all": "All",
+    "allPortfolios": "All Portfolios",
+    "searchByBank": "Search by Bank",
+    "clearFilters": "Clear Filters",
+    "filters": "Filters",
+    "refresh": "Refresh",
+    "overview": "Overview",
+    "totalDeposits": "Total Deposits",
+    "activeDeposits": "Active Deposits",
+    "settledDeposits": "Settled Deposits",
+    "totalPrincipal": "Total Principal",
+    "averageInterestRate": "Average Interest Rate",
+    "settledInterest": "Settled Interest",
+    "accruedInterest": "Accrued Interest",
+    "actualInterest": "Actual Interest",
+    "average": "Average",
+    "confirmDelete": "Confirm Delete Deposit",
+    "cannotUndo": "This action cannot be undone",
+    "deleteWarning": "Warning:",
+    "deleteWarningText": "You are about to permanently delete this deposit. All related data will be lost and cannot be recovered.",
+    "cancel": "Cancel",
+    "deletePermanently": "Delete Permanently",
+    "principalAmount": "Principal Amount:",
+    "interestRateLabel": "Interest Rate:",
+    "termLabel": "Term:",
+    "totalValueLabel": "Total Value:",
+    "form": {
+      "editTitle": "Edit Deposit",
+      "createTitle": "Create New Deposit",
+      "bankName": "Bank Name",
+      "accountNumber": "Account Number (Optional)",
+      "principal": "Principal Amount",
+      "principalPlaceholder": "Enter principal amount",
+      "interestRate": "Interest Rate (%/year)",
+      "interestRatePlaceholder": "Enter interest rate",
+      "term": "Term",
+      "termHelper": "Select term to automatically calculate end date",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "notes": "Notes",
+      "processing": "Processing...",
+      "update": "Update",
+      "create": "Create",
+      "cancel": "Cancel",
+      "save": "Save",
+      "termOptions": {
+        "1M": "1 Month",
+        "3M": "3 Months",
+        "6M": "6 Months",
+        "1Y": "1 Year",
+        "2Y": "2 Years",
+        "3Y": "3 Years",
+        "5Y": "5 Years"
+      },
+      "validation": {
+        "portfolioIdRequired": "Portfolio ID is required",
+        "bankNameRequired": "Bank name is required",
+        "bankNameMaxLength": "Bank name cannot exceed 100 characters",
+        "accountNumberMaxLength": "Account number cannot exceed 50 characters",
+        "principalRequired": "Principal amount is required",
+        "principalMin": "Principal amount must be greater than 0",
+        "interestRateRequired": "Interest rate is required",
+        "interestRateMin": "Interest rate must be greater than or equal to 0",
+        "interestRateMax": "Interest rate cannot exceed 100%",
+        "startDateRequired": "Start date is required",
+        "endDateRequired": "End date is required",
+        "notesMaxLength": "Notes cannot exceed 500 characters",
+        "endDateAfterStart": "End date must be after start date",
+        "termTooLong": "Term cannot exceed 10 years",
+        "errorOccurred": "An error occurred"
+      }
+    },
+    "details": {
+      "title": "Deposit Details",
+      "maturityProgress": "Maturity Progress",
+      "portfolioInfo": "Portfolio Information",
+      "portfolioName": "Portfolio Name",
+      "loadingPortfolio": "Loading portfolio...",
+      "portfolioLoadError": "Failed to load portfolio information",
+      "noPortfolioData": "No portfolio data available",
+      "financialInfo": "Financial Information",
+      "principal": "Principal Amount",
+      "interestRate": "Interest Rate",
+      "accruedInterest": "Accrued Interest",
+      "totalValue": "Total Value",
+      "actualInterest": "Actual Interest (Settled)",
+      "timelineInfo": "Timeline Information",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "settlementDate": "Settlement Date",
+      "additionalInfo": "Additional Information",
+      "notes": "Notes",
+      "daysUntilMaturity": "{{days}} days until maturity"
+    },
+    "settlement": {
+      "title": "Settle Deposit",
+      "subtitle": "Confirm and complete settlement",
+      "settlementInfo": "Settlement Information",
+      "settlementInfoDesc": "Deposit details and settlement information",
+      "depositInfo": "Deposit Information",
+      "settlementDetails": "Settlement Details",
+      "financialSummary": "Financial Summary",
+      "bankName": "Bank Name",
+      "term": "Term",
+      "principal": "Principal",
+      "interestRate": "Interest Rate",
+      "accruedInterest": "Accrued Interest",
+      "total": "Total",
+      "actualInterest": "Actual Interest",
+      "actualInterestPlaceholder": "Enter actual interest amount",
+      "settlementDate": "Settlement Date",
+      "settlementDateHelper": "Select settlement date",
+      "notes": "Notes",
+      "totalReceived": "Total Received",
+      "interest": "Interest",
+      "confirmSettlement": "Confirm Settlement",
+      "processing": "Processing...",
+      "validation": {
+        "actualInterestRequired": "Actual interest amount is required",
+        "actualInterestMin": "Actual interest must be greater than or equal to 0",
+        "settlementDateRequired": "Settlement date is required",
+        "notesMaxLength": "Notes cannot exceed 500 characters"
+      }
+    },
+    "depositActions": {
+      "edit": "Edit Deposit",
+      "settle": "Settle"
+    },
+    "depositStatus": {
+      "active": "Active",
+      "settled": "Settled",
+      "cancelled": "Cancelled"
+    }
+  },
+  "cashflow": {
+    "title": "Cash Flow",
+    "subtitle": "Track your portfolio's cash movements",
+    "refresh": "Refresh",
+    "filter": "Filter",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
+    "dividend": "Dividend",
+    "createDeposit": "Create Deposit",
+    "createWithdrawal": "Create Withdrawal",
+    "createDividend": "Create Dividend",
+    "management": {
+      "title": "Cash Flow Management"
+    },
+    "summary": {
+      "title": "Cash Flow Summary",
+      "totalDeposits": "Total Deposits",
+      "totalWithdrawals": "Total Withdrawals",
+      "totalDividends": "Total Dividends",
+      "netCashFlow": "Net Cash Flow",
+      "deposits": "Deposits",
+      "withdrawals": "Withdrawals",
+      "dividends": "Dividends",
+      "netFlow": "Net Flow",
+      "totalInflows": "Total Inflows",
+      "totalOutflows": "Total Outflows",
+      "transactions": "Transactions"
+    },
+    "chart": {
+      "title": "Cash Flow Chart",
+      "subtitle": "Visualize your cash flow trends",
+      "loading": "Loading chart data...",
+      "fetchingData": "Fetching data for portfolio {{portfolioId}}",
+      "noData": {
+        "title": "No Data Available",
+        "message": "No cash flow data available for the selected period"
+      },
+      "refresh": "Refresh Chart",
+      "chartType": "Chart Type",
+      "lineChart": "Line Chart",
+      "barChart": "Bar Chart",
+      "pieChart": "Pie Chart",
+      "timeRange": "Time Range",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "lastYear": "Last year",
+      "dataPoints": "{{count}} data points",
+      "view": "{{range}} view",
+      "deposits": "Deposits",
+      "withdrawals": "Withdrawals",
+      "dividends": "Dividends",
+      "interest": "Interest",
+      "debugInfo": "Debug Information"
+    },
+    "filters": {
+      "filter": "Filter",
+      "allTypes": "All Types",
+      "deposits": "Deposits",
+      "withdrawals": "Withdrawals",
+      "dividends": "Dividends",
+      "interest": "Interest",
+      "fees": "Fees",
+      "taxes": "Taxes",
+      "buyTrades": "Buy Trades",
+      "sellTrades": "Sell Trades",
+      "tradeSettlements": "Trade Settlements",
+      "adjustments": "Adjustments",
+      "depositCreations": "Deposit Creations",
+      "depositSettlements": "Deposit Settlements",
+      "transactionTypes": "Transaction Types",
+      "dateRange": "Date Range",
+      "type": "Type",
+      "apply": "Apply",
+      "applyFilters": "Apply Filters",
+      "activeFilters": "Active filters",
+      "reset": "Reset",
+      "resetAll": "Reset All",
+      "from": "From",
+      "to": "To",
+      "types": "Types"
+    },
+    "table": {
+      "type": "Type",
+      "amount": "Amount",
+      "description": "Description",
+      "reference": "Reference",
+      "fundingSource": "Funding Source",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions",
+      "transactionCount": "{{count}} transactions",
+      "total": "Total",
+      "items": "{{count}} items",
+      "group": "Group",
+      "groupByDate": "Group by Date",
+      "expand": "Expand",
+      "expandAll": "Expand All",
+      "collapseAll": "Collapse All"
+    },
+    "form": {
+      "amount": "Amount",
+      "amountPlaceholder": "Enter amount",
+      "enterAmount": "Enter amount",
+      "original": "Original",
+      "new": "New",
+      "currency": "Currency",
+      "currencyHelper": "Currency for the transaction",
+      "status": "Status",
+      "completed": "Completed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "originalStatus": "Original Status",
+      "fundingSource": "Funding Source",
+      "fundingSourceOptional": "Funding Source (Optional)",
+      "fundingSourcePlaceholder": "e.g., VIETCOMBANK, BANK_ACCOUNT_001",
+      "fundingSourceHelper": "Source of the funding",
+      "flowDate": "Flow Date",
+      "flowDateHelper": "Date when the cash flow occurred",
+      "reference": "Reference",
+      "referenceHelper": "Reference number or code",
+      "description": "Description",
+      "descriptionHelper": "Description of the transaction",
+      "descriptionOptional": "Description (Optional)",
+      "referenceOptional": "Reference (Optional)"
+    },
+    "modal": {
+      "createTitle": "Create {{type}}",
+      "editTitle": "Edit Cash Flow",
+      "createDeposit": "Create Deposit",
+      "createWithdrawal": "Create Withdrawal",
+      "createDividend": "Create Dividend",
+      "transaction": "{{type}} Transaction",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "creatingCashFlow": "Creating Cash Flow...",
+      "updatingCashFlow": "Updating Cash Flow...",
+      "createCashFlow": "Create Cash Flow",
+      "updateCashFlow": "Update Cash Flow"
+    },
+    "delete": {
+      "title": "Delete Cash Flow",
+      "message": "Are you sure you want to delete this cash flow?",
+      "warning": "This action cannot be undone.",
+      "cancelledWarning": "This cash flow has been cancelled and cannot be deleted.",
+      "cancelledHelper": "Only active cash flows can be deleted.",
+      "error": "Error deleting cash flow",
+      "errorHelper": "Please try again or contact support.",
+      "type": "Type",
+      "amount": "Amount",
+      "description": "Description",
+      "status": "Status",
+      "deleting": "Deleting...",
+      "delete": "Delete",
+      "confirm": "Are you sure you want to cancel this cash flow?"
+    },
+    "transfer": {
+      "title": "Transfer Cash",
+      "description": "Transfer cash between funding sources",
+      "error": "Error transferring cash",
+      "errorHelper": "Please check your input and try again.",
+      "fromSource": "From Source",
+      "fromSourceHelper": "Source to transfer from",
+      "toSource": "To Source",
+      "toSourcePlaceholder": "Enter destination source",
+      "amount": "Amount",
+      "amountPlaceholder": "Enter transfer amount",
+      "amountHelper": "Transferring {{amount}}",
+      "amountHelperEmpty": "Enter the amount to transfer",
+      "date": "Date",
+      "dateHelper": "Date of the transfer",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Transfer from {{from}} to {{to}}",
+      "descriptionHelper": "Description of the transfer",
+      "source": "Source",
+      "destination": "Destination",
+      "summary": "Transfer Summary",
+      "summaryText": "Transfer {{amount}} from {{from}} to {{to}}",
+      "summaryHelper": "This will create two cash flow entries: one outflow from the source and one inflow to the destination.",
+      "transferring": "Transferring...",
+      "transfer": "Transfer",
+      "transferCash": "Transfer Cash"
+    },
+    "tooltips": {
+      "cannotEditCancelled": "Cannot edit cancelled cash flow",
+      "edit": "Edit"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} entries",
+      "perPage": "Per page"
+    },
+    "validation": {
+      "invalidDates": "Invalid date range. Please check your dates and try again."
+    },
+    "error": {
+      "loadFailed": "Failed to load cash flows",
+      "createFailed": "Failed to create cash flow",
+      "cancelFailed": "Failed to cancel cash flow"
+    },
+    "typeDescription": {
+      "deposit": "Money flowing into your portfolio",
+      "withdrawal": "Money flowing out of your portfolio",
+      "dividend": "Dividend payments received",
+      "default": "Cash flow transaction"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "fundingSource": {
+      "title": "Funding Source Summary",
+      "subtitle": "Track cash flows by funding source",
+      "grid": "Grid",
+      "gridView": "Grid View",
+      "list": "List",
+      "listView": "List View",
+      "fundingSource": "Funding Source",
+      "netAmount": "Net Amount",
+      "inflow": "Inflow",
+      "outflow": "Outflow",
+      "transactions": "Transactions",
+      "lastTransaction": "Last Transaction",
+      "typeToSearch": "Type to search funding sources",
+      "enterNew": "Enter new funding source",
+      "enterNewSource": "Enter new funding source",
+      "inputLabel": "Funding Source",
+      "inputPlaceholder": "Enter funding source"
+    },
+    "tabs": {
+      "analytics": "Analytics",
+      "history": "History"
+    },
+    "history": {
+      "title": "Cash Flow History",
+      "transactionCount": "{{count}} transactions"
+    },
+    "withdrawal": "Withdrawal",
+    "transferCash": "Transfer Cash"
+  },
+  "genericForm": {
+    "title": "Create New Transaction",
+    "subtitle": "Select the type of transaction you want to perform",
+    "create": "Create",
+    "tabs": {
+      "trading": "Buy/Sell",
+      "cashflow": "Deposit/Withdraw",
+      "deposit": "Bank Deposit",
+      "transfer": "Transfer"
+    },
+    "options": {
+      "trading": {
+        "title": "Buy/Sell Asset",
+        "description": "Buy/Sell stocks, bonds, gold..."
+      },
+      "cashFlow": {
+        "title": "Deposit/Withdraw",
+        "description": "Deposit or withdraw money from portfolio"
+      },
+      "bankDeposit": {
+        "title": "Bank Deposit",
+        "description": "Create bank deposit with interest rate"
+      },
+      "bankTransfer": {
+        "title": "Transfer Money",
+        "description": "Transfer money between funding sources"
+      }
+    },
+    "bankDeposit": {
+      "title": "Create Bank Deposit",
+      "description": "Add bank deposit information with interest rates"
+    },
+    "goToCashFlow": "Go to Cash Flow",
+    "goToTrading": "Go to Trading",
+    "portfolioInfo": {
+      "title": "Selected Portfolio",
+      "fundingSource": "Funding Source",
+      "selectPortfolio": "Select Portfolio"
+    },
+    "error": {
+      "noPortfolio": "No Portfolio Found",
+      "noPortfolioDescription": "Please create a portfolio before performing transactions"
+    }
+  },
+  "portfolioError": {
+    "benchmarkLoadFailed": "Failed to load benchmark data",
+    "mwrBenchmarkLoadFailed": "Failed to load MWR benchmark data",
+    "riskMetricsLoadFailed": "Failed to load risk metrics data"
+  },
+  "navHistory": {
+    "title": "NAV Performance History",
+    "subtitle": "Net Asset Value evolution over time",
+    "tooltipDescription": "Track portfolio value changes and performance metrics",
+    "returnPercent": "Return %",
+    "navValue": "NAV Value",
+    "currentNav": "Current NAV",
+    "totalReturn": "Total Return",
+    "maxDrawdown": "Max Drawdown",
+    "dataPoints": "Data Points",
+    "loading": "Loading NAV history data...",
+    "error": {
+      "loadFailed": "Failed to load NAV history",
+      "unableToLoad": "Unable to load NAV history data"
+    },
+    "noData": {
+      "title": "No NAV history data available",
+      "message": "Historical data will appear here once available"
+    },
+    "tooltipContent": {
+      "navValue": "NAV Value",
+      "portfolioPnL": "Portfolio P&L",
+      "cumulativeReturn": "Cumulative Return"
+    },
+    "legend": {
+      "navValue": "NAV Value",
+      "portfolioPnL": "Portfolio P&L"
+    },
+    "tooltip": {
+      "navValue": "NAV Value",
+      "portfolioPnL": "Portfolio P&L",
+      "cumulativeReturn": "Cumulative Return"
+    }
+  },
+  "benchmark": {
+    "noData": "No benchmark data available",
+    "subtitle": "Portfolio performance vs {{benchmarkName}}",
+    "portfolio": "Portfolio",
+    "Difference": "Difference",
+    "trackingError": "Tracking Error",
+    "tooltip": {
+      "title": "Investor Notes:",
+      "twr": "TWR",
+      "twrDescription": "reflects fund management capability, removing cash flow impact.",
+      "mwr": "MWR",
+      "mwrDescription": "reflects actual investor returns, may vary based on timing of capital contributions/withdrawals.",
+      "comparison": "Investors should compare personal MWR with fund TWR to understand differences.",
+      "difference": "Difference"
+    }
+  },
+  "mwrBenchmark": {
+    "subtitle": "Portfolio performance vs {{benchmarkName}}",
+    "portfolio": "Portfolio (MWR)",
+    "difference": "Difference",
+    "noData": "No data available for MWR chart",
+    "tooltip": {
+      "title": "Investor Notes:",
+      "mwr": "MWR",
+      "mwrDescription": "reflects actual investor returns, may vary based on timing of capital contributions/withdrawals.",
+      "twr": "TWR",
+      "twrDescription": "reflects fund management capability, removing cash flow impact.",
+      "comparison": "Investors should compare personal MWR with fund TWR to understand differences.",
+      "difference": "Difference"
+    }
+  },
+  "tradeAnalysis": {
+    "title": "Trading Analysis",
+    "subtitle": "Comprehensive performance insights and analytics",
+    "loading": "Loading analysis...",
+    "noData": "No trade data available for analysis",
+    "error": {
+      "loadFailed": "Failed to load trade analysis",
+      "invalidData": "Invalid analysis data format",
+      "portfolioLoadFailed": "Failed to load portfolio information",
+      "portfolioNotFound": "Portfolio not found"
+    },
+    "totalPnL": "Total P&L",
+    "realizedPnL": "Realized P&L",
+    "unrealizedPnL": "Unrealized P&L",
+    "winRate": "Win Rate",
+    "tradingStatistics": "Trading Statistics",
+    "trades": "Trades",
+    "average": "Avg",
+    "buyTrades": "Buy Trades",
+    "sellTrades": "Sell Trades",
+    "totalVolume": "Total Volume",
+    "riskMetrics": "Risk Metrics",
+    "riskLevel": "Risk Level",
+    "riskLevels": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "maxDrawdown": "Max Drawdown",
+    "var95": "VaR 95%",
+    "sharpeRatio": "Sharpe Ratio",
+    "monthlyPerformance": "Investment Performance",
+    "assetPerformance": "Asset Performance",
+    "pieChart": "Pie Chart",
+    "compactList": "Compact List",
+    "noAssetData": "No asset performance data available",
+    "topTrades": "Top Performing Trades",
+    "best": "Best",
+    "worstTrades": "Worst Performing Trades",
+    "worst": "Worst",
+    "assetPerformanceDetails": "Asset Performance Details",
+    "asset": "Asset",
+    "side": "Side",
+    "pnl": "P&L",
+    "date": "Date",
+    "tooltip": {
+      "totalPnL": "Total P&L",
+      "realizedPnL": "Realized P&L",
+      "unrealizedPnL": "Unrealized P&L",
+      "trades": "Trades",
+      "winRate": "Win Rate",
+      "volume": "Volume",
+      "symbol": "Symbol",
+      "pnl": "P&L",
+      "performance": "Performance"
+    },
+    "timeframe": {
+      "allTime": "All Time",
+      "oneMonth": "1 Month",
+      "threeMonths": "3 Months",
+      "sixMonths": "6 Months",
+      "oneYear": "1 Year"
+    },
+    "granularity": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "table": {
+      "asset": "Asset",
+      "side": "Side",
+      "pnl": "P&L",
+      "date": "Date",
+      "quantity": "Quantity",
+      "avgCost": "Avg Buy Price",
+      "marketValue": "Total Sell Value",
+      "trades": "Trades"
+    },
+    "status": {
+      "win": "Win",
+      "loss": "Loss"
+    },
+    "unknown": {
+      "asset": "Unknown",
+      "assetName": "Unknown Asset"
+    }
+  },
+  "riskMetrics": {
+    "noData": "No risk metrics data available",
+    "loading": "Loading risk metrics...",
+    "subtitle": "Comprehensive risk analysis and portfolio health metrics",
+    "var95": "Value at Risk (95%)",
+    "sharpeRatio": "Sharpe Ratio",
+    "volatility": "Volatility",
+    "maxDrawdown": "Max Drawdown",
+    "additionalMetrics": "Additional Risk Metrics",
+    "var99": "VaR (99%)",
+    "beta": "Beta",
+    "calmarRatio": "Calmar Ratio",
+    "sortinoRatio": "Sortino Ratio",
+    "error": {
+      "loadFailed": "Failed to load risk metrics data"
+    }
+  },
+  "navSummary": {
+    "title": "NAV Summary",
+    "subtitle": "Net Asset Value Overview",
+    "tooltipContent": {
+      "currentNav": "Current Net Asset Value"
+    },
+    "navPerUnit": "NAV/Unit",
+    "navTotal": "Total NAV",
+    "growth": "Growth",
+    "decline": "Decline",
+    "investorBenefit": "Investor Benefit",
+    "navPerUnitTooltip": "NAV/Unit = Total NAV ÷ Outstanding Units. Shows each investor's benefit.",
+    "navPerUnitGrowth": "NAV/Unit Growth",
+    "navGrowth": "NAV Growth",
+    "recent": "Recent",
+    "fromStart": "From Start",
+    "infoNote": "💡 Total NAV = Cash + Asset Value | NAV/Unit = Total NAV ÷ Outstanding Units"
+  },
+  "asset": {
+    "modal": {
+      "editTitle": "Edit Asset",
+      "createTitle": "Create New Asset",
+      "updateAsset": "Update Asset",
+      "createAsset": "Create Asset"
+    },
+    "selector": {
+      "title": "Add Asset to Portfolio",
+      "subtitle": "Choose an existing asset or create a new one",
+      "tabs": {
+        "selectExisting": "Select Existing Asset",
+        "createNew": "Create New Asset"
+      },
+      "search": {
+        "label": "Search assets",
+        "placeholder": "Search by name or code..."
+      },
+      "noAssets": {
+        "message": "No assets found. Try creating a new asset."
+      },
+      "createAsset": "Create Asset",
+      "add": "Add",
+      "addSelected": "Add Selected Asset",
+      "error": {
+        "createFailed": "Failed to create asset"
+      }
+    },
+    "autocomplete": {
+      "label": "Asset",
+      "placeholder": "Search assets...",
+      "loading": "Loading assets...",
+      "loadMore": "Load more assets...",
+      "noResults": "No assets found for \"{{searchTerm}}\"",
+      "noAssets": "No assets available",
+      "create": "Create",
+      "createNew": "Create new asset",
+      "currentPrice": "Current Price"
+    },
+    "form": {
+      "fields": {
+        "name": "Asset Name",
+        "symbol": "Asset Symbol",
+        "symbolPlaceholder": "e.g., AAPL, HPG",
+        "symbolHelper": "Symbol cannot be changed after creation.",
+        "symbolFoundInSystem": "✓ This symbol exists in the system and is ready to use",
+        "symbolDisabledHelper": "Symbol cannot be changed after creation",
+        "type": "Asset Type",
+        "currency": "Currency",
+        "currencyHelper": "Currently only VND is supported",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional description of the asset"
+      },
+      "validation": {
+        "nameRequired": "Asset name is required",
+        "symbolRequired": "Asset symbol is required",
+        "symbolInvalidFormat": "Asset symbol can only contain letters and numbers",
+        "typeRequired": "Asset type is required",
+        "priceModeRequired": "Price mode is required",
+        "manualPriceRequired": "Manual price is required when manual mode is selected"
+      },
+      "priceMode": {
+        "automatic": "Automatic",
+        "automaticDescription": "Automatically fetch prices from market and update periodically",
+        "manual": "Manual",
+        "manualDescription": "Only manual price input, no automatic market updates",
+        "readOnlyInfo": "Only the asset creator can change the price mode"
+      },
+      "loading": {
+        "types": "Loading asset types...",
+        "fetchingGlobalAsset": "Searching for asset information from the market..."
+      },
+      "error": {
+        "typesLoadFailed": "Error loading asset types"
+      },
+      "warning": {
+        "differencesWithGlobalAsset": "⚠️ Asset information differs from the system",
+        "differencesExplanation": "This information may differ from the system. You can update to sync with the latest information."
+      },
+      "actions": {
+        "syncWithGlobalAsset": "Update from System"
+      },
+      "info": {
+        "computedFields": {
+          "title": "Computed Fields",
+          "description": "Initial value, initial quantity, current value, and current quantity are automatically calculated based on your trades and market prices. These fields will be updated when you create trades for this asset."
+        }
+      }
+    },
+    "details": {
+      "title": "Asset Details",
+      "editTooltip": "Edit Asset",
+      "deleteTooltip": "Delete Asset",
+      "loading": "Loading...",
+      "demo": "Demo",
+      "demoDataWarning": "Using demo data - API may be unavailable",
+      "noPortfolios": "No portfolios linked",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "portfolios": {
+        "title": "Portfolios",
+        "chip": "{{count}} Portfolio"
+      },
+      "trading": {
+        "title": "Trading Records",
+        "chip": "{{count}} Trading",
+        "demoDescription": "Demo trading activities (API unavailable)",
+        "realDescription": "Real trading activities for this asset",
+        "foundInPortfolios": "Found in {{count}} portfolio with actual trades"
+      },
+      "metrics": {
+        "currentValue": "Current Value",
+        "unrealizedPnL": "Unrealized P&L",
+        "pnlPercentage": "P&L Percentage",
+        "quantity": "Quantity"
+      },
+      "sections": {
+        "keyMetrics": "Key Metrics",
+        "financialOverview": "Financial Overview",
+        "priceInformation": "Price Information",
+        "positionDetails": "Position Details",
+        "performanceAnalytics": "Performance Analytics",
+        "assetInformation": "Asset Information"
+      },
+      "price": {
+        "currentPrice": "Current Price",
+        "averageCost": "Average Cost",
+        "priceChange": "Price Change"
+      },
+      "position": {
+        "totalQuantity": "Total Quantity",
+        "costBasis": "Cost Basis",
+        "marketValue": "Market Value"
+      },
+      "performance": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "yearly": "Yearly"
+      },
+      "metadata": {
+        "created": "Created",
+        "lastUpdated": "Last Updated",
+        "assetId": "Asset ID"
+      }
+    },
+    "delete": {
+      "title": "Delete Asset",
+      "titleWithTrades": "Delete Asset with Trades",
+      "deleting": "Deleting...",
+      "delete": "Delete",
+      "deleteWithImpact": "Delete Asset & Impacted Data",
+      "affectedPortfolios": "Affected Portfolios",
+      "impactAnalysis": "Impact Analysis",
+      "impactDescription": "The asset \"{{assetName}}\" is actively used in your portfolio{{portfolioCount, plural, one {} other {s}}} with {{tradeCount}} trading record{{tradeCount, plural, one {} other {s}}}.",
+      "warningMessage": "Deleting this asset will affect portfolio calculations and historical data.",
+      "whatWillBeDeleted": "What will be deleted",
+      "theAsset": "The asset \"{{assetName}}\"",
+      "tradingRecords": "{{count}} trading record{{count, plural, one {} other {s}}}",
+      "transactionHistory": "All associated transaction history",
+      "portfolioCalculations": "Portfolio performance calculations will be affected",
+      "safeToDelete": "Safe to Delete",
+      "safeDescription": "The asset \"{{assetName}}\" has no associated trades or portfolio usage.",
+      "safeMessage": "This asset can be safely deleted without affecting any portfolio data.",
+      "noTradeRecords": "No trade records (safe to delete)",
+      "confirmationText": "I understand that this action cannot be undone and will permanently delete the asset \"{{assetName}}\" {{tradeCount}} trading records {{portfolioCount}} portfolios."
+    }
+  },
+  "report": {
+    "error": {
+      "loadFailed": "Failed to load report data"
+    },
+    "noData": "No data available",
+    "noReportData": "No report data available",
+    "title": "Financial Report",
+    "subtitle": "Comprehensive overview of cash balance, deposits, and assets by category",
+    "portfolioFilter": "Portfolio Filter",
+    "allPortfolios": "All Portfolios",
+    "portfoliosSelected": "{{count}} portfolios selected",
+    "cashBalance": {
+      "title": "Total Cash Balance",
+      "subtitle": "Available liquidity",
+      "change": "Liquid",
+      "byFundingSource": "By Funding Source"
+    },
+    "deposits": {
+      "title": "Total Deposits",
+      "subtitle": "{{count}} deposit",
+      "change": "Active",
+      "byBank": "By Bank",
+      "byTerm": "By Deposit Term"
+    },
+    "assets": {
+      "title": "Total Assets",
+      "subtitle": "{{count}} asset",
+      "change": "Diversified",
+      "byExchange": "By Exchange/Platform",
+      "byGroup": "By Group"
+    },
+    "columns": {
+      "fundingSource": "Funding Source",
+      "totalAmount": "Total Amount",
+      "share": "Share",
+      "bank": "Bank",
+      "count": "Count",
+      "value": "Value",
+      "term": "Term",
+      "exchange": "Exchange",
+      "capitalValue": "Capital Value",
+      "currentValue": "Current Value",
+      "assetGroup": "Asset Group",
+      "pnl": "P&L"
+    }
+  },
+  "investorReport": {
+    "title": "Asset Report",
+    "subtitle": "Current Asset Overview",
+    "lastUpdated": "Last Updated",
+    "totalValue": "Total Portfolio Value",
+    "totalValueDesc": "Total Portfolio Assets",
+    "totalValueWithInterest": "Total Value with Interest",
+    "investmentAssets": "Investment Assets",
+    "deposits": "Deposits",
+    "cashBalance": "Cash",
+    "ofTotal": "of total assets",
+    "assetTypes": "Asset Types",
+    "performance": "Performance",
+    "diversified": "Diversified",
+    "totalAssets": "Total Assets",
+    "positions": "Investment Positions",
+    "assetAllocation": "Asset Allocation by Type",
+    "assetType": "Asset Type",
+    "value": "Value",
+    "percentage": "Percentage",
+    "count": "Count",
+    "assetDetails": "Asset Details",
+    "symbol": "Symbol",
+    "name": "Asset Name",
+    "type": "Type",
+    "quantity": "Quantity",
+    "price": "Current Price",
+    "unrealizedPl": "Unrealized P&L",
+    "depositsSummary": "Deposits Overview",
+    "totalDeposits": "Total Deposits",
+    "depositCount": "Number of Deposits",
+    "depositPercentage": "Deposit Percentage",
+    "depositsDetails": "Deposits Details",
+    "depositId": "Deposit ID",
+    "bankName": "Bank Name",
+    "accountNumber": "Account Number",
+    "principal": "Principal Amount",
+    "interestRate": "Interest Rate (%)",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "growthMetrics": "Growth Metrics",
+    "dailyGrowth": "Daily Growth",
+    "monthlyGrowth": "Monthly Growth",
+    "ytdGrowth": "Year-to-Date Growth",
+    "error": {
+      "loadFailed": "Unable to load investor report. Please try again later."
+    }
+  },
+  "investorView": {
+    "title": "Investor View",
+    "subtitle": "Overview of all your investment portfolios",
+    "loading": "Loading portfolio list...",
+    "detailedReport": "Detailed Report",
+    "backToList": "Back to List",
+    "clickToView": "Click to view details",
+    "owner": "Created by",
+    "totalValue": "Total Value",
+    "cash": "Cash",
+    "investments": "Investments",
+    "deposits": "Deposits",
+    "performance": "Performance",
+    "lastestDaily": "Lastest Daily",
+    "daily": "Daily",
+    "monthly": "Monthly",
+    "ytd": "YTD",
+    "lastUpdated": "Last Updated",
+    "noPortfolios": "No portfolios available",
+    "noPortfoliosDesc": "You don't have access to any investment portfolios. View your holdings or contact an administrator to get access.",
+    "viewHoldings": "View Holdings",
+    "managePortfolios": "Manage Portfolios",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close",
+    "error": {
+      "loadFailed": "Unable to load portfolio list. Please try again later."
+    }
+  },
+  "accountManagement": {
+    "title": "Account Management",
+    "subtitle": "Manage your accounts, create new accounts, and update account information.",
+    "error": {
+      "loadFailed": "Failed to load accounts",
+      "deleteFailed": "Failed to delete account"
+    },
+    "confirmDelete": "Are you sure you want to delete this account?",
+    "copyIdTooltip": "Click to copy Account ID",
+    "create": "Create",
+    "createAccount": "Create Account",
+    "main": "Main",
+    "investor": "Investor",
+    "protectedAccount": "Protected Account",
+    "noAccounts": "No accounts found. Create your first account to get started.",
+    "moreActions": "More Actions",
+    "deleteConfirm": {
+      "title": "Delete Account",
+      "subtitle": "This action cannot be undone",
+      "message": "Are you sure you want to delete the account \"{{accountName}}\" ({{accountEmail}})?",
+      "warning": "This will permanently delete the account and all associated data. This action cannot be undone.",
+      "deleting": "Deleting..."
+    }
+  },
+  "accountSwitcher": {
+    "switching": "Switching...",
+    "switchAccount": "Switch Account",
+    "selectAccount": "Select Account",
+    "editCurrentAccount": "Edit Current Account",
+    "loadingAccounts": "Loading accounts...",
+    "noAccounts": "No accounts available",
+    "mainAccount": "Main Account",
+    "demoAccount": "Demo Account",
+    "demoAccountBanner": {
+      "title": "You are using a Demo Account",
+      "demoMode": "Demo Mode",
+      "message": "Demo Account allows read-only access. To get full editing and management permissions, please switch to your main account.",
+      "switchToMainAccount": "Switch to Main Account",
+      "switchToAccount": "Switch Account",
+      "noOtherAccounts": "Note: You don't have a main account yet. Please contact an administrator to create one."
+    },
+    "demoAccountSuggestion": {
+      "title": "Explore Demo Account",
+      "newFeature": "New Feature",
+      "message": "Try out the system with the Demo Account to see features and sample data. The Demo Account provides real data and allows you to explore the system safely.",
+      "tryDemo": "Try Demo"
+    },
+    "investor": "Investor",
+    "protectedAccount": "Protected Account",
+    "updateAccountInfo": "Update account information",
+    "manageAccounts": "Manage Accounts",
+    "manageAccountsDescription": "Create, edit, and manage all accounts",
+    "refreshAccounts": "Refresh accounts"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "tabs": {
+      "accountManagement": "Account Management",
+      "security": "Security",
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "appearance": "Appearance",
+      "adminMessages": "Admin Messages"
+    },
+    "security": {
+      "title": "Security Settings",
+      "subtitle": "Manage your security preferences and authentication settings.",
+      "password": {
+        "title": "Password",
+        "subtitle": "Change your password",
+        "description": "Update your password to keep your account secure."
+      },
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "subtitle": "Add an extra layer of security",
+        "description": "Enable 2FA to protect your account with an additional security layer."
+      }
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "subtitle": "Configure how you receive notifications and alerts.",
+      "email": {
+        "title": "Email Notifications",
+        "subtitle": "Manage email alerts",
+        "description": "Choose which email notifications you want to receive."
+      },
+      "push": {
+        "title": "Push Notifications",
+        "subtitle": "Browser notifications",
+        "description": "Control browser push notifications for real-time updates."
+      }
+    },
+    "appearance": {
+      "title": "Appearance Settings",
+      "subtitle": "Customize the look and feel of your application.",
+      "theme": {
+        "title": "Theme",
+        "subtitle": "Choose your preferred theme",
+        "description": "Switch between light and dark themes."
+      },
+      "language": {
+        "title": "Language",
+        "subtitle": "Select your language",
+        "description": "Choose your preferred language for the interface."
+      }
+    }
+  },
+  "createAccountModal": {
+    "error": {
+      "createFailed": "Failed to create account. Please try again."
+    },
+    "title": "Create New Account",
+    "creating": "Creating...",
+    "create": "Create",
+    "createAccount": "Create Account",
+    "accountInfoTitle": "Account Information",
+    "fields": {
+      "name": "Account Holder Name",
+      "nameHelper": "Enter the full name of the account holder",
+      "email": "Email Address (Optional)",
+      "emailHelper": "Optional: Enter email address for account identification",
+      "baseCurrency": "Base Currency",
+      "canInvest": "Can invest in funds",
+      "canInvestHelper": "Enable this if this account can invest in fund portfolios"
+    }
+  },
+  "adminPortfolioList": {
+    "title": "All Portfolios",
+    "subtitle": "View all portfolios in the system",
+    "columns": {
+      "portfolioName": "Portfolio Name",
+      "portfolioId": "Portfolio ID",
+      "createdBy": "Created By",
+      "createdById": "Created By ID",
+      "totalValue": "Total Value",
+      "createdAt": "Created At"
+    },
+    "noPortfolios": "No portfolios found in the system",
+    "error": {
+      "loadFailed": "Failed to load portfolios"
+    }
+  },
+  "admin": {
+    "portfolioList": {
+      "title": "All Portfolios",
+      "subtitle": "Manage portfolios in the system",
+      "loading": "Loading portfolios...",
+      "error": "Failed to load portfolios",
+      "totalPortfolios": "Total Portfolios",
+      "uniqueUsers": "Unique Users",
+      "totalValue": "Total Value",
+      "lastUpdated": "Last Updated",
+      "searchPlaceholder": "Search portfolios or users...",
+      "refresh": "Refresh",
+      "noResults": "No portfolios found matching your search",
+      "noPortfolios": "No portfolios found in the system",
+      "table": {
+        "portfolioName": "Portfolio Name",
+        "portfolioId": "Portfolio ID",
+        "createdBy": "Created By",
+        "user": "User",
+        "currency": "Currency",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "deletePortfolio": "Delete Portfolio",
+      "deleteDialog": {
+        "title": "Delete Portfolio",
+        "message": "Are you sure you want to delete portfolio \"{{portfolioName}}\"? This action cannot be undone."
+      }
+    }
+  },
+  "adminMessage": {
+    "error": {
+      "loadUsers": "Failed to load users",
+      "sendFailed": "Failed to send message",
+      "noPermission": "You don't have permission to access this feature. Admin role required."
+    },
+    "validation": {
+      "titleAndMessageRequired": "Title and message are required",
+      "selectTarget": "Please select target users, role, or enable \"Send to All\""
+    },
+    "success": {
+      "sent": "Message sent successfully to {{target}}"
+    },
+    "allUsers": "all users",
+    "usersCount": "{{count}} users",
+    "title": "Send Message to Users",
+    "subtitle": "Send notifications to specific users, roles, or all users in the system.",
+    "messageDetails": {
+      "title": "Message Details",
+      "titleLabel": "Message Title",
+      "titlePlaceholder": "Enter message title",
+      "contentLabel": "Message Content",
+      "contentPlaceholder": "Enter your message content",
+      "actionUrlLabel": "Action URL (Optional)",
+      "actionUrlPlaceholder": "e.g., /portfolios, /settings",
+      "actionUrlHelper": "Users can click this link from the notification",
+      "priorityLabel": "Priority"
+    },
+    "priority": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High"
+    },
+    "targetUsers": {
+      "title": "Target Users",
+      "sendToAll": "Send to All Users",
+      "selectUsers": "Select Users",
+      "searchUsers": "Search users...",
+      "selectByRole": "Or Select by Role",
+      "selectRole": "Select Role"
+    },
+    "roles": {
+      "user": "Users",
+      "admin": "Admins",
+      "superAdmin": "Super Admins"
+    },
+    "sending": "Sending...",
+    "send": "Send",
+    "sendMessage": "Send Message"
+  },
+  "snapshots": {
+    "title": "Portfolio Snapshots",
+    "subtitle": "Manage and view portfolio snapshots",
+    "pageTitle": "Snapshot Management",
+    "pageSubtitle": "Manage portfolio snapshots, view performance charts, and export/import data",
+    "selectPortfolio": "Select Portfolio",
+    "selectPortfolioPlaceholder": "Choose a portfolio from the dropdown above to view its snapshots",
+    "portfolioDetails": "Portfolio Details",
+    "totalSnapshots": "Total Snapshots",
+    "latestSnapshot": "Latest Snapshot",
+    "oldestSnapshot": "Oldest Snapshot",
+    "portfolioInfo": "Portfolio Info",
+    "noSnapshots": "No snapshots",
+    "snapshots": "snapshots",
+    "latest": "Latest",
+    "created": "Created",
+    "loadingSnapshots": "(Loading snapshots...)",
+    "failedToLoadPortfolios": "Failed to load portfolios",
+    "refreshData": "Refresh Data",
+    "refreshing": "Refreshing...",
+    "refreshConfirmTitle": "Confirm Data Refresh",
+    "refreshConfirm": "Are you sure you want to refresh all snapshot data?",
+    "refreshWarning": "This action will refresh all data and may take a few seconds to complete.",
+    "createSnapshots": "Create Snapshots",
+    "recalculateAll": "Recalculate All",
+    "recalculating": "Recalculating...",
+    "createForAllPortfolios": "Create Snapshots for All Portfolios",
+    "createForMultiplePortfolios": "Create Snapshots for Multiple Portfolios",
+    "selectPortfolios": "Select Portfolios",
+    "portfoliosSelected": "portfolios selected",
+    "selectAtLeastOnePortfolio": "Please select at least one portfolio",
+    "selectGranularity": "Please select granularity",
+    "processing": "Processing {days} days for {portfolios} portfolios...",
+    "deleteSnapshots": "Delete Snapshots",
+    "moreActions": "More Actions",
+    "refreshDataTooltip": "Refresh Data",
+    "moreActionsTooltip": "More Actions",
+    "snapshotDeletedSuccess": "Snapshot deleted successfully!",
+    "snapshotDeleteFailed": "Failed to delete snapshot. Please try again.",
+    "recalculateConfirmTitle": "Confirm Recalculation",
+    "recalculateConfirm": "Are you sure you want to recalculate all snapshots for this portfolio?",
+    "recalculateWarning": "This action will recalculate all existing snapshots and may take several minutes to complete.",
+    "recalculateSuccess": "All snapshots recalculated successfully!",
+    "recalculateFailed": "Failed to recalculate snapshots. Please try again.",
+    "dataRefreshedSuccess": "Data refreshed successfully!",
+    "dataRefreshError": "Error refreshing data",
+    "deleteSuccess": "Delete Success",
+    "deleteFailed": "Delete Failed",
+    "snapshotCreatedSuccess": "Snapshot created successfully for portfolio on",
+    "snapshotCreateFailed": "Failed to create snapshot",
+    "tabs": {
+      "portfolioSummary": "Portfolio Summary",
+      "portfolioPerformance": "Portfolio Performance",
+      "assetGroupPerformance": "Asset Group Performance",
+      "assetPerformance": "Asset Performance",
+      "assetSnapshots": "Asset Snapshots"
+    },
+    "modals": {
+      "createSnapshot": {
+        "title": "Create Snapshot for All Assets",
+        "selectPortfolio": "Select Portfolio",
+        "dateRangeMode": "Date Range Mode",
+        "singleDateMode": "Single Date Mode",
+        "dateRangeModeDescription": "Create snapshots for multiple dates",
+        "singleDateModeDescription": "Create snapshot for a single date",
+        "snapshotDate": "Snapshot Date",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "selectDate": "Select the date for the snapshot",
+        "startDateHelper": "Start date for snapshot range",
+        "endDateHelper": "End date for snapshot range",
+        "granularity": "Granularity",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "create": "Create",
+        "creating": "Creating...",
+        "cancel": "Cancel",
+        "createSnapshot": "Create Snapshot",
+        "created": "Created successfully",
+        "selectPortfolioAndGranularity": "Please select a portfolio and granularity",
+        "selectStartDate": "Please select a start date",
+        "selectEndDate": "Please select an end date",
+        "startDateBeforeEndDate": "Start date must be before end date",
+        "startDateNotFuture": "Start date cannot be in the future",
+        "processingDays": "Processing {{days}} days of snapshots... This may take a few minutes.",
+        "successCreated": "Successfully created {{count}} snapshots for {{portfolioName}}",
+        "noSnapshotsCreated": "No snapshots created for portfolio {{portfolioName}}.",
+        "errorCreating": "Error {{status}}: {{message}}",
+        "failedToLoadPortfolios": "Failed to load portfolios",
+        "createForMultiplePortfolios": "Create Snapshots for Multiple Portfolios",
+        "useDateRange": "Use Date Range",
+        "selectPortfolios": "Select Portfolios",
+        "portfoliosSelected": "portfolios selected",
+        "selectAtLeastOnePortfolio": "Please select at least one portfolio",
+        "selectGranularity": "Please select granularity",
+        "loadingPortfolios": "Loading portfolios...",
+        "processing": "Processing {days} days for {portfolios} portfolios...",
+        "lastSnapshot": "Last snapshot",
+        "noSnapshots": "No snapshots",
+        "totalSnapshots": "Total snapshots"
+      },
+      "deleteSnapshots": {
+        "title": "Delete Snapshots",
+        "deleteMode": "Delete Mode",
+        "specificDate": "Specific Date",
+        "dateRange": "Date Range",
+        "byGranularity": "By Granularity",
+        "specificDateDescription": "Delete all snapshots for a specific date",
+        "dateRangeDescription": "Delete all snapshots within a date range",
+        "granularityDescription": "Delete all snapshots of a specific granularity (daily/weekly/monthly)",
+        "granularity": "Granularity",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "snapshotDate": "Snapshot Date",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "selectDate": "Select the date to delete snapshots",
+        "startDateHelper": "Start date for deletion range",
+        "endDateHelper": "End date for deletion range",
+        "warning": "Warning: This action cannot be undone!",
+        "warningDescription": "All selected snapshots will be permanently deleted from the database.",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "cancel": "Cancel",
+        "deleteSnapshots": "Delete Snapshots",
+        "portfolioIdRequired": "Portfolio ID is required",
+        "selectSnapshotDate": "Please select a snapshot date",
+        "selectBothDates": "Please select both start and end dates",
+        "startDateBeforeEndDate": "Start date must be before end date",
+        "invalidDeleteMode": "Invalid delete mode",
+        "successDeleted": "Successfully deleted {{count}} snapshots",
+        "errorDeleting": "Error {{status}}: {{message}}",
+        "failedToDelete": "Failed to delete snapshots"
+      }
+    }
+  },
+  "editAccountModal": {
+    "error": {
+      "updateFailed": "Failed to update account. Please try again."
+    },
+    "title": "Edit Account Information",
+    "updating": "Updating...",
+    "update": "Update",
+    "updateAccount": "Update Account",
+    "fields": {
+      "name": "Account Holder Name",
+      "nameHelper": "Enter the full name of the account holder",
+      "email": "Email Address",
+      "emailHelper": "This will be used for account identification",
+      "baseCurrency": "Base Currency",
+      "canInvest": "Can invest in funds",
+      "canInvestHelper": "Enable this if this account can invest in fund portfolios"
+    }
+  },
+  "publicPortfolioSelector": {
+    "title": "Select Portfolio Template",
+    "searchPlaceholder": "Search portfolio templates...",
+    "noDescription": "No description available",
+    "createdBy": "Created by: {{name}}",
+    "tradesCount": "{{count}} trades",
+    "tradesCount_other": "{{count}} trades",
+    "cashFlowsCount": "{{count}} cash flows",
+    "cashFlowsCount_other": "{{count}} cash flows",
+    "depositsCount": "{{count}} deposits",
+    "depositsCount_other": "{{count}} deposits",
+    "noSearchResults": "No portfolios match your search",
+    "noPortfolios": "No public portfolios available",
+    "error": {
+      "loadFailed": "Failed to load public portfolios"
+    }
+  },
+  "bulkAssetSelector": {
+    "title": "Select Assets from Template List",
+    "help": {
+      "title": "💡 Usage Guide",
+      "description": "Select assets from the template list to quickly create them in your portfolio. The list only shows assets you don't already own. You can also search by name or symbol."
+    },
+    "search": {
+      "label": "Search assets",
+      "placeholder": "Enter name or symbol..."
+    },
+    "type": {
+      "label": "Asset Type",
+      "all": "All"
+    },
+    "select": {
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All"
+    },
+    "creating": "Creating...",
+    "createCount": "Create {{count}}",
+    "createAssets": "Create {{count}} Assets",
+    "results": {
+      "found": "Found {{count}} assets not in portfolio"
+    },
+    "noAssets": {
+      "allOwned": "You already own all available assets in the system",
+      "noSearchResults": "No assets found matching your search criteria"
+    },
+    "success": {
+      "allCreated": "✅ Successfully created {{count}} assets",
+      "partialCreated": "⚠️ Successfully created {{created}}/{{total}} assets. {{failed}} assets failed."
+    },
+    "error": {
+      "loadFailed": "Failed to load asset list",
+      "createFailed": "❌ Error creating assets",
+      "allFailed": "❌ Failed to create all {{count}} assets"
+    }
+  },
+  "login": {
+    "title": "Portfolio Management System",
+    "subtitle": {
+      "enterUsername": "Enter your username to get started",
+      "welcomeBack": "Enter your username to continue (no password required)",
+      "signIn": "Enter your username and password to sign in",
+      "continue": "Enter your username to continue (no password required)"
+    },
+    "form": {
+      "username": "Username",
+      "password": "Password",
+      "usernamePlaceholder": "Enter your username",
+      "passwordPlaceholder": "Enter your password to continue",
+      "usernameHelper": "Enter your username",
+      "passwordHelper": "Enter your password to continue",
+      "passwordHelperError": "Please enter the correct password"
+    },
+    "buttons": {
+      "enterUsername": "Enter Username",
+      "welcomeBack": "Welcome Back",
+      "signIn": "Sign In",
+      "continue": "Continue",
+      "signingIn": "Signing In...",
+      "backToWelcome": "Back to Welcome",
+      "hide": "Hide",
+      "show": "Show"
+    },
+    "messages": {
+      "welcomeBack": "Welcome back, {{username}}",
+      "enterPassword": "Enter your password to continue",
+      "userHasPassword": "This user has a password set - please enter your password to continue",
+      "userIncomplete": "This user has incomplete profile - no password required",
+      "easyStart": "Easy start - no password required for new users",
+      "usernameRequired": "Please enter a username",
+      "passwordRequired": "Password is required for this user",
+      "incorrectPassword": "Incorrect password. Please try again.",
+      "loginFailed": "Login failed. Please try again.",
+      "usernameFormat": "Username must contain only letters, numbers, hyphens (-), and underscores (_)",
+      "newUserWelcome": "🎉 Welcome to Portfolio Management System! Click here to get started with our guided tour.",
+      "newUserWelcomeTitle": "Welcome to Portfolio Management System!",
+      "newUserWelcomeMessage": "You're all set! Let's take a quick tour to help you get started with managing your investments."
+    },
+    "history": {
+      "title": "Recent Users - Quick Login",
+      "secure": "Secure",
+      "removeUser": "Remove user from history"
+    },
+    "errors": {
+      "loginFailed": "Login failed. Please try again.",
+      "incorrectPassword": "Incorrect password. Please try again.",
+      "usernameFormat": "Username must contain only letters, numbers, hyphens (-), and underscores (_)",
+      "usernameRequired": "Please enter a username",
+      "passwordRequired": "Password is required for this user"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account information and security settings",
+    "basicInfo": {
+      "title": "Basic Information",
+      "username": "Username",
+      "usernameHelper": "Username cannot be changed",
+      "fullName": "Full Name",
+      "email": "Email",
+      "emailVerified": "Email verified",
+      "emailVerificationRequired": "Email verification required"
+    },
+    "advancedInfo": {
+      "title": "Advanced Information",
+      "phone": "Phone",
+      "dateOfBirth": "Date of Birth",
+      "address": "Address"
+    },
+    "security": {
+      "title": "Security",
+      "setPasswordDescription": "Set a password to secure your account",
+      "passwordSetDescription": "Password is set. You can change it below.",
+      "newPassword": "New Password",
+      "currentPassword": "Current Password",
+      "passwordHelper": "Password must be at least 6 characters (letters, numbers, or special characters)"
+    },
+    "authStates": {
+      "complete": "Secure Account",
+      "partial": "Profile Complete", 
+      "demo": "Demo Account",
+      "unknown": "Unknown"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "editProfile": "Edit Profile",
+      "save": "Save",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "setPassword": "Set Password",
+      "set": "Set",
+      "setting": "Setting...",
+      "changePassword": "Change Password",
+      "change": "Change",
+      "changing": "Changing...",
+      "advanced": "Advanced",
+      "advancedInformation": "Advanced Information"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully",
+      "passwordSet": "Password set successfully",
+      "passwordChanged": "Password changed successfully",
+      "userNotFound": "User not found",
+      "completeProfile": "Complete your profile",
+      "completeProfileDescription": "Please fill in your information to access all features. This page is in edit mode to help you get started.",
+      "cannotCancel": "Please complete your profile before canceling",
+      "failedToLoad": "Failed to load profile",
+      "failedToUpdate": "Failed to update profile",
+      "failedToSetPassword": "Failed to set password",
+      "failedToChangePassword": "Failed to change password"
+    },
+    "errors": {
+      "currentPasswordIncorrect": "Current password is incorrect. Please check your current password.",
+      "noPasswordSet": "Account has no password. Please set a password first.",
+      "authenticationFailed": "Authentication failed. Please log in again.",
+      "invalidData": "Invalid data. Please check your information.",
+      "userNotFound": "User not found. Please log in again.",
+      "passwordTooShort": "New password is invalid. Password must be at least 6 characters.",
+      "cannotChangePassword": "Cannot change password. Please try again."
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Portfolio Management System",
+    "subtitle": "Your comprehensive solution for tracking investments, managing portfolios, and analyzing performance with real-time data and advanced analytics.",
+    "buttons": {
+      "getStarted": "Get Started",
+      "viewDashboard": "View Dashboard"
+    },
+    "features": {
+      "title": "Key Features",
+      "portfolio": {
+        "title": "Portfolio Management",
+        "description": "Comprehensive portfolio tracking and management",
+        "feature1": "Real-time portfolio valuation",
+        "feature2": "Performance analytics and reporting",
+        "feature3": "Asset allocation tracking",
+        "feature4": "Historical performance analysis"
+      },
+      "trading": {
+        "title": "Trading Management",
+        "description": "Advanced trading and position management",
+        "feature1": "Buy/sell transaction recording",
+        "feature2": "FIFO/LIFO trade matching",
+        "feature3": "P&L calculation and tracking",
+        "feature4": "Risk management tools"
+      },
+      "analytics": {
+        "title": "Analytics & Reporting",
+        "description": "Comprehensive analytics and insights",
+        "feature1": "Interactive performance charts",
+        "feature2": "Risk metrics and analysis",
+        "feature3": "Benchmark comparisons",
+        "feature4": "Custom reporting tools"
+      },
+      "assets": {
+        "title": "Asset Management",
+        "description": "Multi-asset investment tracking",
+        "feature1": "Stocks, bonds, and commodities",
+        "feature2": "Real-time market data",
+        "feature3": "Price history tracking",
+        "feature4": "Asset performance analysis"
+      },
+      "deposits": {
+        "title": "Deposit Management",
+        "description": "Bank deposit and interest tracking",
+        "feature1": "Interest rate calculations",
+        "feature2": "Early settlement support",
+        "feature3": "Deposit performance tracking",
+        "feature4": "Cash flow management"
+      },
+      "funds": {
+        "title": "Fund Management",
+        "description": "Investment fund management",
+        "feature1": "Fund subscription/redemption",
+        "feature2": "NAV tracking and updates",
+        "feature3": "Investor management",
+        "feature4": "Fund performance analytics"
+      }
+    },
+    "quickStart": {
+      "title": "Quick Start Guide",
+      "step1": {
+        "title": "Create Your First Portfolio",
+        "description": "Start by creating a new portfolio to organize your investments. This will be your main workspace for tracking performance and managing assets.",
+        "action": "Create Portfolio"
+      },
+      "step2": {
+        "title": "Add Your First Trade",
+        "description": "Record your first buy or sell transaction. The system will automatically calculate your position and track your performance.",
+        "action": "Start Trading"
+      },
+      "step3": {
+        "title": "Manage Your Assets",
+        "description": "Add and organize your investment assets. Track stocks, bonds, gold, deposits, and other investment instruments.",
+        "action": "Manage Assets"
+      },
+      "step4": {
+        "title": "View Your Dashboard",
+        "description": "Monitor your portfolio performance with real-time analytics, charts, and comprehensive reporting tools.",
+        "action": "View Dashboard"
+      }
+    },
+    "capabilities": {
+      "title": "System Capabilities",
+      "realTime": "Real-time Data",
+      "analytics": "Advanced Analytics",
+      "multiAccount": "Multi-Account Support",
+      "mobile": "Mobile Responsive",
+      "secure": "Secure & Reliable",
+      "scalable": "Scalable Architecture"
+    },
+    "footer": {
+      "message": "Ready to start managing your investments? Choose your next step below.",
+      "dashboard": "Dashboard",
+      "portfolios": "Portfolios"
+    },
+    "quickStartGuide": {
+      "subtitle": "Follow these simple steps to get started with your portfolio management",
+      "progress": {
+        "step": "Step {{current}} of {{total}}",
+        "complete": "{{percentage}}% Complete"
+      },
+      "navigation": {
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "completion": {
+        "title": "Congratulations! 🎉",
+        "message": "You've completed all the setup steps. Your portfolio management system is ready to use!"
+      },
+      "steps": {
+        "currentStep": "Current Step",
+        "clickToContinue": "Click to continue",
+        "createPortfolio": {
+          "title": "Create Your First Portfolio",
+          "description": "Start by creating a new portfolio to organize your investments. This will be your main workspace for tracking performance and managing assets.",
+          "action": "Create Portfolio"
+        },
+        "addCashFlow": {
+          "title": "Add Cash Flow Source",
+          "description": "Set up your initial cash flow source to fund your portfolio. This could be salary, savings, or other income streams.",
+          "action": "Add Cash Flow"
+        },
+        "addTrade": {
+          "title": "Add Your First Trade",
+          "description": "Record your first buy or sell transaction. The system will automatically calculate your position and track your performance.",
+          "action": "Start Trading"
+        },
+        "manageAssets": {
+          "title": "Manage Your Assets",
+          "description": "Add and organize your investment assets. Track stocks, bonds, gold, deposits, and other investment instruments.",
+          "action": "Manage Assets"
+        },
+        "viewDashboard": {
+          "title": "View Your Dashboard",
+          "description": "Monitor your portfolio performance with real-time analytics, charts, and comprehensive reporting tools.",
+          "action": "View Dashboard"
+        }
+      }
+    }
+  },
+  "permissions": {
+    "title": "Manage Portfolio Permissions",
+    "addNewPermission": "Add New Permission",
+    "accountId": "Account ID",
+    "accountIdPlaceholder": "Enter account ID (UUID format)",
+    "permission": "Permission",
+    "addPermission": "Add Permission",
+    "currentPermissions": "Current Permissions",
+    "account": "Account",
+    "granted": "Granted",
+    "actions": "Actions",
+    "removePermission": "Remove Permission",
+    "transferCreator": "Transfer Portfolio Creator",
+    "transferCreatorWarning": "⚠️ WARNING: This is a critical action!",
+    "transferCreatorWarningMessage": "You are transferring portfolio ownership to another person. After transfer, you will lose ownership and cannot see this portfolio anymore. This action cannot be undone!",
+    "transferCreatorSuccess": "Portfolio ownership transferred successfully!",
+    "deleteSuccess": "Permission deleted successfully!",
+    "confirmRemove": "Confirm Permission Removal",
+    "confirmRemoveDescription": "Are you sure you want to remove this permission? This action cannot be undone.",
+    "noPermissions": "No permissions set for this portfolio",
+    "noPermissionsDescription": "Add accounts to share access to this portfolio",
+    "permissionTypes": {
+      "owner": "Owner",
+      "update": "Update",
+      "view": "View",
+      "creator": "Creator"
+    },
+    "errors": {
+      "loadFailed": "Failed to load permissions",
+      "addFailed": "Failed to add permission",
+      "deleteFailed": "Failed to delete permission",
+      "transferCreatorFailed": "Failed to transfer portfolio ownership"
+    }
+  },
+  "deviceManagement": {
+    "title": "Trusted Devices",
+    "subtitle": "Manage devices that can access your account without password",
+    "stats": {
+      "totalDevices": "Total Devices",
+      "activeDevices": "Active Devices",
+      "expiredDevices": "Expired Devices",
+      "highTrust": "High Trust"
+    },
+    "noDevices": {
+      "title": "No Trusted Devices",
+      "subtitle": "Devices will be automatically added when you log in"
+    },
+    "device": {
+      "lastUsed": "Last used",
+      "expired": "Expired",
+      "revoke": "Revoke Device",
+      "revokeAll": "Revoke All Devices",
+      "refresh": "Refresh"
+    },
+    "dialogs": {
+      "revokeDevice": {
+        "title": "Revoke Device",
+        "message": "Are you sure you want to revoke this device? You will need to enter your password the next time you log in from this device.",
+        "cancel": "Cancel",
+        "confirm": "Revoke"
+      },
+      "revokeAll": {
+        "title": "Revoke All Devices",
+        "warning": "This will revoke all trusted devices. You will need to enter your password the next time you log in from any device.",
+        "message": "Are you sure you want to revoke all {{count}} devices?",
+        "cancel": "Cancel",
+        "confirm": "Revoke All",
+        "revoking": "Revoking..."
+      }
+    },
+    "errors": {
+      "loadFailed": "Failed to load device data",
+      "revokeFailed": "Failed to revoke device",
+      "revokeAllFailed": "Failed to revoke all devices"
+    }
+  },
+  "forgetPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email to contact admin for support",
+    "emailLabel": "Email",
+    "submitButton": "Send Request",
+    "backToLogin": "Back to Login",
+    "contactAdmin": {
+      "title": "Contact Admin",
+      "description": "If you forgot your password, please contact admin for support",
+      "button": "Contact Admin",
+      "modal": {
+        "title": "Contact Admin",
+        "description": "This feature is under development. Please contact admin via email below for the fastest support.",
+        "contactInfo": "Contact Information:",
+        "messageLabel": "Message",
+        "messagePlaceholder": "Describe your issue in detail...",
+        "cancel": "Cancel",
+        "send": "Send Message",
+        "sending": "Sending...",
+        "success": "Message sent successfully! Admin will contact you back as soon as possible."
+      }
+    },
+    "errors": {
+      "emailRequired": "Please enter email",
+      "invalidEmail": "Invalid email format",
+      "submitFailed": "Failed to send request"
+    }
+  },
+  "home": {
+    "title": "Portfolio Management System",
+    "subtitle": "Track and manage your investment portfolio professionally",
+    "sections": {
+      "assetTypes": {
+        "title": "Supported Asset Types",
+        "subtitle": "Diverse asset types to diversify your investment portfolio"
+      },
+      "stockFunds": {
+        "title": "Stock Fund Certificates",
+        "subtitle": "Equity funds with the best performance"
+      },
+      "bondFunds": {
+        "title": "Bond Fund Certificates",
+        "subtitle": "Safe and stable bond investment funds"
+      },
+      "topStocks": {
+        "title": "Top 5 Stocks",
+        "subtitle": "Stocks with the highest trading volume and price volatility"
+      }
+    },
+    "assetTypes": {
+      "stock": "Stocks",
+      "stockDesc": "Invest in stocks on exchanges",
+      "bond": "Bonds",
+      "bondDesc": "Invest in government and corporate bonds",
+      "gold": "Gold",
+      "goldDesc": "Invest in gold and precious metals",
+      "crypto": "Cryptocurrency",
+      "cryptoDesc": "Invest in cryptocurrency and digital assets",
+      "commodity": "Commodities",
+      "commodityDesc": "Invest in commodities and raw materials",
+      "realEstate": "Real Estate",
+      "realEstateDesc": "Invest in real estate and REITs",
+      "other": "Other",
+      "otherDesc": "Other asset types"
+    },
+    "table": {
+      "symbol": "Symbol",
+      "name": "Name",
+      "price": "NAV Price",
+      "change": "Change",
+      "exchange": "Exchange"
+    },
+    "noData": "No data available",
+    "cta": {
+      "title": "Ready to start managing your investment portfolio?",
+      "description": "Login or sign up now to experience the full range of professional portfolio management features",
+      "button": "Login / Sign Up"
+    },
+    "stats": {
+      "products": "Fund Products",
+      "users": "Users",
+      "portfolios": "Investment Portfolios"
+    },
+    "projectName": "MMO",
+    "menu": {
+      "home": "Home",
+      "features": "Features",
+      "features.portfolio": "Portfolio Management",
+      "features.tracking": "Daily Tracking",
+      "features.security": "Security",
+      "contact": "Contact"
+    },
+    "register": {
+      "short": "Sign Up",
+      "full": "Sign Up"
+    },
+    "login": {
+      "short": "Start",
+      "full": "Get Started"
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "Powerful tools for efficient investment management"
+    },
+    "trust": {
+      "title": "Safe and Transparent Investment",
+      "subtitle": "Professional portfolio management system with high security",
+      "safe": {
+        "title": "Absolute Security",
+        "description": "Money and assets are managed and monitored closely"
+      },
+      "transparent": {
+        "title": "Transparent",
+        "description": "Track and manage assets transparently"
+      },
+      "professional": {
+        "title": "Professional",
+        "description": "Professional investment portfolio management system"
+      }
+    },
+    "steps": {
+      "badge": "Guide",
+      "title": "Get Started in Just 3 Steps",
+      "subtitle": "Investing has never been easier. Start your investment journey today",
+      "register": {
+        "title": "Login",
+        "description": "Login to the system to start using"
+      },
+      "invest": {
+        "title": "Create Investment Goal",
+        "description": "Create investment goals according to your investment objectives"
+      },
+      "manage": {
+        "title": "Manage Assets",
+        "description": "Convenient asset tracking and easy trading"
+      }
+    },
+    "vision": {
+      "title": "Turn Your Goals Into Reality",
+      "easyManagement": "Easy Management",
+      "free": "Completely Free"
+    }
+  }
+}

@@ -1,0 +1,483 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LogAggregationService, LogAggregationOptions } from './log-aggregation.service';
+import { ApplicationLog } from '../entities/application-log.entity';
+import { RequestLog } from '../entities/request-log.entity';
+import { BusinessEventLog } from '../entities/business-event-log.entity';
+import { PerformanceLog } from '../entities/performance-log.entity';
+
+describe('LogAggregationService', () => {
+  let service: LogAggregationService;
+  let applicationLogRepository: jest.Mocked<Repository<ApplicationLog>>;
+  let requestLogRepository: jest.Mocked<Repository<RequestLog>>;
+  let businessEventLogRepository: jest.Mocked<Repository<BusinessEventLog>>;
+  let performanceLogRepository: jest.Mocked<Repository<PerformanceLog>>;
+
+  const mockApplicationLogs = [
+    {
+      id: '1',
+      level: 'error',
+      message: 'Database connection failed',
+      module_name: 'DatabaseModule',
+      user_id: 'user1',
+      request_id: 'req1',
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      level: 'info',
+      message: 'User login successful',
+      module_name: 'AuthModule',
+      user_id: 'user1',
+      request_id: 'req2',
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+    {
+      id: '3',
+      level: 'warn',
+      message: 'Slow query detected',
+      module_name: 'DatabaseModule',
+      user_id: 'user2',
+      request_id: 'req3',
+      created_at: new Date('2024-01-01T12:00:00Z'),
+    },
+  ] as ApplicationLog[];
+
+  const mockRequestLogs = [
+    {
+      id: '1',
+      request_id: 'req1',
+      method: 'GET',
+      url: '/api/users',
+      response_time_ms: 150,
+      response_status: 200,
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      request_id: 'req2',
+      method: 'POST',
+      url: '/api/auth/login',
+      response_time_ms: 300,
+      response_status: 200,
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+    {
+      id: '3',
+      request_id: 'req3',
+      method: 'GET',
+      url: '/api/portfolios',
+      response_time_ms: 1200,
+      response_status: 200,
+      created_at: new Date('2024-01-01T12:00:00Z'),
+    },
+  ] as RequestLog[];
+
+  const mockPerformanceLogs = [
+    {
+      id: '1',
+      operation_name: 'getPortfolios',
+      duration_ms: 150,
+      memory_usage_mb: 128,
+      cpu_usage_percent: 15,
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      operation_name: 'createTrade',
+      duration_ms: 300,
+      memory_usage_mb: 256,
+      cpu_usage_percent: 25,
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+  ] as PerformanceLog[];
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LogAggregationService,
+        {
+          provide: getRepositoryToken(ApplicationLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(RequestLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(BusinessEventLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(PerformanceLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<LogAggregationService>(LogAggregationService);
+    applicationLogRepository = module.get(getRepositoryToken(ApplicationLog));
+    requestLogRepository = module.get(getRepositoryToken(RequestLog));
+    businessEventLogRepository = module.get(getRepositoryToken(BusinessEventLog));
+    performanceLogRepository = module.get(getRepositoryToken(PerformanceLog));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('aggregateLogs', () => {
+    it('should aggregate logs by hour', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'hour',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].period).toBe('2024-01-01 17:00');
+      expect(result[0].totalLogs).toBe(1);
+      expect(result[0].errorCount).toBe(1);
+      expect(result[0].averageResponseTime).toBe(150);
+    });
+
+    it('should aggregate logs by day', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].period).toBe('2024-01-01');
+      expect(result[0].totalLogs).toBe(3);
+      expect(result[0].errorCount).toBe(1);
+      expect(result[0].warningCount).toBe(1);
+      expect(result[0].infoCount).toBe(1);
+    });
+
+    it('should apply filters correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+        filters: {
+          levels: ['error', 'warn'],
+          modules: ['DatabaseModule'],
+        },
+      };
+
+      const filteredLogs = mockApplicationLogs.filter(
+        log => ['error', 'warn'].includes(log.level) && log.module_name === 'DatabaseModule'
+      );
+
+      applicationLogRepository.find.mockResolvedValue(filteredLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].totalLogs).toBe(2);
+      expect(result[0].errorCount).toBe(1);
+      expect(result[0].warningCount).toBe(1);
+    });
+
+    it('should calculate top modules correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result[0].topModules).toHaveLength(2);
+      expect(result[0].topModules[0].module).toBe('DatabaseModule');
+      expect(result[0].topModules[0].count).toBe(2);
+      expect(result[0].topModules[1].module).toBe('AuthModule');
+      expect(result[0].topModules[1].count).toBe(1);
+    });
+
+    it('should calculate unique users and requests correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result[0].uniqueUsers).toBe(2);
+      expect(result[0].uniqueRequests).toBe(3);
+    });
+  });
+
+  describe('generateLogSummary', () => {
+    it('should generate comprehensive log summary', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.totalLogs).toBe(3);
+      expect(result.errorRate).toBeCloseTo(33.33, 1);
+      expect(result.averageResponseTime).toBe(550);
+      expect(result.uniqueUsers).toBe(2);
+      expect(result.uniqueRequests).toBe(3);
+      expect(result.topErrors).toHaveLength(1);
+      expect(result.topModules).toHaveLength(2);
+      expect(result.performanceMetrics.slowestRequests).toHaveLength(3);
+    });
+
+    it('should calculate error rate correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      const errorLogs = mockApplicationLogs.filter(log => log.level === 'error');
+      applicationLogRepository.find.mockResolvedValue(errorLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.errorRate).toBe(100);
+    });
+
+    it('should handle empty logs gracefully', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.totalLogs).toBe(0);
+      expect(result.errorRate).toBe(0);
+      expect(result.averageResponseTime).toBe(0);
+      expect(result.uniqueUsers).toBe(0);
+      expect(result.uniqueRequests).toBe(0);
+    });
+  });
+
+  describe('getLogAnalytics', () => {
+    it('should return comprehensive analytics data', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.getLogAnalytics(options);
+
+      expect(result).toHaveProperty('summary');
+      expect(result).toHaveProperty('trends');
+      expect(result).toHaveProperty('insights');
+      expect(result.summary.totalLogs).toBe(3);
+      expect(result.trends).toHaveLength(1);
+      expect(Array.isArray(result.insights)).toBe(true);
+    });
+  });
+
+  describe('private methods', () => {
+    it('should group logs by hour correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'hour',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].period).toBe('2024-01-01 17:00');
+      expect(result[1].period).toBe('2024-01-01 18:00');
+      expect(result[2].period).toBe('2024-01-01 19:00');
+    });
+
+    it('should group logs by week correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-07T23:59:59Z'),
+        groupBy: 'week',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].period).toMatch(/2023-W\d+/);
+    });
+
+    it('should group logs by month correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-31T23:59:59Z'),
+        groupBy: 'month',
+      };
+
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.aggregateLogs(options);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].period).toBe('2024-01');
+    });
+  });
+
+  describe('performance metrics calculation', () => {
+    it('should calculate slowest requests correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.performanceMetrics.slowestRequests).toHaveLength(3);
+      expect(result.performanceMetrics.slowestRequests[0].endpoint).toBe('/api/portfolios');
+      expect(result.performanceMetrics.slowestRequests[0].avgTime).toBe(1200);
+    });
+
+    it('should calculate memory usage correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.performanceMetrics.memoryUsage.avg).toBe(192);
+      expect(result.performanceMetrics.memoryUsage.max).toBe(256);
+      expect(result.performanceMetrics.memoryUsage.min).toBe(128);
+    });
+
+    it('should calculate CPU usage correctly', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateLogSummary(options);
+
+      expect(result.performanceMetrics.cpuUsage.avg).toBe(20);
+      expect(result.performanceMetrics.cpuUsage.max).toBe(25);
+      expect(result.performanceMetrics.cpuUsage.min).toBe(15);
+    });
+  });
+
+  describe('insights generation', () => {
+    it('should generate high error rate insight', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      const highErrorLogs = [
+        ...mockApplicationLogs,
+        { ...mockApplicationLogs[0], id: '4', level: 'error' },
+        { ...mockApplicationLogs[0], id: '5', level: 'error' },
+        { ...mockApplicationLogs[0], id: '6', level: 'error' },
+      ] as ApplicationLog[];
+
+      applicationLogRepository.find.mockResolvedValue(highErrorLogs);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.getLogAnalytics(options);
+
+      expect(result.insights).toHaveLength(1);
+      expect(result.insights[0].type).toBe('warning');
+      expect(result.insights[0].message).toContain('High error rate detected');
+    });
+
+    it('should generate slow response time insight', async () => {
+      const options: LogAggregationOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        groupBy: 'day',
+      };
+
+      const slowRequestLogs = [
+        ...mockRequestLogs,
+        { ...mockRequestLogs[0], id: '4', response_time_ms: 2000 },
+        { ...mockRequestLogs[0], id: '5', response_time_ms: 2500 },
+      ] as RequestLog[];
+
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue(slowRequestLogs);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.getLogAnalytics(options);
+
+      expect(result.insights).toHaveLength(1);
+      expect(result.insights[0].type).toBe('performance');
+      expect(result.insights[0].message).toContain('Slow average response time');
+    });
+  });
+});

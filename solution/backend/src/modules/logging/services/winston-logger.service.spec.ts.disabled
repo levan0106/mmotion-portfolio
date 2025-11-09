@@ -1,0 +1,411 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { WinstonLoggerService } from './winston-logger.service';
+import { LoggingConfigService } from './logging-config.service';
+import { LogRepository } from '../repositories/log.repository';
+import { LoggingConfig } from '../interfaces/logging-config.interface';
+
+describe('WinstonLoggerService', () => {
+  let service: WinstonLoggerService;
+  let configService: jest.Mocked<LoggingConfigService>;
+  let logRepository: jest.Mocked<LogRepository>;
+
+  const mockConfig: LoggingConfig = {
+    global: {
+      enabled: true,
+      level: 'info',
+      appName: 'test-app',
+      appVersion: '1.0.0',
+      environment: 'development',
+    },
+    transports: {
+      console: {
+        enabled: true,
+        level: 'info',
+        format: 'pretty',
+        colorize: true,
+      },
+      file: {
+        enabled: true,
+        level: 'info',
+        filename: 'logs/test.log',
+        maxSize: '20m',
+        maxFiles: 14,
+        datePattern: 'YYYY-MM-DD',
+      },
+      database: {
+        enabled: true,
+        level: 'info',
+        tableName: 'application_logs',
+        batchSize: 100,
+        flushInterval: 5000,
+      },
+    },
+    retention: {
+      enabled: true,
+      days: 30,
+      intervalHours: 24,
+    },
+    performance: {
+      enabled: true,
+      slowThresholdMs: 1000,
+      trackMemoryUsage: true,
+      trackCpuUsage: false,
+    },
+    security: {
+      sanitizeData: true,
+      sensitiveFields: ['password', 'token'],
+      logIpAddresses: true,
+      logUserAgents: true,
+    },
+    businessEvents: {
+      enabled: true,
+      defaultSeverity: 'medium',
+      includeRequestData: false,
+      includeResponseData: false,
+      includeUserContext: true,
+    },
+    http: {
+      enabled: true,
+      logRequestBody: false,
+      logResponseBody: false,
+      maxBodySize: 10000,
+      sensitiveHeaders: ['authorization'],
+      sensitiveBodyFields: ['password'],
+    },
+    errors: {
+      enabled: true,
+      logStackTraces: true,
+      logErrorContext: true,
+      maxStackTraceDepth: 10,
+    },
+    integrations: {
+      elk: {
+        enabled: false,
+        elasticsearchUrl: '',
+        indexName: 'test-logs',
+      },
+      sentry: {
+        enabled: false,
+        dsn: '',
+        environment: 'development',
+      },
+      datadog: {
+        enabled: false,
+        apiKey: '',
+        site: 'datadoghq.com',
+        service: 'test-service',
+      },
+    },
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        WinstonLoggerService,
+        {
+          provide: LoggingConfigService,
+          useValue: {
+            getConfig: jest.fn().mockReturnValue(mockConfig),
+          },
+        },
+        {
+          provide: LogRepository,
+          useValue: {
+            storeApplicationLog: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<WinstonLoggerService>(WinstonLoggerService);
+    configService = module.get(LoggingConfigService);
+    logRepository = module.get(LogRepository);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('onModuleInit', () => {
+    it('should initialize Winston logger', async () => {
+      await service.onModuleInit();
+
+      expect(service.getWinstonLogger()).toBeDefined();
+    });
+
+    it('should not initialize logger when logging is disabled', async () => {
+      configService.getConfig.mockReturnValue({
+        ...mockConfig,
+        global: { ...mockConfig.global, enabled: false },
+      });
+
+      await service.onModuleInit();
+
+      expect(service.getWinstonLogger()).toBeUndefined();
+    });
+  });
+
+  describe('logging methods', () => {
+    beforeEach(async () => {
+      await service.onModuleInit();
+    });
+
+    it('should log error messages', () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+
+      service.error('Test error message', { error: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith('error', 'Test error message', { error: 'test' });
+    });
+
+    it('should log warning messages', () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+
+      service.warn('Test warning message', { warning: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith('warn', 'Test warning message', { warning: 'test' });
+    });
+
+    it('should log info messages', () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+
+      service.info('Test info message', { info: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith('info', 'Test info message', { info: 'test' });
+    });
+
+    it('should log debug messages', () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+
+      service.debug('Test debug message', { debug: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith('debug', 'Test debug message', { debug: 'test' });
+    });
+
+    it('should log verbose messages', () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+
+      service.verbose('Test verbose message', { verbose: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith('verbose', 'Test verbose message', { verbose: 'test' });
+    });
+
+    it('should handle logging when Winston logger is not initialized', () => {
+      // Create a new service instance without initializing
+      const newService = new WinstonLoggerService(configService, logRepository);
+
+      expect(() => {
+        newService.error('Test error');
+        newService.warn('Test warning');
+        newService.info('Test info');
+        newService.debug('Test debug');
+        newService.verbose('Test verbose');
+      }).not.toThrow();
+    });
+  });
+
+  describe('logger management', () => {
+    beforeEach(async () => {
+      await service.onModuleInit();
+    });
+
+    it('should create child logger with context', () => {
+      const context = { userId: '123', requestId: 'req-456' };
+      const childLogger = service.createChildLogger(context);
+
+      expect(childLogger).toBeDefined();
+    });
+
+    it('should throw error when creating child logger without initialization', () => {
+      const newService = new WinstonLoggerService(configService, logRepository);
+
+      expect(() => {
+        newService.createChildLogger({ userId: '123' });
+      }).toThrow('Winston logger not initialized');
+    });
+
+    it('should get current log level', () => {
+      const level = service.getLevel();
+      expect(level).toBe('info');
+    });
+
+    it('should set log level', () => {
+      service.setLevel('debug');
+      expect(service.getLevel()).toBe('debug');
+    });
+
+    it('should check if level is enabled', () => {
+      expect(service.isLevelEnabled('info')).toBe(true);
+      expect(service.isLevelEnabled('debug')).toBe(false); // debug is below info level
+      expect(service.isLevelEnabled('error')).toBe(true); // error is above info level
+    });
+
+    it('should return false for level check when logger not initialized', () => {
+      const newService = new WinstonLoggerService(configService, logRepository);
+      expect(newService.isLevelEnabled('info')).toBe(false);
+    });
+  });
+
+  describe('transport management', () => {
+    beforeEach(async () => {
+      await service.onModuleInit();
+    });
+
+    it('should add transport to logger', () => {
+      const mockTransport = {
+        log: jest.fn(),
+        close: jest.fn(),
+        on: jest.fn(),
+        once: jest.fn(),
+        emit: jest.fn(),
+        removeListener: jest.fn(),
+        removeAllListeners: jest.fn(),
+        setMaxListeners: jest.fn(),
+        getMaxListeners: jest.fn(),
+        listeners: jest.fn(),
+        rawListeners: jest.fn(),
+        listenerCount: jest.fn(),
+        prependListener: jest.fn(),
+        prependOnceListener: jest.fn(),
+        eventNames: jest.fn(),
+      } as any;
+
+      expect(() => {
+        service.addTransport(mockTransport);
+      }).not.toThrow();
+    });
+
+    it('should remove transport from logger', () => {
+      const mockTransport = {
+        log: jest.fn(),
+        close: jest.fn(),
+      } as any;
+
+      expect(() => {
+        service.removeTransport(mockTransport);
+      }).not.toThrow();
+    });
+  });
+
+  describe('database transport', () => {
+    beforeEach(async () => {
+      await service.onModuleInit();
+    });
+
+    it('should write logs to database through transport', async () => {
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+      
+      // Simulate database transport write
+      winstonLogger.info('Test database log', { test: 'data' });
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      expect(logSpy).toHaveBeenCalled();
+    });
+
+    it('should handle database write errors gracefully', async () => {
+      logRepository.storeApplicationLog.mockRejectedValue(new Error('Database error'));
+
+      const winstonLogger = service.getWinstonLogger();
+      const logSpy = jest.spyOn(winstonLogger, 'log').mockImplementation(() => winstonLogger);
+      
+      // This should not throw an error
+      expect(() => {
+        winstonLogger.info('Test database log', { test: 'data' });
+      }).not.toThrow();
+    });
+  });
+
+  describe('configuration handling', () => {
+    it('should handle console transport configuration', async () => {
+      const consoleConfig = {
+        ...mockConfig,
+        transports: {
+          ...mockConfig.transports,
+          console: {
+            enabled: true,
+            level: 'debug',
+            format: 'json',
+            colorize: false,
+          },
+        },
+      };
+
+      configService.getConfig.mockReturnValue(consoleConfig as any);
+
+      await service.onModuleInit();
+
+      expect(service.getWinstonLogger()).toBeDefined();
+    });
+
+    it('should handle file transport configuration', async () => {
+      const fileConfig = {
+        ...mockConfig,
+        transports: {
+          ...mockConfig.transports,
+          file: {
+            enabled: true,
+            level: 'warn',
+            filename: 'custom-logs/app.log',
+            maxSize: '50m',
+            maxFiles: 30,
+            datePattern: 'YYYY-MM',
+          },
+        },
+      };
+
+      configService.getConfig.mockReturnValue(fileConfig);
+
+      await service.onModuleInit();
+
+      expect(service.getWinstonLogger()).toBeDefined();
+    });
+
+    it('should handle database transport configuration', async () => {
+      const databaseConfig = {
+        ...mockConfig,
+        transports: {
+          ...mockConfig.transports,
+          database: {
+            enabled: true,
+            level: 'error',
+            tableName: 'custom_logs',
+            batchSize: 50,
+            flushInterval: 10000,
+          },
+        },
+      };
+
+      configService.getConfig.mockReturnValue(databaseConfig);
+
+      await service.onModuleInit();
+
+      expect(service.getWinstonLogger()).toBeDefined();
+    });
+  });
+
+  describe('onModuleDestroy', () => {
+    it('should close Winston logger on module destroy', async () => {
+      await service.onModuleInit();
+      const winstonLogger = service.getWinstonLogger();
+      const closeSpy = jest.spyOn(winstonLogger, 'close');
+
+      await service.onModuleDestroy();
+
+      expect(closeSpy).toHaveBeenCalled();
+    });
+
+    it('should handle destroy when logger is not initialized', async () => {
+      expect(async () => {
+        await service.onModuleDestroy();
+      }).not.toThrow();
+    });
+  });
+});

@@ -1,0 +1,624 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { AssetController } from './asset.controller';
+import { AssetService } from '../services/asset.service';
+import { AssetValidationService } from '../services/asset-validation.service';
+import { AssetAnalyticsService } from '../services/asset-analytics.service';
+import { Asset } from '../entities/asset.entity';
+import { AssetType } from '../enums/asset-type.enum';
+import { CreateAssetDto } from '../dto/create-asset.dto';
+import { UpdateAssetDto } from '../dto/update-asset.dto';
+import { PaginatedResponse } from '../repositories/asset.repository';
+
+describe('AssetController', () => {
+  let controller: AssetController;
+  let mockAssetService: jest.Mocked<AssetService>;
+  let mockValidationService: jest.Mocked<AssetValidationService>;
+  let mockAnalyticsService: jest.Mocked<AssetAnalyticsService>;
+
+  const mockAsset: Asset = {
+    id: 'test-asset-id',
+    name: 'Test Asset',
+    code: 'TEST',
+    type: AssetType.STOCK,
+    description: 'Test asset description',
+    initialValue: 1000000,
+    initialQuantity: 100,
+    currentValue: 1200000,
+    currentQuantity: 100,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    createdBy: 'test-user-id',
+    updatedBy: 'test-user-id',
+    portfolioId: 'test-portfolio-id',
+    trades: [],
+    portfolioAssets: [],
+    getTotalValue: jest.fn().mockReturnValue(1200000),
+    getTotalQuantity: jest.fn().mockReturnValue(100),
+    hasTrades: jest.fn().mockReturnValue(false),
+    getDisplayName: jest.fn().mockReturnValue('Test Asset (TEST)'),
+    toJSON: jest.fn().mockReturnValue({
+      id: 'test-asset-id',
+      name: 'Test Asset',
+      code: 'TEST',
+      type: 'STOCK',
+      description: 'Test asset description',
+      initialValue: 1000000,
+      initialQuantity: 100,
+      currentValue: 1200000,
+      currentQuantity: 100,
+      totalValue: 1200000,
+      totalQuantity: 100,
+      displayName: 'Test Asset (TEST)',
+      hasTrades: false,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      createdBy: 'test-user-id',
+      updatedBy: 'test-user-id',
+    }),
+  };
+
+  const createAssetDto: CreateAssetDto = {
+    name: 'New Asset',
+    code: 'NEW',
+    type: AssetType.STOCK,
+    description: 'New asset description',
+    initialValue: 1000000,
+    initialQuantity: 100,
+    currentValue: 1200000,
+    currentQuantity: 100,
+    createdBy: 'test-user-id',
+    updatedBy: 'test-user-id',
+  };
+
+  const updateAssetDto: UpdateAssetDto = {
+    name: 'Updated Asset',
+    updatedBy: 'test-user-id',
+  };
+
+  beforeEach(async () => {
+    mockAssetService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      findByPortfolioId: jest.fn(),
+      findByPortfolioIdWithPagination: jest.fn(),
+      findByType: jest.fn(),
+      search: jest.fn(),
+      getAssetStatistics: jest.fn(),
+      findByValueRange: jest.fn(),
+      findRecent: jest.fn(),
+      exists: jest.fn(),
+      getAssetCount: jest.fn(),
+      hasTrades: jest.fn(),
+      getAssetSummary: jest.fn(),
+    } as any;
+
+    mockValidationService = {
+      validateAssetCreation: jest.fn(),
+      validateAssetUpdate: jest.fn(),
+      validateAssetDeletion: jest.fn(),
+      validateBulkAssetCreation: jest.fn(),
+      validateSearchParameters: jest.fn(),
+      validatePaginationParameters: jest.fn(),
+    } as any;
+
+    mockAnalyticsService = {
+      calculatePortfolioValue: jest.fn(),
+      calculateAssetAllocation: jest.fn(),
+      calculatePerformanceMetrics: jest.fn(),
+      calculateRiskMetrics: jest.fn(),
+      generateAssetSummary: jest.fn(),
+      calculateAssetCorrelation: jest.fn(),
+      calculateDiversificationScore: jest.fn(),
+      getAssetPerformanceComparison: jest.fn(),
+    } as any;
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AssetController],
+      providers: [
+        {
+          provide: AssetService,
+          useValue: mockAssetService,
+        },
+        {
+          provide: AssetValidationService,
+          useValue: mockValidationService,
+        },
+        {
+          provide: AssetAnalyticsService,
+          useValue: mockAnalyticsService,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<AssetController>(AssetController);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('create', () => {
+    it('should create a new asset', async () => {
+      mockValidationService.validateAssetCreation.mockResolvedValue(undefined);
+      mockAssetService.create.mockResolvedValue(mockAsset);
+
+      const result = await controller.create(createAssetDto);
+
+      expect(mockValidationService.validateAssetCreation).toHaveBeenCalledWith(createAssetDto);
+      expect(mockAssetService.create).toHaveBeenCalledWith(createAssetDto);
+      expect(result).toEqual({
+        id: 'test-asset-id',
+        name: 'Test Asset',
+        code: 'TEST',
+        type: 'STOCK',
+        description: 'Test asset description',
+        initialValue: 1000000,
+        initialQuantity: 100,
+        currentValue: 1200000,
+        currentQuantity: 100,
+        totalValue: 1200000,
+        totalQuantity: 100,
+        displayName: 'Test Asset (TEST)',
+        hasTrades: false,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        createdBy: 'test-user-id',
+        updatedBy: 'test-user-id',
+      });
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return paginated assets', async () => {
+      const expectedResult: PaginatedResponse<Asset> = {
+        data: [mockAsset],
+        total: 1,
+        page: 1,
+        limit: 10,
+      };
+
+      mockAssetService.findAll.mockResolvedValue(expectedResult);
+
+      const result = await controller.findAll({});
+
+      expect(mockAssetService.findAll).toHaveBeenCalledWith({});
+      expect(result).toEqual({
+        data: [{
+          id: 'test-asset-id',
+          name: 'Test Asset',
+          code: 'TEST',
+          type: 'STOCK',
+          description: 'Test asset description',
+          initialValue: 1000000,
+          initialQuantity: 100,
+          currentValue: 1200000,
+          currentQuantity: 100,
+          totalValue: 1200000,
+          totalQuantity: 100,
+          displayName: 'Test Asset (TEST)',
+          hasTrades: false,
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+          createdBy: 'test-user-id',
+          updatedBy: 'test-user-id',
+        }],
+        total: 1,
+        page: 1,
+        limit: 10,
+      });
+    });
+  });
+
+  describe('findById', () => {
+    it('should return asset by ID', async () => {
+      mockAssetService.findById.mockResolvedValue(mockAsset);
+
+      const result = await controller.findById('test-asset-id');
+
+      expect(mockAssetService.findById).toHaveBeenCalledWith('test-asset-id');
+      expect(result).toEqual({
+        id: 'test-asset-id',
+        name: 'Test Asset',
+        code: 'TEST',
+        type: 'STOCK',
+        description: 'Test asset description',
+        initialValue: 1000000,
+        initialQuantity: 100,
+        currentValue: 1200000,
+        currentQuantity: 100,
+        totalValue: 1200000,
+        totalQuantity: 100,
+        displayName: 'Test Asset (TEST)',
+        hasTrades: false,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        createdBy: 'test-user-id',
+        updatedBy: 'test-user-id',
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('should update asset by ID', async () => {
+      mockValidationService.validateAssetUpdate.mockResolvedValue(undefined);
+      mockAssetService.update.mockResolvedValue(mockAsset);
+
+      const result = await controller.update('test-asset-id', updateAssetDto);
+
+      expect(mockValidationService.validateAssetUpdate).toHaveBeenCalledWith('test-asset-id', updateAssetDto);
+      expect(mockAssetService.update).toHaveBeenCalledWith('test-asset-id', updateAssetDto);
+      expect(result).toEqual({
+        id: 'test-asset-id',
+        name: 'Test Asset',
+        code: 'TEST',
+        type: 'STOCK',
+        description: 'Test asset description',
+        initialValue: 1000000,
+        initialQuantity: 100,
+        currentValue: 1200000,
+        currentQuantity: 100,
+        totalValue: 1200000,
+        totalQuantity: 100,
+        displayName: 'Test Asset (TEST)',
+        hasTrades: false,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        createdBy: 'test-user-id',
+        updatedBy: 'test-user-id',
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete asset by ID', async () => {
+      mockValidationService.validateAssetDeletion.mockResolvedValue(undefined);
+      mockAssetService.delete.mockResolvedValue(undefined);
+
+      await controller.delete('test-asset-id');
+
+      expect(mockValidationService.validateAssetDeletion).toHaveBeenCalledWith('test-asset-id');
+      expect(mockAssetService.delete).toHaveBeenCalledWith('test-asset-id');
+    });
+  });
+
+  describe('findByPortfolioId', () => {
+    it('should return assets by portfolio ID', async () => {
+      const expectedResult: PaginatedResponse<Asset> = {
+        data: [mockAsset],
+        total: 1,
+        page: 1,
+        limit: 10,
+      };
+
+      mockAssetService.findByPortfolioIdWithPagination.mockResolvedValue(expectedResult);
+
+      const result = await controller.findByPortfolioIdWithPagination('test-portfolio-id', {});
+
+      expect(mockAssetService.findByPortfolioIdWithPagination).toHaveBeenCalledWith('test-portfolio-id', {});
+      expect(result).toEqual({
+        data: [{
+          id: 'test-asset-id',
+          name: 'Test Asset',
+          code: 'TEST',
+          type: 'STOCK',
+          description: 'Test asset description',
+          initialValue: 1000000,
+          initialQuantity: 100,
+          currentValue: 1200000,
+          currentQuantity: 100,
+          totalValue: 1200000,
+          totalQuantity: 100,
+          displayName: 'Test Asset (TEST)',
+          hasTrades: false,
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+          createdBy: 'test-user-id',
+          updatedBy: 'test-user-id',
+        }],
+        total: 1,
+        page: 1,
+        limit: 10,
+      });
+    });
+  });
+
+  describe('search', () => {
+    it('should search assets', async () => {
+      const expectedAssets = [mockAsset];
+      mockValidationService.validateSearchParameters.mockReturnValue(undefined);
+      mockAssetService.search.mockResolvedValue(expectedAssets);
+
+      const result = await controller.search('test', 'test-portfolio-id');
+
+      expect(mockValidationService.validateSearchParameters).toHaveBeenCalledWith('test', 'test-portfolio-id');
+      expect(mockAssetService.search).toHaveBeenCalledWith('test', 'test-portfolio-id');
+      expect(result).toEqual([{
+        id: 'test-asset-id',
+        name: 'Test Asset',
+        code: 'TEST',
+        type: 'STOCK',
+        description: 'Test asset description',
+        initialValue: 1000000,
+        initialQuantity: 100,
+        currentValue: 1200000,
+        currentQuantity: 100,
+        totalValue: 1200000,
+        totalQuantity: 100,
+        displayName: 'Test Asset (TEST)',
+        hasTrades: false,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        createdBy: 'test-user-id',
+        updatedBy: 'test-user-id',
+      }]);
+    });
+  });
+
+  describe('getAssetStatistics', () => {
+    it('should return asset statistics', async () => {
+      const expectedStats = {
+        totalAssets: 5,
+        assetsByType: {
+          [AssetType.STOCK]: 3,
+          [AssetType.BOND]: 2,
+          [AssetType.GOLD]: 0,
+          [AssetType.DEPOSIT]: 0,
+          [AssetType.CASH]: 0,
+        },
+        totalValue: 10000,
+        averageValue: 2000,
+      };
+
+      mockAssetService.getAssetStatistics.mockResolvedValue(expectedStats);
+
+      const result = await controller.getAssetStatistics('test-portfolio-id');
+
+      expect(mockAssetService.getAssetStatistics).toHaveBeenCalledWith('test-portfolio-id');
+      expect(result).toEqual(expectedStats);
+    });
+  });
+
+  describe('getAssetAnalytics', () => {
+    it('should return asset analytics summary', async () => {
+      const expectedAnalytics = {
+        overview: { totalAssets: 5, totalValue: 10000, averageValue: 2000 },
+        allocation: { 
+          [AssetType.STOCK]: 60, 
+          [AssetType.BOND]: 40,
+          [AssetType.GOLD]: 0,
+          [AssetType.DEPOSIT]: 0,
+          [AssetType.CASH]: 0,
+        },
+        performance: { 
+          totalReturn: 1000, 
+          averageReturn: 10,
+          bestPerformer: mockAsset,
+          worstPerformer: mockAsset,
+          volatility: 5,
+        },
+        risk: { 
+          maxDrawdown: 5, 
+          sharpeRatio: 1.5,
+          valueAtRisk: 1000,
+          concentrationRisk: 0.3,
+        },
+        topAssets: [mockAsset],
+        recentActivity: [mockAsset],
+      };
+
+      mockAnalyticsService.generateAssetSummary.mockResolvedValue(expectedAnalytics as any);
+
+      const result = await controller.getAssetAnalytics('test-portfolio-id');
+
+      expect(mockAnalyticsService.generateAssetSummary).toHaveBeenCalledWith('test-portfolio-id');
+      expect(result).toEqual({
+        totalAssets: 5,
+        totalValue: 10000,
+        allocation: { 
+          [AssetType.STOCK]: 60, 
+          [AssetType.BOND]: 40,
+          [AssetType.GOLD]: 0,
+          [AssetType.DEPOSIT]: 0,
+          [AssetType.CASH]: 0,
+        },
+        performance: { 
+          assets: [{
+            assetId: 'test-asset-id',
+            assetName: 'Test Asset',
+            assetCode: 'TEST',
+            assetType: 'STOCK',
+            initialValue: 1000000,
+            currentValue: 1200000,
+            percentageReturn: 20,
+            absoluteReturn: 200000,
+            portfolioWeight: 12000,
+          }],
+          bestPerformer: 'Test Asset (TEST)',
+          worstPerformer: 'Test Asset (TEST)',
+          period: 'ALL',
+          totalPortfolioReturn: 1000,
+          totalPortfolioReturnPercentage: 10,
+          totalPortfolioValue: 10000,
+        },
+        riskMetrics: { 
+          maxDrawdown: 5, 
+          sharpeRatio: 1.5,
+          valueAtRisk: 1000,
+          concentrationRisk: 0.3,
+          beta: 0,
+          volatility: 0,
+        },
+        diversificationScore: 48,
+        lastUpdated: expect.any(Date),
+      });
+    });
+  });
+
+  describe('getAssetPerformance', () => {
+    it('should return asset performance comparison', async () => {
+      const expectedPerformance = {
+        period: 'ALL',
+        assets: [
+          {
+            id: 'asset-1',
+            name: 'Asset 1',
+            type: AssetType.STOCK,
+            initialValue: 1000,
+            currentValue: 1200,
+            return: 20,
+            rank: 1,
+          },
+        ],
+      };
+
+      mockAnalyticsService.getAssetPerformanceComparison.mockResolvedValue(expectedPerformance as any);
+
+      const result = await controller.getAssetPerformance('test-portfolio-id', 'ALL');
+
+      expect(mockAnalyticsService.getAssetPerformanceComparison).toHaveBeenCalledWith('test-portfolio-id', 'ALL');
+      expect(result).toEqual({
+        assets: [{
+          assetId: 'asset-1',
+          assetName: 'Asset 1',
+          assetCode: '',
+          assetType: 'STOCK',
+          initialValue: 1000,
+          currentValue: 1200,
+          percentageReturn: 2,
+          absoluteReturn: 20,
+          portfolioWeight: 100,
+        }],
+        bestPerformer: 'Asset 1 (asset-1)',
+        period: 'ALL',
+        totalPortfolioReturn: 20,
+        totalPortfolioReturnPercentage: 1.6666666666666667,
+        totalPortfolioValue: 1200,
+        worstPerformer: 'Asset 1 (asset-1)',
+      });
+    });
+  });
+
+  describe('getAssetAllocation', () => {
+    it('should return asset allocation by type', async () => {
+      const expectedAllocation = {
+        [AssetType.STOCK]: 60,
+        [AssetType.BOND]: 40,
+        [AssetType.GOLD]: 0,
+        [AssetType.DEPOSIT]: 0,
+        [AssetType.CASH]: 0,
+      };
+
+      mockAnalyticsService.calculateAssetAllocation.mockResolvedValue(expectedAllocation);
+
+      const result = await controller.getAssetAllocation('test-portfolio-id');
+
+      expect(mockAnalyticsService.calculateAssetAllocation).toHaveBeenCalledWith('test-portfolio-id');
+      expect(result).toEqual(expectedAllocation);
+    });
+  });
+
+  describe('getAssetRiskMetrics', () => {
+    it('should return asset risk metrics', async () => {
+      const expectedRisk = {
+        maxDrawdown: 5,
+        sharpeRatio: 1.5,
+        valueAtRisk: 1000,
+        concentrationRisk: 0.3,
+        beta: 0,
+        volatility: 0,
+      };
+
+      mockAnalyticsService.calculateRiskMetrics.mockResolvedValue(expectedRisk);
+
+      const result = await controller.getAssetRiskMetrics('test-portfolio-id');
+
+      expect(mockAnalyticsService.calculateRiskMetrics).toHaveBeenCalledWith('test-portfolio-id');
+      expect(result).toEqual(expectedRisk);
+    });
+  });
+
+  describe('getRecentAssets', () => {
+    it('should return recent assets', async () => {
+      const expectedAssets = [mockAsset];
+      mockValidationService.validatePaginationParameters.mockReturnValue(undefined);
+      mockAssetService.findRecent.mockResolvedValue(expectedAssets);
+
+      const result = await controller.getRecentAssets(10, 'test-portfolio-id');
+
+      expect(mockValidationService.validatePaginationParameters).toHaveBeenCalledWith(10);
+      expect(mockAssetService.findRecent).toHaveBeenCalledWith(10, 'test-portfolio-id');
+      expect(result).toEqual([{
+        id: 'test-asset-id',
+        name: 'Test Asset',
+        code: 'TEST',
+        type: 'STOCK',
+        description: 'Test asset description',
+        initialValue: 1000000,
+        initialQuantity: 100,
+        currentValue: 1200000,
+        currentQuantity: 100,
+        totalValue: 1200000,
+        totalQuantity: 100,
+        displayName: 'Test Asset (TEST)',
+        hasTrades: false,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+        createdBy: 'test-user-id',
+        updatedBy: 'test-user-id',
+      }]);
+    });
+  });
+
+  describe('getAssetsByValueRange', () => {
+    it('should return assets in value range', async () => {
+      const expectedAssets = [mockAsset];
+      const expectedResult = {
+        assets: [{
+          assetId: 'test-asset-id',
+          assetName: 'Test Asset',
+          assetCode: 'TEST',
+          assetType: 'STOCK',
+          initialValue: 1000000,
+          currentValue: 1200000,
+          percentageReturn: 20,
+          absoluteReturn: 200000,
+          portfolioWeight: 0
+        }],
+        minValue: 1000,
+        maxValue: 2000,
+        count: 1
+      };
+      mockAssetService.findByValueRange.mockResolvedValue(expectedAssets);
+
+      const result = await controller.getAssetsByValueRange(1000, 2000, 'test-portfolio-id');
+
+      expect(mockAssetService.findByValueRange).toHaveBeenCalledWith(1000, 2000, 'test-portfolio-id');
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('checkAssetExists', () => {
+    it('should return asset existence status', async () => {
+      mockAssetService.exists.mockResolvedValue(true);
+
+      const result = await controller.checkAssetExists('test-asset-id');
+
+      expect(mockAssetService.exists).toHaveBeenCalledWith('test-asset-id');
+      expect(result).toEqual({ exists: true });
+    });
+  });
+
+  describe('getAssetCount', () => {
+    it('should return asset count by portfolio', async () => {
+      mockAssetService.getAssetCount.mockResolvedValue(5);
+
+      const result = await controller.getAssetCount('test-portfolio-id');
+
+      expect(mockAssetService.getAssetCount).toHaveBeenCalledWith('test-portfolio-id');
+      expect(result).toEqual({ count: 5 });
+    });
+  });
+});

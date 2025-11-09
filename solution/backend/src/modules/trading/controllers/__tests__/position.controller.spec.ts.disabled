@@ -1,0 +1,455 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
+import { PositionController, PositionQueryDto, PositionUpdateDto } from '../position.controller';
+import { PositionService, PositionSummary } from '../../services/position.service';
+
+describe('PositionController', () => {
+  let controller: PositionController;
+  let positionService: PositionService;
+
+  const mockPositionService = {
+    getCurrentPositions: jest.fn(),
+    getPositionByAsset: jest.fn(),
+    updatePositionValue: jest.fn(),
+    calculatePositionMetrics: jest.fn(),
+    getPositionPerformance: jest.fn(),
+    getPortfolioPositionSummary: jest.fn(),
+    updateAllPositionValues: jest.fn(),
+    getPositionAlerts: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PositionController],
+      providers: [
+        {
+          provide: PositionService,
+          useValue: mockPositionService,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<PositionController>(PositionController);
+    positionService = module.get<PositionService>(PositionService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getCurrentPositions', () => {
+    const portfolioId = 'portfolio-1';
+    const queryDto: PositionQueryDto = {
+      portfolioId,
+      assetId: 'asset-1',
+      marketPrices: { 'asset-1': 60.0, 'asset-2': 30.0 },
+    };
+
+    const mockPositions: PositionSummary[] = [
+      {
+        assetId: 'asset-1',
+        assetSymbol: 'HPG',
+        assetName: 'Hoa Phat Group',
+        quantity: 100,
+        avgCost: 50.0,
+        marketPrice: 60.0,
+        marketValue: 6000,
+        unrealizedPl: 1000,
+        unrealizedPlPercentage: 20.0,
+        realizedPl: 500,
+        totalPl: 1500,
+        lastUpdated: new Date(),
+      },
+    ];
+
+    it('should get current positions successfully', async () => {
+      mockPositionService.getCurrentPositions.mockResolvedValue(mockPositions);
+
+      const result = await controller.getCurrentPositions(portfolioId, JSON.stringify(queryDto.marketPrices));
+
+      expect(result).toEqual(mockPositions);
+      expect(mockPositionService.getCurrentPositions).toHaveBeenCalledWith(
+        portfolioId,
+        queryDto.marketPrices,
+      );
+    });
+
+    it('should get current positions with minimal query parameters', async () => {
+      const minimalQuery: PositionQueryDto = { portfolioId };
+      mockPositionService.getCurrentPositions.mockResolvedValue(mockPositions);
+
+      const result = await controller.getCurrentPositions(portfolioId, undefined);
+
+      expect(result).toEqual(mockPositions);
+      expect(mockPositionService.getCurrentPositions).toHaveBeenCalledWith(
+        portfolioId,
+        {},
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockPositionService.getCurrentPositions.mockRejectedValue(error);
+
+      await expect(controller.getCurrentPositions(portfolioId, JSON.stringify(queryDto.marketPrices)))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPositionByAsset', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const marketPrice = 60.0;
+
+    const mockPosition: PositionSummary = {
+      assetId: assetId,
+      assetSymbol: 'HPG',
+      assetName: 'Hoa Phat Group',
+      quantity: 100,
+      avgCost: 50.0,
+      marketPrice: 60.0,
+      marketValue: 6000,
+      unrealizedPl: 1000,
+      unrealizedPlPercentage: 20.0,
+      realizedPl: 500,
+      totalPl: 1500,
+      lastUpdated: new Date(),
+    };
+
+    it('should get position by asset successfully', async () => {
+      mockPositionService.getPositionByAsset.mockResolvedValue(mockPosition);
+
+      const result = await controller.getPositionByAsset(portfolioId, assetId, marketPrice);
+
+      expect(result).toEqual(mockPosition);
+      expect(mockPositionService.getPositionByAsset).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        marketPrice,
+      );
+    });
+
+    it('should return null for non-existent position', async () => {
+      mockPositionService.getPositionByAsset.mockResolvedValue(null);
+
+      const result = await controller.getPositionByAsset(portfolioId, assetId, marketPrice);
+
+      expect(result).toBeNull();
+      expect(mockPositionService.getPositionByAsset).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        marketPrice,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Asset not found');
+      mockPositionService.getPositionByAsset.mockRejectedValue(error);
+
+      await expect(controller.getPositionByAsset(portfolioId, assetId, marketPrice))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updatePositionValue', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const marketPrice = 65.0;
+
+    const mockUpdatedPosition: PositionSummary = {
+      assetId: assetId,
+      assetSymbol: 'HPG',
+      assetName: 'Hoa Phat Group',
+      quantity: 100,
+      avgCost: 50.0,
+      marketPrice: 65.0,
+      marketValue: 6500,
+      unrealizedPl: 1500,
+      unrealizedPlPercentage: 30.0,
+      realizedPl: 500,
+      totalPl: 2000,
+      lastUpdated: new Date(),
+    };
+
+    it('should update position value successfully', async () => {
+      mockPositionService.updatePositionValue.mockResolvedValue(mockUpdatedPosition);
+
+      const result = await controller.updatePositionValue(portfolioId, assetId, marketPrice);
+
+      expect(result).toEqual(mockUpdatedPosition);
+      expect(mockPositionService.updatePositionValue).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        marketPrice,
+      );
+    });
+
+    it('should handle position not found', async () => {
+      const error = new NotFoundException('Position not found');
+      mockPositionService.updatePositionValue.mockRejectedValue(error);
+
+      await expect(controller.updatePositionValue(portfolioId, assetId, marketPrice))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('calculatePositionMetrics', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const marketPrice = 60.0;
+
+    const mockMetrics = {
+      totalQuantity: 100,
+      averageCost: 50.0,
+      marketValue: 6000,
+      unrealizedPl: 1000,
+      realizedPl: 500,
+    };
+
+    it('should calculate position metrics successfully', async () => {
+      mockPositionService.calculatePositionMetrics.mockResolvedValue(mockMetrics);
+
+      const result = await controller.calculatePositionMetrics(portfolioId, assetId, marketPrice);
+
+      expect(result).toEqual(mockMetrics);
+      expect(mockPositionService.calculatePositionMetrics).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        marketPrice,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Asset not found');
+      mockPositionService.calculatePositionMetrics.mockRejectedValue(error);
+
+      await expect(controller.calculatePositionMetrics(portfolioId, assetId, marketPrice))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPositionPerformance', () => {
+    const portfolioId = 'portfolio-1';
+    const assetId = 'asset-1';
+    const startDate = '2024-01-01';
+    const endDate = '2024-01-31';
+
+    const mockPerformance = [
+      {
+        date: new Date('2024-01-15'),
+        quantity: 100,
+        avgCost: 50.0,
+        marketPrice: 0,
+        marketValue: 5000,
+        unrealizedPl: 0,
+        realizedPl: 500,
+      },
+    ];
+
+    it('should get position performance successfully', async () => {
+      mockPositionService.getPositionPerformance.mockResolvedValue(mockPerformance);
+
+      const result = await controller.getPositionPerformance(
+        portfolioId,
+        assetId,
+        startDate,
+        endDate,
+      );
+
+      expect(result).toEqual(mockPerformance);
+      expect(mockPositionService.getPositionPerformance).toHaveBeenCalledWith(
+        portfolioId,
+        assetId,
+        new Date(startDate),
+        new Date(endDate),
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Asset not found');
+      mockPositionService.getPositionPerformance.mockRejectedValue(error);
+
+      await expect(controller.getPositionPerformance(portfolioId, assetId, startDate, endDate))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPortfolioPositionSummary', () => {
+    const portfolioId = 'portfolio-1';
+    const marketPrices = { 'asset-1': 60.0, 'asset-2': 30.0 };
+
+    const mockSummary = {
+      totalValue: 12000,
+      totalCost: 10000,
+      totalUnrealizedPl: 2000,
+      totalRealizedPl: 800,
+      totalPl: 2800,
+      positionCount: 2,
+      topPositions: [
+        {
+          assetId: 'asset-1',
+          assetSymbol: 'HPG',
+          assetName: 'Hoa Phat Group',
+          quantity: 100,
+          avgCost: 50.0,
+          marketPrice: 60.0,
+          marketValue: 6000,
+          unrealizedPl: 1000,
+          unrealizedPlPercentage: 20.0,
+          realizedPl: 500,
+          totalPl: 1500,
+          lastUpdated: new Date(),
+        },
+      ],
+    };
+
+    it('should get portfolio position summary successfully', async () => {
+      mockPositionService.getPortfolioPositionSummary.mockResolvedValue(mockSummary);
+
+      const result = await controller.getPortfolioPositionSummary(portfolioId, JSON.stringify(marketPrices));
+
+      expect(result).toEqual(mockSummary);
+      expect(mockPositionService.getPortfolioPositionSummary).toHaveBeenCalledWith(
+        portfolioId,
+        marketPrices,
+      );
+    });
+
+    it('should get portfolio position summary with empty market prices', async () => {
+      mockPositionService.getPortfolioPositionSummary.mockResolvedValue(mockSummary);
+
+      const result = await controller.getPortfolioPositionSummary(portfolioId, '{}');
+
+      expect(result).toEqual(mockSummary);
+      expect(mockPositionService.getPortfolioPositionSummary).toHaveBeenCalledWith(
+        portfolioId,
+        {},
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockPositionService.getPortfolioPositionSummary.mockRejectedValue(error);
+
+      await expect(controller.getPortfolioPositionSummary(portfolioId, JSON.stringify(marketPrices)))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateAllPositionValues', () => {
+    const portfolioId = 'portfolio-1';
+    const updateDto: PositionUpdateDto = {
+      marketPrices: { 'asset-1': 60.0, 'asset-2': 30.0 },
+    };
+
+    const mockUpdatedPositions: PositionSummary[] = [
+      {
+        assetId: 'asset-1',
+        assetSymbol: 'HPG',
+        assetName: 'Hoa Phat Group',
+        quantity: 100,
+        avgCost: 50.0,
+        marketPrice: 60.0,
+        marketValue: 6000,
+        unrealizedPl: 1000,
+        unrealizedPlPercentage: 20.0,
+        realizedPl: 500,
+        totalPl: 1500,
+        lastUpdated: new Date(),
+      },
+    ];
+
+    it('should update all position values successfully', async () => {
+      mockPositionService.updateAllPositionValues.mockResolvedValue(mockUpdatedPositions);
+
+      const result = await controller.updateAllPositionValues(portfolioId, JSON.stringify(updateDto.marketPrices));
+
+      expect(result).toEqual(mockUpdatedPositions);
+      expect(mockPositionService.updateAllPositionValues).toHaveBeenCalledWith(
+        portfolioId,
+        updateDto.marketPrices,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockPositionService.updateAllPositionValues.mockRejectedValue(error);
+
+      await expect(controller.updateAllPositionValues(portfolioId, JSON.stringify(updateDto.marketPrices)))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPositionAlerts', () => {
+    const portfolioId = 'portfolio-1';
+    const marketPrices = { 'asset-1': 40.0, 'asset-2': 75.0 };
+
+    const mockAlerts = [
+      {
+        assetId: 'asset-1',
+        assetSymbol: 'HPG',
+        alertType: 'LOW_QUANTITY' as const,
+        message: 'Low quantity: 0.5',
+        value: 0.5,
+      },
+      {
+        assetId: 'asset-1',
+        assetSymbol: 'HPG',
+        alertType: 'HIGH_LOSS' as const,
+        message: 'High loss: -25.00%',
+        value: -25.0,
+      },
+      {
+        assetId: 'asset-2',
+        assetSymbol: 'VCB',
+        alertType: 'HIGH_GAIN' as const,
+        message: 'High gain: 50.00%',
+        value: 50.0,
+      },
+    ];
+
+    it('should get position alerts successfully', async () => {
+      mockPositionService.getPositionAlerts.mockResolvedValue(mockAlerts);
+
+      const result = await controller.getPositionAlerts(portfolioId, JSON.stringify(marketPrices));
+
+      expect(result).toEqual(mockAlerts);
+      expect(mockPositionService.getPositionAlerts).toHaveBeenCalledWith(
+        portfolioId,
+        marketPrices,
+      );
+    });
+
+    it('should get position alerts with empty market prices', async () => {
+      mockPositionService.getPositionAlerts.mockResolvedValue(mockAlerts);
+
+      const result = await controller.getPositionAlerts(portfolioId, '{}');
+
+      expect(result).toEqual(mockAlerts);
+      expect(mockPositionService.getPositionAlerts).toHaveBeenCalledWith(
+        portfolioId,
+        {},
+      );
+    });
+
+    it('should handle no alerts', async () => {
+      mockPositionService.getPositionAlerts.mockResolvedValue([]);
+
+      const result = await controller.getPositionAlerts(portfolioId, JSON.stringify(marketPrices));
+
+      expect(result).toEqual([]);
+      expect(mockPositionService.getPositionAlerts).toHaveBeenCalledWith(
+        portfolioId,
+        marketPrices,
+      );
+    });
+
+    it('should handle service errors', async () => {
+      const error = new NotFoundException('Portfolio not found');
+      mockPositionService.getPositionAlerts.mockRejectedValue(error);
+
+      await expect(controller.getPositionAlerts(portfolioId, JSON.stringify(marketPrices)))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+});

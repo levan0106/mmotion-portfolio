@@ -1,0 +1,320 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { Request, Response, NextFunction } from 'express';
+import { RequestContextMiddleware } from './request-context.middleware';
+import { ContextManager } from '../services/context-manager.service';
+
+describe('RequestContextMiddleware', () => {
+  let middleware: RequestContextMiddleware;
+  let contextManager: jest.Mocked<ContextManager>;
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
+  let mockNext: NextFunction;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        RequestContextMiddleware,
+        {
+          provide: ContextManager,
+          useValue: {
+            run: jest.fn(),
+            setContext: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    middleware = module.get<RequestContextMiddleware>(RequestContextMiddleware);
+    contextManager = module.get(ContextManager);
+
+    // Setup mock request
+    mockRequest = {
+      method: 'GET',
+      url: '/api/test',
+      path: '/api/test',
+      headers: {
+        'user-agent': 'test-agent',
+        'x-forwarded-for': '192.168.1.1',
+      },
+      query: { param: 'value' },
+      params: { id: '123' },
+      connection: {
+        remoteAddress: '192.168.1.1',
+      } as any,
+      socket: {
+        remoteAddress: '192.168.1.1',
+      } as any,
+      cookies: {},
+    };
+
+    // Setup mock response
+    mockResponse = {
+      setHeader: jest.fn(),
+      on: jest.fn(),
+      statusCode: 200,
+    } as any;
+
+    // Setup mock next function
+    mockNext = jest.fn();
+
+    // Setup default context manager behavior
+    contextManager.run.mockImplementation((context, fn) => {
+      return fn();
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('use', () => {
+    it('should set up request context and call next', () => {
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: expect.any(String),
+          correlationId: expect.any(String),
+          userId: undefined,
+          userRole: undefined,
+          sessionId: undefined,
+          ipAddress: '192.168.1.1',
+          userAgent: 'test-agent',
+          startTime: expect.any(Number),
+          method: 'GET',
+          url: '/api/test',
+          path: '/api/test',
+          query: { param: 'value' },
+          params: { id: '123' },
+        }),
+        expect.any(Function),
+      );
+
+      expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-ID', expect.any(String));
+      expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Correlation-ID', expect.any(String));
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should use existing request ID from headers', () => {
+      mockRequest.headers = {
+        'x-request-id': 'existing-request-id',
+        'user-agent': 'test-agent',
+      };
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'existing-request-id',
+        }),
+        expect.any(Function),
+      );
+
+      expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-ID', 'existing-request-id');
+    });
+
+    it('should use existing correlation ID from headers', () => {
+      mockRequest.headers = {
+        'x-correlation-id': 'existing-correlation-id',
+        'user-agent': 'test-agent',
+      };
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          correlationId: 'existing-correlation-id',
+        }),
+        expect.any(Function),
+      );
+
+      expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Correlation-ID', 'existing-correlation-id');
+    });
+
+    it('should extract user ID from request user object', () => {
+      (mockRequest as any).user = {
+        id: 'user-123',
+        role: 'admin',
+      };
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-123',
+          userRole: 'admin',
+        }),
+        expect.any(Function),
+      );
+    });
+
+    it('should extract session ID from cookies', () => {
+      mockRequest.cookies = {
+        sessionId: 'session-123',
+      };
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'session-123',
+        }),
+        expect.any(Function),
+      );
+    });
+
+    it('should extract session ID from headers', () => {
+      mockRequest.headers = {
+        'x-session-id': 'session-456',
+        'user-agent': 'test-agent',
+      };
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'session-456',
+        }),
+        expect.any(Function),
+      );
+    });
+
+    it('should handle different IP address sources', () => {
+      const testCases = [
+        {
+          headers: { 'x-forwarded-for': '192.168.1.1, 10.0.0.1' },
+          expectedIp: '192.168.1.1',
+        },
+        {
+          headers: { 'x-real-ip': '192.168.1.2' },
+          expectedIp: '192.168.1.2',
+        },
+        {
+          headers: {},
+          connection: { remoteAddress: '192.168.1.3' },
+          expectedIp: '192.168.1.3',
+        },
+        {
+          headers: {},
+          socket: { remoteAddress: '192.168.1.4' },
+          expectedIp: '192.168.1.4',
+        },
+      ];
+
+      testCases.forEach(({ headers, connection, socket, expectedIp }) => {
+        mockRequest = {
+          method: 'GET',
+          url: '/api/test',
+          path: '/api/test',
+          headers: { 'user-agent': 'test-agent', ...headers },
+          query: {},
+          params: {},
+          connection: connection as any,
+          socket: socket as any,
+          cookies: {},
+        };
+
+        middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+        expect(contextManager.run).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ipAddress: expectedIp,
+          }),
+          expect.any(Function),
+        );
+      });
+    });
+
+    it('should set up response event handlers', () => {
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(mockResponse.on).toHaveBeenCalledWith('finish', expect.any(Function));
+      expect(mockResponse.on).toHaveBeenCalledWith('close', expect.any(Function));
+    });
+
+    it('should handle response finish event', () => {
+      let finishHandler: Function;
+      (mockResponse.on as jest.Mock).mockImplementation((event, handler) => {
+        if (event === 'finish') {
+          finishHandler = handler;
+        }
+      });
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      // Simulate response finish
+      if (finishHandler) {
+        finishHandler();
+      }
+
+      expect(contextManager.setContext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          duration: expect.any(Number),
+          statusCode: 200,
+          endTime: expect.any(Number),
+        }),
+      );
+    });
+
+    it('should handle response close event', () => {
+      let closeHandler: Function;
+      (mockResponse.on as jest.Mock).mockImplementation((event, handler) => {
+        if (event === 'close') {
+          closeHandler = handler;
+        }
+      });
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      // Simulate response close
+      if (closeHandler) {
+        closeHandler();
+      }
+
+      // Should not call setContext for close event, just log
+      expect(contextManager.setContext).not.toHaveBeenCalled();
+    });
+
+    it('should handle missing headers gracefully', () => {
+      mockRequest.headers = {};
+      mockRequest.connection = undefined;
+      mockRequest.socket = undefined;
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userAgent: 'unknown',
+          ipAddress: 'unknown',
+        }),
+        expect.any(Function),
+      );
+    });
+
+    it('should handle missing connection and socket gracefully', () => {
+      // Create a new mock request without connection and socket
+      const mockRequestWithoutConnection = {
+        method: 'GET',
+        url: '/api/test',
+        path: '/api/test',
+        headers: {
+          'user-agent': 'test-agent',
+        },
+        query: { param: 'value' },
+        params: { id: '123' },
+        connection: undefined,
+        socket: undefined,
+        cookies: {},
+      };
+
+      middleware.use(mockRequestWithoutConnection as any, mockResponse as Response, mockNext);
+
+      expect(contextManager.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ipAddress: 'unknown',
+        }),
+        expect.any(Function),
+      );
+    });
+  });
+});

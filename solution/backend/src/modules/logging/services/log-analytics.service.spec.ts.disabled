@@ -1,0 +1,596 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LogAnalyticsService, LogAnalyticsOptions } from './log-analytics.service';
+import { LogAggregationService } from './log-aggregation.service';
+import { LogSummarizationService } from './log-summarization.service';
+import { ApplicationLog } from '../entities/application-log.entity';
+import { RequestLog } from '../entities/request-log.entity';
+import { BusinessEventLog } from '../entities/business-event-log.entity';
+import { PerformanceLog } from '../entities/performance-log.entity';
+
+describe('LogAnalyticsService', () => {
+  let service: LogAnalyticsService;
+  let applicationLogRepository: jest.Mocked<Repository<ApplicationLog>>;
+  let requestLogRepository: jest.Mocked<Repository<RequestLog>>;
+  let businessEventLogRepository: jest.Mocked<Repository<BusinessEventLog>>;
+  let performanceLogRepository: jest.Mocked<Repository<PerformanceLog>>;
+  let logAggregationService: jest.Mocked<LogAggregationService>;
+  let logSummarizationService: jest.Mocked<LogSummarizationService>;
+
+  const mockApplicationLogs = [
+    {
+      id: '1',
+      level: 'error',
+      message: 'Database connection failed',
+      module_name: 'DatabaseModule',
+      user_id: 'user1',
+      request_id: 'req1',
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      level: 'info',
+      message: 'User login successful',
+      module_name: 'AuthModule',
+      user_id: 'user1',
+      request_id: 'req2',
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+    {
+      id: '3',
+      level: 'warn',
+      message: 'Slow query detected',
+      module_name: 'DatabaseModule',
+      user_id: 'user2',
+      request_id: 'req3',
+      created_at: new Date('2024-01-01T12:00:00Z'),
+    },
+  ] as ApplicationLog[];
+
+  const mockRequestLogs = [
+    {
+      id: '1',
+      request_id: 'req1',
+      method: 'GET',
+      url: '/api/users',
+      response_time_ms: 150,
+      response_status: 200,
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      request_id: 'req2',
+      method: 'POST',
+      url: '/api/auth/login',
+      response_time_ms: 300,
+      response_status: 200,
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+    {
+      id: '3',
+      request_id: 'req3',
+      method: 'GET',
+      url: '/api/portfolios',
+      response_time_ms: 1200,
+      response_status: 200,
+      created_at: new Date('2024-01-01T12:00:00Z'),
+    },
+  ] as RequestLog[];
+
+  const mockPerformanceLogs = [
+    {
+      id: '1',
+      operation_name: 'getPortfolios',
+      duration_ms: 150,
+      memory_usage_mb: 128,
+      cpu_usage_percent: 15,
+      created_at: new Date('2024-01-01T10:00:00Z'),
+    },
+    {
+      id: '2',
+      operation_name: 'createTrade',
+      duration_ms: 300,
+      memory_usage_mb: 256,
+      cpu_usage_percent: 25,
+      created_at: new Date('2024-01-01T11:00:00Z'),
+    },
+  ] as PerformanceLog[];
+
+  const mockAggregatedData = [
+    {
+      period: '2024-01-01',
+      timestamp: new Date('2024-01-01T00:00:00Z'),
+      totalLogs: 3,
+      errorCount: 1,
+      warningCount: 1,
+      infoCount: 1,
+      debugCount: 0,
+      criticalCount: 0,
+      averageResponseTime: 550,
+      uniqueUsers: 2,
+      uniqueRequests: 3,
+      topModules: [
+        { module: 'DatabaseModule', count: 2 },
+        { module: 'AuthModule', count: 1 },
+      ],
+      topErrors: [
+        { error: 'Database connection failed', count: 1 },
+      ],
+    },
+  ];
+
+  const mockSummaryData = {
+    id: 'test',
+    period: '2024-01-01 to 2024-01-01',
+    startDate: new Date('2024-01-01T00:00:00Z'),
+    endDate: new Date('2024-01-01T23:59:59Z'),
+    summaryType: 'daily',
+    totalLogs: 3,
+    errorCount: 1,
+    warningCount: 1,
+    infoCount: 1,
+    debugCount: 0,
+    criticalCount: 0,
+    errorRate: 33.33,
+    averageResponseTime: 550,
+    uniqueUsers: 2,
+    uniqueRequests: 3,
+    topErrors: [
+      { error: 'Database connection failed', count: 1, percentage: 33.33 },
+    ],
+    topModules: [
+      { module: 'DatabaseModule', count: 2, percentage: 66.67 },
+      { module: 'AuthModule', count: 1, percentage: 33.33 },
+    ],
+    performanceMetrics: {
+      slowestRequests: [
+        { endpoint: '/api/portfolios', avgTime: 1200, count: 1 },
+        { endpoint: '/api/auth/login', avgTime: 300, count: 1 },
+        { endpoint: '/api/users', avgTime: 150, count: 1 },
+      ],
+      memoryUsage: { avg: 192, max: 256, min: 128 },
+      cpuUsage: { avg: 20, max: 25, min: 15 },
+    },
+    trends: {
+      errorTrend: 'stable' as const,
+      performanceTrend: 'stable' as const,
+      userActivityTrend: 'stable' as const,
+    },
+    insights: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LogAnalyticsService,
+        {
+          provide: getRepositoryToken(ApplicationLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(RequestLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(BusinessEventLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(PerformanceLog),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: LogAggregationService,
+          useValue: {
+            aggregateLogs: jest.fn(),
+          },
+        },
+        {
+          provide: LogSummarizationService,
+          useValue: {
+            generateSummary: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<LogAnalyticsService>(LogAnalyticsService);
+    applicationLogRepository = module.get(getRepositoryToken(ApplicationLog));
+    requestLogRepository = module.get(getRepositoryToken(RequestLog));
+    businessEventLogRepository = module.get(getRepositoryToken(BusinessEventLog));
+    performanceLogRepository = module.get(getRepositoryToken(PerformanceLog));
+    logAggregationService = module.get(LogAggregationService);
+    logSummarizationService = module.get(LogSummarizationService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('generateAnalytics', () => {
+    it('should generate comprehensive analytics', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(mockSummaryData);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result).toHaveProperty('summary');
+      expect(result).toHaveProperty('trends');
+      expect(result).toHaveProperty('insights');
+      expect(result).toHaveProperty('patterns');
+      expect(result).toHaveProperty('recommendations');
+      expect(result).toHaveProperty('timeSeries');
+
+      expect(result.summary.totalLogs).toBe(3);
+      expect(result.summary.errorRate).toBe(33.33);
+      expect(result.summary.averageResponseTime).toBe(550);
+      expect(result.summary.uniqueUsers).toBe(2);
+      expect(result.summary.uniqueRequests).toBe(3);
+
+      expect(result.trends.errorTrend).toBe('stable');
+      expect(result.trends.performanceTrend).toBe('stable');
+      expect(result.trends.userActivityTrend).toBe('stable');
+
+      expect(result.timeSeries).toHaveLength(1);
+      expect(result.timeSeries[0].timestamp).toEqual(new Date('2024-01-01T00:00:00Z'));
+      expect(result.timeSeries[0].errorCount).toBe(1);
+      expect(result.timeSeries[0].warningCount).toBe(1);
+      expect(result.timeSeries[0].infoCount).toBe(1);
+    });
+
+    it('should generate insights for high error rate', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const highErrorSummary = {
+        ...mockSummaryData,
+        errorRate: 15,
+        totalLogs: 100,
+        errorCount: 15,
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(highErrorSummary);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.insights).toHaveLength(1);
+      expect(result.insights[0].type).toBe('error');
+      expect(result.insights[0].message).toContain('Critical error rate: 15.00%');
+      expect(result.insights[0].severity).toBe('high');
+      expect(result.insights[0].recommendation).toContain('Investigate error patterns');
+    });
+
+    it('should generate insights for performance issues', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const slowPerformanceSummary = {
+        ...mockSummaryData,
+        averageResponseTime: 2500,
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(slowPerformanceSummary);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.insights.length).toBeGreaterThan(0);
+      const performanceInsight = result.insights.find(i => i.message.includes('Critical performance issue'));
+      expect(performanceInsight).toBeDefined();
+      expect(performanceInsight?.type).toBe('error');
+      expect(performanceInsight?.message).toContain('Critical performance issue: 2500.00ms');
+      expect(performanceInsight?.severity).toBe('high');
+      expect(performanceInsight?.recommendation).toContain('Optimize database queries');
+    });
+
+    it('should generate success insights for low error rate', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const lowErrorSummary = {
+        ...mockSummaryData,
+        errorRate: 0.5,
+        totalLogs: 1000,
+        errorCount: 5,
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(lowErrorSummary);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.insights).toHaveLength(1);
+      expect(result.insights[0].type).toBe('success');
+      expect(result.insights[0].message).toContain('Excellent error rate: 0.50%');
+      expect(result.insights[0].severity).toBe('low');
+      expect(result.insights[0].recommendation).toContain('Maintain current error handling');
+    });
+
+    it('should analyze error patterns correctly', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const errorLogs = [
+        ...mockApplicationLogs,
+        { ...mockApplicationLogs[0], id: '4', level: 'error', message: 'Database timeout' },
+        { ...mockApplicationLogs[0], id: '5', level: 'error', message: 'Database connection failed' },
+      ] as ApplicationLog[];
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(mockSummaryData);
+      applicationLogRepository.find.mockResolvedValue(errorLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.patterns.errorPatterns).toHaveLength(1);
+      expect(result.patterns.errorPatterns[0].pattern).toBe('Database Error');
+      expect(result.patterns.errorPatterns[0].frequency).toBe(3);
+      expect(result.patterns.errorPatterns[0].severity).toBe('high');
+    });
+
+    it('should analyze performance patterns correctly', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const slowRequestLogs = [
+        ...mockRequestLogs,
+        { ...mockRequestLogs[0], id: '4', response_time_ms: 2000, url: '/api/slow' },
+        { ...mockRequestLogs[0], id: '5', response_time_ms: 2500, url: '/api/slow' },
+      ] as RequestLog[];
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(mockSummaryData);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(slowRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.patterns.performancePatterns.length).toBeGreaterThan(0);
+      const slowPattern = result.patterns.performancePatterns.find(p => p.pattern.includes('Slow endpoint'));
+      expect(slowPattern).toBeDefined();
+      expect(slowPattern?.frequency).toBe(2);
+      expect(slowPattern?.impact).toBe('high');
+    });
+
+    it('should generate recommendations based on analytics', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const highErrorSummary = {
+        ...mockSummaryData,
+        errorRate: 8,
+        averageResponseTime: 1500,
+        uniqueUsers: 1200,
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue(mockAggregatedData);
+      logSummarizationService.generateSummary.mockResolvedValue(highErrorSummary);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.recommendations.length).toBeGreaterThan(0);
+      
+      const performanceRecommendation = result.recommendations.find(r => r.category === 'performance');
+      expect(performanceRecommendation).toBeDefined();
+      expect(performanceRecommendation?.priority).toBe('high');
+      expect(performanceRecommendation?.title).toBe('Optimize Database Queries');
+
+      const errorRecommendation = result.recommendations.find(r => r.category === 'error_handling');
+      expect(errorRecommendation).toBeDefined();
+      expect(errorRecommendation?.priority).toBe('high');
+      expect(errorRecommendation?.title).toBe('Improve Error Handling');
+
+      const userRecommendation = result.recommendations.find(r => r.category === 'user_experience');
+      expect(userRecommendation).toBeDefined();
+      expect(userRecommendation?.priority).toBe('medium');
+      expect(userRecommendation?.title).toBe('Scale Infrastructure');
+    });
+  });
+
+  describe('generateComparisonAnalytics', () => {
+    it('should generate comparison analytics between two periods', async () => {
+      const currentOptions: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-02T00:00:00Z'),
+        endDate: new Date('2024-01-02T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const previousOptions: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const currentSummary = {
+        ...mockSummaryData,
+        errorRate: 10,
+        averageResponseTime: 1000,
+        uniqueUsers: 100,
+      };
+
+      const previousSummary = {
+        ...mockSummaryData,
+        errorRate: 5,
+        averageResponseTime: 500,
+        uniqueUsers: 50,
+      };
+
+      // Mock current period
+      logAggregationService.aggregateLogs
+        .mockResolvedValueOnce(mockAggregatedData) // Current
+        .mockResolvedValueOnce(mockAggregatedData); // Previous
+
+      logSummarizationService.generateSummary
+        .mockResolvedValueOnce(currentSummary) // Current
+        .mockResolvedValueOnce(previousSummary); // Previous
+
+      applicationLogRepository.find
+        .mockResolvedValueOnce(mockApplicationLogs) // Current
+        .mockResolvedValueOnce(mockApplicationLogs); // Previous
+
+      requestLogRepository.find
+        .mockResolvedValueOnce(mockRequestLogs) // Current
+        .mockResolvedValueOnce(mockRequestLogs); // Previous
+
+      performanceLogRepository.find
+        .mockResolvedValueOnce(mockPerformanceLogs) // Current
+        .mockResolvedValueOnce(mockPerformanceLogs); // Previous
+
+      const result = await service.generateComparisonAnalytics(currentOptions, previousOptions);
+
+      expect(result).toHaveProperty('current');
+      expect(result).toHaveProperty('previous');
+      expect(result).toHaveProperty('changes');
+      expect(result).toHaveProperty('insights');
+
+      expect(result.changes.errorRate.current).toBe(10);
+      expect(result.changes.errorRate.previous).toBe(5);
+      expect(result.changes.errorRate.change).toBe(5);
+      expect(result.changes.errorRate.percentage).toBe(100);
+
+      expect(result.changes.performance.current).toBe(1000);
+      expect(result.changes.performance.previous).toBe(500);
+      expect(result.changes.performance.change).toBe(500);
+      expect(result.changes.performance.percentage).toBe(100);
+
+      expect(result.changes.userActivity.current).toBe(100);
+      expect(result.changes.userActivity.previous).toBe(50);
+      expect(result.changes.userActivity.change).toBe(50);
+      expect(result.changes.userActivity.percentage).toBe(100);
+
+      expect(result.insights.length).toBeGreaterThanOrEqual(0);
+      if (result.insights.length > 0) {
+        expect(result.insights[0].type).toBe('degradation');
+        expect(result.insights[0].message).toContain('Error rate increased by 100.00%');
+        expect(result.insights[0].severity).toBe('high');
+      }
+    });
+  });
+
+  describe('private methods', () => {
+    it('should calculate trends correctly', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const trendData = [
+        {
+          ...mockAggregatedData[0],
+          errorCount: 1,
+          averageResponseTime: 500,
+          uniqueUsers: 10,
+        },
+        {
+          ...mockAggregatedData[0],
+          errorCount: 3,
+          averageResponseTime: 1000,
+          uniqueUsers: 20,
+        },
+      ];
+
+      logAggregationService.aggregateLogs.mockResolvedValue(trendData);
+      logSummarizationService.generateSummary.mockResolvedValue(mockSummaryData);
+      applicationLogRepository.find.mockResolvedValue(mockApplicationLogs);
+      requestLogRepository.find.mockResolvedValue(mockRequestLogs);
+      performanceLogRepository.find.mockResolvedValue(mockPerformanceLogs);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.trends.errorTrend).toBe('increasing');
+      expect(result.trends.performanceTrend).toBe('degrading');
+      expect(result.trends.userActivityTrend).toBe('increasing');
+    });
+
+    it('should handle empty data gracefully', async () => {
+      const options: LogAnalyticsOptions = {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-01T23:59:59Z'),
+        granularity: 'day',
+      };
+
+      const emptySummary = {
+        ...mockSummaryData,
+        totalLogs: 0,
+        errorRate: 0,
+        averageResponseTime: 0,
+        uniqueUsers: 0,
+        uniqueRequests: 0,
+        topErrors: [],
+        topModules: [],
+      };
+
+      logAggregationService.aggregateLogs.mockResolvedValue([]);
+      logSummarizationService.generateSummary.mockResolvedValue(emptySummary);
+      applicationLogRepository.find.mockResolvedValue([]);
+      requestLogRepository.find.mockResolvedValue([]);
+      performanceLogRepository.find.mockResolvedValue([]);
+
+      const result = await service.generateAnalytics(options);
+
+      expect(result.summary.totalLogs).toBe(0);
+      expect(result.summary.errorRate).toBe(0);
+      expect(result.summary.averageResponseTime).toBe(0);
+      expect(result.summary.uniqueUsers).toBe(0);
+      expect(result.summary.uniqueRequests).toBe(0);
+      expect(result.patterns.errorPatterns).toHaveLength(0);
+      expect(result.patterns.performancePatterns).toHaveLength(0);
+      expect(result.patterns.userBehaviorPatterns).toHaveLength(0);
+    });
+  });
+});

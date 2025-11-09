@@ -1,0 +1,749 @@
+# Portfolio Management System - Progress
+
+## What Works
+### ✅ Completed
+- **MTD (MONTH-TO-DATE) FIELDS IMPLEMENTATION FOR PERFORMANCE SNAPSHOTS - COMPLETED** (Current Session - November 3, 2025)
+  - **Database Schema Enhancement**: Complete MTD fields migration
+    - **Portfolio Snapshots**: Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD columns
+    - **Asset Snapshots**: Added assetTWRMTD, assetIRRMTD columns
+    - **Asset Group Snapshots**: Added groupTWRMTD, groupIRRMTD columns
+    - **Migration File**: 1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+    - **Proper Rollback**: Complete rollback functionality for all MTD fields
+    - **Files Created**: src/migrations/1761500000000-AddMTDFieldsToPerformanceSnapshots.ts
+  - **Entity Updates**: Complete entity updates with MTD fields
+    - **TypeORM Decorators**: Proper @Column decorators with decimal(15,6) precision
+    - **Default Values**: All MTD fields default to 0
+    - **Helper Methods**: Updated getTWROnPeriod, getMWROnPeriod, getIRROnPeriod to support 'MTD' period
+    - **Period Support**: MTD period added to all period selection logic
+    - **Files Updated**: portfolio-performance-snapshot.entity.ts, asset-performance-snapshot.entity.ts, asset-group-performance-snapshot.entity.ts
+  - **TWR Calculation Service Enhancement**: Complete MTD calculation implementation
+    - **Portfolio MTD**: calculateMTD() method for portfolio month-to-date TWR calculation
+    - **Asset MTD**: calculateAssetMTD() method for asset month-to-date TWR calculation
+    - **Asset Group MTD**: calculateAssetGroupMTD() method for asset group month-to-date TWR calculation
+    - **Date Range Logic**: Proper calculation from first day of month to snapshot date
+    - **Integration**: MTD calculations integrated into main calculatePortfolioTWR, calculateAssetTWR, calculateAssetGroupTWR methods
+    - **Return Interface**: Updated TWROptions interface to include twrMTD field
+    - **Files Updated**: twr-calculation.service.ts
+  - **MWR/IRR Calculation Service Enhancement**: Complete MTD MWR/IRR implementation
+    - **Portfolio MTD MWR/IRR**: calculateMTD() and calculateIRRMTD() methods for portfolio month-to-date calculations
+    - **Asset MTD MWR/IRR**: calculateAssetMWRMTD() and calculateAssetIRRMTD() methods
+    - **Asset Group MTD MWR/IRR**: calculateAssetGroupMWRMTD() and calculateAssetGroupIRRMTD() methods
+    - **Date Range Logic**: Proper calculation from first day of month to snapshot date with cash flow handling
+    - **Integration**: MTD calculations integrated into main calculatePortfolioMWRIRR, calculateAssetMWRIRR, calculateAssetGroupMWRIRR methods
+    - **Return Interface**: Updated to include mwrMTD and irrMTD fields
+    - **Files Updated**: mwr-irr-calculation.service.ts
+  - **Performance Snapshot Service Integration**: Complete MTD value saving
+    - **Portfolio Snapshots**: Updated to save portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD during snapshot creation
+    - **Asset Snapshots**: Updated to save assetTWRMTD, assetIRRMTD during snapshot creation
+    - **Asset Group Snapshots**: Updated to save groupTWRMTD, groupIRRMTD during snapshot creation
+    - **Calculation Flow**: All MTD values calculated and saved automatically during snapshot creation
+    - **Transaction Safety**: All MTD values saved within database transaction
+    - **Files Updated**: performance-snapshot.service.ts
+  - **Investor Report Controller Update**: Monthly growth metric enhancement
+    - **Monthly Growth**: Changed from portfolioTWR1M to portfolioTWRMTD for monthlyGrowth metric
+    - **Metric Parsing**: Updated parseMetric function to properly handle MTD values
+    - **API Response**: Monthly growth now returns MTD value (month-to-date) instead of 1-month rolling value
+    - **Backward Compatibility**: Maintained dailyGrowth and ytdGrowth metrics
+    - **Files Updated**: investor-report.controller.ts
+  - **Code Quality & Implementation**: Production-ready implementation
+    - **Consistent Naming**: All MTD fields follow consistent naming convention
+    - **Proper Precision**: All MTD fields use decimal(15,6) for financial precision
+    - **Default Values**: All MTD fields default to 0 for new records
+    - **Calculation Accuracy**: MTD calculations use proper date range (first day of month to snapshot date)
+    - **Type Safety**: All TypeScript interfaces updated with MTD fields
+    - **Helper Methods**: Period-based helper methods updated to support MTD period
+    - **Production Ready**: Clean, maintainable code with proper error handling
+
+- **DEMO ACCOUNT BANNER & MANAGEMENT SYSTEM - COMPLETED** (Previous Session - November 1, 2025)
+  - **Demo Account Toggle System**: Complete backend and frontend implementation
+    - **Backend API Endpoints**: GET and POST endpoints for demo account status management
+    - **AccountService Methods**: getDemoAccountStatus() and toggleDemoAccount() with fixed demo account ID
+    - **Permission-Based Access**: Proper permission checks (settings.read, settings.update)
+    - **Response Validation**: Robust validation for API responses with error handling
+    - **Files Updated**: account.service.ts, settings.controller.ts, api.settings.ts
+  - **System Settings UI Integration**: Complete UI for demo account management
+    - **Toggle Switch**: "Enable Demo Account" switch in System Settings card
+    - **State Management**: Real-time status updates with error recovery
+    - **Toast Notifications**: Success/error messages for user feedback
+    - **Status Display**: Shows demo account name and status information
+    - **Files Updated**: Settings.tsx
+  - **DemoAccountBanner Component**: Comprehensive banner component with advanced features
+    - **Collapse/Expand Functionality**: Full collapse/expand with smooth Collapse animations
+    - **Default Collapsed**: Banner defaults to collapsed for minimal UI intrusion
+    - **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+    - **Account Switching**: Integrated account switching with main account detection
+    - **LocalStorage Persistence**: User preference for collapse state saved to localStorage
+    - **Responsive Design**: Fully responsive with mobile-optimized layouts
+    - **Mobile Button Placement**: Different button strategies for mobile vs desktop
+    - **Touch-Friendly Design**: Large touch targets and proper spacing
+    - **Files Created**: DemoAccountBanner.tsx
+  - **AppLayout Integration**: Seamless integration with main layout
+    - **Banner Placement**: Positioned below Toolbar in main content area
+    - **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar when in demo account
+    - **Height Adjustment**: Scrollable content area adjusts for banner visibility
+    - **Context Integration**: Uses AccountContext for demo account detection
+    - **Files Updated**: AppLayout.tsx
+  - **Translation & i18n Support**: Complete translation support
+    - **Namespace Fix**: Fixed all keys to use `accountSwitcher.demoAccountBanner.*` namespace
+    - **Comprehensive Keys**: All banner-related keys in en.json and vi.json
+    - **Key Consistency**: All translation keys consistent throughout component
+    - **Files Updated**: DemoAccountBanner.tsx, en.json, vi.json
+  - **Report Service Enhancement**: Permission-based report access
+    - **PermissionCheckService Integration**: Uses PermissionCheckService for accessible portfolios
+    - **UPDATE Permission Support**: Accounts with UPDATE permissions can view report data
+    - **Portfolio Filtering**: Filters portfolioIds based on accessibility
+    - **API Consistency**: All report endpoints use permission-based filtering
+    - **Files Updated**: report.service.ts, report.module.ts
+  - **Code Quality & Bug Fixes**: Production-ready code
+    - **Syntax Fixes**: Fixed all syntax errors and duplicate elements
+    - **Button Deduplication**: Removed duplicate collapse/expand buttons
+    - **Action Optimization**: Optimized action prop logic for mobile/desktop
+    - **Linter Compliance**: All code passes linting checks
+    - **Mobile UX**: Excellent mobile experience with proper button placement
+
+- **SCROLL TO TOP FUNCTIONALITY - COMPLETED** (Previous Session - October 31, 2025)
+  - **ScrollToTop Component Implementation**: Complete scroll to top system for route changes
+    - **Unified Component**: ScrollToTop component with exported scrollToTop utility function in single file
+    - **Route Change Detection**: Uses useLocation hook to detect route changes automatically
+    - **Container Detection**: Finds scrollable container using data attribute [data-scrollable-container="true"]
+    - **Fallback Support**: Falls back to window.scrollTo if container not found
+    - **Smooth Scrolling**: Uses smooth scroll behavior for better user experience
+    - **App Integration**: Added ScrollToTop component to App.tsx Router wrapper
+    - **Files Created**: ScrollToTop.tsx (component + utility function)
+    - **Files Updated**: App.tsx, AppLayout.tsx
+  - **Tab Switching Scroll Integration**: Complete scroll to top for all tab changes
+    - **Universal Implementation**: Added scroll to top functionality for all tab changes across application
+    - **Pages Updated**: PortfolioDetail, Portfolios, AdminManagement, Trading, DepositManagement
+    - **Components Updated**: CashFlowLayout
+    - **Mobile Menu Support**: Mobile menu items in PortfolioDetail also trigger scroll to top
+    - **Consistent Behavior**: All tab changes now scroll to top automatically
+    - **Files Updated**: PortfolioDetail.tsx, Portfolios.tsx, AdminManagement.tsx, Trading.tsx, DepositManagement.tsx, CashFlowLayout.tsx
+  - **Code Consolidation**: Single file pattern for consistency
+    - **Consolidation**: Merged scrollUtils.ts into ScrollToTop.tsx for single source of truth
+    - **Export Pattern**: ScrollToTop component (default) + scrollToTop function (named export)
+    - **Import Updates**: Updated all imports from utils/scrollUtils to components/Common/ScrollToTop
+    - **File Cleanup**: Removed scrollUtils.ts after successful consolidation
+    - **Unused Export Removal**: Removed unused ScrollToTop export from components/Common/index.ts
+    - **Files Deleted**: utils/scrollUtils.ts
+    - **Files Updated**: utils/index.ts, components/Common/index.ts, all pages with tab functionality
+
+- **DATE NORMALIZATION UTILITY + TRADEFORM DATE FIX - COMPLETED** (Previous Session - October 29, 2025)
+  - **Date Normalization Utility Implementation**: Complete unified date normalization system
+    - **Unified Function**: Single `normalizeDate()` function handles all date conversion cases
+    - **Auto Type Detection**: Automatically detects input type (string/Date/null) and returns appropriate output
+    - **Timezone Safety**: Extracts YYYY-MM-DD directly from ISO strings to avoid timezone conversion issues
+    - **Option Support**: Supports `{ output: 'iso-string' }` and `{ includeTime: true/false }` options
+    - **Current Time Integration**: When formatting Date to ISO, includes current time (hours, minutes, seconds)
+    - **Date-Only Support**: Option to format with 00:00:00 UTC for date-only operations
+    - **Internal Helpers**: parseDateToLocal() and formatDateToISO() as internal helper functions
+    - **Files Created**: date.utils.ts
+    - **Files Updated**: utils/index.ts (export), TradeForm.tsx
+  - **TradeForm Date Handling Fix**: Complete fix for timezone issues in DatePicker
+    - **Timezone Issue Resolution**: Fixed issue where selecting same date showed different results
+    - **Date Normalization**: Applied normalizeDate utility throughout TradeForm for consistent date handling
+    - **DatePicker Integration**: DatePicker value uses normalizeDate() for proper display
+    - **Form Submission**: Form submission uses normalizeDate() with iso-string output option
+    - **Initial Data Loading**: Initial data normalization with proper date parsing
+    - **Consistent Behavior**: All date operations now use unified normalization function
+    - **No Nested Calls**: Eliminated need for nested function calls (normalizeDate(normalizeDate(...)))
+    - **Files Updated**: TradeForm.tsx
+  - **Code Optimization**: Simplified API with single function pattern
+    - **Single Function Pattern**: Replaced multiple functions with one unified function
+    - **Reduced Nesting**: Eliminated need for nested function calls
+    - **Cleaner API**: Single function with options is easier to use and understand
+    - **Type Safety**: Proper TypeScript types with union return types (Date | string)
+    - **Documentation**: Comprehensive JSDoc comments with examples
+    - **Files Updated**: date.utils.ts
+
+- **GLOBAL ASSET FORM ENHANCEMENT + BACKEND API FIXES - COMPLETED** (Previous Session - October 27, 2025)
+  - **GlobalAssetForm Description Field Fix**: Complete fix for optional description field
+    - **Optional Description**: Fixed description field to be truly optional (allow null/empty values)
+    - **Validation Schema Update**: Updated yup validation to use `.nullable()` for description field
+    - **Form Submission Logic**: Enhanced form submission to handle empty description properly
+    - **TypeScript Interface**: Updated GlobalAssetFormData interface to support `string | null` for description
+    - **Files Updated**: GlobalAssetForm.tsx
+  - **Asset Type Validation Simplification**: Complete simplification of validation logic
+    - **Disabled Nation-Based Validation**: Simplified NationConfigService to always allow all asset types for all nations
+    - **Removed Complex Logic**: Replaced complex validation logic with simple `return true` in `isAssetTypeEnabled` method
+    - **Code Simplification**: Eliminated unnecessary validation complexity for better maintainability
+    - **REALESTATE Support**: Fixed issue where REALESTATE assets were not allowed for VN nation
+    - **Files Updated**: nation-config.service.ts
+  - **Global Asset API Enhancement**: Complete API enhancement for priceMode field
+    - **PriceMode Field Support**: Added priceMode field to UpdateGlobalAssetDto for proper API updates
+    - **Missing Field Fix**: Fixed issue where priceMode was not being updated in global asset API
+    - **DTO Enhancement**: Added PriceMode enum import and validation to UpdateGlobalAssetDto
+    - **API Testing**: Verified that priceMode updates work correctly (AUTOMATIC/MANUAL)
+    - **Files Updated**: update-global-asset.dto.ts
+  - **Nation Configuration Updates**: Complete configuration updates for all nations
+    - **Complete Asset Type Support**: Added all missing asset types (CRYPTO, COMMODITY, REALESTATE, OTHER) to all nations
+    - **Consistent Configuration**: Updated VN, US, UK, JP, SG configurations to include all asset types
+    - **Symbol Pattern Updates**: Ensured all nations have appropriate symbol patterns for all asset types
+    - **Files Updated**: nation-config.service.ts
+  - **API Testing and Verification**: Complete testing and verification of all changes
+    - **Backend Restart**: Successfully restarted backend container to apply changes
+    - **API Response Verification**: Confirmed that priceMode and isActive fields are properly returned in API responses
+    - **Real Estate Asset Testing**: Successfully tested REALESTATE asset creation and updates for VN nation
+    - **Field Update Testing**: Verified that priceMode changes from MANUAL to AUTOMATIC work correctly
+  - **ResponsiveCard Component System Implementation**: Complete unified card component system
+    - **Unified Card Component**: Created ResponsiveCard component for consistent card styling across application
+    - **Multiple Variants**: Implemented default, transparent, outlined, and elevated variants
+    - **Responsive Design**: Automatic mobile/desktop adaptation with breakpoint detection
+    - **Size System**: Small, medium, large sizes with appropriate padding and spacing
+    - **Hover Control**: Configurable hover effects with hoverable prop
+    - **Click Support**: Clickable cards with transform animations
+    - **Loading States**: Built-in loading and error state handling
+    - **Files Created**: ResponsiveCard.tsx, ResponsiveCard.types.ts
+    - **Files Updated**: index.ts (Common components export)
+  - **ResponsiveCard Sub-Components**: Complete sub-component system
+    - **ResponsiveCardContent**: Standalone content component with configurable padding
+    - **ResponsiveCardHeader**: Header component with title, subtitle, icon, and actions support
+    - **ResponsiveCardActions**: Actions component with position and spacing control
+    - **TypeScript Types**: Comprehensive type definitions for all components
+    - **Consistent API**: Unified prop system across all sub-components
+  - **InvestorReport UI Improvements**: Complete UI enhancement with hover control
+    - **Hover Animation Removal**: Disabled hover effects on ResponsiveTable components
+    - **Card Hover Fix**: Removed box shadow hover effects on summary cards
+    - **ResponsiveCard Integration**: Migrated Asset Allocation section to use ResponsiveCard
+    - **Transparent Design**: Applied transparent variant for cleaner appearance
+    - **Consistent Spacing**: Unified spacing system across all sections
+    - **Files Updated**: InvestorReport.tsx
+  - **DepositSettlementModal Bug Fixes**: Complete bug fixes and layout improvements
+    - **Submit Button Fix**: Fixed non-working settlement confirmation button
+    - **Form Submission**: Changed from type="submit" to onClick handler for proper form submission
+    - **Layout Enhancement**: Converted Settlement Summary from card layout to list view
+    - **UI Consistency**: Applied transparent cards with dividers for better visual separation
+    - **Files Updated**: DepositSettlementModal.tsx
+  - **PortfolioDetail Navigation Enhancement**: Complete navigation improvement
+    - **Browser Back Integration**: Changed back button to use window.history.back() instead of hard-coded navigation
+    - **Natural Navigation**: Users now return to previous page in browser history
+    - **Code Cleanup**: Removed unused useNavigate import and navigate variable
+    - **Better UX**: More intuitive navigation behavior
+    - **Files Updated**: PortfolioDetail.tsx
+  - **Code Quality Improvements**: Complete code cleanup and error fixes
+    - **TypeScript Error Fixes**: Removed unused Divider import from TradeForm.tsx
+    - **Build Success**: Frontend builds successfully without TypeScript errors
+    - **Linting Clean**: All linting errors resolved
+    - **Production Ready**: Clean, maintainable code ready for deployment
+    - **Files Updated**: TradeForm.tsx
+
+- **GENERIC FORM MODAL ENHANCEMENT + FORM INTEGRATION - COMPLETED** (Previous Session - October 26, 2025)
+  - **Generic Form Modal Implementation**: Complete centralized form modal with tabbed interface
+    - **Centralized Form System**: Created GenericFormModal for unified form creation experience
+    - **Tabbed Interface**: Implemented 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi)
+    - **Auto Form Selection**: Automatic form rendering when tab changes without additional clicks
+    - **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+    - **Form Integration**: Integrated TradeForm, CashFlowForm, and DepositForm into unified modal
+    - **Files Created**: GenericFormModal.tsx
+  - **Form Submission Handling**: Centralized submission with comprehensive fallback logic
+    - **Centralized Submission**: GenericFormModal controls all form submissions with common buttons
+    - **Form Reference System**: Implemented formRef system for programmatic form submission
+    - **Fallback Logic**: Added fallback logic for forms without submit buttons (TradeForm, CashFlowForm)
+    - **API Integration**: Fixed API calls to use effectivePortfolioId instead of empty selectedPortfolioId
+    - **Error Handling**: Comprehensive error handling for all form types
+    - **Files Updated**: GenericFormModal.tsx, TradeForm.tsx, CashFlowForm.tsx, DepositForm.tsx
+  - **Responsive Design Enhancement**: Complete mobile optimization and desktop layout
+    - **Mobile Optimization**: Fullscreen modal on mobile devices with touch-friendly interface
+    - **Desktop Layout**: Fixed width modal using Material-UI size system (md/lg)
+    - **Tab Styling**: Responsive tabs with icon hiding on mobile for cleaner interface
+    - **Form Layout**: Consistent form layouts using md breakpoint for all forms
+    - **Width Consistency**: Fixed modal width changes when switching between tabs
+    - **Files Updated**: GenericFormModal.tsx, ModalWrapper.tsx, TradeForm.tsx, CashFlowForm.tsx, DepositForm.tsx
+  - **Portfolio Management Integration**: Context-aware portfolio selection and auto-selection
+    - **Context-Aware Logic**: Portfolio selection hidden when opened from portfolio detail page
+    - **Auto Portfolio Selection**: Automatic portfolio selection when modal opens from general pages
+    - **Effective Portfolio ID**: Unified logic using effectivePortfolioId for all API calls
+    - **Portfolio Validation**: Error display when no portfolio is available
+    - **Files Updated**: GenericFormModal.tsx
+  - **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
+    - **CashFlowForm Extraction**: Extracted CashFlowForm from CashFlowFormModal for reuse
+    - **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
+    - **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
+    - **Button Control**: Added hideButtons prop to control form button visibility
+    - **Files Created**: CashFlowForm.tsx, CashFlowFormModal.tsx, TransferCashModal.tsx, CashflowDeleteConfirmationModal.tsx
+    - **Files Updated**: CashFlowLayout.tsx
+  - **Translation and i18n Support**: Comprehensive translation support
+    - **Comprehensive Translations**: Added translation keys for all GenericFormModal components
+    - **Portfolio Information**: Added portfolio selection and information display translations
+    - **Error Messages**: Added error message translations for form validation
+    - **Consistent Language**: Vietnamese and English translations for all new features
+    - **Files Updated**: en.json, vi.json
+
+- **ASSET MANAGEMENT ENHANCEMENT + MIGRATION CONSOLIDATION - COMPLETED** (Previous Session - October 26, 2025)
+  - **Enhanced Asset Creation Workflow**: Complete global asset integration with automatic data fetching
+    - **Global Asset Integration**: Automatic global asset data fetching when creating assets
+    - **Symbol Input Validation**: Alphanumeric-only symbol input with automatic uppercase conversion
+    - **Auto-fill Functionality**: Automatic population of asset details from global asset data
+    - **Permission-Based Field Control**: Disable fields based on asset ownership (createdBy vs accountId)
+    - **Focus Management**: Fixed symbol input focus loss during data fetching
+    - **Helper Text System**: Dynamic helper text indicating symbol availability in system
+    - **Field Reordering**: Symbol field moved before name field for better UX
+    - **Blur-Based Fetching**: Global asset data fetched only on symbol field blur (not on every change)
+    - **Files Updated**: AssetForm.tsx, AssetFormModal.tsx, Assets.tsx, global-asset.service.ts
+  - **Backend API Enhancement**: New symbol-based lookup endpoint and service enhancements
+    - **New API Endpoint**: GET /api/v1/global-assets/symbol/:symbol for symbol-based lookup
+    - **Service Layer Enhancement**: findBySymbol method in GlobalAssetService
+    - **DTO Enhancement**: Added createdBy field to GlobalAssetResponseDto
+    - **Permission Integration**: createdBy field mapping for ownership validation
+    - **Files Updated**: global-asset.controller.ts, global-asset.service.ts, global-asset-response.dto.ts
+  - **Database Migration Consolidation**: Merged 3 separate migrations into 1 comprehensive migration
+    - **Migration Consolidation**: Merged 3 separate migrations into 1 comprehensive migration
+    - **Unified Migration**: 1761449000001-AddPriceModeAndCreatedByToAssets.ts
+    - **Comprehensive Changes**: Added price_mode to both assets and global_assets tables
+    - **CreatedBy Field**: Added created_by column to global_assets table
+    - **Enum Creation**: Created separate enums for assets and global_assets price_mode
+    - **Rollback Support**: Complete rollback functionality for all changes
+    - **Files Created**: 1761449000001-AddPriceModeAndCreatedByToAssets.ts
+    - **Files Deleted**: 1735128000000-AddPriceModeToAssets.ts, 1735128000001-AddPriceModeToGlobalAssets.ts, 1761449000000-AddCreatedByToGlobalAssets.ts
+  - **Asset Details Modal Enhancement**: Complete redesign with list view and responsive grid system
+    - **List View Redesign**: Converted from card-based to list-based layout
+    - **Responsive Grid System**: 4 columns desktop, 2 columns mobile for optimal space usage
+    - **Unified Grid Layout**: Single grid combining all asset information sections
+    - **Border System**: Light borders (rgba(0, 0, 0, 0.08)) for item separation
+    - **Asset ID Removal**: Removed Asset ID field for cleaner interface
+    - **Text Truncation**: Ellipsis (...) for long labels with proper overflow handling
+    - **Professional Styling**: Consistent typography and spacing throughout
+    - **Files Updated**: AssetDetailsModal.tsx
+  - **Code Cleanup and Optimization**: Comprehensive cleanup for production readiness
+    - **Debug Log Removal**: Removed console.log statements from frontend and backend
+    - **Unused Code Cleanup**: Removed commented-out code and unused imports
+    - **TypeScript Fixes**: Resolved all linter errors and type mismatches
+    - **Production Ready**: Clean, maintainable code ready for production deployment
+    - **Files Cleaned**: AssetForm.tsx, AssetDetailsModal.tsx, Assets.tsx, global-asset.service.ts, asset-global-sync.service.ts
+- **CODE CLEANUP + MOBILE UI ENHANCEMENT - COMPLETED** (Previous Session - October 25, 2025)
+  - **Debug Logs Cleanup**: Comprehensive cleanup of debug logs across frontend and backend
+    - **Backend Cleanup**: Removed 24+ console.log statements from backend services
+    - **Frontend Cleanup**: Removed 24+ console.log statements from frontend components
+    - **Files Cleaned**: AssetService, CashFlowService, DepositService, NotificationGateway, PortfolioDetail, GlobalAssetTrackingDashboard, queryUtils, NotificationManager, NotificationContext, RoleForm, GoalCard, deviceTrustService, PortfolioForm
+    - **Code Quality**: All debug logs removed while preserving error logging (console.error)
+    - **Production Ready**: Code is now clean and professional for production deployment
+  - **Mobile UI Enhancement**: Fixed mobile scroll issues for admin management
+    - **Admin Management Tabs**: Fixed mobile scroll issue for admin management tabs
+    - **Scrollable Tabs**: Added `variant="scrollable"` and `scrollButtons="auto"` for horizontal scrolling
+    - **Mobile Optimization**: Added `allowScrollButtonsMobile` for better mobile experience
+    - **Responsive CSS**: Enhanced tab styling with mobile-specific padding and font sizes
+    - **Touch-Friendly**: Improved touch interaction for mobile users
+    - **Files Updated**: AdminManagement.tsx
+  - **TypeScript Build Fixes**: Resolved all TypeScript compilation errors
+    - **Unused Variables**: Fixed unused variable errors in queryUtils.ts
+    - **Build Success**: Frontend build now completes without TypeScript errors
+    - **Code Quality**: Removed unused imports and variables
+    - **Linting**: All linter errors resolved
+  - **Environment Configuration**: Added ADMIN_USERNAME configuration
+    - **ADMIN_USERNAME**: Added ADMIN_USERNAME configuration to all environment files
+    - **Config Files**: Updated env.example, env.development.example, env.staging.example, production.env, docker-compose.yml
+    - **Default Value**: Set default value to 'admin' for admin user lookup
+    - **Docker Support**: Added environment variable support in docker-compose.yml
+
+- **FRONTEND BUILD ERROR FIX & CODE CLEANUP - COMPLETED** (Previous Session - October 23, 2025)
+  - **TypeScript Build Error Resolution**: Fixed 4 TypeScript errors for unused `Fab` imports
+    - **Files Fixed**: GoalsList.tsx, AdminManagement.tsx, RoleManagement.tsx, Trading.tsx
+    - **Solution**: Commented out unused `Fab` imports to resolve TS6133 errors
+    - **Build Success**: Frontend build now completes successfully without errors
+    - **Files Updated**: All 4 files with commented out `// Fab,` imports
+  - **Auto Asset Creation Service Cleanup**: Removed redundant services and updated architecture
+    - **Service Removal**: Deleted redundant `auto-asset-creation.service.ts` files
+    - **Module Cleanup**: Removed `AutoAssetCreationService` from asset.module.ts
+    - **Event-Driven Architecture**: Replaced with event-driven `AutoAssetCreationListener`
+    - **Linting Fix**: Resolved linting errors after service removal
+    - **Files Deleted**: `src/modules/shared/services/auto-asset-creation.service.ts`, `src/modules/asset/services/auto-asset-creation.service.ts`
+  - **Build Process Verification**: Comprehensive build testing and verification
+    - **Frontend Build**: Successfully completed in 11.22s
+    - **Backend Build**: Previously verified working
+    - **No TypeScript Errors**: All compilation errors resolved
+    - **Production Ready**: Both frontend and backend ready for deployment
+
+- **DEVICE TRUST SYSTEM IMPLEMENTATION & ENHANCEMENT - COMPLETED** (Current Session - October 23, 2025)
+  - **Device Trust Core System**: Complete device trust implementation with advanced fingerprinting
+    - **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
+    - **Stable Fingerprints**: Removed timestamp to ensure consistent device identification
+    - **Incognito Detection**: Comprehensive incognito/private mode detection with multiple methods
+    - **Security Enhancement**: Incognito sessions generate random fingerprints (never trusted)
+    - **Files Created**: deviceFingerprintService.ts, deviceTrustService.ts, device-trust.service.ts
+  - **Backend Device Trust Infrastructure**: Complete backend implementation for device trust
+    - **TrustedDevice Entity**: Complete database schema with proper relationships and indexes
+    - **Device Trust Service**: Full CRUD operations for trusted devices with expiration management
+    - **Device Trust Controller**: RESTful API endpoints for device management
+    - **Database Migration**: Comprehensive migration with proper foreign keys and indexes
+    - **Files Created**: trusted-device.entity.ts, device-trust.service.ts, device-trust.controller.ts
+  - **Authentication Integration**: Enhanced authentication flow with device trust
+    - **Login Flow Enhancement**: Integrated device trust into login-or-register API
+    - **Progressive Authentication**: Device trust bypasses password for trusted devices
+    - **Smart Logic**: Backend automatically handles device trust checking and device addition
+    - **Error Handling**: Proper error responses for password requirements vs invalid credentials
+    - **Files Updated**: auth.service.ts, auth.controller.ts, auth.dto.ts
+  - **Frontend Device Management UI**: Complete user interface for device management
+    - **Device Management Component**: Complete UI for viewing and managing trusted devices
+    - **Settings Integration**: Added Security tab to Settings page with device management
+    - **Device Statistics**: Real-time stats showing total, active, expired, and high-trust devices
+    - **Revoke Functionality**: Individual device revocation and bulk device revocation
+    - **Files Created**: DeviceManagement.tsx, updated Settings.tsx
+  - **User Experience Enhancements**: Smooth login flow and proper error handling
+    - **Smooth Login Flow**: No error messages when password is required (400 status)
+    - **Error Display**: Proper error display for invalid credentials (401 status)
+    - **Time Display**: Accurate time display for device last used (minutes/hours/days ago)
+    - **Device Information**: Comprehensive device details with browser info and location
+    - **Files Updated**: Login.tsx, deviceTrustService.ts, device-trust.service.ts
+
+- **GOALS MANAGEMENT SYSTEM IMPLEMENTATION & ENHANCEMENT - COMPLETED** (Previous Session - October 23, 2025)
+  - **Goals Navigation Integration**: Complete navigation system integration for goals management
+    - **Menu Restructuring**: Moved Goals menu from "Quản lý quỹ" to "Nhà đầu tư" section for better accessibility
+    - **Translation Updates**: Updated vi.json with navigation.investor.goals key for proper localization
+    - **User Experience**: Goals now accessible to all users under investor section
+    - **Files Updated**: AppLayout.tsx, vi.json
+  - **Portfolio Linking System Enhancement**: Enhanced portfolio linking capabilities
+    - **Multiple Portfolio Support**: Removed unique constraint allowing portfolios to link to multiple goals
+    - **Database Migration**: Created migration to remove UQ_goal_portfolios_portfolio_id constraint
+    - **API Endpoint Fix**: Updated /api/v1/goals/portfolios/available to return portfolios with UPDATE/VIEW permissions
+    - **Permission-Based Access**: Endpoint now respects portfolio permissions for proper access control
+    - **Files Updated**: goal.service.ts, RemovePortfolioUniqueConstraint migration
+  - **UI/UX Improvements**: Comprehensive UI/UX enhancements for goals management
+    - **Progress Display Enhancement**: Simplified progress UI for better readability and professional appearance
+    - **Priority Display**: Added priority slider with color coding and tooltips for clear visualization
+    - **Status Integration**: Harmonized status and priority display in single row for space efficiency
+    - **Date Input Enhancement**: Replaced DatePicker with TextField type="date" for better cursor control
+    - **Portfolio Selection Fix**: Fixed portfolio filtering logic in GoalForm to show available portfolios
+    - **Files Updated**: GoalCard.tsx, GoalForm.tsx, GoalsList.tsx
+  - **Data Management & Sorting**: Enhanced data management capabilities
+    - **Priority-Based Sorting**: Goals sorted by priority (highest first) then by creation date
+    - **Portfolio Filtering**: Fixed available portfolios loading in GoalForm with proper API integration
+    - **Form Validation**: Enhanced form validation for portfolio selection and goal creation
+    - **Files Updated**: GoalsList.tsx, GoalForm.tsx
+
+- **GLOBAL ASSET TRACKING CLEANUP ENDPOINT FIX - COMPLETED** (Previous Session - October 22, 2025)
+  - **HTTP Method Mismatch Resolution**: Fixed critical mismatch between frontend GET and backend POST methods
+    - **Root Cause Analysis**: Backend controller used POST method with @Body('days') while frontend service used GET method with query parameter
+    - **Solution Implementation**: Updated backend controller to use POST method with @Body('days') parameter
+    - **Frontend Service Update**: Updated frontend service to use POST method with body parameter { days }
+    - **Swagger Documentation**: Updated API documentation from @ApiQuery to @ApiBody for proper parameter handling
+    - **Files Updated**: global-asset-tracking.controller.ts, api.global-asset-tracking.ts
+  - **Endpoint Testing & Verification**: Comprehensive testing and verification of fixed endpoint
+    - **Container Restart**: Restarted backend container to apply changes
+    - **API Testing**: Successfully tested POST endpoint with PowerShell Invoke-WebRequest
+    - **Response Verification**: Confirmed endpoint returns correct response format: {"deletedRecords":0,"message":"Successfully deleted 0 tracking records older than 2 days"}
+    - **Error Resolution**: Fixed 404 NotFoundException error completely
+    - **Production Ready**: Endpoint now works correctly with POST method
+  - **Code Quality & Standards**: Enhanced code quality and security standards
+    - **HTTP Method Appropriateness**: POST method is more appropriate for cleanup/delete operations
+    - **Security Enhancement**: Body parameters are more secure than query parameters for sensitive operations
+    - **RESTful Design**: POST method follows RESTful principles for operations with side effects
+    - **Data Integrity**: Body parameters provide better data integrity for cleanup operations
+    - **No Linting Errors**: All changes pass linting checks
+    - **Files Updated**: global-asset-tracking.controller.ts, api.global-asset-tracking.ts
+
+- **SYSTEMGUIDE COMPONENT ENHANCEMENT & NAVIGATION SYSTEM - COMPLETED** (Previous Session - October 21, 2025)
+  - **Table of Contents Navigation**: Fixed expand/collapse functionality for parent sections
+    - **Accordion Behavior**: Implemented proper accordion behavior (only one section expanded at a time)
+    - **State Management**: Added expandedSections Set for proper state management
+    - **Manual Control**: Created handleSectionClick function for manual expand/collapse control
+    - **Files Updated**: SystemGuide.tsx
+  - **Active Highlighting System**: Fixed active section highlighting to work correctly
+    - **Immediate Feedback**: Active section highlighting updates immediately on click
+    - **Conflict Prevention**: Added isManualClick state to prevent scroll detection conflicts
+    - **Manual Click Handling**: Enhanced handleSectionClick and handleSubsectionClick functions
+    - **Files Updated**: SystemGuide.tsx
+  - **Scroll Detection Enhancement**: Improved scroll detection algorithm for accurate highlighting
+    - **Distance-Based Selection**: Find section closest to viewport top for better accuracy
+    - **Main Section Preference**: Prefer main sections over subsections when distances are similar
+    - **Debounced Detection**: Implemented 50ms debounce for better performance
+    - **Conflict Prevention**: Added manual click protection to prevent scroll detection conflicts
+    - **Files Updated**: SystemGuide.tsx
+  - **Navigation System Architecture**: Enhanced navigation system with proper state management
+    - **Auto-Expand Functionality**: Parent sections automatically expand when subsections are active
+    - **ID Verification**: Verified all navigation IDs match between TOC and components
+    - **Mobile Responsiveness**: TOC works on both desktop and mobile devices
+    - **Smooth Navigation**: Conflict-free navigation between manual clicks and scroll detection
+    - **Files Updated**: SystemGuide.tsx, all SystemGuide component files
+  - **User Experience Improvements**: Enhanced user experience with smooth navigation
+    - **Accordion Navigation**: Table of contents now works as proper accordion
+    - **Immediate Visual Feedback**: Active section highlighting updates immediately on click
+    - **Smooth Scroll Detection**: Accurate scroll-based highlighting without conflicts
+    - **Mobile-Friendly TOC**: Responsive table of contents for both desktop and mobile
+    - **Auto-Expand Subsections**: Parent sections automatically expand when subsections are active
+    - **Files Updated**: SystemGuide.tsx
+
+- **PRICE UPDATE CONFIGURATION & AUTO SYNC SERVICE ENHANCEMENT - COMPLETED** (Previous Session - October 20, 2025)
+  - **Fixed-Time Price Update Scheduling**: Implemented comprehensive fixed-time scheduling system
+    - **Schedule Type Support**: Added support for both interval and fixed-time scheduling
+    - **Fixed Times Configuration**: Support for multiple daily execution times (9:01 AM, 3:01 PM, 6:50 PM)
+    - **Timezone Integration**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
+    - **Cron Expression Generation**: Dynamic cron expression generation for fixed times
+    - **Files Updated**: scheduled-price-update.service.ts, production.env, .env
+  - **Auto Sync Service Enhancement**: Enhanced service to support dual scheduling
+    - **Configuration Interface**: Updated AutoSyncConfig interface with new fields
+    - **Schedule Type Detection**: Automatic detection and handling of schedule types
+    - **Fixed Time Validation**: Added shouldRunAtFixedTime() method for execution validation
+    - **Next Execution Calculation**: Enhanced getNextFixedTimeSync() for accurate timing
+    - **Files Updated**: auto-sync.service.ts, auto-sync.controller.ts
+  - **API Controller Updates**: Enhanced DTOs and validation for new configuration
+    - **UpdateConfigDto**: Added scheduleType, fixedTimes, timezone fields
+    - **AutoSyncStatusDto**: Updated to display fixed-time configuration information
+    - **Validation**: Added proper validation for new configuration parameters
+    - **API Response**: Fixed API to return correct scheduleType: "fixed_times"
+    - **Files Updated**: auto-sync.controller.ts
+  - **Configuration Management**: Resolved Docker container configuration issues
+    - **Environment Variables**: Updated .env file with new price update configuration
+    - **Dependency Management**: Added moment-timezone and @types/moment-timezone packages
+    - **TypeScript Compilation**: Fixed compilation errors with proper type declarations
+    - **Container Restart**: Resolved configuration loading issues with container restart
+    - **Files Updated**: package.json, .env, docker-compose.yml
+  - **Service Integration**: Enhanced service methods for dual scheduling support
+    - **loadConfiguration()**: Updated to handle both schedule types from environment
+    - **updateConfig()**: Enhanced to support dynamic configuration updates
+    - **getStatus()**: Improved to return appropriate configuration details
+    - **generateFixedTimesCronExpression()**: Added method for fixed-time cron generation
+    - **Files Updated**: auto-sync.service.ts
+
+- **MULTI-ACCOUNT PORTFOLIO MANAGEMENT SYSTEM - COMPLETED** (Previous Session - October 19, 2025)
+  - **Permission-Based Access Control**: Implemented comprehensive permission system
+    - **Permission Levels**: OWNER (full access), UPDATE (modify data), VIEW (read-only)
+    - **Database Schema**: Created portfolio_permissions table with proper relationships
+    - **Migration Script**: Populated existing portfolios with OWNER permissions
+    - **Unique Constraints**: Prevent duplicate permissions per portfolio-account pair
+    - **Files Updated**: portfolio-permission.entity.ts, AddPortfolioPermissions migration
+  - **Centralized Permission Service**: Created PermissionCheckService for consistent logic
+    - **Context-Aware Permissions**: Different access levels for different pages
+    - **API Integration**: All portfolio-related APIs use permission checks
+    - **Trading API Fix**: Fixed 403 errors for non-owner accounts
+    - **Cash Flow API Fix**: Fixed 403 errors for non-owner accounts
+    - **Convert-to-Portfolio Fix**: Fixed 403 errors for non-owner accounts
+    - **Files Updated**: permission-check.service.ts, trading.controller.ts, cash-flow.controller.ts
+  - **Frontend Permission Management**: Complete UI for permission management
+    - **Permission Modal**: PortfolioPermissionModal for managing permissions
+    - **Permission Badge**: Visual indicator of user permission level
+    - **Owner-Only Actions**: Manage permissions button only visible to owners
+    - **Permission Stats**: Display number of accounts with access
+    - **Files Updated**: PortfolioPermissionModal.tsx, PermissionBadge.tsx, PortfolioCard.tsx
+  - **ResponsiveTable Component System**: Created reusable table components
+    - **ResponsiveTable**: Base table with consistent styling and light borders
+    - **ResponsiveTableWithActions**: Table with action menus and buttons
+    - **TypeScript Types**: Comprehensive type definitions for table components
+    - **CSS Styling**: Light borders for better text visibility
+    - **Files Updated**: ResponsiveTable.tsx, ResponsiveTableWithActions.tsx, table.types.ts
+  - **Investor Report Table Enhancement**: Migrated all tables to ResponsiveTable
+    - **Consistent Styling**: All tables use ResponsiveTable component
+    - **Header Visibility**: Fixed table header text color issues
+    - **Light Borders**: Better text contrast with subtle borders
+    - **Responsive Design**: Mobile-optimized layouts
+    - **Files Updated**: InvestorReport.tsx, ResponsiveTable.styles.css
+
+- **DATABASE RESTORE & MIGRATION FIX - COMPLETED** (Previous Session - October 18, 2025)
+  - **Database Restore Issue Resolution**: Fixed production database restore to local development environment
+    - **Schema Mismatch Fix**: Resolved foreign key constraint violations due to missing tables
+    - **TypeScript Compilation Fix**: Fixed corrupted file encoding causing build failures
+    - **Migration Execution**: Successfully ran migrations in Docker container to avoid local issues
+    - **Manual Table Creation**: Created missing tables (users, roles, permissions, user_roles, role_permissions)
+    - **Data Verification**: Confirmed successful restore with 15 portfolios, 171 trades, 14 users, 7 roles, 59 permissions
+    - **Foreign Key Resolution**: All foreign key constraints now working properly
+    - **Files Fixed**: market-data.service.ts, asset.module.ts, database schema
+    - **Process Documented**: Complete fix process documented in memory-bank/fixes/
+
+- **WELCOME PAGE IMPLEMENTATION & PUBLIC ACCESS - COMPLETED** (Previous Session - January 15, 2025)
+  - **Welcome Page Implementation**: Complete welcome page with public access and layout integration
+    - **Public Access**: Welcome page accessible without authentication for new users
+    - **Layout Integration**: Authenticated users see Welcome page within AppLayout
+    - **Smart Navigation**: Navigation handlers adapt based on authentication status
+    - **Quick Start Guide**: Interactive step-by-step guide with visual progress tracking
+    - **Multi-Language Support**: Complete translation support for all welcome content
+    - **Responsive Design**: Optimized for all screen sizes with Material-UI components
+    - **Cash Flow Step**: Added cash flow source creation step before trading step
+    - **Trading Redirect**: Enhanced trading redirect with query parameter support
+    - **Login Integration**: Seamless redirect flow from welcome actions to login
+    - **Files Updated**: Welcome.tsx, App.tsx, Login.tsx, en.json, vi.json
+
+- **LOGIN PAGE MULTI-LANGUAGE & HOLDINGS UI ENHANCEMENT - COMPLETED** (Previous Session - January 15, 2025)
+  - **Login Page Multi-Language Implementation**: Complete multi-language support for Login page
+    - **Translation Keys**: Added comprehensive translation keys for login functionality in both EN/VI
+    - **Dynamic Language Switching**: Login page automatically switches language based on user settings
+    - **Contextual Messages**: Messages change based on user state (COMPLETE, PARTIAL, DEMO)
+    - **Error Handling**: All error messages fully localized with proper fallbacks
+    - **User Experience**: Enhanced UX for both English and Vietnamese users
+    - **ResponsiveTypography Integration**: Migrated all Typography to ResponsiveTypography for consistency
+    - **Form Labels**: Username, Password labels and placeholders fully translated
+    - **Button Text**: All button text and loading states translated
+    - **Helper Text**: Form helper text and validation messages translated
+    - **User History**: Recent users section fully translated
+    - **Files Updated**: Login.tsx, en.json, vi.json
+  - **Holdings Page UI Enhancement**: Improved Holdings page with professional icon-left, text-right layout
+    - **Summary Cards Layout**: Enhanced summary cards with icon-left, content-right layout
+    - **Icon Design**: Larger icons (48x48px) with rounded corners and shadows
+    - **Typography Hierarchy**: Improved title, value, subtitle hierarchy
+    - **Table Row Icons**: Added contextual icons for all table columns
+      - **Portfolio Column**: AccountBalance icon for portfolio identification
+      - **Units Column**: Assessment icon (info) for quantity display
+      - **Avg Cost Column**: MonetizationOn icon (warning) for cost information
+      - **Total Investment Column**: AccountBalanceWallet icon (primary) for investment amount
+      - **Current Value Column**: TrendingUp icon (success) for current value
+      - **Unrealized P&L Column**: TrendingUp/Down icon (success/error) based on value
+      - **Realized P&L Column**: ArrowUpward/Downward icon (success/error) based on value
+    - **Color Coding**: Consistent color coding for P&L values (green for positive, red for negative)
+    - **Responsive Design**: Optimized for mobile, tablet, and desktop
+    - **Files Updated**: Holdings.tsx
+
+## Current Status
+### 🎯 Active Development
+- **MTD Fields Implementation**: Complete MTD (Month-to-Date) fields for all performance snapshots
+  - **Database Migration**: MTD fields added to portfolio, asset, and asset group snapshot tables
+  - **Calculation Services**: TWR, MWR, and IRR MTD calculations implemented
+  - **Service Integration**: Performance snapshot service saves MTD values automatically
+  - **API Updates**: Investor report controller uses MTD for monthly growth metric
+  - **Code Quality**: Production-ready code with proper type safety and precision
+- **Demo Account Management**: Complete demo account toggle system with backend and frontend integration
+- **DemoAccountBanner**: Comprehensive banner component with collapse/expand and mobile optimization
+- **Mobile Responsive**: Fully responsive banner with mobile-specific button placement and touch-friendly design
+- **Account Switching**: Easy account switching functionality from banner to main account
+- **Permission-Based Reports**: Accounts with UPDATE permissions can view report data
+- **Translation Support**: Complete i18n support with correct namespace for all banner keys
+- **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar for persistent indication
+- **State Persistence**: User collapse preference saved to localStorage
+- **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+- **Smooth Animations**: Material-UI Collapse component for smooth expand/collapse animations
+- **Code Quality**: Production-ready code with comprehensive error handling
+- **Mobile UX**: Excellent mobile experience with proper button placement and touch targets
+- **Generic Form Modal**: Complete centralized form modal with tabbed interface and responsive design
+- **Form Integration**: Seamless integration of TradeForm, CashFlowForm, and DepositForm into unified modal
+- **Form Submission**: Centralized submission handling with formRef system and comprehensive fallback logic
+- **API Integration**: Fixed API calls to use effectivePortfolioId for proper portfolio handling
+- **Responsive Design**: Fullscreen on mobile, fixed width on desktop with Material-UI size system
+- **Portfolio Management**: Context-aware portfolio selection and auto-selection
+- **Form Component Refactoring**: Extracted CashFlowForm and separated modal components
+- **Button Control System**: Added hideButtons prop for unified form button management
+- **Width Consistency**: Fixed modal width changes when switching between tabs
+- **Mobile Optimization**: Touch-friendly interface with hidden tab icons on mobile
+- **Translation Support**: Comprehensive i18n support for Vietnamese and English
+- **Error Handling**: Comprehensive error handling for all form types
+- **Code Reuse**: Refactored CashFlowFormModal to use CashFlowForm internally
+- **Modal Component Separation**: Separated modals from CashFlowLayout into individual files
+- **FloatingTradingButton Integration**: Updated to open GenericFormModal instead of individual forms
+- **Asset Management Enhancement**: Complete global asset integration with automatic data fetching and permission-based field control
+- **Enhanced Asset Creation Workflow**: Symbol validation, auto-fill functionality, and focus management
+- **Permission-Based Control**: Asset field control based on ownership (createdBy vs accountId)
+- **Global Asset Integration**: Automatic global asset data fetching and auto-fill functionality
+- **Asset Details Modal**: Redesigned with list view and responsive grid system
+- **Database Migration Consolidation**: Merged 3 migrations into 1 comprehensive migration
+- **Code Cleanup**: Production-ready code with debug logs removed
+- **Device Trust System**: Complete device trust implementation with advanced security
+- **Device Fingerprinting**: Advanced fingerprinting using Canvas, WebGL, Audio, Screen, User Agent
+- **Incognito Detection**: Comprehensive incognito/private mode detection with multiple methods
+- **Authentication Integration**: Enhanced login flow with device trust and progressive authentication
+- **Device Management UI**: Complete interface for viewing and managing trusted devices
+- **Smooth Login Experience**: No error messages for password requirements, proper error display for invalid credentials
+- **Time Display Enhancement**: Accurate time display for device last used (minutes/hours/days ago)
+- **Security Enhancement**: Incognito sessions generate random fingerprints (never trusted)
+- **Fixed-Time Price Update System**: Fully functional fixed-time scheduling (9:01 AM, 3:01 PM, 6:50 PM)
+- **Dual Scheduling Support**: Both interval and fixed-time scheduling operational
+- **Timezone Integration**: Proper Vietnam timezone handling (Asia/Ho_Chi_Minh)
+- **Configuration Management**: Dynamic configuration loading and updates
+- **API Status Display**: Real-time status showing correct scheduleType: "fixed_times"
+- **Multi-Account Portfolio Management**: Fully functional permission-based system
+- **Permission-Based Access**: OWNER, UPDATE, VIEW permission levels implemented
+- **ResponsiveTable System**: Consistent table styling across the application
+- **Permission Management UI**: Complete UI for managing portfolio permissions
+- **API Permission Integration**: All APIs use centralized permission checks
+- **Build System**: Both frontend and backend build successfully without errors
+- **Code Quality**: All TypeScript errors resolved, unused imports cleaned up
+- **Event-Driven Architecture**: Auto asset creation using event-driven pattern
+
+### 🔧 Technical Architecture
+- **Frontend**: React 18 + TypeScript + Material-UI + Vite
+- **Backend**: NestJS + TypeScript + PostgreSQL
+- **Authentication**: JWT-based with permission-based access control
+- **Database**: PostgreSQL with price update and auto sync systems
+- **Deployment**: Docker containerization with production-ready configuration
+- **Price Update System**: Fixed-time scheduling with timezone support
+- **Auto Sync Service**: Dual scheduling support (interval + fixed-time)
+- **Configuration Management**: Dynamic environment variable loading
+
+### 📊 System Capabilities
+- **Fixed-Time Price Updates**: Price updates run at specific times (9:01 AM, 3:01 PM, 6:50 PM)
+- **Interval-Based Scheduling**: Backward compatible interval-based scheduling (every N minutes)
+- **Timezone Support**: Proper timezone handling for Vietnam time (Asia/Ho_Chi_Minh)
+- **Configuration Management**: Dynamic configuration loading and updates
+- **API Status Display**: Real-time status showing current schedule type and next execution time
+- **Multi-Account Portfolio Access**: Share portfolios with multiple accounts
+- **Permission-Based UI**: Different interfaces based on permission level
+- **Portfolio Management**: Create, view, edit portfolios with permission checks
+- **Trading Management**: Complete trading workflow with permission validation
+- **Investor Reporting**: Professional investor reports with permission filtering
+- **Table System**: Consistent table styling with ResponsiveTable components
+- **Permission Management**: Easy permission management for portfolio owners
+
+## Next Steps
+### 🚀 Planned Enhancements (Current Session)
+- **Advanced Navigation Features**: Search functionality in table of contents
+- **Smooth Animations**: Add smooth expand/collapse animations for better UX
+- **Keyboard Navigation**: Support for keyboard navigation in table of contents
+- **Breadcrumb Navigation**: Add breadcrumb navigation for better context
+- **Section Progress**: Show reading progress for each section
+- **Mobile Gestures**: Support for swipe gestures on mobile devices
+
+### 🚀 Planned Enhancements (Previous Session)
+- **Advanced Permission Features**: More granular permission levels
+- **Bulk Permission Management**: Manage multiple portfolios at once
+- **Permission History**: Track permission changes over time
+- **Mobile App**: React Native mobile application
+- **API Documentation**: Comprehensive API documentation with Swagger
+- **Testing**: Unit and integration test coverage for permission system
+- **Performance**: Optimization for large datasets with permission checks
+
+## Key Files Modified in Current Session
+- `frontend/src/components/Common/GenericFormModal.tsx` - Centralized form modal with tabbed interface and responsive design
+- `frontend/src/components/Common/ModalWrapper.tsx` - Enhanced with fullScreen support and width consistency
+- `frontend/src/components/Trading/TradeForm.tsx` - Updated for GenericFormModal integration with external portfolio props
+- `frontend/src/components/CashFlow/CashFlowForm.tsx` - Extracted standalone form component for reuse
+- `frontend/src/components/CashFlow/CashFlowFormModal.tsx` - Refactored to use CashFlowForm internally
+- `frontend/src/components/CashFlow/CashFlowLayout.tsx` - Updated to use separated modal components
+- `frontend/src/components/Deposit/DepositForm.tsx` - Updated for GenericFormModal integration
+- `frontend/src/components/Common/FloatingTradingButton.tsx` - Updated to open GenericFormModal
+- `frontend/src/i18n/locales/en.json` - Added GenericFormModal translations
+- `frontend/src/i18n/locales/vi.json` - Added GenericFormModal translations
+
+## Key Files Modified in Previous Session
+- `frontend/src/pages/AdminManagement.tsx` - Fixed mobile scroll issues for admin management tabs
+- `frontend/src/utils/queryUtils.ts` - Fixed TypeScript build errors and removed unused variables
+- `frontend/src/components/Goals/GoalCard.tsx` - Removed debug console.log statements
+- `frontend/src/pages/PortfolioDetail.tsx` - Removed debug console.log statements
+- `frontend/src/services/deviceTrustService.ts` - Removed debug console.log statements
+- `frontend/src/components/Portfolio/PortfolioForm.tsx` - Removed debug console.log statements
+- `frontend/src/components/GlobalAssetTrackingDashboard.tsx` - Removed debug console.log statements
+- `frontend/src/components/Notification/NotificationManager.tsx` - Removed debug console.log statements
+- `frontend/src/contexts/NotificationContext.tsx` - Removed debug console.log statements
+- `frontend/src/components/RoleManagement/RoleForm.tsx` - Removed debug console.log statements
+- `src/notification/notification.gateway.ts` - Removed debug console.log statements
+- `src/modules/asset/services/asset.service.ts` - Removed debug console.log statements
+- `src/modules/asset/controllers/asset.controller.ts` - Removed debug console.log statements
+- `src/modules/asset/repositories/asset.repository.ts` - Removed debug console.log statements
+- `src/modules/portfolio/services/cash-flow.service.ts` - Removed debug console.log statements
+- `src/modules/portfolio/services/deposit.service.ts` - Removed debug console.log statements
+- `src/modules/portfolio/services/performance-snapshot.service.ts` - Removed debug console.log statements
+- `env.example` - Added ADMIN_USERNAME configuration
+- `env.development.example` - Added ADMIN_USERNAME configuration
+- `env.staging.example` - Added ADMIN_USERNAME configuration
+- `production.env` - Added ADMIN_USERNAME configuration
+- `docker-compose.yml` - Added ADMIN_USERNAME environment variable support
+
+## System Health
+- ✅ **Database**: Fully operational with MTD fields for all performance snapshots and demo account management
+- ✅ **Performance Snapshots**: Complete MTD calculation support for portfolio, asset, and asset group levels
+- ✅ **Calculation Services**: TWR, MWR, and IRR MTD calculations working correctly
+- ✅ **Investor Reports**: Monthly growth metric now uses MTD (month-to-date) values
+- ✅ **Authentication**: Enhanced with device trust integration and progressive authentication
+- ✅ **Frontend**: Responsive with DemoAccountBanner and demo account management UI
+- ✅ **Backend**: Stable API endpoints with demo account toggle and permission-based report access
+- ✅ **Deployment**: Production-ready configuration with Docker
+- ✅ **Demo Account Management**: Complete toggle system with backend and frontend integration
+- ✅ **DemoAccountBanner**: Comprehensive banner component with collapse/expand and mobile optimization
+- ✅ **Mobile Responsive**: Fully responsive banner with mobile-specific layouts and touch-friendly design
+- ✅ **Account Switching**: Easy account switching functionality from banner to main account
+- ✅ **Permission-Based Reports**: Accounts with UPDATE permissions can view report data
+- ✅ **Translation Support**: Complete i18n support with correct namespace (accountSwitcher.demoAccountBanner.*)
+- ✅ **Visual Indicators**: "Demo" chip and "Read-only" text in AppBar for persistent indication
+- ✅ **State Persistence**: User collapse preference saved to localStorage
+- ✅ **Click Anywhere Toggle**: When collapsed, clicking anywhere on banner expands it
+- ✅ **Smooth Animations**: Material-UI Collapse component for smooth expand/collapse animations
+- ✅ **Report Service Enhancement**: Permission-based report access using PermissionCheckService
+- ✅ **Code Quality**: Production-ready code with comprehensive error handling and no duplicate buttons
+- ✅ **Mobile UX**: Excellent mobile experience with proper button placement and large touch targets
+- ✅ **Build System**: Both frontend and backend build successfully without errors
+- ✅ **Event-Driven Architecture**: Auto asset creation using event-driven pattern
+- ✅ **Code Cleanup**: All debug logs removed, code is clean and production-ready
+- ✅ **Production Ready**: Code is clean, professional, and ready for production deployment

@@ -1,0 +1,1490 @@
+openapi: 3.0.3
+info:
+  title: Global Assets System API
+  description: |
+    A comprehensive API for managing financial assets across multiple nations and markets.
+    
+    ## Features
+    - Multi-national asset support
+    - Separated pricing system with history tracking
+    - Nation-specific configuration management
+    - System resilience with graceful degradation
+    - Advanced analytics and reporting
+    
+    ## Authentication
+    All API endpoints require authentication. Include the authentication token in the request header:
+    ```
+    Authorization: Bearer <your-token>
+    ```
+  version: 1.0.0
+  contact:
+    name: Portfolio Management System Team
+    email: support@portfolio-system.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.portfolio-system.com/api/assets
+    description: Production server
+  - url: https://staging-api.portfolio-system.com/api/assets
+    description: Staging server
+  - url: http://localhost:3000/api/assets
+    description: Development server
+
+tags:
+  - name: Global Assets
+    description: Operations for managing global assets
+  - name: Asset Prices
+    description: Operations for managing asset prices
+  - name: Price History
+    description: Operations for accessing price history and analytics
+  - name: Nation Configuration
+    description: Operations for nation-specific configuration
+
+paths:
+  # Global Assets Endpoints
+  /global:
+    get:
+      tags:
+        - Global Assets
+      summary: Get all global assets
+      description: Retrieve a paginated list of global assets with optional filtering and sorting
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: symbol
+          in: query
+          description: Filter by asset symbol
+          required: false
+          schema:
+            type: string
+        - name: nation
+          in: query
+          description: Filter by nation code
+          required: false
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        - name: type
+          in: query
+          description: Filter by asset type
+          required: false
+          schema:
+            $ref: '#/components/schemas/AssetType'
+        - name: isActive
+          in: query
+          description: Filter by active status
+          required: false
+          schema:
+            type: boolean
+        - name: sortBy
+          in: query
+          description: Sort field
+          required: false
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, symbol, name, nation]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalAssetListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    post:
+      tags:
+        - Global Assets
+      summary: Create a new global asset
+      description: Create a new global asset with multi-national support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGlobalAssetRequest'
+      responses:
+        '201':
+          description: Global asset created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalAssetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /global/{id}:
+    get:
+      tags:
+        - Global Assets
+      summary: Get global asset by ID
+      description: Retrieve a specific global asset by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the global asset
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalAssetResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - Global Assets
+      summary: Update global asset
+      description: Update an existing global asset. Note: symbol and nation cannot be modified after creation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the global asset
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGlobalAssetRequest'
+      responses:
+        '200':
+          description: Global asset updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalAssetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Global Assets
+      summary: Delete global asset
+      description: Delete a global asset. Only assets without associated trades can be deleted
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the global asset
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Global asset deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /global/nations:
+    get:
+      tags:
+        - Nation Configuration
+      summary: Get supported nations
+      description: Get list of supported nation codes
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NationsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /global/nations/{code}/config:
+    get:
+      tags:
+        - Nation Configuration
+      summary: Get nation configuration
+      description: Get configuration for a specific nation
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Nation code (e.g., VN, US)
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NationConfigResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /global/validate-symbol:
+    get:
+      tags:
+        - Nation Configuration
+      summary: Validate symbol format
+      description: Validate if a symbol format is valid for a specific nation and asset type
+      parameters:
+        - name: nation
+          in: query
+          required: true
+          description: Nation code
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        - name: type
+          in: query
+          required: true
+          description: Asset type
+          schema:
+            $ref: '#/components/schemas/AssetType'
+        - name: symbol
+          in: query
+          required: true
+          description: Symbol to validate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymbolValidationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Asset Prices Endpoints
+  /prices:
+    get:
+      tags:
+        - Asset Prices
+      summary: Get all asset prices
+      description: Retrieve a paginated list of asset prices with optional filtering
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: assetId
+          in: query
+          description: Filter by asset ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: priceType
+          in: query
+          description: Filter by price type
+          required: false
+          schema:
+            $ref: '#/components/schemas/PriceType'
+        - name: priceSource
+          in: query
+          description: Filter by price source
+          required: false
+          schema:
+            $ref: '#/components/schemas/PriceSource'
+        - name: sortBy
+          in: query
+          description: Sort field
+          required: false
+          schema:
+            type: string
+            enum: [lastPriceUpdate, createdAt, currentPrice]
+            default: lastPriceUpdate
+        - name: sortOrder
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPriceListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    post:
+      tags:
+        - Asset Prices
+      summary: Create asset price
+      description: Create a new asset price record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssetPriceRequest'
+      responses:
+        '201':
+          description: Asset price created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPriceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /prices/{id}:
+    get:
+      tags:
+        - Asset Prices
+      summary: Get asset price by ID
+      description: Retrieve a specific asset price by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the asset price
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPriceResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - Asset Prices
+      summary: Update asset price
+      description: Update an existing asset price record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the asset price
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAssetPriceRequest'
+      responses:
+        '200':
+          description: Asset price updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPriceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Asset Prices
+      summary: Delete asset price
+      description: Delete an asset price record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the asset price
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Asset price deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /prices/asset/{assetId}:
+    get:
+      tags:
+        - Asset Prices
+      summary: Get asset price by asset ID
+      description: Retrieve the current price for a specific asset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          description: UUID of the global asset
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPriceResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /prices/{assetId}/history:
+    get:
+      tags:
+        - Price History
+      summary: Get price history
+      description: Get price history for a specific asset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          description: UUID of the global asset
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: startDate
+          in: query
+          description: Start date filter (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: End date filter (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceHistoryListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /prices/statistics:
+    get:
+      tags:
+        - Price History
+      summary: Get price statistics
+      description: Get price statistics for assets
+      parameters:
+        - name: assetId
+          in: query
+          description: Filter by asset ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          description: Start date filter (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: End date filter (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceStatisticsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /prices/bulk-update:
+    post:
+      tags:
+        - Asset Prices
+      summary: Bulk update prices
+      description: Update multiple asset prices in a single request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUpdatePricesRequest'
+      responses:
+        '200':
+          description: Bulk update completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpdatePricesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    # Enums
+    AssetType:
+      type: string
+      enum: [STOCK, BOND, GOLD, DEPOSIT, CASH]
+      description: Type of the asset
+    
+    PriceType:
+      type: string
+      enum: [MANUAL, MARKET_DATA, EXTERNAL, CALCULATED]
+      description: Type of the price
+    
+    PriceSource:
+      type: string
+      enum: [USER, MARKET_DATA_SERVICE, EXTERNAL_API, CALCULATED]
+      description: Source of the price
+
+    # Global Asset Schemas
+    GlobalAssetResponse:
+      type: object
+      required:
+        - id
+        - symbol
+        - name
+        - type
+        - nation
+        - marketCode
+        - currency
+        - timezone
+        - isActive
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the global asset
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        symbol:
+          type: string
+          maxLength: 50
+          description: Asset symbol for trading
+          example: "HPG"
+        name:
+          type: string
+          maxLength: 255
+          description: Name of the asset
+          example: "Hoa Phat Group"
+        type:
+          $ref: '#/components/schemas/AssetType'
+        nation:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: Nation code where this asset is traded
+          example: "VN"
+        marketCode:
+          type: string
+          maxLength: 20
+          description: Market code where this asset is traded
+          example: "HOSE"
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: Currency used for this asset
+          example: "VND"
+        timezone:
+          type: string
+          maxLength: 50
+          description: Timezone for this asset's market
+          example: "Asia/Ho_Chi_Minh"
+        isActive:
+          type: boolean
+          description: Whether this asset is active and available for trading
+          example: true
+        description:
+          type: string
+          maxLength: 1000
+          description: Optional description of the asset
+          example: "Leading steel manufacturer in Vietnam"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the asset was created
+          example: "2024-01-15T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the asset was last updated
+          example: "2024-01-15T10:30:00.000Z"
+        globalIdentifier:
+          type: string
+          description: Combined symbol and nation for global uniqueness
+          example: "HPG.VN"
+        displayName:
+          type: string
+          description: Formatted display name with nation
+          example: "Hoa Phat Group (HPG.VN)"
+        marketDisplayName:
+          type: string
+          description: Formatted market name
+          example: "HOSE (VN)"
+        hasTrades:
+          type: boolean
+          description: Whether this asset has any associated trades
+          example: false
+        isAvailableForTrading:
+          type: boolean
+          description: Whether this asset is available for trading
+          example: true
+        marketInfo:
+          type: object
+          description: Market information object
+          properties:
+            nation:
+              type: string
+              example: "VN"
+            marketCode:
+              type: string
+              example: "HOSE"
+            currency:
+              type: string
+              example: "VND"
+            timezone:
+              type: string
+              example: "Asia/Ho_Chi_Minh"
+        canModify:
+          type: boolean
+          description: Whether this asset can be modified
+          example: true
+
+    CreateGlobalAssetRequest:
+      type: object
+      required:
+        - symbol
+        - name
+        - type
+        - nation
+        - marketCode
+        - currency
+        - timezone
+      properties:
+        symbol:
+          type: string
+          maxLength: 50
+          pattern: '^[A-Z0-9-]+$'
+          description: Asset symbol for trading - must be uppercase alphanumeric
+          example: "HPG"
+        name:
+          type: string
+          maxLength: 255
+          description: Name of the asset
+          example: "Hoa Phat Group"
+        type:
+          $ref: '#/components/schemas/AssetType'
+        nation:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: Nation code where this asset is traded
+          example: "VN"
+        marketCode:
+          type: string
+          maxLength: 20
+          pattern: '^[A-Z0-9-]+$'
+          description: Market code where this asset is traded
+          example: "HOSE"
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: Currency used for this asset
+          example: "VND"
+        timezone:
+          type: string
+          maxLength: 50
+          pattern: '^[A-Za-z_/]+$'
+          description: Timezone for this asset's market
+          example: "Asia/Ho_Chi_Minh"
+        description:
+          type: string
+          maxLength: 1000
+          description: Optional description of the asset
+          example: "Leading steel manufacturer in Vietnam"
+
+    UpdateGlobalAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          description: Name of the asset
+          example: "Hoa Phat Group JSC"
+        type:
+          $ref: '#/components/schemas/AssetType'
+        marketCode:
+          type: string
+          maxLength: 20
+          pattern: '^[A-Z0-9-]+$'
+          description: Market code where this asset is traded
+          example: "HOSE"
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: Currency used for this asset
+          example: "VND"
+        timezone:
+          type: string
+          maxLength: 50
+          pattern: '^[A-Za-z_/]+$'
+          description: Timezone for this asset's market
+          example: "Asia/Ho_Chi_Minh"
+        isActive:
+          type: boolean
+          description: Whether this asset is active and available for trading
+          example: true
+        description:
+          type: string
+          maxLength: 1000
+          description: Optional description of the asset
+          example: "Updated description"
+
+    GlobalAssetListResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GlobalAssetResponse'
+        total:
+          type: integer
+          description: Total number of items
+          example: 100
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 10
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 10
+
+    # Asset Price Schemas
+    AssetPriceResponse:
+      type: object
+      required:
+        - id
+        - assetId
+        - currentPrice
+        - priceType
+        - priceSource
+        - lastPriceUpdate
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the asset price
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        assetId:
+          type: string
+          format: uuid
+          description: Foreign key to global_assets table
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        currentPrice:
+          type: number
+          format: decimal
+          description: Current price value
+          example: 50000
+        priceType:
+          $ref: '#/components/schemas/PriceType'
+        priceSource:
+          $ref: '#/components/schemas/PriceSource'
+        lastPriceUpdate:
+          type: string
+          format: date-time
+          description: Timestamp of the last price update
+          example: "2024-01-15T10:30:00.000Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the price record was created
+          example: "2024-01-15T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the price record was last updated
+          example: "2024-01-15T10:30:00.000Z"
+        priceChange:
+          type: number
+          format: decimal
+          description: Price change from previous value
+          example: 1000
+        priceChangePercentage:
+          type: number
+          format: decimal
+          description: Price change percentage from previous value
+          example: 2.0
+        isUpToDate:
+          type: boolean
+          description: Whether the price is up to date
+          example: true
+
+    CreateAssetPriceRequest:
+      type: object
+      required:
+        - assetId
+        - currentPrice
+        - priceType
+        - priceSource
+        - lastPriceUpdate
+      properties:
+        assetId:
+          type: string
+          format: uuid
+          description: Foreign key to global_assets table
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        currentPrice:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Current price value
+          example: 50000
+        priceType:
+          $ref: '#/components/schemas/PriceType'
+        priceSource:
+          $ref: '#/components/schemas/PriceSource'
+        lastPriceUpdate:
+          type: string
+          format: date-time
+          description: Timestamp of the last price update
+          example: "2024-01-15T10:30:00.000Z"
+
+    UpdateAssetPriceRequest:
+      type: object
+      properties:
+        currentPrice:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Current price value
+          example: 51000
+        priceType:
+          $ref: '#/components/schemas/PriceType'
+        priceSource:
+          $ref: '#/components/schemas/PriceSource'
+        lastPriceUpdate:
+          type: string
+          format: date-time
+          description: Timestamp of the last price update
+          example: "2024-01-15T11:30:00.000Z"
+
+    AssetPriceListResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetPriceResponse'
+        total:
+          type: integer
+          description: Total number of items
+          example: 100
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 10
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 10
+
+    # Price History Schemas
+    PriceHistoryResponse:
+      type: object
+      required:
+        - id
+        - assetId
+        - price
+        - priceType
+        - priceSource
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the price history record
+          example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
+        assetId:
+          type: string
+          format: uuid
+          description: Foreign key to global_assets table
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        price:
+          type: number
+          format: decimal
+          description: Price value at the time of this record
+          example: 51000
+        priceType:
+          $ref: '#/components/schemas/PriceType'
+        priceSource:
+          $ref: '#/components/schemas/PriceSource'
+        changeReason:
+          type: string
+          maxLength: 255
+          description: Reason for the price change
+          example: "Market data update"
+        metadata:
+          type: object
+          description: Optional metadata about the price change
+          example:
+            provider: "Yahoo Finance"
+            timestamp: "2024-01-15T11:30:00.000Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when this price record was created
+          example: "2024-01-15T11:30:00.000Z"
+
+    PriceHistoryListResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceHistoryResponse'
+        total:
+          type: integer
+          description: Total number of items
+          example: 100
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 10
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 10
+
+    PriceStatisticsResponse:
+      type: object
+      required:
+        - totalAssets
+        - assetsWithPrices
+        - averagePrice
+        - highestPrice
+        - lowestPrice
+        - priceChanges
+        - lastUpdated
+      properties:
+        totalAssets:
+          type: integer
+          description: Total number of assets
+          example: 10
+        assetsWithPrices:
+          type: integer
+          description: Number of assets with prices
+          example: 8
+        averagePrice:
+          type: number
+          format: decimal
+          description: Average price across all assets
+          example: 45000
+        highestPrice:
+          type: number
+          format: decimal
+          description: Highest price among all assets
+          example: 100000
+        lowestPrice:
+          type: number
+          format: decimal
+          description: Lowest price among all assets
+          example: 10000
+        priceChanges:
+          type: object
+          description: Price change statistics
+          properties:
+            positive:
+              type: integer
+              description: Number of assets with positive price changes
+              example: 5
+            negative:
+              type: integer
+              description: Number of assets with negative price changes
+              example: 2
+            unchanged:
+              type: integer
+              description: Number of assets with unchanged prices
+              example: 1
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Timestamp of the last price update
+          example: "2024-01-15T11:30:00.000Z"
+
+    # Nation Configuration Schemas
+    NationsResponse:
+      type: object
+      required:
+        - nations
+      properties:
+        nations:
+          type: array
+          items:
+            type: string
+            pattern: '^[A-Z]{2}$'
+          description: List of supported nation codes
+          example: ["VN", "US", "UK", "JP", "SG"]
+
+    NationConfigResponse:
+      type: object
+      required:
+        - code
+        - name
+        - currency
+        - timezone
+        - marketCodes
+        - defaultPriceSource
+        - assetTypes
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: Nation code
+          example: "VN"
+        name:
+          type: string
+          description: Nation name
+          example: "Vietnam"
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: Default currency
+          example: "VND"
+        timezone:
+          type: string
+          description: Default timezone
+          example: "Asia/Ho_Chi_Minh"
+        marketCodes:
+          type: array
+          items:
+            type: object
+            required:
+              - code
+              - displayName
+            properties:
+              code:
+                type: string
+                description: Market code
+                example: "HOSE"
+              displayName:
+                type: string
+                description: Market display name
+                example: "Ho Chi Minh Stock Exchange"
+        defaultPriceSource:
+          $ref: '#/components/schemas/PriceSource'
+        assetTypes:
+          type: object
+          description: Asset type configurations
+          additionalProperties:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                description: Whether this asset type is enabled
+                example: true
+              symbolPattern:
+                type: string
+                description: Regex pattern for symbol validation
+                example: "^[A-Z0-9]{3}$"
+              defaultMarketCode:
+                type: string
+                description: Default market code for this asset type
+                example: "HOSE"
+
+    SymbolValidationResponse:
+      type: object
+      required:
+        - valid
+        - message
+      properties:
+        valid:
+          type: boolean
+          description: Whether the symbol format is valid
+          example: true
+        message:
+          type: string
+          description: Validation message
+          example: "Symbol format is valid"
+
+    # Bulk Operations Schemas
+    BulkUpdatePricesRequest:
+      type: object
+      required:
+        - updates
+      properties:
+        updates:
+          type: array
+          items:
+            type: object
+            required:
+              - assetId
+              - currentPrice
+              - priceType
+              - priceSource
+              - lastPriceUpdate
+            properties:
+              assetId:
+                type: string
+                format: uuid
+                description: Foreign key to global_assets table
+                example: "550e8400-e29b-41d4-a716-446655440000"
+              currentPrice:
+                type: number
+                format: decimal
+                minimum: 0
+                description: Current price value
+                example: 51000
+              priceType:
+                $ref: '#/components/schemas/PriceType'
+              priceSource:
+                $ref: '#/components/schemas/PriceSource'
+              lastPriceUpdate:
+                type: string
+                format: date-time
+                description: Timestamp of the last price update
+                example: "2024-01-15T11:30:00.000Z"
+
+    BulkUpdatePricesResponse:
+      type: object
+      required:
+        - updated
+        - failed
+        - results
+      properties:
+        updated:
+          type: integer
+          description: Number of successfully updated prices
+          example: 2
+        failed:
+          type: integer
+          description: Number of failed updates
+          example: 0
+        results:
+          type: array
+          items:
+            type: object
+            required:
+              - assetId
+              - success
+              - message
+            properties:
+              assetId:
+                type: string
+                format: uuid
+                description: Asset ID
+                example: "550e8400-e29b-41d4-a716-446655440000"
+              success:
+                type: boolean
+                description: Whether the update was successful
+                example: true
+              message:
+                type: string
+                description: Result message
+                example: "Price updated successfully"
+
+    # Common Schemas
+    SuccessMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Operation completed successfully"
+
+    ErrorDetail:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Field name that caused the error
+          example: "symbol"
+        message:
+          type: string
+          description: Error message
+          example: "Symbol must contain only uppercase letters, numbers, and dashes"
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - error
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: "Validation failed"
+        error:
+          type: string
+          description: Error type
+          example: "Bad Request"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+          description: Detailed error information
+
+  responses:
+    BadRequest:
+      description: Bad request - validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 400
+            message: "Validation failed"
+            error: "Bad Request"
+            details:
+              - field: "symbol"
+                message: "Symbol must contain only uppercase letters, numbers, and dashes"
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 401
+            message: "Unauthorized"
+            error: "Unauthorized"
+
+    NotFound:
+      description: Not found - resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 404
+            message: "Global asset with ID 550e8400-e29b-41d4-a716-446655440000 not found"
+            error: "Not Found"
+
+    Conflict:
+      description: Conflict - resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 409
+            message: "Asset with symbol HPG and nation VN already exists"
+            error: "Conflict"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 500
+            message: "Internal server error"
+            error: "Internal Server Error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+security:
+  - BearerAuth: []

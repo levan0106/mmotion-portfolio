@@ -1,0 +1,776 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PortfolioAnalyticsService } from './portfolio-analytics.service';
+import { PortfolioRepository } from '../repositories/portfolio.repository';
+import { NavSnapshot } from '../entities/nav-snapshot.entity';
+import { testUtils } from '../../../../test/utils/test-helpers';
+
+describe('PortfolioAnalyticsService', () => {
+  let service: PortfolioAnalyticsService;
+  let mockPortfolioRepository: jest.Mocked<PortfolioRepository>;
+  let mockNavSnapshotRepository: jest.Mocked<Repository<NavSnapshot>>;
+
+  beforeEach(async () => {
+    // Create mock repositories
+    mockPortfolioRepository = {
+      findByIdWithAssets: jest.fn(),
+      getPerformanceHistory: jest.fn(),
+      getAssetAllocation: jest.fn(),
+    } as any;
+
+    mockNavSnapshotRepository = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+    } as any;
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PortfolioAnalyticsService,
+        {
+          provide: PortfolioRepository,
+          useValue: mockPortfolioRepository,
+        },
+        {
+          provide: getRepositoryToken(NavSnapshot),
+          useValue: mockNavSnapshotRepository,
+        },
+      ],
+    }).compile();
+
+    service = module.get<PortfolioAnalyticsService>(PortfolioAnalyticsService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('calculateNAV', () => {
+    it('should calculate NAV for portfolio with assets', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 100000,
+        portfolioAssets: [
+          testUtils.fixtures.portfolioAsset({
+            portfolioId: portfolioId,
+            assetId: 'asset-1',
+            market_value: 500000,
+          }),
+          testUtils.fixtures.portfolioAsset({
+            portfolioId: portfolioId,
+            assetId: 'asset-2',
+            market_value: 300000,
+          }),
+        ],
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+
+      // Act
+      const result = await service.calculateNAV(portfolioId);
+
+      // Assert
+      expect(result).toBe(900000); // 100000 + 500000 + 300000
+      expect(mockPortfolioRepository.findByIdWithAssets).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should calculate NAV for portfolio with only cash', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 250000,
+        portfolioAssets: [],
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+
+      // Act
+      const result = await service.calculateNAV(portfolioId);
+
+      // Assert
+      expect(result).toBe(250000);
+    });
+
+    it('should calculate NAV for portfolio with null assets', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 150000,
+        portfolioAssets: null,
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+
+      // Act
+      const result = await service.calculateNAV(portfolioId);
+
+      // Assert
+      expect(result).toBe(150000);
+    });
+
+    it('should throw error when portfolio not found', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.calculateNAV(portfolioId)).rejects.toThrow(
+        `Portfolio with ID ${portfolioId} not found`,
+      );
+    });
+
+    it('should handle database errors', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const error = new Error('Database connection failed');
+      mockPortfolioRepository.findByIdWithAssets.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(service.calculateNAV(portfolioId)).rejects.toThrow(
+        'Database connection failed',
+      );
+    });
+  });
+
+  describe('calculateROE', () => {
+    it('should calculate ROE for positive returns', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: 1000000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: endDate,
+          nav_value: 1100000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateROE(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(10); // ((1100000 - 1000000) / 1000000) * 100
+      expect(mockPortfolioRepository.getPerformanceHistory).toHaveBeenCalledWith(
+        portfolioId,
+        startDate,
+        endDate,
+      );
+    });
+
+    it('should calculate ROE for negative returns', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: 1000000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: endDate,
+          nav_value: 950000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateROE(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(-5); // ((950000 - 1000000) / 1000000) * 100
+    });
+
+    it('should return 0 when insufficient NAV history', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: 1000000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateROE(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 when start NAV is zero', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: 0,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: endDate,
+          nav_value: 1000000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateROE(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+
+    it('should handle database errors', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const error = new Error('Performance history query failed');
+      mockPortfolioRepository.getPerformanceHistory.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(service.calculateROE(portfolioId, startDate, endDate)).rejects.toThrow(
+        'Performance history query failed',
+      );
+    });
+  });
+
+  describe('calculateWeekOnWeekChange', () => {
+    it('should calculate week-on-week change', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const now = new Date();
+
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: twoWeeksAgo,
+          nav_value: 1000000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: now,
+          nav_value: 1050000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateWeekOnWeekChange(portfolioId);
+
+      // Assert
+      expect(result).toBe(5); // ((1050000 - 1000000) / 1000000) * 100
+      expect(mockPortfolioRepository.getPerformanceHistory).toHaveBeenCalledWith(
+        portfolioId,
+        expect.any(Date),
+        expect.any(Date),
+      );
+    });
+
+    it('should return 0 when insufficient history', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue([]);
+
+      // Act
+      const result = await service.calculateWeekOnWeekChange(portfolioId);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 when two weeks ago NAV is zero', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const now = new Date();
+
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: twoWeeksAgo,
+          nav_value: 0,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: now,
+          nav_value: 1000000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateWeekOnWeekChange(portfolioId);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('calculateReturnHistory', () => {
+    it('should return return history by asset type', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const allocation = [
+        { assetType: 'STOCK', totalValue: 600000, percentage: 60 },
+        { assetType: 'BOND', totalValue: 300000, percentage: 30 },
+        { assetType: 'CASH', totalValue: 100000, percentage: 10 },
+      ];
+
+      mockPortfolioRepository.getAssetAllocation.mockResolvedValue(allocation);
+
+      // Act
+      const result = await service.calculateReturnHistory(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toEqual([
+        { assetType: 'STOCK', return: 60 },
+        { assetType: 'BOND', return: 30 },
+        { assetType: 'CASH', return: 10 },
+      ]);
+      expect(mockPortfolioRepository.getAssetAllocation).toHaveBeenCalledWith(portfolioId);
+    });
+
+    it('should handle empty allocation', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      mockPortfolioRepository.getAssetAllocation.mockResolvedValue([]);
+
+      // Act
+      const result = await service.calculateReturnHistory(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('generateNavSnapshot', () => {
+    it('should create new NAV snapshot', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const navDate = new Date('2024-01-15');
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 100000,
+        total_value: 1000000,
+        portfolioAssets: [
+          testUtils.fixtures.portfolioAsset({
+            portfolioId: portfolioId,
+            assetId: 'asset-1',
+            market_value: 500000,
+          }),
+        ],
+      });
+
+      const expectedSnapshot = testUtils.fixtures.navSnapshot({
+        portfolioId: portfolioId,
+        nav_date: navDate,
+        nav_value: 600000,
+        cash_balance: 100000,
+        total_value: 1000000,
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+      mockNavSnapshotRepository.findOne.mockResolvedValue(null);
+      mockNavSnapshotRepository.create.mockReturnValue(expectedSnapshot);
+      mockNavSnapshotRepository.save.mockResolvedValue(expectedSnapshot);
+
+      // Act
+      const result = await service.generateNavSnapshot(portfolioId, navDate);
+
+      // Assert
+      expect(result).toEqual(expectedSnapshot);
+      expect(mockPortfolioRepository.findByIdWithAssets).toHaveBeenCalledWith(portfolioId);
+      expect(mockNavSnapshotRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          portfolioId: portfolioId,
+          nav_date: navDate,
+        },
+      });
+      expect(mockNavSnapshotRepository.create).toHaveBeenCalledWith({
+        portfolioId: portfolioId,
+        nav_date: navDate,
+        nav_value: 600000,
+        cash_balance: 100000,
+        total_value: 1000000,
+      });
+      expect(mockNavSnapshotRepository.save).toHaveBeenCalledWith(expectedSnapshot);
+    });
+
+    it('should update existing NAV snapshot', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const navDate = new Date('2024-01-15');
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 150000,
+        total_value: 1100000,
+        portfolioAssets: [
+          testUtils.fixtures.portfolioAsset({
+            portfolioId: portfolioId,
+            assetId: 'asset-1',
+            market_value: 600000,
+          }),
+        ],
+      });
+
+      const existingSnapshot = testUtils.fixtures.navSnapshot({
+        portfolioId: portfolioId,
+        nav_date: navDate,
+        nav_value: 500000,
+        cash_balance: 100000,
+        total_value: 1000000,
+      });
+
+      const updatedSnapshot = {
+        ...existingSnapshot,
+        nav_value: 750000,
+        cash_balance: 150000,
+        total_value: 1100000,
+      };
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+      mockNavSnapshotRepository.findOne.mockResolvedValue(existingSnapshot);
+      mockNavSnapshotRepository.save.mockResolvedValue(updatedSnapshot);
+
+      // Act
+      const result = await service.generateNavSnapshot(portfolioId, navDate);
+
+      // Assert
+      expect(result).toEqual(updatedSnapshot);
+      expect(existingSnapshot.nav_value).toBe(750000);
+      expect(existingSnapshot.cash_balance).toBe(150000);
+      expect(existingSnapshot.total_value).toBe(1100000);
+    });
+
+    it('should use current date when navDate not provided', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 100000,
+        total_value: 1000000,
+        portfolioAssets: [],
+      });
+
+      const expectedSnapshot = testUtils.fixtures.navSnapshot({
+        portfolioId: portfolioId,
+        nav_date: expect.any(Date),
+        nav_value: 100000,
+        cash_balance: 100000,
+        total_value: 1000000,
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+      mockNavSnapshotRepository.findOne.mockResolvedValue(null);
+      mockNavSnapshotRepository.create.mockReturnValue(expectedSnapshot);
+      mockNavSnapshotRepository.save.mockResolvedValue(expectedSnapshot);
+
+      // Act
+      const result = await service.generateNavSnapshot(portfolioId);
+
+      // Assert
+      expect(result).toEqual(expectedSnapshot);
+      expect(mockNavSnapshotRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          portfolioId: portfolioId,
+          nav_date: expect.any(Date),
+        },
+      });
+    });
+
+    it('should throw error when portfolio not found', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const navDate = new Date('2024-01-15');
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.generateNavSnapshot(portfolioId, navDate)).rejects.toThrow(
+        `Portfolio with ID ${portfolioId} not found`,
+      );
+    });
+  });
+
+  describe('calculateTWR', () => {
+    it('should calculate TWR for multiple periods', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-01'),
+          nav_value: 1000000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-15'),
+          nav_value: 1050000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-31'),
+          nav_value: 1100000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateTWR(portfolioId, startDate, endDate);
+
+      // Assert
+      // TWR = (1.05 * 1.0476) - 1 = 0.1 = 10%
+      expect(result).toBeCloseTo(10, 1);
+      expect(mockPortfolioRepository.getPerformanceHistory).toHaveBeenCalledWith(
+        portfolioId,
+        startDate,
+        endDate,
+      );
+    });
+
+    it('should return 0 when insufficient NAV history', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: 1000000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateTWR(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+
+    it('should handle zero NAV values in history', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-01'),
+          nav_value: 0,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-15'),
+          nav_value: 1000000,
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date('2024-01-31'),
+          nav_value: 1100000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateTWR(portfolioId, startDate, endDate);
+
+      // Assert
+      // Should skip the zero NAV period and calculate TWR for the remaining periods
+      expect(result).toBeCloseTo(10, 1);
+    });
+  });
+
+  describe('calculateIRR', () => {
+    it('should return 0 as placeholder', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+
+      // Act
+      const result = await service.calculateIRR(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('calculateXIRR', () => {
+    it('should return 0 as placeholder', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+
+      // Act
+      const result = await service.calculateXIRR(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('getPerformanceSummary', () => {
+    it('should return complete performance summary', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 100000,
+        total_value: 1000000,
+        portfolioAssets: [
+          testUtils.fixtures.portfolioAsset({
+            portfolioId: portfolioId,
+            assetId: 'asset-1',
+            market_value: 500000,
+          }),
+        ],
+      });
+
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: new Date(),
+          nav_value: 600000,
+        }),
+      ];
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.getPerformanceSummary(portfolioId);
+
+      // Assert
+      expect(result).toHaveProperty('currentNAV');
+      expect(result).toHaveProperty('weekOnWeekChange');
+      expect(result).toHaveProperty('roe1Month');
+      expect(result).toHaveProperty('roe3Month');
+      expect(result).toHaveProperty('roe1Year');
+      expect(result).toHaveProperty('twr1Year');
+      expect(result.currentNAV).toBe(600000);
+    });
+
+    it('should handle missing data gracefully', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const portfolio = testUtils.fixtures.portfolio({
+        portfolioId: portfolioId,
+        cash_balance: 100000,
+        total_value: 1000000,
+        portfolioAssets: [],
+      });
+
+      mockPortfolioRepository.findByIdWithAssets.mockResolvedValue(portfolio);
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue([]);
+
+      // Act
+      const result = await service.getPerformanceSummary(portfolioId);
+
+      // Assert
+      expect(result).toHaveProperty('currentNAV');
+      expect(result).toHaveProperty('weekOnWeekChange');
+      expect(result).toHaveProperty('roe1Month');
+      expect(result).toHaveProperty('roe3Month');
+      expect(result).toHaveProperty('roe1Year');
+      expect(result).toHaveProperty('twr1Year');
+      expect(result.currentNAV).toBe(100000);
+      expect(result.weekOnWeekChange).toBe(0);
+      expect(result.roe1Month).toBe(0);
+      expect(result.roe3Month).toBe(0);
+      expect(result.roe1Year).toBe(0);
+      expect(result.twr1Year).toBe(0);
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle malformed UUID in calculateNAV', async () => {
+      // Arrange
+      const invalidId = 'invalid-uuid';
+      const error = new Error('Invalid UUID format');
+      mockPortfolioRepository.findByIdWithAssets.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(service.calculateNAV(invalidId)).rejects.toThrow('Invalid UUID format');
+    });
+
+    it('should handle performance calculation edge cases', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const navHistory = [
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: startDate,
+          nav_value: -1000000, // Negative value
+        }),
+        testUtils.fixtures.navSnapshot({
+          portfolioId: portfolioId,
+          nav_date: endDate,
+          nav_value: 1000000,
+        }),
+      ];
+
+      mockPortfolioRepository.getPerformanceHistory.mockResolvedValue(navHistory);
+
+      // Act
+      const result = await service.calculateROE(portfolioId, startDate, endDate);
+
+      // Assert
+      expect(result).toBe(-200); // ((1000000 - (-1000000)) / (-1000000)) * 100
+    });
+
+    it('should handle database connection errors', async () => {
+      // Arrange
+      const portfolioId = '550e8400-e29b-41d4-a716-446655440000';
+      const error = new Error('Database connection lost');
+      mockPortfolioRepository.findByIdWithAssets.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(service.calculateNAV(portfolioId)).rejects.toThrow('Database connection lost');
+    });
+  });
+});

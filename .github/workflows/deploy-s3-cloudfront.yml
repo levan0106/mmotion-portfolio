@@ -104,7 +104,7 @@ jobs:
 
     - name: Install frontend dependencies
       run: |
-        cd frontend
+        cd solution/frontend
         # Force clean install to fix rollup native module issues
         echo "🧹 Cleaning node_modules and package-lock.json..."
         rm -rf node_modules package-lock.json
@@ -134,7 +134,7 @@ jobs:
     - name: Build frontend for production
       id: build
       run: |
-        cd frontend
+        cd solution/frontend
         # Load production environment variables
         echo "📝 Loading production environment variables..."
         cp production.env .env
@@ -167,7 +167,7 @@ jobs:
 
     - name: Install frontend dependencies
       run: |
-        cd frontend
+        cd solution/frontend
         # Force clean install to fix rollup native module issues
         echo "🧹 Cleaning node_modules and package-lock.json..."
         rm -rf node_modules package-lock.json
@@ -189,7 +189,7 @@ jobs:
 
     - name: Build frontend for production
       run: |
-        cd frontend
+        cd solution/frontend
         # Load production environment variables
         echo "📝 Loading production environment variables..."
         cp production.env .env
@@ -257,7 +257,7 @@ jobs:
         echo "🌐 CloudFront domain: $CLOUDFRONT_DOMAIN"
         
         # Sync files to S3
-        aws s3 sync frontend/build/ s3://$BUCKET_NAME/ --delete || {
+        aws s3 sync solution/frontend/build/ s3://$BUCKET_NAME/ --delete || {
           echo "❌ S3 sync failed"
           exit 1
         }

@@ -1,0 +1,286 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PortfolioRepository } from './portfolio.repository';
+import { Portfolio } from '../entities/portfolio.entity';
+import { PortfolioAsset } from '../entities/portfolio-asset.entity';
+import { NavSnapshot } from '../entities/nav-snapshot.entity';
+
+describe('PortfolioRepository', () => {
+  let repository: PortfolioRepository;
+  let mockPortfolioRepository: jest.Mocked<Repository<Portfolio>>;
+  let mockPortfolioAssetRepository: jest.Mocked<Repository<PortfolioAsset>>;
+  let mockNavSnapshotRepository: jest.Mocked<Repository<NavSnapshot>>;
+
+  const mockPortfolio: Portfolio = {
+    portfolioId: 'portfolio-1',
+    name: 'Test Portfolio',
+    account_id: 'account-1',
+    base_currency: 'VND',
+    total_value: 100000,
+    cash_balance: 10000,
+    unrealized_pl: 5000,
+    realized_pl: 2000,
+    created_at: new Date('2024-01-01'),
+    updated_at: new Date('2024-01-01'),
+    account: {} as any,
+    portfolioAssets: [],
+    navSnapshots: [],
+    cashFlows: [],
+    trades: [],
+  };
+
+  const mockPortfolioAsset: PortfolioAsset = {
+    portfolioId: 'portfolio-1',
+    assetId: 'asset-1',
+    quantity: 100,
+    avg_cost: 50,
+    market_value: 5000,
+    unrealized_pl: 500,
+    updated_at: new Date('2024-01-01'),
+    portfolio: mockPortfolio,
+    asset: {
+      id: 'asset-1',
+      name: 'Test Asset',
+      symbol: 'TEST',
+      type: 'STOCK' as any,
+      portfolioId: 'portfolio-1',
+      created_at: new Date('2024-01-01'),
+      updated_at: new Date('2024-01-01'),
+      createdBy: 'user-1',
+      updatedBy: 'user-1',
+      initialValue: 1000,
+      initialQuantity: 100,
+      trades: [],
+      portfolioAssets: [],
+      getTotalValue: jest.fn().mockReturnValue(1000),
+      getTotalQuantity: jest.fn().mockReturnValue(100),
+      hasTrades: jest.fn().mockReturnValue(false),
+      getDisplayName: jest.fn().mockReturnValue('Test Asset (TEST)'),
+      toJSON: jest.fn().mockReturnValue({}),
+    } as any,
+  };
+
+  const mockNavSnapshot: NavSnapshot = {
+    portfolioId: 'portfolio-1',
+    nav_date: new Date('2024-01-01'),
+    nav_value: 100000,
+    cash_balance: 10000,
+    total_value: 100000,
+    created_at: new Date('2024-01-01'),
+    portfolio: {} as any,
+  };
+
+  beforeEach(async () => {
+    const mockPortfolioRepo = {
+      findOne: jest.fn(),
+      find: jest.fn(),
+      createQueryBuilder: jest.fn(),
+    };
+
+    const mockPortfolioAssetRepo = {
+      createQueryBuilder: jest.fn(),
+    };
+
+    const mockNavSnapshotRepo = {
+      createQueryBuilder: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PortfolioRepository,
+        {
+          provide: getRepositoryToken(Portfolio),
+          useValue: mockPortfolioRepo,
+        },
+        {
+          provide: getRepositoryToken(PortfolioAsset),
+          useValue: mockPortfolioAssetRepo,
+        },
+        {
+          provide: getRepositoryToken(NavSnapshot),
+          useValue: mockNavSnapshotRepo,
+        },
+      ],
+    }).compile();
+
+    repository = module.get<PortfolioRepository>(PortfolioRepository);
+    mockPortfolioRepository = module.get(getRepositoryToken(Portfolio));
+    mockPortfolioAssetRepository = module.get(getRepositoryToken(PortfolioAsset));
+    mockNavSnapshotRepository = module.get(getRepositoryToken(NavSnapshot));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('findByIdWithAssets', () => {
+    it('should return portfolio with assets', async () => {
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        relations: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockPortfolio),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.findByIdWithAssets('portfolio-1');
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('portfolio.portfolioId = :portfolioId', { portfolioId: 'portfolio-1' });
+      expect(mockQueryBuilder.relations).toHaveBeenCalledWith(['portfolioAssets', 'portfolioAssets.asset']);
+      expect(result).toEqual(mockPortfolio);
+    });
+
+    it('should return null when portfolio not found', async () => {
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        relations: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.findByIdWithAssets('nonexistent');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findByAccountId', () => {
+    it('should return portfolios for account', async () => {
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        relations: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockPortfolio]),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.findByAccountId('account-1');
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('portfolio.account_id = :accountId', { accountId: 'account-1' });
+      expect(mockQueryBuilder.relations).toHaveBeenCalledWith(['portfolioAssets', 'portfolioAssets.asset']);
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith({ created_at: 'DESC' });
+      expect(result).toEqual([mockPortfolio]);
+    });
+  });
+
+  describe('findWithNavHistory', () => {
+    it('should return portfolio with NAV history', async () => {
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        relations: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockPortfolio),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.findWithNavHistory('portfolio-1', 30);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('portfolio.portfolioId = :portfolioId', { portfolioId: 'portfolio-1' });
+      expect(mockQueryBuilder.relations).toHaveBeenCalledWith(['navSnapshots']);
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith({ navSnapshots: { nav_date: 'DESC' } });
+      expect(result).toEqual(mockPortfolio);
+    });
+  });
+
+  describe('getPortfolioAnalytics', () => {
+    it('should return portfolio analytics data', async () => {
+      const mockQueryBuilder = {
+        leftJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue({
+          portfolio_total_value: '100000',
+          portfolio_cash_balance: '10000',
+          portfolio_unrealized_pl: '5000',
+          portfolio_realized_pl: '2000',
+          assetCount: '5',
+        }),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.getPortfolioAnalytics('portfolio-1');
+
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith('portfolio.portfolioAssets', 'asset');
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('portfolio.portfolioId = :portfolioId', { portfolioId: 'portfolio-1' });
+      expect(result).toEqual({
+        totalValue: 100000,
+        cashBalance: 10000,
+        unrealizedPL: 5000,
+        realizedPL: 2000,
+        assetCount: 5,
+      });
+    });
+  });
+
+  describe('getPerformanceHistory', () => {
+    it('should return NAV snapshots for date range', async () => {
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockNavSnapshot]),
+      };
+
+      mockNavSnapshotRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.getPerformanceHistory('portfolio-1', startDate, endDate);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('nav.portfolioId = :portfolioId', { portfolioId: 'portfolio-1' });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('nav.nav_date >= :startDate', { startDate });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('nav.nav_date <= :endDate', { endDate });
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('nav.nav_date', 'ASC');
+      expect(result).toEqual([mockNavSnapshot]);
+    });
+  });
+
+  describe('getAssetAllocation', () => {
+    it('should return asset allocation summary', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockPortfolioAsset]),
+      };
+
+      mockPortfolioAssetRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.getAssetAllocation('portfolio-1');
+
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('pa.asset', 'asset');
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pa.portfolioId = :portfolioId', { portfolioId: 'portfolio-1' });
+      expect(result).toEqual([
+        {
+          assetType: 'STOCK',
+          totalValue: 5000,
+          percentage: 100,
+        },
+      ]);
+    });
+  });
+
+  describe('findWithCurrentPositions', () => {
+    it('should return portfolios with current positions', async () => {
+      const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        relations: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockPortfolio]),
+      };
+
+      mockPortfolioRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await repository.findWithCurrentPositions('account-1');
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('portfolio.account_id = :accountId', { accountId: 'account-1' });
+      expect(mockQueryBuilder.relations).toHaveBeenCalledWith(['portfolioAssets', 'portfolioAssets.asset']);
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith({ portfolioAssets: { updated_at: 'DESC' } });
+      expect(result).toEqual([mockPortfolio]);
+    });
+  });
+});
