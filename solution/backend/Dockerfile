@@ -8,7 +8,9 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app
 
 # Copy package files first (for better layer caching)
-COPY package*.json ./
+# Explicitly copy package.json and package-lock.json
+COPY package.json ./
+COPY package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci && npm cache clean --force

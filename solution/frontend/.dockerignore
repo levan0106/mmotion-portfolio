@@ -42,4 +42,10 @@ test
 docs
 
 # Keep package.json and package-lock.json (important!)
+# Explicitly include them (negation patterns)
+!package.json
+!package-lock.json
+
 # Keep production.env and nginx.conf (needed for build)
+!production.env
+!nginx.conf

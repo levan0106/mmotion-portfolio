@@ -51,4 +51,7 @@ Dockerfile.dev
 docker-compose.yml
 
 # Keep package.json and package-lock.json (important!)
+# Explicitly include them (negation patterns)
+!package.json
+!package-lock.json
 

@@ -1,3 +1,6 @@
+# Root level .dockerignore - only for root-level builds
+# Backend and frontend have their own .dockerignore files
+
 node_modules
 npm-debug.log
 .git
@@ -6,14 +9,23 @@ README.md
 .env
 .nyc_output
 coverage
-.nyc_output
 .coverage
-.coverage/
 dist
 build
 .DS_Store
 *.log
-frontend/node_modules
-frontend/dist
-frontend/build
-frontend/coverage
+
+# Solution directories - handled by their own .dockerignore
+solution/backend/node_modules
+solution/backend/dist
+solution/backend/build
+solution/frontend/node_modules
+solution/frontend/dist
+solution/frontend/build
+solution/frontend/coverage
+
+# But keep package.json files - they are needed
+!solution/backend/package.json
+!solution/backend/package-lock.json
+!solution/frontend/package.json
+!solution/frontend/package-lock.json
