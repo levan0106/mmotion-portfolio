@@ -33,21 +33,70 @@ export class AddUsersTable1736333000000 implements MigrationInterface {
     await queryRunner.query(`CREATE INDEX "IDX_users_username" ON "users" ("username")`);
     await queryRunner.query(`CREATE INDEX "IDX_users_email" ON "users" ("email")`);
 
-    // Add user_id column to accounts table
-    await queryRunner.query(`
-      ALTER TABLE "accounts" 
-      ADD COLUMN "user_id" uuid
+    // Check if accounts table exists before modifying
+    const accountsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'accounts'
+      )
     `);
 
-    // Add foreign key constraint
-    await queryRunner.query(`
-      ALTER TABLE "accounts" 
-      ADD CONSTRAINT "FK_accounts_user_id" 
-      FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE SET NULL
-    `);
+    if (accountsExists[0]?.exists) {
+      // Check if column already exists
+      const columnExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.columns 
+          WHERE table_schema = 'public' 
+          AND table_name = 'accounts' 
+          AND column_name = 'user_id'
+        )
+      `);
 
-    // Create index for user_id in accounts
-    await queryRunner.query(`CREATE INDEX "IDX_accounts_user_id" ON "accounts" ("user_id")`);
+      if (!columnExists[0]?.exists) {
+        // Add user_id column to accounts table
+        await queryRunner.query(`
+          ALTER TABLE "accounts" 
+          ADD COLUMN "user_id" uuid
+        `);
+      }
+
+      // Check if foreign key already exists
+      const fkExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'FK_accounts_user_id' 
+          AND table_name = 'accounts'
+        )
+      `);
+
+      if (!fkExists[0]?.exists) {
+        // Add foreign key constraint
+        await queryRunner.query(`
+          ALTER TABLE "accounts" 
+          ADD CONSTRAINT "FK_accounts_user_id" 
+          FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE SET NULL
+        `);
+      }
+
+      // Check if index already exists
+      const indexExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT FROM pg_indexes 
+          WHERE schemaname = 'public' 
+          AND tablename = 'accounts' 
+          AND indexname = 'IDX_accounts_user_id'
+        )
+      `);
+
+      if (!indexExists[0]?.exists) {
+        // Create index for user_id in accounts
+        await queryRunner.query(`CREATE INDEX "IDX_accounts_user_id" ON "accounts" ("user_id")`);
+      }
+    } else {
+      console.log('⚠️ accounts table does not exist, skipping user_id column addition');
+      console.log('   Column will be added when accounts table is created');
+    }
 
     // Add foreign key to trusted_devices table if it exists (created earlier)
     const trustedDevicesExists = await queryRunner.query(`
