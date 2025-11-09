@@ -48,10 +48,18 @@ export class AuthService {
     const normalizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
     this.logger.log(`Login/Register attempt for username: ${normalizedUsername}`);
 
+    // Load user without accounts relation to avoid TypeORM join table issue
+    // We'll load accounts separately if needed
     let user = await this.userRepository.findOne({ 
-      where: { username: normalizedUsername },
-      relations: ['accounts']
+      where: { username: normalizedUsername }
     });
+    
+    // Load accounts separately if user exists
+    if (user) {
+      user.accounts = await this.accountRepository.find({
+        where: { userId: user.userId }
+      });
+    }
 
     if (!user) {
       // Create new user

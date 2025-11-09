@@ -117,7 +117,9 @@ export class User {
   /**
    * Accounts owned by this user.
    */
-  @OneToMany(() => Account, (account) => account.user)
+  @OneToMany(() => Account, (account) => account.user, {
+    cascade: false,
+  })
   accounts: Account[];
 
   /**

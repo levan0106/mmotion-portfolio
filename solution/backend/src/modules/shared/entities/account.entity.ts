@@ -100,8 +100,11 @@ export class Account {
   /**
    * User who owns this account.
    */
-  @ManyToOne(() => User, (user) => user.accounts)
-  @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => User, (user) => user.accounts, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user?: User;
 
   // Computed properties for investor management
