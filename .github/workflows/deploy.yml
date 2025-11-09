@@ -320,12 +320,12 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        # Only upload necessary files for deployment (not source code)
-        # Source code is already built into Docker image
+        # Upload to temp location first
+        # SCP may preserve solution/backend/ structure, so we'll reorganize after upload
         source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/init-scripts"
-        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
+        target: "/home/${{ secrets.EC2_USER }}/temp-backend-deploy/"
     
-    - name: Verify backend root structure on EC2
+    - name: Setup backend root directory on EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -335,6 +335,51 @@ jobs:
           set -e
           
           BACKEND_ROOT="/home/${{ secrets.EC2_USER }}/mmotion-portfolio"
+          TEMP_DIR="/home/${{ secrets.EC2_USER }}/temp-backend-deploy"
+          
+          # Create backend root directory
+          mkdir -p $BACKEND_ROOT
+          
+          echo "📦 Reorganizing files to backend root..."
+          echo "📂 Checking temp directory structure:"
+          find $TEMP_DIR -type f -name "docker-compose.yml" 2>/dev/null | head -5 || echo "No docker-compose.yml found"
+          
+          # Find and move files from temp location
+          # Handle different possible structures: solution/backend/, backend/, or direct
+          if [ -f "$TEMP_DIR/solution/backend/docker-compose.yml" ]; then
+            # SCP preserved full path: solution/backend/
+            echo "📂 Found files at: $TEMP_DIR/solution/backend"
+            cp -r $TEMP_DIR/solution/backend/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/solution/backend/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          elif [ -f "$TEMP_DIR/backend/docker-compose.yml" ]; then
+            # SCP stripped solution/ prefix
+            echo "📂 Found files at: $TEMP_DIR/backend"
+            cp -r $TEMP_DIR/backend/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/backend/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          elif [ -f "$TEMP_DIR/docker-compose.yml" ]; then
+            # Files are directly in temp directory
+            echo "📂 Found files directly in temp directory"
+            cp -r $TEMP_DIR/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          else
+            # Try to find docker-compose.yml anywhere in temp directory
+            echo "🔍 Searching for docker-compose.yml..."
+            DOCKER_COMPOSE_PATH=$(find $TEMP_DIR -type f -name "docker-compose.yml" 2>/dev/null | head -1)
+            if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+              BACKEND_SOURCE=$(dirname "$DOCKER_COMPOSE_PATH")
+              echo "📂 Found backend files at: $BACKEND_SOURCE"
+              cp -r $BACKEND_SOURCE/* $BACKEND_ROOT/ 2>/dev/null || true
+              cp -r $BACKEND_SOURCE/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+            else
+              echo "❌ Error: Could not find docker-compose.yml in temp directory"
+              echo "📂 Temp directory structure:"
+              find $TEMP_DIR -type f 2>/dev/null | head -20 || echo "Temp directory is empty"
+              exit 1
+            fi
+          fi
+          
+          # Clean up temp directory
+          rm -rf $TEMP_DIR
           
           # Verify backend root structure
           echo "📋 Verifying backend root structure at: $BACKEND_ROOT"
@@ -345,6 +390,8 @@ jobs:
             echo "❌ Error: docker-compose.yml not found in backend root"
             echo "📂 Current directory contents:"
             ls -la $BACKEND_ROOT/ || echo "Directory is empty"
+            echo "📂 Full directory tree:"
+            find $BACKEND_ROOT -type f 2>/dev/null | head -20 || echo "No files found"
             exit 1
           fi
           
@@ -360,6 +407,21 @@ jobs:
             echo "⚠️ Warning: init-scripts directory not found in backend root"
           fi
           
+          # Verify NO solution/ directory is present
+          if [ -d "$BACKEND_ROOT/solution" ]; then
+            echo "❌ Error: solution/ directory found in backend root - files not properly reorganized!"
+            echo "📂 Found solution directory:"
+            ls -la $BACKEND_ROOT/solution/ | head -10
+            echo "🔄 Attempting to fix by moving solution/backend contents..."
+            if [ -d "$BACKEND_ROOT/solution/backend" ]; then
+              cp -r $BACKEND_ROOT/solution/backend/* $BACKEND_ROOT/ 2>/dev/null || true
+              rm -rf $BACKEND_ROOT/solution
+              echo "✅ Fixed: Moved files from solution/backend/ to root"
+            else
+              exit 1
+            fi
+          fi
+          
           # Verify NO source code files are present
           if [ -d "$BACKEND_ROOT/src" ]; then
             echo "❌ Error: src/ directory found in backend root - source code should not be deployed!"
@@ -368,8 +430,8 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Backend root directory verified"
-          echo "📂 Final structure (should NOT contain src/):"
+          echo "✅ Backend root directory setup complete"
+          echo "📂 Final structure (should NOT contain solution/ or src/):"
           ls -la $BACKEND_ROOT/ | head -20
 
     - name: Deploy Backend to EC2
