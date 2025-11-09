@@ -363,6 +363,46 @@ jobs:
             exit 1
           fi
           
+          # Aggressive cleanup before pulling new image to free disk space
+          echo "🧹 Performing aggressive Docker cleanup to free disk space..."
+          echo "💾 Disk space before cleanup:"
+          df -h
+          
+          # Stop all running containers (except system containers)
+          echo "🛑 Stopping all containers..."
+          docker ps -q | xargs -r docker stop 2>/dev/null || true
+          
+          # Remove all stopped containers
+          echo "🗑️ Removing stopped containers..."
+          docker container prune -f || true
+          
+          # Remove all unused images (keep only currently running ones)
+          echo "🗑️ Removing unused images..."
+          docker image prune -af || true
+          
+          # Remove old/unused backend images specifically
+          echo "🗑️ Removing old backend images..."
+          docker images $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND --format "{{.ID}}" | xargs -r docker rmi -f 2>/dev/null || true
+          
+          # Remove dangling images
+          echo "🗑️ Removing dangling images..."
+          docker images -f "dangling=true" -q | xargs -r docker rmi -f 2>/dev/null || true
+          
+          # Prune build cache
+          echo "🗑️ Pruning build cache..."
+          docker builder prune -af || true
+          
+          # Prune volumes (be careful - only unused ones)
+          echo "🗑️ Pruning unused volumes..."
+          docker volume prune -f || true
+          
+          # Full system prune
+          echo "🗑️ Full system prune..."
+          docker system prune -af --volumes || true
+          
+          echo "💾 Disk space after cleanup:"
+          df -h
+          
           # Pull latest backend image with retry
           echo "📥 Pulling backend image..."
           IMAGE_PULL_SUCCESS=false
@@ -373,6 +413,11 @@ jobs:
               break
             else
               echo "❌ Backend image pull attempt $i failed, retrying..."
+              # Additional cleanup on failure
+              if [ $i -lt 3 ]; then
+                echo "🧹 Additional cleanup before retry..."
+                docker system prune -f || true
+              fi
               sleep 10
             fi
           done
@@ -436,9 +481,17 @@ jobs:
           #   exit 1
           # fi
           
-          # Clean up old images
-          echo "🧹 Cleaning up old images..."
-          docker image prune -f || echo "⚠️ Image cleanup failed, but continuing..."
+          # Clean up old images after successful deployment
+          echo "🧹 Cleaning up old images after deployment..."
+          # Remove old backend images (keep only latest and current tag)
+          docker images $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND --format "{{.ID}} {{.Tag}}" | grep -v "latest" | grep -v "$IMAGE_TAG" | awk '{print $1}' | xargs -r docker rmi -f 2>/dev/null || true
+          # Remove unused images
+          docker image prune -af || echo "⚠️ Image cleanup failed, but continuing..."
+          # Final system prune
+          docker system prune -f || echo "⚠️ System prune failed, but continuing..."
+          
+          echo "💾 Final disk space:"
+          df -h
           
           echo "✅ Backend deployment completed successfully"
 
