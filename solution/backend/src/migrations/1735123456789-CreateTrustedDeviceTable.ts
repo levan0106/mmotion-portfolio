@@ -4,6 +4,19 @@ export class CreateTrustedDeviceTable1735123456789 implements MigrationInterface
   name = 'CreateTrustedDeviceTable1735123456789';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if users table exists
+    const usersTableExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'users'
+      )
+    `);
+
+    const hasUsersTable = usersTableExists[0]?.exists;
+
+    // Create table without foreign key if users table doesn't exist
+    // Foreign key will be added later when users table is created
     await queryRunner.createTable(
       new Table({
         name: 'trusted_devices',
@@ -87,18 +100,44 @@ export class CreateTrustedDeviceTable1735123456789 implements MigrationInterface
             isNullable: false,
           },
         ],
-        foreignKeys: [
-          {
-            columnNames: ['user_id'],
-            referencedTableName: 'users',
-            referencedColumnNames: ['user_id'],
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
-          },
-        ],
+        foreignKeys: hasUsersTable
+          ? [
+              {
+                columnNames: ['user_id'],
+                referencedTableName: 'users',
+                referencedColumnNames: ['user_id'],
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE',
+              },
+            ]
+          : [],
       }),
       true,
     );
+
+    // Add foreign key later if users table exists now
+    if (hasUsersTable) {
+      // Check if foreign key already exists
+      const fkExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'FK_d80738022e4cedca17a9fc25982' 
+          AND table_name = 'trusted_devices'
+        )
+      `);
+
+      if (!fkExists[0]?.exists) {
+        await queryRunner.query(`
+          ALTER TABLE "trusted_devices" 
+          ADD CONSTRAINT "FK_d80738022e4cedca17a9fc25982" 
+          FOREIGN KEY ("user_id") REFERENCES "users"("user_id") 
+          ON DELETE CASCADE ON UPDATE CASCADE
+        `);
+      }
+    } else {
+      console.log('⚠️ users table does not exist, creating trusted_devices without foreign key');
+      console.log('   Foreign key will be added when users table is created');
+    }
 
     // Create indexes using raw SQL
     await queryRunner.query(`CREATE INDEX "IDX_trusted_devices_user_id" ON "trusted_devices" ("user_id")`);

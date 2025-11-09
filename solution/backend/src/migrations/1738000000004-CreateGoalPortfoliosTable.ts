@@ -4,6 +4,32 @@ export class CreateGoalPortfoliosTable1738000000004 implements MigrationInterfac
   name = 'CreateGoalPortfoliosTable1738000000004';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if required tables exist
+    const portfolioGoalsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'portfolio_goals'
+      )
+    `);
+
+    const portfoliosExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'portfolios'
+      )
+    `);
+
+    const hasPortfolioGoalsTable = portfolioGoalsExists[0]?.exists;
+    const hasPortfoliosTable = portfoliosExists[0]?.exists;
+
+    if (!hasPortfolioGoalsTable || !hasPortfoliosTable) {
+      console.log('⚠️ portfolio_goals or portfolios table does not exist, skipping goal_portfolios creation');
+      console.log('   Table will be created when portfolio_goals and portfolios tables are available');
+      return;
+    }
+
     // Create goal_portfolios table for many-to-many relationship
     await queryRunner.query(`
       CREATE TABLE "goal_portfolios" (

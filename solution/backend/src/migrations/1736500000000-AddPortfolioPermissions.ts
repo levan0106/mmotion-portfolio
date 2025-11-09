@@ -4,7 +4,33 @@ export class AddPortfolioPermissions1736500000000 implements MigrationInterface 
   name = 'AddPortfolioPermissions1736500000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create portfolio_permissions table
+    // Check if required tables exist
+    const portfoliosExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'portfolios'
+      )
+    `);
+
+    const accountsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'accounts'
+      )
+    `);
+
+    const hasPortfoliosTable = portfoliosExists[0]?.exists;
+    const hasAccountsTable = accountsExists[0]?.exists;
+
+    if (!hasPortfoliosTable || !hasAccountsTable) {
+      console.log('⚠️ portfolios or accounts table does not exist, skipping portfolio_permissions creation');
+      console.log('   Table will be created when portfolios and accounts tables are available');
+      return;
+    }
+
+    // Create portfolio_permissions table with foreign keys
     await queryRunner.query(`
       CREATE TABLE portfolio_permissions (
         permission_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

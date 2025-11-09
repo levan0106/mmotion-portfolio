@@ -48,6 +48,36 @@ export class AddUsersTable1736333000000 implements MigrationInterface {
 
     // Create index for user_id in accounts
     await queryRunner.query(`CREATE INDEX "IDX_accounts_user_id" ON "accounts" ("user_id")`);
+
+    // Add foreign key to trusted_devices table if it exists (created earlier)
+    const trustedDevicesExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'trusted_devices'
+      )
+    `);
+
+    if (trustedDevicesExists[0]?.exists) {
+      // Check if foreign key already exists
+      const fkExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'FK_d80738022e4cedca17a9fc25982' 
+          AND table_name = 'trusted_devices'
+        )
+      `);
+
+      if (!fkExists[0]?.exists) {
+        await queryRunner.query(`
+          ALTER TABLE "trusted_devices" 
+          ADD CONSTRAINT "FK_d80738022e4cedca17a9fc25982" 
+          FOREIGN KEY ("user_id") REFERENCES "users"("user_id") 
+          ON DELETE CASCADE ON UPDATE CASCADE
+        `);
+        console.log('✅ Added foreign key constraint to trusted_devices table');
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
