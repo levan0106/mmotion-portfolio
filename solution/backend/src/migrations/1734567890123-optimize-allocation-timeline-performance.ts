@@ -4,6 +4,20 @@ export class OptimizeAllocationTimelinePerformance1734567890123 implements Migra
   name = 'OptimizeAllocationTimelinePerformance1734567890123';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if table exists before creating indexes
+    const tableExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'asset_allocation_snapshots'
+      )
+    `);
+
+    if (!tableExists[0]?.exists) {
+      console.log('⚠️ asset_allocation_snapshots table does not exist, skipping index creation');
+      return;
+    }
+
     // Add composite index for analytics queries
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "idx_asset_allocation_snapshots_analytics" 
