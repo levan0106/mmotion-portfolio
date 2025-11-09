@@ -4,18 +4,47 @@ export class AddMTDFieldsToPerformanceSnapshots1761500000000 implements Migratio
     name = 'AddMTDFieldsToPerformanceSnapshots1761500000000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        // Check if tables exist
+        const portfolioPerfExists = await queryRunner.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'portfolio_performance_snapshots'
+            )
+        `);
+        const assetPerfExists = await queryRunner.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'asset_performance_snapshots'
+            )
+        `);
+        const assetGroupPerfExists = await queryRunner.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'asset_group_performance_snapshots'
+            )
+        `);
+
         // Add MTD fields to portfolio_performance_snapshots table
-        await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_mwr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        if (portfolioPerfExists[0]?.exists) {
+            await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+            await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_mwr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+            await queryRunner.query(`ALTER TABLE "portfolio_performance_snapshots" ADD COLUMN IF NOT EXISTS "portfolio_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        }
 
         // Add MTD fields to asset_performance_snapshots table
-        await queryRunner.query(`ALTER TABLE "asset_performance_snapshots" ADD COLUMN IF NOT EXISTS "asset_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "asset_performance_snapshots" ADD COLUMN IF NOT EXISTS "asset_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        if (assetPerfExists[0]?.exists) {
+            await queryRunner.query(`ALTER TABLE "asset_performance_snapshots" ADD COLUMN IF NOT EXISTS "asset_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+            await queryRunner.query(`ALTER TABLE "asset_performance_snapshots" ADD COLUMN IF NOT EXISTS "asset_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        }
 
         // Add MTD fields to asset_group_performance_snapshots table
-        await queryRunner.query(`ALTER TABLE "asset_group_performance_snapshots" ADD COLUMN IF NOT EXISTS "group_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "asset_group_performance_snapshots" ADD COLUMN IF NOT EXISTS "group_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        if (assetGroupPerfExists[0]?.exists) {
+            await queryRunner.query(`ALTER TABLE "asset_group_performance_snapshots" ADD COLUMN IF NOT EXISTS "group_twr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+            await queryRunner.query(`ALTER TABLE "asset_group_performance_snapshots" ADD COLUMN IF NOT EXISTS "group_irr_mtd" numeric(15,6) NOT NULL DEFAULT '0'`);
+        }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

@@ -4,6 +4,20 @@ export class UpdateAccountsEmailConstraints1736336000000 implements MigrationInt
   name = 'UpdateAccountsEmailConstraints1736336000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if accounts table exists
+    const accountsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'accounts'
+      )
+    `);
+
+    if (!accountsExists[0]?.exists) {
+      console.log('⚠️ accounts table does not exist, skipping email constraints update');
+      return;
+    }
+
     // Remove unique constraint from email column
     await queryRunner.query(`
       ALTER TABLE "accounts" 

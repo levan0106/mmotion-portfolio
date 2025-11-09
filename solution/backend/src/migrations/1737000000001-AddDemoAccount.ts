@@ -4,6 +4,20 @@ export class AddDemoAccount1737000000001 implements MigrationInterface {
   name = 'AddDemoAccount1737000000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if accounts table exists
+    const accountsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'accounts'
+      )
+    `);
+
+    if (!accountsExists[0]?.exists) {
+      console.log('⚠️ accounts table does not exist, skipping demo account setup');
+      return;
+    }
+
     // Add is_demo_account column to accounts table
     await queryRunner.query(`
       ALTER TABLE "accounts" 

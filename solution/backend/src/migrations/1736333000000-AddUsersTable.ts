@@ -78,6 +78,52 @@ export class AddUsersTable1736333000000 implements MigrationInterface {
         console.log('✅ Added foreign key constraint to trusted_devices table');
       }
     }
+
+    // Add foreign keys to user_roles table if it exists (created earlier)
+    const userRolesExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user_roles'
+      )
+    `);
+
+    if (userRolesExists[0]?.exists) {
+      // Check if foreign key already exists
+      const fkUserIdExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'FK_user_roles_user_id' 
+          AND table_name = 'user_roles'
+        )
+      `);
+
+      if (!fkUserIdExists[0]?.exists) {
+        await queryRunner.query(`
+          ALTER TABLE "user_roles" 
+          ADD CONSTRAINT "FK_user_roles_user_id" 
+          FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE
+        `);
+        console.log('✅ Added foreign key constraint FK_user_roles_user_id');
+      }
+
+      const fkAssignedByExists = await queryRunner.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'FK_user_roles_assigned_by' 
+          AND table_name = 'user_roles'
+        )
+      `);
+
+      if (!fkAssignedByExists[0]?.exists) {
+        await queryRunner.query(`
+          ALTER TABLE "user_roles" 
+          ADD CONSTRAINT "FK_user_roles_assigned_by" 
+          FOREIGN KEY ("assigned_by") REFERENCES "users"("user_id") ON DELETE SET NULL
+        `);
+        console.log('✅ Added foreign key constraint FK_user_roles_assigned_by');
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

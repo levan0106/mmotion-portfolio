@@ -4,6 +4,20 @@ export class RemoveUnusedGoalFields1738000000001 implements MigrationInterface {
   name = 'RemoveUnusedGoalFields1738000000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if portfolio_goals table exists
+    const tableExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'portfolio_goals'
+      )
+    `);
+
+    if (!tableExists[0]?.exists) {
+      console.log('⚠️ portfolio_goals table does not exist, skipping unused fields removal');
+      return;
+    }
+
     // Remove unused columns from portfolio_goals table
     await queryRunner.query(`
       ALTER TABLE "portfolio_goals" 

@@ -4,6 +4,28 @@ export class AddPortfolioVisibilityPermission1736400001000 implements MigrationI
   name = 'AddPortfolioVisibilityPermission1736400001000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if permissions and roles tables exist
+    const permissionsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'permissions'
+      )
+    `);
+
+    const rolesExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'roles'
+      )
+    `);
+
+    if (!permissionsExists[0]?.exists || !rolesExists[0]?.exists) {
+      console.log('⚠️ permissions or roles tables do not exist, skipping portfolio visibility permission');
+      return;
+    }
+
     // Add portfolio.visibility.manage permission
     await queryRunner.query(`
       INSERT INTO "permissions" ("name", "display_name", "description", "category", "is_system_permission", "priority") VALUES

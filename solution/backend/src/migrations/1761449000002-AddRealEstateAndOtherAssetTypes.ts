@@ -4,13 +4,60 @@ export class AddRealEstateAndOtherAssetTypes1761449000002 implements MigrationIn
   name = 'AddRealEstateAndOtherAssetTypes1761449000002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if enum types exist before modifying
+    const assetsEnumExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM pg_type 
+        WHERE typname = 'assets_type_enum'
+      )
+    `);
+
+    const globalAssetsEnumExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM pg_type 
+        WHERE typname = 'global_assets_type_enum'
+      )
+    `);
+
     // Add new asset types to assets table enum
-    await queryRunner.query(`ALTER TYPE "public"."assets_type_enum" ADD VALUE 'REALESTATE'`);
-    await queryRunner.query(`ALTER TYPE "public"."assets_type_enum" ADD VALUE 'OTHER'`);
+    if (assetsEnumExists[0]?.exists) {
+      try {
+        await queryRunner.query(`ALTER TYPE "public"."assets_type_enum" ADD VALUE 'REALESTATE'`);
+      } catch (e: any) {
+        // Value might already exist, ignore error
+        if (!e.message?.includes('already exists')) {
+          throw e;
+        }
+      }
+      try {
+        await queryRunner.query(`ALTER TYPE "public"."assets_type_enum" ADD VALUE 'OTHER'`);
+      } catch (e: any) {
+        // Value might already exist, ignore error
+        if (!e.message?.includes('already exists')) {
+          throw e;
+        }
+      }
+    }
 
     // Add new asset types to global_assets table enum
-    await queryRunner.query(`ALTER TYPE "public"."global_assets_type_enum" ADD VALUE 'REALESTATE'`);
-    await queryRunner.query(`ALTER TYPE "public"."global_assets_type_enum" ADD VALUE 'OTHER'`);
+    if (globalAssetsEnumExists[0]?.exists) {
+      try {
+        await queryRunner.query(`ALTER TYPE "public"."global_assets_type_enum" ADD VALUE 'REALESTATE'`);
+      } catch (e: any) {
+        // Value might already exist, ignore error
+        if (!e.message?.includes('already exists')) {
+          throw e;
+        }
+      }
+      try {
+        await queryRunner.query(`ALTER TYPE "public"."global_assets_type_enum" ADD VALUE 'OTHER'`);
+      } catch (e: any) {
+        // Value might already exist, ignore error
+        if (!e.message?.includes('already exists')) {
+          throw e;
+        }
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

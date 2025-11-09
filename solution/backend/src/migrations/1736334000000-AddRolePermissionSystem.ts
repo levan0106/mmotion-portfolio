@@ -75,23 +75,36 @@ export class AddRolePermissionSystem1736334000000 implements MigrationInterface 
     await queryRunner.query(`CREATE INDEX "IDX_user_roles_is_active" ON "user_roles" ("is_active")`);
     await queryRunner.query(`CREATE INDEX "IDX_user_roles_expires_at" ON "user_roles" ("expires_at")`);
 
-    // Add foreign key constraints
-    await queryRunner.query(`
-      ALTER TABLE "user_roles" 
-      ADD CONSTRAINT "FK_user_roles_user_id" 
-      FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE
+    // Add foreign key constraints (only if users table exists)
+    const usersExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'users'
+      )
     `);
+
+    if (usersExists[0]?.exists) {
+      await queryRunner.query(`
+        ALTER TABLE "user_roles" 
+        ADD CONSTRAINT "FK_user_roles_user_id" 
+        FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE
+      `);
+
+      await queryRunner.query(`
+        ALTER TABLE "user_roles" 
+        ADD CONSTRAINT "FK_user_roles_assigned_by" 
+        FOREIGN KEY ("assigned_by") REFERENCES "users"("user_id") ON DELETE SET NULL
+      `);
+    } else {
+      console.log('⚠️ users table does not exist, creating user_roles without foreign keys');
+      console.log('   Foreign keys will be added when users table is created');
+    }
 
     await queryRunner.query(`
       ALTER TABLE "user_roles" 
       ADD CONSTRAINT "FK_user_roles_role_id" 
       FOREIGN KEY ("role_id") REFERENCES "roles"("role_id") ON DELETE CASCADE
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "user_roles" 
-      ADD CONSTRAINT "FK_user_roles_assigned_by" 
-      FOREIGN KEY ("assigned_by") REFERENCES "users"("user_id") ON DELETE SET NULL
     `);
 
     await queryRunner.query(`

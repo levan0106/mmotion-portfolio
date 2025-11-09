@@ -4,6 +4,20 @@ export class RemoveDuplicatePerformanceFieldsFromPortfolioSnapshots1737000000000
     name = 'RemoveDuplicatePerformanceFieldsFromPortfolioSnapshots1737000000000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        // Check if portfolio_snapshots table exists
+        const tableExists = await queryRunner.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'portfolio_snapshots'
+            )
+        `);
+
+        if (!tableExists[0]?.exists) {
+            console.log('⚠️ portfolio_snapshots table does not exist, skipping duplicate fields removal');
+            return;
+        }
+
         // Remove duplicate performance fields from portfolio_snapshots table
         // These fields are now handled by portfolio_performance_snapshots table
         

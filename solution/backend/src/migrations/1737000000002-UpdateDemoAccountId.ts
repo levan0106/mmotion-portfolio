@@ -4,6 +4,20 @@ export class UpdateDemoAccountId1737000000002 implements MigrationInterface {
   name = 'UpdateDemoAccountId1737000000002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Check if required tables exist
+    const accountsExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'accounts'
+      )
+    `);
+
+    if (!accountsExists[0]?.exists) {
+      console.log('⚠️ accounts table does not exist, skipping demo account ID update');
+      return;
+    }
+
     // Update demo account ID from invalid UUID to valid UUID v4
     // Old ID: 00000000-0000-0000-0000-000000000001 (invalid UUID v4)
     // New ID: ffffffff-ffff-4fff-bfff-ffffffffffff (valid UUID v4)
@@ -24,27 +38,58 @@ export class UpdateDemoAccountId1737000000002 implements MigrationInterface {
       `, [newDemoAccountId]);
 
       if (newAccountExists.length === 0) {
+        // Check if tables exist before updating
+        const portfoliosExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'portfolios'
+          )
+        `);
+
+        const investorHoldingsExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'investor_holdings'
+          )
+        `);
+
+        const portfolioPermissionsExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'portfolio_permissions'
+          )
+        `);
+
         // Update all foreign key references first (portfolios, investor_holdings, etc.)
         // Update portfolios
-        await queryRunner.query(`
-          UPDATE "portfolios" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        if (portfoliosExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "portfolios" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
 
         // Update investor_holdings
-        await queryRunner.query(`
-          UPDATE "investor_holdings" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        if (investorHoldingsExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "investor_holdings" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
 
         // Update portfolio_permissions
-        await queryRunner.query(`
-          UPDATE "portfolio_permissions" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        if (portfolioPermissionsExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "portfolio_permissions" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
 
         // Finally, update the account ID itself
         await queryRunner.query(`
@@ -55,23 +100,51 @@ export class UpdateDemoAccountId1737000000002 implements MigrationInterface {
       } else {
         // If new account already exists, just delete the old one and update references
         // This shouldn't happen in normal cases
-        await queryRunner.query(`
-          UPDATE "portfolios" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        const portfoliosExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'portfolios'
+          )
+        `);
+        const investorHoldingsExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'investor_holdings'
+          )
+        `);
+        const portfolioPermissionsExists = await queryRunner.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'portfolio_permissions'
+          )
+        `);
 
-        await queryRunner.query(`
-          UPDATE "investor_holdings" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        if (portfoliosExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "portfolios" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
 
-        await queryRunner.query(`
-          UPDATE "portfolio_permissions" 
-          SET "account_id" = $1 
-          WHERE "account_id" = $2
-        `, [newDemoAccountId, oldDemoAccountId]);
+        if (investorHoldingsExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "investor_holdings" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
+
+        if (portfolioPermissionsExists[0]?.exists) {
+          await queryRunner.query(`
+            UPDATE "portfolio_permissions" 
+            SET "account_id" = $1 
+            WHERE "account_id" = $2
+          `, [newDemoAccountId, oldDemoAccountId]);
+        }
 
         await queryRunner.query(`
           DELETE FROM "accounts" 
