@@ -1,7 +1,13 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
+import { join } from 'path';
 
 config();
+
+// Determine base path for entities and migrations
+// In production: __dirname = /app/dist/src/config, basePath should be /app/dist/src
+// In development: __dirname = /app/src/config, basePath should be /app/src
+const basePath = join(__dirname, '..');
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -10,8 +16,8 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || process.env.DB_DATABASE || 'portfolio_db',
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+  entities: [join(basePath, '**', '*.entity{.ts,.js}')],
+  migrations: [join(basePath, 'migrations', '*.{.ts,.js}')],
   synchronize: false, // Disable synchronize, use migrations only
   logging: process.env.NODE_ENV === 'development',
   extra: {
@@ -20,3 +26,6 @@ export const AppDataSource = new DataSource({
     idleTimeoutMillis: 30000,
   },
 });
+
+// Export default for TypeORM CLI compatibility
+export default AppDataSource;
