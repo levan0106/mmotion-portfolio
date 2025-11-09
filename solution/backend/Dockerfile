@@ -13,13 +13,23 @@ COPY package.json ./
 COPY package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci --prefer-offline --no-audit && npm cache clean --force
+RUN npm ci --prefer-offline --no-audit && \
+    npm cache clean --force && \
+    # Remove source maps and unnecessary files to save space
+    find node_modules -name "*.map" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.ts" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.d.ts" -not -path "*/@types/*" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.md" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "LICENSE" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "CHANGELOG*" -type f -delete 2>/dev/null || true
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npm run build && \
+    # Remove source maps from dist after build
+    find dist -name "*.map" -type f -delete 2>/dev/null || true
 
 # Production stage
 FROM node:18-alpine AS production
@@ -39,7 +49,15 @@ COPY --from=builder /app/dist ./dist
 # Install only production dependencies (exclude dev dependencies)
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/package-lock.json* ./
-RUN npm ci --only=production --prefer-offline --no-audit && npm cache clean --force
+RUN npm ci --only=production --prefer-offline --no-audit && \
+    npm cache clean --force && \
+    # Remove source maps and unnecessary files from production node_modules
+    find node_modules -name "*.map" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.ts" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.d.ts" -not -path "*/@types/*" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "*.md" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "LICENSE" -type f -delete 2>/dev/null || true && \
+    find node_modules -name "CHANGELOG*" -type f -delete 2>/dev/null || true
 # Create default .env if it doesn't exist
 RUN if [ ! -f .env ]; then echo "NODE_ENV=production" > .env; fi
 

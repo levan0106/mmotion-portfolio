@@ -55,6 +55,13 @@ jobs:
     - name: Cleanup Docker before build
       run: |
         echo "🧹 Cleaning up Docker to free space..."
+        # Stop all running containers
+        docker stop $(docker ps -aq) 2>/dev/null || true
+        # Remove all containers
+        docker rm $(docker ps -aq) 2>/dev/null || true
+        # Remove all images
+        docker rmi $(docker images -q) 2>/dev/null || true
+        # Prune system
         docker system prune -af --volumes || true
         docker builder prune -af || true
         echo "💾 Available disk space:"
@@ -68,10 +75,13 @@ jobs:
       run: |
         set -e  # Exit on any error
         
-        # Build backend image (use tag instead of rebuild for latest)
+        # Build backend image with memory limit and cleanup during build
         echo "🔨 Building backend image..."
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG -f solution/backend/Dockerfile solution/backend || {
+        # Use DOCKER_BUILDKIT=0 to avoid cache issues and reduce memory usage
+        DOCKER_BUILDKIT=0 docker build --no-cache --rm -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG -f solution/backend/Dockerfile solution/backend || {
           echo "❌ Backend image build failed"
+          # Cleanup on failure
+          docker system prune -f || true
           exit 1
         }
         
