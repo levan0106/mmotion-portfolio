@@ -7,9 +7,9 @@ set -e
 
 echo "🧠 Smart Migration Check..."
 
-# Check if we're on the production server
-if [ ! -f "docker-compose.backend.yml" ]; then
-    echo "❌ Error: docker-compose.backend.yml not found. Please run from project root."
+# Check if we're in the backend directory
+if [ ! -f "docker-compose.yml" ]; then
+    echo "❌ Error: docker-compose.yml not found. Please run from solution/backend directory."
     exit 1
 fi
 

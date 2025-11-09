@@ -24,7 +24,9 @@ echo "✅ Database is running"
 
 # Run the seed script
 echo "🌱 Running production seed script..."
-docker exec -i portfolio_postgres psql -U $DATABASE_USER -d $DATABASE_NAME < scripts/seed-production-data.sql
+# Get the script directory to handle paths correctly
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+docker exec -i portfolio_postgres psql -U $DATABASE_USER -d $DATABASE_NAME < "$SCRIPT_DIR/seed-production-data.sql"
 
 if [ $? -eq 0 ]; then
     echo "✅ Production data seeded successfully!"
