@@ -5,7 +5,7 @@ import { join } from 'path';
 config();
 
 // Determine base path for entities and migrations
-// In production: __dirname = /app/dist/src/config, basePath should be /app/dist/src
+// In production: __dirname = /app/dist/config, basePath should be /app/dist
 // In development: __dirname = /app/src/config, basePath should be /app/src
 const basePath = join(__dirname, '..');
 

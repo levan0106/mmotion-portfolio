@@ -43,10 +43,10 @@ import { TestLoggingController } from './test-logging.controller';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'portfolio_db',
       entities: [
-        // Handle both development (src/) and production (dist/src/) paths
-        // In production: __dirname = /app/dist/src, entities are at /app/dist/src/modules/**/*.entity.js
+        // Handle both development (src/) and production (dist/) paths
+        // In production: __dirname = /app/dist, entities are at /app/dist/modules/**/*.entity.js
         // In development: __dirname = /app/src, entities are at /app/src/modules/**/*.entity.ts
-        // Both cases: entities are relative to __dirname, no need to add 'src'
+        // Both cases: entities are relative to __dirname
         join(__dirname, 'modules', '**', '*.entity{.ts,.js}'),
         join(__dirname, 'modules', 'shared', 'entities', '*.entity{.ts,.js}'),
         join(__dirname, 'notification', '*.entity{.ts,.js}'),

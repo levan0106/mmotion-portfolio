@@ -51,19 +51,19 @@ fi
 
 # Verify config file exists before proceeding
 echo "🔍 Verifying database config file exists..."
-if ! docker exec $CONTAINER_NAME test -f /app/dist/src/config/database.config.js; then
-    echo "❌ Error: database.config.js not found at /app/dist/src/config/database.config.js"
+if ! docker exec $CONTAINER_NAME test -f /app/dist/config/database.config.js; then
+    echo "❌ Error: database.config.js not found at /app/dist/config/database.config.js"
     echo "💡 Checking dist structure..."
     docker exec $CONTAINER_NAME sh -c "find /app/dist -name '*.config.js' -type f 2>/dev/null || echo 'No config files found'"
-    echo "💡 Listing dist/src/config directory..."
-    docker exec $CONTAINER_NAME sh -c "ls -la /app/dist/src/config/ 2>/dev/null || echo 'Directory does not exist'"
+    echo "💡 Listing dist/config directory..."
+    docker exec $CONTAINER_NAME sh -c "ls -la /app/dist/config/ 2>/dev/null || echo 'Directory does not exist'"
     exit 1
 fi
 echo "✅ Database config file found"
 
 # Check if migrations table exists
 echo "🔍 Checking migrations table..."
-MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'\" -d dist/src/config/database.config.js" 2>/dev/null | grep -c "migrations" || echo "0")
+MIGRATIONS_EXIST=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'\" -d dist/config/database.config.js" 2>/dev/null | grep -c "migrations" || echo "0")
 
 # Ensure MIGRATIONS_EXIST is a number
 MIGRATIONS_EXIST=${MIGRATIONS_EXIST:-0}
@@ -77,7 +77,7 @@ if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     # First try with production command (for compiled JS)
     if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod"; then
         echo "✅ Migration successful with production command"
-    elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/src/config/database.config.js"; then
+    elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/config/database.config.js"; then
         echo "✅ Migration successful with explicit config path"
     elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
         echo "✅ Migration successful from container root"
@@ -86,7 +86,7 @@ if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
     else
         echo "❌ Migration failed with all approaches"
         echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-        echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/src/config/"
+        echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
         exit 1
     fi
     
@@ -104,7 +104,7 @@ else
         # First try with production command (for compiled JS)
         if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod"; then
             echo "✅ Migration successful with production command"
-        elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/src/config/database.config.js"; then
+        elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/config/database.config.js"; then
             echo "✅ Migration successful with explicit config path"
         # Fallback: try to find the config file
         elif CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1) && [ -n "$CONFIG_PATH" ]; then
@@ -118,7 +118,7 @@ else
             else
                 echo "❌ Migration failed with all approaches"
                 echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/src/config/"
+                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
                 exit 1
             fi
         else
@@ -130,7 +130,7 @@ else
             else
                 echo "❌ Migration failed with all approaches"
                 echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/src/config/"
+                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
                 exit 1
             fi
         fi
@@ -144,7 +144,7 @@ fi
 
 # Verify accounts table exists (critical check)
 echo "🔍 Verifying critical tables..."
-ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'\" -d dist/src/config/database.config.js" 2>/dev/null | grep -c "accounts" || echo "0")
+ACCOUNTS_EXIST=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounts'\" -d dist/config/database.config.js" 2>/dev/null | grep -c "accounts" || echo "0")
 
 # Ensure ACCOUNTS_EXIST is a number
 ACCOUNTS_EXIST=${ACCOUNTS_EXIST:-0}
