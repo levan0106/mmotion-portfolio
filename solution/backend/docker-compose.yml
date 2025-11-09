@@ -1,7 +1,7 @@
 services:
   backend:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY_BACKEND}:latest
-    container_name: portfolio-backend
+    container_name: mmotion-backend
     restart: always
     env_file:
       - production.env

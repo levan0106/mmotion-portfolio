@@ -322,13 +322,13 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         # Note: Source paths are from repository structure (solution/backend/...)
         # SCP action will strip common prefix and preserve relative paths
-        # Result on EC2: portfolio-backend/ becomes the root (equivalent to solution/backend/ in repo)
+        # Result on EC2: mmotion-portfolio/ becomes the root (equivalent to solution/backend/ in repo)
         # Files will be placed as:
-        #   solution/backend/docker-compose.yml → portfolio-backend/docker-compose.yml
-        #   solution/backend/scripts/smart-migration.sh → portfolio-backend/scripts/smart-migration.sh
-        #   solution/backend/init-scripts/ → portfolio-backend/init-scripts/
+        #   solution/backend/docker-compose.yml → mmotion-portfolio/docker-compose.yml
+        #   solution/backend/scripts/smart-migration.sh → mmotion-portfolio/scripts/smart-migration.sh
+        #   solution/backend/init-scripts/ → mmotion-portfolio/init-scripts/
         source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/init-scripts"
-        target: "/home/${{ secrets.EC2_USER }}/portfolio-backend/"
+        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
 
     - name: Deploy Backend to EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -444,7 +444,7 @@ jobs:
           
           # Ensure project directory exists (backend root)
           echo "📁 Setting up backend root directory..."
-          BACKEND_ROOT="/home/${{ secrets.EC2_USER }}/portfolio-backend"
+          BACKEND_ROOT="/home/${{ secrets.EC2_USER }}/mmotion-portfolio"
           mkdir -p $BACKEND_ROOT
           cd $BACKEND_ROOT
           
@@ -471,7 +471,7 @@ jobs:
           
           # Force remove containers by name if they still exist
           echo "🧹 Force removing any remaining containers..."
-          docker rm -f portfolio-backend portfolio-postgres portfolio-redis 2>/dev/null || true
+          docker rm -f mmotion-backend portfolio-postgres portfolio-redis 2>/dev/null || true
           
           # Start backend services
           echo "🚀 Starting backend services..."

@@ -16,7 +16,7 @@ fi
 
 # Detect backend container (Linux production server)
 echo "🔍 Detecting backend container..."
-CONTAINER_NAME=$(docker ps --format "{{.Names}}" | grep -E "(portfolio.*backend|portfolio.*app)" | head -1)
+CONTAINER_NAME=$(docker ps --format "{{.Names}}" | grep -E "(mmotion.*backend|portfolio.*backend|portfolio.*app)" | head -1)
 
 if [ -z "$CONTAINER_NAME" ]; then
     echo "❌ Error: No backend container found"
