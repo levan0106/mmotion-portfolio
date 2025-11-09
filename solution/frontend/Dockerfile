@@ -1,24 +1,27 @@
 # Build stage
 FROM node:18-alpine AS builder
 
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better layer caching)
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Clean and reinstall to fix rollup issue
-RUN rm -rf node_modules package-lock.json
-RUN npm install
-
-# Copy production environment
-COPY production.env .env
+# Create .env file from production.env if it exists, otherwise create default
+RUN if [ -f production.env ]; then cp production.env .env; else \
+      echo "VITE_API_URL=http://localhost:3000" > .env && \
+      echo "VITE_WS_URL=http://localhost:3000" >> .env && \
+      echo "VITE_ENV=production" >> .env; \
+    fi
 
 # Build the application
 RUN npm run build
@@ -32,8 +35,8 @@ RUN apk add --no-cache curl
 # Copy built frontend files
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx configuration from builder stage
+COPY --from=builder /app/nginx.conf /etc/nginx/nginx.conf
 
 # Change ownership (nginx user already exists)
 RUN chown -R nginx:nginx /usr/share/nginx/html

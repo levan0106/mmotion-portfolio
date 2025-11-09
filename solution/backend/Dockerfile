@@ -7,7 +7,7 @@ RUN apk add --no-cache python3 make g++
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better layer caching)
 COPY package*.json ./
 
 # Install all dependencies (including dev dependencies for build)
@@ -35,9 +35,8 @@ WORKDIR /app
 # Copy only necessary files from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY package*.json ./
-# Copy .env if it exists, otherwise create a default one
-COPY .env* ./
+COPY --from=builder /app/package*.json ./
+# Create default .env if it doesn't exist
 RUN if [ ! -f .env ]; then echo "NODE_ENV=production" > .env; fi
 
 # Change ownership

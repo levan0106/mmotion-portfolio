@@ -8,7 +8,7 @@ build
 coverage
 .nyc_output
 
-# Environment files (will be provided at runtime or copied explicitly)
+# Environment files (will be provided at runtime)
 .env
 .env.local
 .env.*.local
@@ -29,17 +29,26 @@ Thumbs.db
 
 # Logs
 *.log
+logs
 
 # Test files
 test
 *.spec.ts
 *.test.ts
-*.spec.tsx
-*.test.tsx
 
 # Documentation
 *.md
 docs
 
+# Scripts (not needed in production)
+scripts
+
+# Backups
+backups
+
+# Docker
+Dockerfile.dev
+docker-compose.yml
+
 # Keep package.json and package-lock.json (important!)
-# Keep production.env and nginx.conf (needed for build)
+
