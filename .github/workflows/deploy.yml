@@ -322,7 +322,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         # Upload to temp location first
         # SCP may preserve solution/backend/ structure, so we'll reorganize after upload
-        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/scripts/run-migrations-manual.sh,solution/backend/init-scripts"
+        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/scripts/run-migrations-manual.sh,solution/backend/scripts/debug-migrations.sh,solution/backend/scripts/fix-migrations-path.sh,solution/backend/init-scripts"
         target: "/home/${{ secrets.EC2_USER }}/temp-backend-deploy/"
     
     - name: Setup backend root directory on EC2

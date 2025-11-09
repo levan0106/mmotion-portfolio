@@ -17,7 +17,10 @@ const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || process.env.DB_DATABASE || 'portfolio_db',
   entities: [join(basePath, '**', '*.entity{.ts,.js}')],
-  migrations: [join(basePath, 'migrations', '*.{.ts,.js}')],
+  migrations: [
+    // Primary path: dist/migrations/*.js in production, src/migrations/*.ts in development
+    join(basePath, 'migrations', '*.{.ts,.js}'),
+  ],
   synchronize: false, // Disable synchronize, use migrations only
   logging: process.env.NODE_ENV === 'development',
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
