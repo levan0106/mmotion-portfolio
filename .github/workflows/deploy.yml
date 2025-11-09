@@ -320,15 +320,81 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        # Note: Source paths are from repository structure (solution/backend/...)
-        # SCP action will strip common prefix and preserve relative paths
-        # Result on EC2: mmotion-portfolio/ becomes the root (equivalent to solution/backend/ in repo)
-        # Files will be placed as:
-        #   solution/backend/docker-compose.yml → mmotion-portfolio/docker-compose.yml
-        #   solution/backend/scripts/smart-migration.sh → mmotion-portfolio/scripts/smart-migration.sh
-        #   solution/backend/init-scripts/ → mmotion-portfolio/init-scripts/
-        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/init-scripts"
-        target: "/home/${{ secrets.EC2_USER }}/mmotion-portfolio/"
+        # Upload entire solution/backend directory to temp location
+        source: "solution/backend"
+        target: "/home/${{ secrets.EC2_USER }}/temp-backend-upload/"
+    
+    - name: Setup backend root directory on EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          set -e
+          
+          # Create backend root directory
+          BACKEND_ROOT="/home/${{ secrets.EC2_USER }}/mmotion-portfolio"
+          mkdir -p $BACKEND_ROOT
+          
+          # Find and move files from temp location to backend root
+          # Handle different possible structures from SCP action
+          echo "📦 Setting up backend root directory..."
+          
+          TEMP_DIR="/home/${{ secrets.EC2_USER }}/temp-backend-upload"
+          
+          # Try to find the actual backend files
+          if [ -d "$TEMP_DIR/solution/backend" ]; then
+            # SCP preserved full path: solution/backend/
+            echo "📂 Found files at: $TEMP_DIR/solution/backend"
+            cp -r $TEMP_DIR/solution/backend/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/solution/backend/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          elif [ -d "$TEMP_DIR/backend" ]; then
+            # SCP stripped solution/ prefix
+            echo "📂 Found files at: $TEMP_DIR/backend"
+            cp -r $TEMP_DIR/backend/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/backend/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          elif [ -f "$TEMP_DIR/docker-compose.yml" ]; then
+            # Files are directly in temp directory
+            echo "📂 Found files directly in temp directory"
+            cp -r $TEMP_DIR/* $BACKEND_ROOT/ 2>/dev/null || true
+            cp -r $TEMP_DIR/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+          else
+            echo "⚠️ Checking temp directory structure..."
+            find $TEMP_DIR -type f -name "docker-compose.yml" | head -1 | while read file; do
+              BACKEND_SOURCE=$(dirname "$file")
+              echo "📂 Found backend files at: $BACKEND_SOURCE"
+              cp -r $BACKEND_SOURCE/* $BACKEND_ROOT/ 2>/dev/null || true
+              cp -r $BACKEND_SOURCE/.[!.]* $BACKEND_ROOT/ 2>/dev/null || true
+            done
+          fi
+          
+          # Clean up temp directory
+          rm -rf $TEMP_DIR
+          
+          # Verify backend root structure
+          echo "📋 Verifying backend root structure at: $BACKEND_ROOT"
+          ls -la $BACKEND_ROOT/ || echo "⚠️ Backend root appears empty"
+          
+          # Ensure required files exist
+          if [ ! -f "$BACKEND_ROOT/docker-compose.yml" ]; then
+            echo "❌ Error: docker-compose.yml not found in backend root"
+            echo "📂 Current directory contents:"
+            ls -la $BACKEND_ROOT/ || echo "Directory is empty"
+            exit 1
+          fi
+          
+          if [ ! -f "$BACKEND_ROOT/production.env" ]; then
+            echo "⚠️ Warning: production.env not found in backend root"
+          fi
+          
+          if [ ! -d "$BACKEND_ROOT/scripts" ]; then
+            echo "⚠️ Warning: scripts directory not found in backend root"
+          fi
+          
+          echo "✅ Backend root directory setup complete"
+          echo "📂 Final structure:"
+          ls -la $BACKEND_ROOT/ | head -20
 
     - name: Deploy Backend to EC2
       uses: appleboy/ssh-action@v1.0.0
