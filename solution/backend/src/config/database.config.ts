@@ -19,7 +19,9 @@ const AppDataSource = new DataSource({
   entities: [join(basePath, '**', '*.entity{.ts,.js}')],
   migrations: [
     // Primary path: dist/migrations/*.js in production, src/migrations/*.ts in development
-    join(basePath, 'migrations', '*.{.ts,.js}'),
+    // Use separate patterns for .ts and .js files
+    join(basePath, 'migrations', '*.ts'),
+    join(basePath, 'migrations', '*.js'),
   ],
   synchronize: false, // Disable synchronize, use migrations only
   logging: process.env.NODE_ENV === 'development',
