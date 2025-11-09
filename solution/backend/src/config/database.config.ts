@@ -20,6 +20,7 @@ const AppDataSource = new DataSource({
   migrations: [join(basePath, 'migrations', '*.{.ts,.js}')],
   synchronize: false, // Disable synchronize, use migrations only
   logging: process.env.NODE_ENV === 'development',
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   extra: {
     max: 10, // connection pool size
     connectionTimeoutMillis: 30000, // 30 seconds
