@@ -322,7 +322,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         # Upload to temp location first
         # SCP may preserve solution/backend/ structure, so we'll reorganize after upload
-        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/init-scripts"
+        source: "solution/backend/docker-compose.yml,solution/backend/production.env,solution/backend/scripts/smart-migration.sh,solution/backend/scripts/run-migrations-manual.sh,solution/backend/init-scripts"
         target: "/home/${{ secrets.EC2_USER }}/temp-backend-deploy/"
     
     - name: Setup backend root directory on EC2
@@ -584,11 +584,37 @@ jobs:
             exit 1
           }
           
-          # Wait for backend to be healthy
-          echo "⏳ Waiting for backend to be healthy..."
-          sleep 60
+          # Wait for backend container to be ready
+          echo "⏳ Waiting for backend container to be ready..."
+          MAX_WAIT=120
+          WAIT_COUNT=0
+          CONTAINER_READY=false
+          while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+            if docker ps --format "{{.Names}}" | grep -qE "(mmotion.*backend|portfolio.*backend)"; then
+              CONTAINER_STATUS=$(docker ps --format "{{.Names}}\t{{.Status}}" | grep -E "(mmotion.*backend|portfolio.*backend)" | awk '{print $2}' | head -1)
+              if echo "$CONTAINER_STATUS" | grep -q "Up"; then
+                echo "✅ Backend container is running"
+                CONTAINER_READY=true
+                break
+              fi
+            fi
+            echo "⏳ Waiting for container... ($WAIT_COUNT/$MAX_WAIT seconds)"
+            sleep 5
+            WAIT_COUNT=$((WAIT_COUNT + 5))
+          done
           
-          # Run smart database migrations (only when needed)
+          if [ "$CONTAINER_READY" = false ]; then
+            echo "❌ Backend container not ready after $MAX_WAIT seconds"
+            echo "📋 Container status:"
+            docker ps -a | grep -E "(mmotion.*backend|portfolio.*backend)" || echo "No backend container found"
+            exit 1
+          fi
+          
+          # Additional wait for container to fully initialize
+          echo "⏳ Waiting for container to fully initialize..."
+          sleep 10
+          
+          # Run smart database migrations (CRITICAL - must succeed)
           # Script runs from backend root, all paths are relative
           echo "🧠 Running smart database migrations..."
           if [ -f scripts/smart-migration.sh ]; then
@@ -596,11 +622,26 @@ jobs:
             if ./scripts/smart-migration.sh; then
               echo "✅ Smart migration completed successfully"
             else
-              echo "❌ All migration attempts failed"
+              echo "❌ Migration failed - this is critical!"
+              echo "📋 Container logs:"
+              docker logs --tail 100 mmotion-backend 2>/dev/null || docker logs --tail 100 portfolio-backend 2>/dev/null || echo "Could not get container logs"
               exit 1
             fi
           else
-            echo "⚠️ Warning: scripts/smart-migration.sh not found, skipping migration"
+            echo "❌ Error: scripts/smart-migration.sh not found - cannot run migrations!"
+            exit 1
+          fi
+          
+          # Verify critical tables exist after migration
+          echo "🔍 Verifying database schema after migration..."
+          CONTAINER_NAME=$(docker ps --format "{{.Names}}" | grep -E "(mmotion.*backend|portfolio.*backend)" | head -1)
+          if [ -n "$CONTAINER_NAME" ]; then
+            USERS_EXIST=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users'\" -d dist/config/database.config.js" 2>/dev/null | grep -c "users" || echo "0")
+            if [ "$USERS_EXIST" -eq 0 ]; then
+              echo "❌ Error: users table not found after migration - migrations may have failed!"
+              exit 1
+            fi
+            echo "✅ Database schema verified - users table exists"
           fi
           
           # Check backend health

@@ -90,56 +90,71 @@ if [ "$MIGRATIONS_EXIST" -eq 0 ]; then
         exit 1
     fi
     
-    echo "✅ Fresh database migration completed"
-else
-    echo "📋 Migrations table exists. Checking for pending migrations..."
-    
-    # Check if there are pending migrations (skip dry-run check for now)
-    PENDING_MIGRATIONS=1  # Always try to run migration to be safe
-    
-    if [ "$PENDING_MIGRATIONS" -gt 0 ]; then
-        echo "🔄 Found pending migrations. Running migrations..."
-        
-        # Try different approaches to run migration
-        # First try with production command (for compiled JS)
-        if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod"; then
-            echo "✅ Migration successful with production command"
-        elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/config/database.config.js"; then
-            echo "✅ Migration successful with explicit config path"
-        # Fallback: try to find the config file
-        elif CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1) && [ -n "$CONFIG_PATH" ]; then
-            echo "🔍 Found config file at: $CONFIG_PATH"
-            if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d $CONFIG_PATH"; then
-                echo "✅ Migration successful with found config path"
-            elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
-                echo "✅ Migration successful from container root"
-            elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
-                echo "✅ Migration successful without config file"
-            else
-                echo "❌ Migration failed with all approaches"
-                echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
-                exit 1
-            fi
-        else
-            echo "⚠️  Config file not found, trying alternative approaches..."
-            if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
-                echo "✅ Migration successful from container root"
-            elif docker exec $CONTAINER_NAME npm run typeorm:migration:run; then
-                echo "✅ Migration successful without config file"
-            else
-                echo "❌ Migration failed with all approaches"
-                echo "💡 Check container logs: docker logs $CONTAINER_NAME"
-                echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
-                exit 1
-            fi
-        fi
-        
-        echo "✅ Pending migrations completed"
-    else
-        echo "✅ No pending migrations. Skipping migration step."
-        echo "⚡ Performance optimized: No unnecessary migration run"
+    # Verify migration actually ran by checking for critical tables
+    echo "🔍 Verifying migration results..."
+    sleep 2
+    USERS_TABLE=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users'\" -d dist/config/database.config.js" 2>/dev/null | grep -c "users" || echo "0")
+    if [ "$USERS_TABLE" -eq 0 ]; then
+        echo "⚠️ Warning: users table not found after migration. Running migration again..."
+        docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod" || {
+            echo "❌ Migration retry failed"
+            exit 1
+        }
     fi
+    echo "✅ Fresh database migration completed and verified"
+else
+    echo "📋 Migrations table exists. Running migrations to ensure all are applied..."
+    
+    # Always run migration to ensure all migrations are applied
+    MIGRATION_SUCCESS=false
+    
+    # Try different approaches to run migration
+    if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod"; then
+        echo "✅ Migration successful with production command"
+        MIGRATION_SUCCESS=true
+    elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d dist/config/database.config.js"; then
+        echo "✅ Migration successful with explicit config path"
+        MIGRATION_SUCCESS=true
+    # Fallback: try to find the config file
+    elif CONFIG_PATH=$(docker exec $CONTAINER_NAME find /app -name "database.config.js" -type f 2>/dev/null | head -1) && [ -n "$CONFIG_PATH" ]; then
+        echo "🔍 Found config file at: $CONFIG_PATH"
+        if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run:prod -d $CONFIG_PATH"; then
+            echo "✅ Migration successful with found config path"
+            MIGRATION_SUCCESS=true
+        elif docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
+            echo "✅ Migration successful from container root"
+            MIGRATION_SUCCESS=true
+        fi
+    else
+        echo "⚠️  Config file not found, trying alternative approaches..."
+        if docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:migration:run"; then
+            echo "✅ Migration successful from container root"
+            MIGRATION_SUCCESS=true
+        fi
+    fi
+    
+    if [ "$MIGRATION_SUCCESS" = false ]; then
+        echo "❌ Migration failed with all approaches"
+        echo "💡 Check container logs: docker logs $CONTAINER_NAME"
+        echo "💡 Verify config file exists: docker exec $CONTAINER_NAME ls -la /app/dist/config/"
+        echo "💡 Checking container status:"
+        docker ps -a | grep $CONTAINER_NAME || echo "Container not found"
+        echo "💡 Try running manual migration script: ./scripts/run-migrations-manual.sh"
+        exit 1
+    fi
+    
+    # Verify migration results
+    echo "🔍 Verifying migration results..."
+    sleep 2
+    USERS_TABLE=$(docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users'\" -d dist/config/database.config.js" 2>/dev/null | grep -c "users" || echo "0")
+    if [ "$USERS_TABLE" -eq 0 ]; then
+        echo "❌ Error: users table not found after migration!"
+        echo "💡 This indicates migrations did not run successfully"
+        echo "💡 Checking migrations table:"
+        docker exec $CONTAINER_NAME sh -c "cd /app && npm run typeorm:prod -- query \"SELECT * FROM migrations ORDER BY timestamp DESC LIMIT 5\" -d dist/config/database.config.js" 2>/dev/null || echo "Could not query migrations table"
+        exit 1
+    fi
+    echo "✅ Migrations completed and verified"
 fi
 
 # Verify accounts table exists (critical check)
