@@ -503,13 +503,26 @@ jobs:
           echo "🗑️ Pruning build cache..."
           docker builder prune -af || true
           
-          # Prune volumes (be careful - only unused ones)
-          echo "🗑️ Pruning unused volumes..."
-          docker volume prune -f || true
+          # Prune volumes (be careful - only unused ones, NOT production data volumes)
+          echo "🗑️ Pruning unused volumes (excluding production data volumes)..."
+          # List production volumes to protect
+          PROTECTED_VOLUMES="mmotion-portfolio_postgres_data mmotion-portfolio_redis_data portfolio-postgres_data portfolio-redis_data"
+          # Only prune volumes that are NOT in use and NOT protected
+          docker volume ls -q | while read vol; do
+            if echo "$PROTECTED_VOLUMES" | grep -q "$vol"; then
+              echo "🔒 Protecting production volume: $vol"
+            else
+              # Check if volume is in use
+              if ! docker ps -a --filter volume="$vol" --format "{{.ID}}" | grep -q .; then
+                echo "🗑️ Removing unused volume: $vol"
+                docker volume rm "$vol" 2>/dev/null || true
+              fi
+            fi
+          done || true
           
-          # Full system prune
-          echo "🗑️ Full system prune..."
-          docker system prune -af --volumes || true
+          # Full system prune (WITHOUT volumes to protect production data)
+          echo "🗑️ Full system prune (preserving production volumes)..."
+          docker system prune -af || true
           
           echo "💾 Disk space after cleanup:"
           df -h
@@ -569,20 +582,71 @@ jobs:
             fi
           fi
           
-          # Stop and remove existing backend containers
-          echo "🛑 Stopping existing backend containers..."
-          docker-compose -f docker-compose.yml down -v --remove-orphans || echo "⚠️ No existing containers to stop"
+          # ============================================
+          # CRITICAL: Backup database BEFORE deployment
+          # ============================================
+          echo "💾 Creating database backup before deployment..."
+          BACKUP_DIR="$BACKEND_ROOT/backups/pre-deploy"
+          mkdir -p "$BACKUP_DIR"
+          BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="$BACKUP_DIR/portfolio_pre_deploy_backup_${BACKUP_TIMESTAMP}.sql.gz"
+          
+          # Check if postgres container exists and is running
+          if docker ps --format "{{.Names}}" | grep -qE "(portfolio-postgres|mmotion.*postgres)"; then
+            POSTGRES_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "(portfolio-postgres|mmotion.*postgres)" | head -1)
+            echo "📦 Found postgres container: $POSTGRES_CONTAINER"
+            
+            # Create backup
+            if docker exec $POSTGRES_CONTAINER pg_dump -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-portfolio_db} --no-owner --no-privileges --encoding=UTF8 | gzip > "$BACKUP_FILE"; then
+              BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+              echo "✅ Database backup created successfully: $BACKUP_FILE ($BACKUP_SIZE)"
+            else
+              echo "⚠️ Warning: Database backup failed, but continuing deployment..."
+              echo "⚠️ This may indicate database is not accessible or container is not running"
+            fi
+          else
+            echo "⚠️ Warning: Postgres container not found or not running - skipping backup"
+            echo "⚠️ This may be the first deployment or containers are already stopped"
+          fi
+          
+          # Stop and remove existing backend containers (WITHOUT deleting volumes)
+          echo "🛑 Stopping existing backend containers (preserving data volumes)..."
+          # CRITICAL: Do NOT use -v flag - it deletes all volumes including database data!
+          docker-compose -f docker-compose.yml down --remove-orphans || echo "⚠️ No existing containers to stop"
           
           # Force remove containers by name if they still exist
           echo "🧹 Force removing any remaining containers..."
           docker rm -f mmotion-backend portfolio-postgres portfolio-redis 2>/dev/null || true
           
+          # Verify production volumes exist before starting services
+          echo "🔍 Verifying production data volumes..."
+          if docker volume ls | grep -qE "(mmotion-portfolio_postgres_data|portfolio.*postgres_data)"; then
+            echo "✅ Production postgres volume found - data will be preserved"
+          else
+            echo "ℹ️ Postgres volume not found - will be created on first deployment"
+          fi
+          if docker volume ls | grep -qE "(mmotion-portfolio_redis_data|portfolio.*redis_data)"; then
+            echo "✅ Production redis volume found - data will be preserved"
+          else
+            echo "ℹ️ Redis volume not found - will be created on first deployment"
+          fi
+          
           # Start backend services
           echo "🚀 Starting backend services..."
+          # Docker Compose will automatically reuse existing named volumes
           docker-compose -f docker-compose.yml up -d || {
             echo "❌ Failed to start backend services"
             exit 1
           }
+          
+          # Verify volumes are still present after restart
+          echo "🔍 Verifying volumes after service restart..."
+          if docker volume ls | grep -qE "(mmotion-portfolio_postgres_data|portfolio.*postgres_data)"; then
+            echo "✅ Postgres volume preserved successfully"
+          fi
+          if docker volume ls | grep -qE "(mmotion-portfolio_redis_data|portfolio.*redis_data)"; then
+            echo "✅ Redis volume preserved successfully"
+          fi
           
           # Wait for backend container to be ready
           echo "⏳ Waiting for backend container to be ready..."
@@ -653,14 +717,30 @@ jobs:
           #   exit 1
           # fi
           
-          # Clean up old images after successful deployment
+          # Clean up old images after successful deployment (preserving volumes)
           echo "🧹 Cleaning up old images after deployment..."
           # Remove old backend images (keep only latest and current tag)
           docker images $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND --format "{{.ID}} {{.Tag}}" | grep -v "latest" | grep -v "$IMAGE_TAG" | awk '{print $1}' | xargs -r docker rmi -f 2>/dev/null || true
-          # Remove unused images
+          # Remove unused images (NOT volumes)
           docker image prune -af || echo "⚠️ Image cleanup failed, but continuing..."
-          # Final system prune
+          # Final system prune (WITHOUT volumes to protect production data)
           docker system prune -f || echo "⚠️ System prune failed, but continuing..."
+          
+          # Final verification: Ensure production volumes still exist
+          echo "🔍 Final verification: Checking production volumes..."
+          if docker volume ls | grep -qE "(mmotion-portfolio_postgres_data|portfolio.*postgres_data)"; then
+            POSTGRES_VOL=$(docker volume ls | grep -E "(mmotion-portfolio_postgres_data|portfolio.*postgres_data)" | awk '{print $2}' | head -1)
+            VOLUME_SIZE=$(docker volume inspect "$POSTGRES_VOL" --format '{{.Mountpoint}}' 2>/dev/null | xargs du -sh 2>/dev/null | cut -f1 || echo "unknown")
+            echo "✅ Postgres volume preserved: $POSTGRES_VOL ($VOLUME_SIZE)"
+          else
+            echo "⚠️ Warning: Postgres volume not found after deployment"
+          fi
+          if docker volume ls | grep -qE "(mmotion-portfolio_redis_data|portfolio.*redis_data)"; then
+            REDIS_VOL=$(docker volume ls | grep -E "(mmotion-portfolio_redis_data|portfolio.*redis_data)" | awk '{print $2}' | head -1)
+            echo "✅ Redis volume preserved: $REDIS_VOL"
+          else
+            echo "⚠️ Warning: Redis volume not found after deployment"
+          fi
           
           echo "💾 Final disk space:"
           df -h

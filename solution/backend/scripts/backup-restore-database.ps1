@@ -3,11 +3,13 @@ param(
     [string]$TargetServer = "",
     [string]$TargetUser = "",
     [string]$TargetPath = "/home/ec2-user/mmotion-portfolio/backups/",
-    [string]$KeyPath = "mmo-portfolio-key.pem",
+    [string]$KeyPath = "F:\\code\\mmotion-portfolio\\mmo-portfolio-key.pem",
     [string]$ContainerName = "portfolio_postgres",
     [string]$ContainerNameRestore = "portfolio-postgres",
     [string]$DbName = "portfolio_db",
-    [string]$DbUser = "postgres"
+    [string]$DbUser = "postgres",
+    [ValidateSet("data-only", "full")]
+    [string]$BackupType = "data-only"
 )
 
 # ================================
@@ -19,6 +21,10 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $BackupDir = "backups\$Timestamp"
+# Update backup name based on backup type
+if ($BackupType -eq "full" -and $BackupName -like "portfolio_backup_*") {
+    $BackupName = $BackupName -replace "portfolio_backup_", "portfolio_full_backup_"
+}
 $BackupFile = "$BackupDir\$BackupName.sql"
 $CompressedFile = "$BackupFile.gz"
 New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
@@ -26,18 +32,26 @@ New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
 Write-Host "=== Database Backup + Restore Process ===" -ForegroundColor Cyan
 Write-Host "Database: $DbName" -ForegroundColor Yellow
 Write-Host "Container: $ContainerName" -ForegroundColor Yellow
+Write-Host "Backup Type: $BackupType" -ForegroundColor Yellow
 Write-Host "Backup dir: $BackupDir" -ForegroundColor Yellow
 Write-Host ""
 
 # ================================
 # STEP 1: BACKUP DATA
 # ================================
-Write-Host "Creating data-only backup (UTF-8 inserts)..." -ForegroundColor Yellow
-
-# Set UTF-8 environment for the docker exec command
-$env:PGCLIENTENCODING = "UTF8"
-& docker exec -e PGCLIENTENCODING=UTF8 $ContainerName pg_dump -U $DbUser -d $DbName --data-only --inserts --no-owner --no-privileges --encoding=UTF8 | `
-Out-File -FilePath $BackupFile -Encoding UTF8
+if ($BackupType -eq "full") {
+    Write-Host "Creating full backup (schema + data, UTF-8)..." -ForegroundColor Yellow
+    # Set UTF-8 environment for the docker exec command (matching production backup script)
+    $env:PGCLIENTENCODING = "UTF8"
+    & docker exec -e PGCLIENTENCODING=UTF8 -e LC_ALL=en_US.UTF-8 -e LANG=en_US.UTF-8 $ContainerName pg_dump -U $DbUser -d $DbName --verbose --no-owner --no-privileges --encoding=UTF8 | `
+    Out-File -FilePath $BackupFile -Encoding UTF8
+} else {
+    Write-Host "Creating data-only backup (UTF-8 inserts)..." -ForegroundColor Yellow
+    # Set UTF-8 environment for the docker exec command
+    $env:PGCLIENTENCODING = "UTF8"
+    & docker exec -e PGCLIENTENCODING=UTF8 $ContainerName pg_dump -U $DbUser -d $DbName --data-only --inserts --no-owner --no-privileges --encoding=UTF8 | `
+    Out-File -FilePath $BackupFile -Encoding UTF8
+}
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Backup failed." -ForegroundColor Red
@@ -64,9 +78,11 @@ Write-Host "Backup compressed: $([math]::Round($sizeMB,2)) MB" -ForegroundColor 
 # STEP 3: TRANSFER TO LINUX SERVER
 # ================================
 if ($TargetServer -and $TargetUser) {
+    # Normalize TargetPath for consistency
+    $NormalizedTargetPath = $TargetPath.Trim().TrimEnd('/')
     Write-Host "Transferring backup to $TargetServer ..." -ForegroundColor Yellow
-    & ssh -i $KeyPath "$TargetUser@$TargetServer" "mkdir -p $TargetPath"
-    & scp -i $KeyPath $CompressedFile "${TargetUser}@${TargetServer}:${TargetPath}"
+    & ssh -i $KeyPath "$TargetUser@$TargetServer" "mkdir -p ${NormalizedTargetPath}"
+    & scp -i $KeyPath $CompressedFile "${TargetUser}@${TargetServer}:${NormalizedTargetPath}/"
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Backup transferred successfully." -ForegroundColor Green
     } else {
@@ -89,7 +105,45 @@ if ($TargetServer -and $TargetUser) {
         Write-Host "Starting restore process on Linux server..." -ForegroundColor Cyan
 
         # Dynamic restore script
-        $RemoteScript = @'
+        if ($BackupType -eq "full") {
+            # Full backup restore script (drop and recreate database)
+            $RemoteScript = @'
+#!/bin/bash
+set -e
+
+# Set UTF-8 locale for proper character handling
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export PGCLIENTENCODING=UTF8
+
+cd __TargetPath__
+echo "Extracting backup..."
+gunzip -f __FileName__
+
+echo "Terminating active connections to database..."
+docker exec __ContainerNameRestore__ psql -U __DbUser__ -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '__DbName__' AND pid <> pg_backend_pid();" || true
+
+echo "Dropping and recreating database..."
+docker exec __ContainerNameRestore__ psql -U __DbUser__ -d postgres -c "DROP DATABASE IF EXISTS __DbName__;" || true
+docker exec __ContainerNameRestore__ psql -U __DbUser__ -d postgres -c "CREATE DATABASE __DbName__;"
+
+echo "Restoring full database (schema + data, UTF-8)..."
+# Restore with proper UTF-8 handling
+# Note: pg_dump already includes encoding info in the SQL file
+# We also set client_encoding via psql option and environment variable
+cat __ExtractedName__ | docker exec -i -e PGCLIENTENCODING=UTF8 __ContainerNameRestore__ psql -U __DbUser__ -d __DbName__ --set client_encoding=UTF8 --set ON_ERROR_STOP=on
+
+echo "Verifying database..."
+docker exec -i __ContainerNameRestore__ psql -U __DbUser__ -d __DbName__ -c "\dt" || true
+
+echo "Cleaning up extracted file..."
+rm -f __ExtractedName__ || true
+
+echo "Full database restore completed successfully."
+'@
+        } else {
+            # Data-only restore script (truncate and insert)
+            $RemoteScript = @'
 #!/bin/bash
 set -e
 
@@ -114,13 +168,9 @@ echo "Truncating old data..."
 docker exec -i __ContainerNameRestore__ psql -U __DbUser__ -d __DbName__ -c "TRUNCATE TABLE $TABLES RESTART IDENTITY CASCADE;"
 
 echo "Restoring new data (UTF-8)..."
-# Ensure UTF-8 encoding is set at the beginning of the SQL file
-if ! head -1 __ExtractedName__ | grep -q "encoding UTF8"; then
-  sed -i '1i \encoding UTF8' __ExtractedName__
-fi
-
 # Restore with proper UTF-8 handling
-cat __ExtractedName__ | docker exec -i __ContainerNameRestore__ psql -U __DbUser__ -d __DbName__ --set client_encoding=UTF8 --set ON_ERROR_STOP=off
+# Set encoding via psql option and environment variable (no need to modify SQL file)
+cat __ExtractedName__ | docker exec -i -e PGCLIENTENCODING=UTF8 __ContainerNameRestore__ psql -U __DbUser__ -d __DbName__ --set client_encoding=UTF8 --set ON_ERROR_STOP=off
 
 echo "Verifying data counts..."
 for tbl in $(echo "$TABLES" | tr ',' ' '); do
@@ -129,9 +179,15 @@ done
 
 echo "Restore completed successfully."
 '@
+        }
 
+        # Use normalized TargetPath (already normalized in STEP 3, but ensure it's set)
+        if (-not $NormalizedTargetPath) {
+            $NormalizedTargetPath = $TargetPath.Trim().TrimEnd('/')
+        }
+        
         # Replace placeholders with real variables
-        $RemoteScript = $RemoteScript.Replace("__TargetPath__", $TargetPath)
+        $RemoteScript = $RemoteScript.Replace("__TargetPath__", $NormalizedTargetPath)
         $RemoteScript = $RemoteScript.Replace("__FileName__", $FileName)
         $RemoteScript = $RemoteScript.Replace("__ContainerNameRestore__", $ContainerNameRestore)
         $RemoteScript = $RemoteScript.Replace("__DbUser__", $DbUser)
@@ -140,9 +196,13 @@ echo "Restore completed successfully."
 
         Write-Host "Uploading and executing restore script..." -ForegroundColor Yellow
         $TempScriptPath = "$BackupDir\restore_remote.sh"
-        $RemoteScript | Out-File -FilePath $TempScriptPath -Encoding UTF8 -NoNewline
-        & scp -i $KeyPath $TempScriptPath "${TargetUser}@${TargetServer}:${TargetPath}"
-        & ssh -i $KeyPath "$TargetUser@$TargetServer" "chmod +x ${TargetPath}restore_remote.sh && bash ${TargetPath}restore_remote.sh"
+        # Convert line endings to Unix format (LF only) and write file
+        $RemoteScriptUnix = $RemoteScript -replace "`r`n", "`n" -replace "`r", "`n"
+        $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
+        [System.IO.File]::WriteAllText($TempScriptPath, $RemoteScriptUnix, $Utf8NoBom)
+        & scp -i $KeyPath $TempScriptPath "${TargetUser}@${TargetServer}:${NormalizedTargetPath}/"
+        # Convert line endings on server and execute (defense in depth)
+        & ssh -i $KeyPath "$TargetUser@$TargetServer" "sed -i 's/\r$//' ${NormalizedTargetPath}/restore_remote.sh && chmod +x ${NormalizedTargetPath}/restore_remote.sh && bash ${NormalizedTargetPath}/restore_remote.sh"
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Data restored successfully." -ForegroundColor Green
@@ -157,8 +217,11 @@ echo "Restore completed successfully."
 # ================================
 Write-Host ""
 Write-Host "Backup summary:" -ForegroundColor Cyan
+Write-Host "Backup Type: $BackupType" -ForegroundColor Yellow
 Write-Host "Backup file: $CompressedFile"
-Write-Host "Target: ${TargetUser}@${TargetServer}:${TargetPath}"
+if ($TargetServer -and $TargetUser) {
+    Write-Host "Target: ${TargetUser}@${TargetServer}:${TargetPath}"
+}
 Write-Host "Database: $DbName"
 Write-Host "Encoding: UTF-8 (Vietnamese supported)"
 Write-Host "=============================================="

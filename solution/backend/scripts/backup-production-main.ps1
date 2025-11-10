@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$TargetUser,
     
-    [string]$KeyPath="mmo-portfolio-key.pem",
+    [string]$KeyPath="F:\\code\\mmotion-portfolio\\mmo-portfolio-key.pem",
     [string]$BackupType="data-only"  # data-only, schema-only, full
 )
 
