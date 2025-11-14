@@ -1,4 +1,5 @@
 import { GlobalAsset } from '../types/global-asset.types';
+import { apiService } from './api';
 
 interface GlobalAssetFilters {
   nation?: string;
@@ -34,29 +35,16 @@ interface SupportedNationsResponse {
 }
 
 class GlobalAssetService {
-  private baseUrl = '/api/v1/global-assets';
-
   async getGlobalAssets(filters: GlobalAssetFilters = {}): Promise<GlobalAssetResponse> {
-    const params = new URLSearchParams();
+    const params: Record<string, string> = {};
     
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        params.append(key, value.toString());
+        params[key] = value.toString();
       }
     });
 
-    const response = await fetch(`${this.baseUrl}?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch global assets: ${response.statusText}`);
-    }
-
-    return await response.json();
+    return await apiService.get('/api/v1/global-assets', { params });
   }
 
   /**
@@ -69,109 +57,53 @@ class GlobalAssetService {
     portfolioId?: string,
     filters: GlobalAssetFilters = {}
   ): Promise<GlobalAssetResponse> {
-    const params = new URLSearchParams();
-    
-    // Add required accountId
-    params.append('accountId', accountId);
+    const params: Record<string, string> = {
+      accountId,
+    };
     
     // Add optional portfolioId
     if (portfolioId) {
-      params.append('portfolioId', portfolioId);
+      params.portfolioId = portfolioId;
     }
     
     // Add other filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        params.append(key, value.toString());
+        params[key] = value.toString();
       }
     });
 
-    const response = await fetch(`${this.baseUrl}/for-autocomplete?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch global assets for autocomplete: ${response.statusText}`);
-    }
-
-    return await response.json();
+    return await apiService.get('/api/v1/global-assets/for-autocomplete', { params });
   }
 
   async getGlobalAssetById(id: string): Promise<GlobalAsset | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`Failed to fetch global asset: ${response.statusText}`);
+      return await apiService.get(`/api/v1/global-assets/${id}`);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
       }
-
-      return await response.json();
-    } catch (error) {
-      return null;
+      throw error;
     }
   }
 
   async getGlobalAssetBySymbol(symbol: string): Promise<GlobalAsset | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/symbol/${symbol}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`Failed to fetch global asset by symbol: ${response.statusText}`);
+      return await apiService.get(`/api/v1/global-assets/symbol/${symbol}`);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
       }
-
-      return await response.json();
-    } catch (error) {
-      return null;
+      throw error;
     }
   }
 
   async getSupportedNations(): Promise<SupportedNationsResponse> {
-    const response = await fetch(`${this.baseUrl}/nations/list`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch supported nations: ${response.statusText}`);
-    }
-
-    return await response.json();
+    return await apiService.get('/api/v1/global-assets/nations/list');
   }
 
   async getNationConfig(code: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/nations/${code}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch nation config: ${response.statusText}`);
-    }
-
-    return await response.json();
+    return await apiService.get(`/api/v1/global-assets/nations/${code}`);
   }
 
   async validateSymbolFormat(code: string, symbol: string, type: string): Promise<{
@@ -181,19 +113,9 @@ class GlobalAssetService {
     type: string;
     message: string;
   }> {
-    const params = new URLSearchParams({ symbol, type });
-    const response = await fetch(`${this.baseUrl}/nations/${code}/validate-symbol?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return await apiService.get(`/api/v1/global-assets/nations/${code}/validate-symbol`, {
+      params: { symbol, type },
     });
-
-    if (!response.ok) {
-      throw new Error(`Failed to validate symbol format: ${response.statusText}`);
-    }
-
-    return await response.json();
   }
 }
 
