@@ -69,15 +69,25 @@ const CashflowDeleteConfirmationModal: React.FC<CashflowDeleteConfirmationModalP
             {t('common.cancel')}
           </ResponsiveButton>
           <ResponsiveButton 
-            onClick={onConfirm} 
+            onClick={async () => {
+              // Close modal immediately
+              onClose();
+              // Then execute delete in background
+              try {
+                await onConfirm();
+              } catch (err) {
+                // Error will be handled by parent component
+                console.error('Failed to delete cashflow:', err);
+              }
+            }} 
             color="error" 
             variant="contained"
-            icon={loading ? null : <DeleteIcon />}
-            mobileText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
-            desktopText={loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
+            icon={<DeleteIcon />}
+            mobileText={t('cashflow.delete.delete')}
+            desktopText={t('cashflow.delete.delete')}
             disabled={loading}
           >
-            {loading ? t('cashflow.delete.deleting') : t('cashflow.delete.delete')}
+            {t('cashflow.delete.delete')}
           </ResponsiveButton>
         </Box>
       }

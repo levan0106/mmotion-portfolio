@@ -144,8 +144,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
       return;
     }
     
-    loadCashFlows();
-    loadAllCashFlows();
+    reloadCashFlows();
   };
   
   // Pagination state
@@ -155,16 +154,6 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     total: 0,
     totalPages: 0,
   });
-
-  // Load all cash flows for summary calculations
-  const loadAllCashFlows = async () => {
-    try {
-      const response = await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { limit: 100000 });
-      setAllCashFlows(response.data || []);
-    } catch (err) {
-      console.error('Failed to load all cash flows:', err);
-    }
-  };
 
   // Load cash flow history (paginated)
   const loadCashFlows = async (page: number = pagination?.page || 1, limit: number = pagination?.limit || 50) => {
@@ -187,6 +176,35 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
     }
   };
 
+  // Optimized: Load both cash flows in one function to avoid duplicate calls
+  const reloadCashFlows = async () => {
+    try {
+      setLoading(true);
+      // Load both in parallel
+      const [paginatedResponse, allResponse] = await Promise.all([
+        (async () => {
+          const filters = {
+            page: pagination?.page || 1,
+            limit: pagination?.limit || 50,
+            startDate: dateFilters.startDate ? dateFilters.startDate.toISOString() : undefined,
+            endDate: dateFilters.endDate ? dateFilters.endDate.toISOString() : undefined,
+            types: filterTypes.includes('ALL') ? undefined : filterTypes,
+          };
+          return await apiService.getPortfolioCashFlowHistory(portfolioId, accountId, filters);
+        })(),
+        apiService.getPortfolioCashFlowHistory(portfolioId, accountId, { limit: 100000 })
+      ]);
+      
+      setCashFlows(paginatedResponse.data);
+      setPagination(paginatedResponse.pagination);
+      setAllCashFlows(allResponse.data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('cashflow.error.loadFailed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Pagination handlers
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     loadCashFlows(page, pagination?.limit || 50);
@@ -198,8 +216,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
   };
 
   useEffect(() => {
-    loadCashFlows();
-    loadAllCashFlows();
+    reloadCashFlows();
   }, [portfolioId]);
 
 
@@ -406,7 +423,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
           </ResponsiveTypography>
           <Box display="flex" gap={1}>
             <Tooltip title={t('cashflow.refresh')}>
-              <IconButton onClick={() => { loadCashFlows(); loadAllCashFlows(); }} disabled={loading} color="primary">
+              <IconButton onClick={() => { reloadCashFlows(); }} disabled={loading} color="primary">
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
@@ -1007,7 +1024,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
                       icon={<RefreshIcon />}
                       mobileText={t('cashflow.refresh')}
                       desktopText={t('cashflow.refresh')}
-                      onClick={() => { loadCashFlows(); loadAllCashFlows(); }}
+                      onClick={() => { reloadCashFlows(); }}
                       disabled={loading}
                     >
                       {t('cashflow.refresh')}
@@ -1630,8 +1647,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             setEditingCashFlow(null);
             setError(null); // Clear error on success
             
-            await loadCashFlows();
-            await loadAllCashFlows(); // Reload all cash flows for summary
+            await reloadCashFlows();
             onCashFlowUpdate?.();
           } catch (err) {
             setError(err instanceof Error ? err.message : t('cashflow.error.createFailed', { action: editingCashFlow ? 'update' : 'create' }));
@@ -1662,8 +1678,9 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             
             await apiService.deleteCashFlow(portfolioId, accountId, cashFlowToDelete.cashflowId);
 
-            await loadCashFlows();
-            await loadAllCashFlows(); // Reload all cash flows for summary
+            // Reload cash flows (both paginated and all) in optimized way
+            await reloadCashFlows();
+            
             setDeleteDialogOpen(false);
             setCashFlowToDelete(null);
             setDeleteError(null); // Clear error on success
@@ -1730,8 +1747,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             setError(null);
             
             // Reload data
-            await loadCashFlows();
-            await loadAllCashFlows();
+            await reloadCashFlows();
             onCashFlowUpdate?.();
           } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to transfer cash');
@@ -1773,8 +1789,7 @@ const CashFlowLayout: React.FC<CashFlowLayoutProps> = ({
             handleRowClickEditModalClose();
             setError(null);
             
-            await loadCashFlows();
-            await loadAllCashFlows();
+            await reloadCashFlows();
             onCashFlowUpdate?.();
           } catch (err) {
             setError(err instanceof Error ? err.message : t('cashflow.error.updateFailed'));

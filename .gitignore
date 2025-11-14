@@ -183,6 +183,8 @@ logs/
 # Frontend build folders
 frontend/build/
 frontend/dist/
+solution/frontend/build/
+solution/frontend/dist/
 
 # Test files
 test_capital_value*.json
