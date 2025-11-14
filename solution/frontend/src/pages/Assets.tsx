@@ -1114,9 +1114,9 @@ const Assets: React.FC = () => {
 
         {/* Assets Lists - Separated by trades status */}
         {(() => {
-          // Separate assets by trades status
-          const assetsWithTrades = assets.filter(asset => asset.hasTrades);
-          const assetsWithoutTrades = assets.filter(asset => !asset.hasTrades);
+          // Separate assets by trades status (use hasPortfolioTrades if available, fallback to hasTrades)
+          const assetsWithTrades = assets.filter(asset => asset.hasPortfolioTrades);
+          const assetsWithoutTrades = assets.filter(asset => !asset.hasPortfolioTrades);
           
           return (
             <Box>

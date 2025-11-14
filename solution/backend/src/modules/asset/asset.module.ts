@@ -9,6 +9,7 @@ import { Asset } from './entities/asset.entity';
 import { Trade } from '../trading/entities/trade.entity';
 import { TradeDetail } from '../trading/entities/trade-detail.entity';
 import { Portfolio } from '../portfolio/entities/portfolio.entity';
+import { PortfolioPermission } from '../portfolio/entities/portfolio-permission.entity';
 import { Account } from '../shared/entities/account.entity';
 import { GlobalAssetController } from './controllers/global-asset.controller';
 import { BasicPriceController } from './controllers/basic-price.controller';
@@ -72,6 +73,7 @@ import { NotificationModule } from '../../notification/notification.module';
       Trade,
       TradeDetail,
       Portfolio,
+      PortfolioPermission,
       Account,
     ]),
     forwardRef(() => MarketDataModule),

@@ -58,7 +58,8 @@ export interface Asset {
     yearly: number;
   };
   totalQuantity?: number;
-  hasTrades?: boolean;
+  hasTrades?: boolean; // Keep for backward compatibility
+  hasPortfolioTrades?: boolean; // Whether asset has trades in portfolios that account has access to
   displayName?: string;
   // Trade data for performance calculation
   trades?: Array<{

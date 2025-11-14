@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
 import { AssetRepository, AssetFilters, PaginatedResponse } from '../repositories/asset.repository';
 import { IAssetRepository, AssetStatistics } from '../repositories/asset.repository.interface';
 import { Asset } from '../entities/asset.entity';
@@ -9,6 +11,9 @@ import { MarketDataService } from '../../market-data/services/market-data.servic
 import { AssetGlobalSyncService } from './asset-global-sync.service';
 import { AssetValueCalculatorService } from './asset-value-calculator.service';
 import { CashFlowService } from '../../portfolio/services/cash-flow.service';
+import { Portfolio } from '../../portfolio/entities/portfolio.entity';
+import { PortfolioPermission } from '../../portfolio/entities/portfolio-permission.entity';
+import { Trade } from '../../trading/entities/trade.entity';
 
 /**
  * Create Asset DTO
@@ -61,6 +66,14 @@ export class AssetService {
     private readonly assetGlobalSyncService: AssetGlobalSyncService,
     private readonly assetValueCalculator: AssetValueCalculatorService,
     private readonly cashFlowService: CashFlowService,
+    @InjectRepository(Portfolio)
+    private readonly portfolioRepository: Repository<Portfolio>,
+    @InjectRepository(PortfolioPermission)
+    private readonly portfolioPermissionRepository: Repository<PortfolioPermission>,
+    @InjectRepository(Trade)
+    private readonly tradeRepository: Repository<Trade>,
+    @InjectRepository(Asset)
+    private readonly assetEntityRepository: Repository<Asset>,
   ) {}
 
   /**
@@ -196,12 +209,252 @@ export class AssetService {
 
   /**
    * Find all assets with filtering and pagination
-   * @param filters - Filter criteria
+   * Merges assets from two sources:
+   * 1. Assets created by the account (from assets table with createdBy = accountId)
+   * 2. Assets from portfolios that the account has access to (from trades in accessible portfolios)
+   * @param filters - Filter criteria (must include accountId)
    * @returns Paginated assets
    */
-  async findAll(filters: AssetFilters = {}): Promise<PaginatedResponse<Asset>> {
-    const result = await this.assetRepository.findWithPagination(filters);
-    return result;
+  async findAll(filters: AssetFilters & { accountId?: string } = {}): Promise<PaginatedResponse<Asset>> {
+    const accountId = filters.accountId || filters.createdBy;
+    
+    if (!accountId) {
+      // If no accountId, use original logic (backward compatibility)
+      return await this.assetRepository.findWithPagination(filters);
+    }
+
+    // Get portfolios that account has access to
+    // 1. Portfolios owned by account
+    const ownedPortfolios = await this.portfolioRepository.find({
+      where: { accountId },
+      select: ['portfolioId'],
+    });
+    const ownedPortfolioIds = ownedPortfolios.map(p => p.portfolioId);
+
+    // 2. Portfolios from permissions
+    const permissions = await this.portfolioPermissionRepository.find({
+      where: { accountId },
+      select: ['portfolioId'],
+    });
+    const permissionPortfolioIds = permissions.map(p => p.portfolioId);
+
+    // Merge portfolio IDs (deduplicate)
+    const accessiblePortfolioIds = [...new Set([...ownedPortfolioIds, ...permissionPortfolioIds])];
+
+    // Get assets from two sources - PRIORITY: portfolio assets first
+    // Source 1: Assets from trades in accessible portfolios (PRIORITY)
+    let portfolioAssets: Asset[] = [];
+    let portfolioAssetIds = new Set<string>();
+    let portfolioAssetSymbols = new Set<string>();
+    
+    if (accessiblePortfolioIds.length > 0) {
+      // Get unique asset IDs from trades in accessible portfolios
+      const trades = await this.tradeRepository.find({
+        where: { portfolioId: In(accessiblePortfolioIds) },
+        relations: ['asset'],
+        select: ['assetId'],
+      });
+      
+      const portfolioAssetIdList = [...new Set(trades.map(t => t.assetId).filter(Boolean))];
+      portfolioAssetIds = new Set(portfolioAssetIdList);
+      
+      if (portfolioAssetIdList.length > 0) {
+        // Query all assets from portfolios
+        const queryBuilder = this.assetEntityRepository.createQueryBuilder('asset')
+          .where('asset.id IN (:...assetIds)', { assetIds: portfolioAssetIdList });
+        
+        // Apply additional filters
+        if (filters.search) {
+          queryBuilder.andWhere(
+            '(asset.name ILIKE :search OR asset.symbol ILIKE :search OR asset.description ILIKE :search)',
+            { search: `%${filters.search}%` }
+          );
+        }
+        
+        if (filters.type) {
+          queryBuilder.andWhere('asset.type = :type', { type: filters.type });
+        }
+        
+        if (filters.priceMode) {
+          queryBuilder.andWhere('asset.priceMode = :priceMode', { priceMode: filters.priceMode });
+        }
+        
+        if (filters.symbol) {
+          queryBuilder.andWhere('LOWER(asset.symbol) = LOWER(:symbol)', { symbol: filters.symbol });
+        }
+        
+        portfolioAssets = await queryBuilder.getMany();
+        portfolioAssetSymbols = new Set(portfolioAssets.map(a => a.symbol?.toUpperCase()).filter(Boolean) as string[]);
+      }
+    }
+
+    // Source 2: Assets created by account (only get assets not already in portfolioAssets)
+    const accountAssetsFilters: AssetFilters = {
+      ...filters,
+      createdBy: accountId,
+    };
+    const accountAssetsResult = await this.assetRepository.findWithPagination(accountAssetsFilters);
+    const accountAssets = accountAssetsResult.data;
+    
+    // Filter out account assets that are already in portfolioAssets (by ID or symbol)
+    const accountAssetsFiltered = accountAssets.filter(asset => {
+      // Exclude if asset ID is in portfolio assets
+      if (portfolioAssetIds.has(asset.id)) {
+        return false;
+      }
+      // Exclude if asset symbol is in portfolio assets (duplicate symbol)
+      if (asset.symbol && portfolioAssetSymbols.has(asset.symbol.toUpperCase())) {
+        return false;
+      }
+      return true;
+    });
+
+    // Merge assets: portfolio assets first (PRIORITY), then account assets
+    const mergedAssets = [...portfolioAssets, ...accountAssetsFiltered];
+    
+    // Distinct assets by symbol immediately after merge
+    // Priority: portfolio assets first (already in mergedAssets first), so they will be kept
+    const uniqueAssetsMap = new Map<string, Asset>();
+    mergedAssets.forEach(asset => {
+      if (asset && asset.id && asset.symbol) {
+        const symbolKey = asset.symbol.toUpperCase();
+        // If symbol doesn't exist, add it (first occurrence wins - which is portfolio asset)
+        if (!uniqueAssetsMap.has(symbolKey)) {
+          uniqueAssetsMap.set(symbolKey, asset);
+        }
+        // Otherwise keep the existing one (portfolio asset has priority)
+      }
+    });
+    const uniqueAssets = Array.from(uniqueAssetsMap.values());
+
+    // Apply filters (search, type, etc.) to merged assets
+    let filteredAssets = uniqueAssets;
+    
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filteredAssets = filteredAssets.filter(asset =>
+        asset.name?.toLowerCase().includes(searchLower) ||
+        asset.symbol?.toLowerCase().includes(searchLower) ||
+        asset.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (filters.type) {
+      filteredAssets = filteredAssets.filter(asset => asset.type === filters.type);
+    }
+    
+    if (filters.priceMode) {
+      filteredAssets = filteredAssets.filter(asset => asset.priceMode === filters.priceMode);
+    }
+    
+    if (filters.symbol) {
+      filteredAssets = filteredAssets.filter(asset => 
+        asset.symbol?.toLowerCase() === filters.symbol?.toLowerCase()
+      );
+    }
+
+    // Apply sorting
+    if (filters.sortBy) {
+      const sortOrder = filters.sortOrder || 'ASC';
+      filteredAssets.sort((a, b) => {
+        const aValue = (a as any)[filters.sortBy!];
+        const bValue = (b as any)[filters.sortBy!];
+        
+        if (aValue === bValue) return 0;
+        if (aValue == null) return 1;
+        if (bValue == null) return -1;
+        
+        const comparison = aValue < bValue ? -1 : 1;
+        return sortOrder === 'ASC' ? comparison : -comparison;
+      });
+    } else {
+      // Default sort by createdAt DESC
+      filteredAssets.sort((a, b) => {
+        const aDate = a.createdAt?.getTime() || 0;
+        const bDate = b.createdAt?.getTime() || 0;
+        return bDate - aDate;
+      });
+    }
+
+    // Update hasTrades for each asset based on trades in accessible portfolios
+    // Check if any asset has trades in portfolios that the account has access to
+    if (filteredAssets.length > 0 && accessiblePortfolioIds.length > 0) {
+      const assetIds = filteredAssets.map(a => a.id);
+      const assetSymbols = filteredAssets.map(a => a.symbol?.toUpperCase()).filter(Boolean) as string[];
+      
+      // Get all trades for these assets in accessible portfolios
+      // Query 1: Get trades by asset IDs
+      const tradesByAssetIds = await this.tradeRepository.find({
+        where: { 
+          assetId: In(assetIds), 
+          portfolioId: In(accessiblePortfolioIds) 
+        },
+        select: ['assetId'],
+      });
+      
+      // Query 2: Get trades by symbol (in case we have different asset IDs with same symbol)
+      let tradesBySymbol: any[] = [];
+      if (assetSymbols.length > 0) {
+        tradesBySymbol = await this.tradeRepository
+          .createQueryBuilder('trade')
+          .innerJoin('trade.asset', 'asset')
+          .where('UPPER(asset.symbol) IN (:...symbols)', { symbols: assetSymbols })
+          .andWhere('trade.portfolioId IN (:...portfolioIds)', { portfolioIds: accessiblePortfolioIds })
+          .select(['trade.assetId'])
+          .getMany();
+      }
+      
+      // Combine both query results
+      const allTrades = [...tradesByAssetIds, ...tradesBySymbol];
+      
+      // Create a set of asset IDs that have trades
+      const assetsWithTradesIds = new Set(allTrades.map(t => t.assetId).filter(Boolean));
+      
+      // Create a map of symbol -> hasTrades
+      const symbolTradesMap = new Map<string, boolean>();
+      if (assetSymbols.length > 0) {
+        const tradesWithSymbols = await this.tradeRepository
+          .createQueryBuilder('trade')
+          .innerJoin('trade.asset', 'asset')
+          .where('UPPER(asset.symbol) IN (:...symbols)', { symbols: assetSymbols })
+          .andWhere('trade.portfolioId IN (:...portfolioIds)', { portfolioIds: accessiblePortfolioIds })
+          .select(['UPPER(asset.symbol) as symbol'])
+          .getRawMany();
+        
+        tradesWithSymbols.forEach((t: any) => {
+          if (t.symbol) {
+            symbolTradesMap.set(t.symbol.toUpperCase(), true);
+          }
+        });
+      }
+      
+      // Update hasPortfolioTrades property for each asset
+      filteredAssets.forEach(asset => {
+        const hasTradesById = assetsWithTradesIds.has(asset.id);
+        const hasTradesBySymbol = asset.symbol && symbolTradesMap.has(asset.symbol.toUpperCase());
+        // Set hasPortfolioTrades property if asset has trades in accessible portfolios
+        (asset as any).hasPortfolioTrades = hasTradesById || hasTradesBySymbol || false;
+      });
+    } else if (filteredAssets.length > 0) {
+      // If no accessible portfolios, set hasPortfolioTrades to false
+      filteredAssets.forEach(asset => {
+        (asset as any).hasPortfolioTrades = false;
+      });
+    }
+
+    // Apply pagination
+    const limit = filters.limit || 10;
+    const page = filters.page || 1;
+    const offset = (page - 1) * limit;
+    const total = filteredAssets.length;
+    const paginatedAssets = filteredAssets.slice(offset, offset + limit);
+
+    return {
+      data: paginatedAssets,
+      total,
+      page,
+      limit,
+    };
   }
 
   /**

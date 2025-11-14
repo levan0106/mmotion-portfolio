@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException, BadRequestException, ConflictExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindManyOptions, Like, In, Not } from 'typeorm';
 import { GlobalAsset } from '../entities/global-asset.entity';
+import { Asset } from '../entities/asset.entity';
+import { Trade } from '../../trading/entities/trade.entity';
 import { NationConfigService } from './nation-config.service';
 import { BasicPriceService } from './basic-price.service';
 import { PriceHistoryService } from './price-history.service';
@@ -36,6 +38,10 @@ export class GlobalAssetService {
   constructor(
     @InjectRepository(GlobalAsset)
     private readonly globalAssetRepository: Repository<GlobalAsset>,
+    @InjectRepository(Asset)
+    private readonly assetRepository: Repository<Asset>,
+    @InjectRepository(Trade)
+    private readonly tradeRepository: Repository<Trade>,
     private readonly nationConfigService: NationConfigService,
     @Inject(forwardRef(() => BasicPriceService))
     private readonly basicPriceService: BasicPriceService,
@@ -788,6 +794,236 @@ export class GlobalAssetService {
       this.logger.error(`Failed to create price history record for asset ${assetId}: ${error.message}`);
       // Don't throw error here to avoid breaking the main operation
     }
+  }
+
+  /**
+   * Find global assets for autocomplete with smart filtering
+   * - All assets with AUTOMATIC price mode
+   * - MANUAL price mode assets only if:
+   *   - Created by the accountId, OR
+   *   - Used in the specified portfolio
+   * - Also includes assets from legacy assets table
+   * @param accountId - Account ID for filtering
+   * @param portfolioId - Optional portfolio ID to include assets used in that portfolio
+   * @param queryDto - Query parameters for search, pagination, etc.
+   * @returns Paginated global assets (merged with legacy assets)
+   */
+  async findForAutocomplete(
+    accountId: string,
+    portfolioId?: string,
+    queryDto: GlobalAssetQueryDto = {},
+  ): Promise<{
+    data: GlobalAssetResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    this.logger.log(`Finding global assets for autocomplete: accountId=${accountId}, portfolioId=${portfolioId}`);
+
+    const {
+      search,
+      nation,
+      type,
+      marketCode,
+      currency,
+      isActive,
+      nations,
+      types,
+      marketCodes,
+      currencies,
+      sortBy = 'symbol',
+      sortOrder = 'ASC',
+      page = 1,
+      limit = 10,
+      includeInactive = true,
+    } = queryDto;
+
+    // Get symbols of assets used in portfolio (if portfolioId provided)
+    let portfolioAssetSymbols: string[] = [];
+    if (portfolioId) {
+      try {
+        const trades = await this.tradeRepository.find({
+          where: { portfolioId },
+          relations: ['asset'],
+        });
+        portfolioAssetSymbols = [...new Set(trades.map(trade => trade.asset?.symbol).filter(Boolean))];
+        this.logger.debug(`Found ${portfolioAssetSymbols.length} unique asset symbols in portfolio ${portfolioId}`);
+      } catch (error) {
+        this.logger.warn(`Failed to get portfolio assets: ${error.message}`);
+      }
+    }
+
+    // Source 1: Get global assets
+    const globalAssetsQueryBuilder = this.globalAssetRepository.createQueryBuilder('ga')
+      .leftJoinAndSelect('ga.assetPrice', 'ap');
+
+    // Apply filters for global assets
+    if (search) {
+      globalAssetsQueryBuilder.andWhere(
+        '(UPPER(ga.symbol) LIKE UPPER(:search) OR UPPER(ga.name) LIKE UPPER(:search))',
+        { search: `%${search}%` }
+      );
+    }
+
+    if (nation) {
+      globalAssetsQueryBuilder.andWhere('ga.nation = :nation', { nation });
+    }
+
+    if (type) {
+      globalAssetsQueryBuilder.andWhere('ga.type = :type', { type });
+    }
+
+    if (marketCode) {
+      globalAssetsQueryBuilder.andWhere('ga.marketCode = :marketCode', { marketCode });
+    }
+
+    if (currency) {
+      globalAssetsQueryBuilder.andWhere('ga.currency = :currency', { currency });
+    }
+
+    if (isActive !== undefined) {
+      globalAssetsQueryBuilder.andWhere('ga.isActive = :isActive', { isActive });
+    }
+
+    if (nations && nations.length > 0) {
+      globalAssetsQueryBuilder.andWhere('ga.nation IN (:...nations)', { nations });
+    }
+
+    if (types && types.length > 0) {
+      globalAssetsQueryBuilder.andWhere('ga.type IN (:...types)', { types });
+    }
+
+    if (marketCodes && marketCodes.length > 0) {
+      globalAssetsQueryBuilder.andWhere('ga.marketCode IN (:...marketCodes)', { marketCodes });
+    }
+
+    if (currencies && currencies.length > 0) {
+      globalAssetsQueryBuilder.andWhere('ga.currency IN (:...currencies)', { currencies });
+    }
+
+    if (!includeInactive) {
+      globalAssetsQueryBuilder.andWhere('ga.isActive = :isActive', { isActive: true });
+    }
+
+    // Apply smart filtering logic for global assets:
+    // - All AUTOMATIC price mode assets
+    // - MANUAL price mode assets only if createdBy = accountId OR symbol in portfolioAssetSymbols
+    globalAssetsQueryBuilder.andWhere(
+      '(ga.priceMode = :automatic OR (ga.priceMode = :manual AND (ga.createdBy = :accountId' +
+      (portfolioAssetSymbols.length > 0 ? ' OR ga.symbol IN (:...portfolioSymbols)' : '') +
+      ')))',
+      {
+        automatic: PriceMode.AUTOMATIC,
+        manual: PriceMode.MANUAL,
+        accountId,
+        ...(portfolioAssetSymbols.length > 0 ? { portfolioSymbols: portfolioAssetSymbols } : {}),
+      }
+    );
+
+    // Get all global assets (without pagination first to merge with legacy assets)
+    const globalAssets = await globalAssetsQueryBuilder.getMany();
+    const globalAssetSymbols = new Set(globalAssets.map(ga => ga.symbol?.toUpperCase()).filter(Boolean));
+
+    // Source 2: Get legacy assets from assets table
+    const legacyAssetsQueryBuilder = this.assetRepository.createQueryBuilder('asset');
+
+    // Apply filters for legacy assets
+    if (search) {
+      legacyAssetsQueryBuilder.andWhere(
+        '(UPPER(asset.symbol) LIKE UPPER(:search) OR UPPER(asset.name) LIKE UPPER(:search))',
+        { search: `%${search}%` }
+      );
+    }
+
+    if (type) {
+      legacyAssetsQueryBuilder.andWhere('asset.type = :type', { type });
+    }
+
+    // Legacy assets: only get assets created by account or used in portfolio
+    const legacyWhereConditions: string[] = ['asset.createdBy = :accountId'];
+    const legacyWhereParams: any = { accountId };
+
+    if (portfolioAssetSymbols.length > 0) {
+      legacyWhereConditions.push('asset.symbol IN (:...portfolioSymbols)');
+      legacyWhereParams.portfolioSymbols = portfolioAssetSymbols;
+    }
+
+    legacyAssetsQueryBuilder.andWhere(`(${legacyWhereConditions.join(' OR ')})`, legacyWhereParams);
+
+    // Get all legacy assets
+    const legacyAssets = await legacyAssetsQueryBuilder.getMany();
+
+    // Convert legacy assets to GlobalAssetResponseDto format
+    const legacyAssetsAsGlobal = legacyAssets
+      .filter(asset => {
+        // Exclude if symbol already exists in global assets
+        if (asset.symbol && globalAssetSymbols.has(asset.symbol.toUpperCase())) {
+          return false;
+        }
+        return true;
+      })
+      .map(asset => {
+        // Map legacy Asset to GlobalAssetResponseDto format
+        return {
+          id: asset.id,
+          symbol: asset.symbol,
+          name: asset.name,
+          type: asset.type,
+          priceMode: asset.priceMode,
+          nation: 'VN' as NationCode, // Default to VN for legacy assets
+          marketCode: 'DEFAULT',
+          currency: 'VND', // Default currency
+          timezone: 'Asia/Ho_Chi_Minh',
+          isActive: true,
+          description: asset.description || '',
+          createdBy: asset.createdBy,
+          createdAt: asset.createdAt,
+          updatedAt: asset.updatedAt,
+          assetPrice: null, // Legacy assets don't have assetPrice relation, will be calculated separately if needed
+          globalIdentifier: asset.symbol || '',
+          displayName: `${asset.name} (${asset.symbol})`,
+          marketDisplayName: asset.symbol || '',
+          hasTrades: false, // Will be calculated if needed
+          isAvailableForTrading: true,
+          marketInfo: {
+            nation: 'VN',
+            marketCode: 'DEFAULT',
+            currency: 'VND',
+            timezone: 'Asia/Ho_Chi_Minh',
+          },
+          canModify: true,
+        } as GlobalAssetResponseDto;
+      });
+
+    // Merge global assets and legacy assets
+    const mergedAssets = [...globalAssets.map(ga => this.mapToResponseDto(ga)), ...legacyAssetsAsGlobal];
+
+    // Apply sorting
+    mergedAssets.sort((a, b) => {
+      const aValue = (a as any)[sortBy];
+      const bValue = (b as any)[sortBy];
+      
+      if (aValue === bValue) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      const comparison = aValue < bValue ? -1 : 1;
+      return sortOrder === 'ASC' ? comparison : -comparison;
+    });
+
+    // Apply pagination
+    const total = mergedAssets.length;
+    const skip = (page - 1) * limit;
+    const paginatedAssets = mergedAssets.slice(skip, skip + limit);
+
+    return {
+      data: paginatedAssets,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   /**

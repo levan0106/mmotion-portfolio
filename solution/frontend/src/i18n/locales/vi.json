@@ -2021,7 +2021,7 @@
       "deleteWithImpact": "Xóa tài sản & dữ liệu bị ảnh hưởng",
       "affectedPortfolios": "Danh mục bị ảnh hưởng",
       "impactAnalysis": "Phân tích tác động",
-      "impactDescription": "Tài sản \"{{assetName}}\" đang được sử dụng trong {{portfolioCount, plural, one {danh mục} other {các danh mục}}} của bạn với {{tradeCount}} bản ghi giao dịch.",
+      "impactDescription": "Tài sản \"{{assetName}}\" đang được sử dụng trong {{portfolioCount}} danh mục của bạn với {{tradeCount}} bản ghi giao dịch.",
       "warningMessage": "Xóa tài sản này sẽ ảnh hưởng đến tính toán danh mục và dữ liệu lịch sử.",
       "whatWillBeDeleted": "Những gì sẽ bị xóa",
       "theAsset": "Tài sản \"{{assetName}}\"",

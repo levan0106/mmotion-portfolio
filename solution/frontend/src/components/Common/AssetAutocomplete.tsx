@@ -11,10 +11,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ResponsiveButton } from './ResponsiveButton';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { Asset } from '../../types/asset.types';
-import { useAssets } from '../../hooks/useAssets';
+import { GlobalAsset } from '../../types/global-asset.types';
 import { useAccount } from '../../contexts/AccountContext';
 import { formatCurrency } from '../../utils/format';
+import { globalAssetService } from '../../services/global-asset.service';
 
 export interface AssetAutocompleteProps {
   value?: string;
@@ -28,11 +28,13 @@ export interface AssetAutocompleteProps {
   showCreateOption?: boolean;
   onCreateAsset?: () => void;
   currency?: string; // Base currency for formatting
+  portfolioId?: string; // Optional portfolio ID to include assets used in that portfolio
 }
 
 /**
  * AssetAutocomplete component with search and pagination support
- * Provides a searchable dropdown for selecting assets with load more functionality
+ * Provides a searchable dropdown for selecting global assets with load more functionality
+ * Uses the new global assets API with smart filtering based on price mode and portfolio
  */
 export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   value,
@@ -46,46 +48,118 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   showCreateOption = true,
   onCreateAsset,
   currency = 'VND', // Default to VND if not provided
+  portfolioId,
 }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<GlobalAsset | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
+  // Global assets state
+  const [globalAssets, setGlobalAssets] = useState<GlobalAsset[]>([]);
+  const [globalAssetsLoading, setGlobalAssetsLoading] = useState(false);
+  const [globalAssetsError, setGlobalAssetsError] = useState<string | null>(null);
+  const [globalAssetsPagination, setGlobalAssetsPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+  
   // Refs to track previous values and prevent unnecessary updates
   const prevValueRef = useRef<string | undefined>(value);
-  const prevSelectedAssetRef = useRef<Asset | null>(null);
+  const prevSelectedAssetRef = useRef<GlobalAsset | null>(null);
   const hasInitializedRef = useRef(false);
   const prevSearchTermRef = useRef<string>('');
+  const prevPortfolioIdRef = useRef<string | undefined>(portfolioId);
+  const hasInitialFetchRef = useRef(false); // Track if initial fetch has been done
 
-  // Use assets hook with search functionality
-  const {
-    assets,
-    loading,
-    error: assetsError,
-    pagination,
-    updateFilter,
-  } = useAssets({
-    initialFilters: {
-      createdBy: accountId,
-      limit: 50, // Load more assets initially
-      page: 1,
-      sortBy: 'name',
-      sortOrder: 'ASC',
-    },
-    autoFetch: true,
-  });
+  // Fetch global assets
+  const fetchGlobalAssets = useCallback(async (pageNum: number = 1, search: string = '') => {
+    if (!accountId) return;
+    
+    setGlobalAssetsLoading(true);
+    setGlobalAssetsError(null);
+    
+    try {
+      const response = await globalAssetService.getGlobalAssetsForAutocomplete(
+        accountId,
+        portfolioId,
+        {
+          search,
+          limit: 50, // Fixed limit for autocomplete
+          page: pageNum,
+          sortBy: 'symbol',
+          sortOrder: 'ASC',
+        }
+      );
+      
+      if (pageNum === 1) {
+        setGlobalAssets(response.data);
+      } else {
+        setGlobalAssets(prev => [...prev, ...response.data]);
+      }
+      
+      setGlobalAssetsPagination({
+        page: response.page,
+        limit: response.limit,
+        total: response.total,
+        totalPages: response.totalPages,
+      });
+    } catch (err) {
+      setGlobalAssetsError(err instanceof Error ? err.message : 'Failed to fetch global assets');
+      console.error('Failed to fetch global assets:', err);
+    } finally {
+      setGlobalAssetsLoading(false);
+    }
+  }, [accountId, portfolioId]);
 
-  // Use ref to avoid dependency issues
-  const updateFilterRef = useRef(updateFilter);
-  updateFilterRef.current = updateFilter;
+  // Initial fetch - when component mounts or portfolioId changes
+  useEffect(() => {
+    if (accountId) {
+      // Reset fetch flag when portfolioId changes to allow re-fetch
+      if (portfolioId !== prevPortfolioIdRef.current) {
+        hasInitialFetchRef.current = false;
+        prevPortfolioIdRef.current = portfolioId;
+      }
+      
+      if (!hasInitialFetchRef.current) {
+        hasInitialFetchRef.current = true;
+        fetchGlobalAssets(1, '');
+      }
+    }
+  }, [accountId, portfolioId, fetchGlobalAssets]);
 
   // Update search filter when search term changes
   useEffect(() => {
+    // Skip if this is the initial empty search (already handled by initial fetch)
+    if (searchTerm === '' && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      prevSearchTermRef.current = '';
+      return;
+    }
+
     // Don't call API if search term hasn't actually changed
     if (prevSearchTermRef.current === searchTerm) {
+      return;
+    }
+
+    // Only search if search term has at least 2 characters
+    const trimmedSearch = searchTerm.trim();
+    const shouldSearch = trimmedSearch.length >= 2;
+
+    // If search term is less than 2 characters, reset to initial state
+    if (!shouldSearch) {
+      // Reset to initial fetch if search is cleared
+      if (trimmedSearch === '') {
+        prevSearchTermRef.current = '';
+        fetchGlobalAssets(1, '');
+      } else {
+        // If less than 2 chars but not empty, just update ref without searching
+        prevSearchTermRef.current = searchTerm;
+      }
       return;
     }
 
@@ -98,30 +172,26 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     prevSearchTermRef.current = searchTerm;
 
     const timeoutId = setTimeout(() => {
-      // If search term is empty, reset to first page and clear search
-      if (searchTerm.trim() === '') {
-        updateFilterRef.current('search', '');
-        updateFilterRef.current('page', 1);
-      } else {
-        updateFilterRef.current('search', searchTerm);
-        updateFilterRef.current('page', 1); // Reset to first page for new search
+      // Fetch global assets with search (only if >= 2 characters)
+      if (shouldSearch) {
+        fetchGlobalAssets(1, trimmedSearch);
       }
     }, 300); // Debounce search
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, fetchGlobalAssets]);
 
   // Check if there are more assets to load
   useEffect(() => {
-    setHasMore(pagination.page < pagination.totalPages);
-  }, [pagination]);
+    setHasMore(globalAssetsPagination.page < globalAssetsPagination.totalPages);
+  }, [globalAssetsPagination]);
 
   // Reset hasMore when search term is cleared
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      setHasMore(pagination.page < pagination.totalPages);
+      setHasMore(globalAssetsPagination.page < globalAssetsPagination.totalPages);
     }
-  }, [searchTerm, pagination]);
+  }, [searchTerm, globalAssetsPagination]);
 
   // Find selected asset when value changes (only when value changes, not assets)
   useEffect(() => {
@@ -129,9 +199,8 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     if (prevValueRef.current !== value) {
       prevValueRef.current = value;
       
-      if (value && assets.length > 0) {
-        const asset = assets.find(a => a.id === value);
-        // Only update if the asset actually changed
+      if (value && globalAssets.length > 0) {
+        const asset = globalAssets.find(a => a.id === value);
         if (asset && asset.id !== prevSelectedAssetRef.current?.id) {
           setSelectedAsset(asset);
           prevSelectedAssetRef.current = asset;
@@ -141,34 +210,34 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
         prevSelectedAssetRef.current = null;
       }
     }
-  }, [value, assets]); // Re-add assets but with proper change detection
+  }, [value, globalAssets]);
 
   // Effect to handle case when assets are loaded and we have a value but no selectedAsset
   // This handles the edit modal case where value is set before assets are loaded
   useEffect(() => {
-    if (value && !selectedAsset && assets.length > 0 && !loading) {
-      const asset = assets.find(a => a.id === value);
+    if (value && !selectedAsset && globalAssets.length > 0 && !globalAssetsLoading) {
+      const asset = globalAssets.find(a => a.id === value);
       if (asset) {
         setSelectedAsset(asset);
         prevSelectedAssetRef.current = asset;
       }
     }
-  }, [value, selectedAsset, assets, loading]);
+  }, [value, selectedAsset, globalAssets, globalAssetsLoading]);
 
   // Load more assets
   const loadMore = useCallback(async () => {
     if (hasMore && !isLoadingMore) {
       setIsLoadingMore(true);
       try {
-        updateFilterRef.current('page', pagination.page + 1);
+        await fetchGlobalAssets(globalAssetsPagination.page + 1, searchTerm);
       } finally {
         setIsLoadingMore(false);
       }
     }
-  }, [hasMore, isLoadingMore, pagination.page]);
+  }, [hasMore, isLoadingMore, globalAssetsPagination.page, fetchGlobalAssets, searchTerm]);
 
   // Handle asset selection
-  const handleAssetChange = useCallback((_event: any, newValue: Asset | null) => {
+  const handleAssetChange = useCallback((_event: any, newValue: GlobalAsset | null) => {
     // Only update if the value actually changed
     if (newValue?.id !== selectedAsset?.id) {
       setSelectedAsset(newValue);
@@ -200,7 +269,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
 
   // Memoize options to prevent unnecessary re-renders
   const options = useMemo(() => {
-    const assetOptions = assets.map(asset => ({
+    const assetOptions = globalAssets.map(asset => ({
       ...asset,
       label: `${asset.symbol || 'N/A'} - ${asset.name}`,
     }));
@@ -211,7 +280,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
     }
 
     return assetOptions;
-  }, [assets, hasMore, loadMoreOption]);
+  }, [globalAssets, hasMore, loadMoreOption]);
 
   // Handle option selection
   const handleOptionClick = useCallback((option: any) => {
@@ -225,14 +294,14 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   return (
     <Box>
       <Autocomplete
-        value={selectedAsset}
+        value={selectedAsset as any}
         onChange={handleAssetChange}
         inputValue={searchTerm}
         onInputChange={handleInputChange}
         options={options}
         getOptionLabel={(option) => (option as any).label || `${option.symbol || 'N/A'} - ${option.name}`}
         isOptionEqualToValue={(option, value) => option.id === value?.id}
-        loading={loading}
+        loading={globalAssetsLoading}
         disabled={disabled}
         renderInput={(params) => (
           <TextField
@@ -245,7 +314,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
               ...params.InputProps,
               endAdornment: (
                 <>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {globalAssetsLoading ? <CircularProgress color="inherit" size={20} /> : null}
                   {params.InputProps.endAdornment}
                 </>
               ),
@@ -316,9 +385,9 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
                   color="primary"
                   variant="outlined"
                 />
-                {option.currentPrice && option.currentPrice > 0 && (
+                {option.assetPrice?.currentPrice && option.assetPrice.currentPrice > 0 && (
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {formatCurrency(option.currentPrice, currency)}
+                    {formatCurrency(option.assetPrice.currentPrice, currency)}
                   </Typography>
                 )}
               </Box>
@@ -326,7 +395,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
           );
         }}
         noOptionsText={
-          loading ? (
+          globalAssetsLoading ? (
             <Box display="flex" alignItems="center" justifyContent="center" py={2}>
               <CircularProgress size={20} />
               <Typography variant="body2" sx={{ ml: 1 }}>
@@ -380,15 +449,18 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
         }}
       />
       
-      {assetsError && (
+      {globalAssetsError && (
         <Alert severity="error" sx={{ mt: 1 }}>
-          {assetsError}
+          {globalAssetsError}
         </Alert>
       )}
       
-      {selectedAsset && selectedAsset.currentPrice && selectedAsset.currentPrice > 0 && (
+      {selectedAsset?.assetPrice?.currentPrice && selectedAsset.assetPrice.currentPrice > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          {t('asset.autocomplete.currentPrice')}: {formatCurrency(selectedAsset.currentPrice, currency)}
+          {t('asset.autocomplete.currentPrice')}: {formatCurrency(
+            selectedAsset.assetPrice.currentPrice,
+            currency
+          )}
         </Typography>
       )}
     </Box>

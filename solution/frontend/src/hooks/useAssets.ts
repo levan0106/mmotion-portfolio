@@ -132,18 +132,23 @@ export const useAssets = (options: UseAssetsOptions = {}): UseAssetsReturn => {
           currentQuantity: asset.currentQuantity,
           // Preserve backend computed fields
           hasTrades: asset.hasTrades,
+          hasPortfolioTrades: asset.hasPortfolioTrades,
           displayName: asset.displayName,
           // Use backend computed values directly
-          totalValue: asset.totalValue || (asset.currentQuantity && asset.currentPrice 
-            ? asset.currentQuantity * asset.currentPrice 
-            : 0),
-          totalQuantity: asset.totalQuantity || asset.currentQuantity || 0,
+          totalValue: asset.hasPortfolioTrades 
+            ? (asset.totalValue || ( asset.currentQuantity && asset.currentPrice 
+              ? asset.currentQuantity * asset.currentPrice 
+              : 0))
+            : 0,
+          totalQuantity: asset.hasPortfolioTrades 
+            ? (asset.totalQuantity || asset.currentQuantity || 0)
+            : 0,
           // Add additional computed properties for frontend
           currentPrice: asset.currentPrice || 0, // Use backend currentPrice
           avgCost: asset.avgCost || 0, // Use backend avgCost
-          quantity: asset.hasTrades 
-            ? (asset.currentQuantity || 0)
-            : (asset.initialQuantity || 0), // Use initialQuantity when no trades
+          quantity: asset.hasPortfolioTrades
+            ? (asset.currentQuantity || asset.initialQuantity || 0)
+            : 0,
           performance: performance, // Real calculated performance
         };
         return mappedAsset;

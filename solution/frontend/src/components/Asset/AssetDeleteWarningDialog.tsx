@@ -101,24 +101,35 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
         </Alert> */}
 
         {/* Affected Portfolios */}
-        {portfolios.length > 0 && (
+        {tradeCount > 0 && (
           <Box sx={{ mb: 3, mt: 2 }}>
-            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom 
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            ellipsis={false}>
               {/* <PortfolioIcon color="primary" /> */}
               {t('asset.delete.affectedPortfolios')}
             </ResponsiveTypography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {portfolios.map((portfolio) => (
-                <Chip
-                  key={portfolio.id}
-                  label={portfolio.name}
-                  color="primary"
-                  variant="outlined"
-                  icon={<PortfolioIcon />}
-                  sx={{ mb: 1 }}
-                />
-              ))}
-            </Box>
+            {portfolios.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {portfolios.map((portfolio) => (
+                  <Chip
+                    key={portfolio.id}
+                    label={portfolio.name}
+                    color="primary"
+                    variant="outlined"
+                    icon={<PortfolioIcon />}
+                    sx={{ mb: 1 }}
+                  />
+                ))}
+              </Box>
+            )}
+            {portfolios.length == 0 && (
+              <ResponsiveTypography variant="cardValueSmall" paragraph 
+              ellipsis={false} 
+              >
+                {t('asset.delete.affectedPortfolios', 'Danh mục bị ảnh hưởng được quản lý bởi account khác.')}
+              </ResponsiveTypography>
+            )}
           </Box>
         )}
 
@@ -127,12 +138,14 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
         {/* Impact Analysis */}
         {tradeCount > 0 || portfolios.length > 0 ? (
           <Box>
-            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom 
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            ellipsis={false}>
               <WarningIcon color="warning" />
               {t('asset.delete.impactAnalysis')}
             </ResponsiveTypography>
             
-            <ResponsiveTypography variant="cardLabel" paragraph>
+            <ResponsiveTypography variant="cardLabel" paragraph ellipsis={false}>
               {t('asset.delete.impactDescription', { 
                 assetName, 
                 portfolioCount: portfolios.length,
@@ -171,17 +184,19 @@ export const AssetDeleteWarningDialog: React.FC<AssetDeleteWarningDialogProps> =
           </Box>
         ) : (
           <Box>
-            <ResponsiveTypography variant="cardLabel" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ResponsiveTypography variant="cardLabel" gutterBottom 
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            ellipsis={false}>
               <SafeIcon color="success" />
               {t('asset.delete.safeToDelete')}
             </ResponsiveTypography>
             
-            <ResponsiveTypography variant="cardLabel" paragraph>
+            <ResponsiveTypography variant="cardLabel" paragraph ellipsis={false}>
               {t('asset.delete.safeDescription', { assetName })}
             </ResponsiveTypography>
 
             <Alert severity="success" sx={{ mb: 2 }}>
-              <ResponsiveTypography variant="cardLabel">
+              <ResponsiveTypography variant="cardLabel" ellipsis={false}>
                 {t('asset.delete.safeMessage')}
               </ResponsiveTypography>
             </Alert>

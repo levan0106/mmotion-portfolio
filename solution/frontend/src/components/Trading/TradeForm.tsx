@@ -557,6 +557,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                       onChange={(assetId) => handleFieldChange('assetId', assetId || '')}
                       error={!!errors.assetId}
                       disabled={isLoading}
+                      portfolioId={formData.portfolioId}
                       label={t('trading.form.asset')}
                       required={true}
                       placeholder={t('trading.form.searchAsset')}

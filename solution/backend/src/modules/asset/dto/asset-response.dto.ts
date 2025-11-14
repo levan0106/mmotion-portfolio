@@ -136,6 +136,12 @@ export class AssetResponseDto {
   })
   hasTrades: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Whether this asset has trades in portfolios that the account has access to',
+    example: true,
+  })
+  hasPortfolioTrades?: boolean;
+
   @ApiProperty({
     description: 'Formatted display name for UI',
     example: 'Hoa Phat Group (HPG)',

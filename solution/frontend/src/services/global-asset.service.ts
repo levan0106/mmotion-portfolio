@@ -7,6 +7,7 @@ interface GlobalAssetFilters {
   search?: string;
   limit?: number;
   offset?: number;
+  page?: number;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 }
@@ -53,6 +54,47 @@ class GlobalAssetService {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch global assets: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Get global assets for autocomplete with smart filtering
+   * - All assets with AUTOMATIC price mode
+   * - MANUAL price mode assets only if created by accountId or used in portfolio
+   */
+  async getGlobalAssetsForAutocomplete(
+    accountId: string,
+    portfolioId?: string,
+    filters: GlobalAssetFilters = {}
+  ): Promise<GlobalAssetResponse> {
+    const params = new URLSearchParams();
+    
+    // Add required accountId
+    params.append('accountId', accountId);
+    
+    // Add optional portfolioId
+    if (portfolioId) {
+      params.append('portfolioId', portfolioId);
+    }
+    
+    // Add other filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await fetch(`${this.baseUrl}/for-autocomplete?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch global assets for autocomplete: ${response.statusText}`);
     }
 
     return await response.json();

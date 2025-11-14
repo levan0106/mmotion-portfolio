@@ -47,7 +47,10 @@ export class AssetMapper {
       updatedBy: asset.updatedBy,
       totalValue: currentValue, // Use calculated currentValue as totalValue
       totalQuantity: currentQuantity || 0,
-      hasTrades: (currentQuantity || 0) > 0,
+      hasTrades: (currentQuantity || 0) > 0, // Keep original logic based on currentQuantity
+      hasPortfolioTrades: (asset as any).hasPortfolioTrades !== undefined 
+        ? (asset as any).hasPortfolioTrades 
+        : undefined, // Only include if set by findAll logic
       displayName: asset.getDisplayName(),
       canModifySymbol: asset.canModifySymbol(),
       primaryIdentifier: asset.getPrimaryIdentifier(),

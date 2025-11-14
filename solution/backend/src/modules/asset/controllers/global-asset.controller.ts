@@ -51,6 +51,69 @@ export class GlobalAssetController {
   ) {}
 
   /**
+   * Get global assets for autocomplete with smart filtering.
+   * - All assets with AUTOMATIC price mode
+   * - MANUAL price mode assets only if created by accountId or used in portfolio
+   */
+  @Get('for-autocomplete')
+  @ApiOperation({
+    summary: 'Get global assets for autocomplete',
+    description: 'Retrieve global assets optimized for autocomplete with smart filtering based on price mode and ownership.',
+  })
+  @ApiQuery({
+    name: 'accountId',
+    required: true,
+    description: 'Account ID for filtering',
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'portfolioId',
+    required: false,
+    description: 'Optional portfolio ID to include assets used in that portfolio',
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search in symbol and name fields',
+    example: 'HPG',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items per page',
+    type: 'number',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (1-based)',
+    type: 'number',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Global assets retrieved successfully',
+  })
+  async findForAutocomplete(
+    @Query('accountId') accountId: string,
+    @Query('portfolioId') portfolioId?: string,
+    @Query(ValidationPipe) queryDto: GlobalAssetQueryDto = {},
+  ): Promise<{
+    data: GlobalAssetResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    if (!accountId) {
+      throw new NotFoundException('accountId query parameter is required');
+    }
+    return this.globalAssetService.findForAutocomplete(accountId, portfolioId, queryDto);
+  }
+
+  /**
    * Get all global assets with filtering, pagination, and sorting.
    */
   @Get()
