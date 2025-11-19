@@ -88,6 +88,24 @@ flowchart LR
   - Date-only storage: `normalizeDate(date, { output: 'iso-string', includeTime: false })`
 - **Pattern**: Unified date normalization with automatic type detection, timezone safety, and flexible options
 
+### Notes Management Pattern - **IMPLEMENTED** ✅
+- **Flexible Association System**: Notes can be associated with Portfolio (required) and optionally with Asset
+- **Dedicated Entity**: Note entity with proper TypeORM relationships and indexes
+- **DateTime Support**: Full timestamp storage with user-friendly date-only selection
+- **Backend Module**: Complete NestJS module (NotesModule) with entity, DTOs, service, and controller
+- **CRUD Operations**: Full create, read, update, delete with filtering by portfolio and asset
+- **Permission Integration**: Notes respect portfolio permissions for access control
+- **Circular Dependency Handling**: Used forwardRef for Portfolio/Asset module dependencies
+- **Frontend Components**: FloatingNoteButton (transparent FAB) and NotesModal (comprehensive modal)
+- **Compact Form Design**: Single-row form with DatePicker, Asset Select, Content Field, and Action Buttons
+- **Professional Delete Confirmation**: ConfirmModal component replacing window.confirm
+- **Asset Filtering**: Filter notes by asset within portfolio for better organization
+- **DateTime Handling**: Users select date only, time automatically added from current time
+- **Migration Support**: Comprehensive migrations for table creation and column type changes
+- **Translation Support**: Complete i18n support for Vietnamese and English
+- **Files**: note.entity.ts, notes.module.ts, note.service.ts, note.controller.ts, FloatingNoteButton.tsx, NotesModal.tsx, note.service.ts
+- **Pattern**: Flexible notes system with Portfolio/Asset association, DateTime support, and professional UI components
+
 ### Generic Form Modal Pattern - **IMPLEMENTED** ✅
 - **Centralized Form System**: GenericFormModal for unified form creation experience
 - **Tabbed Interface**: 3-tab layout (Mua/Bán, Nạp/Rút tiền, Tiền gửi) for different transaction types

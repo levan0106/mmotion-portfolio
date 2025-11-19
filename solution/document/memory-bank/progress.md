@@ -2,7 +2,48 @@
 
 ## What Works
 ### ✅ Completed
-- **MTD (MONTH-TO-DATE) FIELDS IMPLEMENTATION FOR PERFORMANCE SNAPSHOTS - COMPLETED** (Current Session - November 3, 2025)
+- **NOTES FEATURE IMPLEMENTATION - COMPLETED** (Current Session - November 16, 2025)
+  - **Flexible Notes System**: Complete notes management system with Portfolio/Asset association
+    - **Database Schema**: Dedicated `notes` table with proper relationships and indexes
+    - **Portfolio Association**: Required portfolio link with CASCADE delete
+    - **Optional Asset Association**: Optional asset link with SET NULL on asset delete
+    - **DateTime Support**: Full timestamp storage with automatic time addition
+    - **Migration Files**: Comprehensive migrations for table creation and column type changes
+    - **Files Created**: note.entity.ts, CreateNotesTable migration, ChangeNoteDateToTimestamp migration
+  - **Backend Implementation**: Complete NestJS module with full CRUD operations
+    - **Notes Module**: Entity, DTOs, service, controller with proper module structure
+    - **CRUD Operations**: Create, read, update, delete with filtering support
+    - **Permission Integration**: Notes respect portfolio permissions for access control
+    - **Circular Dependency Handling**: forwardRef for Portfolio/Asset module dependencies
+    - **Files Created**: notes.module.ts, note.service.ts, note.controller.ts, create-note.dto.ts, update-note.dto.ts
+  - **Frontend Implementation**: Professional UI with FloatingNoteButton and NotesModal
+    - **FloatingNoteButton**: Transparent floating action button with white/gray styling
+    - **NotesModal**: Comprehensive modal with compact form and notes list
+    - **Compact Form Design**: Single-row form with DatePicker, Asset Select, Content Field, and Action Buttons
+    - **Professional Delete Confirmation**: ConfirmModal component replacing window.confirm
+    - **Asset Filtering**: Filter notes by asset within portfolio
+    - **Date Display**: Shows note date/time in list with proper formatting
+    - **Files Created**: FloatingNoteButton.tsx, NotesModal.tsx, note.service.ts
+  - **DateTime Handling**: User-friendly date selection with automatic time addition
+    - **User Experience**: Users only select date, time automatically added from current time
+    - **Backend Storage**: Full timestamp stored in database (timestamp type)
+    - **Frontend Format**: DatePicker for user input, DateTime string for API communication
+    - **Migration Support**: Migration to convert existing date columns to timestamp
+    - **Backward Compatibility**: Handles both date-only and datetime strings
+  - **UI/UX Enhancements**: Professional styling and responsive design
+    - **Transparent Button**: FloatingNoteButton with transparent background and subtle hover effects
+    - **Responsive Design**: Compact form adapts to mobile/desktop with proper wrapping
+    - **Modal Integration**: Uses ModalWrapper, ResponsiveTypography, ResponsiveButton for consistency
+    - **Professional Styling**: Clean, modern interface with proper spacing and typography
+    - **Translation Support**: Complete i18n support for Vietnamese and English
+  - **Code Quality & Architecture**: Production-ready implementation
+    - **Type Safety**: Complete TypeScript interfaces for Note, CreateNoteDto, UpdateNoteDto
+    - **Service Layer**: Centralized noteService for all API operations
+    - **Error Handling**: Comprehensive error handling with user-friendly messages
+    - **State Management**: Proper React state management with loading and error states
+    - **Production Ready**: Clean, maintainable code with proper validation
+
+- **MTD (MONTH-TO-DATE) FIELDS IMPLEMENTATION FOR PERFORMANCE SNAPSHOTS - COMPLETED** (Previous Session - November 3, 2025)
   - **Database Schema Enhancement**: Complete MTD fields migration
     - **Portfolio Snapshots**: Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD columns
     - **Asset Snapshots**: Added assetTWRMTD, assetIRRMTD columns

@@ -1,13 +1,60 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: November 3, 2025  
-**Session Type**: MTD (Month-to-Date) Fields Implementation for Performance Snapshots  
-**Primary Goal**: Add MTD calculation fields (TWR, MWR, IRR) to all performance snapshot entities and update calculation services
+**Date**: November 16, 2025  
+**Session Type**: Notes Feature Implementation & UI Enhancement  
+**Primary Goal**: Implement flexible notes system with Portfolio/Asset association, DateTime support, and professional UI components
 
 ## Recent Achievements
 
-### ✅ MTD (Month-to-Date) Fields Implementation for Performance Snapshots (Current Session - November 3, 2025)
+### ✅ Notes Feature Implementation - COMPLETED (Current Session - November 16, 2025)
+1. **Flexible Notes System Architecture**
+   - **Dedicated Notes Table**: Created `notes` table with proper relationships and indexes
+   - **Portfolio Association**: Each note requires a portfolio (ManyToOne with CASCADE delete)
+   - **Optional Asset Association**: Notes can optionally be linked to specific assets (ManyToOne with SET NULL on delete)
+   - **DateTime Support**: Notes store full timestamp (date + time) with automatic time addition
+   - **Migration Files**: Created comprehensive migrations for notes table and column type changes
+   - **Files Created**: note.entity.ts, CreateNotesTable migration, ChangeNoteDateToTimestamp migration
+
+2. **Backend Implementation**
+   - **Notes Module**: Complete NestJS module with entity, DTOs, service, and controller
+   - **CRUD Operations**: Full create, read, update, delete operations for notes
+   - **Filtering Support**: Filter notes by portfolio and optional asset filtering
+   - **Permission Integration**: Notes respect portfolio permissions for access control
+   - **Circular Dependency Handling**: Used forwardRef for Portfolio/Asset module dependencies
+   - **Files Created**: notes.module.ts, note.service.ts, note.controller.ts, create-note.dto.ts, update-note.dto.ts
+
+3. **Frontend Implementation**
+   - **FloatingNoteButton**: Transparent floating action button with white/gray styling
+   - **NotesModal**: Comprehensive modal with compact form and notes list
+   - **Compact Form Design**: Single-row form with DatePicker, Asset Select, Content Field, and Action Buttons
+   - **Professional Delete Confirmation**: Replaced window.confirm with ConfirmModal component
+   - **Asset Filtering**: Filter notes by asset within portfolio
+   - **Date Display**: Shows note date/time in list with proper formatting
+   - **Files Created**: FloatingNoteButton.tsx, NotesModal.tsx, note.service.ts
+
+4. **DateTime Handling**
+   - **User Experience**: Users only select date, time automatically added from current time
+   - **Backend Storage**: Full timestamp stored in database (timestamp type)
+   - **Frontend Format**: DatePicker for user input, DateTime string for API communication
+   - **Migration Support**: Migration to convert existing date columns to timestamp
+   - **Backward Compatibility**: Handles both date-only and datetime strings
+
+5. **UI/UX Enhancements**
+   - **Transparent Button**: FloatingNoteButton with transparent background and subtle hover effects
+   - **Responsive Design**: Compact form adapts to mobile/desktop with proper wrapping
+   - **Modal Integration**: Uses ModalWrapper, ResponsiveTypography, ResponsiveButton for consistency
+   - **Professional Styling**: Clean, modern interface with proper spacing and typography
+   - **Translation Support**: Complete i18n support for Vietnamese and English
+
+6. **Code Quality & Architecture**
+   - **Type Safety**: Complete TypeScript interfaces for Note, CreateNoteDto, UpdateNoteDto
+   - **Service Layer**: Centralized noteService for all API operations
+   - **Error Handling**: Comprehensive error handling with user-friendly messages
+   - **State Management**: Proper React state management with loading and error states
+   - **Production Ready**: Clean, maintainable code with proper validation
+
+### ✅ MTD (Month-to-Date) Fields Implementation for Performance Snapshots (Previous Session - November 3, 2025)
 1. **Database Schema Enhancement**
    - **Migration Creation**: Created comprehensive migration for MTD fields
    - **Portfolio Snapshots**: Added portfolioTWRMTD, portfolioMWRMTD, portfolioIRRMTD fields

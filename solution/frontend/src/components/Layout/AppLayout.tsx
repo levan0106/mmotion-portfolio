@@ -55,6 +55,7 @@ import { NotificationBell, NotificationManager } from '../Notification';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import DataDisplayToggle from '../Common/DataDisplayToggle';
 import FloatingTradingButton from '../Common/FloatingTradingButton';
+import FloatingNoteButton from '../Common/FloatingNoteButton';
 import FloatingMenuButton from '../Common/FloatingMenuButton';
 import { DemoAccountBanner } from '../Common/DemoAccountBanner';
 
@@ -1321,6 +1322,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         
         {/* Global Floating Trading Button */}
         <FloatingTradingButton portfolioId={getPortfolioIdFromPath()} />
+        
+        {/* Global Floating Note Button */}
+        <FloatingNoteButton portfolioId={getPortfolioIdFromPath()} />
         
         {/* Floating Menu Button for Mobile */}
         <FloatingMenuButton 

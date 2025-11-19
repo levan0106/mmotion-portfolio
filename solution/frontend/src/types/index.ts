@@ -135,6 +135,31 @@ export interface NavSnapshot {
   createdAt: string;
 }
 
+// Note types
+export interface Note extends BaseEntity {
+  noteId: string;
+  portfolioId: string;
+  assetId?: string;
+  noteDate: string; // ISO datetime string (YYYY-MM-DDTHH:mm:ss)
+  content: string;
+  portfolio?: Portfolio;
+  asset?: Asset;
+}
+
+export interface CreateNoteDto {
+  portfolioId: string;
+  assetId?: string;
+  noteDate: string; // ISO datetime string (YYYY-MM-DDTHH:mm:ss)
+  content: string;
+}
+
+export interface UpdateNoteDto {
+  portfolioId?: string;
+  assetId?: string;
+  noteDate?: string; // ISO datetime string (YYYY-MM-DDTHH:mm:ss)
+  content?: string;
+}
+
 export interface CashFlow {
   cashflowId: string;
   portfolioId: string;

@@ -1673,6 +1673,35 @@
     "mwrBenchmarkLoadFailed": "Không thể tải dữ liệu MWR benchmark",
     "riskMetricsLoadFailed": "Không thể tải dữ liệu risk metrics"
   },
+  "notes": {
+    "title": "Ghi chú",
+    "portfolio": "Portfolio",
+    "noteDate": "Ngày",
+    "noteDateTime": "Ngày giờ",
+    "asset": "Asset",
+    "noAsset": "Không có",
+    "contentPlaceholder": "Nhập nội dung ghi chú...",
+    "list": "Danh sách ghi chú",
+    "filterByAsset": "Lọc theo Asset",
+    "allAssets": "Tất cả",
+    "noNotes": "Chưa có ghi chú nào.",
+    "createdAt": "Tạo lúc: {{date}}",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa ghi chú này không?",
+    "delete": {
+      "title": "Xóa ghi chú",
+      "message": "Bạn có chắc chắn muốn xóa ghi chú này không?\n\n\"{{content}}\"\n\nHành động này không thể hoàn tác."
+    },
+    "floatingButton": {
+      "tooltip": "Ghi chú",
+      "ariaLabel": "Ghi chú"
+    },
+    "error": {
+      "loadFailed": "Không thể tải ghi chú",
+      "contentRequired": "Nội dung và ngày là bắt buộc",
+      "saveFailed": "Không thể lưu ghi chú",
+      "deleteFailed": "Không thể xóa ghi chú"
+    }
+  },
   "navHistory": {
     "title": "Lịch sử hiệu suất NAV",
     "subtitle": "Sự phát triển của giá trị tài sản ròng theo thời gian",
