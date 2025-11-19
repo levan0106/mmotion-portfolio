@@ -20,6 +20,8 @@ const AppDataSource = new DataSource({
   migrations: [
     // Primary path: dist/migrations/*.js in production, src/migrations/*.ts in development
     // Use separate patterns for .ts and .js files
+    // In production (basePath = /app/dist), look for compiled .js files
+    // In development (basePath = /app/src), look for .ts files
     join(basePath, 'migrations', '*.ts'),
     join(basePath, 'migrations', '*.js'),
   ],

@@ -79,7 +79,7 @@ const FloatingNoteButton: React.FC<FloatingNoteButtonProps> = ({
             sx={{
               position: 'fixed',
               bottom: {xs: 24, md: 88}, // Left for mobile, above FloatingTradingButton for desktop
-              right: {xs: 88, md: 24}, // left for mobile, above FloatingTradingButton for desktop
+              right: {xs: 88, md: 28}, // left for mobile, above FloatingTradingButton for desktop
               zIndex: 1300,
               boxShadow: `0 8px 32px ${alpha('#000000', 0.15)}`,
               background: 'transparent',
@@ -97,8 +97,8 @@ const FloatingNoteButton: React.FC<FloatingNoteButtonProps> = ({
                 background: 'rgba(0, 0, 0, 0.1)',
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              width: 56,
-              height: 56,
+              width: 48,
+              height: 48,
             }}
           >
             <NotesIcon sx={{ fontSize: 28 }} />

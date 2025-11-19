@@ -28,6 +28,24 @@ COPY . .
 
 # Build the application
 RUN npm run build && \
+    # Compile migrations to dist/migrations (nest build doesn't compile migrations by default)
+    # Create dist/migrations directory
+    mkdir -p dist/migrations && \
+    # Compile all migrations using TypeScript compiler with proper config
+    if [ -d "src/migrations" ] && [ "$(ls -A src/migrations/*.ts 2>/dev/null)" ]; then \
+      npx tsc src/migrations/*.ts \
+        --outDir dist/migrations \
+        --module commonjs \
+        --target ES2020 \
+        --esModuleInterop \
+        --skipLibCheck \
+        --resolveJsonModule \
+        --moduleResolution node \
+        --declaration false \
+        --sourceMap false \
+        --noEmitOnError false 2>&1 || \
+      echo "⚠️ Migration compilation completed with warnings"; \
+    fi && \
     # Remove source maps from dist after build
     find dist -name "*.map" -type f -delete 2>/dev/null || true
 
@@ -46,6 +64,7 @@ WORKDIR /app
 
 # Copy only necessary files from builder stage
 COPY --from=builder /app/dist ./dist
+# Note: Migrations should already be compiled to dist/migrations/*.js during build stage
 # Install only production dependencies (exclude dev dependencies)
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/package-lock.json* ./
