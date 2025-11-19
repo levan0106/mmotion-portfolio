@@ -17,6 +17,7 @@ import { PortfolioSnapshotModule } from './modules/portfolio/portfolio-snapshot.
 import { DepositModule } from './modules/portfolio/deposit.module';
 import { ReportModule } from './modules/report/report.module';
 import { GoalModule } from './modules/goal/goal.module';
+import { NotesModule } from './modules/notes/notes.module';
 import { NotificationModule } from './notification/notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -83,6 +84,7 @@ import { TestLoggingController } from './test-logging.controller';
       DepositModule,
       ReportModule,
       GoalModule,
+      NotesModule,
       NotificationModule,
   ],
   controllers: [AppController, TestLoggingController],
