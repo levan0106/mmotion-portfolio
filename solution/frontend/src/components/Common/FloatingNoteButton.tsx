@@ -81,15 +81,17 @@ const FloatingNoteButton: React.FC<FloatingNoteButtonProps> = ({
               bottom: {xs: 24, md: 88}, // Left for mobile, above FloatingTradingButton for desktop
               right: {xs: 88, md: 28}, // left for mobile, above FloatingTradingButton for desktop
               zIndex: 1300,
+              opacity: 0.8,
               boxShadow: `0 8px 32px ${alpha('#000000', 0.15)}`,
-              background: 'transparent',
+              background: 'rgba(255, 255, 255, 0.8)',
               color: '#212121',
               border: '1px solid',
               borderColor: 'rgba(0, 0, 0, 0.12)',
+              backdropFilter: 'blur(10px)',
               '&:hover': {
                 boxShadow: `0 12px 40px ${alpha('#000000', 0.2)}`,
                 transform: 'scale(1.05)',
-                background: 'rgba(0, 0, 0, 0.05)',
+                background: 'rgba(255, 255, 255, 0.9)',
                 borderColor: 'rgba(0, 0, 0, 0.2)',
               },
               '&:active': {

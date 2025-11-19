@@ -237,7 +237,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ open, onClose, portfolioId }) =
           gap: 2, 
           py: 1,
           overflow: 'auto',
-          maxHeight: 'calc(90vh - 200px)',
+        //   maxHeight: 'calc(90vh - 200px)',
         }}
       >
         {/* Error Alert */}
@@ -247,25 +247,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ open, onClose, portfolioId }) =
           </Alert>
         )}
 
-        {/* Portfolio Selection */}
-        {!portfolioId && portfolios && portfolios.length > 0 && (
-          <FormControl fullWidth size="small">
-            <InputLabel>{t('notes.portfolio') || 'Portfolio'}</InputLabel>
-            <Select
-              value={selectedPortfolioId}
-              label={t('notes.portfolio') || 'Portfolio'}
-              onChange={(e) => setSelectedPortfolioId(e.target.value)}
-            >
-              {portfolios.map((portfolio) => (
-                <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
-                  {portfolio.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-
-        {/* Note Form Section - All in one row */}
+        {/* Note Form Section - Two column layout */}
         <Box 
           sx={{ 
             border: '0px solid', 
@@ -273,105 +255,138 @@ const NotesModal: React.FC<NotesModalProps> = ({ open, onClose, portfolioId }) =
             borderRadius: 2, 
             p: 0,
             display: 'flex',
-            gap: 1,
+            gap: 2,
             alignItems: 'flex-start',
             flexWrap: { xs: 'wrap', sm: 'nowrap' },
           }}
         >
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              label={t('notes.noteDate') || 'Ngày'}
-              value={noteDate}
-              onChange={(newValue) => setNoteDate(newValue)}
-              slotProps={{
-                textField: {
-                  size: 'small',
-                  sx: { 
-                    minWidth: { xs: '100%', sm: 160 },
-                    maxWidth: { xs: '100%', sm: 160 },
-                    flexShrink: 0,
-                  },
-                },
-              }}
-            />
-          </LocalizationProvider>
-
-          {assets.length > 0 && (
-            <FormControl 
-              size="small" 
-              sx={{ 
-                minWidth: { xs: '100%', sm: 150 },
-                flexShrink: 0,
-              }}
-            >
-              <InputLabel>{t('notes.asset') || 'Asset'}</InputLabel>
-              <Select
-                value={formAssetId}
-                label={t('notes.asset') || 'Asset'}
-                onChange={(e) => setFormAssetId(e.target.value)}
-              >
-                <MenuItem value="">{t('notes.noAsset') || 'Không có'}</MenuItem>
-                {assets.map((asset) => (
-                  <MenuItem key={asset.id} value={asset.id}>
-                    {asset.symbol || asset.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-
-          <TextField
-            placeholder={t('notes.contentPlaceholder') || 'Nhập nội dung ghi chú...'}
-            fullWidth
-            value={noteContent}
-            onChange={(e) => setNoteContent(e.target.value)}
-            variant="outlined"
-            size="small"
-            sx={{ flexGrow: 1 }}
-          />
-
-          <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-            {editingNote && (
-              <ResponsiveButton
-                onClick={handleCancelEdit}
-                size="small"
-                variant="outlined"
-                mobileText={t('common.cancel') || 'Hủy'}
-                desktopText={t('common.cancel') || 'Hủy'}
-                sx={{ minWidth: 'auto', px: 1.5 }}
-              >
-                {t('common.cancel') || 'Hủy'}
-              </ResponsiveButton>
+          {/* Left Column: Portfolio and Date (4/12) */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 1,
+            width: { xs: '100%', sm: '33.333%' }, // 4/12 = 33.333%
+            flexShrink: 0,
+          }}>
+            {/* Portfolio Selection */}
+            {!portfolioId && portfolios && portfolios.length > 0 && (
+              <FormControl fullWidth size="small">
+                <InputLabel>{t('notes.portfolio') || 'Portfolio'}</InputLabel>
+                <Select
+                  value={selectedPortfolioId}
+                  label={t('notes.portfolio') || 'Portfolio'}
+                  onChange={(e) => setSelectedPortfolioId(e.target.value)}
+                >
+                  {portfolios.map((portfolio) => (
+                    <MenuItem key={portfolio.portfolioId} value={portfolio.portfolioId}>
+                      {portfolio.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             )}
-            <ResponsiveButton
-              onClick={handleSubmit}
-              variant="contained"
-              disabled={!noteContent.trim() || !noteDate || isSubmitting}
-              size="small"
-              mobileText={
-                isSubmitting
-                  ? t('common.processing') || 'Đang xử lý...'
-                  : editingNote
-                  ? t('common.update') || 'Sửa'
-                  : t('common.create') || 'Thêm'
-              }
-              desktopText={
-                isSubmitting
-                  ? t('common.processing') || 'Đang xử lý...'
-                  : editingNote
-                  ? t('common.update') || 'Cập nhật'
-                  : t('common.create') || 'Thêm'
-              }
-              sx={{ minWidth: 'auto', px: 2 }}
-            >
-              {isSubmitting ? (
-                <CircularProgress size={16} />
-              ) : editingNote ? (
-                t('common.update') || 'Sửa'
-              ) : (
-                t('common.create') || 'Thêm'
+
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label={t('notes.noteDate') || 'Ngày'}
+                value={noteDate}
+                onChange={(newValue) => setNoteDate(newValue)}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+
+          {/* Right Column: Asset, Note Content, and Buttons (8/12) */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 1,
+            width: { xs: '100%', sm: '66.667%' }, // 8/12 = 66.667%
+            flexGrow: 1,
+          }}>
+            {/* Asset Selection */}
+            {assets.length > 0 && (
+              <FormControl 
+                size="small" 
+                fullWidth
+              >
+                <InputLabel>{t('notes.asset') || 'Asset'}</InputLabel>
+                <Select
+                  value={formAssetId}
+                  label={t('notes.asset') || 'Asset'}
+                  onChange={(e) => setFormAssetId(e.target.value)}
+                >
+                  <MenuItem value="">{t('notes.noAsset') || 'Không có'}</MenuItem>
+                  {assets.map((asset) => (
+                    <MenuItem key={asset.id} value={asset.id}>
+                      {asset.symbol || asset.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
+            {/* Note Content */}
+            <TextField
+              placeholder={t('notes.contentPlaceholder') || 'Nhập nội dung ghi chú...'}
+              fullWidth
+              value={noteContent}
+              onChange={(e) => setNoteContent(e.target.value)}
+              variant="outlined"
+              size="medium"
+              multiline
+              rows={2}
+            />
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+              {editingNote && (
+                <ResponsiveButton
+                  onClick={handleCancelEdit}
+                  size="small"
+                  variant="outlined"
+                  mobileText={t('common.cancel') || 'Hủy'}
+                  desktopText={t('common.cancel') || 'Hủy'}
+                  sx={{ minWidth: 'auto', px: 1.5 }}
+                >
+                  {t('common.cancel') || 'Hủy'}
+                </ResponsiveButton>
               )}
-            </ResponsiveButton>
+              <ResponsiveButton
+                onClick={handleSubmit}
+                variant="contained"
+                disabled={!noteContent.trim() || !noteDate || isSubmitting}
+                size="small"
+                mobileText={
+                  isSubmitting
+                    ? t('common.processing') || 'Đang xử lý...'
+                    : editingNote
+                    ? t('common.update') || 'Sửa'
+                    : t('common.create') || 'Thêm'
+                }
+                desktopText={
+                  isSubmitting
+                    ? t('common.processing') || 'Đang xử lý...'
+                    : editingNote
+                    ? t('common.update') || 'Cập nhật'
+                    : t('common.create') || 'Thêm'
+                }
+                sx={{ minWidth: 'auto', px: 2 }}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={16} />
+                ) : editingNote ? (
+                  t('common.update') || 'Sửa'
+                ) : (
+                  t('common.create') || 'Thêm'
+                )}
+              </ResponsiveButton>
+            </Box>
           </Box>
         </Box>
 
