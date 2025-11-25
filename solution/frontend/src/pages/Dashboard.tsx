@@ -483,7 +483,7 @@ const Dashboard: React.FC = () => {
               label={isAutoSyncEnabled ? t('dashboard.systemStatus') : t('dashboard.dataUpdateStatus.systemPaused')}
               color={isAutoSyncEnabled ? "success" : "warning"}
               variant="outlined"
-              sx={{ borderRadius: 2, display: { xs: 'none', sm: 'block' } }}
+              sx={{ borderRadius: 2, display: { xs: 'none', sm: 'flex' } }}
             />
             <Chip
               icon={<Timeline />}
@@ -492,14 +492,14 @@ const Dashboard: React.FC = () => {
               variant="outlined"
               sx={{ borderRadius: 2 }}
             />
-            { !isMobile && (<Chip
+            <Chip
               key="activePortfolios"
               icon={<Assessment />}
               label={`${totalPortfolios} ${t('dashboard.portfolio', { count: totalPortfolios })} ${t('dashboard.active')}`}
               color="primary"
               variant="outlined"
-              sx={{ borderRadius: 2 }}
-            />)}
+              sx={{ borderRadius: 2, display: { xs: 'none', sm: 'flex' } }}
+            />
           </Box>
         </Box>
 

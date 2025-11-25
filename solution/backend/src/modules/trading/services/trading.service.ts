@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -19,6 +19,10 @@ import { RiskMetricsConfig } from '../../../config/risk-metrics.config';
 // PortfolioAsset entity has been removed - Portfolio is now linked to Assets through Trades only
 import { CreateTradeDto, UpdateTradeDto } from '../dto/trade.dto';
 import { NotificationGateway } from '../../../notification/notification.gateway';
+import { AssetService, CreateAssetDto } from '../../asset/services/asset.service';
+import { GlobalAssetService } from '../../asset/services/global-asset.service';
+import { Asset } from '../../asset/entities/asset.entity';
+import { GlobalAsset } from '../../asset/entities/global-asset.entity';
 
 
 export interface TradeMatchingResult {
@@ -43,6 +47,10 @@ export class TradingService {
     private readonly tradeDetailRepository: Repository<TradeDetail>,
     @InjectRepository(Portfolio)
     private readonly portfolioRepo: Repository<Portfolio>,
+    @InjectRepository(Asset)
+    private readonly assetRepository: Repository<Asset>,
+    @InjectRepository(GlobalAsset)
+    private readonly globalAssetRepository: Repository<GlobalAsset>,
     private readonly tradeRepo: TradeRepository,
     private readonly tradeDetailRepo: TradeDetailRepository,
     private readonly fifoEngine: FIFOEngine,
@@ -50,6 +58,10 @@ export class TradingService {
     private readonly positionManager: PositionManager,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly assetCacheService: AssetCacheService,
+    @Inject(forwardRef(() => AssetService))
+    private readonly assetService: AssetService,
+    @Inject(forwardRef(() => GlobalAssetService))
+    private readonly globalAssetService: GlobalAssetService,
     private readonly cashFlowService: CashFlowService,
     private readonly portfolioCalculationService: PortfolioCalculationService,
     private readonly portfolioValueCalculator: PortfolioValueCalculatorService,
@@ -155,6 +167,72 @@ export class TradingService {
   }
 
   /**
+   * Convert GlobalAsset.id to Asset.id for trade creation
+   * If the provided assetId is a GlobalAsset.id, find or create the corresponding Asset
+   * @param assetId - Asset ID (could be Asset.id or GlobalAsset.id)
+   * @param portfolioId - Portfolio ID to get accountId
+   * @returns Asset.id that can be used for trade creation
+   */
+  private async resolveAssetIdForTrade(assetId: string, portfolioId: string): Promise<string> {
+    // First, check if it's already a valid Asset.id
+    const asset = await this.assetRepository.findOne({
+      where: { id: assetId },
+    });
+
+    if (asset) {
+      // It's already a valid Asset.id, return it
+      return assetId;
+    }
+
+    // Check if it's a GlobalAsset.id
+    const globalAsset = await this.globalAssetRepository.findOne({
+      where: { id: assetId },
+    });
+
+    if (!globalAsset) {
+      throw new NotFoundException(`Asset with ID ${assetId} not found in assets or global_assets`);
+    }
+
+    // Get portfolio to find accountId
+    const portfolio = await this.portfolioRepo.findOne({
+      where: { portfolioId },
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${portfolioId} not found`);
+    }
+
+    const accountId = portfolio.accountId;
+
+    // Find existing asset by symbol and user
+    const existingAsset = await this.assetRepository.findOne({
+      where: {
+        symbol: globalAsset.symbol,
+        createdBy: accountId,
+      },
+    });
+
+    if (existingAsset) {
+      // Asset already exists for this user, return it
+      return existingAsset.id;
+    }
+
+    // Create new asset from global asset
+    const createAssetDto: CreateAssetDto = {
+      name: globalAsset.name,
+      symbol: globalAsset.symbol,
+      type: globalAsset.type,
+      description: globalAsset.description,
+      priceMode: globalAsset.priceMode,
+      createdBy: accountId,
+      updatedBy: accountId,
+    };
+
+    const newAsset = await this.assetService.create(createAssetDto);
+    return newAsset.id;
+  }
+
+  /**
    * Create a new trade
    * @param createTradeDto Trade creation data
    * @returns Created trade
@@ -163,10 +241,16 @@ export class TradingService {
     // Validate trade data
     this.validateTradeData(createTradeDto);
 
+    // Resolve assetId - convert GlobalAsset.id to Asset.id if needed
+    const resolvedAssetId = await this.resolveAssetIdForTrade(
+      createTradeDto.assetId,
+      createTradeDto.portfolioId
+    );
+
     // Create trade entity
     const trade = this.tradeRepository.create({
       portfolioId: createTradeDto.portfolioId,
-      assetId: createTradeDto.assetId,
+      assetId: resolvedAssetId,
       tradeDate: new Date(createTradeDto.tradeDate),
       side: createTradeDto.side,
       quantity: createTradeDto.quantity,
