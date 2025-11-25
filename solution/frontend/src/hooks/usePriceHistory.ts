@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { 
   priceHistoryService, 
   PriceHistoryQuery, 
@@ -103,6 +103,25 @@ export const usePriceHistory = (options: UsePriceHistoryOptions): UsePriceHistor
     totalPages,
     totalRecords
   };
+};
+
+/**
+ * Hook for deleting a price history record
+ */
+export const useDeletePriceHistory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async (id: string) => {
+      await priceHistoryService.deletePriceHistory(id);
+    },
+    {
+      onSuccess: () => {
+        // Invalidate all price history queries to refresh the list
+        queryClient.invalidateQueries(['priceHistory']);
+      },
+    }
+  );
 };
 
 export default usePriceHistory;

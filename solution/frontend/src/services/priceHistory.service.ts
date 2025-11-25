@@ -119,6 +119,13 @@ export class PriceHistoryService {
       sortOrder: 'DESC'
     });
   }
+
+  /**
+   * Delete a specific price history record
+   */
+  async deletePriceHistory(id: string): Promise<void> {
+    await apiService.api.delete(`/api/v1/price-history/${id}`);
+  }
 }
 
 export const priceHistoryService = new PriceHistoryService();

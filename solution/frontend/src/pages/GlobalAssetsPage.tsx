@@ -96,7 +96,8 @@ const GlobalAssetsContent: React.FC = () => {
     price: number, 
     priceType: string, 
     priceSource: string, 
-    changeReason?: string
+    changeReason?: string,
+    priceDate?: Date | null
   ) => {
     try {
       await updateAssetPriceMutation.mutateAsync({
@@ -105,6 +106,7 @@ const GlobalAssetsContent: React.FC = () => {
         priceType,
         priceSource,
         changeReason,
+        priceDate,
       });
     } catch (error) {
       console.error('Price update error:', error);

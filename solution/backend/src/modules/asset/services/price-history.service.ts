@@ -505,4 +505,40 @@ export class PriceHistoryService {
       where: { assetId }
     });
   }
+
+  /**
+   * Delete a specific price history record by ID.
+   * @param id - Price history record ID
+   * @returns True if deleted successfully, false if not found
+   */
+  async deletePriceHistory(id: string): Promise<void> {
+    this.logger.log(`Deleting price history record ${id}`);
+
+    const record = await this.priceHistoryRepository.findOne({
+      where: { id }
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Price history record with ID ${id} not found`);
+    }
+
+    // Log the deletion before deleting
+    await this.loggingService.logBusinessEvent(
+      'PRICE_HISTORY_DELETE',
+      'AssetPriceHistory',
+      id,
+      'DELETE',
+      record,
+      {
+        assetId: record.assetId,
+        price: record.price,
+        priceType: record.priceType,
+        priceSource: record.priceSource,
+        createdAt: record.createdAt,
+      },
+    );
+
+    await this.priceHistoryRepository.remove(record);
+    this.logger.log(`Price history record ${id} deleted successfully`);
+  }
 }

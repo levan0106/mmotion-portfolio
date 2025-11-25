@@ -84,7 +84,7 @@ interface GlobalAssetManagementProps {
   onChangeRowsPerPage?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   
   // Props for price management
-  onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string) => Promise<void>;
+  onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string, priceDate?: Date | null) => Promise<void>;
   onPriceHistoryRefresh: (assetId: string) => Promise<void>;
   
   // Props for price updates

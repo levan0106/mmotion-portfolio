@@ -25,6 +25,8 @@ import {
   DialogActions,
   LinearProgress,
   Pagination,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -33,15 +35,17 @@ import {
   Edit as EditIcon,
   Refresh as RefreshIcon,
   Close as CloseIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { ResponsiveButton, ActionButton } from './Common';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useQueryClient } from 'react-query';
-import { usePriceHistory } from '../hooks/usePriceHistory';
+import { usePriceHistory, useDeletePriceHistory } from '../hooks/usePriceHistory';
 
 // Types
 interface AssetPrice {
@@ -61,7 +65,7 @@ interface AssetPriceManagementProps {
     currency: string;
     assetPrice?: AssetPrice;
   };
-  onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string) => Promise<void>;
+  onPriceUpdate: (assetId: string, price: number, priceType: string, priceSource: string, changeReason?: string, priceDate?: Date | null) => Promise<void>;
   onPriceHistoryRefresh: (assetId: string) => Promise<void>;
   loading?: boolean;
   error?: string;
@@ -72,6 +76,7 @@ interface PriceUpdateFormData {
   priceType: string;
   priceSource: string;
   changeReason?: string;
+  priceDate?: Date | null;
 }
 
 // Validation schema
@@ -92,6 +97,10 @@ const validationSchema = yup.object({
   changeReason: yup
     .string()
     .max(200, 'Change reason must be at most 200 characters'),
+  priceDate: yup
+    .date()
+    .nullable()
+    .optional(),
 });
 
 // Price types
@@ -114,9 +123,13 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
   error,
 }) => {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<{ id: string; price: number; date: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const queryClient = useQueryClient();
+  
+  const deletePriceHistoryMutation = useDeletePriceHistory();
   
   // Use new pagination-enabled hook for price history
   const { 
@@ -151,6 +164,7 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
       priceType: asset.assetPrice?.priceType || 'MANUAL',
       priceSource: asset.assetPrice?.priceSource || 'USER_INPUT',
       changeReason: '',
+      priceDate: null,
     },
   });
 
@@ -199,7 +213,8 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
         data.price,
         data.priceType,
         data.priceSource,
-        data.changeReason
+        data.changeReason,
+        data.priceDate
       );
       
       setUpdateDialogOpen(false);
@@ -499,8 +514,9 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                             <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '18%', fontSize: '0.875rem' }}>Price</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '12%', fontSize: '0.875rem' }}>Type</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '12%', fontSize: '0.875rem' }}>Source</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '28%', fontSize: '0.875rem' }}>Reason</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '30%', fontSize: '0.875rem' }}>Date</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '20%', fontSize: '0.875rem' }}>Reason</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '20%', fontSize: '0.875rem' }}>Date</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#667eea', width: '8%', fontSize: '0.875rem', textAlign: 'center' }}>Action</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -575,6 +591,31 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                                 }}>
                                   {formatDate(history.createdAt)}
                                 </Typography>
+                              </TableCell>
+                              <TableCell sx={{ py: 0.5, textAlign: 'center', width: '48px' }}>
+                                <Tooltip title="Delete record">
+                                  <IconButton
+                                    onClick={() => {
+                                      setRecordToDelete({
+                                        id: history.id,
+                                        price: typeof history.price === 'string' ? parseFloat(history.price) : history.price,
+                                        date: history.createdAt,
+                                      });
+                                      setDeleteDialogOpen(true);
+                                    }}
+                                    disabled={deletePriceHistoryMutation.isLoading}
+                                    size="small"
+                                    sx={{
+                                      color: '#f44336',
+                                      '&:hover': {
+                                        backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                                        color: '#d32f2f',
+                                      },
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -814,7 +855,38 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                     )}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name="priceDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        {...field}
+                        label="Price Date (Optional)"
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            error: !!errors.priceDate,
+                            helperText: errors.priceDate?.message,
+                            sx: {
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: '#667eea',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: '#667eea',
+                                  borderWidth: 2,
+                                },
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <Controller
                     name="changeReason"
                     control={control}
@@ -823,8 +895,6 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
                         {...field}
                         label="Change Reason (Optional)"
                         fullWidth
-                        multiline
-                        rows={3}
                         error={!!errors.changeReason}
                         helperText={errors.changeReason?.message}
                         placeholder="Enter a reason for this price change..."
@@ -877,6 +947,140 @@ const AssetPriceManagement: React.FC<AssetPriceManagementProps> = ({
               </ActionButton>
             </DialogActions>
           </form>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setRecordToDelete(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: '1.5rem',
+            py: 3,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Box>
+              Delete Price History Record
+            </Box>
+            <ResponsiveButton
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setRecordToDelete(null);
+              }}
+              icon={<CloseIcon />}
+              forceIconOnly={true}
+              mobileText=""
+              desktopText=""
+              sx={{
+                color: 'white',
+                minWidth: 'auto',
+                p: 1,
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }
+              }}
+            >
+              Close
+            </ResponsiveButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 4 }}>
+            <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
+              Are you sure you want to delete this price history record? This action cannot be undone.
+            </Alert>
+            {recordToDelete && (
+              <Box>
+                <Typography variant="body1" sx={{ mb: 2, fontWeight: 600 }}>
+                  Record Details:
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <strong>Price:</strong> {formatPrice(recordToDelete.price, asset.currency)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <strong>Date:</strong> {formatDate(recordToDelete.date)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ 
+            p: 3, 
+            pt: 2,
+            gap: 2,
+            borderTop: '1px solid rgba(0,0,0,0.1)',
+            justifyContent: 'flex-end'
+          }}>
+            <ActionButton
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setRecordToDelete(null);
+              }}
+              variant="outlined"
+              mobileText="Cancel"
+              desktopText="Cancel"
+              forceTextOnly={true}
+              sx={{
+                borderColor: '#667eea',
+                color: '#667eea',
+                fontWeight: 600,
+                minWidth: 100,
+                borderRadius: 2,
+              }}
+            >
+              Cancel
+            </ActionButton>
+            <ActionButton
+              onClick={async () => {
+                if (recordToDelete) {
+                  try {
+                    await deletePriceHistoryMutation.mutateAsync(recordToDelete.id);
+                    setDeleteDialogOpen(false);
+                    setRecordToDelete(null);
+                    // Invalidate and refetch price history data
+                    queryClient.invalidateQueries(['priceHistory', asset.id]);
+                    await refetchPriceHistory();
+                  } catch (error) {
+                    console.error('Delete price history error:', error);
+                  }
+                }
+              }}
+              variant="contained"
+              disabled={deletePriceHistoryMutation.isLoading}
+              icon={deletePriceHistoryMutation.isLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+              mobileText={deletePriceHistoryMutation.isLoading ? 'Deleting...' : 'Delete'}
+              desktopText={deletePriceHistoryMutation.isLoading ? 'Deleting...' : 'Delete'}
+              forceTextOnly={true}
+              sx={{
+                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                fontWeight: 700,
+                minWidth: 120,
+                borderRadius: 2,
+                boxShadow: '0 4px 16px rgba(244,67,54,0.3)',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(244,67,54,0.4)',
+                }
+              }}
+            >
+              {deletePriceHistoryMutation.isLoading ? 'Deleting...' : 'Delete'}
+            </ActionButton>
+          </DialogActions>
         </Dialog>
       </Box>
     </LocalizationProvider>

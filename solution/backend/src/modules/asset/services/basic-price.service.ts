@@ -288,39 +288,54 @@ export class BasicPriceService {
 
     try {
       // Update lastPriceUpdate if currentPrice is being updated
+      // Always use current time for lastPriceUpdate (when the update was made)
       if (updateDto.currentPrice !== undefined) {
+        // Store the provided date for price history, but use current time for lastPriceUpdate
+        const priceHistoryDate = updateDto.lastPriceUpdate 
+          ? new Date(updateDto.lastPriceUpdate) 
+          : new Date();
+        
+        // Update lastPriceUpdate to current time (when update was made)
         updateDto.lastPriceUpdate = new Date().toISOString();
-      }
+        
+        Object.assign(price, {
+          ...updateDto,
+          lastPriceUpdate: new Date(), // Always use current time for lastPriceUpdate
+        });
 
-      Object.assign(price, {
-        ...updateDto,
-        lastPriceUpdate: updateDto.lastPriceUpdate ? new Date(updateDto.lastPriceUpdate) : price.lastPriceUpdate,
-      });
-
-      const savedPrice = await this.assetPriceRepository.save(price);
-      
-      // Create price history record for manual updates
-      if (updateDto.currentPrice !== undefined) {
+        const savedPrice = await this.assetPriceRepository.save(price);
+        
+        // Create price history record with the provided date (or current date if not provided)
         const priceHistory = this.priceHistoryRepository.create({
           assetId: assetId,
           price: updateDto.currentPrice,
           priceType: updateDto.priceType || 'MANUAL',
           priceSource: updateDto.priceSource || 'USER',
-          changeReason: `Price update ${new Date().toLocaleDateString('vi-VN')}`,
-          createdAt: new Date(), // Add the required createdAt field
+          changeReason: updateDto.metadata?.changeReason || `Price update ${priceHistoryDate.toLocaleDateString('vi-VN')}`,
+          createdAt: priceHistoryDate, // Use provided date or current date
           metadata: {
             source: 'manual_update',
             updateType: 'manual',
-            changeReason: updateDto.metadata?.changeReason || `Price update ${new Date().toLocaleDateString('vi-VN')}`,
+            changeReason: updateDto.metadata?.changeReason || `Price update ${priceHistoryDate.toLocaleDateString('vi-VN')}`,
+            priceDate: priceHistoryDate.toISOString(), // Store the date in metadata for reference
           },
         });
         
         await this.priceHistoryRepository.save(priceHistory);
-        this.logger.log(`Price history created for manual update: ${assetId}`);
+        this.logger.log(`Price history created for manual update: ${assetId} at ${priceHistoryDate.toISOString()}`);
+        
+        return this.mapToResponseDto(savedPrice);
+      } else {
+        // If only updating other fields (not price), just update normally
+        Object.assign(price, {
+          ...updateDto,
+          lastPriceUpdate: updateDto.lastPriceUpdate ? new Date(updateDto.lastPriceUpdate) : price.lastPriceUpdate,
+        });
+
+        const savedPrice = await this.assetPriceRepository.save(price);
+        this.logger.log(`Asset price updated successfully by asset ID: ${savedPrice.id}`);
+        return this.mapToResponseDto(savedPrice);
       }
-      
-      this.logger.log(`Asset price updated successfully by asset ID: ${savedPrice.id}`);
-      return this.mapToResponseDto(savedPrice);
     } catch (error) {
       this.logger.error(`Failed to update asset price by asset ID ${assetId}: ${error.message}`);
       throw new BadRequestException(`Failed to update asset price: ${error.message}`);

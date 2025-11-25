@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -530,5 +531,39 @@ export class PriceHistoryController {
       deletedCount,
       message: `Successfully deleted ${deletedCount} old price history records`,
     };
+  }
+
+  /**
+   * Delete a specific price history record.
+   * @param id - Price history record ID
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete price history record',
+    description: 'Delete a specific price history record by ID',
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    format: 'uuid',
+    description: 'Price history record ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Price history record deleted successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Price history record not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid price history record ID format',
+  })
+  async deletePriceHistory(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    await this.priceHistoryService.deletePriceHistory(id);
   }
 }

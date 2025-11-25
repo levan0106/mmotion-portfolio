@@ -213,42 +213,61 @@ export const useUpdateAssetPrice = () => {
   const queryClient = useQueryClient();
   
   return useMutation(
-    async ({ assetId, price, priceType, priceSource, changeReason }: {
+    async ({ assetId, price, priceType, priceSource, changeReason, priceDate }: {
       assetId: string;
       price: number;
       priceType: string;
       priceSource: string;
       changeReason?: string;
+      priceDate?: Date | null;
     }) => {
       try {
-        // Try to get existing asset price
-        await apiService.api.get(`/api/v1/asset-prices/asset/${assetId}`);
-        // Update existing asset price by asset ID (this will automatically create price history)
-        const updateResponse = await apiService.api.put(`/api/v1/asset-prices/asset/${assetId}`, {
+        // Prepare update payload
+        const updatePayload: any = {
           currentPrice: price,
           priceType,
           priceSource,
-          changeReason,
           metadata: {
             changeReason,
             source: 'manual_update',
           },
-        });
+        };
+
+        // Add lastPriceUpdate if priceDate is provided
+        if (priceDate) {
+          // Set to end of day to ensure it's included in that date
+          const dateWithTime = new Date(priceDate);
+          dateWithTime.setHours(23, 59, 59, 999);
+          updatePayload.lastPriceUpdate = dateWithTime.toISOString();
+        }
+
+        // Try to get existing asset price
+        await apiService.api.get(`/api/v1/asset-prices/asset/${assetId}`);
+        // Update existing asset price by asset ID (this will automatically create price history)
+        const updateResponse = await apiService.api.put(`/api/v1/asset-prices/asset/${assetId}`, updatePayload);
           return updateResponse.data;
       } catch (error: any) {
         // If price doesn't exist (404), create new one
         if (error.response?.status === 404) {
-          const createResponse = await apiService.api.post('/api/v1/asset-prices', {
+          const createPayload: any = {
             assetId,
             currentPrice: price,
             priceType,
             priceSource,
-            changeReason,
             metadata: {
               changeReason,
               source: 'manual_update',
             },
-          });
+          };
+
+          // Add lastPriceUpdate if priceDate is provided
+          if (priceDate) {
+            const dateWithTime = new Date(priceDate);
+            dateWithTime.setHours(23, 59, 59, 999);
+            createPayload.lastPriceUpdate = dateWithTime.toISOString();
+          }
+
+          const createResponse = await apiService.api.post('/api/v1/asset-prices', createPayload);
           return createResponse.data;
         }
         // Re-throw other errors
