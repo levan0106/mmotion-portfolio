@@ -84,8 +84,11 @@ export class AssetService {
   /**
    * Get asset by ID
    */
-  async getAssetById(id: string): Promise<Asset> {
-    return this.makeRequest<Asset>('GET', `/api/v1/assets/${id}`);
+  async getAssetById(id: string, accountId?: string): Promise<Asset> {
+    const url = accountId 
+      ? `/api/v1/assets/${id}?accountId=${accountId}`
+      : `/api/v1/assets/${id}`;
+    return this.makeRequest<Asset>('GET', url);
   }
 
   /**

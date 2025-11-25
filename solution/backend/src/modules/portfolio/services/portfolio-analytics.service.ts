@@ -360,27 +360,31 @@ export class PortfolioAnalyticsService {
     const portfolioTotalValue = calculation.assetPositions.reduce((sum, pos) => sum + pos.currentValue, 0);
 
     // Transform data and calculate percentages using consistent calculations
-    const assetDetails: AssetDetailSummaryDto[] = calculation.assetPositions.map(position => {
-      const assetInfo = assetInfoMap.get(position.symbol) || { name: position.symbol, assetType: 'UNKNOWN' };
-      const currentPrice = position.quantity > 0 ? position.currentValue / position.quantity : 0;
-      const percentage = position.currentValue > 0 && portfolioTotalValue > 0 ? (position.currentValue / portfolioTotalValue) * 100 : 0;
-      
-      // Use real unrealized P&L from PortfolioCalculationService
-      const unrealizedPlPercentage = position.avgCost > 0 ? (position.unrealizedPl / (position.quantity * position.avgCost)) * 100 : 0;
+    // Filter out positions with very small quantities (floating point precision issues)
+    const QUANTITY_THRESHOLD = 0.00000001;
+    const assetDetails: AssetDetailSummaryDto[] = calculation.assetPositions
+      .filter(position => position.quantity > QUANTITY_THRESHOLD)
+      .map(position => {
+        const assetInfo = assetInfoMap.get(position.symbol) || { name: position.symbol, assetType: 'UNKNOWN' };
+        const currentPrice = position.quantity > 0 ? position.currentValue / position.quantity : 0;
+        const percentage = position.currentValue > 0 && portfolioTotalValue > 0 ? (position.currentValue / portfolioTotalValue) * 100 : 0;
+        
+        // Use real unrealized P&L from PortfolioCalculationService
+        const unrealizedPlPercentage = position.avgCost > 0 && position.quantity > 0 ? (position.unrealizedPl / (position.quantity * position.avgCost)) * 100 : 0;
 
-      return {
-        assetId: (assetInfo as any)?.assetId || position.assetId,
-        symbol: position.symbol,
-        name: (assetInfo as any).name,
-        assetType: (assetInfo as any).assetType,
-        quantity: position.quantity,
-        currentPrice: currentPrice,
-        totalValue: position.currentValue,
-        percentage: percentage,
-        unrealizedPl: position.unrealizedPl,
-        unrealizedPlPercentage: unrealizedPlPercentage,
-      } as AssetDetailSummaryDto;
-    });
+        return {
+          assetId: (assetInfo as any)?.assetId || position.assetId,
+          symbol: position.symbol,
+          name: (assetInfo as any).name,
+          assetType: (assetInfo as any).assetType,
+          quantity: position.quantity,
+          currentPrice: currentPrice,
+          totalValue: position.currentValue,
+          percentage: percentage,
+          unrealizedPl: position.unrealizedPl,
+          unrealizedPlPercentage: unrealizedPlPercentage,
+        } as AssetDetailSummaryDto;
+      });
 
     return {
       portfolioId: portfolioId,

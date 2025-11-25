@@ -161,7 +161,10 @@ export class PortfolioCalculationService {
 
     for (const [assetId, assetTradesList] of assetTrades) {
       const position = await this.calculateAssetPosition(assetId, assetTradesList, snapshotDate);
-      if (position.quantity > 0) {
+      // Filter out positions with quantity <= 0 (including very small floating point values)
+      // Threshold: 0.00000001 (1e-8) - any quantity smaller than this is considered zero
+      const QUANTITY_THRESHOLD = 0.00000001;
+      if (position.quantity > QUANTITY_THRESHOLD) {
         positions.push(position);
       }
     }

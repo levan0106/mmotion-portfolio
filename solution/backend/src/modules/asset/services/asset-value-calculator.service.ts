@@ -531,14 +531,19 @@ export class AssetValueCalculatorService {
       }
     }
   
-    const marketValue = netQuantity * currentPrice;
+    // Round very small quantities to zero to avoid floating point precision issues
+    // Threshold: 0.00000001 (1e-8) - any quantity smaller than this is considered zero
+    const QUANTITY_THRESHOLD = 0.00000001;
+    const roundedQuantity = Math.abs(netQuantity) < QUANTITY_THRESHOLD ? 0 : netQuantity;
+    
+    const marketValue = roundedQuantity * currentPrice;
     const unrealizedPnl = marketValue - totalCostBasis;
     const totalPnl = realizedPnl + unrealizedPnl;
   
     // ========== 5. Output ==========
     return {
-      quantity: netQuantity,                          // số lượng còn lại
-      avgCost: netQuantity > 0 ? totalCostBasis / netQuantity : 0, // giá vốn bình quân còn lại
+      quantity: roundedQuantity,                      // số lượng còn lại (rounded to avoid floating point errors)
+      avgCost: roundedQuantity > 0 ? totalCostBasis / roundedQuantity : 0, // giá vốn bình quân còn lại
       currentValue: marketValue,                      // giá trị thị trường
       unrealizedPl: unrealizedPnl,                    // lãi/lỗ chưa thực hiện
       realizedPl: realizedPnl,                        // lãi/lỗ đã thực hiện

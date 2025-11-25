@@ -15,6 +15,7 @@ import { GlobalAsset } from '../../types/global-asset.types';
 import { useAccount } from '../../contexts/AccountContext';
 import { formatCurrency } from '../../utils/format';
 import { globalAssetService } from '../../services/global-asset.service';
+import { assetService } from '../../services/asset.service';
 
 export interface AssetAutocompleteProps {
   value?: string;
@@ -75,6 +76,7 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
   const prevSearchTermRef = useRef<string>('');
   const prevPortfolioIdRef = useRef<string | undefined>(portfolioId);
   const hasInitialFetchRef = useRef(false); // Track if initial fetch has been done
+  const isResolvingAssetIdRef = useRef(false); // Track if we're currently resolving Asset.id to GlobalAsset.id
 
   // Fetch global assets
   const fetchGlobalAssets = useCallback(async (pageNum: number = 1, search: string = '') => {
@@ -214,15 +216,53 @@ export const AssetAutocomplete: React.FC<AssetAutocompleteProps> = ({
 
   // Effect to handle case when assets are loaded and we have a value but no selectedAsset
   // This handles the edit modal case where value is set before assets are loaded
+  // Also handles the case where value is Asset.id but we need GlobalAsset.id
   useEffect(() => {
     if (value && !selectedAsset && globalAssets.length > 0 && !globalAssetsLoading) {
-      const asset = globalAssets.find(a => a.id === value);
-      if (asset) {
+      // First, try to find GlobalAsset by id directly
+      let asset = globalAssets.find(a => a.id === value);
+      
+      // If not found, it might be an Asset.id, so we need to resolve it
+      if (!asset) {
+        // Try to find by searching in all loaded assets (including paginated ones)
+        // If still not found, fetch Asset from backend and find GlobalAsset by symbol
+        const resolveAssetId = async () => {
+          // Prevent multiple simultaneous resolutions
+          if (isResolvingAssetIdRef.current) {
+            return;
+          }
+          
+          isResolvingAssetIdRef.current = true;
+          try {
+            // Fetch Asset from backend to get symbol
+            const assetData = await assetService.getAssetById(value, accountId);
+            if (assetData && assetData.symbol) {
+              // Find GlobalAsset by symbol
+              const globalAsset = await globalAssetService.getGlobalAssetBySymbol(assetData.symbol);
+              if (globalAsset) {
+                setSelectedAsset(globalAsset);
+                prevSelectedAssetRef.current = globalAsset;
+                // Don't call onChange here to avoid infinite loop
+                // The parent component already has the Asset.id, and we're just displaying the GlobalAsset
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to resolve Asset.id ${value} to GlobalAsset:`, error);
+            // If resolution fails, try to find in current globalAssets list by symbol
+            // This is a fallback in case the asset is already in the list but with different id
+          } finally {
+            isResolvingAssetIdRef.current = false;
+          }
+        };
+        
+        resolveAssetId();
+      } else {
+        // Found directly, set it
         setSelectedAsset(asset);
         prevSelectedAssetRef.current = asset;
       }
     }
-  }, [value, selectedAsset, globalAssets, globalAssetsLoading]);
+  }, [value, selectedAsset, globalAssets, globalAssetsLoading, accountId, onChange]);
 
   // Load more assets
   const loadMore = useCallback(async () => {
