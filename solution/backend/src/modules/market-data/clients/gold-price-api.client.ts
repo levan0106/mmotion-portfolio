@@ -47,11 +47,14 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
         method: 'GET',
       },
       apiCall: () => this.fetchGoldPrices(headers),
-      dataProcessor: (data: GoldData[]) => ({
-        symbolsProcessed: data.length,
-        successfulSymbols: data.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
-        failedSymbols: data.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length,
-      }),
+      dataProcessor: (data: { goldPrices: GoldData[]; rejectedCount: number }) => {
+        const validGoldPrices = data.goldPrices;
+        return {
+          symbolsProcessed: validGoldPrices.length + data.rejectedCount, // Total: valid + rejected
+          successfulSymbols: validGoldPrices.filter(item => item && item.symbol && (item.buyPrice > 0 || item.sellPrice > 0)).length,
+          failedSymbols: data.rejectedCount + validGoldPrices.filter(item => !item || !item.symbol || (item.buyPrice <= 0 && item.sellPrice <= 0)).length, // Include rejected count
+        };
+      },
     };
 
     const result = await this.executeWithTracking(
@@ -60,8 +63,11 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
       apiCall.dataProcessor
     );
 
+    // Fetch actual data
+    const fetchResult = result.statusCode === 200 ? await apiCall.apiCall() : { goldPrices: [], rejectedCount: 0 };
+
     return {
-      data: result.statusCode === 200 ? await apiCall.apiCall() : [],
+      data: fetchResult.goldPrices, // Return only valid gold prices
       apiCalls: [result],
       totalSymbols: result.symbolsProcessed,
       successfulSymbols: result.successfulSymbols,
@@ -71,8 +77,9 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
 
   /**
    * Private method to fetch gold prices
+   * Returns both valid gold prices and rejected count for proper tracking
    */
-  private async fetchGoldPrices(headers: any): Promise<GoldData[]> {
+  private async fetchGoldPrices(headers: any): Promise<{ goldPrices: GoldData[]; rejectedCount: number }> {
     return this.circuitBreakerService.execute(
       'gold-price-api',
       async () => {
@@ -95,10 +102,10 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
           .replace(/&gt;/g, '>')
           .replace(/&amp;/g, '&');
 
-        const goldPrices = this.parseGoldData(cleanText);
-        this.logger.log(`Successfully fetched ${goldPrices.length} gold prices from Doji`);
+        const parseResult = this.parseGoldData(cleanText);
+        this.logger.log(`Successfully fetched ${parseResult.goldPrices.length} gold prices from Doji (${parseResult.rejectedCount} rejected)`);
         
-        return goldPrices;
+        return parseResult;
       },
       {
         failureThreshold: 3,
@@ -130,8 +137,9 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
 
   /**
    * Parse gold data from HTML content
+   * Returns both valid gold prices and rejected count for proper tracking
    */
-  private parseGoldData(htmlContent: string): GoldData[] {
+  private parseGoldData(htmlContent: string): { goldPrices: GoldData[]; rejectedCount: number } {
     try {
       const goldPrices: GoldData[] = [];
       let rejectedCount = 0; // Track rejected records due to invalid price
@@ -160,8 +168,11 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
       // Parse table rows
       const rowPattern = /<tr[^>]*>.*?<\/tr>/gs;
       const rows = tableContent.match(rowPattern) || [];
-      
-      // this.logger.debug(`Found ${rows.length} table rows`);
+
+      if (rows.length === 0) {
+        this.logger.error('No gold price table found in HTML content' + htmlContent);
+        return { goldPrices: [], rejectedCount: 0 };
+      }
 
       for (const row of rows) {
         // Extract text content from table cells
@@ -208,19 +219,20 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
               const finalBuyPrice = buyPrice * 1000;
               const finalSellPrice = sellPrice * 1000;
               
-              // Validate gold price: if price < 20 million VND per luong (1 luong = 10 chi)
+              // Validate gold price: if price < 2 million VND per chi (1 chi = 3.75g)
               // This indicates API error or invalid data
-              // Note: Gold prices in Vietnam are typically 70-80 million VND per luong
-              // If price < 20 million, it's likely an error (wrong unit, corrupted data, etc.)
-              const MIN_VALID_GOLD_PRICE_PER_LUONG = 20000000; // 20 million VND
+              // Note: Gold prices from Doji API are per chi (not per luong)
+              // Gold prices in Vietnam are typically 14-15 million VND per chi
+              // If price < 2 million, it's likely an error (wrong unit, corrupted data, etc.)
+              const MIN_VALID_GOLD_PRICE_PER_CHI = 2000000; // 2 million VND per chi
               
               // Check if prices are too low (likely API error)
-              if (finalBuyPrice < MIN_VALID_GOLD_PRICE_PER_LUONG || finalSellPrice < MIN_VALID_GOLD_PRICE_PER_LUONG) {
+              if (finalBuyPrice < MIN_VALID_GOLD_PRICE_PER_CHI || finalSellPrice < MIN_VALID_GOLD_PRICE_PER_CHI) {
                 rejectedCount++;
                 this.logger.warn(
                   `Invalid gold price detected for ${type}: Buy=${finalBuyPrice.toLocaleString('vi-VN')} VND, ` +
                   `Sell=${finalSellPrice.toLocaleString('vi-VN')} VND. ` +
-                  `Price is below minimum threshold (${MIN_VALID_GOLD_PRICE_PER_LUONG.toLocaleString('vi-VN')} VND/luong). ` +
+                  `Price is below minimum threshold (${MIN_VALID_GOLD_PRICE_PER_CHI.toLocaleString('vi-VN')} VND/chi). ` +
                   `Skipping this record as API error.`
                 );
                 continue; // Skip this record
@@ -235,6 +247,13 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
               let symbol = type;
               let name = type;
               
+              // Log successful gold price parsing for debugging (after symbol is declared)
+              this.logger.debug(
+                `[DEBUG] Valid gold price parsed for ${type}: ` +
+                `Symbol=${symbol || type}, Buy=${finalBuyPrice.toLocaleString('vi-VN')} VND, ` +
+                `Sell=${finalSellPrice.toLocaleString('vi-VN')} VND`
+              );
+              
               // Special handling for SJC
               if (type.toLowerCase().includes('sjc')) {
                 symbol = 'GOLDSJC';
@@ -242,7 +261,7 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
               }
               // Special handling for 9999 gold
               else if (type.toLowerCase().includes('9999')) {
-                symbol = 'GOLD9999';
+                symbol = 'GOLDDOJI';
                 name = 'Nhẫn tròn 9999 DOJI';
               }
               // Special handling for PNJ
@@ -264,27 +283,41 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
                 region: 'Vietnam'
               });
             }
+            else {
+              this.logger.error(
+                `Invalid gold type detected for ${type} not in list of gold types: ${row}`
+              );
+            }
           }
+          else {
+            this.logger.error(
+              `Validation failed for valid gold price data: ${cells.join(' | ')}`
+            );
+          }
+        }else {
+          this.logger.error(
+            `Invalid gold row detected: ${cells.join(' | ')}`
+          );
         }
       }
 
       // Log warning if all records were rejected (API likely has issues)
       if (rejectedCount > 0 && goldPrices.length === 0) {
         this.logger.error(
-          `All gold price records were rejected due to invalid prices (< 20 million VND/luong). ` +
+          `All gold price records were rejected due to invalid prices (< 2 million VND/chi). ` +
           `Rejected ${rejectedCount} record(s). This indicates API error - cannot crawl gold price data.`
         );
       } else if (rejectedCount > 0) {
         this.logger.warn(
-          `Rejected ${rejectedCount} invalid gold price record(s) (price < 20 million VND/luong). ` +
+          `Rejected ${rejectedCount} invalid gold price record(s) (price < 2 million VND/chi). ` +
           `Successfully parsed ${goldPrices.length} valid record(s).`
         );
       }
 
-      return goldPrices;
+      return { goldPrices, rejectedCount };
     } catch (error) {
       this.logger.error('Failed to parse Doji gold data:', error.message);
-      return [];
+      return { goldPrices: [], rejectedCount: 0 };
     }
   }
 

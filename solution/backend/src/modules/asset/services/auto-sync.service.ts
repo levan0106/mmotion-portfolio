@@ -9,6 +9,7 @@ import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { PriceMode } from '../enums/price-mode.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
+import { MarketDataType } from '../../market-data/types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
 import { GlobalAssetTrackingService } from './global-asset-tracking.service';
 import { GlobalAssetSyncType, GlobalAssetSyncSource, GlobalAssetSyncStatus } from '../entities/global-asset-tracking.entity';
@@ -166,7 +167,6 @@ export class AutoSyncService {
       }
     }
 
-    this.logger.log(`[AutoSyncService] Auto sync configuration updated: ${JSON.stringify(this.getConfig())}`);
     
     // Update cron job when config changes
     this.setupDynamicCronJob();
@@ -335,7 +335,6 @@ export class AutoSyncService {
    */
   async triggerManualSync(): Promise<string> {
     const syncId = `manual_${Date.now()}`;
-    // this.logger.log(`[AutoSyncService] Manual sync triggered: ${syncId}`);
     
     // Get total assets in database for proper success rate calculation
     const totalAssetsInDatabase = await this.globalAssetRepository.count({
@@ -374,7 +373,6 @@ export class AutoSyncService {
 
       // Step 1: Fetch all market data from external APIs
       const marketDataResult = await this.externalMarketDataService.fetchAllMarketData(syncId);
-      // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
       // Update tracking with API statistics
       const totalApis = Object.keys(marketDataResult.summary.sources).length;
@@ -402,11 +400,43 @@ export class AutoSyncService {
       await new Promise(resolve => setTimeout(resolve, 500));
       await this.updateApiStatisticsFromCallDetails(syncId);
       
-      // Calculate final success rate
+      // Get updated tracking record to get latest API statistics
+      const updatedTracking = await this.globalAssetTrackingService.getByExecutionId(syncId);
+      if (!updatedTracking) {
+        throw new Error(`Tracking record not found for execution ID: ${syncId}`);
+      }
+      
+      // Get final API statistics from updated tracking
+      const finalTotalApis = updatedTracking.totalApis || totalApis;
+      const finalSuccessfulApis = updatedTracking.successfulApis || 0;
+      const finalFailedApis = updatedTracking.failedApis || 0;
+      
+      // Calculate final success rate for asset updates
       const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
       
-      // Determine final status based on success rate
-      const finalStatus = finalSuccessRate === 100 ? GlobalAssetSyncStatus.COMPLETED : GlobalAssetSyncStatus.FAILED;
+      // Determine final status: BOTH conditions must be met:
+      // 1. All APIs must be SUCCESS (finalSuccessfulApis === finalTotalApis)
+      // 2. All assets must be updated successfully (finalSuccessRate === 100)
+      const allApisSuccessful = finalTotalApis > 0 && finalSuccessfulApis === finalTotalApis && finalFailedApis === 0;
+      const allAssetsUpdated = finalSuccessRate === 100;
+      
+      const finalStatus = (allApisSuccessful && allAssetsUpdated) 
+        ? GlobalAssetSyncStatus.COMPLETED 
+        : GlobalAssetSyncStatus.FAILED;
+      
+      // Log status determination for debugging
+      if (!allApisSuccessful) {
+        this.logger.warn(
+          `[AutoSyncService] Manual sync ${syncId} marked as FAILED: Not all APIs successful. ` +
+          `Successful: ${finalSuccessfulApis}/${finalTotalApis}, Failed: ${finalFailedApis}`
+        );
+      }
+      if (!allAssetsUpdated) {
+        this.logger.warn(
+          `[AutoSyncService] Manual sync ${syncId} marked as FAILED: Not all assets updated. ` +
+          `Success rate: ${finalSuccessRate.toFixed(2)}% (${syncResult.successfulUpdates || 0}/${totalAssetsInDatabase})`
+        );
+      }
       
       //step 4: update tracking with final results
       tracking = await this.globalAssetTrackingService.updateProgress(
@@ -415,9 +445,9 @@ export class AutoSyncService {
         totalAssetsInDatabase, // Use database assets count, not API symbols
         syncResult.successfulUpdates || 0,
         syncResult.failedUpdates || 0,
-        totalApis,
-        successfulApis,
-        failedApis,
+        finalTotalApis,
+        finalSuccessfulApis,
+        finalFailedApis,
         syncResult.failedSymbols || []
       );
       
@@ -444,7 +474,6 @@ export class AutoSyncService {
    * Note: Cron expression is configurable via updateConfig()
    */
   async handleAutoSync(): Promise<void> {
-    // this.logger.log(`[AutoSyncService] Auto sync enabled: ${this.autoSyncEnabled}`);
     // Check if auto sync is enabled
     if (!this.autoSyncEnabled) {
       return;
@@ -458,7 +487,6 @@ export class AutoSyncService {
     }
 
     const syncId = `auto_${Date.now()}`;
-    // this.logger.log(`[AutoSyncService] Auto sync triggered: ${syncId}`);
     
     // Get total assets in database for proper success rate calculation
     const totalAssetsInDatabase = await this.globalAssetRepository.count({
@@ -497,7 +525,6 @@ export class AutoSyncService {
 
       // Step 1: Fetch all market data from external APIs
       const marketDataResult = await this.externalMarketDataService.fetchAllMarketData(syncId);
-      // this.logger.log(`[AutoSyncService] Fetched market data: ${marketDataResult.summary.totalSymbols} symbols from ${Object.keys(marketDataResult.summary.sources).length} sources`);
       
       // Update tracking with API statistics
       const totalApis = Object.keys(marketDataResult.summary.sources).length;
@@ -525,12 +552,43 @@ export class AutoSyncService {
       await new Promise(resolve => setTimeout(resolve, 500));
       await this.updateApiStatisticsFromCallDetails(syncId);
       
-      // Calculate final success rate
+      // Get updated tracking record to get latest API statistics
+      const updatedTracking = await this.globalAssetTrackingService.getByExecutionId(syncId);
+      if (!updatedTracking) {
+        throw new Error(`Tracking record not found for execution ID: ${syncId}`);
+      }
+      
+      // Get final API statistics from updated tracking
+      const finalTotalApis = updatedTracking.totalApis || totalApis;
+      const finalSuccessfulApis = updatedTracking.successfulApis || 0;
+      const finalFailedApis = updatedTracking.failedApis || 0;
+      
+      // Calculate final success rate for asset updates
       const finalSuccessRate = totalAssetsInDatabase > 0 ? ((syncResult.successfulUpdates || 0) / totalAssetsInDatabase) * 100 : 0;
       
-      // Determine final status based on success rate
-      const finalStatus = finalSuccessRate === 100 ? GlobalAssetSyncStatus.COMPLETED : GlobalAssetSyncStatus.FAILED;
+      // Determine final status: BOTH conditions must be met:
+      // 1. All APIs must be SUCCESS (finalSuccessfulApis === finalTotalApis)
+      // 2. All assets must be updated successfully (finalSuccessRate === 100)
+      const allApisSuccessful = finalTotalApis > 0 && finalSuccessfulApis === finalTotalApis && finalFailedApis === 0;
+      const allAssetsUpdated = finalSuccessRate === 100;
       
+      const finalStatus = (allApisSuccessful && allAssetsUpdated) 
+        ? GlobalAssetSyncStatus.COMPLETED 
+        : GlobalAssetSyncStatus.FAILED;
+      
+      // Log status determination for debugging
+      if (!allApisSuccessful) {
+        this.logger.warn(
+          `[AutoSyncService] Sync ${syncId} marked as FAILED: Not all APIs successful. ` +
+          `Successful: ${finalSuccessfulApis}/${finalTotalApis}, Failed: ${finalFailedApis}`
+        );
+      }
+      if (!allAssetsUpdated) {
+        this.logger.warn(
+          `[AutoSyncService] Sync ${syncId} marked as FAILED: Not all assets updated. ` +
+          `Success rate: ${finalSuccessRate.toFixed(2)}% (${syncResult.successfulUpdates || 0}/${totalAssetsInDatabase})`
+        );
+      }
       
       // Update tracking with final results including failed symbols
       tracking = await this.globalAssetTrackingService.updateProgress(
@@ -539,14 +597,13 @@ export class AutoSyncService {
         totalAssetsInDatabase, // Use database assets count, not API symbols
         syncResult.successfulUpdates || 0,
         syncResult.failedUpdates || 0,
-        totalApis,
-        successfulApis,
-        failedApis,
+        finalTotalApis,
+        finalSuccessfulApis,
+        finalFailedApis,
         syncResult.failedSymbols || [],
       );
       
       this.lastSyncTime = new Date();
-      // this.logger.log(`[AutoSyncService] Auto sync completed: ${syncId}`);
     } catch (error) {
       this.logger.error(`[AutoSyncService] Auto sync failed: ${syncId}`, error);
       
@@ -563,7 +620,45 @@ export class AutoSyncService {
   }
 
   /**
+   * Map API provider name to MarketDataSource enum
+   */
+  private mapProviderToSource(provider: string): string {
+    const providerMap: Record<string, string> = {
+      'Doji': 'DOJI',
+      'FMarket': 'FMARKET',
+      'Vietcombank': 'VIETCOMBANK',
+      'SSI': 'SSI',
+      'CoinGecko': 'COINGECKO',
+    };
+    return providerMap[provider] || provider.toUpperCase();
+  }
+
+  /**
+   * Get database symbol variations for a given API gold symbol
+   * This handles cases where API uses different symbol format than database
+   * Example: API returns 'GOLDSJC' but database has 'SJCGOLD' or 'DOJI'
+   */
+  private getGoldSymbolVariations(apiSymbol: string): string[] {
+    const symbol = apiSymbol.toUpperCase();
+    
+    // Gold symbol mapping: API symbols -> Database symbol variations
+    if (symbol === 'GOLDSJC' || symbol.includes('SJC')) {
+      return ['GOLDSJC', 'SJCGOLD', 'SJC', 'GOLD-SJC'];
+    } else if (symbol === 'GOLDDOJI' || symbol.includes('DOJI')) {
+      return ['GOLDDOJI', 'DOJIGOLD', 'DOJI', 'GOLD-DOJI'];
+    } else if (symbol === 'GOLDPNJ' || symbol.includes('PNJ')) {
+      return ['GOLDPNJ', 'PNJGOLD', 'PNJ', 'GOLD-PNJ'];
+    } else if (symbol === 'GOLD' || symbol.includes('VANG') || symbol.includes('9999')) {
+      return ['GOLD', 'VANG', 'VANG9999', 'GOLD9999'];
+    }
+    
+    // Return original symbol if no mapping found
+    return [apiSymbol];
+  }
+
+  /**
    * Perform the actual sync operation with circuit breaker protection
+   * Only updates prices for symbols from successful APIs (no fallback)
    */
   private async performSync(syncId: string, marketDataResult?: any, isManual: boolean = false): Promise<{
     successfulUpdates: number;
@@ -583,21 +678,81 @@ export class AutoSyncService {
           relations: ['assetPrice']
         });
 
-        // this.logger.log(`[AutoSyncService] Found ${globalAssets.length} active global assets to sync`);
 
         let successCount = 0;
         let errorCount = 0;
         const totalAssetsInDatabase = globalAssets.length; // Tổng số assets trong database
 
+        // Get failed API sources from multiple sources
+        // Only update prices for symbols from successful APIs (no fallback)
+        const failedSources = new Set<string>();
+        
+        // Method 1: Get from API call details (if available)
+        try {
+          const apiCallDetails = await this.globalAssetTrackingService.getApiCallDetailsByExecutionId(syncId);
+          apiCallDetails.forEach(detail => {
+            if (detail.status === 'failed' || detail.status === 'timeout') {
+              const source = this.mapProviderToSource(detail.provider);
+              failedSources.add(source);
+            }
+          });
+        } catch (error) {
+          // API call details not available yet, will use marketDataResult.errors as fallback
+        }
+        
+        // Method 2: Get from marketDataResult.errors (backup method)
+        if (marketDataResult && marketDataResult.errors && marketDataResult.errors.length > 0) {
+          marketDataResult.errors.forEach((error: any) => {
+            if (error.source) {
+              failedSources.add(error.source);
+            }
+          });
+        }
+
+        if (failedSources.size > 0) {
+          this.logger.warn(
+            `[AutoSyncService] ${failedSources.size} API source(s) failed: ${Array.from(failedSources).join(', ')}. ` +
+            `Prices from these sources will NOT be updated (no fallback).`
+          );
+        }
+
         // Create a map of all market data for quick lookup
+        // Only include data from successful API sources
         const marketDataMap = new Map<string, any>();
         
         if (marketDataResult) {
-          // Map all market data by symbol
-          [...marketDataResult.funds, ...marketDataResult.gold, ...marketDataResult.exchangeRates, ...marketDataResult.stocks, ...marketDataResult.crypto].forEach(item => {
-            marketDataMap.set(item.symbol, item);
+          // Filter and map market data by symbol, excluding failed sources
+          const allMarketData = [
+            ...marketDataResult.funds, 
+            ...marketDataResult.gold, 
+            ...marketDataResult.exchangeRates, 
+            ...marketDataResult.stocks, 
+            ...marketDataResult.crypto
+          ];
+          
+          allMarketData.forEach(item => {
+            // Only include data from successful API sources
+            if (item.source && !failedSources.has(item.source)) {
+              // Normalize symbol to uppercase for case-insensitive matching
+              const normalizedSymbol = item.symbol.toUpperCase();
+              marketDataMap.set(normalizedSymbol, item);
+              
+              // For gold assets, add symbol variations to the map for direct lookup
+              // API returns 'GOLDSJC' but DB might have 'SJCGOLD' or 'DOJI'
+              if (item.type === 'GOLD' || item.type === MarketDataType.GOLD) {
+                const apiSymbol = normalizedSymbol;
+                const dbSymbolVariations = this.getGoldSymbolVariations(apiSymbol);
+                
+                // Add all variations to the map for direct lookup (normalized to uppercase)
+                dbSymbolVariations.forEach(dbSymbol => {
+                  const normalizedDbSymbol = dbSymbol.toUpperCase();
+                  if (!marketDataMap.has(normalizedDbSymbol)) {
+                    marketDataMap.set(normalizedDbSymbol, item);
+                  }
+                });
+              }
+            }
           });
-          // this.logger.log(`[AutoSyncService] Created market data map with ${marketDataMap.size} symbols: ${Array.from(marketDataMap.keys()).slice(0, 10).join(', ')}...`);
         }
 
       // Track failed symbols
@@ -606,40 +761,26 @@ export class AutoSyncService {
       // Update prices for each asset
       for (const asset of globalAssets) {
         try {
-          // Try exact match first
-          let marketData = marketDataMap.get(asset.symbol);
-          // this.logger.debug(`[AutoSyncService] Looking for ${asset.symbol}, exact match: ${marketData ? 'found' : 'not found'}`);
+          // Only try exact match - NO fuzzy matching/fallback
+          // Normalize asset symbol to uppercase for case-insensitive matching
+          const normalizedAssetSymbol = asset.symbol.toUpperCase();
+          const marketData = marketDataMap.get(normalizedAssetSymbol);
           
-          // If no exact match, try fuzzy matching for common cases
           if (!marketData) {
-            // Try different symbol variations
-            const symbolVariations = [
-              asset.symbol,
-              asset.symbol.toUpperCase(),
-              asset.symbol.toLowerCase(),
-              // For vàng miếng SJC, code là GOLDSJC
-              ...(asset.symbol.toLowerCase().includes('sjc')? 
-                ['GOLDSJC'] : []),
-              // For vàng 9999, doji, pnj, code là GOLD9999, GOLDPNJ
-              ...(asset.symbol.toLowerCase().includes('gold')  || asset.symbol.toLowerCase().includes('9999')
-                || asset.symbol.toLowerCase().includes('doji') || asset.symbol.toLowerCase().includes('pnj') 
-                || asset.symbol.toLowerCase().includes('vàng') || asset.symbol.toLowerCase().includes('vang') ? 
-                ['GOLD9999', 'GOLDPNJ', '9999', 'PNJ'] : []),
-              // For crypto assets, try common crypto symbols
-              ...(asset.symbol.toLowerCase().includes('btc') || asset.symbol.toLowerCase().includes('bitcoin') ? 
-                ['BTC'] : []),
-              ...(asset.symbol.toLowerCase().includes('eth') || asset.symbol.toLowerCase().includes('ethereum') ? 
-                ['ETH'] : []),
-            ];
-            
-            for (const variation of symbolVariations) {
-              if (marketDataMap.has(variation)) {
-                marketData = marketDataMap.get(variation);
-                // this.logger.debug(`[AutoSyncService] Found match for ${asset.symbol} using variation: ${variation}`);
-                break;
-              }
-            }
-            // this.logger.debug(`[AutoSyncService] Tried variations for ${asset.symbol}: ${symbolVariations.join(', ')}, found: ${marketData ? 'yes' : 'no'}`);
+            // No data found for this symbol (either not in market data or from failed API)
+            failedSymbols.push(asset.symbol);
+            errorCount++;
+            continue;
+          }
+          
+          // Check if source is failed (double check)
+          if (marketData.source && failedSources.has(marketData.source)) {
+            failedSymbols.push(asset.symbol);
+            errorCount++;
+            this.logger.warn(
+              `[AutoSyncService] Skipping ${asset.symbol} - source ${marketData.source} failed`
+            );
+            continue;
           }
           
           const currentPrice = marketData?.buyPrice || marketData?.sellPrice;
@@ -686,10 +827,9 @@ export class AutoSyncService {
               await this.assetPriceHistoryRepository.save(priceHistory);
               
               successCount++;
-              // this.logger.debug(`[AutoSyncService] Updated price for ${asset.symbol}: ${currentPrice} (source: ${marketData?.source || 'unknown'}) and saved to history`);
           } else {
             failedSymbols.push(asset.symbol);
-            errorCount++; // Count as failed update
+            errorCount++;
           }
         } catch (error) {
           failedSymbols.push(asset.symbol);
@@ -698,7 +838,6 @@ export class AutoSyncService {
         }
       }
 
-        // this.logger.log(`[AutoSyncService] Sync operation ${syncId} completed: ${successCount} successful, ${errorCount} errors`);
         
         // Calculate success rate based on database assets, not API symbols
         const successRate = totalAssetsInDatabase > 0 ? (successCount / totalAssetsInDatabase) * 100 : 0;

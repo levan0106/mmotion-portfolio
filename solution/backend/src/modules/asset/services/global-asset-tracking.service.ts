@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GlobalAssetTracking, GlobalAssetSyncStatus, GlobalAssetSyncType, GlobalAssetSyncSource } from '../entities/global-asset-tracking.entity';
 import { ApiCallDetailService } from './api-call-detail.service';
@@ -111,9 +111,27 @@ export class GlobalAssetTrackingService {
     if (failedApis !== undefined) tracking.failedApis = failedApis;
     if (failedSymbols !== undefined) tracking.failedSymbols = failedSymbols;
 
-    // Calculate success rate based on total symbols (which should be total assets in database)
-    if (tracking.totalSymbols > 0) {
+    // Calculate success rate: must consider BOTH API success AND asset update success
+    // Success Rate = 0% if any API failed (cannot have 100% success with failed APIs)
+    // Otherwise, Success Rate = (successfulUpdates / totalSymbols) * 100
+    if (tracking.totalApis > 0 && tracking.successfulApis < tracking.totalApis) {
+      // If any API failed, success rate cannot be 100%
+      // Calculate as weighted average: (API success rate * 0.5) + (Asset update rate * 0.5)
+      const apiSuccessRate = (tracking.successfulApis / tracking.totalApis) * 100;
+      const assetUpdateRate = tracking.totalSymbols > 0 
+        ? (tracking.successfulUpdates / tracking.totalSymbols) * 100 
+        : 0;
+      tracking.successRate = (apiSuccessRate * 0.5) + (assetUpdateRate * 0.5);
+      this.logger.debug(
+        `[GlobalAssetTrackingService] Success rate calculated with API failures: ` +
+        `API: ${apiSuccessRate.toFixed(2)}%, Assets: ${assetUpdateRate.toFixed(2)}%, ` +
+        `Final: ${tracking.successRate.toFixed(2)}%`
+      );
+    } else if (tracking.totalSymbols > 0) {
+      // All APIs successful, calculate based on asset updates only
       tracking.successRate = (tracking.successfulUpdates / tracking.totalSymbols) * 100;
+    } else {
+      tracking.successRate = 0;
     }
 
     // Update status based on success rate: only 100% success rate is considered completed
