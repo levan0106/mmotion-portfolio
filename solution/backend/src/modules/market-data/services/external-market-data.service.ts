@@ -173,7 +173,34 @@ export class ExternalMarketDataService {
         await this.apiTrackingHelper.recordApiCallDetails(executionId, apiResult.apiCalls);
       }
 
-      this.logger.log(`Successfully fetched ${apiResult.data.length} ${task.name}`);
+      // Check if API call succeeded but returned no valid data due to validation errors
+      // This happens when all records are rejected (e.g., gold prices < 20 million VND/luong)
+      if (apiResult.data.length === 0 && apiResult.failedSymbols > 0 && apiResult.successfulSymbols === 0) {
+        // API call was successful (HTTP 200) but all data was rejected due to validation
+        // This indicates data quality issues (e.g., invalid prices, API format changes)
+        result.errors.push({
+          source: task.source,
+          message: `${task.name}: API call succeeded but all ${apiResult.failedSymbols} record(s) were rejected due to validation errors (e.g., invalid price data). Cannot crawl valid ${task.name} data.`,
+          timestamp: new Date(),
+          details: {
+            totalSymbols: apiResult.totalSymbols,
+            successfulSymbols: apiResult.successfulSymbols,
+            failedSymbols: apiResult.failedSymbols,
+            reason: 'All records rejected by validation (likely API data quality issue)'
+          }
+        });
+        this.logger.warn(
+          `${task.name}: API call succeeded but all records were rejected. ` +
+          `Total: ${apiResult.totalSymbols}, Failed: ${apiResult.failedSymbols}, Successful: ${apiResult.successfulSymbols}`
+        );
+      } else if (apiResult.data.length === 0 && apiResult.failedSymbols > 0) {
+        // Some records were rejected but we still have valid data
+        this.logger.warn(
+          `${task.name}: ${apiResult.failedSymbols} record(s) were rejected, but ${apiResult.successfulSymbols} valid record(s) were fetched.`
+        );
+      } else {
+        this.logger.log(`Successfully fetched ${apiResult.data.length} ${task.name}`);
+      }
     } catch (error) {
       result.errors.push({
         source: task.source,

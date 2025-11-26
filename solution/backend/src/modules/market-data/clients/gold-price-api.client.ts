@@ -134,6 +134,7 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
   private parseGoldData(htmlContent: string): GoldData[] {
     try {
       const goldPrices: GoldData[] = [];
+      let rejectedCount = 0; // Track rejected records due to invalid price
 
       // Debug: Log HTML content length and first 500 chars
       //this.logger.debug(`HTML content length: ${htmlContent.length}`);
@@ -203,6 +204,28 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
             );
 
             if (isGoldRow) {
+              // Calculate final prices (multiply by 1000 to convert from thousands to VND)
+              const finalBuyPrice = buyPrice * 1000;
+              const finalSellPrice = sellPrice * 1000;
+              
+              // Validate gold price: if price < 20 million VND per luong (1 luong = 10 chi)
+              // This indicates API error or invalid data
+              // Note: Gold prices in Vietnam are typically 70-80 million VND per luong
+              // If price < 20 million, it's likely an error (wrong unit, corrupted data, etc.)
+              const MIN_VALID_GOLD_PRICE_PER_LUONG = 20000000; // 20 million VND
+              
+              // Check if prices are too low (likely API error)
+              if (finalBuyPrice < MIN_VALID_GOLD_PRICE_PER_LUONG || finalSellPrice < MIN_VALID_GOLD_PRICE_PER_LUONG) {
+                rejectedCount++;
+                this.logger.warn(
+                  `Invalid gold price detected for ${type}: Buy=${finalBuyPrice.toLocaleString('vi-VN')} VND, ` +
+                  `Sell=${finalSellPrice.toLocaleString('vi-VN')} VND. ` +
+                  `Price is below minimum threshold (${MIN_VALID_GOLD_PRICE_PER_LUONG.toLocaleString('vi-VN')} VND/luong). ` +
+                  `Skipping this record as API error.`
+                );
+                continue; // Skip this record
+              }
+              
               // Try to get lastUpdated from API data, fallback to current time
               let lastUpdated = new Date();
               // For gold prices, we can use the current time as they're scraped in real-time
@@ -232,8 +255,8 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
               
               goldPrices.push({
                 symbol: symbol,
-                buyPrice: buyPrice * 1000, // Multiply by 1000 for gold prices
-                sellPrice: sellPrice * 1000, // Multiply by 1000 for gold prices
+                buyPrice: finalBuyPrice,
+                sellPrice: finalSellPrice,
                 lastUpdated: lastUpdated,
                 source: MarketDataSource.DOJI,
                 type: MarketDataType.GOLD,
@@ -243,6 +266,19 @@ export class GoldPriceAPIClient extends ApiTrackingBase {
             }
           }
         }
+      }
+
+      // Log warning if all records were rejected (API likely has issues)
+      if (rejectedCount > 0 && goldPrices.length === 0) {
+        this.logger.error(
+          `All gold price records were rejected due to invalid prices (< 20 million VND/luong). ` +
+          `Rejected ${rejectedCount} record(s). This indicates API error - cannot crawl gold price data.`
+        );
+      } else if (rejectedCount > 0) {
+        this.logger.warn(
+          `Rejected ${rejectedCount} invalid gold price record(s) (price < 20 million VND/luong). ` +
+          `Successfully parsed ${goldPrices.length} valid record(s).`
+        );
       }
 
       return goldPrices;
