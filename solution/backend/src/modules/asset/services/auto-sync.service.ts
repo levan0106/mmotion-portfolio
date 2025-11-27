@@ -8,6 +8,7 @@ import { AssetPrice } from '../entities/asset-price.entity';
 import { AssetPriceHistory } from '../entities/asset-price-history.entity';
 import { PriceType, PriceSource } from '../enums/price-type.enum';
 import { PriceMode } from '../enums/price-mode.enum';
+import { AssetType } from '../enums/asset-type.enum';
 import { ExternalMarketDataService } from '../../market-data/services/external-market-data.service';
 import { MarketDataType } from '../../market-data/types/market-data.types';
 import { CircuitBreakerService } from '../../shared/services/circuit-breaker.service';
@@ -751,6 +752,20 @@ export class AutoSyncService {
                   }
                 });
               }
+              
+              // For exchange rates (CURRENCY assets), also map by currency field
+              // ExchangeRateData has both symbol and currency fields
+              // Map by currency field as well for better matching
+              if (item.type === 'EXCHANGE_RATE' || item.type === MarketDataType.EXCHANGE_RATE) {
+                const currency = (item as any).currency;
+                if (currency) {
+                  const normalizedCurrency = currency.toUpperCase();
+                  // Only add if different from symbol to avoid duplicates
+                  if (normalizedCurrency !== normalizedSymbol && !marketDataMap.has(normalizedCurrency)) {
+                    marketDataMap.set(normalizedCurrency, item);
+                  }
+                }
+              }
             }
           });
         }
@@ -761,10 +776,24 @@ export class AutoSyncService {
       // Update prices for each asset
       for (const asset of globalAssets) {
         try {
-          // Only try exact match - NO fuzzy matching/fallback
           // Normalize asset symbol to uppercase for case-insensitive matching
           const normalizedAssetSymbol = asset.symbol.toUpperCase();
-          const marketData = marketDataMap.get(normalizedAssetSymbol);
+          let marketData = marketDataMap.get(normalizedAssetSymbol);
+          
+          // For CURRENCY assets, also try matching by currency field if symbol doesn't match
+          if (!marketData && asset.type === AssetType.CURRENCY) {
+            // Try to find exchange rate by currency field
+            // ExchangeRateData has currency field that might match asset symbol
+            for (const [key, value] of marketDataMap.entries()) {
+              if (value.type === 'EXCHANGE_RATE' || value.type === MarketDataType.EXCHANGE_RATE) {
+                const currency = (value as any).currency;
+                if (currency && currency.toUpperCase() === normalizedAssetSymbol) {
+                  marketData = value;
+                  break;
+                }
+              }
+            }
+          }
           
           if (!marketData) {
             // No data found for this symbol (either not in market data or from failed API)

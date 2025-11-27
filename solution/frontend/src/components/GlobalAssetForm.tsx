@@ -73,7 +73,11 @@ const validationSchema = yup.object({
     .required('Symbol is required')
     .min(1, 'Symbol must be at least 1 character')
     .max(20, 'Symbol must be at most 20 characters')
-    .matches(/^[A-Z0-9-]+$/, 'Symbol must contain only uppercase letters, numbers, and hyphens'),
+    .when('type', {
+      is: 'CURRENCY',
+      then: (schema) => schema.matches(/^[A-Z]{3}$/, 'Currency code must be exactly 3 uppercase letters (e.g., USD, GBP, EUR)'),
+      otherwise: (schema) => schema.matches(/^[A-Z0-9-]+$/, 'Symbol must contain only uppercase letters, numbers, and hyphens'),
+    }),
   name: yup
     .string()
     .required('Name is required')
@@ -82,7 +86,7 @@ const validationSchema = yup.object({
   type: yup
     .string()
     .required('Asset type is required')
-    .oneOf(['STOCK', 'BOND', 'CRYPTO', 'COMMODITY', 'GOLD', 'REALESTATE', 'OTHER'], 'Invalid asset type'),
+    .oneOf(['STOCK', 'BOND', 'CRYPTO', 'COMMODITY', 'GOLD', 'REALESTATE', 'CURRENCY', 'OTHER'], 'Invalid asset type'),
   // Hidden fields - set default values
   nation: yup.string().default('VN'),
   marketCode: yup.string().default('HOSE'),
@@ -108,6 +112,7 @@ const ASSET_TYPES = [
   { value: 'COMMODITY', label: 'Commodity' },
   { value: 'GOLD', label: 'Gold' },
   { value: 'REALESTATE', label: 'Real Estate' },
+  { value: 'CURRENCY', label: 'Currency' },
   { value: 'OTHER', label: 'Other' }
 ];
 

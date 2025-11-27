@@ -6,7 +6,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
-  Grid,
   Tooltip as MuiTooltip,
 } from '@mui/material';
 import ResponsiveTypography from '../Common/ResponsiveTypography';
@@ -60,6 +59,16 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
 
   const correlationMatrix = createCorrelationMatrix();
 
+  // Flexible layout settings
+  const labelWidth = { xs: 50, sm: 60, md: 70 };
+  const cellSpacing = compact ? 1 : 2;
+  const minCellWidth = assetTypes.length > 6 ? 40 : assetTypes.length > 4 ? 50 : 60;
+  const fontSize = assetTypes.length > 6 ? '0.6rem!important' : assetTypes.length > 4 ? '0.65rem!important' : (compact ? '0.65rem!important' : '0.75rem!important');
+  
+  // Calculate minimum width for scroll container
+  const labelMinWidth = 70; // Use max value for calculation
+  const minContainerWidth = labelMinWidth + (assetTypes.length * minCellWidth) + (assetTypes.length * cellSpacing);
+
   const getCorrelationColor = (correlation: number) => {
     const absCorr = Math.abs(correlation);
     if (absCorr >= 0.8) return '#d32f2f'; // High correlation (red)
@@ -102,52 +111,90 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
         overflowX: 'auto', 
         overflowY: 'hidden',
         px: { xs: 0, sm: 1 },
-        mx: { xs: -3, sm: 0 } // Negative margin on mobile to extend to edges
+        mx: { xs: -3, sm: 0 }, // Negative margin on mobile to extend to edges
+        '&::-webkit-scrollbar': {
+          height: 8,
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'rgba(0,0,0,0.05)',
+          borderRadius: 4,
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          borderRadius: 4,
+          '&:hover': {
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          },
+        },
       }}>
-        <Box sx={{ minWidth: compact ? 300 : 400, overflow: 'hidden' }}>
+        <Box sx={{ 
+          width: '100%',
+          minWidth: minContainerWidth,
+          overflow: 'hidden'
+        }}>
           {/* Header row */}
-          <Grid container spacing={compact ? 0.25 : 0.5} sx={{ mb: compact ? 0.5 : 1 }}>
-            <Grid item xs={2}>
-              <Box sx={{ height: compact ? 30 : 40 }} />
-            </Grid>
+          <Box sx={{ 
+            display: 'flex', 
+            mb: compact ? 0.5 : 1, 
+            gap: cellSpacing,
+            alignItems: 'stretch',
+            width: '100%'
+          }}>
+            <Box sx={{ 
+              width: labelWidth,
+              minWidth: { xs: 50, sm: 60, md: 70 },
+              height: compact ? 30 : 40,
+              flexShrink: 0
+            }} />
             {assetTypes.map(asset => (
-              <Grid item xs={2} key={asset}>
-                <Box 
-                  sx={{ 
-                    height: compact ? 30 : 40, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    fontSize: compact ? '0.65rem' : '0.75rem',
-                    fontWeight: 'bold',
-                    color: 'text.secondary'
-                  }}
-                >
-                  {asset.toUpperCase()}
-                </Box>
-              </Grid>
+              <Box 
+                key={asset}
+                sx={{ 
+                  flex: 1,
+                  minWidth: minCellWidth,
+                  height: compact ? 30 : 40, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: fontSize,
+                  fontWeight: 'bold',
+                  color: 'text.secondary'
+                }}
+              >
+                {asset.toUpperCase()}
+              </Box>
             ))}
-          </Grid>
+          </Box>
 
           {/* Correlation matrix */}
           {assetTypes.map(asset1 => (
-            <Grid container spacing={compact ? 0.25 : 0.5} key={asset1} sx={{ mb: compact ? 0.25 : 0.5 }}>
+            <Box 
+              key={asset1} 
+              sx={{ 
+                display: 'flex', 
+                mb: compact ? 0.25 : 0.5, 
+                gap: cellSpacing,
+                alignItems: 'stretch',
+                width: '100%'
+              }}
+            >
               {/* Asset label */}
-              <Grid item xs={2}>
-                <Box 
-                  sx={{ 
-                    height: compact ? 30 : 40, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    fontSize: compact ? '0.65rem' : '0.75rem',
-                    fontWeight: 'bold',
-                    color: 'text.secondary'
-                  }}
-                >
-                  {asset1.toUpperCase()}
-                </Box>
-              </Grid>
+              <Box 
+                sx={{ 
+                  width: labelWidth,
+                  minWidth: { xs: 50, sm: 60, md: 70 },
+                  height: compact ? 30 : 40, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: fontSize,
+                  fontWeight: 'bold',
+                  color: 'text.secondary',
+                  flexShrink: 0
+                }}
+              >
+                {asset1.toUpperCase()}
+              </Box>
               
               {/* Correlation cells */}
               {assetTypes.map(asset2 => {
@@ -155,48 +202,53 @@ const DiversificationHeatmap: React.FC<DiversificationHeatmapProps> = ({
                 const isDiagonal = asset1 === asset2;
                 
                 return (
-                  <Grid item xs={2} key={`${asset1}-${asset2}`}>
-                    <MuiTooltip 
-                      title={`${asset1} vs ${asset2}: ${formatPercentage(correlation)}`}
-                      arrow
+                  <MuiTooltip 
+                    key={`${asset1}-${asset2}`}
+                    title={`${asset1} vs ${asset2}: ${formatPercentage(correlation)}`}
+                    arrow
+                  >
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minWidth: minCellWidth,
+                        height: compact ? 30 : 40,
+                        backgroundColor: isDiagonal ? '#e0e0e0' : getCorrelationColor(correlation),
+                        opacity: isDiagonal ? 0.3 : getCorrelationIntensity(correlation),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          opacity: 1,
+                          transform: 'scale(1.02)',
+                          zIndex: 1,
+                        },
+                        borderRadius: compact ? 0.5 : 1,
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        boxSizing: 'border-box'
+                      }}
                     >
-                      <Box
-                        sx={{
-                          height: compact ? 30 : 40,
-                          backgroundColor: isDiagonal ? '#e0e0e0' : getCorrelationColor(correlation),
-                          opacity: isDiagonal ? 0.3 : getCorrelationIntensity(correlation),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            opacity: 1,
-                            transform: 'scale(1.02)',
-                            zIndex: 1,
-                          },
-                          borderRadius: compact ? 0.5 : 1,
-                          border: '1px solid rgba(0,0,0,0.1)',
-                        }}
-                      >
-                        {!isDiagonal && (
-                          <ResponsiveTypography 
-                            variant="formHelper" 
-                            sx={{ 
-                              color: 'white', 
-                              fontWeight: 'bold',
-                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            {formatPercentage(correlation)}
-                          </ResponsiveTypography>
-                        )}
-                      </Box>
-                    </MuiTooltip>
-                  </Grid>
+                      {!isDiagonal && (
+                        <ResponsiveTypography 
+                          variant="formHelper" 
+                          sx={{ 
+                            color: 'white', 
+                            fontWeight: 'bold',
+                            //textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                            fontSize: assetTypes.length > 6 ? '0.6rem!important' : '0.75rem!important',
+                            lineHeight: 1,
+                            textAlign: 'center'
+                          }}
+                        >
+                          {formatPercentage(correlation)}
+                        </ResponsiveTypography>
+                      )}
+                    </Box>
+                  </MuiTooltip>
                 );
               })}
-            </Grid>
+            </Box>
           ))}
         </Box>
       </Box>

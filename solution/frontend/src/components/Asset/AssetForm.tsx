@@ -227,8 +227,18 @@ export const AssetForm: React.FC<AssetFormProps> = ({
     // Only validate symbol in create mode
     if (!isEditMode && !formData.symbol?.trim()) {
       newErrors.symbol = t('asset.form.validation.symbolRequired');
-    } else if (!isEditMode && formData.symbol && !/^[A-Z0-9-]+$/.test(formData.symbol)) {
-      newErrors.symbol = t('asset.form.validation.symbolInvalidFormat');
+    } else if (!isEditMode && formData.symbol) {
+      // Special validation for CURRENCY type: must be exactly 3 uppercase letters
+      if (formData.type === AssetType.CURRENCY) {
+        if (!/^[A-Z]{3}$/.test(formData.symbol)) {
+          newErrors.symbol = t('asset.form.validation.currencyCodeInvalidFormat') || 'Currency code must be exactly 3 uppercase letters (e.g., USD, GBP, EUR)';
+        }
+      } else {
+        // Standard validation for other asset types
+        if (!/^[A-Z0-9-]+$/.test(formData.symbol)) {
+          newErrors.symbol = t('asset.form.validation.symbolInvalidFormat');
+        }
+      }
     }
 
     if (!formData.type) {
@@ -275,10 +285,21 @@ export const AssetForm: React.FC<AssetFormProps> = ({
     
     // Ensure symbol is always uppercase and only contains letters, numbers, and hyphens
     if (field === 'symbol') {
-      // Remove any non-alphanumeric characters except hyphens
-      value = value.replace(/[^A-Za-z0-9-]/g, '');
-      // Convert to uppercase
-      value = value.toUpperCase();
+      // Special handling for CURRENCY type: only allow 3 uppercase letters
+      if (formData.type === AssetType.CURRENCY) {
+        // Remove any non-letter characters
+        value = value.replace(/[^A-Za-z]/g, '');
+        // Convert to uppercase
+        value = value.toUpperCase();
+        // Limit to 3 characters
+        value = value.substring(0, 3);
+      } else {
+        // Standard handling for other asset types
+        // Remove any non-alphanumeric characters except hyphens
+        value = value.replace(/[^A-Za-z0-9-]/g, '');
+        // Convert to uppercase
+        value = value.toUpperCase();
+      }
     }
 
     setFormData(prev => ({

@@ -14,6 +14,7 @@ export enum AssetType {
   COMMODITY = 'COMMODITY',
   GOLD = 'GOLD',
   REALESTATE = 'REALESTATE',
+  CURRENCY = 'CURRENCY',
   OTHER = 'OTHER',
   //REIT = 'REIT',
   //DEPOSIT = 'DEPOSIT',
@@ -133,6 +134,7 @@ export interface AssetAllocation {
   [AssetType.COMMODITY]: number;
   [AssetType.GOLD]: number;
   [AssetType.REALESTATE]: number;
+  [AssetType.CURRENCY]: number;
   [AssetType.OTHER]: number;
   //[AssetType.REIT]: number;
   //[AssetType.DEPOSIT]: number;
@@ -273,6 +275,7 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.COMMODITY]: 'Hàng hóa',
   [AssetType.GOLD]: 'Vàng',
   [AssetType.REALESTATE]: 'Bất động sản',
+  [AssetType.CURRENCY]: 'Tiền tệ',
   [AssetType.OTHER]: 'Khác',
   //[AssetType.REIT]: 'Bất động sản',
   //[AssetType.DEPOSIT]: 'Tiền gửi',
@@ -287,6 +290,7 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   [AssetType.COMMODITY]: 'Hàng hóa và nguyên liệu thô',
   [AssetType.GOLD]: 'Vàng vật chất và vàng tài khoản',
   [AssetType.REALESTATE]: 'Bất động sản và các khoản đầu tư liên quan',
+  [AssetType.CURRENCY]: 'Tiền tệ ngoại hối (USD, GBP, EUR, JPY, etc.)',
   [AssetType.OTHER]: 'Các loại tài sản khác không thuộc các danh mục trên',
   //[AssetType.REIT]: 'Quỹ đầu tư bất động sản',
   //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng có kỳ hạn',

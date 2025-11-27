@@ -26,13 +26,16 @@ export class CreateAssetDto {
   name: string;
 
   @ApiProperty({
-    description: 'Asset symbol for trading - must be unique per user',
+    description: 'Asset symbol for trading - must be unique per user. For CURRENCY type, must be 3-letter currency code (USD, GBP, EUR, etc.)',
     example: 'AAPL',
     maxLength: 50,
   })
   @IsString({ message: 'Asset symbol must be a string' })
   @MaxLength(50, { message: 'Asset symbol cannot exceed 50 characters' })
+  @ValidateIf((o) => o.type !== AssetType.CURRENCY)
   @Matches(/^[A-Z0-9-]+$/, { message: 'Asset symbol must contain only uppercase letters, numbers, and dashes' })
+  @ValidateIf((o) => o.type === AssetType.CURRENCY)
+  @Matches(/^[A-Z]{3}$/, { message: 'Currency code must be exactly 3 uppercase letters (e.g., USD, GBP, EUR)' })
   symbol: string;
 
   @ApiPropertyOptional({

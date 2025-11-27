@@ -24,7 +24,7 @@ import {
   ExpandLess as ExpandLessIcon,
   FilterList as FilterIcon,
 } from '@mui/icons-material';
-import { AssetFilters as AssetFiltersType } from '../../types/asset.types';
+import { AssetFilters as AssetFiltersType, AssetTypeLabels } from '../../types/asset.types';
 import { usePortfolios } from '../../hooks/usePortfolios';
 import { useAccount } from '../../contexts/AccountContext';
 
@@ -277,11 +277,11 @@ const AssetsFilterPanelInternal: React.FC<AssetsFilterPanelProps> = ({
                 sx={{ borderRadius: 2 }}
               >
                 <MenuItem value="ALL">All Types</MenuItem>
-                <MenuItem value="STOCK">Stock</MenuItem>
-                <MenuItem value="BOND">Bond</MenuItem>
-                <MenuItem value="GOLD">Gold</MenuItem>
-                <MenuItem value="CRYPTO">Cryptocurrency</MenuItem>
-                <MenuItem value="COMMODITY">Commodity</MenuItem>
+                {Object.entries(AssetTypeLabels).map(([type, label]) => (
+                  <MenuItem key={type} value={type}>
+                    {label as string}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>

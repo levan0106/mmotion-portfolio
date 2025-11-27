@@ -43,7 +43,7 @@ import { AssetDeleteWarningDialog } from '../components/Asset/AssetDeleteWarning
 import { BulkAssetSelector } from '../components/Asset/BulkAssetSelector';
 import AssetsFilterPanel from '../components/Assets/AssetsFilterPanel';
 import { UserGuide } from '../components/Common/UserGuide';
-import { Asset, AssetFilters as AssetFiltersType } from '../types/asset.types';
+import { Asset, AssetFilters as AssetFiltersType, AssetTypeLabels } from '../types/asset.types';
 import { assetService } from '../services/asset.service';
 import { globalAssetService } from '../services/global-asset.service';
 import { getAssetTypeColor } from '../config/chartColors';
@@ -80,6 +80,7 @@ const AssetTableRow = memo(({
       case '#dc3532': return 'error';      // Rose - CRYPTO
       case '#ff5722': return 'error';      // Deep Orange - COMMODITY
       case '#795548': return 'default';    // Brown - REALESTATE
+      case '#00BCD4': return 'info';      // Cyan/Teal - CURRENCY
       case '#9e9e9e': return 'default';    // Grey - OTHER
       case '#5d2fd3': return 'secondary';  // Purple - DEPOSITS
       default: return 'default';
@@ -136,7 +137,7 @@ const AssetTableRow = memo(({
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Chip
-              label={asset.type}
+              label={AssetTypeLabels[asset.type as keyof typeof AssetTypeLabels] || asset.type}
               color={getAssetTypeChipColor(asset.type) as any}
               size="small"
               sx={{ 

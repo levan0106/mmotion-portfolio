@@ -1,13 +1,49 @@
 # Active Context - Portfolio Management System
 
 ## Current Session Focus
-**Date**: November 16, 2025  
-**Session Type**: Notes Feature Implementation & UI Enhancement  
-**Primary Goal**: Implement flexible notes system with Portfolio/Asset association, DateTime support, and professional UI components
+**Date**: November 27, 2025  
+**Session Type**: Currency Investment System Implementation & UI Enhancement  
+**Primary Goal**: Implement currency investment feature as AssetType.CURRENCY, integrate with existing asset management system, and enhance UI components
 
 ## Recent Achievements
 
-### ✅ Notes Feature Implementation - COMPLETED (Current Session - November 16, 2025)
+### ✅ Currency Investment System Implementation - COMPLETED (Current Session - November 27, 2025)
+1. **Phase 1: Database Schema & Backend Foundation**
+   - **AssetType Enum Update**: Added CURRENCY to AssetType enum in both backend and frontend
+   - **Database Migration**: Created migration to add CURRENCY to asset_type_enum and global_assets_type_enum
+   - **Nation Configuration**: Updated all nations (VN, US, UK, JP, SG) to support CURRENCY asset type
+   - **Asset Validation**: Added currency code validation (3-letter uppercase) for CURRENCY assets
+   - **Asset Analytics Service**: Updated to include CURRENCY in all Record<AssetType, number> types
+   - **Files Updated**: asset-type.enum.ts (backend/frontend), AddCurrencyToAssetType migration, nations.json, create-asset.dto.ts, asset-analytics.service.ts, asset.utils.ts, AssetAnalytics.spec.tsx
+
+2. **Phase 2: Price Update System Integration**
+   - **AutoSyncService Enhancement**: Integrated CURRENCY assets into performSync() method
+   - **Exchange Rate API Client**: Cleaned up redundant code, improved HTML parsing logic
+   - **Market Data Controller**: Added exchange rate endpoints (GET, POST refresh)
+   - **Price Update Integration**: CURRENCY assets now included in automatic price updates
+   - **Files Updated**: auto-sync.service.ts, exchange-rate-api.client.ts, market-data.controller.ts
+
+3. **Frontend TypeScript Fixes**
+   - **Record Types**: Added CURRENCY to all Record<AssetType, ...> types in frontend
+   - **Asset Utilities**: Updated groupAssetsByType and calculateAssetAllocation to include CURRENCY
+   - **Test Files**: Updated all test cases to include CURRENCY in assetsByType objects
+   - **Build Success**: Frontend builds successfully without TypeScript errors
+   - **Files Updated**: asset.utils.ts, AssetAnalytics.spec.tsx
+
+4. **UI Component Enhancements**
+   - **DiversificationHeatmap**: Converted from fixed-width Grid to flexible Flexbox layout
+   - **Responsive Design**: Full width on large screens, horizontal scroll on small screens
+   - **Cell Alignment**: Fixed alignment issues between label and value cells
+   - **Custom Scrollbar**: Added styled scrollbar for better UX
+   - **Files Updated**: DiversificationHeatmap.tsx
+
+5. **Code Quality Improvements**
+   - **ExchangeRateAPIClient Cleanup**: Removed 70+ lines of commented code
+   - **Method Simplification**: Simplified getUSDExchangeRate to reuse getExchangeRateByCurrency
+   - **Code Reuse**: Refactored getExchangeRateBySymbol to reuse existing methods
+   - **Production Ready**: Clean, maintainable code ready for deployment
+
+### ✅ Notes Feature Implementation - COMPLETED (Previous Session - November 16, 2025)
 1. **Flexible Notes System Architecture**
    - **Dedicated Notes Table**: Created `notes` table with proper relationships and indexes
    - **Portfolio Association**: Each note requires a portfolio (ManyToOne with CASCADE delete)

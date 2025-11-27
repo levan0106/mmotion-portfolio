@@ -10,6 +10,7 @@ export interface AssetTypeColors {
   CRYPTO: string;
   COMMODITY: string;
   REALESTATE: string;
+  CURRENCY: string;
   OTHER: string;
   DEPOSITS: string;
   [key: string]: string; // Allow additional asset types
@@ -22,6 +23,7 @@ export const CHART_COLORS: AssetTypeColors = {
   CRYPTO: '#dc3532',     // Rose
   COMMODITY: '#ff5722',  // Deep Orange
   REALESTATE: '#795548', // Brown
+  CURRENCY: '#00BCD4',   // Cyan/Teal
   OTHER: '#9e9e9e',      // Grey
   DEPOSITS: '#5d2fd3',   // Purple
 };

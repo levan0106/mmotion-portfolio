@@ -62,6 +62,12 @@
           "defaultMarketCode": "CASH",
           "symbolPattern": "^[A-Z0-9]{3,10}$",
           "description": "Tiền mặt Việt Nam Đồng"
+        },
+        "CURRENCY": {
+          "enabled": true,
+          "defaultMarketCode": "FOREX",
+          "symbolPattern": "^[A-Z]{3}$",
+          "description": "Tiền tệ ngoại hối (USD, GBP, EUR, JPY, etc.)"
         }
       },
       "priceSources": [
@@ -168,6 +174,12 @@
           "defaultMarketCode": "CASH",
           "symbolPattern": "^[A-Z0-9]{3,10}$",
           "description": "US Dollar cash"
+        },
+        "CURRENCY": {
+          "enabled": true,
+          "defaultMarketCode": "FOREX",
+          "symbolPattern": "^[A-Z]{3}$",
+          "description": "Foreign currencies (USD, GBP, EUR, JPY, etc.)"
         }
       },
       "priceSources": [
@@ -274,6 +286,12 @@
           "defaultMarketCode": "CASH",
           "symbolPattern": "^[A-Z0-9]{3,10}$",
           "description": "British Pound cash"
+        },
+        "CURRENCY": {
+          "enabled": true,
+          "defaultMarketCode": "FOREX",
+          "symbolPattern": "^[A-Z]{3}$",
+          "description": "Foreign currencies (USD, GBP, EUR, JPY, etc.)"
         }
       },
       "priceSources": [

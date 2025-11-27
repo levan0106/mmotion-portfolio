@@ -256,15 +256,19 @@ const GlobalAssetManagement: React.FC<GlobalAssetManagementProps> = ({
 
   const getAssetTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      STOCK: '#1976d2',
-      BOND: '#388e3c',
-      CRYPTO: '#f57c00',
-      COMMODITY: '#7b1fa2',
-      CURRENCY: '#d32f2f',
-      ETF: '#0288d1',
-      MUTUAL_FUND: '#5d4037',
+      STOCK: '#045db4',      // Blue
+      BOND: '#059669',       // Emerald
+      GOLD: '#ff9800',       // Orange/Yellow
+      CRYPTO: '#dc3532',     // Rose
+      COMMODITY: '#ff5722',  // Deep Orange
+      REALESTATE: '#795548', // Brown
+      CURRENCY: '#00BCD4',   // Cyan/Teal
+      OTHER: '#9e9e9e',      // Grey
+      DEPOSITS: '#5d2fd3',   // Purple
+      ETF: '#0288d1',        // Light Blue (for ETF)
+      MUTUAL_FUND: '#5d4037', // Brown (for Mutual Fund)
     };
-    return colors[type] || '#666';
+    return colors[type] || '#9e9e9e'; // Default to grey (consistent with chartColors)
   };
 
   const getNationDisplayName = (code: string) => {

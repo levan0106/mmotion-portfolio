@@ -22,7 +22,7 @@ import { ApiTrackingHelper } from './utils/api-tracking.helper';
     HttpModule, // Enable HTTP requests
     MarketDataClientsModule, // Import external API clients
     TypeOrmModule.forFeature([AssetPriceHistory, GlobalAsset]), // Import AssetPriceHistory and GlobalAsset entities
-    forwardRef(() => AssetModule), // Import AssetModule to get ApiCallDetailService
+    forwardRef(() => AssetModule), // Import AssetModule to get ApiCallDetailService and AutoSyncService
   ],
   controllers: [
     MarketDataController,
