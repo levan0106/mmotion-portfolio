@@ -211,23 +211,72 @@ export class ExchangeRateAPIClient extends ApiTrackingBase {
       
       this.logger.debug(`Parsing ${rows.length} rows from 5-column table`);
 
+      // Helper function to extract text from child elements (for cell 0, 1)
+      // Handles cases like: <th><span>...</span><a>USD</a></th>
+      const extractFromChildElements = (cellHtml: string): string => {
+        if (!cellHtml) return '';
+        
+        // Remove all HTML tags and get text content
+        const strippedText = cellHtml.replace(/<[^>]*>/g, '').trim();
+        if (strippedText) {
+          return strippedText;
+        }
+        return '';
+      };
+
+      // Helper function to extract direct text from cell (only direct text, ignore child elements)
+      // For cell 2, 3, 4 (price cells): <td>26,189<span>...</span></td> -> "26,189"
+      const extractDirectText = (cellHtml: string): string => {
+        if (!cellHtml) return '';
+        
+        // Extract text directly after opening tag and before first child element
+        // Pattern: <td[^>]*>([^<]*?)< - captures all text (including whitespace) before first <
+        // This handles cases like: <td>  26,189<span>...</span></td>
+        const directTextMatch = cellHtml.match(/<t[dh][^>]*>([^<]*?)(?:<|$)/);
+        if (directTextMatch && directTextMatch[1]) {
+          const trimmed = directTextMatch[1].trim();
+          if (trimmed) {
+            return trimmed;
+          }
+        }
+        
+        // If no direct text found, return empty (don't get text from child elements)
+        return '';
+      };
+
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const row = rows[rowIndex];
         // Extract text content from table cells (both th and td)
-        const thPattern = /<th[^>]*>(.*?)<\/th>/gs;
-        const tdPattern = /<td[^>]*>(.*?)<\/td>/gs;
+        const thPattern = /<th[^>]*>.*?<\/th>/gs;
+        const tdPattern = /<td[^>]*>.*?<\/td>/gs;
         const cells = [];
         let match;
         
         // Extract from th cells first (header row)
         while ((match = thPattern.exec(row)) !== null) {
-          const cellText = match[1].replace(/<[^>]*>/g, '').trim();
+          // For header cells, extract from child elements (like <th><a>USD</a></th>)
+          const cellText = extractFromChildElements(match[0]);
+          if (rowIndex === 0) {
+            this.logger.debug(`Header cell ${cells.length}: "${match[0].substring(0, 100)}" -> "${cellText}"`);
+          }
           cells.push(cellText);
         }
         
         // Extract from td cells (data rows)
         while ((match = tdPattern.exec(row)) !== null) {
-          const cellText = match[1].replace(/<[^>]*>/g, '').trim();
+          const cellIndex = cells.length;
+          let cellText: string;
+          
+          // Cell 0 and 1: extract from child elements (currency and other info)
+          // Cell 2, 3, 4: extract direct text only (price values)
+          if (cellIndex < 2) {
+            cellText = extractFromChildElements(match[0]);
+          } else {
+            cellText = extractDirectText(match[0]);
+          }
+          
+          // Log all cells for debugging
+          this.logger.debug(`Data cell ${cellIndex} (row ${rowIndex}): "${match[0].substring(0, 100)}" -> "${cellText}"`);
           cells.push(cellText);
         }
 
@@ -238,6 +287,11 @@ export class ExchangeRateAPIClient extends ApiTrackingBase {
 
         // Parse 5-column format: [Currency, Buy, Transfer, Sell, ...]
         const currencyText = cells[0];
+        
+        // Debug: log all cells for first few rows
+        if (rowIndex < 3) {
+          this.logger.debug(`Row ${rowIndex} cells: [${cells.map((c, i) => `cell${i}="${c}"`).join(', ')}]`);
+        }
         const buyPriceText = cells[2].replace(/[,\s]/g, '');
         const transferPriceText = cells[3].replace(/[,\s]/g, '');
         const sellPriceText = cells[4].replace(/[,\s]/g, '');
