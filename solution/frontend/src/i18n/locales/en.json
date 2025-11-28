@@ -713,6 +713,7 @@
     "perPortfolio": "Per portfolio",
     "balanced": "Balanced",
     "refreshData": "Refresh Data",
+    "refreshing": "Refreshing...",
     "systemStatus": "System Status: Active",
     "lastUpdated": "Last Updated",
     "dataUpdateStatus": {

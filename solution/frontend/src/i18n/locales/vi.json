@@ -739,6 +739,7 @@
     "perPortfolio": "Mỗi danh mục",
     "balanced": "Cân bằng",
     "refreshData": "Làm mới",
+    "refreshing": "Đang làm mới...",
     "systemStatus": "Trạng thái hệ thống: Hoạt động",
     "lastUpdated": "Cập nhật cuối",
     "dataUpdateStatus": {
