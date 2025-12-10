@@ -3,7 +3,7 @@
  * Displays a modal with note form at the top and notes list at the bottom
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -64,14 +64,31 @@ const NotesModal: React.FC<NotesModalProps> = ({ open, onClose, portfolioId }) =
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Memoize portfolio IDs to prevent unnecessary re-renders
+  const portfolioIds = useMemo(() => {
+    return portfolios?.map(p => p.portfolioId).join(',') || '';
+  }, [portfolios]);
+
+  // Memoize the selected portfolio to avoid re-finding it on every render
+  const selectedPortfolio = useMemo(() => {
+    return portfolios?.find(p => p.portfolioId === selectedPortfolioId);
+  }, [portfolios, selectedPortfolioId]);
+
   // Initialize selected portfolio
   useEffect(() => {
     if (portfolioId) {
-      setSelectedPortfolioId(portfolioId);
+      setSelectedPortfolioId(prev => prev !== portfolioId ? portfolioId : prev);
     } else if (portfolios && portfolios.length > 0) {
-      setSelectedPortfolioId(portfolios[0].portfolioId);
+      const firstPortfolioId = portfolios[0].portfolioId;
+      setSelectedPortfolioId(prev => {
+        // Only update if we don't have a selection or the first portfolio changed
+        if (!prev || prev !== firstPortfolioId) {
+          return firstPortfolioId;
+        }
+        return prev;
+      });
     }
-  }, [portfolioId, portfolios]);
+  }, [portfolioId, portfolioIds]);
 
   // Load assets for selected portfolio
   useEffect(() => {
@@ -81,16 +98,24 @@ const NotesModal: React.FC<NotesModalProps> = ({ open, onClose, portfolioId }) =
     }
     
     // Get assets from portfolio's portfolioAssets
-    const portfolio = portfolios?.find(p => p.portfolioId === selectedPortfolioId);
-    if (portfolio?.portfolioAssets) {
-      const portfolioAssets = portfolio.portfolioAssets
+    if (selectedPortfolio?.portfolioAssets) {
+      const portfolioAssets = selectedPortfolio.portfolioAssets
         .map(pa => pa.asset)
         .filter((asset): asset is Asset => asset !== undefined);
-      setAssets(portfolioAssets);
+      
+      // Only update if assets actually changed
+      setAssets(prev => {
+        const prevIds = prev.map(a => a.id).sort().join(',');
+        const newIds = portfolioAssets.map(a => a.id).sort().join(',');
+        if (prevIds !== newIds) {
+          return portfolioAssets;
+        }
+        return prev;
+      });
     } else {
       setAssets([]);
     }
-  }, [selectedPortfolioId, accountId, portfolios]);
+  }, [selectedPortfolioId, accountId, selectedPortfolio]);
 
   // Load notes
   const loadNotes = async () => {
