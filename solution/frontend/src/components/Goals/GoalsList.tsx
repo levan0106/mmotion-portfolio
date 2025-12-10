@@ -37,11 +37,13 @@ import {
   MoreVert as MoreVertIcon,
   Star as StarIcon,
   Delete as DeleteIcon,
+  HelpOutline as HelpIcon,
 } from '@mui/icons-material';
 import { GoalCard } from './GoalCard';
 import { GoalForm } from './GoalForm';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common/ResponsiveButton';
+import { GoalPlanExplanationModal } from '../FinancialFreedom/GoalPlanExplanationModal';
 import { Goal, GoalStatus, CreateGoalRequest, UpdateGoalRequest } from '../../types/goal.types';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useSetPrimaryGoal } from '../../hooks/useGoals';
 import { useTranslation } from 'react-i18next';
@@ -140,6 +142,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [tableMenuAnchor, setTableMenuAnchor] = useState<{ [key: string]: HTMLElement | null }>({});
+  const [explanationModalOpen, setExplanationModalOpen] = useState(false);
 
   const { data: goals, isLoading, error } = useGoals(accountId, portfolioId);
   const createGoalMutation = useCreateGoal(accountId);
@@ -286,6 +289,15 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
             </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Tooltip title="Tìm hiểu về Portfolio, Goal và Plan">
+              <IconButton
+                size="small"
+                onClick={() => setExplanationModalOpen(true)}
+                sx={{ color: 'primary.main' }}
+              >
+                <HelpIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <ResponsiveButton
               variant="contained"
               icon={<AddIcon />}
@@ -735,6 +747,12 @@ export const GoalsList: React.FC<GoalsListProps> = ({ accountId, portfolioId }) 
         goal={editingGoal || undefined}
         loading={createGoalMutation.isLoading || updateGoalMutation.isLoading}
         accountId={accountId}
+      />
+
+      {/* Goal Plan Explanation Modal */}
+      <GoalPlanExplanationModal
+        open={explanationModalOpen}
+        onClose={() => setExplanationModalOpen(false)}
       />
     </Box>
   );

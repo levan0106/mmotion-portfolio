@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { calculateConsolidate } from '../../utils/financialFreedomCalculation';
 import { formatCurrency } from '../../utils/format';
 import { ASSET_TYPE_TEMPLATES } from '../../config/assetTypeTemplates';
-import { DebugPlanData } from './DebugPlanData';
+// import { DebugPlanData } from './DebugPlanData';
 
 interface Step3ConsolidatedOverviewProps {
   data: PlanData;
@@ -156,23 +156,12 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
 
   return (
     <Box>
-      {/* <Paper sx={{ p: 3, mb: 3 }}>
-        <ResponsiveTypography variant="h5" sx={{ mb: 1 }}>
-          {t('financialFreedom.step3.title')}
-        </ResponsiveTypography>
-        <ResponsiveTypography variant="body2" color="text.secondary">
-          {t('financialFreedom.step3.subtitle')}
-        </ResponsiveTypography>
-      </Paper> */}
 
       {/* Debug: Plan Data */}
-      <DebugPlanData data={data} currentStep={3} />
+      {/* <DebugPlanData data={data} currentStep={3} /> */}
 
       {/* Plan Name Input */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        {/* <ResponsiveTypography variant="h6" sx={{ mb: 2 }}>
-          {t('financialFreedom.step3.planName')}
-        </ResponsiveTypography> */}
         <TextField
           fullWidth
           label={t('financialFreedom.step3.planNameLabel')}

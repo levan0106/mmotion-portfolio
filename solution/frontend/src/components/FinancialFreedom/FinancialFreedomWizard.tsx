@@ -5,7 +5,12 @@ import {
   Step,
   StepLabel,
   Paper,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import {
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import { ResponsiveButton } from '../Common/ResponsiveButton';
 import { Step1GoalDefinition } from './Step1GoalDefinition';
 import { Step2AllocationSuggestionsDynamic as Step2AllocationSuggestions } from './Step2AllocationSuggestionsDynamic';
@@ -154,16 +159,16 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
         ))}
       </Stepper>
 
-      <Box sx={{ flex: 1, pb: 10 }}>
+      <Box sx={{ flex: 1, pb: 2 }}>
         {renderStepContent()}
       </Box>
 
       {/* Fixed Navigation Bar */}
       <Paper
-        elevation={3}
+        elevation={1}
         sx={{
           position: 'sticky',
-          bottom: 0,
+          bottom: { xs: 0, md: "-20px" },
           left: 0,
           right: 0,
           zIndex: 1000,
@@ -175,13 +180,20 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
       >
         <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', maxWidth: 1200, mx: 'auto', gap: 2 }}>
           {onCancel && (
-            <ResponsiveButton
-              type="button"
-              variant="outlined"
-              onClick={onCancel}
-            >
-              {t('common.cancel')}
-            </ResponsiveButton>
+            <Tooltip title={t('common.cancel')}>
+              <IconButton
+                onClick={onCancel}
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    color: 'text.primary',
+                  },
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Tooltip>
           )}
           {activeStep > 0 && (
             <ResponsiveButton

@@ -43,7 +43,7 @@ import {
   ChevronRight as ChevronRightIcon,
   Help as HelpIcon,
   Flag as GoalsIcon,
-  TrendingUp as FinancialFreedomIcon,
+  TrendingUp as PlansIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -153,8 +153,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         },
         {
           text: t('financialFreedom.title'),
-          icon: <FinancialFreedomIcon />,
-          path: '/financial-freedom',
+          icon: <PlansIcon />,
+          path: '/plans',
           description: t('financialFreedom.subtitle'),
           badge: null
         }

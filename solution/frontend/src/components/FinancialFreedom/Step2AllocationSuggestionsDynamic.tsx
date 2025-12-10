@@ -32,7 +32,6 @@ import { financialFreedomApi } from '../../services/api.financial-freedom';
 import { ASSET_TYPE_TEMPLATES } from '../../config/assetTypeTemplates';
 import { SelectAssetTypeModal } from './SelectAssetTypeModal';
 import { AssetTypeTemplate } from '../../types/financialFreedom.types';
-import { DebugPlanData } from './DebugPlanData';
 
 interface Step2AllocationSuggestionsProps {
   data: PlanData;
@@ -375,26 +374,16 @@ export const Step2AllocationSuggestionsDynamic: React.FC<Step2AllocationSuggesti
                   <Box 
                     key={assetType.code} 
                     sx={{ 
-                      mb: 2,
+                      mb: 0,
                       '&:hover .delete-icon': {
                         opacity: 1,
                         visibility: 'visible',
                       },
                     }}
                   >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {/* <Box
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: '50%',
-                            bgcolor: color,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                          }}
-                        /> */}
-                        <ResponsiveTypography variant="body2" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="body2" sx={{ fontWeight: 600 }}>
                           {getAssetTypeName(assetType)}
                         </ResponsiveTypography>
                       </Box>
@@ -462,6 +451,7 @@ export const Step2AllocationSuggestionsDynamic: React.FC<Step2AllocationSuggesti
                           showIcon={false}
                           fullWidth
                           margin="dense"
+                          size='medium'
                         />
                       </Grid>
                     </Grid>

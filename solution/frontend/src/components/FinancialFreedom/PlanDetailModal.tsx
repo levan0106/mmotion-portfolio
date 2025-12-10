@@ -1,13 +1,16 @@
-import React from 'react';
-import { Box, Divider, Stack, Grid } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Divider, Stack, Grid, IconButton, Tooltip } from '@mui/material';
+import { HelpOutline as HelpIcon } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
 import { ModalWrapper } from '../Common/ModalWrapper';
-import { FinancialFreedomPlan } from '../../types/financialFreedom.types';
+import { FinancialFreedomPlan, AssetAllocation } from '../../types/financialFreedom.types';
 import { formatCurrency, formatPercentageValue } from '../../utils/format';
 import { useTranslation } from 'react-i18next';
 import { ASSET_TYPE_TEMPLATES } from '../../config/assetTypeTemplates';
 import { ProgressChart } from './ProgressChart';
+import { AllocationChart } from './AllocationChart';
+import { GoalPlanExplanationModal } from './GoalPlanExplanationModal';
 
 interface PlanDetailModalProps {
   open: boolean;
@@ -22,7 +25,8 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
   onClose,
   onEdit,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const [explanationModalOpen, setExplanationModalOpen] = useState(false);
 
   if (!plan) {
     return null;
@@ -34,23 +38,37 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
   };
 
   return (
-    <ModalWrapper
-      open={open}
-      onClose={onClose}
-      title={plan.name || t('financialFreedom.title')}
-      maxWidth="lg"
-      fullWidth
-      actions={
-        <>
-          <ResponsiveButton variant="outlined" onClick={onClose}>
-            {t('common.close')}
-          </ResponsiveButton>
-          <ResponsiveButton variant="contained" onClick={handleEdit}>
-            {t('common.edit')}
-          </ResponsiveButton>
-        </>
-      }
-    >
+    <>
+      <ModalWrapper
+        open={open}
+        onClose={onClose}
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <span>{plan.name || t('financialFreedom.title')}</span>
+            <Tooltip title="Tìm hiểu về Portfolio, Goal và Plan">
+              <IconButton
+                size="small"
+                onClick={() => setExplanationModalOpen(true)}
+                sx={{ color: 'primary.main' }}
+              >
+                <HelpIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        }
+        maxWidth="lg"
+        fullWidth
+        actions={
+          <>
+            <ResponsiveButton variant="outlined" onClick={onClose}>
+              {t('common.close')}
+            </ResponsiveButton>
+            <ResponsiveButton variant="contained" onClick={handleEdit}>
+              {t('common.edit')}
+            </ResponsiveButton>
+          </>
+        }
+      >
       <Grid container spacing={3}>
         {/* Left Column: Investment Parameters Section */}
         <Grid item xs={12} md={6}>
@@ -172,79 +190,68 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
             </Box>
 
             {/* Allocation Section */}
-            {plan.suggestedAllocation && (
-              <>
-                <Divider />
-                <Box>
-                  <ResponsiveTypography variant="h6" sx={{ mb: 1.5, fontWeight: 600 }}>
-                    {t('financialFreedom.step2.allocation')}
-                  </ResponsiveTypography>
-              <Stack spacing={1}>
-                {plan.suggestedAllocation && Array.isArray(plan.suggestedAllocation) && plan.suggestedAllocation.length > 0 ? (
-                  // Dynamic allocation display - array format with code, allocation, expectedReturn
-                  plan.suggestedAllocation
-                    .filter(item => item.allocation >= 0) // Only show asset types with allocation > 0
-                    .map((item, index) => {
-                      // Find template for display name
-                      const template = ASSET_TYPE_TEMPLATES.find(t => t.code === item.code);
-                      const displayName = template 
-                        ? (i18n.language === 'en' && template.nameEn ? template.nameEn : template.name)
-                        : item.code; // Fallback to code if template not found
-                      
-                      // Try to get translation key
-                      const translationKey = `financialFreedom.allocation.${item.code}`;
-                      const translatedName = t(translationKey, { defaultValue: displayName });
-                      
-                      return (
-                        <React.Fragment key={item.code}>
-                          {index > 0 && <Divider />}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5 }}>
-                            <ResponsiveTypography variant="body2" color="text.secondary">
-                              {translatedName}
-                            </ResponsiveTypography>
-                            <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
-                              {formatPercentageValue(item.allocation)}
-                            </ResponsiveTypography>
-                          </Box>
-                        </React.Fragment>
-                      );
-                    })
-                ) : plan.suggestedAllocation && !Array.isArray(plan.suggestedAllocation) && Object.keys(plan.suggestedAllocation).length > 0 ? (
-                  // Backward compatibility: handle old object format
-                  Object.entries(plan.suggestedAllocation)
-                    .filter(([_, value]) => (value as number) > 0)
-                    .map(([code, value], index) => {
-                      const template = ASSET_TYPE_TEMPLATES.find(t => t.code === code);
-                      const displayName = template 
-                        ? (i18n.language === 'en' && template.nameEn ? template.nameEn : template.name)
-                        : code;
-                      const translationKey = `financialFreedom.allocation.${code}`;
-                      const translatedName = t(translationKey, { defaultValue: displayName });
-                      
-                      return (
-                        <React.Fragment key={code}>
-                          {index > 0 && <Divider />}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5 }}>
-                            <ResponsiveTypography variant="body2" color="text.secondary">
-                              {translatedName}
-                            </ResponsiveTypography>
-                            <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
-                              {formatPercentageValue(value as number)}
-                            </ResponsiveTypography>
-                          </Box>
-                        </React.Fragment>
-                      );
-                    })
-                ) : (
-                  // Fallback: no allocation data
-                  <ResponsiveTypography variant="body2" color="text.secondary">
-                    {t('financialFreedom.planDetails.noAllocation')}
-                  </ResponsiveTypography>
-                )}
-              </Stack>
-                </Box>
-              </>
-            )}
+            {plan.suggestedAllocation && (() => {
+              // Convert suggestedAllocation to AssetAllocation format and get assetTypes
+              let allocationData: AssetAllocation = {};
+              let assetTypes: Array<{ code: string; name: string; nameEn?: string; color?: string }> = [];
+
+              if (Array.isArray(plan.suggestedAllocation) && plan.suggestedAllocation.length > 0) {
+                // New format: AssetAllocationItem[]
+                allocationData = plan.suggestedAllocation.reduce((acc, item) => {
+                  acc[item.code] = item.allocation;
+                  return acc;
+                }, {} as AssetAllocation);
+
+                // Get asset types metadata from templates
+                assetTypes = plan.suggestedAllocation
+                  .filter(item => item.allocation > 0)
+                  .map(item => {
+                    const template = ASSET_TYPE_TEMPLATES.find(t => t.code === item.code);
+                    return {
+                      code: item.code,
+                      name: template?.name || item.code,
+                      nameEn: template?.nameEn,
+                      color: template?.color,
+                    };
+                  });
+              } else if (!Array.isArray(plan.suggestedAllocation) && Object.keys(plan.suggestedAllocation).length > 0) {
+                // Old format: AssetAllocation (object)
+                allocationData = plan.suggestedAllocation as AssetAllocation;
+                
+                // Get asset types metadata from templates
+                assetTypes = Object.entries(plan.suggestedAllocation)
+                  .filter(([_, value]) => (value as number) > 0)
+                  .map(([code]) => {
+                    const template = ASSET_TYPE_TEMPLATES.find(t => t.code === code);
+                    return {
+                      code,
+                      name: template?.name || code,
+                      nameEn: template?.nameEn,
+                      color: template?.color,
+                    };
+                  });
+              }
+
+              // Only render if we have allocation data
+              if (Object.keys(allocationData).length > 0) {
+                return (
+                  <>
+                    <Divider />
+                    <Box>
+                    <ResponsiveTypography variant="h6" sx={{ mb: 1.5, fontWeight: 600 }}>
+                      {t('financialFreedom.step2.allocation')}
+                    </ResponsiveTypography>
+                      <AllocationChart
+                        allocation={allocationData}
+                        assetTypes={assetTypes.length > 0 ? assetTypes : undefined}
+                      />
+                    </Box>
+                  </>
+                );
+              }
+
+              return null;
+            })()}
           </Stack>
         </Grid>
 
@@ -266,6 +273,12 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
         )}
       </Grid>
     </ModalWrapper>
+
+    <GoalPlanExplanationModal
+      open={explanationModalOpen}
+      onClose={() => setExplanationModalOpen(false)}
+    />
+    </>
   );
 };
 

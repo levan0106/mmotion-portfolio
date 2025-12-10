@@ -409,5 +409,38 @@ export * from './trading';
 // Export asset types
 export * from './asset.types';
 
-// Export financial freedom types
-export * from './financialFreedom.types';
+// Export financial freedom enums
+export {
+  PaymentFrequency,
+  PaymentType,
+  RiskTolerance,
+  CalculatedVariableType,
+  TemplateCategory,
+} from './financialFreedom.types';
+
+// Export financial freedom types (excluding AssetAllocation and AssetAllocationItem to avoid conflict with asset.types)
+export type {
+  CalculationInputs,
+  CalculatedVariable,
+  CalculationResult,
+  AssetAllocation as FinancialFreedomAssetAllocation,
+  AssetAllocationItem as FinancialFreedomAssetAllocationItem,
+  AssetTypeMetadata,
+  AssetTypeTemplate,
+  AllocationSuggestion,
+  YearlyProjection,
+  ScenarioResult,
+  Scenarios,
+  Milestone,
+  ProgressAlert,
+  ProgressResult,
+  PlanningTemplate,
+  FinancialFreedomPlan,
+  CreatePlanRequest,
+  UpdatePlanRequest,
+  ConsolidateRequest,
+  ConsolidateResponse,
+  SuggestAllocationRequest,
+  FinalCalculationResult,
+  PlanData,
+} from './financialFreedom.types';

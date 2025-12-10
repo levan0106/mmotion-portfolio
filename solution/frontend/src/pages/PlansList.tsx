@@ -26,12 +26,14 @@ import {
   Delete as DeleteIcon,
   Warning as WarningIcon,
   MoreVert as MoreVertIcon,
+  HelpOutline as HelpIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
 import { ModalWrapper } from '../components/Common/ModalWrapper';
 import { FinancialFreedomWizard } from '../components/FinancialFreedom/FinancialFreedomWizard';
 import { PlanDetailModal } from '../components/FinancialFreedom/PlanDetailModal';
+import { GoalPlanExplanationModal } from '../components/FinancialFreedom/GoalPlanExplanationModal';
 import { useFinancialFreedomPlans, useCreateFinancialFreedomPlan, useDeleteFinancialFreedomPlan, useUpdateFinancialFreedomPlan } from '../hooks/useFinancialFreedomPlans';
 import { useAccount } from '../contexts/AccountContext';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +41,7 @@ import { PlanData, FinancialFreedomPlan } from '../types/financialFreedom.types'
 import { mapPlanDataToCreateRequest, mapPlanDataToUpdateRequest, mapPlanToPlanData } from '../utils/planDataMapper';
 import { formatCurrency, formatPercentageValue } from '../utils/format';
 
-const FinancialFreedom: React.FC = () => {
+const PlansList: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { accountId } = useAccount();
@@ -53,6 +55,7 @@ const FinancialFreedom: React.FC = () => {
   const [planToEdit, setPlanToEdit] = useState<FinancialFreedomPlan | null>(null);
   const [planToView, setPlanToView] = useState<FinancialFreedomPlan | null>(null);
   const [actionMenuAnchor, setActionMenuAnchor] = useState<{ element: HTMLElement; plan: FinancialFreedomPlan } | null>(null);
+  const [explanationModalOpen, setExplanationModalOpen] = useState(false);
 
   const handleCreateNew = () => {
     setShowWizard(true);
@@ -218,6 +221,15 @@ const FinancialFreedom: React.FC = () => {
             </ResponsiveTypography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Tooltip title="Tìm hiểu về Portfolio, Goal và Plan">
+              <IconButton
+                size="small"
+                onClick={() => setExplanationModalOpen(true)}
+                sx={{ color: 'primary.main' }}
+              >
+                <HelpIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <ResponsiveButton
               variant="contained"
               icon={<AddIcon />}
@@ -455,9 +467,14 @@ const FinancialFreedom: React.FC = () => {
           </Box>
         </Box>
       </ModalWrapper>
+
+      <GoalPlanExplanationModal
+        open={explanationModalOpen}
+        onClose={() => setExplanationModalOpen(false)}
+      />
     </Box>
   );
 };
 
-export default FinancialFreedom;
+export default PlansList;
 
