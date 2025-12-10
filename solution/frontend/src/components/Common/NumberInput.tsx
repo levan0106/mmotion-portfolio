@@ -32,6 +32,10 @@ interface NumberInputProps {
   prefix?: string;
   suffix?: string;
   showIcon?: boolean;
+  InputLabelProps?: {
+    shrink?: boolean;
+    [key: string]: any;
+  };
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -58,6 +62,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   prefix = '',
   suffix = '',
   showIcon = true,
+  InputLabelProps,
 }) => {
   const [displayValue, setDisplayValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -256,6 +261,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
       placeholder={placeholder}
       autoComplete="off"
       inputProps={getInputProps()}
+      InputLabelProps={InputLabelProps}
       InputProps={{
         startAdornment: showIcon ? (
           <InputAdornment position="start">

@@ -6,6 +6,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "edit": "Edit",
     "create": "Create",
     "update": "Update",
@@ -20,6 +21,7 @@
     "export": "Export",
     "import": "Import",
     "back": "Back",
+    "next": "Next",
     "thisAsset": "this asset",
     "groupByDate": "Group by Date",
     "grid": "Grid",
@@ -183,6 +185,278 @@
       "medium": "Medium",
       "low": "Low",
       "lowest": "Lowest"
+    }
+  },
+  "financialFreedom": {
+    "title": "Financial Freedom Planning",
+    "subtitle": "Plan your path to financial independence",
+    "templates": {
+      "title": "Choose a Planning Template",
+      "subtitle": "Select a template that matches your situation, or start from scratch",
+      "skip": "Skip, Enter Manually",
+      "willCalculate": "Will calculate",
+      "categories": {
+        "savings": "Savings",
+        "retirement": "Retirement",
+        "purchase": "Purchase",
+        "education": "Education",
+        "emergency": "Emergency"
+      },
+      "savingsInvestment": {
+        "name": "Savings & Investment",
+        "description": "For working individuals who want to save and invest to achieve financial goals"
+      },
+      "retirementWithdrawal": {
+        "name": "Retirement Withdrawal",
+        "description": "For retired individuals who have savings and want to withdraw money periodically"
+      },
+      "earlyRetirement": {
+        "name": "Early Retirement (FIRE)",
+        "description": "For individuals who want to retire early, need to accumulate quickly"
+      },
+      "homePurchase": {
+        "name": "Home Purchase",
+        "description": "For individuals who want to save to buy a home in the future"
+      },
+      "educationFund": {
+        "name": "Education Fund",
+        "description": "For parents who want to save for their children's university or study abroad"
+      },
+      "emergencyFund": {
+        "name": "Emergency Fund",
+        "description": "For individuals who want to build an emergency fund to handle unexpected situations"
+      },
+      "childrenFuture": {
+        "name": "Children's Future Fund",
+        "description": "For parents who want to save long-term for their children (18-20 years)"
+      }
+    },
+    "calculatedVariables": {
+      "returnRate": "Required Return Rate",
+      "years": "Investment Years",
+      "periodicPayment": "Periodic Payment",
+      "futureValue": "Future Value",
+      "initialInvestment": "Initial Investment"
+    },
+    "form": {
+      "targetAmount": {
+        "title": "Target Amount",
+        "targetCalculationMethod": "Target Calculation Method",
+        "direct": "Direct Amount",
+        "fromExpenses": "From Monthly Expenses",
+        "targetAmountPresentValue": "Target Amount (Present Value)",
+        "targetAmountHelper": "Enter the total amount you need to achieve financial freedom",
+        "monthlyExpenses": "Monthly Expenses (VND)",
+        "monthlyExpensesHelper": "Your monthly living expenses",
+        "withdrawalRate": "Withdrawal Rate (%)",
+        "withdrawalRateHelper": "Default: 4% (4% rule)",
+        "targetAmountFV": "Nominal Value",
+        "targetAmountRealFV": "Real Value"
+      },
+      "investmentParameters": {
+        "title": "Investment Parameters",
+        "initialInvestment": "Initial Investment (VND)",
+        "initialInvestmentHelper": "Your starting capital",
+        "periodicPayment": "Periodic Payment (VND)",
+        "periodicPaymentContributionHelper": "Amount you can invest each period",
+        "periodicPaymentWithdrawalHelper": "Enter as positive number (will be treated as withdrawal)",
+        "investmentYears": "Investment Years",
+        "investmentYearsHelper": "Leave empty to calculate",
+        "expectedReturnRate": "Expected Return Rate (%)",
+        "expectedReturnRateHelper": "Leave empty to calculate",
+        "paymentFrequency": "Payment Frequency",
+        "paymentType": "Payment Type",
+        "contribution": "Contribution",
+        "withdrawal": "Withdrawal",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "perYear": "/year",
+        "perMonth": "/month",
+        "perQuarter": "/quarter",
+        "inflationRate": "Inflation Rate (%)",
+        "inflationRateHelper": "Default: 3.5% for Vietnam",
+        "riskTolerance": "Risk Tolerance",
+        "conservative": "Conservative",
+        "moderate": "Moderate",
+        "aggressive": "Aggressive"
+      },
+      "calculate": "Calculate",
+      "calculating": "Calculating...",
+      "results": {
+        "title": "Calculation Results",
+        "calculatedVariable": "Calculated Variable:",
+        "futureValueRequired": "Future Value Required:",
+        "targetPresentValue": "Target Amount (adjusted for {{inflationRate}}% inflation):",
+        "feasible": "Feasible:",
+        "yes": "Yes",
+        "no": "No",
+        "warnings": "Warnings",
+        "suggestions": "Suggestions:",
+        "group1": {
+          "title": "Calculation Results",
+          "completionTime": "Completion Time",
+          "returnRate": "Required Return Rate %",
+          "totalValueAchieved": "Total Value Achieved",
+          "monthlyExpenses": "Monthly Profit",
+          "totalFutureValuePresentValue": "Total Future Value (adjusted for {{inflationRate}}% inflation)",
+          "monthlyExpensesPresentValue": "Monthly Profit",
+          "feasibility": "Feasibility Result"
+        },
+        "group2": {
+          "title": "Target",
+          "targetPresentValue": "Target Amount (adjusted for {{inflationRate}}% inflation)",
+          "targetFutureValue": "Target Amount (Completion Date)"
+        }
+      },
+      "error": "Error calculating. Please check your inputs.",
+      "tips": "Tips:",
+      "selectTemplate": "Select Template",
+      "changeTemplate": "Change Template"
+    },
+    "steps": {
+      "step1": {
+        "title": "Goal Definition & Investment Parameters",
+        "subtitle": "Define your financial freedom goal and investment parameters"
+      },
+      "step2": {
+        "title": "Asset Allocation Suggestions",
+        "subtitle": "Get recommendations for optimal portfolio allocation",
+        "addAssetType": "Add Asset Type",
+        "selectAssetType": "Select asset type from list",
+        "defaultExpectedReturn": "Default Expected Return",
+        "allAssetTypesAdded": "All asset types have been added",
+        "suggestedAllocation": "Suggested Allocation",
+        "allocationChart": "Allocation Chart",
+        "totalAllocation": "Total Allocation",
+        "expectedReturn": "Expected Return",
+        "portfolioReturn": "Portfolio Return",
+        "calculatedReturn": "Calculated Return",
+        "requiredReturn": "Required Return",
+        "difference": "Difference",
+        "returnNotMet": "Return requirement not met",
+        "recommendations": "Recommendations",
+        "noAllocation": "No allocation available"
+      },
+      "step3": {
+        "title": "Consolidated Plan Overview",
+        "subtitle": "View your complete financial plan and future projections"
+      },
+      "step4": {
+        "title": "Progress Tracking",
+        "subtitle": "Monitor your progress and get recommendations"
+      }
+    },
+    "allocation": {
+      "stocks": "Stocks",
+      "bonds": "Bonds",
+      "gold": "Gold",
+      "other": "Other",
+      "cash": "Cash"
+    },
+    "chart": {
+      "year": "Year",
+      "portfolioValue": "Portfolio Value",
+      "targetValue": "Target Value",
+      "target": "Target",
+      "assetValueOverTime": "Asset Value Over Time",
+      "assetValue": "Asset Value",
+      "totalFutureValue": "Total Nominal Value",
+      "targetFutureValue": "Target Amount (Completion Date)",
+      "totalFutureValuePresentValue": "Total Real Value",
+      "totalCapital": "Total Capital"
+    },
+    "table": {
+      "year": "Year",
+      "beginningValue": "Beginning Value",
+      "returnRate": "Return Rate %",
+      "investmentReturn": "Investment Return",
+      "periodicPayment": "Periodic Payment",
+      "totalCapital": "Total Capital",
+      "endingValue": "Ending Value",
+      "endingValueAfterInflation": "Ending Value After Inflation"
+    },
+    "scenario": {
+      "conservative": "Conservative",
+      "moderate": "Moderate",
+      "aggressive": "Aggressive",
+      "recommended": "Recommended",
+      "returnRate": "Expected Return Rate",
+      "finalValue": "Final Value",
+      "afterYears": "after {{years}} years",
+      "yearsToGoal": "Years to Goal",
+      "years": "years",
+      "progress": "Progress"
+    },
+    "step2": {
+      "title": "Asset Allocation Suggestions",
+      "subtitle": "Based on your required return rate and risk tolerance",
+      "addAssetType": "Add Asset Type",
+      "selectAssetType": "Select asset type from list",
+      "defaultExpectedReturn": "Default Expected Return",
+      "allAssetTypesAdded": "All asset types have been added",
+      "expectedReturn": "Expected Return",
+      "currentAllocation": "Current Allocation",
+      "suggestedAllocation": "Suggested Allocation",
+      "recommendations": "Recommendations",
+      "accept": "Accept Allocation",
+      "modify": "Modify Allocation",
+      "noAllocation": "No current allocation data available",
+      "allocation": "Asset Allocation",
+      "allocationChart": "Allocation Chart",
+      "totalAllocation": "Total Allocation",
+      "totalMustBe100": "Total allocation must equal 100%",
+      "portfolioReturn": "Portfolio Return",
+      "calculatedReturn": "Calculated Return",
+      "requiredReturn": "Required Return",
+      "difference": "Difference",
+      "returnNotMet": "Return requirement not met"
+    },
+    "step3": {
+      "title": "Consolidated Plan Overview",
+      "subtitle": "Complete view of your financial plan",
+      "yearlyProjections": "Yearly Projections",
+      "scenarioComparison": "Scenario Comparison",
+      "milestones": "Milestones",
+      "riskAssessment": "Risk Assessment",
+      "combinedAllocation": "Combined Allocation",
+      "savePlan": "Save Plan",
+      "planName": "Plan Name",
+      "planNameLabel": "Plan Name",
+      "planNamePlaceholder": "Enter a name for your plan",
+      "planNameHelper": "Give your plan a name to easily identify it later",
+      "planNameRequired": "Please enter a plan name"
+    },
+    "step4": {
+      "title": "Progress Tracking",
+      "subtitle": "Monitor your plan execution",
+      "currentProgress": "Current Progress",
+      "currentValue": "Current Value",
+      "targetValue": "Target Value",
+      "remainingAmount": "Remaining Amount",
+      "remainingYears": "Remaining Years",
+      "currentReturnRate": "Current Return Rate",
+      "requiredReturnRate": "Required Return Rate",
+      "gap": "Gap",
+      "milestones": "Milestones",
+      "alerts": "Alerts",
+      "yearlyComparison": "Yearly Comparison",
+      "linkPortfolio": "Link Portfolio",
+      "complete": "Complete"
+    },
+    "createNewPlan": "Create New Plan",
+    "noPlans": "No plans yet",
+    "noPlansDescription": "Create your first financial freedom plan to get started",
+    "createFirstPlan": "Create First Plan",
+    "planDetails": {
+      "title": "Plan Details",
+      "noAllocation": "No allocation"
+    },
+    "delete": {
+      "title": "Delete Plan",
+      "message": "Are you sure you want to delete the plan \"{{name}}\"?",
+      "warning": "This action cannot be undone. All data related to this plan will be permanently deleted.",
+      "error": "Failed to delete plan. Please try again."
     }
   },
   "navigation": {

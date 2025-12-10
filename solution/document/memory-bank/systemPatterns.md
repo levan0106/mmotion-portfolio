@@ -88,6 +88,50 @@ flowchart LR
   - Date-only storage: `normalizeDate(date, { output: 'iso-string', includeTime: false })`
 - **Pattern**: Unified date normalization with automatic type detection, timezone safety, and flexible options
 
+### Financial Freedom Planning System Pattern - **IMPLEMENTED** ✅ (Frontend & Backend - December 2024)
+- **4-Step Wizard Workflow**: Step-by-step financial planning process (Goal Definition → Allocation Suggestions → Consolidated Overview → Progress Tracking)
+- **Template-Based Planning**: 7 predefined templates for common financial scenarios (Savings & Investment, Retirement Withdrawal, Early Retirement/FIRE, Home Purchase, Education Fund, Emergency Fund, Children's Future Fund)
+- **Flexible Calculation Engine**: Calculate any missing variable (Return Rate, Investment Years, Periodic Payment, Future Value, Initial Investment) based on provided inputs
+- **2-Column Layout Pattern**: Form inputs on left, calculation results on right for optimal space usage
+- **Sticky Positioning**: Form and results stay visible when scrolling for better UX
+- **Mock Data Support**: USE_MOCK_DATA flag for frontend development without backend dependency
+- **Multi-Language Support**: Complete i18n support for all components and messages
+- **Professional Results Display**: Cards with icons, proper typography, and visual hierarchy
+- **Custom Input Components**: MoneyInput and NumberInput for consistent formatting and validation
+- **Format Utilities**: formatCurrency and formatPercentageValue for consistent value display
+- **React Query Integration**: All data fetching uses react-query for caching and state management
+- **3-Step Wizard Workflow**: Step-by-step financial planning process (Goal Definition → Asset Allocation → Consolidated Overview)
+- **Dynamic Asset Allocation**: Users can add/remove asset types dynamically from predefined templates
+- **Asset Type Templates**: 9 predefined asset types (stock, bond, gold, crypto, commodity, currency, cash, other)
+- **Interactive Allocation**: Sliders with +/- buttons for allocation percentage, number inputs for expected returns
+- **Real-time Portfolio Return**: Automatic calculation and comparison with target return rate
+- **Component Structure**:
+  - TemplateSelection: Grid layout for template selection
+  - TemplateCard: Individual template display
+  - CalculationForm: Comprehensive calculation form with 2-column layout
+  - Step1GoalDefinition: Step 1 component with template integration
+  - Step2AllocationSuggestionsDynamic: Dynamic asset allocation with add/remove functionality
+  - Step3ConsolidatedOverview: Consolidated overview with charts and scenarios
+  - FinancialFreedomWizard: Main wizard with Material-UI Stepper and fixed navigation
+  - PlanDetailModal: Plan detail modal with 2-column layout and yearly projections chart
+  - FinancialFreedom: Main page with plan list and wizard
+  - AllocationChart: Dynamic pie chart for asset allocation
+  - ProgressChart: AreaChart with target reference line
+  - ScenarioComparison: Comparison of conservative, moderate, aggressive scenarios
+  - SelectAssetTypeModal: Modal for selecting asset types from templates
+- **Backend Architecture**:
+  - FinancialFreedomPlan Entity: TypeORM entity with JSONB fields for dynamic data
+  - FinancialFreedomPlanService: Service layer with CRUD operations and JSONB serialization
+  - FinancialFreedomController: RESTful API endpoints
+  - DTOs: CreatePlanDto, UpdatePlanDto, PlanResponseDto with dynamic asset allocation support
+  - Raw SQL Updates: Dynamic SQL queries for JSONB field updates
+- **Data Mapping**: planDataMapper for converting between frontend PlanData and backend DTOs
+- **Calculation Fixes**: Contributions calculation, return rate warnings, periodic payment handling
+- **Type Safety**: Complete TypeScript types for all components and data structures
+- **Responsive Design**: Mobile-friendly with proper stacking and touch-friendly interactions
+- **Files**: financialFreedom.types.ts, planningTemplates.ts, assetTypeTemplates.ts, api.financial-freedom.ts, useFinancialFreedomPlans.ts, useFinancialFreedomCalculation.ts, useProgressTracking.ts, usePlanningTemplates.ts, TemplateSelection.tsx, TemplateCard.tsx, CalculationForm.tsx, Step1GoalDefinition.tsx, Step2AllocationSuggestionsDynamic.tsx, Step3ConsolidatedOverview.tsx, FinancialFreedomWizard.tsx, PlanDetailModal.tsx, FinancialFreedom.tsx, AllocationChart.tsx, ProgressChart.tsx, ScenarioComparison.tsx, SelectAssetTypeModal.tsx, planDataMapper.ts, financial-freedom-plan.entity.ts, financial-freedom-plan.service.ts, financial-freedom.controller.ts
+- **Pattern**: Template-based financial planning system with dynamic asset allocation, flexible calculation engine, 2-column layout, and professional UI
+
 ### Notes Management Pattern - **IMPLEMENTED** ✅
 - **Flexible Association System**: Notes can be associated with Portfolio (required) and optionally with Asset
 - **Dedicated Entity**: Note entity with proper TypeORM relationships and indexes

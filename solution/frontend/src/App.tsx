@@ -24,6 +24,7 @@ import Transactions from './pages/Transactions';
 import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
 import Goals from './pages/Goals';
+import FinancialFreedom from './pages/FinancialFreedom';
 import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import Welcome from './pages/Welcome';
@@ -192,6 +193,13 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <Goals />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/financial-freedom" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <FinancialFreedom />
               </Box>
             </AppLayout>
           } />

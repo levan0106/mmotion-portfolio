@@ -21,6 +21,7 @@
     "export": "Xuất",
     "import": "Nhập",
     "back": "Quay lại",
+    "next": "Tiếp theo",
     "thisAsset": "tài sản này",
     "groupByDate": "Nhóm theo ngày",
     "grid": "Lưới",
@@ -190,17 +191,278 @@
       "medium": "Trung bình",
       "low": "Thấp",
       "lowest": "Rất thấp"
+    }
     },
-    "deleteConfirm": {
-      "title": "Xác nhận xóa mục tiêu",
-      "message": "Bạn có chắc chắn muốn xóa mục tiêu này không?",
-      "warning": "Cảnh báo",
-      "warningMessage": "Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến mục tiêu này sẽ bị xóa vĩnh viễn.",
-      "goalDetails": "Chi tiết mục tiêu sẽ bị xóa:",
-      "name": "Tên",
-      "currentValue": "Giá trị hiện tại",
+  "financialFreedom": {
+    "title": "Kế hoạch",
+    "subtitle": "Lập kế hoạch để đạt tự do tài chính",
+    "templates": {
+      "title": "Chọn mẫu kế hoạch",
+      "subtitle": "Chọn mẫu phù hợp với tình huống của bạn, hoặc tự nhập thông tin",
+      "skip": "Bỏ qua, Tự nhập",
+      "willCalculate": "Sẽ tính",
+      "categories": {
+        "savings": "Tiết kiệm",
+        "retirement": "Nghỉ hưu",
+        "purchase": "Mua sắm",
+        "education": "Giáo dục",
+        "emergency": "Khẩn cấp"
+      },
+      "savingsInvestment": {
+        "name": "Tiết kiệm và đầu tư",
+        "description": "Dành cho người đang làm việc, muốn tích lũy và đầu tư để đạt mục tiêu tài chính"
+      },
+      "retirementWithdrawal": {
+        "name": "Đã nghỉ hưu, rút tiền",
+        "description": "Dành cho người đã nghỉ hưu, có khoản tiết kiệm và muốn rút tiền định kỳ"
+      },
+      "earlyRetirement": {
+        "name": "Tự do tài chính sớm (FIRE)",
+        "description": "Dành cho người muốn nghỉ hưu sớm, cần tích lũy nhanh để đạt tự do tài chính"
+      },
+      "homePurchase": {
+        "name": "Mua nhà",
+        "description": "Dành cho người muốn tích lũy để mua nhà trong tương lai"
+      },
+      "educationFund": {
+        "name": "Quỹ giáo dục",
+        "description": "Dành cho phụ huynh muốn tích lũy cho con cái đi học đại học hoặc du học"
+      },
+      "emergencyFund": {
+        "name": "Quỹ khẩn cấp",
+        "description": "Dành cho người muốn xây dựng quỹ khẩn cấp để đối phó với các tình huống bất ngờ"
+      },
+      "childrenFuture": {
+        "name": "Tích lũy cho con cái",
+        "description": "Dành cho phụ huynh muốn tích lũy dài hạn cho con cái (18-20 năm)"
+      }
+    },
+    "calculatedVariables": {
+      "returnRate": "Tỉ suất lợi nhuận",
+      "years": "năm",
+      "periodicPayment": "Tiền bổ sung mỗi kỳ",
+      "futureValue": "Tổng tiền tương lai",
+      "initialInvestment": "Vốn ban đầu"
+    },
+    "form": {
+      "targetAmount": {
+        "title": "Số tiền mục tiêu",
+        "targetCalculationMethod": "Phương pháp tính mục tiêu theo tháng",
+        "direct": "Số tiền trực tiếp",
+        "fromExpenses": "Từ chi phí hàng tháng",
+        "targetAmountPresentValue": "Số tiền mục tiêu (Giá trị hiện tại)",
+        "targetAmountHelper": "Nhập tổng số tiền bạn cần để đạt tự do tài chính",
+        "monthlyExpenses": "Chi phí hàng tháng (VND)",
+        "monthlyExpensesHelper": "Chi phí sinh hoạt hàng tháng của bạn",
+        "withdrawalRate": "Tỷ lệ rút tiền (%)",
+        "withdrawalRateHelper": "Mặc định: 5% (Lãi suất tiết kiệm)",
+        "targetAmountFV": "Giá trị danh nghĩa",
+        "targetAmountRealFV": "Giá trị thực"
+      },
+      "investmentParameters": {
+        "title": "Thông số đầu tư",
+        "initialInvestment": "Vốn ban đầu (VND)",
+        "initialInvestmentHelper": "Vốn khởi điểm của bạn",
+        "periodicPayment": "Thanh toán định kỳ (VND)",
+        "periodicPaymentContributionHelper": "Số tiền bạn có thể đầu tư mỗi kỳ",
+        "periodicPaymentWithdrawalHelper": "Nhập số dương (sẽ được coi là rút tiền)",
+        "investmentYears": "Số năm đầu tư",
+        "investmentYearsHelper": "Để trống để tính toán",
+        "expectedReturnRate": "Lợi nhuận kỳ vọng",
+        "expectedReturnRateHelper": "Để trống để tính toán",
+        "paymentFrequency": "Tần suất thanh toán",
+        "paymentType": "Loại thanh toán",
+        "contribution": "Đóng góp",
+        "withdrawal": "Rút tiền",
+        "monthly": "Hàng tháng",
+        "quarterly": "Hàng quý",
+        "yearly": "Hàng năm",
+        "perYear": "/năm",
+        "perMonth": "/tháng",
+        "perQuarter": "/quý",
+        "inflationRate": "Tỷ lệ lạm phát (%)",
+        "inflationRateHelper": "Mặc định: 3.5% cho Việt Nam",
+        "riskTolerance": "Mức độ chấp nhận rủi ro",
+        "conservative": "Thận trọng",
+        "moderate": "Trung bình",
+        "aggressive": "Mạo hiểm"
+      },
+      "calculate": "Tính toán",
+      "calculating": "Đang tính toán...",
+      "results": {
+        "title": "Kết quả tính toán",
+        "calculatedVariable": "Biến được tính:",
+        "futureValueRequired": "Số tiền mục tiêu (thời điểm hoàn thành):",
+        "targetPresentValue": "Số tiền mục tiêu (trừ lạm phát {{inflationRate}}%):",
+        "feasible": "Khả thi:",
+        "yes": "Có",
+        "no": "Không",
+        "warnings": "Cảnh báo",
+        "suggestions": "Gợi ý:",
+        "group1": {
+          "title": "Kết quả tính toán",
+          "completionTime": "Thời gian hoàn thành",
+          "returnRate": "Tỷ suất đầu tư",
+          "totalValueAchieved": "Tổng giá trị danh nghĩa",
+          "monthlyExpenses": "Lợi nhuận theo tháng",
+          "totalFutureValuePresentValue": "Tổng giá trị thực (trừ lạm phát {{inflationRate}}%)",
+          "monthlyExpensesPresentValue": "Tiền rút theo tháng",
+          "feasibility": "Kết quả khả thi"
+        },
+        "group2": {
+          "title": "Mục tiêu",
+          "targetPresentValue": "Số tiền mục tiêu (thời điển hiện tại)",
+          "targetFutureValue": "Số tiền mục tiêu (thời điểm hoàn thành)"
+        }
+      },
+      "error": "Lỗi tính toán. Vui lòng kiểm tra lại thông tin nhập vào.",
+      "tips": "Mẹo:",
+      "selectTemplate": "Chọn mẫu kế hoạch",
+      "changeTemplate": "Thay đổi mẫu kế hoạch"
+    },
+    "steps": {
+      "step1": {
+        "title": "Xác định mục tiêu và gia tốc đầu tư",
+        "subtitle": "Xác định mục tiêu tự do tài chính và các thông số đầu tư"
+      },
+      "step2": {
+        "title": "Phân bổ danh mục đầu tư",
+        "subtitle": "Nhận đề xuất phân bổ danh mục tối ưu",
+        "addAssetType": "Thêm loại tài sản",
+        "selectAssetType": "Chọn loại tài sản từ danh sách",
+        "defaultExpectedReturn": "Tỉ suất lợi nhuận mặc định",
+        "allAssetTypesAdded": "Tất cả loại tài sản đã được thêm",
+        "suggestedAllocation": "Phân bổ đề xuất",
+        "allocationChart": "Biểu đồ phân bổ",
+        "totalAllocation": "Tổng phân bổ",
+        "expectedReturn": "Tỉ suất lợi nhuận kỳ vọng",
+        "portfolioReturn": "Lợi nhuận danh mục",
+        "calculatedReturn": "Lợi nhuận tính toán",
+        "requiredReturn": "Lợi nhuận yêu cầu",
+        "difference": "Chênh lệch",
+        "returnNotMet": "Lợi nhuận chưa đạt yêu cầu",
+        "recommendations": "Đề xuất",
+        "noAllocation": "Không có phân bổ"
+      },
+      "step3": {
+        "title": "Tổng quan toàn bộ kế hoạch",
+        "subtitle": "Xem kế hoạch tài chính hoàn chỉnh và dự báo tương lai"
+      },
+      "step4": {
+        "title": "Theo dõi danh mục kế hoạch",
+        "subtitle": "Theo dõi tiến độ và nhận đề xuất"
+      }
+    },
+    "allocation": {
+      "stocks": "Cổ phiếu",
+      "bonds": "Trái phiếu",
+      "gold": "Vàng",
+      "other": "Khác",
+      "cash": "Tiền mặt"
+    },
+    "chart": {
+      "year": "Năm",
+      "portfolioValue": "Giá trị danh mục",
+      "targetValue": "Giá trị mục tiêu",
       "target": "Mục tiêu",
+      "assetValueOverTime": "Giá trị tài sản qua từng năm",
+      "assetValue": "Giá trị tài sản",
+      "totalFutureValue": "Tổng giá trị danh nghĩa",
+      "targetFutureValue": "Số tiền mục tiêu (thời điểm hoàn thành)",
+      "totalFutureValuePresentValue": "Tổng giá trị thực",
+      "totalCapital": "Vốn góp"
+    },
+    "table": {
+      "year": "Năm",
+      "beginningValue": "Giá trị đầu kỳ",
+      "returnRate": "Tỷ suất (%)",
+      "investmentReturn": "Tiền lãi ĐT",
+      "periodicPayment": "Thanh toán định kỳ",
+      "totalCapital": "Vốn góp",
+      "endingValue": "Giá trị danh nghĩa",
+      "endingValueAfterInflation": "Giá trị thực"
+    },
+    "scenario": {
+      "conservative": "Thận trọng",
+      "moderate": "Trung bình",
+      "aggressive": "Mạo hiểm",
+      "recommended": "Được đề xuất",
+      "returnRate": "Lợi suất kỳ vọng",
+      "finalValue": "Giá trị cuối cùng",
+      "afterYears": "sau {{years}} năm",
+      "yearsToGoal": "Số năm đến mục tiêu",
+      "years": "năm",
       "progress": "Tiến độ"
+    },
+    "step2": {
+      "title": "Gợi ý phân bổ danh mục đầu tư",
+      "subtitle": "Dựa trên tỉ suất lợi nhuận yêu cầu và mức độ chấp nhận rủi ro",
+      "addAssetType": "Thêm loại tài sản",
+      "selectAssetType": "Chọn loại tài sản từ danh sách",
+      "defaultExpectedReturn": "Tỉ suất lợi nhuận mặc định",
+      "allAssetTypesAdded": "Tất cả loại tài sản đã được thêm",
+      "expectedReturn": "Tỉ suất lợi nhuận kỳ vọng",
+      "currentAllocation": "Phân bổ hiện tại",
+      "suggestedAllocation": "Phân bổ đề xuất",
+      "recommendations": "Đề xuất",
+      "accept": "Chấp nhận phân bổ",
+      "modify": "Chỉnh sửa phân bổ",
+      "noAllocation": "Không có dữ liệu phân bổ hiện tại",
+      "allocation": "Phân bổ tài sản",
+      "allocationChart": "Biểu đồ phân bổ",
+      "totalAllocation": "Tổng phân bổ",
+      "totalMustBe100": "Tổng phân bổ phải bằng 100%",
+      "portfolioReturn": "Lợi nhuận danh mục",
+      "calculatedReturn": "Lợi nhuận tính toán",
+      "requiredReturn": "Lợi nhuận yêu cầu",
+      "difference": "Chênh lệch",
+      "returnNotMet": "Lợi nhuận chưa đạt yêu cầu"
+    },
+    "step3": {
+      "title": "Tổng quan toàn bộ kế hoạch",
+      "subtitle": "Xem toàn bộ kế hoạch tài chính của bạn",
+      "yearlyProjections": "Dự báo hàng năm",
+      "scenarioComparison": "So sánh kịch bản",
+      "milestones": "Cột mốc",
+      "riskAssessment": "Đánh giá rủi ro",
+      "combinedAllocation": "Phân bổ kết hợp",
+      "savePlan": "Lưu kế hoạch",
+      "planName": "Tên kế hoạch",
+      "planNameLabel": "Tên kế hoạch",
+      "planNamePlaceholder": "Nhập tên cho kế hoạch của bạn",
+      "planNameHelper": "Đặt tên cho kế hoạch để dễ dàng nhận biết",
+      "planNameRequired": "Vui lòng nhập tên kế hoạch"
+    },
+    "step4": {
+      "title": "Theo dõi tiến độ",
+      "subtitle": "Theo dõi việc thực hiện kế hoạch",
+      "currentProgress": "Tiến độ hiện tại",
+      "currentValue": "Giá trị hiện tại",
+      "targetValue": "Giá trị mục tiêu",
+      "remainingAmount": "Số tiền còn lại",
+      "remainingYears": "Thời gian",
+      "currentReturnRate": "Tỉ suất lợi nhuận hiện tại",
+      "requiredReturnRate": "Tỉ suất lợi nhuận",
+      "gap": "Chênh lệch",
+      "milestones": "Cột mốc",
+      "alerts": "Cảnh báo",
+      "yearlyComparison": "So sánh hàng năm",
+      "linkPortfolio": "Liên kết danh mục",
+      "complete": "Hoàn thành"
+    },
+    "createNewPlan": "Tạo kế hoạch mới",
+    "noPlans": "Chưa có kế hoạch",
+    "noPlansDescription": "Tạo kế hoạch tự do tài chính đầu tiên để bắt đầu",
+    "createFirstPlan": "Tạo kế hoạch đầu tiên",
+    "planDetails": {
+      "title": "Chi tiết kế hoạch",
+      "noAllocation": "Không có phân bổ"
+    },
+    "delete": {
+      "title": "Xóa kế hoạch",
+      "message": "Bạn có chắc chắn muốn xóa kế hoạch \"{{name}}\"?",
+      "warning": "Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến kế hoạch này sẽ bị xóa vĩnh viễn.",
+      "error": "Không thể xóa kế hoạch. Vui lòng thử lại."
     }
   },
   "navigation": {

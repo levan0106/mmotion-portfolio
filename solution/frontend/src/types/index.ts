@@ -408,3 +408,6 @@ export * from './trading';
 
 // Export asset types
 export * from './asset.types';
+
+// Export financial freedom types
+export * from './financialFreedom.types';
