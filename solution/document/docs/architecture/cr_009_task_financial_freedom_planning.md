@@ -539,15 +539,20 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [x] Auto-refresh plan data after link/unlink
     - [x] Multi-language support
 
-### Task 32: Integrate with Asset Analytics Service
-- [ ] Use `AssetAnalyticsService` for current allocation comparison
-    - [ ] Call `calculateAssetAllocation()` method
-    - [ ] Compare with suggested allocation
-    - [ ] Calculate adjustments needed
-- [ ] Display allocation comparison in UI
-    - [ ] Show current vs suggested
-    - [ ] Highlight differences
-    - [ ] Show rebalancing recommendations
+### Task 32: Integrate with Asset Analytics Service ✅ COMPLETED
+- [x] Use `AssetAnalyticsService` for current allocation comparison
+    - [x] Call `calculateAssetAllocation()` method
+    - [x] Use `PortfolioCalculationService` to get actual asset values
+    - [x] Compare with suggested allocation
+    - [x] Calculate adjustments needed
+    - [x] Handle portfolios from linked goals
+- [x] Display allocation comparison in UI
+    - [x] Show current vs suggested allocation charts
+    - [x] Highlight differences in deviations table
+    - [x] Show rebalancing recommendations
+    - [x] Filter out asset types with 0 value
+    - [x] Add third tab in PlanDetailModal for allocation comparison
+    - [x] Auto-refresh data when tab is clicked
 
 ### Task 33: Integrate with TWR/IRR Services ✅ COMPLETED
 - [x] Use `TWRCalculationService` for actual return rate
@@ -810,6 +815,15 @@ This document breaks down the implementation of the Financial Freedom Planning S
   - Logic: Automatically combines portfolios from linked goals with direct linked portfolios
   - Frontend: `PlanProgressSection` component with milestones timeline
   - Auto-refresh: Progress automatically updates after link/unlink
+- ✅ **Task 32 Completed**: Asset Analytics Service integration
+  - Backend: `compareAllocationWithCurrent()` method implemented
+  - Uses `AssetAnalyticsService` to get current allocation from portfolios
+  - Combines portfolios from linked goals with direct linked portfolios
+  - Calculates deviations and generates rebalancing recommendations
+  - Frontend: `AllocationComparisonSection` component with charts and table
+  - Third tab in `PlanDetailModal` for allocation comparison
+  - Auto-refresh when tab is clicked
+  - Filters out asset types with 0 value
 - ✅ **Task 33 Completed**: TWR/IRR Services integration
   - Weighted average TWR calculation across all portfolios (direct + from goals)
   - Proper handling of portfolios from linked goals
@@ -865,7 +879,7 @@ This document breaks down the implementation of the Financial Freedom Planning S
 
 ## Progress Summary
 
-### Completed Tasks (28/50)
+### Completed Tasks (29/50)
 - ✅ Task 1: Create FinancialFreedomPlan Entity
 - ✅ Task 2: Create Database Migration
 - ✅ Task 3: Create Repository (Using TypeORM Repository)
@@ -890,6 +904,7 @@ This document breaks down the implementation of the Financial Freedom Planning S
 - ✅ Task 29: Add Navigation and Routing
 - ✅ Task 30: Integrate with Goals Management System
 - ✅ Task 31: Integrate with Portfolio System
+- ✅ Task 32: Integrate with Asset Analytics Service
 - ✅ Task 33: Integrate with TWR/IRR Services
 - ✅ Task 9: Create Progress Tracking Service (Re-implemented)
 
@@ -901,6 +916,8 @@ This document breaks down the implementation of the Financial Freedom Planning S
 - Plan detail modal with tabs: ✅ COMPLETED
 - Plans list with financial summary: ✅ COMPLETED
 - startDate and description fields: ✅ COMPLETED
+- Asset Analytics integration: ✅ COMPLETED
+- UI/UX improvements (layout, progress display, wizard navigation): ✅ COMPLETED
 
 ### Pending
 - Backend calculation/allocation/consolidation services (Tasks 5-10) - Note: Currently done on frontend, can be moved to backend later if needed

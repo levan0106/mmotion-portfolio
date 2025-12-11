@@ -18,6 +18,7 @@ import {
   PieChart as PieChartIcon,
   Timeline as TimelineIcon,
   Settings as SettingsIcon,
+  CompareArrows as CompareArrowsIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
@@ -32,6 +33,7 @@ import { AllocationChart } from './AllocationChart';
 import { GoalPlanExplanationModal } from './GoalPlanExplanationModal';
 import { PlanLinksSection } from './PlanLinksSection';
 import { PlanProgressSection } from './PlanProgressSection';
+import { AllocationComparisonSection } from './AllocationComparisonSection';
 import { useProgressTracking } from '../../hooks/useProgressTracking';
 
 interface PlanDetailModalProps {
@@ -49,6 +51,7 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { accountId } = useAccount();
+  const queryClient = useQueryClient();
   const [explanationModalOpen, setExplanationModalOpen] = useState(false);
   const [localPlan, setLocalPlan] = useState<FinancialFreedomPlan | null>(plan);
   const [activeTab, setActiveTab] = useState(0);
@@ -67,11 +70,19 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
     }
   }, [plan]);
 
+  // Refresh allocation comparison data when tab is clicked
+  useEffect(() => {
+    if (activeTab === 2 && localPlan?.id && accountId) {
+      // Invalidate and refetch allocation comparison data
+      queryClient.invalidateQueries({ 
+        queryKey: ['allocationComparison', localPlan.id, accountId] 
+      });
+    }
+  }, [activeTab, localPlan?.id, accountId, queryClient]);
+
   if (!plan || !localPlan) {
     return null;
   }
-
-  const queryClient = useQueryClient();
 
   const handlePlanUpdate = (updatedPlan: FinancialFreedomPlan) => {
     setLocalPlan(updatedPlan);
@@ -125,7 +136,7 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
             </Tooltip>
           </Box>
         }
-        maxWidth="lg"
+        maxWidth="xl"
         fullWidth
         actions={
           <>
@@ -154,7 +165,7 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                   </ResponsiveTypography>
                   {completionYear && (
                     <ResponsiveTypography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                      {t('financialFreedom.planDetails.completionYear', { year: completionYear })}
+                      {t('financialFreedom.planDetails.completionYear', { startYear: new Date(localPlan.startDate || localPlan.createdAt).getFullYear(), endYear: completionYear })}
                     </ResponsiveTypography>
                   )}
                 </Box>
@@ -203,7 +214,7 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                           {formatPercentage(progress.currentReturnRate)}
                         </ResponsiveTypography>
                         <ResponsiveTypography variant="caption" color="text.secondary">
-                          | {formatPercentage(progress.requiredReturnRate)}
+                          / {formatPercentage(progress.requiredReturnRate)}
                         </ResponsiveTypography>
                       </Box>
                       <ResponsiveTypography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -273,6 +284,14 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <TrendingUpIcon fontSize="small" />
                   <span>{t('financialFreedom.planDetails.tabs.progressAndLinks')}</span>
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CompareArrowsIcon fontSize="small" />
+                  <span>{t('financialFreedom.planDetails.tabs.allocationComparison')}</span>
                 </Box>
               }
             />
@@ -394,93 +413,96 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Asset Allocation */}
-            {localPlan.suggestedAllocation && (() => {
-              // Convert suggestedAllocation to AssetAllocation format and get assetTypes
-              let allocationData: AssetAllocation = {};
-              let assetTypes: Array<{ code: string; name: string; nameEn?: string; color?: string }> = [];
+            {/* Asset Allocation and Yearly Projections - Side by Side */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+              {/* Asset Allocation */}
+              {localPlan.suggestedAllocation && (() => {
+                // Convert suggestedAllocation to AssetAllocation format and get assetTypes
+                let allocationData: AssetAllocation = {};
+                let assetTypes: Array<{ code: string; name: string; nameEn?: string; color?: string }> = [];
 
-              if (Array.isArray(localPlan.suggestedAllocation) && localPlan.suggestedAllocation.length > 0) {
-                // New format: AssetAllocationItem[]
-                allocationData = localPlan.suggestedAllocation.reduce((acc, item) => {
-                  acc[item.code] = item.allocation;
-                  return acc;
-                }, {} as AssetAllocation);
+                if (Array.isArray(localPlan.suggestedAllocation) && localPlan.suggestedAllocation.length > 0) {
+                  // New format: AssetAllocationItem[]
+                  allocationData = localPlan.suggestedAllocation.reduce((acc, item) => {
+                    acc[item.code] = item.allocation;
+                    return acc;
+                  }, {} as AssetAllocation);
 
-                // Get asset types metadata from templates
-                assetTypes = localPlan.suggestedAllocation
-                  .filter(item => item.allocation > 0)
-                  .map(item => {
-                    const template = ASSET_TYPE_TEMPLATES.find(t => t.code === item.code);
-                    return {
-                      code: item.code,
-                      name: template?.name || item.code,
-                      nameEn: template?.nameEn,
-                      color: template?.color,
-                    };
-                  });
-              } else if (!Array.isArray(localPlan.suggestedAllocation) && Object.keys(localPlan.suggestedAllocation).length > 0) {
-                // Old format: AssetAllocation (object)
-                allocationData = localPlan.suggestedAllocation as AssetAllocation;
-                
-                // Get asset types metadata from templates
-                assetTypes = Object.entries(localPlan.suggestedAllocation)
-                  .filter(([_, value]) => (value as number) > 0)
-                  .map(([code]) => {
-                    const template = ASSET_TYPE_TEMPLATES.find(t => t.code === code);
-                    return {
-                      code,
-                      name: template?.name || code,
-                      nameEn: template?.nameEn,
-                      color: template?.color,
-                    };
-                  });
-              }
+                  // Get asset types metadata from templates
+                  assetTypes = localPlan.suggestedAllocation
+                    .filter(item => item.allocation > 0)
+                    .map(item => {
+                      const template = ASSET_TYPE_TEMPLATES.find(t => t.code === item.code);
+                      return {
+                        code: item.code,
+                        name: template?.name || item.code,
+                        nameEn: template?.nameEn,
+                        color: template?.color,
+                      };
+                    });
+                } else if (!Array.isArray(localPlan.suggestedAllocation) && Object.keys(localPlan.suggestedAllocation).length > 0) {
+                  // Old format: AssetAllocation (object)
+                  allocationData = localPlan.suggestedAllocation as AssetAllocation;
+                  
+                  // Get asset types metadata from templates
+                  assetTypes = Object.entries(localPlan.suggestedAllocation)
+                    .filter(([_, value]) => (value as number) > 0)
+                    .map(([code]) => {
+                      const template = ASSET_TYPE_TEMPLATES.find(t => t.code === code);
+                      return {
+                        code,
+                        name: template?.name || code,
+                        nameEn: template?.nameEn,
+                        color: template?.color,
+                      };
+                    });
+                }
 
-              // Only render if we have allocation data
-              if (Object.keys(allocationData).length > 0) {
-                return (
-                  <Card>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <PieChartIcon color="primary" />
-                        <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
-                          {t('financialFreedom.step2.allocation')}
-                        </ResponsiveTypography>
-                      </Box>
-                      <AllocationChart
-                        allocation={allocationData}
-                        assetTypes={assetTypes.length > 0 ? assetTypes : undefined}
-                      />
-                    </CardContent>
-                  </Card>
-                );
-              }
+                // Only render if we have allocation data
+                if (Object.keys(allocationData).length > 0) {
+                  return (
+                    <Card sx={{ flex: 1, height: '100%' }}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                          <PieChartIcon color="primary" />
+                          <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
+                            {t('financialFreedom.step2.allocation')}
+                          </ResponsiveTypography>
+                        </Box>
+                        <AllocationChart
+                          allocation={allocationData}
+                          assetTypes={assetTypes.length > 0 ? assetTypes : undefined}
+                        />
+                      </CardContent>
+                    </Card>
+                  );
+                }
 
-              return null;
-            })()}
+                return null;
+              })()}
 
-            {/* Yearly Projections */}
-            {localPlan.yearlyProjections && localPlan.yearlyProjections.length > 0 && (
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <TimelineIcon color="primary" />
-                    <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
-                      {t('financialFreedom.step3.yearlyProjections')}
-                    </ResponsiveTypography>
-                  </Box>
-                  <ProgressChart
-                    projections={localPlan.yearlyProjections}
-                    targetValue={localPlan.futureValueRequired}
-                    // title={t('financialFreedom.step3.yearlyProjections')}
-                    baseCurrency={localPlan.baseCurrency || 'VND'}
-                    height={350}
-                    showTarget={true}
-                  />
-                </CardContent>
-              </Card>
-            )}
+              {/* Yearly Projections */}
+              {localPlan.yearlyProjections && localPlan.yearlyProjections.length > 0 && (
+                <Card sx={{ flex: 1, height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <TimelineIcon color="primary" />
+                      <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
+                        {t('financialFreedom.step3.yearlyProjections')}
+                      </ResponsiveTypography>
+                    </Box>
+                    <ProgressChart
+                      projections={localPlan.yearlyProjections}
+                      targetValue={localPlan.futureValueRequired}
+                      // title={t('financialFreedom.step3.yearlyProjections')}
+                      baseCurrency={localPlan.baseCurrency || 'VND'}
+                      height={300}
+                      showTarget={true}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </Box>
           </Stack>
         )}
 
@@ -518,6 +540,37 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                 <PlanLinksSection plan={localPlan} onPlanUpdate={handlePlanUpdate} />
               </CardContent>
             </Card>
+          </Stack>
+        )}
+
+        {/* Tab Panel 3: Allocation Comparison */}
+        {activeTab === 2 && (
+          <Stack spacing={3}>
+            {/* Allocation Comparison Section (if has linked portfolios or goals) */}
+            {(hasLinkedPortfolios || (localPlan.linkedGoalIds && localPlan.linkedGoalIds.length > 0)) ? (
+              <Card>
+                <CardContent>
+                  <AllocationComparisonSection
+                    planId={localPlan.id}
+                    baseCurrency={localPlan.baseCurrency || 'VND'}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent>
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <CompareArrowsIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                    <ResponsiveTypography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                      {t('financialFreedom.planDetails.allocationComparison.noData') || 'Chưa có dữ liệu so sánh'}
+                    </ResponsiveTypography>
+                    <ResponsiveTypography variant="body2" color="text.secondary">
+                      {t('financialFreedom.planDetails.allocationComparison.noDataMessage') || 'Vui lòng liên kết Portfolio hoặc Goal để xem so sánh phân bổ tài sản'}
+                    </ResponsiveTypography>
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
           </Stack>
         )}
       </Stack>

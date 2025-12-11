@@ -43,6 +43,7 @@ import { TradingModule } from '../trading/trading.module';
 import { LoggingModule } from '../logging/logging.module';
 import { SharedModule } from '../shared/shared.module';
 import { NotificationModule } from '../../notification/notification.module';
+import { PortfolioModule } from '../portfolio/portfolio.module';
 
 /**
  * Asset Module for the Global Assets System.
@@ -77,6 +78,7 @@ import { NotificationModule } from '../../notification/notification.module';
       Account,
     ]),
     forwardRef(() => MarketDataModule),
+    forwardRef(() => PortfolioModule),
     forwardRef(() => TradingModule),
     LoggingModule,
     SharedModule,

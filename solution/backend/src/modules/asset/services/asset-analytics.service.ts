@@ -1,7 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { IAssetRepository, AssetStatistics } from '../repositories/asset.repository.interface';
 import { Asset } from '../entities/asset.entity';
 import { AssetType } from '../enums/asset-type.enum';
+import { PortfolioCalculationService } from '../../portfolio/services/portfolio-calculation.service';
 
 /**
  * Asset Analytics Service
@@ -12,6 +13,8 @@ export class AssetAnalyticsService {
   constructor(
     @Inject('IAssetRepository')
     private readonly assetRepository: IAssetRepository,
+    @Inject(forwardRef(() => PortfolioCalculationService))
+    private readonly portfolioCalculationService: PortfolioCalculationService,
   ) {}
 
   /**
@@ -44,11 +47,16 @@ export class AssetAnalyticsService {
    * @param portfolioId - Portfolio ID
    * @returns Asset allocation percentages by type
    */
-  async calculateAssetAllocation(portfolioId: string): Promise<Record<AssetType, number>> {
-    const assets = await this.assetRepository.findByPortfolioId(portfolioId);
-    const totalValue = await this.calculatePortfolioValue(portfolioId);
+  async calculateAssetAllocation(portfolioId: string, portfolioValue?: number): Promise<Record<AssetType, number>> {
+    // Use PortfolioCalculationService to get actual asset values
+    const portfolioAssets = await this.portfolioCalculationService.calculatePortfolioAssetValues(portfolioId);
+    
+    const totalValue = portfolioValue || portfolioAssets.totalValue;
+    
+    console.log(`[calculateAssetAllocation] Portfolio ${portfolioId}: assetPositions count=${portfolioAssets.assetPositions.length}, totalValue=${totalValue}`);
     
     if (totalValue === 0) {
+      console.log(`[calculateAssetAllocation] Portfolio ${portfolioId}: totalValue is 0, returning zeros`);
       return {
         [AssetType.STOCK]: 0,
         [AssetType.BOND]: 0,
@@ -58,8 +66,8 @@ export class AssetAnalyticsService {
         [AssetType.REALESTATE]: 0,
         [AssetType.CURRENCY]: 0,
         [AssetType.OTHER]: 0,
-        //[AssetType.DEPOSIT]: 0,
-        //[AssetType.CASH]: 0,
+         [AssetType.DEPOSIT]: 0,
+        [AssetType.CASH]: 0,
       };
     }
 
@@ -72,16 +80,22 @@ export class AssetAnalyticsService {
       [AssetType.REALESTATE]: 0,
       [AssetType.CURRENCY]: 0,
       [AssetType.OTHER]: 0,
-      //[AssetType.DEPOSIT]: 0,
-      //[AssetType.CASH]: 0,
+      [AssetType.DEPOSIT]: 0,
+      [AssetType.CASH]: 0,
     };
 
-    assets.forEach(asset => {
-      const assetValue = this.calculateCurrentValue(asset);
+    // Calculate allocation from asset positions with actual current values
+    portfolioAssets.assetPositions.forEach(position => {
+      const assetValue = parseFloat(position.currentValue.toString());
       const percentage = (assetValue / totalValue) * 100;
-      allocation[asset.type] += percentage;
+      const assetType = position.assetType as AssetType;
+      console.log(`[calculateAssetAllocation] Asset ${position.symbol} (${assetType}): value=${assetValue}, percentage=${percentage}`);
+      if (allocation[assetType] !== undefined) {
+        allocation[assetType] += percentage;
+      }
     });
 
+    console.log(`[calculateAssetAllocation] Portfolio ${portfolioId} final allocation:`, JSON.stringify(allocation));
     return allocation;
   }
 

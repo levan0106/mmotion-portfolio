@@ -480,6 +480,7 @@ export const Step2AllocationSuggestionsDynamic: React.FC<Step2AllocationSuggesti
               <AllocationChart
                 key={`chart-${assetTypes.map(at => at.code).join('-')}-${Object.keys(allocation).join('-')}`}
                 allocation={allocation}
+                showAllAssetTypes={true}
                 assetTypes={assetTypes.map(at => {
                   const template = ASSET_TYPE_TEMPLATES.find(t => t.code === at.code);
                   return {

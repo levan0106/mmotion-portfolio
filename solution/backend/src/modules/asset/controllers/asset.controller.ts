@@ -312,7 +312,10 @@ export class AssetController {
       description: AssetTypeDescriptions[type]
     }));
 
-    return { types };
+    // Remove deposit and cash types from the list when create new asset on frontend
+    const filteredTypes = types.filter(type => type.value !== 'DEPOSIT' && type.value !== 'CASH');
+
+    return { types: filteredTypes };
   }
 
   /**

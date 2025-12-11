@@ -63,6 +63,7 @@ interface PlanRowProps {
   t: (key: string, options?: any) => string;
   formatCurrency: (value: number, currency: string) => string;
   formatPercentageValue: (value: number) => string;
+  calculateTimeProgress: (plan: FinancialFreedomPlan) => { elapsed: number; total: number; remaining: number } | null;
 }
 
 const PlanRow: React.FC<PlanRowProps> = ({
@@ -76,6 +77,7 @@ const PlanRow: React.FC<PlanRowProps> = ({
   t,
   formatCurrency,
   formatPercentageValue,
+  calculateTimeProgress,
 }) => {
   const { data: progress } = useProgressTracking(plan.id);
 
@@ -90,21 +92,11 @@ const PlanRow: React.FC<PlanRowProps> = ({
           <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
             {plan.name}
           </Typography>
-          {plan.startDate && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {t('financialFreedom.plansList.startDate')}: {new Date(plan.startDate).toLocaleDateString('vi-VN')}
-            </Typography>
-          )}
           {completionYear && (
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {t('financialFreedom.planDetails.completionYear', { year: completionYear })}
+              {t('financialFreedom.planDetails.completionYear', { startYear: new Date(plan.startDate || plan.createdAt).getFullYear(), endYear: completionYear })}
             </Typography>
           )}
-          {/* {plan.description && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}>
-              {plan.description}
-            </Typography>
-          )} */}
         </Box>
       </TableCell>
       <TableCell align="right" sx={{ minWidth: 150 }}>
@@ -119,10 +111,10 @@ const PlanRow: React.FC<PlanRowProps> = ({
           )}
         </Box>
       </TableCell>
-      <TableCell align="center" sx={{ minWidth: 120 }}>
+      <TableCell align="right" sx={{ minWidth: 120 }}>
         {hasLinkedPortfolios && progress ? (
           <Box sx={{ minWidth: 100 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5, mb: 0.5 }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
                 {Math.min(100, Math.max(0, progress.progressPercentage)).toFixed(1)}%
               </Typography>
@@ -140,9 +132,22 @@ const PlanRow: React.FC<PlanRowProps> = ({
                 },
               }}
             />
+            {(() => {
+              const timeProgress = calculateTimeProgress(plan);
+              if (timeProgress) {
+                return (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right' }}>
+                      {timeProgress.elapsed} / {timeProgress.total} {t('financialFreedom.scenario.years')}
+                    </Typography>
+                  </Box>
+                );
+              }
+              return null;
+            })()}
           </Box>
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
             {t('common.na')}
           </Typography>
         )}
@@ -467,7 +472,7 @@ const PlansList: React.FC = () => {
                 return null;
               }
 
-              console.log(totalsByCurrency);
+              // console.log(totalsByCurrency);
 
               return (
                 <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
@@ -535,7 +540,7 @@ const PlansList: React.FC = () => {
                   <TableCell align="right" sx={{ fontWeight: 600, minWidth: 150 }}>
                     {t('financialFreedom.step4.targetValue')}
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, minWidth: 120 }}>
+                  <TableCell align="right" sx={{ fontWeight: 600, minWidth: 120 }}>
                     {t('financialFreedom.planDetails.progress')}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, minWidth: 120 }}>
@@ -554,7 +559,7 @@ const PlansList: React.FC = () => {
               </TableHead>
               <TableBody>
                 {plans.map((plan) => {
-                  const hasLinkedPortfolios = plan.linkedPortfolioIds && plan.linkedPortfolioIds.length > 0;
+                  const hasLinkedPortfolios = (plan.linkedPortfolioIds && plan.linkedPortfolioIds.length > 0) || (plan.linkedGoalIds && plan.linkedGoalIds.length > 0);
                   const linkedPortfolioCount = plan.linkedPortfolioIds?.length || 0;
                   const linkedGoalCount = plan.linkedGoalIds?.length || 0;
                   
@@ -572,6 +577,38 @@ const PlansList: React.FC = () => {
                   };
                   const completionYear = calculateCompletionYear();
 
+                  // Calculate time progress based on completion year
+                  const calculateTimeProgress = (plan: FinancialFreedomPlan) => {
+                    if (!plan.investmentYears) {
+                      return null;
+                    }
+
+                    // Get start year from startDate or createdAt
+                    const startDate = plan.startDate || plan.createdAt;
+                    if (!startDate) {
+                      return null;
+                    }
+
+                    const startYear = new Date(startDate).getFullYear();
+                    const completionYear = startYear + Math.ceil(plan.investmentYears);
+                    const currentYear = new Date().getFullYear();
+                    
+                    // Calculate total years from start to completion
+                    const totalYears = completionYear - startYear;
+                    
+                    // Calculate elapsed years from start to current year
+                    const elapsedYears = Math.max(0, Math.min(totalYears, currentYear - startYear));
+                    
+                    // Calculate remaining years
+                    const remainingYears = Math.max(0, totalYears - elapsedYears);
+
+                    return {
+                      elapsed: elapsedYears,
+                      total: totalYears,
+                      remaining: remainingYears,
+                    };
+                  };
+
                   return (
                     <PlanRow
                       key={plan.id}
@@ -585,6 +622,7 @@ const PlansList: React.FC = () => {
                       t={t}
                       formatCurrency={formatCurrency}
                       formatPercentageValue={formatPercentageValue}
+                      calculateTimeProgress={calculateTimeProgress}
                     />
                   );
                 })}

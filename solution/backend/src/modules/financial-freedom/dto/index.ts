@@ -4,4 +4,5 @@ export * from './update-plan.dto';
 export * from './plan-response.dto';
 export * from './link-request.dto';
 export * from './progress-response.dto';
+export * from './allocation-comparison-response.dto';
 

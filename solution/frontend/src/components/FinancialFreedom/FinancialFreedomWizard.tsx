@@ -111,6 +111,81 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
     }
   };
 
+  const handleStepClick = (stepIndex: number) => {
+    // Only allow step navigation in edit mode (when initialData exists)
+    if (!initialData) {
+      return;
+    }
+
+    // Only allow navigation to completed steps or current step
+    // Step 0 is always accessible
+    if (stepIndex === 0) {
+      setActiveStep(0);
+      return;
+    }
+
+    // Step 1 (allocation) requires step1 data
+    if (stepIndex === 1 && planData.step1 && Object.keys(planData.step1).length > 0) {
+      setActiveStep(1);
+      return;
+    }
+
+    // Step 2 (overview) requires step1 and step2 data
+    if (stepIndex === 2 && 
+        planData.step1 && Object.keys(planData.step1).length > 0 &&
+        planData.step2 && Object.keys(planData.step2).length > 0) {
+      setActiveStep(2);
+      return;
+    }
+  };
+
+  const isStepCompleted = (stepIndex: number): boolean => {
+    switch (stepIndex) {
+      case 0:
+        return !!(planData.step1 && Object.keys(planData.step1).length > 0);
+      case 1:
+        return !!(planData.step1 && Object.keys(planData.step1).length > 0 &&
+               planData.step2 && Object.keys(planData.step2).length > 0);
+      case 2:
+        return !!(planData.step1 && Object.keys(planData.step1).length > 0 &&
+               planData.step2 && Object.keys(planData.step2).length > 0 &&
+               planData.step3 && Object.keys(planData.step3).length > 0);
+      default:
+        return false;
+    }
+  };
+
+  const isStepValid = (stepIndex: number): boolean => {
+    switch (stepIndex) {
+      case 0:
+        // Step 1: Need finalResult with required fields
+        const step1FinalResult = planData.step1?.finalResult;
+        return !!(
+          step1FinalResult &&
+          step1FinalResult.futureValueRequired !== undefined &&
+          step1FinalResult.futureValueRequired !== null &&
+          step1FinalResult.investmentYears !== undefined &&
+          step1FinalResult.investmentYears !== null &&
+          (step1FinalResult.returnRate !== undefined && step1FinalResult.returnRate !== null ||
+           step1FinalResult.expectedReturnRate !== undefined && step1FinalResult.expectedReturnRate !== null)
+        );
+      case 1:
+        // Step 2: Need allocationSuggestion or allocation
+        return !!(
+          planData.step2?.allocationSuggestion ||
+          (planData.step2?.allocation && Object.keys(planData.step2.allocation).length > 0)
+        );
+      case 2:
+        // Step 3: Need planName
+        return !!(
+          planData.step3?.planName &&
+          planData.step3.planName.trim().length > 0
+        );
+      default:
+        return false;
+    }
+  };
+
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
@@ -152,11 +227,26 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-        {steps.map((step) => (
-          <Step key={step.key}>
-            <StepLabel>{step.label}</StepLabel>
-          </Step>
-        ))}
+        {steps.map((step, index) => {
+          const isCompleted = isStepCompleted(index);
+          const isClickable = initialData && (isCompleted || index === activeStep || index === 0);
+          
+          return (
+            <Step key={step.key} completed={isCompleted}>
+              <StepLabel
+                onClick={() => isClickable && handleStepClick(index)}
+                sx={{
+                  cursor: isClickable ? 'pointer' : 'default',
+                  '& .MuiStepLabel-label': {
+                    cursor: isClickable ? 'pointer' : 'default',
+                  },
+                }}
+              >
+                {step.label}
+              </StepLabel>
+            </Step>
+          );
+        })}
       </Stepper>
 
       <Box sx={{ flex: 1, pb: 2 }}>
@@ -210,6 +300,7 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
               type="button"
               variant="contained"
               onClick={handleStep2Next}
+              disabled={!isStepValid(1)}
             >
               {t('common.next')}
             </ResponsiveButton>
@@ -219,6 +310,7 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
               type="button"
               variant="contained"
               onClick={handleStep3Save}
+              disabled={!isStepValid(2)}
             >
               {t('financialFreedom.step3.savePlan')}
             </ResponsiveButton>
@@ -228,6 +320,7 @@ export const FinancialFreedomWizard: React.FC<FinancialFreedomWizardProps> = ({
               type="button"
               variant="contained"
               onClick={handleNext}
+              disabled={!isStepValid(0)}
             >
               {t('common.next')}
             </ResponsiveButton>

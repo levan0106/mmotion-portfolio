@@ -32,10 +32,14 @@ const FloatingNoteButton: React.FC<FloatingNoteButtonProps> = ({
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  // Always show tooltip on desktop
+  // Always show tooltip on desktop, but close when modal opens
   useEffect(() => {
-    setTooltipOpen(isDesktop);
-  }, [isDesktop]);
+    if (showNotesModal) {
+      setTooltipOpen(false);
+    } else {
+      setTooltipOpen(isDesktop);
+    }
+  }, [isDesktop, showNotesModal]);
 
   const handleButtonClick = () => {
     if (!currentAccount?.accountId) {
@@ -66,12 +70,19 @@ const FloatingNoteButton: React.FC<FloatingNoteButtonProps> = ({
           title={t('notes.floatingButton.tooltip', 'Ghi chú')}
           placement="left"
           arrow
-          open={tooltipOpen}
-          onOpen={() => setTooltipOpen(true)}
-          onClose={() => setTooltipOpen(isDesktop)}
+          open={tooltipOpen && !showNotesModal}
+          onOpen={() => !showNotesModal && setTooltipOpen(true)}
+          onClose={() => setTooltipOpen(isDesktop && !showNotesModal)}
           disableHoverListener={isDesktop}
           disableFocusListener={isDesktop}
           disableTouchListener={isDesktop}
+          slotProps={{
+            popper: {
+              sx: {
+                zIndex: 1200, // Lower than Modal (1300)
+              },
+            },
+          }}
         >
           <Fab
             aria-label={t('notes.floatingButton.ariaLabel', 'Ghi chú')}

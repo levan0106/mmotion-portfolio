@@ -28,10 +28,10 @@ export enum AssetType {
   OTHER = 'OTHER',
   
   /** Bank deposits and fixed income */
-  //DEPOSIT = 'DEPOSIT',
+  DEPOSIT = 'DEPOSIT',
   
   /** Cash and cash equivalents */
-  //CASH = 'CASH'
+  CASH = 'CASH'
 }
 
 /**
@@ -46,8 +46,8 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.REALESTATE]: 'Bất động sản',
   [AssetType.CURRENCY]: 'Tiền tệ',
   [AssetType.OTHER]: 'Khác',
-  //[AssetType.DEPOSIT]: 'Tiền gửi',
-  //[AssetType.CASH]: 'Tiền mặt'
+  [AssetType.DEPOSIT]: 'Tiền gửi',
+  [AssetType.CASH]: 'Tiền mặt'
 };
 
 /**
@@ -62,6 +62,6 @@ export const AssetTypeDescriptions: Record<AssetType, string> = {
   [AssetType.REALESTATE]: 'Bất động sản và các khoản đầu tư liên quan',
   [AssetType.CURRENCY]: 'Tiền tệ ngoại hối (USD, GBP, EUR, JPY, etc.)',
   [AssetType.OTHER]: 'Các loại tài sản khác không thuộc các danh mục trên',
-  //[AssetType.DEPOSIT]: 'Tiền gửi ngân hàng và sản phẩm tiết kiệm',
-  //[AssetType.CASH]: 'Tiền mặt và các khoản tương đương tiền'
+  [AssetType.DEPOSIT]: 'Tiền gửi ngân hàng và sản phẩm tiết kiệm',
+  [AssetType.CASH]: 'Tiền mặt và các khoản tương đương tiền'
 };

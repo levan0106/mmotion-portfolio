@@ -5,6 +5,7 @@ import { FinancialFreedomPlanService } from './services';
 import { FinancialFreedomController } from './controllers';
 import { GoalModule } from '../goal/goal.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
+import { AssetModule } from '../asset/asset.module';
 import { PortfolioGoal, GoalPortfolio } from '../goal/entities';
 import { SharedModule } from '../shared/shared.module';
 
@@ -13,6 +14,7 @@ import { SharedModule } from '../shared/shared.module';
     TypeOrmModule.forFeature([FinancialFreedomPlan, PortfolioGoal, GoalPortfolio]),
     forwardRef(() => GoalModule),
     forwardRef(() => PortfolioModule),
+    forwardRef(() => AssetModule),
     forwardRef(() => SharedModule),
   ],
   controllers: [FinancialFreedomController],

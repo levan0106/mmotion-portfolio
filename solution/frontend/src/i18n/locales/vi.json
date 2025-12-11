@@ -475,18 +475,19 @@
       "title": "Chi tiết kế hoạch",
       "noAllocation": "Không có phân bổ",
       "target": "Mục tiêu",
-      "completionYear": "Mục tiêu hoàn thành: {{year}}",
+      "completionYear": "Thời gian: {{startYear}} - {{endYear}}",
       "progress": "Tiến độ",
       "currentValue": "Giá trị hiện tại",
       "remaining": "Còn lại: {{amount}}",
-      "returnRate": "Lợi nhuận TT | YC",
-      "time": "Thời gian: {{remainingYears}} | {{targetYears}} năm",
+      "returnRate": "Lợi nhuận",
+      "time": "Thời gian: {{remainingYears}} vs. {{targetYears}} năm",
       "requiredReturnRate": "Lợi nhuận yêu cầu",
       "investmentTime": "Thời gian đầu tư",
       "initialInvestment": "Đầu tư ban đầu",
       "tabs": {
         "parametersAndProjections": "Thông số & Dự báo",
-        "progressAndLinks": "Tiến độ & Liên kết"
+        "progressAndLinks": "Tiến độ & Liên kết",
+        "allocationComparison": "So sánh phân bổ"
       },
       "investmentParameters": "Thông số đầu tư",
       "progressDetails": "Chi tiết tiến độ",
@@ -511,6 +512,25 @@
         "milestoneTarget": "Mục tiêu: {{amount}}",
         "achieved": "Đã đạt",
         "progressToMilestone": "Tiến độ đến cột mốc"
+      },
+      "allocationComparison": {
+        "title": "So sánh phân bổ tài sản",
+        "needsRebalancing": "Cần điều chỉnh phân bổ",
+        "rebalancingMessage": "Có {{count}} loại tài sản cần điều chỉnh (>5% chênh lệch)",
+        "noRebalancingNeeded": "Phân bổ hiện tại phù hợp với kế hoạch",
+        "currentAllocation": "Phân bổ hiện tại",
+        "suggestedAllocation": "Phân bổ đề xuất",
+        "deviations": "Chênh lệch phân bổ",
+        "assetType": "Loại tài sản",
+        "current": "Hiện tại",
+        "suggested": "Đề xuất",
+        "deviation": "Chênh lệch",
+        "status": "Trạng thái",
+        "needsAdjustment": "Cần điều chỉnh",
+        "ok": "Ổn định",
+        "recommendations": "Khuyến nghị điều chỉnh",
+        "noData": "Chưa có dữ liệu so sánh",
+        "noDataMessage": "Vui lòng liên kết Portfolio hoặc Goal để xem so sánh phân bổ tài sản"
       }
     },
     "delete": {

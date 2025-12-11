@@ -11,6 +11,7 @@ interface AllocationChartProps {
   title?: string;
   height?: number;
   assetTypes?: Array<{ id?: string; code?: string; name: string; nameEn?: string; color?: string }>; // Optional metadata for dynamic asset types (id or code is used as key for allocation lookup)
+  showAllAssetTypes?: boolean;
 }
 
 // Default colors for backward compatibility (using singular form to match asset type codes)
@@ -34,6 +35,7 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
   title,
   height = 300,
   assetTypes,
+  showAllAssetTypes = false,
 }) => {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
@@ -42,25 +44,28 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
   // Build data array dynamically
   const data = React.useMemo(() => {
     if (assetTypes && assetTypes.length > 0) {
-      // Use provided asset types metadata - include all asset types even with 0% allocation
+      // Use provided asset types metadata - only include asset types with value > 0
       return assetTypes
         .map(assetType => {
           const code = assetType.id || assetType.code || '';
+          const value = allocation[code] || 0;
           return {
             name: i18n.language === 'en' && assetType.nameEn ? assetType.nameEn : assetType.name,
-            value: allocation[code] || 0,
+            value: value,
             color: assetType.color || DEFAULT_COLORS[code] || COLOR_PALETTE[assetTypes.indexOf(assetType) % COLOR_PALETTE.length],
           };
-        });
+        })
+        .filter(item => item.value > 0 || showAllAssetTypes); // Only include items with value > 0 or show all asset types
     } else {
-      // Fallback to default asset types (backward compatibility) - include all even with 0% allocation
-      return [
+      // Fallback to default asset types (backward compatibility) - only include with value > 0
+      const defaultData = [
         { name: t('financialFreedom.allocation.stocks'), value: allocation.stock || 0, color: DEFAULT_COLORS.stock },
         { name: t('financialFreedom.allocation.bonds'), value: allocation.bond || 0, color: DEFAULT_COLORS.bond },
         { name: t('financialFreedom.allocation.gold'), value: allocation.gold || 0, color: DEFAULT_COLORS.gold },
         { name: t('financialFreedom.allocation.other'), value: allocation.other || 0, color: DEFAULT_COLORS.other },
         { name: t('financialFreedom.allocation.cash'), value: allocation.cash || 0, color: DEFAULT_COLORS.cash },
       ];
+      return defaultData.filter(item => item.value > 0); // Only include items with value > 0
     }
   }, [allocation, assetTypes, t, i18n.language]);
 

@@ -469,18 +469,19 @@
       "title": "Plan Details",
       "noAllocation": "No allocation",
       "target": "Target",
-      "completionYear": "Target completion: {{year}}",
+      "completionYear": "Target completion: {{startYear}} - {{endYear}}",
       "progress": "Progress",
       "currentValue": "Current Value",
       "remaining": "Remaining: {{amount}}",
-      "returnRate": "Actual Return Rate | Required Return Rate",
-      "time": "Time: {{remainingYears}} | {{targetYears}} years",
+      "returnRate": "Return Rate",
+      "time": "Time: {{remainingYears}} vs. {{targetYears}} years",
       "requiredReturnRate": "Required Return Rate",
       "investmentTime": "Investment Time",
       "initialInvestment": "Initial Investment",
       "tabs": {
         "parametersAndProjections": "Parameters & Projections",
-        "progressAndLinks": "Progress & Links"
+        "progressAndLinks": "Progress & Links",
+        "allocationComparison": "Allocation Comparison"
       },
       "investmentParameters": "Investment Parameters",
       "progressDetails": "Progress Details",
@@ -505,6 +506,25 @@
         "milestoneTarget": "Target: {{amount}}",
         "achieved": "Achieved",
         "progressToMilestone": "Progress to Milestone"
+      },
+      "allocationComparison": {
+        "title": "Asset Allocation Comparison",
+        "needsRebalancing": "Rebalancing Needed",
+        "rebalancingMessage": "{{count}} asset types need adjustment (>5% deviation)",
+        "noRebalancingNeeded": "Current allocation matches the plan",
+        "currentAllocation": "Current Allocation",
+        "suggestedAllocation": "Suggested Allocation",
+        "deviations": "Allocation Deviations",
+        "assetType": "Asset Type",
+        "current": "Current",
+        "suggested": "Suggested",
+        "deviation": "Deviation",
+        "status": "Status",
+        "needsAdjustment": "Needs Adjustment",
+        "ok": "OK",
+        "recommendations": "Rebalancing Recommendations",
+        "noData": "No comparison data available",
+        "noDataMessage": "Please link a Portfolio or Goal to view asset allocation comparison"
       }
     },
     "delete": {

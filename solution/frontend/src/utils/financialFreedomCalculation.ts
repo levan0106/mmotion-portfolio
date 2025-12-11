@@ -513,7 +513,7 @@ function generateSuggestions(
         suggestions.push('Với mức độ chấp nhận rủi ro trung bình, tỷ suất yêu cầu khá cao. Xem xét tăng đầu tư hoặc điều chỉnh mục tiêu.');
       }
     }
-    suggestions.push('Đề xuất phân bổ: 65% cổ phiếu, 25% trái phiếu, 5% vàng, 5% bất động sản');
+    suggestions.push('Đề xuất phân bổ: 65% cổ phiếu, 15% trái phiếu, 10% vàng, 10% tiền mặt/tiền gửi');
   } else if (calculatedType === CalculatedVariableType.YEARS) {
     if (calculatedValue > 30) {
       suggestions.push('Thời gian đầu tư rất dài. Xem xét tăng vốn ban đầu hoặc thanh toán định kỳ để rút ngắn thời gian.');

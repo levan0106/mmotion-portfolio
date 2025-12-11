@@ -41,10 +41,14 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
   const createTradeMutation = useCreateTrade();
   const { portfolios, createPortfolio, isCreating: isCreatingPortfolioHook } = usePortfolios(currentAccount?.accountId);
 
-  // Always show tooltip on desktop
+  // Always show tooltip on desktop, but close when modal opens
   useEffect(() => {
-    setTooltipOpen(isDesktop);
-  }, [isDesktop]);
+    if (showGenericForm || showTradeForm) {
+      setTooltipOpen(false);
+    } else {
+      setTooltipOpen(isDesktop);
+    }
+  }, [isDesktop, showGenericForm, showTradeForm]);
 
   const handleCreateTrade = async (data: CreateTradeDto) => {
     try {
@@ -122,12 +126,19 @@ const FloatingTradingButton: React.FC<FloatingTradingButtonProps> = ({
           }
           placement="left"
           arrow
-          open={tooltipOpen}
-          onOpen={() => setTooltipOpen(true)}
-          onClose={() => setTooltipOpen(isDesktop)}
+          open={tooltipOpen && !showGenericForm && !showTradeForm}
+          onOpen={() => !showGenericForm && !showTradeForm && setTooltipOpen(true)}
+          onClose={() => setTooltipOpen(isDesktop && !showGenericForm && !showTradeForm)}
           disableHoverListener={isDesktop}
           disableFocusListener={isDesktop}
           disableTouchListener={isDesktop}
+          slotProps={{
+            popper: {
+              sx: {
+                zIndex: 1200, // Lower than Modal (1300)
+              },
+            },
+          }}
         >
           <Fab
             color="secondary"

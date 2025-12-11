@@ -20,6 +20,7 @@ import {
   UnlinkGoalRequestDto,
   UnlinkPortfolioRequestDto,
   ProgressResponseDto,
+  AllocationComparisonResponseDto,
 } from '../dto';
 
 @ApiTags('Financial Freedom')
@@ -189,6 +190,20 @@ export class FinancialFreedomController {
       throw new UnauthorizedException('accountId query parameter is required');
     }
     return this.planService.calculateProgress(id, accountId);
+  }
+
+  @Get('plans/:id/allocation-comparison')
+  @ApiOperation({ summary: 'Compare current allocation with suggested allocation' })
+  @ApiResponse({ status: 200, description: 'Allocation comparison retrieved successfully', type: AllocationComparisonResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan not found' })
+  async getAllocationComparison(
+    @Param('id') id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<AllocationComparisonResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.compareAllocationWithCurrent(id, accountId);
   }
 }
 

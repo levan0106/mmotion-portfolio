@@ -3,6 +3,7 @@ import {
   SuggestAllocationRequest,
   AllocationSuggestion,
   ProgressResult,
+  AllocationComparison,
   PlanningTemplate,
   FinancialFreedomPlan,
   CreatePlanRequest,
@@ -351,6 +352,10 @@ export const financialFreedomApi = {
       `/api/v1/financial-freedom/plans/${planId}/unlink-portfolio?accountId=${accountId}`,
       { portfolioId }
     );
+  },
+
+  getAllocationComparison: (id: string, accountId: string): Promise<AllocationComparison> => {
+    return apiService.get(`/api/v1/financial-freedom/plans/${id}/allocation-comparison?accountId=${accountId}`);
   },
 };
 

@@ -146,6 +146,24 @@ export interface ProgressAlert {
   action?: string;
 }
 
+export interface AllocationDeviation {
+  assetType: string;
+  currentAllocation: number;
+  suggestedAllocation: number;
+  deviation: number;
+  absoluteDeviation: number;
+}
+
+export interface AllocationComparison {
+  planId: string;
+  currentAllocation: Record<string, number>;
+  suggestedAllocation: Record<string, number>;
+  deviations: AllocationDeviation[];
+  needsRebalancing: boolean;
+  significantDeviationsCount: number;
+  recommendations: string[];
+}
+
 export interface ProgressResult {
   planId: string;
   currentValue: number;

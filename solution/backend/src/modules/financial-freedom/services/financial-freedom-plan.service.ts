@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException,
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { FinancialFreedomPlan } from '../entities/financial-freedom-plan.entity';
-import { CreatePlanDto, UpdatePlanDto, PlanResponseDto, ProgressResponseDto } from '../dto';
+import { CreatePlanDto, UpdatePlanDto, PlanResponseDto, ProgressResponseDto, AllocationComparisonResponseDto, AllocationDeviationDto } from '../dto';
 import { GoalService } from '../../goal/services/goal.service';
 import { PortfolioService } from '../../portfolio/services/portfolio.service';
 import { PortfolioGoal, GoalPortfolio } from '../../goal/entities';
@@ -10,6 +10,8 @@ import { PortfolioValueCalculatorService } from '../../portfolio/services/portfo
 import { TWRCalculationService } from '../../portfolio/services/twr-calculation.service';
 import { SnapshotGranularity } from '../../portfolio/enums/snapshot-granularity.enum';
 import { DepositCalculationService } from '../../shared/services/deposit-calculation.service';
+import { AssetAnalyticsService } from '../../asset/services/asset-analytics.service';
+import { AssetType } from '../../asset/enums/asset-type.enum';
 
 @Injectable()
 export class FinancialFreedomPlanService {
@@ -30,6 +32,8 @@ export class FinancialFreedomPlanService {
     private twrCalculationService: TWRCalculationService,
     @Inject(forwardRef(() => DepositCalculationService))
     private depositCalculationService: DepositCalculationService,
+    @Inject(forwardRef(() => AssetAnalyticsService))
+    private assetAnalyticsService: AssetAnalyticsService,
   ) {}
 
   /**
@@ -1001,6 +1005,315 @@ export class FinancialFreedomPlanService {
     }
 
     return comparisons;
+  }
+
+  /**
+   * Compare current allocation from linked portfolios with suggested allocation from plan
+   * @param planId - Plan ID
+   * @param accountId - Account ID (for ownership verification)
+   * @returns AllocationComparisonResponseDto
+   */
+  async compareAllocationWithCurrent(planId: string, accountId: string): Promise<AllocationComparisonResponseDto> {
+    // Verify plan ownership
+    const plan = await this.planRepository.findOne({
+      where: { id: planId, accountId },
+    });
+
+    if (!plan) {
+      throw new NotFoundException(`Plan with ID ${planId} not found`);
+    }
+
+    // Get all portfolio IDs (direct + from goals)
+    const allPortfolioIds = await this.getAllPortfolioIds(plan);
+
+    if (allPortfolioIds.length === 0) {
+      // No portfolios linked, return empty comparison
+      return {
+        planId: plan.id,
+        currentAllocation: {} as Record<string, number>,
+        suggestedAllocation: {} as Record<string, number>,
+        deviations: [],
+        needsRebalancing: false,
+        significantDeviationsCount: 0,
+        recommendations: [],
+      };
+    }
+
+    // Get current allocation from all linked portfolios (weighted average)
+    const currentAllocationAssetType = await this.getCurrentAllocation(allPortfolioIds);
+    
+    // Debug logging
+    console.log('[AllocationComparison] allPortfolioIds:', allPortfolioIds);
+    console.log('[AllocationComparison] currentAllocationAssetType:', JSON.stringify(currentAllocationAssetType));
+    
+    // Convert current allocation from AssetType enum to code strings (to match suggestedAllocation format)
+    const currentAllocation = this.convertAssetTypeToCodeStrings(currentAllocationAssetType);
+    
+    // Debug logging
+    console.log('[AllocationComparison] currentAllocation after conversion:', JSON.stringify(currentAllocation));
+
+    // Convert suggested allocation from array to Record<string, number> (keep original code strings)
+    const suggestedAllocation = this.convertSuggestedAllocationToRecord(plan.suggestedAllocation);
+
+    // Calculate deviations
+    const deviations = this.calculateDeviations(currentAllocation, suggestedAllocation);
+
+    // Check if rebalancing is needed (any deviation > 5%)
+    const significantDeviations = deviations.filter(d => Math.abs(d.deviation) > 5);
+    const needsRebalancing = significantDeviations.length > 0;
+
+    // Generate recommendations
+    const recommendations = this.generateRebalancingRecommendations(deviations);
+
+    return {
+      planId: plan.id,
+      currentAllocation,
+      suggestedAllocation,
+      deviations,
+      needsRebalancing,
+      significantDeviationsCount: significantDeviations.length,
+      recommendations,
+    };
+  }
+
+  /**
+   * Get current allocation from all linked portfolios (weighted average)
+   */
+  private async getCurrentAllocation(portfolioIds: string[]): Promise<Record<AssetType, number>> {
+    if (!portfolioIds || portfolioIds.length === 0) {
+      return {} as Record<AssetType, number>;
+    }
+
+    // Get portfolio values for weighting
+    const portfolioValues: Array<{ portfolioId: string; value: number }> = [];
+    let totalValue = 0;
+    let totalDepositValue = 0;
+    let totalCash = 0;
+
+    for (const portfolioId of portfolioIds) {
+      try {
+        const values = await this.portfolioValueCalculator.calculateAllValues(portfolioId);
+        const depositData = await this.depositCalculationService.calculateDepositDataByPortfolioId(portfolioId);
+        const portfolioValue = values.totalValue + depositData.totalDepositValue; // totalValue = cash + assets
+        portfolioValues.push({ portfolioId, value: portfolioValue });
+
+        totalValue += portfolioValue;
+        totalDepositValue += depositData.totalDepositValue;
+        totalCash += values.cashBalance;
+
+      } catch (error) {
+        console.error(`Error calculating value for portfolio ${portfolioId}:`, error);
+      }
+    }
+
+    if (totalValue === 0) {
+      return {} as Record<AssetType, number>;
+    }
+
+    // Calculate weighted average allocation
+    const weightedAllocation: Record<AssetType, number> = {} as Record<AssetType, number>;
+
+    // Initialize all asset types to 0
+    const assetTypes = [AssetType.STOCK, AssetType.BOND, AssetType.GOLD, AssetType.CRYPTO, 
+      AssetType.COMMODITY, AssetType.REALESTATE, AssetType.CURRENCY, AssetType.OTHER];
+    assetTypes.forEach(type => {
+      weightedAllocation[type] = 0;
+    });
+
+    for (const { portfolioId, value } of portfolioValues) {
+      try {
+        const allocation = await this.assetAnalyticsService.calculateAssetAllocation(portfolioId, value);
+        const weight = value / totalValue;
+
+        // Debug logging
+        console.log(`[getCurrentAllocation] Portfolio ${portfolioId}:`, {
+          allocation: JSON.stringify(allocation),
+          allocationKeys: Object.keys(allocation),
+          allocationValues: Object.values(allocation),
+          value,
+          weight,
+          totalValue,
+        });
+
+        // Add weighted allocation
+        // Iterate over all AssetType enum values to ensure we capture all allocations
+        const assetTypes = [AssetType.STOCK, AssetType.BOND, AssetType.GOLD, AssetType.CRYPTO, 
+          AssetType.COMMODITY, AssetType.REALESTATE, AssetType.CURRENCY, AssetType.OTHER];
+        assetTypes.forEach(type => {
+          const allocationValue = allocation[type] || 0;
+          console.log(`[getCurrentAllocation] Processing ${type}: allocationValue=${allocationValue}, weight=${weight}, weighted=${allocationValue * weight}`);
+          if (allocationValue > 0) {
+            weightedAllocation[type] = (weightedAllocation[type] || 0) + allocationValue * weight;
+            console.log(`[getCurrentAllocation] Updated ${type}: ${weightedAllocation[type]}`);
+          }
+        });
+
+      } catch (error) {
+        console.error(`Error getting allocation for portfolio ${portfolioId}:`, error);
+      }
+    }
+
+
+    console.log('[getCurrentAllocation] totalCash:', totalCash);
+    console.log('[getCurrentAllocation] totalDepositValue:', totalDepositValue);
+    console.log('[getCurrentAllocation] totalValue:', totalValue);
+    // Frontend đang hiển thị Tiền mặt/Tiền gửi chung   
+    weightedAllocation[AssetType.CASH] = ((totalCash + totalDepositValue)/totalValue) * 100; 
+
+    // Debug logging
+    console.log('[getCurrentAllocation] Final weightedAllocation:', JSON.stringify(weightedAllocation));
+
+    return weightedAllocation;
+  }
+
+  /**
+   * Convert suggested allocation array to Record<string, number> (keep original code strings)
+   */
+  private convertSuggestedAllocationToRecord(suggestedAllocation?: Array<{ code: string; allocation: number; expectedReturn: number }>): Record<string, number> {
+    const result: Record<string, number> = {};
+
+    if (!suggestedAllocation || suggestedAllocation.length === 0) {
+      return result;
+    }
+
+    // Return data as stored, using code strings directly
+    for (const item of suggestedAllocation) {
+      result[item.code] = item.allocation;
+    }
+
+    return result;
+  }
+
+  /**
+   * Convert AssetType enum keys to code strings (e.g., STOCK -> stock)
+   */
+  private convertAssetTypeToCodeStrings(allocation: Record<AssetType, number>): Record<string, number> {
+    const result: Record<string, number> = {};
+    
+    // Map AssetType enum to code strings
+    const assetTypeToCode: Record<AssetType, string> = {
+      [AssetType.STOCK]: 'stock',
+      [AssetType.BOND]: 'bond',
+      [AssetType.GOLD]: 'gold',
+      [AssetType.CRYPTO]: 'crypto',
+      [AssetType.COMMODITY]: 'commodity',
+      [AssetType.REALESTATE]: 'realestate',
+      [AssetType.CURRENCY]: 'currency',
+      [AssetType.OTHER]: 'other',
+      [AssetType.DEPOSIT]: 'deposit',
+      [AssetType.CASH]: 'cash',
+    };
+
+    for (const [assetType, value] of Object.entries(allocation)) {
+      const code = assetTypeToCode[assetType as AssetType];
+      if (code) {
+        // Include all values, even if 0, to show complete allocation
+        result[code] = value;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculate deviations between current and suggested allocation
+   */
+  private calculateDeviations(
+    currentAllocation: Record<string, number>,
+    suggestedAllocation: Record<string, number>
+  ): AllocationDeviationDto[] {
+    const deviations: AllocationDeviationDto[] = [];
+
+    // Get all asset types that appear in either allocation
+    const allAssetTypes = new Set([
+      ...Object.keys(currentAllocation),
+      ...Object.keys(suggestedAllocation),
+    ]);
+
+    for (const assetTypeCode of allAssetTypes) {
+      const current = currentAllocation[assetTypeCode] || 0;
+      const suggested = suggestedAllocation[assetTypeCode] || 0;
+      const deviation = current - suggested;
+      const absoluteDeviation = Math.abs(deviation);
+
+      // Only include if there's a meaningful difference (> 0.1%)
+      if (absoluteDeviation > 0.1 || current > 0 || suggested > 0) {
+        // Convert code string back to AssetType enum for DTO (if possible)
+        const assetType = this.convertCodeStringToAssetType(assetTypeCode);
+        deviations.push({
+          assetType: assetType || AssetType.OTHER, // Fallback to OTHER if not found
+          currentAllocation: current,
+          suggestedAllocation: suggested,
+          deviation,
+          absoluteDeviation,
+        });
+      }
+    }
+
+    // Sort by absolute deviation (largest first)
+    return deviations.sort((a, b) => b.absoluteDeviation - a.absoluteDeviation);
+  }
+
+  /**
+   * Convert code string to AssetType enum (for DTO compatibility)
+   */
+  private convertCodeStringToAssetType(code: string): AssetType | null {
+    const codeToAssetType: Record<string, AssetType> = {
+      'stock': AssetType.STOCK,
+      'bond': AssetType.BOND,
+      'gold': AssetType.GOLD,
+      'crypto': AssetType.CRYPTO,
+      'commodity': AssetType.COMMODITY,
+      'realestate': AssetType.REALESTATE,
+      'currency': AssetType.CURRENCY,
+      'other': AssetType.OTHER,
+      'deposit': AssetType.DEPOSIT,
+      'cash': AssetType.CASH,
+    };
+    return codeToAssetType[code.toLowerCase()] || null;
+  }
+
+  /**
+   * Generate rebalancing recommendations based on deviations
+   */
+  private generateRebalancingRecommendations(deviations: AllocationDeviationDto[]): string[] {
+    const recommendations: string[] = [];
+    const significantDeviations = deviations.filter(d => Math.abs(d.deviation) > 5);
+
+    if (significantDeviations.length === 0) {
+      recommendations.push('Phân bổ hiện tại phù hợp với kế hoạch đề xuất');
+      return recommendations;
+    }
+
+    for (const deviation of significantDeviations) {
+      const assetTypeName = this.getAssetTypeName(deviation.assetType);
+      if (deviation.deviation > 0) {
+        recommendations.push(`Giảm phân bổ ${assetTypeName} xuống ${deviation.suggestedAllocation.toFixed(1)}% (hiện tại: ${deviation.currentAllocation.toFixed(1)}%)`);
+      } else {
+        recommendations.push(`Tăng phân bổ ${assetTypeName} lên ${deviation.suggestedAllocation.toFixed(1)}% (hiện tại: ${deviation.currentAllocation.toFixed(1)}%)`);
+      }
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Get Vietnamese name for asset type
+   */
+  private getAssetTypeName(assetType: AssetType): string {
+    const names: Record<AssetType, string> = {
+      [AssetType.STOCK]: 'Cổ phiếu',
+      [AssetType.BOND]: 'Trái phiếu',
+      [AssetType.GOLD]: 'Vàng',
+      [AssetType.CRYPTO]: 'Tiền điện tử',
+      [AssetType.COMMODITY]: 'Hàng hóa',
+      [AssetType.REALESTATE]: 'Bất động sản',
+      [AssetType.CURRENCY]: 'Tiền tệ',
+      [AssetType.OTHER]: 'Khác',
+      [AssetType.DEPOSIT]: 'Tiền gửi',
+      [AssetType.CASH]: 'Tiền mặt',
+    };
+    return names[assetType] || assetType;
   }
 
   private mapToResponseDto(plan: FinancialFreedomPlan): PlanResponseDto {
