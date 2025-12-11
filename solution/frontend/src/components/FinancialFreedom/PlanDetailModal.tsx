@@ -57,7 +57,8 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
   const [activeTab, setActiveTab] = useState(0);
 
   // Fetch progress if plan has linked portfolios
-  const hasLinkedPortfolios = localPlan?.linkedPortfolioIds && localPlan.linkedPortfolioIds.length > 0;
+  const hasLinkedPortfolios = localPlan?.linkedPortfolioIds && localPlan.linkedPortfolioIds.length > 0 
+                              || localPlan?.linkedGoalIds && localPlan.linkedGoalIds.length > 0;
   const { data: progress, isLoading: progressLoading } = useProgressTracking(
     localPlan?.id || '',
     accountId
@@ -172,7 +173,7 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
               </Grid>
 
               {/* Progress (if has linked portfolios or goals) */}
-              {(hasLinkedPortfolios || (localPlan.linkedGoalIds && localPlan.linkedGoalIds.length > 0)) && progress && (
+              {hasLinkedPortfolios && progress && (
                 <>
                   <Grid item xs={12} sm={6} md={3}>
                     <Box>
@@ -304,81 +305,81 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
             {/* Investment Parameters */}
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <SettingsIcon color="primary" />
                   <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
                     {t('financialFreedom.planDetails.investmentParameters')}
                   </ResponsiveTypography>
                 </Box>
-                <Grid container spacing={2}>
+                <Grid container spacing={3}>
                   
                   {localPlan.initialInvestment !== undefined && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.form.investmentParameters.initialInvestment')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 500 }}>
                           {formatCurrency(localPlan.initialInvestment, localPlan.baseCurrency || 'VND')}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   )}
                   {localPlan.periodicPayment !== undefined && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.form.investmentParameters.periodicPayment')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" color="primary.main">
                           {formatCurrency(localPlan.periodicPayment, localPlan.baseCurrency || 'VND')}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   )}
                   {localPlan.requiredReturnRate !== undefined && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.step4.requiredReturnRate')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" color="primary.main">
                           {formatPercentageValue(localPlan.requiredReturnRate)}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   )}
                   {localPlan.investmentYears !== undefined && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.step4.remainingYears')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 500 }}>
                           {localPlan.investmentYears} {t('financialFreedom.scenario.years')}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   )}
                   {localPlan.inflationRate !== undefined && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.form.investmentParameters.inflationRate')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 500 }}>
                           {formatPercentageValue(localPlan.inflationRate)}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   )}
                   {localPlan.riskTolerance && (
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.form.investmentParameters.riskTolerance')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 500 }}>
                           {t(`financialFreedom.form.investmentParameters.${localPlan.riskTolerance}`)}
                         </ResponsiveTypography>
                       </Box>
@@ -386,20 +387,20 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                   )}
                   {/* Start Date */}
                   
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.plansList.startDate')}
                         </ResponsiveTypography>
-                        <ResponsiveTypography variant="body1" sx={{ fontWeight: 500 }}>
+                        <ResponsiveTypography variant="cardValue" sx={{ fontWeight: 500 }}>
                           {localPlan.startDate ? new Date(localPlan.startDate).toLocaleDateString('vi-VN') : '-'}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
                   {/* Description */}
                   {localPlan.description && (
-                    <Grid item xs={12} sm={ 12}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}>
+                    <Grid item xs={12} sm={ 12} md={12}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
                         {/* <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.step3.descriptionLabel')}
                         </ResponsiveTypography> */}
