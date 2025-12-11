@@ -82,3 +82,71 @@ export const useDuplicateFinancialFreedomPlan = (accountId?: string) => {
   });
 };
 
+export const useLinkGoalToPlan = (accountId?: string) => {
+  const queryClient = useQueryClient();
+  const { accountId: contextAccountId } = useAccount();
+  const effectiveAccountId = accountId || contextAccountId;
+
+  return useMutation({
+    mutationFn: ({ planId, goalId }: { planId: string; goalId: string }) =>
+      financialFreedomApi.linkGoal(planId, goalId, effectiveAccountId!),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlans', effectiveAccountId] });
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlan', variables.planId] });
+      // Invalidate progress query to refresh calculations
+      queryClient.invalidateQueries({ queryKey: ['planProgress', variables.planId] });
+    },
+  });
+};
+
+export const useUnlinkGoalFromPlan = (accountId?: string) => {
+  const queryClient = useQueryClient();
+  const { accountId: contextAccountId } = useAccount();
+  const effectiveAccountId = accountId || contextAccountId;
+
+  return useMutation({
+    mutationFn: ({ planId, goalId }: { planId: string; goalId: string }) =>
+      financialFreedomApi.unlinkGoal(planId, goalId, effectiveAccountId!),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlans', effectiveAccountId] });
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlan', variables.planId] });
+      // Invalidate progress query to refresh calculations
+      queryClient.invalidateQueries({ queryKey: ['planProgress', variables.planId] });
+    },
+  });
+};
+
+export const useLinkPortfolioToPlan = (accountId?: string) => {
+  const queryClient = useQueryClient();
+  const { accountId: contextAccountId } = useAccount();
+  const effectiveAccountId = accountId || contextAccountId;
+
+  return useMutation({
+    mutationFn: ({ planId, portfolioId }: { planId: string; portfolioId: string }) =>
+      financialFreedomApi.linkPortfolio(planId, portfolioId, effectiveAccountId!),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlans', effectiveAccountId] });
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlan', variables.planId] });
+      // Invalidate progress query to refresh calculations
+      queryClient.invalidateQueries({ queryKey: ['planProgress', variables.planId] });
+    },
+  });
+};
+
+export const useUnlinkPortfolioFromPlan = (accountId?: string) => {
+  const queryClient = useQueryClient();
+  const { accountId: contextAccountId } = useAccount();
+  const effectiveAccountId = accountId || contextAccountId;
+
+  return useMutation({
+    mutationFn: ({ planId, portfolioId }: { planId: string; portfolioId: string }) =>
+      financialFreedomApi.unlinkPortfolio(planId, portfolioId, effectiveAccountId!),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlans', effectiveAccountId] });
+      queryClient.invalidateQueries({ queryKey: ['financialFreedomPlan', variables.planId] });
+      // Invalidate progress query to refresh calculations
+      queryClient.invalidateQueries({ queryKey: ['planProgress', variables.planId] });
+    },
+  });
+};
+

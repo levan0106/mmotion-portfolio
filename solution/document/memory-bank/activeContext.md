@@ -135,12 +135,64 @@
    - **Equal Height Sections**: Combined Allocation and Milestones sections with equal height
    - **Files Updated**: FinancialFreedomWizard.tsx, PlanDetailModal.tsx, ProgressChart.tsx
 
-14. **Code Quality & Architecture**
-   - **Type Safety**: Complete TypeScript types for all components and backend
-   - **Component Reusability**: ModalWrapper, ResponsiveTypography, ResponsiveButton, AllocationChart
-   - **Consistent Patterns**: Follows existing system patterns and conventions
-   - **Data Mapping**: planDataMapper for converting between frontend PlanData and backend DTOs
-   - **Production Ready**: Clean, maintainable code with proper error handling
+14. **Integration with Goals & Portfolios** ✅ COMPLETED (December 11, 2024)
+    - **Goal Linking**: Backend methods `linkToGoal()` and `unlinkGoal()` implemented
+    - **Portfolio Linking**: Backend methods `linkToPortfolio()` and `unlinkPortfolio()` implemented
+    - **Portfolio Combination Logic**: Automatically combines portfolios from linked goals with direct linked portfolios
+    - **GoalPortfolio Repository**: Uses GoalPortfolio repository to fetch portfolios from goals
+    - **PlanLinksSection Component**: UI component for linking/unlinking goals and portfolios
+    - **Two-Column Layout**: Portfolios on left, Goals on right
+    - **Auto-Refresh**: Progress query automatically invalidated on link/unlink operations
+    - **Multi-Language Support**: Complete i18n support for all link/unlink operations
+    - **Files Created**: PlanLinksSection.tsx, link-request.dto.ts
+    - **Files Updated**: financial-freedom-plan.service.ts, financial-freedom.controller.ts, useFinancialFreedomPlans.ts, PlanDetailModal.tsx
+
+15. **Progress Tracking Implementation** ✅ COMPLETED (December 11, 2024)
+    - **Progress Calculation Service**: `calculateProgress()` method implemented
+    - **Portfolio Value Calculation**: Includes totalDepositValue in currentValue calculation
+    - **TWR Integration**: Weighted average TWR calculation across all portfolios (direct + from goals)
+    - **Milestones Tracking**: Timeline-based milestones display with progress indicators
+    - **Alerts Generation**: Vietnamese alert messages for rebalancing, performance, and milestones
+    - **PlanProgressSection Component**: UI component for displaying progress tracking
+    - **Auto-Refresh**: Progress automatically updates after link/unlink operations
+    - **Multi-Language Support**: Complete i18n support for progress section
+    - **Files Created**: PlanProgressSection.tsx, ProgressResponseDto
+    - **Files Updated**: financial-freedom-plan.service.ts, financial-freedom.controller.ts, useProgressTracking.ts, PlanDetailModal.tsx
+
+16. **Plan Detail Modal Redesign** ✅ COMPLETED (December 11, 2024)
+    - **Tabbed Layout**: Two tabs - "Thông số & Dự báo" and "Tiến độ & Liên kết"
+    - **Summary Section**: Always visible summary with target, progress, current value, return rate
+    - **Completion Year**: Display completion year based on startDate
+    - **Investment Parameters Tab**: Investment parameters, asset allocation (Pie Chart), yearly projections
+    - **Progress & Links Tab**: Progress details and links with Goals & Portfolios
+    - **Local State Management**: Local plan state for auto-refresh after link/unlink
+    - **Files Updated**: PlanDetailModal.tsx
+
+17. **Plans List Enhancement** ✅ COMPLETED (December 11, 2024)
+    - **Component Rename**: Renamed from `FinancialFreedom.tsx` to `PlansList.tsx`
+    - **Route Rename**: Changed from `/financial-freedom` to `/plans`
+    - **Financial Summary Section**: Total initial investment and periodic payment by currency
+    - **Enhanced Table**: Progress column, linked items count, completion year
+    - **Responsive Design**: Horizontal scrolling on small screens with min-width columns
+    - **Start Date & Description**: Display startDate and description in plan rows
+    - **Files Updated**: PlansList.tsx, App.tsx, AppLayout.tsx
+
+18. **Additional Features** ✅ COMPLETED (December 11, 2024)
+    - **startDate Field**: Users can select start date for plan
+    - **description Field**: Users can add notes/description to plan
+    - **Database Migration**: Migration for description and start_date columns
+    - **Completion Year Calculation**: Uses startDate if available, otherwise createdAt
+    - **GoalPlanExplanationModal**: Modal explaining Portfolio, Goal, and Plan concepts
+    - **Help Icons**: Help icon buttons on Plans and Goals pages
+    - **Files Created**: GoalPlanExplanationModal.tsx, AddDescriptionAndStartDateToFinancialFreedomPlans migration
+    - **Files Updated**: Step3ConsolidatedOverview.tsx, planDataMapper.ts, PlansList.tsx, PlanDetailModal.tsx, GoalsList.tsx
+
+19. **Code Quality & Architecture**
+    - **Type Safety**: Complete TypeScript types for all components and backend
+    - **Component Reusability**: ModalWrapper, ResponsiveTypography, ResponsiveButton, AllocationChart
+    - **Consistent Patterns**: Follows existing system patterns and conventions
+    - **Data Mapping**: planDataMapper for converting between frontend PlanData and backend DTOs
+    - **Production Ready**: Clean, maintainable code with proper error handling
 
 ### ✅ Currency Investment System Implementation - COMPLETED (Previous Session - November 27, 2025)
 1. **Phase 1: Database Schema & Backend Foundation**

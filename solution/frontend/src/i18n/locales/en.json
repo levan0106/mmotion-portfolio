@@ -425,7 +425,10 @@
       "planNameLabel": "Plan Name",
       "planNamePlaceholder": "Enter a name for your plan",
       "planNameHelper": "Give your plan a name to easily identify it later",
-      "planNameRequired": "Please enter a plan name"
+      "planNameRequired": "Please enter a plan name",
+      "startDateLabel": "Start Date",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter notes for your plan (optional)"
     },
     "step4": {
       "title": "Progress Tracking",
@@ -448,9 +451,61 @@
     "noPlans": "No plans yet",
     "noPlansDescription": "Create your first financial freedom plan to get started",
     "createFirstPlan": "Create First Plan",
+    "plansList": {
+      "links": "Links",
+      "noLinks": "No links",
+      "portfoliosLinked": "{{count}} Portfolio(s) linked",
+      "goalsLinked": "{{count}} Goal(s) linked",
+      "remaining": "Remaining: {{years}} years",
+      "financialSummary": "Financial Summary",
+      "totalInitialInvestment": "Total Initial Investment",
+      "totalPeriodicPayment": "Total Periodic Payment",
+      "perPeriod": "Per period",
+      "plan": "plan",
+      "plans": "plans",
+      "startDate": "Start Date"
+    },
     "planDetails": {
       "title": "Plan Details",
-      "noAllocation": "No allocation"
+      "noAllocation": "No allocation",
+      "target": "Target",
+      "completionYear": "Target completion: {{year}}",
+      "progress": "Progress",
+      "currentValue": "Current Value",
+      "remaining": "Remaining: {{amount}}",
+      "returnRate": "Actual Return Rate | Required Return Rate",
+      "time": "Time: {{remainingYears}} | {{targetYears}} years",
+      "requiredReturnRate": "Required Return Rate",
+      "investmentTime": "Investment Time",
+      "initialInvestment": "Initial Investment",
+      "tabs": {
+        "parametersAndProjections": "Parameters & Projections",
+        "progressAndLinks": "Progress & Links"
+      },
+      "investmentParameters": "Investment Parameters",
+      "progressDetails": "Progress Details",
+      "links": "Links with Goals & Portfolios",
+      "helpTooltip": "Learn about Portfolio, Goal and Plan",
+      "linksSection": {
+        "linkedPortfolios": "Linked Portfolios",
+        "noLinkedPortfolios": "No portfolios linked yet",
+        "selectPortfolioToLink": "Select Portfolio to link",
+        "linkedGoals": "Linked Goals",
+        "noLinkedGoals": "No goals linked yet",
+        "selectGoalToLink": "Select Goal to link"
+      },
+      "progressSection": {
+        "progressTracking": "Progress Tracking",
+        "progressToTarget": "Progress to Target",
+        "actualReturnRate": "Actual Return Rate",
+        "gap": "Gap",
+        "remainingTime": "Remaining Time",
+        "importantMilestones": "Important Milestones",
+        "milestoneYear": "Year {{year}}: {{description}}",
+        "milestoneTarget": "Target: {{amount}}",
+        "achieved": "Achieved",
+        "progressToMilestone": "Progress to Milestone"
+      }
     },
     "delete": {
       "title": "Delete Plan",

@@ -12,6 +12,12 @@ export class PlanResponseDto {
   @ApiProperty()
   name: string;
 
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiPropertyOptional()
+  startDate?: Date;
+
   // Step 1: Goals & Investment Info
   @ApiPropertyOptional()
   targetMethod?: 'direct' | 'fromExpenses';

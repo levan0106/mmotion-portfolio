@@ -132,27 +132,30 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [ ] Implement `generateScenarios()` method
     - [ ] Implement `assessRisk()` method for overall risk assessment
 
-### Task 9: ~~Create Progress Tracking Service~~ CANCELLED
-- Step 4 (Progress Tracking) has been removed from the workflow. The system now has 3 steps only.
-        - [ ] Calculate progress percentage
-        - [ ] Calculate remaining years
-        - [ ] Check milestones achievement
-        - [ ] Generate alerts
-    - [ ] Implement `getCurrentPortfolioValue()` private method
-        - [ ] Sum values from all linked portfolios
-    - [ ] Implement `getActualReturnRate()` private method
-        - [ ] Calculate weighted average TWR across portfolios
-        - [ ] Use 1-year TWR for comparison
-    - [ ] Implement `calculateRemainingYears()` method
-    - [ ] Implement `checkMilestones()` method
-        - [ ] Compare current value with milestone targets
-        - [ ] Mark achieved milestones
-        - [ ] Update milestone achievement dates
-    - [ ] Implement `generateAlerts()` method
-        - [ ] Check rebalancing needs (allocation deviation > 5%)
-        - [ ] Check performance gap (actual vs required return)
-        - [ ] Check milestone achievements
-        - [ ] Return alerts with severity levels
+### Task 9: Create Progress Tracking Service ✅ COMPLETED
+- Progress Tracking has been implemented as a separate feature (not part of wizard workflow)
+    - [x] Calculate progress percentage
+    - [x] Calculate remaining years
+    - [x] Check milestones achievement
+    - [x] Generate alerts
+    - [x] Implement `getCurrentPortfolioValue()` private method
+        - [x] Sum values from all linked portfolios (direct + from goals)
+        - [x] Include totalDepositValue in calculation
+    - [x] Implement `getActualReturnRate()` private method
+        - [x] Calculate weighted average TWR across portfolios
+        - [x] Use 1-year TWR for comparison
+    - [x] Implement `calculateRemainingYears()` method
+    - [x] Implement `checkMilestones()` method
+        - [x] Compare current value with milestone targets
+        - [x] Mark achieved milestones
+    - [x] Implement `generateAlerts()` method
+        - [x] Check rebalancing needs (allocation deviation > 5%)
+        - [x] Check performance gap (actual vs required return)
+        - [x] Check milestone achievements
+        - [x] Return alerts with severity levels (Vietnamese messages)
+    - [x] Implement `getAllPortfolioIds()` method
+        - [x] Combine direct linked portfolios with portfolios from linked goals
+        - [x] Use GoalPortfolio repository to fetch portfolios from goals
 
 ### Task 10: Create Template Service
 - [ ] Create `PlanningTemplateService` class in `backend/src/modules/financial-freedom/services/template.service.ts`
@@ -185,15 +188,19 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [x] Implement `updatePlan()` method
     - [x] Implement `deletePlan()` method (soft delete)
     - [x] Implement `duplicatePlan()` method
-    - [ ] Implement `linkToGoal()` method (pending - for future integration)
-    - [ ] Implement `linkToPortfolio()` method (pending - for future integration)
+    - [x] Implement `linkToGoal()` method ✅ COMPLETED
+    - [x] Implement `unlinkGoal()` method ✅ COMPLETED
+    - [x] Implement `linkToPortfolio()` method ✅ COMPLETED
+    - [x] Implement `unlinkPortfolio()` method ✅ COMPLETED
+    - [x] Implement `calculateProgress()` method ✅ COMPLETED
     - [ ] Implement `autoCreateGoal()` method (pending - for future integration)
     - Note: Calculation, Allocation, Consolidation services will be added later when needed
 
 ### Task 12: Create Financial Freedom Module ✅ COMPLETED
 - [x] Create `FinancialFreedomModule` class in `backend/src/modules/financial-freedom/financial-freedom.module.ts`
     - [x] Import TypeOrmModule with FinancialFreedomPlan entity
-    - [ ] Import required modules (GoalsModule, PortfolioModule, AssetModule) (pending - will be added when integration is needed)
+    - [x] Import required modules (GoalsModule, PortfolioModule, SharedModule) ✅ COMPLETED
+    - [x] Import GoalPortfolio entity for repository injection ✅ COMPLETED
     - [x] Add services as providers (FinancialFreedomPlanService)
     - [x] Export services for use in other modules
     - [x] Add module to main AppModule
@@ -207,7 +214,8 @@ This document breaks down the implementation of the Financial Freedom Planning S
 - [ ] Create `CalculateResponseDto` in `backend/src/modules/financial-freedom/dto/calculate-response.dto.ts` (pending - calculation done on frontend)
 - [ ] Create `SuggestAllocationRequestDto` and `SuggestAllocationResponseDto` (pending)
 - [ ] Create `ConsolidateRequestDto` and `ConsolidateResponseDto` (pending - consolidation done on frontend)
-- [ ] Create `ProgressResponseDto` (pending)
+    - [x] Create `ProgressResponseDto` ✅ COMPLETED
+    - [x] Create `LinkGoalRequestDto` and `LinkPortfolioRequestDto` ✅ COMPLETED
 - [x] Create `CreatePlanDto`, `UpdatePlanDto`, `PlanResponseDto` ✅ COMPLETED
     - [x] CreatePlanDto with validation decorators
     - [x] UpdatePlanDto extends PartialType(CreatePlanDto)
@@ -252,7 +260,11 @@ This document breaks down the implementation of the Financial Freedom Planning S
         - [x] Duplicate plan
         - [x] Return duplicated plan
         - [x] Add Swagger documentation
-    - [ ] Implement `GET /api/v1/financial-freedom/plans/:id/progress` endpoint (pending)
+    - [x] Implement `GET /api/v1/financial-freedom/plans/:id/progress` endpoint ✅ COMPLETED
+    - [x] Implement `POST /api/v1/financial-freedom/plans/:id/link-goal` endpoint ✅ COMPLETED
+    - [x] Implement `POST /api/v1/financial-freedom/plans/:id/unlink-goal` endpoint ✅ COMPLETED
+    - [x] Implement `POST /api/v1/financial-freedom/plans/:id/link-portfolio` endpoint ✅ COMPLETED
+    - [x] Implement `POST /api/v1/financial-freedom/plans/:id/unlink-portfolio` endpoint ✅ COMPLETED
     - [x] Add proper error handling for all endpoints ✅ COMPLETED
     - [x] Add Swagger/OpenAPI documentation for all endpoints ✅ COMPLETED
 
@@ -286,7 +298,11 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [x] Implement `updatePlan()` method (with mock data support)
     - [x] Implement `deletePlan()` method (with mock data support)
     - [x] Implement `duplicatePlan()` method (with mock data support)
-    - [x] Implement `getProgress()` method (with mock data support)
+    - [x] Implement `getProgress()` method ✅ COMPLETED
+    - [x] Implement `linkGoal()` method ✅ COMPLETED
+    - [x] Implement `unlinkGoal()` method ✅ COMPLETED
+    - [x] Implement `linkPortfolio()` method ✅ COMPLETED
+    - [x] Implement `unlinkPortfolio()` method ✅ COMPLETED
     - [x] Add error handling for all methods
     - [x] Add TypeScript types for all methods
     - [x] Add `USE_MOCK_DATA` flag for frontend development
@@ -300,13 +316,19 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [x] Implement `useUpdateFinancialFreedomPlan()` mutation
     - [x] Implement `useDeleteFinancialFreedomPlan()` mutation
     - [x] Implement `useDuplicateFinancialFreedomPlan()` mutation
+    - [x] Implement `useLinkGoalToPlan()` mutation ✅ COMPLETED
+    - [x] Implement `useUnlinkGoalFromPlan()` mutation ✅ COMPLETED
+    - [x] Implement `useLinkPortfolioToPlan()` mutation ✅ COMPLETED
+    - [x] Implement `useUnlinkPortfolioFromPlan()` mutation ✅ COMPLETED
     - [x] Add proper error handling
+    - [x] Auto-invalidate progress query on link/unlink ✅ COMPLETED
 - [x] Create `useFinancialFreedomCalculation.ts` hook
     - [x] Implement `useFinancialFreedomCalculation()` mutation
     - [x] Handle loading and error states
-- [x] Create `useProgressTracking.ts` hook
+- [x] Create `useProgressTracking.ts` hook ✅ COMPLETED
     - [x] Implement `useProgressTracking(planId)` query
-    - [x] Set up polling for real-time updates (ready for implementation)
+    - [x] Set up polling for real-time updates (60s refetch interval)
+    - [x] Auto-refresh on link/unlink operations
 - [x] Create `usePlanningTemplates.ts` hook
     - [x] Implement `usePlanningTemplates()` query
     - [x] Implement `usePlanningTemplate(id)` query
@@ -452,54 +474,70 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [x] Add filtering and sorting
     - [x] Add search functionality
 
-### Task 28: Create Main Financial Freedom Page ✅ COMPLETED
-- [x] Create `FinancialFreedom.tsx` page in `frontend/src/pages/FinancialFreedom.tsx`
+### Task 28: Create Main Financial Freedom Page ✅ COMPLETED (RENAMED to PlansList)
+- [x] Create `PlansList.tsx` page in `frontend/src/pages/PlansList.tsx` (renamed from FinancialFreedom.tsx)
     - [x] Add page header with title and description
     - [x] Add "Create New Plan" button
-    - [x] Display plan list or wizard based on state
+    - [x] Display plan list with comprehensive table
+    - [x] Add financial summary section (total initial investment, total periodic payment by currency)
+    - [x] Display plan progress, linked items count, completion year
+    - [x] Add responsive table with horizontal scrolling
     - [x] Integrate `FinancialFreedomWizard` component
-    - [x] Add routing integration
+    - [x] Add routing integration (route: `/plans`)
     - [x] Add responsive design
     - [x] Add loading and error states
-    - [x] Support mock data for development
+    - [x] Display startDate and description
 
 ### Task 29: Add Navigation and Routing ✅ COMPLETED
 - [x] Add Financial Freedom route to router configuration
-    - [x] Route: `/financial-freedom` (main page)
-    - [x] Route: `/financial-freedom/new` for creating new plan (ready for implementation)
-    - [x] Route: `/financial-freedom/:id` for viewing plan details (ready for implementation)
-    - [x] Route: `/financial-freedom/:id/edit` for editing plan (ready for implementation)
+    - [x] Route: `/plans` (main page - renamed from `/financial-freedom`)
+    - [x] Route: `/plans/new` for creating new plan (ready for implementation)
+    - [x] Route: `/plans/:id` for viewing plan details (ready for implementation)
+    - [x] Route: `/plans/:id/edit` for editing plan (ready for implementation)
 - [x] Add navigation menu item
     - [x] Add to main navigation menu (AppLayout)
-    - [x] Add appropriate icon (TrendingUp)
+    - [x] Add appropriate icon (TrendingUp as PlansIcon)
     - [x] Add translation keys (vi.json and en.json)
+    - [x] Add help icon button linking to GoalPlanExplanationModal
 
 ---
 
 ## Integration
 
-### Task 30: Integrate with Goals Management System
-- [ ] Update `GoalsService` to support linking from Financial Freedom plans
-    - [ ] Add method to accept plan data for goal creation
-- [ ] Add goal linking functionality in `FinancialFreedomService`
-    - [ ] Verify goal exists and user has access
-    - [ ] Update plan's linkedGoalIds array
-- [ ] Add UI for linking goals in plan management
-    - [ ] Add goal selection dropdown
-    - [ ] Display linked goals
-    - [ ] Allow unlinking goals
+### Task 30: Integrate with Goals Management System ✅ COMPLETED
+- [x] Add goal linking functionality in `FinancialFreedomPlanService`
+    - [x] Verify goal exists and user has access
+    - [x] Update plan's linkedGoalIds array
+    - [x] Return updated plan
+- [x] Add goal unlinking functionality
+    - [x] Verify goal is linked to plan
+    - [x] Remove goal from linkedGoalIds array
+- [x] Add UI for linking goals in plan management ✅ COMPLETED
+    - [x] Add goal selection dropdown (PlanLinksSection component)
+    - [x] Display linked goals with chips
+    - [x] Allow unlinking goals with close icon
+    - [x] Auto-refresh plan data after link/unlink
+    - [x] Multi-language support
 
-### Task 31: Integrate with Portfolio System
-- [ ] Add portfolio linking functionality in `FinancialFreedomService`
-    - [ ] Verify portfolio access using permission system
-    - [ ] Update plan's linkedPortfolioIds array
-- [ ] Use `PortfolioService` for getting portfolio values
-    - [ ] Call `calculatePortfolioValue()` method
-    - [ ] Handle multiple portfolios
-- [ ] Add UI for linking portfolios in plan management
-    - [ ] Add portfolio selection (multi-select)
-    - [ ] Display linked portfolios
-    - [ ] Allow unlinking portfolios
+### Task 31: Integrate with Portfolio System ✅ COMPLETED
+- [x] Add portfolio linking functionality in `FinancialFreedomPlanService`
+    - [x] Verify portfolio access using permission system
+    - [x] Update plan's linkedPortfolioIds array
+    - [x] Return updated plan
+- [x] Add portfolio unlinking functionality
+    - [x] Verify portfolio is linked to plan
+    - [x] Remove portfolio from linkedPortfolioIds array
+- [x] Use `PortfolioValueCalculatorService` for getting portfolio values ✅ COMPLETED
+    - [x] Call `calculateAllValues()` method
+    - [x] Include `totalDepositValue` from `DepositCalculationService`
+    - [x] Handle multiple portfolios (direct + from goals)
+    - [x] Combine portfolios from goals with direct linked portfolios
+- [x] Add UI for linking portfolios in plan management ✅ COMPLETED
+    - [x] Add portfolio selection dropdown (PlanLinksSection component)
+    - [x] Display linked portfolios with chips
+    - [x] Allow unlinking portfolios with close icon
+    - [x] Auto-refresh plan data after link/unlink
+    - [x] Multi-language support
 
 ### Task 32: Integrate with Asset Analytics Service
 - [ ] Use `AssetAnalyticsService` for current allocation comparison
@@ -511,11 +549,12 @@ This document breaks down the implementation of the Financial Freedom Planning S
     - [ ] Highlight differences
     - [ ] Show rebalancing recommendations
 
-### Task 33: Integrate with TWR/IRR Services
-- [ ] Use `TWRCalculationService` for actual return rate
-    - [ ] Call `calculatePortfolioTWR()` method
-    - [ ] Use 1-year period for comparison
-    - [ ] Calculate weighted average across portfolios
+### Task 33: Integrate with TWR/IRR Services ✅ COMPLETED
+- [x] Use `TWRCalculationService` for actual return rate
+    - [x] Call `calculatePortfolioTWR()` method
+    - [x] Use DAILY granularity for comparison
+    - [x] Calculate weighted average across portfolios (direct + from goals)
+    - [x] Handle portfolios from linked goals automatically
 
 ---
 
@@ -757,6 +796,38 @@ This document breaks down the implementation of the Financial Freedom Planning S
 
 ## Recent Updates (December 2024)
 
+### Integration & Progress Tracking (Latest - December 11, 2024)
+- ✅ **Task 30 Completed**: Goals integration with link/unlink functionality
+  - Backend: `linkToGoal()`, `unlinkGoal()` methods implemented
+  - Frontend: `PlanLinksSection` component with goal selection and display
+  - Auto-refresh: Progress query invalidated on link/unlink operations
+- ✅ **Task 31 Completed**: Portfolio integration with link/unlink functionality
+  - Backend: `linkToPortfolio()`, `unlinkPortfolio()` methods implemented
+  - Frontend: `PlanLinksSection` component with portfolio selection and display
+  - Auto-refresh: Progress query invalidated on link/unlink operations
+- ✅ **Task 9 Completed**: Progress Tracking Service re-implemented
+  - Backend: `calculateProgress()` method with portfolio combination logic
+  - Logic: Automatically combines portfolios from linked goals with direct linked portfolios
+  - Frontend: `PlanProgressSection` component with milestones timeline
+  - Auto-refresh: Progress automatically updates after link/unlink
+- ✅ **Task 33 Completed**: TWR/IRR Services integration
+  - Weighted average TWR calculation across all portfolios (direct + from goals)
+  - Proper handling of portfolios from linked goals
+- ✅ **UI Enhancements**:
+  - `PlanDetailModal`: Tabbed layout (Parameters & Projections, Progress & Links)
+  - `PlansList`: Financial summary section, progress display, completion year
+  - `PlanLinksSection`: Two-column layout (Portfolios left, Goals right)
+  - `PlanProgressSection`: Timeline-based milestones display
+  - Multi-language support for all new components
+- ✅ **Additional Features**:
+  - `startDate` and `description` fields for plans
+  - Completion year calculation based on `startDate`
+  - Route renamed from `/financial-freedom` to `/plans`
+  - Component renamed from `FinancialFreedom` to `PlansList`
+  - `GoalPlanExplanationModal` for system explanation
+
+### Backend Implementation (Previous - December 2024)
+
 ### Backend Implementation (Latest)
 - ✅ **Task 1 Completed**: FinancialFreedomPlan Entity created with all required fields
 - ✅ **Task 2 Completed**: Database migration created with proper structure, enums, indexes, and constraints
@@ -794,7 +865,7 @@ This document breaks down the implementation of the Financial Freedom Planning S
 
 ## Progress Summary
 
-### Completed Tasks (20/50)
+### Completed Tasks (28/50)
 - ✅ Task 1: Create FinancialFreedomPlan Entity
 - ✅ Task 2: Create Database Migration
 - ✅ Task 3: Create Repository (Using TypeORM Repository)
@@ -815,17 +886,26 @@ This document breaks down the implementation of the Financial Freedom Planning S
 - ✅ Task 25: Create Chart Components (AllocationChart, ProgressChart, ScenarioComparison, AssetValueChart)
 - ✅ Task 26: Create Main Wizard Component
 - ✅ Task 27: Create Plan Management Components (PlanCard, plan list view)
-- ✅ Task 28: Create Main Financial Freedom Page
+- ✅ Task 28: Create Main Financial Freedom Page (Renamed to PlansList)
 - ✅ Task 29: Add Navigation and Routing
+- ✅ Task 30: Integrate with Goals Management System
+- ✅ Task 31: Integrate with Portfolio System
+- ✅ Task 33: Integrate with TWR/IRR Services
+- ✅ Task 9: Create Progress Tracking Service (Re-implemented)
 
 ### In Progress
-- Backend plan CRUD implementation completed, ready for testing
+- Integration with Goals & Portfolios: ✅ COMPLETED
+- Progress Tracking: ✅ COMPLETED
+- Auto-refresh on link/unlink: ✅ COMPLETED
+- Portfolio combination from goals: ✅ COMPLETED
+- Plan detail modal with tabs: ✅ COMPLETED
+- Plans list with financial summary: ✅ COMPLETED
+- startDate and description fields: ✅ COMPLETED
 
 ### Pending
 - Backend calculation/allocation/consolidation services (Tasks 5-10) - Note: Currently done on frontend, can be moved to backend later if needed
 - Backend template service (Task 10)
 - Backend calculation/allocation/consolidation endpoints (Task 14 - partially)
-- Integration tasks (Tasks 30-33)
 - Testing (Tasks 34-40)
 - Documentation (Tasks 41-43)
 - Security & Performance (Tasks 44-46)

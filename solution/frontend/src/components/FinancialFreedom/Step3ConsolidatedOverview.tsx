@@ -32,6 +32,16 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [planName, setPlanName] = useState<string>(data.step3?.planName || '');
+  const [description, setDescription] = useState<string>(data.step3?.description || '');
+  const [startDate, setStartDate] = useState<string>(() => {
+    if (data.step3?.startDate) {
+      const date = typeof data.step3.startDate === 'string' 
+        ? new Date(data.step3.startDate) 
+        : data.step3.startDate;
+      return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    }
+    return new Date().toISOString().split('T')[0];
+  });
 
   // Calculate consolidated data directly using calculation function (no API call)
   // Always recalculate when we have step1 and step2 data to ensure accuracy
@@ -95,6 +105,16 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
     }
   }, [consolidatedData, data?.step3, onUpdate]);
 
+  // Initialize startDate in step3 data if not already set (use default from local state)
+  useEffect(() => {
+    if (startDate && !data.step3?.startDate) {
+      onUpdate({
+        ...data?.step3,
+        startDate: new Date(startDate),
+      });
+    }
+  }, [startDate, data?.step3?.startDate, onUpdate]);
+
   // Update plan name in state when it changes
   const handlePlanNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newName = event.target.value;
@@ -102,6 +122,24 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
     onUpdate({
       ...data?.step3,
       planName: newName,
+    });
+  };
+
+  const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newDescription = event.target.value;
+    setDescription(newDescription);
+    onUpdate({
+      ...data?.step3,
+      description: newDescription,
+    });
+  };
+
+  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = event.target.value;
+    setStartDate(newDate);
+    onUpdate({
+      ...data?.step3,
+      startDate: newDate ? new Date(newDate) : undefined,
     });
   };
 
@@ -114,6 +152,15 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
       setError(t('financialFreedom.step3.planNameRequired') || 'Plan name is required');
       return;
     }
+    
+    // Ensure startDate is saved to step3 data before saving (use default if not set)
+    const finalStartDate = startDate ? new Date(startDate) : new Date();
+    onUpdate({
+      ...data?.step3,
+      planName: planName.trim(),
+      description: description || undefined,
+      startDate: finalStartDate,
+    });
     
     // Only call API when actually saving
     if (consolidatedData && onSave) {
@@ -160,18 +207,44 @@ export const Step3ConsolidatedOverview: React.FC<Step3ConsolidatedOverviewProps>
       {/* Debug: Plan Data */}
       {/* <DebugPlanData data={data} currentStep={3} /> */}
 
-      {/* Plan Name Input */}
+      {/* Plan Name, Description, and Start Date Inputs */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <TextField
-          fullWidth
-          label={t('financialFreedom.step3.planNameLabel')}
-          placeholder={t('financialFreedom.step3.planNamePlaceholder')}
-          value={planName}
-          onChange={handlePlanNameChange}
-          error={error !== null && (!planName || planName.trim() === '')}
-          helperText={error && (!planName || planName.trim() === '') ? error : t('financialFreedom.step3.planNameHelper')}
-          sx={{ mb: 2 }}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label={t('financialFreedom.step3.planNameLabel')}
+              placeholder={t('financialFreedom.step3.planNamePlaceholder')}
+              value={planName}
+              onChange={handlePlanNameChange}
+              error={error !== null && (!planName || planName.trim() === '')}
+              helperText={error && (!planName || planName.trim() === '') ? error : t('financialFreedom.step3.planNameHelper')}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              type="date"
+              label={t('financialFreedom.step3.startDateLabel')}
+              value={startDate}
+              onChange={handleStartDateChange}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              multiline
+              rows={2}
+              label={t('financialFreedom.step3.descriptionLabel')}
+              placeholder={t('financialFreedom.step3.descriptionPlaceholder')}
+              value={description}
+              onChange={handleDescriptionChange}
+            />
+          </Grid>
+        </Grid>
       </Paper>
 
       <Grid container spacing={3}>

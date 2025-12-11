@@ -45,6 +45,12 @@ export class FinancialFreedomPlan {
   @Column({ name: 'name', type: 'varchar', length: 255 })
   name: string;
 
+  @Column({ name: 'description', type: 'text', nullable: true })
+  description?: string;
+
+  @Column({ name: 'start_date', type: 'date', nullable: true })
+  startDate?: Date;
+
   // Step 1: Goals & Investment Info
   @Column({ name: 'target_method', type: 'varchar', length: 20, nullable: true })
   targetMethod?: 'direct' | 'fromExpenses';

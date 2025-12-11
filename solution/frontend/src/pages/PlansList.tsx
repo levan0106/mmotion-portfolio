@@ -19,6 +19,11 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  Chip,
+  LinearProgress,
+  Stack,
+  Grid,
+  CardContent,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -27,6 +32,10 @@ import {
   Warning as WarningIcon,
   MoreVert as MoreVertIcon,
   HelpOutline as HelpIcon,
+  AccountBalance as PortfolioIcon,
+  Flag as GoalIcon,
+  AccountBalanceWallet as WalletIcon,
+  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
@@ -40,6 +49,183 @@ import { useTranslation } from 'react-i18next';
 import { PlanData, FinancialFreedomPlan } from '../types/financialFreedom.types';
 import { mapPlanDataToCreateRequest, mapPlanDataToUpdateRequest, mapPlanToPlanData } from '../utils/planDataMapper';
 import { formatCurrency, formatPercentageValue } from '../utils/format';
+import { useProgressTracking } from '../hooks/useProgressTracking';
+
+// Component for each plan row with progress tracking
+interface PlanRowProps {
+  plan: FinancialFreedomPlan;
+  hasLinkedPortfolios: boolean;
+  linkedPortfolioCount: number;
+  linkedGoalCount: number;
+  completionYear: number | null;
+  onRowClick: (plan: FinancialFreedomPlan, event: React.MouseEvent) => void;
+  onActionMenuOpen: (event: React.MouseEvent<HTMLElement>, plan: FinancialFreedomPlan) => void;
+  t: (key: string, options?: any) => string;
+  formatCurrency: (value: number, currency: string) => string;
+  formatPercentageValue: (value: number) => string;
+}
+
+const PlanRow: React.FC<PlanRowProps> = ({
+  plan,
+  hasLinkedPortfolios,
+  linkedPortfolioCount,
+  linkedGoalCount,
+  completionYear,
+  onRowClick,
+  onActionMenuOpen,
+  t,
+  formatCurrency,
+  formatPercentageValue,
+}) => {
+  const { data: progress } = useProgressTracking(plan.id);
+
+  return (
+    <TableRow 
+      hover
+      onClick={(e) => onRowClick(plan, e)}
+      sx={{ cursor: 'pointer' }}
+    >
+      <TableCell sx={{ minWidth: 180 }}>
+        <Box>
+          <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
+            {plan.name}
+          </Typography>
+          {plan.startDate && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {t('financialFreedom.plansList.startDate')}: {new Date(plan.startDate).toLocaleDateString('vi-VN')}
+            </Typography>
+          )}
+          {completionYear && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {t('financialFreedom.planDetails.completionYear', { year: completionYear })}
+            </Typography>
+          )}
+          {/* {plan.description && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}>
+              {plan.description}
+            </Typography>
+          )} */}
+        </Box>
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: 150 }}>
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {formatCurrency(plan.futureValueRequired, plan.baseCurrency || 'VND')}
+          </Typography>
+          {hasLinkedPortfolios && progress && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+              {t('financialFreedom.planDetails.currentValue')}: {formatCurrency(progress.currentValue, plan.baseCurrency || 'VND')}
+            </Typography>
+          )}
+        </Box>
+      </TableCell>
+      <TableCell align="center" sx={{ minWidth: 120 }}>
+        {hasLinkedPortfolios && progress ? (
+          <Box sx={{ minWidth: 100 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                {Math.min(100, Math.max(0, progress.progressPercentage)).toFixed(1)}%
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={Math.min(100, Math.max(0, progress.progressPercentage))}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: 'action.disabledBackground',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 3,
+                  backgroundColor: progress.progressPercentage >= 100 ? 'success.main' : 'primary.main',
+                },
+              }}
+            />
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {t('common.na')}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: 120 }}>
+        {plan.requiredReturnRate ? (
+          <Typography variant="body2">
+            {formatPercentageValue(plan.requiredReturnRate)}
+          </Typography>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {t('common.na')}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: 150 }}>
+        {plan.investmentYears ? (
+          <Box>
+            <Typography variant="body2">
+              {plan.investmentYears} {t('financialFreedom.scenario.years')}
+            </Typography>
+            {hasLinkedPortfolios && progress && progress.remainingYears !== undefined && progress.remainingYears !== Infinity && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {t('financialFreedom.plansList.remaining', { years: Math.ceil(progress.remainingYears) })}
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {t('common.na')}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="center" sx={{ minWidth: 120 }} onClick={(e) => e.stopPropagation()}>
+        <Stack direction="row" spacing={0.5} justifyContent="center" flexWrap="wrap" sx={{ gap: 0.5 }}>
+          {linkedPortfolioCount > 0 && (
+            <Tooltip title={t('financialFreedom.plansList.portfoliosLinked', { count: linkedPortfolioCount })}>
+              <Chip
+                icon={<PortfolioIcon />}
+                label={linkedPortfolioCount}
+                size="small"
+                color="primary"
+                variant="outlined"
+                sx={{ height: 24 }}
+              />
+            </Tooltip>
+          )}
+          {linkedGoalCount > 0 && (
+            <Tooltip title={t('financialFreedom.plansList.goalsLinked', { count: linkedGoalCount })}>
+              <Chip
+                icon={<GoalIcon />}
+                label={linkedGoalCount}
+                size="small"
+                color="warning"
+                variant="outlined"
+                sx={{ height: 24 }}
+              />
+            </Tooltip>
+          )}
+          {linkedPortfolioCount === 0 && linkedGoalCount === 0 && (
+            <Typography variant="caption" color="text.secondary">
+              {t('financialFreedom.plansList.noLinks')}
+            </Typography>
+          )}
+        </Stack>
+      </TableCell>
+      <TableCell align="center" sx={{ minWidth: 80 }} onClick={(e) => e.stopPropagation()}>
+        <Tooltip title={t('common.actions')}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onActionMenuOpen(e, plan);
+            }}
+            aria-label={t('common.actions')}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const PlansList: React.FC = () => {
   const { t } = useTranslation();
@@ -251,114 +437,161 @@ const PlansList: React.FC = () => {
             <ResponsiveTypography sx={{ mt: 2 }}>Loading plans...</ResponsiveTypography>
           </Box>
         ) : plans && plans.length > 0 ? (
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
+          <>
+            {/* Financial Summary Section */}
+            {(() => {
+              // Calculate totals grouped by currency
+              const totalsByCurrency: Record<string, { initialInvestment: number; periodicPayment: number }> = {};
+              
+              plans.forEach((plan) => {
+                const currency = plan.baseCurrency || 'VND';
+                if (!totalsByCurrency[currency]) {
+                  totalsByCurrency[currency] = { initialInvestment: 0, periodicPayment: 0 };
+                }
+                // Add initialInvestment if it exists (including 0)
+                if (plan.initialInvestment !== null && plan.initialInvestment !== undefined) {
+                  totalsByCurrency[currency].initialInvestment += Number(plan.initialInvestment);
+                }
+                // Add periodicPayment if it exists (including 0)
+                if (plan.periodicPayment !== null && plan.periodicPayment !== undefined) {
+                  totalsByCurrency[currency].periodicPayment += Number(plan.periodicPayment);
+                }
+              });
+
+              // Only show summary if there are plans with financial data
+              const hasFinancialData = Object.values(totalsByCurrency).some(
+                (totals) => totals.initialInvestment > 0 || totals.periodicPayment > 0
+              );
+
+              if (!hasFinancialData && Object.keys(totalsByCurrency).length === 0) {
+                return null;
+              }
+
+              console.log(totalsByCurrency);
+
+              return (
+                <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <ResponsiveTypography variant="h6" sx={{ fontWeight: 600 }}>
+                      {t('financialFreedom.plansList.financialSummary')}
+                    </ResponsiveTypography>
+                    <Chip 
+                      label={`${plans.length} ${plans.length === 1 ? t('financialFreedom.plansList.plan') : t('financialFreedom.plansList.plans')}`}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Grid container spacing={2}>
+                    {Object.entries(totalsByCurrency).map(([currency, totals]) => (
+                      <Grid item xs={12} md={6} key={currency}>
+                          <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={6}>
+                                <Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                    <WalletIcon color="primary" sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                                    <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                      {t('financialFreedom.plansList.totalInitialInvestment')}
+                                    </ResponsiveTypography>
+                                  </Box>
+                                  <ResponsiveTypography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
+                                    {formatCurrency(totals.initialInvestment, currency)}
+                                  </ResponsiveTypography>
+                                </Box>
+                              </Grid>
+                              <Grid item xs={6}>
+                                <Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                    <PaymentIcon color="secondary" sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                                    <ResponsiveTypography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                      {t('financialFreedom.plansList.totalPeriodicPayment')}
+                                    </ResponsiveTypography>
+                                  </Box>
+                                  <ResponsiveTypography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main', fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
+                                    {formatCurrency(totals.periodicPayment, currency)}
+                                  </ResponsiveTypography>
+                                </Box>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Paper>
+              );
+            })()}
+            <TableContainer 
+            component={Paper} 
+            sx={{ 
+              mt: 2,
+              overflowX: 'auto',
+            }}
+          >
+            <Table sx={{ minWidth: 860 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>{t('common.name')}</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {t('financialFreedom.form.investmentParameters.initialInvestment')}
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {t('financialFreedom.form.investmentParameters.periodicPayment')}
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {t('financialFreedom.step4.requiredReturnRate')}
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {t('financialFreedom.step4.remainingYears')}
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
+                  <TableCell sx={{ fontWeight: 600, minWidth: 180 }}>{t('common.name')}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, minWidth: 150 }}>
                     {t('financialFreedom.step4.targetValue')}
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600 }}>
+                  <TableCell align="center" sx={{ fontWeight: 600, minWidth: 120 }}>
+                    {t('financialFreedom.planDetails.progress')}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, minWidth: 120 }}>
+                    {t('financialFreedom.step4.requiredReturnRate')}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, minWidth: 150 }}>
+                    {t('financialFreedom.planDetails.investmentTime')}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, minWidth: 120 }}>
+                    {t('financialFreedom.plansList.links')}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, minWidth: 80 }}>
                     {t('common.actions')}
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {plans.map((plan) => {
+                  const hasLinkedPortfolios = plan.linkedPortfolioIds && plan.linkedPortfolioIds.length > 0;
+                  const linkedPortfolioCount = plan.linkedPortfolioIds?.length || 0;
+                  const linkedGoalCount = plan.linkedGoalIds?.length || 0;
+                  
+                  // Calculate completion year
+                  const calculateCompletionYear = (): number | null => {
+                    if (plan.investmentYears) {
+                      // Use startDate if available, otherwise fallback to createdAt
+                      const startDate = plan.startDate || plan.createdAt;
+                      if (startDate) {
+                        const startYear = new Date(startDate).getFullYear();
+                        return startYear + Math.ceil(plan.investmentYears);
+                      }
+                    }
+                    return null;
+                  };
+                  const completionYear = calculateCompletionYear();
+
                   return (
-                    <TableRow 
-                      key={plan.id} 
-                      hover
-                      onClick={(e) => handleRowClick(plan, e)}
-                      sx={{ cursor: 'pointer' }}
-                    >
-                      <TableCell>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {plan.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        {plan.initialInvestment ? (
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(plan.initialInvestment, plan.baseCurrency || 'VND')}
-                          </Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('common.na')}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        {plan.periodicPayment ? (
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(plan.periodicPayment, plan.baseCurrency || 'VND')}
-                          </Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('common.na')}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        {plan.requiredReturnRate ? (
-                          <Typography variant="body2">
-                            {formatPercentageValue(plan.requiredReturnRate)}
-                          </Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('common.na')}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        {plan.investmentYears ? (
-                          <Typography variant="body2">
-                            {plan.investmentYears} {t('financialFreedom.scenario.years')}
-                          </Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('common.na')}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatCurrency(plan.futureValueRequired, plan.baseCurrency || 'VND')}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                        <Tooltip title={t('common.actions')}>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleActionMenuOpen(e, plan);
-                            }}
-                            aria-label={t('common.actions')}
-                          >
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
+                    <PlanRow
+                      key={plan.id}
+                      plan={plan}
+                      hasLinkedPortfolios={hasLinkedPortfolios}
+                      linkedPortfolioCount={linkedPortfolioCount}
+                      linkedGoalCount={linkedGoalCount}
+                      completionYear={completionYear}
+                      onRowClick={handleRowClick}
+                      onActionMenuOpen={handleActionMenuOpen}
+                      t={t}
+                      formatCurrency={formatCurrency}
+                      formatPercentageValue={formatPercentageValue}
+                    />
                   );
                 })}
               </TableBody>
             </Table>
           </TableContainer>
+          </>
         ) : (
           <Paper sx={{ p: 4, textAlign: 'center', mt: 2 }}>
             <ResponsiveTypography variant="h6" sx={{ mb: 2 }}>

@@ -22,6 +22,16 @@ export class CreatePlanDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  startDate?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
   templateId?: string;
 

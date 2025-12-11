@@ -51,21 +51,21 @@ interface AssetAllocationConfig {
 
 const ALLOCATION_BY_RISK: Record<RiskTolerance, AssetAllocationConfig[]> = {
   [RiskTolerance.CONSERVATIVE]: [
-    { code: 'stock', allocation: 35, expectedReturn: 12 },
-    { code: 'bond', allocation: 45, expectedReturn: 7 },
-    { code: 'gold', allocation: 15, expectedReturn: 8 },
-    { code: 'cash', allocation: 5, expectedReturn: 0 },
+    { code: 'stock', allocation: 45, expectedReturn: 10 },
+    { code: 'bond', allocation: 25, expectedReturn: 7.5 },
+    { code: 'gold', allocation: 25, expectedReturn: 10 },
+    { code: 'cash', allocation: 10, expectedReturn: 0 },
   ],
   [RiskTolerance.MODERATE]: [
     { code: 'stock', allocation: 65, expectedReturn: 12 },
-    { code: 'bond', allocation: 22, expectedReturn: 7 },
-    { code: 'gold', allocation: 10, expectedReturn: 8 },
-    { code: 'cash', allocation: 3, expectedReturn: 0 },
+    { code: 'bond', allocation: 20, expectedReturn: 7.5 },
+    { code: 'gold', allocation: 10, expectedReturn: 10 },
+    { code: 'cash', allocation: 5, expectedReturn: 0 },
   ],
   [RiskTolerance.AGGRESSIVE]: [
-    { code: 'stock', allocation: 75, expectedReturn: 12 },
-    { code: 'bond', allocation: 15, expectedReturn: 7 },
-    { code: 'gold', allocation: 10, expectedReturn: 8 },
+    { code: 'stock', allocation: 75, expectedReturn: 14 },
+    { code: 'bond', allocation: 15, expectedReturn: 7. },
+    { code: 'gold', allocation: 10, expectedReturn: 10 },
     { code: 'cash', allocation: 0, expectedReturn: 0 },
   ],
 };
@@ -322,6 +322,35 @@ export const financialFreedomApi = {
       });
     }
     return apiService.get(`/api/v1/financial-freedom/plans/${id}/progress?accountId=${accountId}`);
+  },
+
+  // Link/Unlink operations
+  linkGoal: (planId: string, goalId: string, accountId: string): Promise<FinancialFreedomPlan> => {
+    return apiService.post(
+      `/api/v1/financial-freedom/plans/${planId}/link-goal?accountId=${accountId}`,
+      { goalId }
+    );
+  },
+
+  unlinkGoal: (planId: string, goalId: string, accountId: string): Promise<FinancialFreedomPlan> => {
+    return apiService.post(
+      `/api/v1/financial-freedom/plans/${planId}/unlink-goal?accountId=${accountId}`,
+      { goalId }
+    );
+  },
+
+  linkPortfolio: (planId: string, portfolioId: string, accountId: string): Promise<FinancialFreedomPlan> => {
+    return apiService.post(
+      `/api/v1/financial-freedom/plans/${planId}/link-portfolio?accountId=${accountId}`,
+      { portfolioId }
+    );
+  },
+
+  unlinkPortfolio: (planId: string, portfolioId: string, accountId: string): Promise<FinancialFreedomPlan> => {
+    return apiService.post(
+      `/api/v1/financial-freedom/plans/${planId}/unlink-portfolio?accountId=${accountId}`,
+      { portfolioId }
+    );
   },
 };
 

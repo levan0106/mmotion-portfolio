@@ -11,7 +11,16 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FinancialFreedomPlanService } from '../services';
-import { CreatePlanDto, UpdatePlanDto, PlanResponseDto } from '../dto';
+import { 
+  CreatePlanDto, 
+  UpdatePlanDto, 
+  PlanResponseDto,
+  LinkGoalRequestDto,
+  LinkPortfolioRequestDto,
+  UnlinkGoalRequestDto,
+  UnlinkPortfolioRequestDto,
+  ProgressResponseDto,
+} from '../dto';
 
 @ApiTags('Financial Freedom')
 @Controller('api/v1/financial-freedom')
@@ -101,6 +110,85 @@ export class FinancialFreedomController {
       throw new UnauthorizedException('accountId query parameter is required');
     }
     return this.planService.duplicatePlan(id, accountId);
+  }
+
+  @Post('plans/:id/link-goal')
+  @ApiOperation({ summary: 'Link a goal to a financial freedom plan' })
+  @ApiResponse({ status: 200, description: 'Goal linked successfully', type: PlanResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan or Goal not found' })
+  @ApiResponse({ status: 400, description: 'Goal is already linked' })
+  async linkGoal(
+    @Param('id') id: string,
+    @Body() linkGoalDto: LinkGoalRequestDto,
+    @Query('accountId') accountId: string,
+  ): Promise<PlanResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.linkToGoal(id, linkGoalDto.goalId, accountId);
+  }
+
+  @Post('plans/:id/unlink-goal')
+  @ApiOperation({ summary: 'Unlink a goal from a financial freedom plan' })
+  @ApiResponse({ status: 200, description: 'Goal unlinked successfully', type: PlanResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan not found' })
+  @ApiResponse({ status: 400, description: 'Goal is not linked' })
+  async unlinkGoal(
+    @Param('id') id: string,
+    @Body() unlinkGoalDto: UnlinkGoalRequestDto,
+    @Query('accountId') accountId: string,
+  ): Promise<PlanResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.unlinkGoal(id, unlinkGoalDto.goalId, accountId);
+  }
+
+  @Post('plans/:id/link-portfolio')
+  @ApiOperation({ summary: 'Link a portfolio to a financial freedom plan' })
+  @ApiResponse({ status: 200, description: 'Portfolio linked successfully', type: PlanResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan or Portfolio not found' })
+  @ApiResponse({ status: 403, description: 'Access denied to portfolio' })
+  @ApiResponse({ status: 400, description: 'Portfolio is already linked' })
+  async linkPortfolio(
+    @Param('id') id: string,
+    @Body() linkPortfolioDto: LinkPortfolioRequestDto,
+    @Query('accountId') accountId: string,
+  ): Promise<PlanResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.linkToPortfolio(id, linkPortfolioDto.portfolioId, accountId);
+  }
+
+  @Post('plans/:id/unlink-portfolio')
+  @ApiOperation({ summary: 'Unlink a portfolio from a financial freedom plan' })
+  @ApiResponse({ status: 200, description: 'Portfolio unlinked successfully', type: PlanResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan not found' })
+  @ApiResponse({ status: 400, description: 'Portfolio is not linked' })
+  async unlinkPortfolio(
+    @Param('id') id: string,
+    @Body() unlinkPortfolioDto: UnlinkPortfolioRequestDto,
+    @Query('accountId') accountId: string,
+  ): Promise<PlanResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.unlinkPortfolio(id, unlinkPortfolioDto.portfolioId, accountId);
+  }
+
+  @Get('plans/:id/progress')
+  @ApiOperation({ summary: 'Get progress tracking for a financial freedom plan' })
+  @ApiResponse({ status: 200, description: 'Progress retrieved successfully', type: ProgressResponseDto })
+  @ApiResponse({ status: 404, description: 'Plan not found' })
+  async getProgress(
+    @Param('id') id: string,
+    @Query('accountId') accountId: string,
+  ): Promise<ProgressResponseDto> {
+    if (!accountId) {
+      throw new UnauthorizedException('accountId query parameter is required');
+    }
+    return this.planService.calculateProgress(id, accountId);
   }
 }
 

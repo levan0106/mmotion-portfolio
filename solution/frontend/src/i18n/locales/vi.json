@@ -431,7 +431,10 @@
       "planNameLabel": "Tên kế hoạch",
       "planNamePlaceholder": "Nhập tên cho kế hoạch của bạn",
       "planNameHelper": "Đặt tên cho kế hoạch để dễ dàng nhận biết",
-      "planNameRequired": "Vui lòng nhập tên kế hoạch"
+      "planNameRequired": "Vui lòng nhập tên kế hoạch",
+      "startDateLabel": "Ngày bắt đầu",
+      "descriptionLabel": "Ghi chú",
+      "descriptionPlaceholder": "Nhập ghi chú cho kế hoạch (tùy chọn)"
     },
     "step4": {
       "title": "Theo dõi tiến độ",
@@ -454,9 +457,61 @@
     "noPlans": "Chưa có kế hoạch",
     "noPlansDescription": "Tạo kế hoạch tự do tài chính đầu tiên để bắt đầu",
     "createFirstPlan": "Tạo kế hoạch đầu tiên",
+    "plansList": {
+      "links": "Liên kết",
+      "noLinks": "Chưa liên kết",
+      "portfoliosLinked": "{{count}} Portfolio liên kết",
+      "goalsLinked": "{{count}} Goal liên kết",
+      "remaining": "Tốc độ hiện tại: {{years}} năm",
+      "financialSummary": "Tổng hợp tài chính",
+      "totalInitialInvestment": "Tổng vốn ban đầu",
+      "totalPeriodicPayment": "Tổng thanh toán định kỳ",
+      "perPeriod": "Mỗi kỳ",
+      "plan": "kế hoạch",
+      "plans": "kế hoạch",
+      "startDate": "Ngày bắt đầu"
+    },
     "planDetails": {
       "title": "Chi tiết kế hoạch",
-      "noAllocation": "Không có phân bổ"
+      "noAllocation": "Không có phân bổ",
+      "target": "Mục tiêu",
+      "completionYear": "Mục tiêu hoàn thành: {{year}}",
+      "progress": "Tiến độ",
+      "currentValue": "Giá trị hiện tại",
+      "remaining": "Còn lại: {{amount}}",
+      "returnRate": "Lợi nhuận TT | YC",
+      "time": "Thời gian: {{remainingYears}} | {{targetYears}} năm",
+      "requiredReturnRate": "Lợi nhuận yêu cầu",
+      "investmentTime": "Thời gian đầu tư",
+      "initialInvestment": "Đầu tư ban đầu",
+      "tabs": {
+        "parametersAndProjections": "Thông số & Dự báo",
+        "progressAndLinks": "Tiến độ & Liên kết"
+      },
+      "investmentParameters": "Thông số đầu tư",
+      "progressDetails": "Chi tiết tiến độ",
+      "links": "Liên kết với Goals & Portfolios",
+      "helpTooltip": "Tìm hiểu về Portfolio, Goal và Plan",
+      "linksSection": {
+        "linkedPortfolios": "Portfolios liên kết",
+        "noLinkedPortfolios": "Chưa có Portfolio nào được liên kết",
+        "selectPortfolioToLink": "Chọn Portfolio để liên kết",
+        "linkedGoals": "Goals liên kết",
+        "noLinkedGoals": "Chưa có Goal nào được liên kết",
+        "selectGoalToLink": "Chọn Goal để liên kết"
+      },
+      "progressSection": {
+        "progressTracking": "Theo dõi tiến độ",
+        "progressToTarget": "Tiến độ đạt mục tiêu",
+        "actualReturnRate": "Lợi nhuận thực tế",
+        "gap": "Chênh lệch",
+        "remainingTime": "Thời gian còn lại",
+        "importantMilestones": "Cột mốc quan trọng",
+        "milestoneYear": "Năm {{year}}: {{description}}",
+        "milestoneTarget": "Mục tiêu: {{amount}}",
+        "achieved": "Đã đạt",
+        "progressToMilestone": "Tiến độ đến cột mốc"
+      }
     },
     "delete": {
       "title": "Xóa kế hoạch",

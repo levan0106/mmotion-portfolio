@@ -1,12 +1,19 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FinancialFreedomPlan } from './entities';
 import { FinancialFreedomPlanService } from './services';
 import { FinancialFreedomController } from './controllers';
+import { GoalModule } from '../goal/goal.module';
+import { PortfolioModule } from '../portfolio/portfolio.module';
+import { PortfolioGoal, GoalPortfolio } from '../goal/entities';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FinancialFreedomPlan]),
+    TypeOrmModule.forFeature([FinancialFreedomPlan, PortfolioGoal, GoalPortfolio]),
+    forwardRef(() => GoalModule),
+    forwardRef(() => PortfolioModule),
+    forwardRef(() => SharedModule),
   ],
   controllers: [FinancialFreedomController],
   providers: [FinancialFreedomPlanService],

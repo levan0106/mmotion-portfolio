@@ -200,6 +200,8 @@ export interface FinancialFreedomPlan {
   id: string;
   accountId: string;
   name: string;
+  description?: string;
+  startDate?: Date | string;
   
   // Step 1: Goals & Investment Info
   targetMethod?: 'direct' | 'fromExpenses';
@@ -244,6 +246,8 @@ export interface FinancialFreedomPlan {
 
 export interface CreatePlanRequest {
   name: string;
+  description?: string;
+  startDate?: Date | string;
   templateId?: string;
   targetMethod?: 'direct' | 'fromExpenses';
   targetPresentValue: number;
@@ -268,6 +272,8 @@ export interface CreatePlanRequest {
 
 export interface UpdatePlanRequest {
   name?: string;
+  description?: string;
+  startDate?: Date | string;
   targetMethod?: 'direct' | 'fromExpenses';
   targetPresentValue?: number;
   futureValueRequired?: number;
@@ -380,6 +386,8 @@ export interface PlanData {
   step3?: {
     consolidationResult?: ConsolidateResponse;
     planName?: string; // Plan name entered by user
+    description?: string; // Plan description/notes
+    startDate?: Date | string; // Plan start date
   };
 }
 

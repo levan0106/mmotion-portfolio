@@ -64,9 +64,11 @@ export function mapPlanToPlanData(plan: FinancialFreedomPlan): PlanData {
       },
     } : undefined,
     // step3 is intentionally left undefined - will be calculated fresh in Step3ConsolidatedOverview
-    // But include plan name for edit mode
+    // But include plan name, description, and startDate for edit mode
     step3: {
       planName: plan.name,
+      description: plan.description,
+      startDate: plan.startDate,
     },
   };
 }
@@ -96,6 +98,9 @@ export function mapPlanDataToCreateRequest(planData: PlanData, planName?: string
   
   const request: CreatePlanRequest = {
     name: finalPlanName,
+    description: step3?.description,
+    // Use startDate from step3, or default to today's date if not provided
+    startDate: step3?.startDate || new Date(),
     targetMethod: step1?.targetMethod || 'direct', // Get from step1, not calculationInputs
     targetPresentValue: finalResult.targetPresentValue ?? 0,
     futureValueRequired: finalResult.futureValueRequired ?? 0,

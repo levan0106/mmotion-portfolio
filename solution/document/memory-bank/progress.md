@@ -102,13 +102,44 @@
     - **Reference Line Fix**: Fixed ReferenceLine label overflow
     - **Equal Height Sections**: Combined Allocation and Milestones with equal height
     - **Files Updated**: FinancialFreedomWizard.tsx, PlanDetailModal.tsx, ProgressChart.tsx
+  - **Integration with Goals & Portfolios** ✅ COMPLETED (December 11, 2024)
+    - **Backend Integration**: Link/unlink goals and portfolios with proper validation
+    - **Portfolio Combination**: Automatically combines portfolios from goals with direct linked portfolios
+    - **Frontend UI**: PlanLinksSection component with two-column layout
+    - **Auto-Refresh**: Progress automatically updates after link/unlink
+    - **Multi-Language**: Complete i18n support
+    - **Files Created**: PlanLinksSection.tsx, link-request.dto.ts
+  - **Progress Tracking** ✅ COMPLETED (December 11, 2024)
+    - **Backend Service**: calculateProgress() method with portfolio combination logic
+    - **Current Value Calculation**: Includes totalDepositValue from DepositCalculationService
+    - **TWR Integration**: Weighted average TWR across all portfolios
+    - **Milestones & Alerts**: Timeline-based milestones and Vietnamese alerts
+    - **Frontend UI**: PlanProgressSection component with timeline display
+    - **Auto-Refresh**: Progress query invalidated on link/unlink
+    - **Files Created**: PlanProgressSection.tsx, ProgressResponseDto
+  - **Plan Detail Modal Redesign** ✅ COMPLETED (December 11, 2024)
+    - **Tabbed Layout**: Two tabs for better organization
+    - **Summary Section**: Always visible summary with key metrics
+    - **Completion Year**: Display based on startDate
+    - **Local State**: Auto-refresh after link/unlink operations
+  - **Plans List Enhancement** ✅ COMPLETED (December 11, 2024)
+    - **Component Rename**: PlansList.tsx (from FinancialFreedom.tsx)
+    - **Route Rename**: /plans (from /financial-freedom)
+    - **Financial Summary**: Total initial investment and periodic payment by currency
+    - **Enhanced Table**: Progress, linked items, completion year
+    - **Responsive Design**: Horizontal scrolling with min-width columns
+  - **Additional Features** ✅ COMPLETED (December 11, 2024)
+    - **startDate & description**: User-selectable start date and notes
+    - **Database Migration**: Migration for new fields
+    - **GoalPlanExplanationModal**: System explanation modal
+    - **Help Icons**: Help buttons on Plans and Goals pages
   - **Code Quality**: Production-ready code with proper patterns
     - **Type Safety**: Complete TypeScript types for frontend and backend
     - **Component Reusability**: ModalWrapper, ResponsiveTypography, ResponsiveButton, AllocationChart
     - **Consistent Patterns**: Follows system conventions
     - **Data Mapping**: planDataMapper for frontend/backend conversion
     - **Production Ready**: Clean, maintainable code with proper error handling
-    - **Overall Progress**: Frontend ~95% complete, Backend ~90% complete
+    - **Overall Progress**: Frontend ~98% complete, Backend ~95% complete
 
 - **CURRENCY INVESTMENT SYSTEM IMPLEMENTATION - COMPLETED** (Previous Session - November 27, 2025)
   - **Phase 1: Database Schema & Backend Foundation**: Complete implementation of CURRENCY as AssetType
@@ -947,21 +978,26 @@
 - `docker-compose.yml` - Added ADMIN_USERNAME environment variable support
 
 ## System Health
-- ✅ **Financial Freedom Planning System (CR-009)**: Frontend implementation in progress
+- ✅ **Financial Freedom Planning System (CR-009)**: Frontend & Backend implementation nearly complete
   - ✅ TypeScript types and configuration (100% complete)
   - ✅ API service with mock data support (100% complete)
   - ✅ React hooks for data management (100% complete)
   - ✅ Template selection components (100% complete)
   - ✅ Calculation form with 2-column layout (100% complete)
-  - ✅ Step 1 component (100% complete)
+  - ✅ Step 1, 2, 3 components (100% complete)
   - ✅ Wizard component (100% complete)
-  - ✅ Main page and navigation (100% complete)
+  - ✅ Plans list page with financial summary (100% complete)
+  - ✅ Plan detail modal with tabs (100% complete)
+  - ✅ Integration with Goals & Portfolios (100% complete)
+  - ✅ Progress tracking service (100% complete)
   - ✅ Multi-language support (100% complete)
-  - ⏳ Steps 2-4 components (placeholders created, 0% complete)
-  - ⏳ Chart components (0% complete)
-  - ⏳ Plan management components (0% complete)
-  - ⏳ Backend implementation (0% complete)
-  - **Overall Progress**: 9/50 tasks completed (18%)
+  - ✅ Backend CRUD operations (100% complete)
+  - ✅ Backend link/unlink operations (100% complete)
+  - ✅ Backend progress calculation (100% complete)
+  - ⏳ Testing (Tasks 34-40) (0% complete)
+  - ⏳ Documentation (Tasks 41-43) (0% complete)
+  - ⏳ Security & Performance (Tasks 44-46) (0% complete)
+  - **Overall Progress**: 28/50 tasks completed (56%)
 - ✅ **Database**: Fully operational with MTD fields for all performance snapshots and demo account management
 - ✅ **Performance Snapshots**: Complete MTD calculation support for portfolio, asset, and asset group levels
 - ✅ **Calculation Services**: TWR, MWR, and IRR MTD calculations working correctly
