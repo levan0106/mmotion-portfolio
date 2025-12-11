@@ -93,12 +93,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick })
           </Box>
         </Box>
 
-        <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <ResponsiveTypography variant="caption" color="text.secondary" sx={{ mb: 2 }}  ellipsis={false}>
           {isVietnamese ? template.description : template.descriptionEn}
         </ResponsiveTypography>
 
-        <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <ResponsiveTypography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ResponsiveTypography variant="caption" color="text.secondary">
             {t('financialFreedom.templates.willCalculate')}:
           </ResponsiveTypography>
           <Chip

@@ -597,7 +597,7 @@ const PlansList: React.FC = () => {
                     const totalYears = completionYear - startYear;
                     
                     // Calculate elapsed years from start to current year
-                    const elapsedYears = Math.max(0, Math.min(totalYears, currentYear - startYear));
+                    const elapsedYears = Math.max(0, Math.min(totalYears, currentYear - startYear + 1));
                     
                     // Calculate remaining years
                     const remainingYears = Math.max(0, totalYears - elapsedYears);

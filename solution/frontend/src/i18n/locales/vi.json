@@ -239,6 +239,7 @@
     },
     "calculatedVariables": {
       "returnRate": "Tỷ suất lợi nhuận",
+      "investmentYears": "Số năm đầu tư",
       "years": "năm",
       "periodicPayment": "Tiền bổ sung mỗi kỳ",
       "futureValue": "Tổng tiền tương lai",

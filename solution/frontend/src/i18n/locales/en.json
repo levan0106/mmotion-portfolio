@@ -233,7 +233,8 @@
     },
     "calculatedVariables": {
       "returnRate": "Required Return Rate",
-      "years": "Investment Years",
+      "investmentYears": "Investment Years",
+      "years": "Years",
       "periodicPayment": "Periodic Payment",
       "futureValue": "Future Value",
       "initialInvestment": "Initial Investment"

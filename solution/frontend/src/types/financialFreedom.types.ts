@@ -19,7 +19,7 @@ export enum RiskTolerance {
 
 export enum CalculatedVariableType {
   RETURN_RATE = 'returnRate',
-  YEARS = 'years',
+  YEARS = 'investmentYears',
   PERIODIC_PAYMENT = 'periodicPayment',
   FUTURE_VALUE = 'futureValue',
   INITIAL_INVESTMENT = 'initialInvestment',

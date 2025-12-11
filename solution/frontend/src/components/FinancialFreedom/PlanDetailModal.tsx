@@ -400,12 +400,12 @@ export const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                   {/* Description */}
                   {localPlan.description && (
                     <Grid item xs={12} sm={ 12} md={12}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 0.5, borderBottom: '1px solid #e0e0e0' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 0.5}}>
                         {/* <ResponsiveTypography variant="body2" color="text.secondary">
                           {t('financialFreedom.step3.descriptionLabel')}
                         </ResponsiveTypography> */}
-                        <ResponsiveTypography variant="caption" sx={{ fontStyle: 'italic', textAlign: 'right' }}>
-                          {localPlan.description}
+                        <ResponsiveTypography variant="body2" sx={{ fontStyle: 'italic'}}>
+                          Mục đich: {localPlan.description}
                         </ResponsiveTypography>
                       </Box>
                     </Grid>
