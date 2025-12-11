@@ -24,6 +24,7 @@ import {
   Stack,
   Grid,
   CardContent,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -89,14 +90,99 @@ const PlanRow: React.FC<PlanRowProps> = ({
     >
       <TableCell sx={{ minWidth: 180 }}>
         <Box>
-          <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-            {plan.name}
-          </Typography>
-          {completionYear && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {t('financialFreedom.planDetails.completionYear', { startYear: new Date(plan.startDate || plan.createdAt).getFullYear(), endYear: completionYear })}
-            </Typography>
-          )}
+          <Tooltip
+            title={
+              <Box sx={{ p: 1.5, maxWidth: 300 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, color: 'common.white', fontSize: '0.875rem' }}>
+                  {plan.name}
+                </Typography>
+                <Divider sx={{ mb: 1.5, bgcolor: 'rgba(255, 255, 255, 0.2)' }} />
+                <Stack spacing={1}>
+                  {plan.initialInvestment !== undefined && plan.initialInvestment !== null && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.form.investmentParameters.initialInvestment')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {formatCurrency(plan.initialInvestment, plan.baseCurrency || 'VND')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.periodicPayment !== undefined && plan.periodicPayment !== null && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.form.investmentParameters.periodicPayment')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {formatCurrency(plan.periodicPayment, plan.baseCurrency || 'VND')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.requiredReturnRate !== undefined && plan.requiredReturnRate !== null && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.step4.requiredReturnRate')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {formatPercentageValue(plan.requiredReturnRate)}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.investmentYears !== undefined && plan.investmentYears !== null && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.planDetails.investmentTime')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {plan.investmentYears} {t('financialFreedom.scenario.years')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.riskTolerance && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.form.investmentParameters.riskTolerance')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {t(`financialFreedom.form.investmentParameters.${plan.riskTolerance}`)}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.startDate && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                        {t('financialFreedom.plansList.startDate')}:
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 500, fontSize: '0.75rem', ml: 1 }}>
+                        {new Date(plan.startDate).toLocaleDateString('vi-VN')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {plan.description && (
+                    <>
+                      <Divider sx={{ my: 0.5, bgcolor: 'rgba(255, 255, 255, 0.2)' }} />
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', fontSize: '0.75rem', lineHeight: 1.4 }}>
+                        {plan.description}
+                      </Typography>
+                    </>
+                  )}
+                </Stack>
+              </Box>
+            }
+            arrow
+            placement="right"
+          >
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
+                {plan.name}
+              </Typography>
+              {completionYear && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  {t('financialFreedom.planDetails.completionYear', { startYear: new Date(plan.startDate || plan.createdAt).getFullYear(), endYear: completionYear })}
+                </Typography>
+              )}
+            </Box>
+          </Tooltip>
         </Box>
       </TableCell>
       <TableCell align="right" sx={{ minWidth: 150 }}>
