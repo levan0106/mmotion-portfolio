@@ -213,12 +213,16 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newName = event.target.value;
+    // Only update local state, don't call API yet
     setAnalysisData((prev) => ({ ...prev, name: newName }));
-    // Auto-save name change
-    if (id && analysisData.id) {
+  };
+
+  const handleNameBlur = () => {
+    // Update API only when user finishes editing (on blur)
+    if (id && analysisData.id && analysisData.name !== undefined) {
       updateAnalysisMutation.mutate({
         id: analysisData.id,
-        data: { name: newName },
+        data: { name: analysisData.name },
       });
     }
   };
@@ -281,8 +285,9 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
                 fullWidth
                 variant="standard"
                 placeholder={id ? t('personalFinancialAnalysis.edit') : t('personalFinancialAnalysis.create')}
-                value={currentAnalysis?.name || ''}
+                value={analysisData?.name ?? currentAnalysis?.name ?? ''}
                 onChange={handleNameChange}
+                onBlur={handleNameBlur}
                 sx={{
                   '& .MuiInputBase-input': {
                     fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },

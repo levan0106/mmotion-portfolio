@@ -121,7 +121,7 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
         ? t('personalFinancialAnalysis.charts.balanceSheet.deficit') 
         : t('personalFinancialAnalysis.charts.balanceSheet.savings'),
       value: Math.abs(remainingMonthlySavings),
-      color: isNegativeSavings ? theme.palette.warning.main : theme.palette.info.main,
+      color: isNegativeSavings ? theme.palette.error.light : theme.palette.info.main,
       percentage: savingsPercentage,
     },
   ].filter((item) => item.value > 0);
@@ -357,6 +357,9 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
                           const childX = currentX;
                           currentX += childWidth + childSpacing;
 
+                          const isDeficit = child.id === 'savings' && isNegativeSavings;
+                          const textColor = isDeficit ? theme.palette.error.main : 'white';
+                          
                           return (
                             <g key={child.id}>
                               {/* Child block - full height of parent */}
@@ -376,7 +379,7 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
                                 x={childX + childWidth / 2}
                                 y={block.y + block.height / 2 - 5}
                                 textAnchor="middle"
-                                fill="white"
+                                fill={textColor}
                                 fontSize={isMobile ? 9 : 10}
                                 fontWeight={600}
                               >
@@ -387,7 +390,7 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
                                 x={childX + childWidth / 2}
                                 y={block.y + block.height / 2 + 10}
                                 textAnchor="middle"
-                                fill="white"
+                                fill={textColor}
                                 fontSize={isMobile ? 8 : 9}
                                 fontWeight={500}
                               >
@@ -398,7 +401,7 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
                                 x={childX + childWidth / 2}
                                 y={block.y + block.height / 2 + 20}
                                 textAnchor="middle"
-                                fill="white"
+                                fill={textColor}
                                 fontSize={isMobile ? 7 : 8}
                                 fontWeight={400}
                                 opacity={0.9}
