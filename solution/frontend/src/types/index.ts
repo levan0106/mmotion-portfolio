@@ -444,3 +444,6 @@ export type {
   FinalCalculationResult,
   PlanData,
 } from './financialFreedom.types';
+
+// Export Personal Financial Analysis types
+export * from './personalFinancialAnalysis.types';

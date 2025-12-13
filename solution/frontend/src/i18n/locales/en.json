@@ -22,6 +22,7 @@
     "import": "Import",
     "back": "Back",
     "next": "Next",
+    "saving": "Saving...",
     "thisAsset": "this asset",
     "groupByDate": "Group by Date",
     "grid": "Grid",
@@ -58,7 +59,8 @@
     "errorOccurred": "An error occurred",
     "noDescription": "No description",
     "currentDate": "Current date",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "percentage": "Percentage"
   },
   "dataDisplay": {
     "toggle": {
@@ -533,6 +535,227 @@
       "message": "Are you sure you want to delete the plan \"{{name}}\"?",
       "warning": "This action cannot be undone. All data related to this plan will be permanently deleted.",
       "error": "Failed to delete plan. Please try again."
+    }
+  },
+  "personalFinancialAnalysis": {
+    "title": "Personal Financial Analysis",
+    "subtitle": "Analyze your financial health and plan for the future",
+    "createNew": "Create New Analysis",
+    "create": "Create Analysis",
+    "edit": "Edit Analysis",
+    "unnamed": "Unnamed Analysis",
+    "noAnalyses": "No analyses yet",
+    "noAnalysesDescription": "Create your first financial analysis to understand your financial health",
+    "createFirst": "Create First Analysis",
+    "error": {
+      "loading": "Error loading analyses"
+    },
+    "creating": "Creating new analysis...",
+    "table": {
+      "name": "Name",
+      "analysisDate": "Analysis Date",
+      "totalAssets": "Total Assets",
+      "totalDebt": "Total Debt",
+      "netWorth": "Net Worth",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "final": "Final"
+    },
+    "delete": {
+      "title": "Delete Analysis",
+      "message": "Are you sure you want to delete the analysis \"{{name}}\"?",
+      "warning": "This action cannot be undone."
+    },
+    "steps": {
+      "step1": {
+        "title": "Cash Flow Survey"
+      },
+      "step2": {
+        "title": "Financial Analysis",
+        "subtitle": "Comprehensive overview of your financial health"
+      },
+      "step3": {
+        "title": "Asset Restructuring",
+        "description": "Create and compare different scenarios to see how restructuring your assets, income, expenses, and debts affects your financial health.",
+        "comingSoon": "Scenario management and comparison features coming soon",
+        "note": "Note: To edit scenario data, you can duplicate a scenario and modify it. Scenario editing will be enhanced in future updates."
+      },
+      "step4": {
+        "title": "Financial Planning"
+      }
+    },
+    "portfolioLinking": {
+      "title": "Portfolio Linking",
+      "linkPortfolio": "Link Portfolio",
+      "selectPortfolio": "Select Portfolio",
+      "selectPortfolioDescription": "Select a portfolio to link and load its assets into this analysis.",
+      "allPortfoliosLinked": "All available portfolios are already linked.",
+      "noPortfoliosAvailable": "No portfolios available. Create a portfolio first."
+    },
+    "assets": {
+      "title": "Assets",
+      "add": "Add Asset",
+      "name": "Asset Name",
+      "value": "Value",
+        "category": "Category",
+        "layer": "Asset Layer",
+        "emergencyFund": "Emergency Fund",
+        "source": "Source",
+      "total": "Total Assets",
+      "count": "Count",
+      "fromPortfolio": "From Portfolio",
+      "custom": "Custom",
+      "empty": "No assets yet. Click 'Add Asset' to add your first asset.",
+      "categories": {
+        "consumer": "Consumer Assets",
+        "business": "Business Assets",
+        "financial": "Financial Investment Assets",
+        "realEstate": "Real Estate Investment Assets"
+      }
+    },
+    "income": {
+      "title": "Income",
+      "add": "Add Income",
+      "name": "Income Name",
+      "monthlyValue": "Monthly Value",
+      "annualValue": "Annual Value",
+      "category": "Category",
+      "totalAnnual": "Total Annual Income",
+      "empty": "No income sources yet. Click 'Add Income' to add your first income source.",
+      "categories": {
+        "family": "Family Income",
+        "business": "Business Income",
+        "other": "Other Income"
+      }
+    },
+    "expenses": {
+      "title": "Expenses",
+      "add": "Add Expense",
+      "name": "Expense Name",
+      "monthlyValue": "Monthly Value",
+      "annualValue": "Annual Value",
+      "category": "Category",
+      "totalAnnual": "Total Annual Expenses",
+      "empty": "No expenses yet. Click 'Add Expense' to add your first expense.",
+      "categories": {
+        "living": "Living Expenses",
+        "education": "Education",
+        "insurance": "Insurance",
+        "other": "Other Expenses"
+      }
+    },
+    "debts": {
+      "title": "Debts",
+      "add": "Add Debt",
+      "name": "Debt Name",
+      "principalAmount": "Principal Amount",
+      "interestRate": "Interest Rate",
+      "term": "Term",
+      "monthlyPayment": "Monthly Payment",
+      "annualPayment": "Annual Payment",
+      "remainingBalance": "Remaining Balance",
+      "months": "months",
+      "totalAnnualPayments": "Total Annual Debt Payments",
+      "empty": "No debts yet. Click 'Add Debt' to add your first debt."
+    },
+    "metrics": {
+      "title": "Key Metrics",
+      "totalAssets": "Total Assets",
+      "totalDebt": "Total Debt",
+      "netWorth": "Net Worth",
+      "debtToAssetRatio": "Debt-to-Asset Ratio",
+      "emergencyFund": "Emergency Fund",
+      "recommended": "Recommended"
+    },
+    "incomeExpenseBreakdown": {
+      "title": "Income and Expense Breakdown",
+      "income": "Income",
+      "expenses": "Expenses",
+      "savings": "Remaining Savings",
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "total": "Total",
+      "percentageOfIncome": "{{percentage}}% of income"
+    },
+    "notes": {
+      "title": "Analysis Notes",
+      "placeholder": "Enter notes about your financial analysis results..."
+    },
+    "charts": {
+      "title": "Charts and Visualizations",
+      "comingSoon": "Charts will be displayed here (Balance Sheet, Asset Pyramid, Asset Structure)",
+      "balanceSheet": {
+        "title": "Balance Sheet Overview",
+        "income": "Income",
+        "expenses": "Expenses",
+        "savings": "Savings",
+        "deficit": "Deficit",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
+        "emergencyFund": "Emergency Fund",
+        "investmentAssets": "Investment Assets",
+        "consumerAssets": "Consumer Assets",
+        "netAssets": "Net Assets",
+        "liabilitiesAndNetAssets": "Liabilities & Net Assets",
+        "expensesAndSavings": "Expenses & Savings"
+      },
+      "assetStructure": {
+        "title": "Asset Structure",
+        "noData": "No assets to display"
+      },
+      "incomeExpense": {
+        "title": "Income and Expense by Category",
+        "income": "Income",
+        "expense": "Expense",
+        "noData": "No income or expenses to display"
+      },
+      "incomeByCategory": {
+        "title": "Income by Category",
+        "noData": "No income to display"
+      },
+      "expenseByCategory": {
+        "title": "Expense by Category",
+        "noData": "No expenses to display"
+      },
+      "assetPyramid": {
+        "title": "Asset Pyramid",
+        "noData": "No assets to display"
+      },
+      "layers": "layers",
+      "breakdown": "Breakdown",
+      "noData": "No data available"
+    },
+    "assetLayers": {
+      "protection": "Protection Layer",
+      "incomeGeneration": "Income Generation Layer",
+      "growth": "Growth Layer",
+      "risk": "Risk Layer"
+    },
+    "assetCategories": {
+      "consumer": "Consumer Assets",
+      "business": "Business Assets",
+      "financial": "Financial Investment Assets",
+      "realEstate": "Real Estate Investment Assets"
+    },
+    "incomeCategories": {
+      "family": "Family Income",
+      "business": "Business Income",
+      "other": "Other Income"
+    },
+    "expenseCategories": {
+      "living": "Living Expenses",
+      "education": "Education",
+      "insurance": "Insurance",
+      "other": "Other Expenses"
+    },
+    "financialPlanning": {
+      "planLinked": "Financial Freedom Plan is linked",
+      "noPlanLinked": "No Financial Freedom Plan linked",
+      "createPlan": "Create New Plan",
+      "linkExistingPlan": "Link Existing Plan",
+      "unlinkPlan": "Unlink Plan"
     }
   },
   "navigation": {

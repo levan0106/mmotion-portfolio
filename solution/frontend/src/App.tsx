@@ -25,6 +25,8 @@ import Report from './pages/Report';
 import InvestorView from './pages/InvestorView';
 import Goals from './pages/Goals';
 import PlansList from './pages/PlansList';
+import PersonalFinancialAnalysisPage from './pages/PersonalFinancialAnalysis';
+import PersonalFinancialAnalysisWizardPage from './pages/PersonalFinancialAnalysisWizard';
 import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import Welcome from './pages/Welcome';
@@ -200,6 +202,27 @@ const AppContent: React.FC = () => {
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
                 <PlansList />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/personal-financial-analysis" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <PersonalFinancialAnalysisPage />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/personal-financial-analysis/new" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <PersonalFinancialAnalysisWizardPage />
+              </Box>
+            </AppLayout>
+          } />
+          <Route path="/personal-financial-analysis/:id" element={
+            <AppLayout>
+              <Box sx={{ minHeight: '100vh' }}>
+                <PersonalFinancialAnalysisWizardPage />
               </Box>
             </AppLayout>
           } />

@@ -75,15 +75,15 @@ export const AssetValueTable: React.FC<AssetValueTableProps> = ({
     // Get periodic payment with correct sign - MUST match calculateFinancialFreedom logic
     // Chỉ lấy giá trị từ inputs, không lấy từ calculatedVariable vì bảng hiển thị giá trị người dùng nhập
     let periodicPayment: number;
-    console.log('inputs.periodicPayment', inputs.periodicPayment);
-    console.log('inputs.paymentType', inputs.paymentType);
-    console.log('inputs.paymentFrequency', inputs.paymentFrequency);
-    console.log('inputs.expectedReturnRate', inputs.expectedReturnRate);
-    console.log('inputs.investmentYears', inputs.investmentYears);
-    console.log('inputs.inflationRate', inputs.inflationRate);
-    console.log('inputs.initialInvestment', inputs.initialInvestment);
-    console.log('result.calculatedVariable.type', result.calculatedVariable.type);
-    console.log('result.calculatedVariable.value', result.calculatedVariable.value);
+    // console.log('inputs.periodicPayment', inputs.periodicPayment);
+    // console.log('inputs.paymentType', inputs.paymentType);
+    // console.log('inputs.paymentFrequency', inputs.paymentFrequency);
+    // console.log('inputs.expectedReturnRate', inputs.expectedReturnRate);
+    // console.log('inputs.investmentYears', inputs.investmentYears);
+    // console.log('inputs.inflationRate', inputs.inflationRate);
+    // console.log('inputs.initialInvestment', inputs.initialInvestment);
+    // console.log('result.calculatedVariable.type', result.calculatedVariable.type);
+    // console.log('result.calculatedVariable.value', result.calculatedVariable.value);
     if (inputs.periodicPayment !== undefined && inputs.periodicPayment !== null && inputs.periodicPayment !== 0) {
       periodicPayment = inputs.periodicPayment;
       if (inputs.paymentType === PaymentType.WITHDRAWAL && periodicPayment > 0) {

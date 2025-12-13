@@ -122,6 +122,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       description: t('navigation.dashboard'),
       badge: null
     },
+    // Tài chính cá nhân - Always show
+    {
+      text: t('personalFinancialAnalysis.title'),
+      icon: <ReportsIcon />,
+      path: '/personal-financial-analysis',
+      description: t('personalFinancialAnalysis.subtitle'),
+      badge: null
+    },
     // Nhà đầu tư - Always show
     {
       text: t('navigation.investor.title'),

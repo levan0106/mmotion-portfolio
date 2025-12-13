@@ -22,6 +22,7 @@
     "import": "Nhập",
     "back": "Quay lại",
     "next": "Tiếp theo",
+    "saving": "Đang lưu...",
     "thisAsset": "tài sản này",
     "groupByDate": "Nhóm theo ngày",
     "grid": "Lưới",
@@ -59,7 +60,8 @@
     "errorOccurred": "Có lỗi xảy ra",
     "noDescription": "Không có mô tả",
     "currentDate": "Ngày hiện tại",
-    "processing": "Đang xử lý..."
+    "processing": "Đang xử lý...",
+    "percentage": "Tỷ lệ phần trăm"
   },
   "dataDisplay": {
     "toggle": {
@@ -539,6 +541,238 @@
       "message": "Bạn có chắc chắn muốn xóa kế hoạch \"{{name}}\"?",
       "warning": "Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến kế hoạch này sẽ bị xóa vĩnh viễn.",
       "error": "Không thể xóa kế hoạch. Vui lòng thử lại."
+    }
+  },
+  "personalFinancialAnalysis": {
+    "title": "Tài chính cá nhân",
+    "subtitle": "Phân tích sức khỏe tài chính và lập kế hoạch cho tương lai",
+    "createNew": "Tạo phân tích mới",
+    "create": "Tạo phân tích",
+    "edit": "Chỉnh sửa phân tích",
+    "unnamed": "Phân tích chưa đặt tên",
+    "noAnalyses": "Chưa có phân tích nào",
+    "noAnalysesDescription": "Tạo phân tích tài chính đầu tiên để hiểu sức khỏe tài chính của bạn",
+    "createFirst": "Tạo phân tích đầu tiên",
+    "error": {
+      "loading": "Lỗi khi tải danh sách phân tích"
+    },
+    "creating": "Đang tạo phân tích mới...",
+    "table": {
+      "name": "Tên",
+      "analysisDate": "Ngày phân tích",
+      "totalAssets": "Tổng tài sản",
+      "totalDebt": "Tổng nợ",
+      "netWorth": "Giá trị ròng",
+      "status": "Trạng thái"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "final": "Hoàn thành"
+    },
+    "delete": {
+      "title": "Xóa phân tích",
+      "message": "Bạn có chắc chắn muốn xóa phân tích \"{{name}}\"?",
+      "warning": "Hành động này không thể hoàn tác."
+    },
+    "steps": {
+      "step1": {
+        "title": "Tài sản và dòng tiền"
+      },
+      "step2": {
+        "title": "Phân tích tài chính",
+        "subtitle": "Tổng quan toàn diện về sức khỏe tài chính của bạn"
+      },
+      "step3": {
+        "title": "Tái cấu trúc tài sản",
+        "description": "Tạo và so sánh các kịch bản khác nhau để xem cách tái cấu trúc tài sản, thu nhập, chi phí và nợ ảnh hưởng đến sức khỏe tài chính của bạn.",
+        "comingSoon": "Tính năng quản lý và so sánh kịch bản sẽ sớm có",
+        "note": "Lưu ý: Để chỉnh sửa dữ liệu kịch bản, bạn có thể sao chép một kịch bản và chỉnh sửa nó. Tính năng chỉnh sửa kịch bản sẽ được cải thiện trong các bản cập nhật sau."
+      },
+      "step4": {
+        "title": "Lập kế hoạch tài chính"
+      }
+    },
+    "portfolioLinking": {
+      "title": "Liên kết Portfolio",
+      "linkPortfolio": "Liên kết Portfolio",
+      "selectPortfolio": "Chọn Portfolio",
+      "selectPortfolioDescription": "Chọn một portfolio để liên kết và tải tài sản của nó vào phân tích này.",
+      "allPortfoliosLinked": "Tất cả các portfolio có sẵn đã được liên kết.",
+      "noPortfoliosAvailable": "Không có portfolio nào. Vui lòng tạo portfolio trước."
+    },
+    "assets": {
+      "title": "Tài sản",
+      "add": "Thêm tài sản",
+      "name": "Tên tài sản",
+      "value": "Giá trị",
+        "category": "Danh mục",
+        "layer": "Lớp tài sản",
+        "emergencyFund": "Quỹ khẩn cấp",
+        "source": "Nguồn",
+      "total": "Tổng tài sản",
+      "count": "Số lượng",
+      "fromPortfolio": "Từ Portfolio",
+      "custom": "Tùy chỉnh",
+      "empty": "Chưa có tài sản nào. Nhấn 'Thêm tài sản' để thêm tài sản đầu tiên.",
+      "categories": {
+        "consumer": "Tài sản tiêu dùng",
+        "business": "Tài sản kinh doanh",
+        "financial": "Tài sản đầu tư tài chính",
+        "realEstate": "Tài sản đầu tư bất động sản"
+      }
+    },
+    "income": {
+      "title": "Thu nhập",
+      "add": "Thêm thu nhập",
+      "name": "Tên thu nhập",
+      "monthlyValue": "Giá trị hàng tháng",
+      "annualValue": "Giá trị hàng năm",
+      "category": "Danh mục",
+      "totalAnnual": "Tổng thu nhập hàng năm",
+      "empty": "Chưa có nguồn thu nhập nào. Nhấn 'Thêm thu nhập' để thêm nguồn thu nhập đầu tiên.",
+      "categories": {
+        "family": "Thu nhập gia đình",
+        "business": "Thu nhập kinh doanh",
+        "other": "Thu nhập khác"
+      }
+    },
+    "expenses": {
+      "title": "Chi phí",
+      "add": "Thêm chi phí",
+      "name": "Tên chi phí",
+      "monthlyValue": "Giá trị hàng tháng",
+      "annualValue": "Giá trị hàng năm",
+      "category": "Danh mục",
+      "totalAnnual": "Tổng chi phí hàng năm",
+      "empty": "Chưa có chi phí nào. Nhấn 'Thêm chi phí' để thêm chi phí đầu tiên.",
+      "categories": {
+        "living": "Chi phí sinh hoạt",
+        "education": "Giáo dục",
+        "insurance": "Bảo hiểm",
+        "other": "Chi phí khác"
+      }
+    },
+    "debts": {
+      "title": "Nợ",
+      "add": "Thêm khoản nợ",
+      "name": "Tên khoản nợ",
+      "principalAmount": "Số tiền gốc",
+      "interestRate": "Lãi suất",
+      "term": "Kỳ hạn",
+      "monthlyPayment": "Thanh toán hàng tháng",
+      "annualPayment": "Thanh toán hàng năm",
+      "remainingBalance": "Số dư còn lại",
+      "months": "tháng",
+      "totalAnnualPayments": "Tổng thanh toán nợ hàng năm",
+      "empty": "Chưa có khoản nợ nào. Nhấn 'Thêm khoản nợ' để thêm khoản nợ đầu tiên."
+    },
+    "metrics": {
+      "title": "Chỉ số quan trọng",
+      "totalAssets": "Tổng tài sản",
+      "totalDebt": "Tổng nợ",
+      "netWorth": "Giá trị ròng",
+      "debtToAssetRatio": "Tỷ lệ nợ/tài sản",
+      "emergencyFund": "Quỹ khẩn cấp",
+      "recommended": "Khuyến nghị"
+    },
+    "incomeExpenseBreakdown": {
+      "title": "Dòng tiền",
+      "income": "Thu nhập",
+      "expenses": "Chi phí",
+      "savings": "Tiết kiệm còn lại",
+      "monthly": "Hàng tháng",
+      "annual": "Hàng năm",
+      "total": "Tổng cộng",
+      "percentageOfIncome": "{{percentage}}% của thu nhập"
+    },
+    "notes": {
+      "title": "Nhận định về kết quả tài chính",
+      "placeholder": "Nhập ghi chú về kết quả phân tích tài chính của bạn..."
+    },
+    "charts": {
+      "title": "Biểu đồ và trực quan hóa",
+      "comingSoon": "Biểu đồ sẽ được hiển thị ở đây (Bảng cân đối, Kim tự tháp tài sản, Cấu trúc tài sản)",
+      "balanceSheet": {
+        "title": "Tổng quan Bảng cân đối",
+        "income": "Thu nhập",
+        "expenses": "Chi tiêu",
+        "savings": "Tiết kiệm",
+        "deficit": "Thâm hụt",
+        "assets": "Tài sản",
+        "liabilities": "Nợ",
+        "emergencyFund": "Quỹ khẩn cấp",
+        "investmentAssets": "Tài sản đầu tư",
+        "consumerAssets": "Tài sản tiêu dùng",
+        "netAssets": "Giá trị ròng",
+        "liabilitiesAndNetAssets": "Nợ & Giá trị ròng",
+        "expensesAndSavings": "Chi phí & Tiết kiệm"
+      },
+      "assetStructure": {
+        "title": "Cấu trúc tài sản",
+        "noData": "Chưa có tài sản để hiển thị"
+      },
+      "incomeExpense": {
+        "title": "Thu nhập và Chi phí theo Danh mục",
+        "income": "Thu nhập",
+        "expense": "Chi phí",
+        "noData": "Chưa có thu nhập hoặc chi phí để hiển thị"
+      },
+      "incomeByCategory": {
+        "title": "Thu nhập",
+        "noData": "Chưa có thu nhập để hiển thị"
+      },
+      "expenseByCategory": {
+        "title": "Chi phí",
+        "noData": "Chưa có chi phí để hiển thị"
+      },
+      "assetPyramid": {
+        "title": "Tháp tài sản",
+        "noData": "Chưa có tài sản để hiển thị"
+      },
+      "layers": "lớp",
+      "breakdown": "Phân tích chi tiết",
+      "noData": "Chưa có dữ liệu"
+    },
+    "assetLayers": {
+      "protection": "Lớp bảo vệ",
+      "incomeGeneration": "Lớp tạo thu nhập",
+      "growth": "Lớp tăng trưởng",
+      "risk": "Lớp rủi ro"
+    },
+    "assetCategories": {
+      "consumer": "Tài sản tiêu dùng",
+      "business": "Tài sản kinh doanh",
+      "financial": "Tài sản đầu tư tài chính",
+      "realEstate": "Tài sản đầu tư bất động sản"
+    },
+    "incomeCategories": {
+      "family": "Thu nhập gia đình",
+      "business": "Thu nhập kinh doanh",
+      "other": "Thu nhập khác"
+    },
+    "expenseCategories": {
+      "living": "Chi phí sinh hoạt",
+      "education": "Giáo dục",
+      "insurance": "Bảo hiểm",
+      "other": "Chi phí khác"
+    },
+    "scenarios": {
+      "title": "Kịch bản",
+      "create": "Tạo kịch bản",
+      "name": "Tên kịch bản",
+      "current": "Hiện tại",
+      "currentDescription": "Tình hình tài chính hiện tại của bạn",
+      "comparison": "So sánh kịch bản",
+      "selectToCompare": "Chọn một kịch bản ở trên để so sánh với tình hình hiện tại của bạn.",
+      "duplicate": "Sao chép",
+      "delete": "Xóa"
+    },
+    "financialPlanning": {
+      "planLinked": "Kế hoạch Tự do Tài chính đã được liên kết",
+      "noPlanLinked": "Chưa liên kết Kế hoạch Tự do Tài chính",
+      "createPlan": "Tạo kế hoạch mới",
+      "linkExistingPlan": "Liên kết kế hoạch hiện có",
+      "unlinkPlan": "Hủy liên kết kế hoạch"
     }
   },
   "navigation": {
@@ -2468,7 +2702,7 @@
     "assetAllocation": "Phân bổ tài sản theo loại",
     "assetType": "Loại tài sản",
     "value": "Tổng giá trị",
-    "percentage": "Tỷ lệ",
+    "percentage": "Tỷ lệ phần trăm",
     "count": "Số lượng",
     "assetDetails": "Chi tiết tài sản",
     "symbol": "Mã",
