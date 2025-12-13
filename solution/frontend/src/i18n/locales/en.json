@@ -758,6 +758,12 @@
       "insurance": "Insurance",
       "other": "Other Expenses"
     },
+    "defaultItems": {
+      "title": "Default Items Suggestion",
+      "description": "Select income and expense items that suit you. You can edit them after adding to the analysis.",
+      "suggestItems": "Suggest Items",
+      "openSuggestion": "Suggest Items"
+    },
     "scenarios": {
       "title": "Scenarios",
       "create": "Create Scenario",

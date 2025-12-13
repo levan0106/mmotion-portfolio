@@ -19,13 +19,19 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { ResponsiveTypography } from '../components/Common/ResponsiveTypography';
 import { ResponsiveButton } from '../components/Common';
-import { PersonalFinancialAnalysis, AnalysisStatus } from '../types/personalFinancialAnalysis.types';
+import { 
+  PersonalFinancialAnalysis, 
+  AnalysisStatus,
+  AnalysisIncome,
+  AnalysisExpense,
+} from '../types/personalFinancialAnalysis.types';
 import { useTranslation } from 'react-i18next';
 import { useCreateAnalysis, useUpdateAnalysis, useAnalysis } from '../hooks/usePersonalFinancialAnalysis';
 import { Step1CashFlowSurvey } from '../components/PersonalFinancialAnalysis/Step1CashFlowSurvey';
 import { Step2FinancialAnalysis } from '../components/PersonalFinancialAnalysis/Step2FinancialAnalysis';
 import { Step3AssetRestructuring } from '../components/PersonalFinancialAnalysis/Step3AssetRestructuring';
 import { Step4FinancialPlanning } from '../components/PersonalFinancialAnalysis/Step4FinancialPlanning';
+import { DefaultItemsSuggestionModal } from '../components/PersonalFinancialAnalysis/DefaultItemsSuggestionModal';
 import { useSummaryMetrics, useIncomeExpenseBreakdown } from '../hooks/useAnalysisCalculations';
 
 interface TabPanelProps {
@@ -63,6 +69,8 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const [activeTab, setActiveTab] = useState(0);
+  const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
+  const [pendingAnalysisId, setPendingAnalysisId] = useState<string | null>(null);
   const createAnalysisMutation = useCreateAnalysis();
   const updateAnalysisMutation = useUpdateAnalysis();
   const { data: existingAnalysis, isLoading: isLoadingAnalysis } = useAnalysis(id);
@@ -94,9 +102,10 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
 
   // Create new analysis on mount if no ID
   useEffect(() => {
-    if (!id && !createAnalysisMutation.isLoading && !existingAnalysis) {
+    if (!id && !createAnalysisMutation.isLoading && !existingAnalysis && !pendingAnalysisId) {
       const createNew = async () => {
         try {
+          // Create empty analysis first
           const newAnalysis = await createAnalysisMutation.mutateAsync({
             name: undefined,
             assets: [],
@@ -104,6 +113,11 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
             expenses: [],
             debts: [],
           });
+          
+          // Set pending analysis ID and open suggestion modal
+          setPendingAnalysisId(newAnalysis.id);
+          setSuggestionModalOpen(true);
+          
           // Navigate to the new analysis ID
           navigate(`/personal-financial-analysis/${newAnalysis.id}`, { replace: true });
         } catch (error) {
@@ -112,7 +126,45 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
       };
       createNew();
     }
-  }, [id, createAnalysisMutation, existingAnalysis, navigate]);
+  }, [id, createAnalysisMutation, existingAnalysis, navigate, pendingAnalysisId]);
+
+  // Handle suggestion modal confirm
+  const handleSuggestionConfirm = async (selectedIncome: AnalysisIncome[], selectedExpenses: AnalysisExpense[]) => {
+    if (!pendingAnalysisId && !id) return;
+
+    const analysisId = pendingAnalysisId || id;
+    if (!analysisId) return;
+
+    try {
+      // Update analysis with selected items
+      await updateAnalysisMutation.mutateAsync({
+        id: analysisId,
+        data: {
+          income: selectedIncome,
+          expenses: selectedExpenses,
+        },
+      });
+
+      // Update local state
+      setAnalysisData((prev) => ({
+        ...prev,
+        income: selectedIncome,
+        expenses: selectedExpenses,
+      }));
+
+      // Close modal and clear pending ID
+      setSuggestionModalOpen(false);
+      setPendingAnalysisId(null);
+    } catch (error) {
+      console.error('Error updating analysis with default items:', error);
+    }
+  };
+
+  // Handle suggestion modal close (skip adding items)
+  const handleSuggestionClose = () => {
+    setSuggestionModalOpen(false);
+    setPendingAnalysisId(null);
+  };
 
   const tabs = [
     { label: t('personalFinancialAnalysis.steps.step1.title'), key: 'step1' },
@@ -298,6 +350,9 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
                 label={tab.label}
                 id={`analysis-tab-${index}`}
                 aria-controls={`analysis-tabpanel-${index}`}
+                sx={{
+                  fontWeight: 600
+                }}
               />
             ))}
           </Tabs>
@@ -326,6 +381,7 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
                 // Portfolio unlinking is handled in Step1CashFlowSurvey component
                 // This callback can be used for additional actions if needed
               }}
+              onOpenSuggestionModal={() => setSuggestionModalOpen(true)}
             />
           )}
         </TabPanel>
@@ -417,6 +473,13 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
           </TabPanel>
         </Paper>
       </Box>
+
+      {/* Default Items Suggestion Modal */}
+      <DefaultItemsSuggestionModal
+        open={suggestionModalOpen}
+        onClose={handleSuggestionClose}
+        onConfirm={handleSuggestionConfirm}
+      />
     </Box>
   );
 };

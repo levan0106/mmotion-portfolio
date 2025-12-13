@@ -20,6 +20,7 @@ import { GoalModule } from './modules/goal/goal.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { NotificationModule } from './notification/notification.module';
 import { FinancialFreedomModule } from './modules/financial-freedom/financial-freedom.module';
+import { PersonalFinancialAnalysisModule } from './modules/personal-financial-analysis/personal-financial-analysis.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestLoggingController } from './test-logging.controller';
@@ -88,6 +89,7 @@ import { TestLoggingController } from './test-logging.controller';
       NotesModule,
       NotificationModule,
       FinancialFreedomModule,
+      PersonalFinancialAnalysisModule,
   ],
   controllers: [AppController, TestLoggingController],
   providers: [AppService],

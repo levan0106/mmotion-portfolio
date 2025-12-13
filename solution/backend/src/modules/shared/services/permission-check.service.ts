@@ -26,25 +26,32 @@ export class PermissionCheckService {
    * @param portfolioId Portfolio ID
    * @param accountId Account ID
    * @param context Context of the request (e.g., 'investor', 'dashboard', 'portfolios')
+   * @param portfolioAccountId Optional: portfolio accountId if already known (to avoid expensive query)
    * @returns PermissionResult with access level and permissions
    */
   async checkPortfolioPermission(
     portfolioId: string,
     accountId: string,
-    context: 'investor' | 'dashboard' | 'portfolios' | 'api' = 'api'
+    context: 'investor' | 'dashboard' | 'portfolios' | 'api' = 'api',
+    portfolioAccountId?: string
   ): Promise<PermissionResult> {
     try {
-      // First check if account is the owner
-      const portfolio = await this.portfolioService.getPortfolioDetails(portfolioId);
-      if (!portfolio) {
-        return {
-          hasAccess: false,
-          accessLevel: AccessLevel.VIEW_ONLY,
-          isOwner: false
-        };
+      // Get portfolio accountId (use provided value or query from database)
+      let ownerAccountId = portfolioAccountId;
+      if (!ownerAccountId) {
+        // Only query accountId, not full portfolio details (much faster)
+        const portfolio = await this.portfolioService.getPortfolioAccountId(portfolioId);
+        if (!portfolio) {
+          return {
+            hasAccess: false,
+            accessLevel: AccessLevel.VIEW_ONLY,
+            isOwner: false
+          };
+        }
+        ownerAccountId = portfolio.accountId;
       }
 
-      const isOwner = portfolio.accountId === accountId;
+      const isOwner = ownerAccountId === accountId;
       
       if (isOwner) {
         return {
@@ -88,36 +95,110 @@ export class PermissionCheckService {
 
   /**
    * Check if account has access to multiple portfolios
+   * Optimized to batch query accountIds and permissions
    */
   async checkMultiplePortfolioPermissions(
     portfolioIds: string[],
     accountId: string,
-    context: 'investor' | 'dashboard' | 'portfolios' | 'api' = 'api'
+    context: 'investor' | 'dashboard' | 'portfolios' | 'api' = 'api',
+    portfolioAccountIds?: Map<string, string> // Optional: map of portfolioId -> accountId to avoid queries
   ): Promise<{ [portfolioId: string]: PermissionResult }> {
     const results: { [portfolioId: string]: PermissionResult } = {};
     
-    await Promise.all(
-      portfolioIds.map(async (portfolioId) => {
-        results[portfolioId] = await this.checkPortfolioPermission(portfolioId, accountId, context);
-      })
-    );
+    if (portfolioIds.length === 0) {
+      return results;
+    }
+
+    // Batch query portfolio accountIds if not provided
+    let accountIdMap = portfolioAccountIds;
+    if (!accountIdMap) {
+      const portfolioAccountIdList = await this.portfolioService.getPortfolioAccountIds(portfolioIds);
+      accountIdMap = new Map(portfolioAccountIdList.map(p => [p.portfolioId, p.accountId]));
+    }
+
+    // Batch query all permissions at once
+    const permissions = await this.portfolioPermissionService.getAccountPermissionsForPortfolios(portfolioIds, accountId);
+    const permissionMap = new Map(permissions.map(p => [p.portfolioId, p]));
+
+    // Build results using batch-queried data
+    for (const portfolioId of portfolioIds) {
+      const ownerAccountId = accountIdMap.get(portfolioId);
+      if (!ownerAccountId) {
+        results[portfolioId] = {
+          hasAccess: false,
+          accessLevel: AccessLevel.VIEW_ONLY,
+          isOwner: false
+        };
+        continue;
+      }
+
+      const isOwner = ownerAccountId === accountId;
+      
+      if (isOwner) {
+        results[portfolioId] = {
+          hasAccess: true,
+          accessLevel: AccessLevel.FULL_ACCESS,
+          isOwner: true,
+          permissionType: 'OWNER'
+        };
+        continue;
+      }
+
+      const permission = permissionMap.get(portfolioId);
+      if (!permission) {
+        results[portfolioId] = {
+          hasAccess: false,
+          accessLevel: AccessLevel.VIEW_ONLY,
+          isOwner: false
+        };
+        continue;
+      }
+
+      const hasAccess = this.determineAccess(permission.permissionType, context);
+      const accessLevel = this.getAccessLevel(permission.permissionType, context);
+
+      results[portfolioId] = {
+        hasAccess,
+        accessLevel,
+        isOwner: permission.permissionType === 'OWNER',
+        permissionType: permission.permissionType
+      };
+    }
 
     return results;
   }
 
   /**
    * Get all accessible portfolios for an account with permission details
+   * Optimized to use portfolio data already loaded instead of re-querying
    */
   async getAccessiblePortfoliosWithPermissions(
     accountId: string,
     context: 'investor' | 'dashboard' | 'portfolios' | 'api' = 'api'
   ) {
-    // Get all accessible portfolios
+    // Get all accessible portfolios (already includes real-time calculations)
     const portfolios = await this.portfolioService.getAccessiblePortfoliosByAccount(accountId);
     
-    // Check permissions for each portfolio
+    if (portfolios.length === 0) {
+      return {
+        portfolios: [],
+        permissions: {}
+      };
+    }
+    
+    // Build accountId map from portfolios (already loaded, no need to query)
+    const portfolioAccountIdMap = new Map(
+      portfolios.map(p => [p.portfolioId, p.accountId])
+    );
+    
+    // Check permissions for each portfolio (optimized with batch queries)
     const portfolioIds = portfolios.map(p => p.portfolioId);
-    const permissions = await this.checkMultiplePortfolioPermissions(portfolioIds, accountId, context);
+    const permissions = await this.checkMultiplePortfolioPermissions(
+      portfolioIds, 
+      accountId, 
+      context,
+      portfolioAccountIdMap // Pass accountIds to avoid re-querying
+    );
     
     // Filter portfolios based on access and add userPermission field
     const accessiblePortfolios = portfolios

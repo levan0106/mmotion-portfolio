@@ -146,23 +146,40 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
 
 
   // Calculate sub-blocks for Liabilities and Net Assets parent block (Debt and Net Assets)
+  // When netAssets is negative, we need to show it to indicate insolvency
+  const isNegativeNetAssets = netAssets < 0;
   const totalLiabilitiesAndNetAssets = summaryMetrics.totalDebt + netAssets;
+  
+  // For percentage calculation, use absolute values to ensure proper visualization
+  // The total for percentage should be the sum of absolute values when netAssets is negative
+  const totalForPercentage = isNegativeNetAssets 
+    ? summaryMetrics.totalDebt + Math.abs(netAssets)
+    : totalLiabilitiesAndNetAssets;
+  
   const liabilitiesAndNetAssetsSubBlocks: SubBlock[] = [
     {
       id: 'debt',
       label: t('personalFinancialAnalysis.charts.balanceSheet.liabilities'),
       value: summaryMetrics.totalDebt,
       color: theme.palette.warning.main,
-      percentage: totalLiabilitiesAndNetAssets > 0 ? (summaryMetrics.totalDebt / totalLiabilitiesAndNetAssets) * 100 : 0,
+      percentage: totalForPercentage > 0 ? (summaryMetrics.totalDebt / totalForPercentage) * 100 : 0,
     },
     {
       id: 'netAssets',
-      label: t('personalFinancialAnalysis.charts.balanceSheet.netAssets'),
-      value: netAssets,
-      color: theme.palette.success.main,
-      percentage: totalLiabilitiesAndNetAssets > 0 ? (netAssets / totalLiabilitiesAndNetAssets) * 100 : 0,
+      label: isNegativeNetAssets 
+        ? t('personalFinancialAnalysis.charts.balanceSheet.negativeNetAssets', 'Tài sản thuần (Âm)')
+        : t('personalFinancialAnalysis.charts.balanceSheet.netAssets'),
+      value: Math.abs(netAssets), // Store absolute value for sizing, but we'll display the actual value
+      color: isNegativeNetAssets ? theme.palette.error.main : theme.palette.success.main,
+      percentage: totalForPercentage > 0 ? (Math.abs(netAssets) / totalForPercentage) * 100 : 0,
     },
-  ].filter((item) => item.value > 0);
+  ].filter((item) => {
+    // Only filter out zero values, keep negative netAssets to show insolvency
+    if (item.id === 'netAssets' && netAssets < 0) {
+      return true; // Always show negative netAssets
+    }
+    return item.value > 0; // Filter out zero values for other items
+  });
 
   // Define blocks with positions
   const minBlockHeight = 50; // Minimum height for a block
@@ -428,17 +445,19 @@ export const BalanceSheetChart: React.FC<BalanceSheetChartProps> = ({
                                   >
                                     {child.label}
                                   </text>
-                                  {/* Child value */}
-                                  <text
-                                    x={block.x + block.width / 2}
-                                    y={childY + childHeight / 2 + 10}
-                                    textAnchor="middle"
-                                    fill="white"
-                                    fontSize={isMobile ? 8 : 9}
-                                    fontWeight={500}
-                                  >
-                                    {formatCurrency(child.value, baseCurrency)}
-                                  </text>
+                              {/* Child value - show negative sign for negative netAssets */}
+                              <text
+                                x={block.x + block.width / 2}
+                                y={childY + childHeight / 2 + 10}
+                                textAnchor="middle"
+                                fill="white"
+                                fontSize={isMobile ? 8 : 9}
+                                fontWeight={500}
+                              >
+                                {child.id === 'netAssets' && isNegativeNetAssets
+                                  ? `-${formatCurrency(child.value, baseCurrency)}`
+                                  : formatCurrency(child.value, baseCurrency)}
+                              </text>
                                   {/* Child percentage */}
                                   {childHeight >= 40 && (
                                     <text

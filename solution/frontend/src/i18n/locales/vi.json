@@ -764,6 +764,12 @@
       "insurance": "Bảo hiểm",
       "other": "Chi phí khác"
     },
+    "defaultItems": {
+      "title": "Gợi ý các mục mặc định",
+      "description": "Chọn các mục thu nhập và chi tiêu phù hợp với bạn. Bạn có thể chỉnh sửa sau khi thêm vào phân tích.",
+      "suggestItems": "Gợi ý các mục",
+      "openSuggestion": "Gợi ý các mục"
+    },
     "scenarios": {
       "title": "Kịch bản",
       "create": "Tạo kịch bản",

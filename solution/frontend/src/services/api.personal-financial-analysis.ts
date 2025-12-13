@@ -29,7 +29,7 @@ const generateUUID = (): string => {
 };
 
 // Mock data flag - set to false when backend is ready
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 // Mock data storage (in-memory)
 let mockAnalyses: PersonalFinancialAnalysis[] = [];
@@ -131,7 +131,7 @@ const generateMockAnalysis = (): PersonalFinancialAnalysis => {
 /**
  * Get all analyses for current user
  */
-export async function getAllAnalyses(): Promise<AnalysisResponse[]> {
+export async function getAllAnalyses(accountId: string): Promise<AnalysisResponse[]> {
   if (USE_MOCK_DATA) {
     // Return mock data
     if (mockAnalyses.length === 0) {
@@ -144,7 +144,7 @@ export async function getAllAnalyses(): Promise<AnalysisResponse[]> {
   }
 
   const response = await apiService.api.get<AnalysisResponse[]>(
-    '/api/v1/personal-financial-analysis'
+    `/api/v1/personal-financial-analysis?accountId=${accountId}`
   );
   return response.data;
 }
@@ -152,7 +152,7 @@ export async function getAllAnalyses(): Promise<AnalysisResponse[]> {
 /**
  * Get analysis by ID
  */
-export async function getAnalysisById(id: string): Promise<AnalysisResponse> {
+export async function getAnalysisById(id: string, accountId: string): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === id);
     if (!analysis) {
@@ -170,7 +170,7 @@ export async function getAnalysisById(id: string): Promise<AnalysisResponse> {
   }
 
   const response = await apiService.api.get<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${id}`
+    `/api/v1/personal-financial-analysis/${id}?accountId=${accountId}`
   );
   return response.data;
 }
@@ -179,7 +179,8 @@ export async function getAnalysisById(id: string): Promise<AnalysisResponse> {
  * Create new analysis
  */
 export async function createAnalysis(
-  data: CreateAnalysisRequest
+  data: CreateAnalysisRequest,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const newAnalysis: PersonalFinancialAnalysis = {
@@ -206,7 +207,7 @@ export async function createAnalysis(
   }
 
   const response = await apiService.api.post<AnalysisResponse>(
-    '/api/v1/personal-financial-analysis',
+    `/api/v1/personal-financial-analysis?accountId=${accountId}`,
     data
   );
   return response.data;
@@ -217,7 +218,8 @@ export async function createAnalysis(
  */
 export async function updateAnalysis(
   id: string,
-  data: UpdateAnalysisRequest
+  data: UpdateAnalysisRequest,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const index = mockAnalyses.findIndex((a) => a.id === id);
@@ -236,7 +238,7 @@ export async function updateAnalysis(
   }
 
   const response = await apiService.api.put<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${id}`,
+    `/api/v1/personal-financial-analysis/${id}?accountId=${accountId}`,
     data
   );
   return response.data;
@@ -245,7 +247,7 @@ export async function updateAnalysis(
 /**
  * Delete analysis
  */
-export async function deleteAnalysis(id: string): Promise<void> {
+export async function deleteAnalysis(id: string, accountId: string): Promise<void> {
   if (USE_MOCK_DATA) {
     const index = mockAnalyses.findIndex((a) => a.id === id);
     if (index !== -1) {
@@ -256,7 +258,7 @@ export async function deleteAnalysis(id: string): Promise<void> {
     });
   }
 
-  await apiService.api.delete(`/api/v1/personal-financial-analysis/${id}`);
+  await apiService.api.delete(`/api/v1/personal-financial-analysis/${id}?accountId=${accountId}`);
 }
 
 /**
@@ -264,7 +266,8 @@ export async function deleteAnalysis(id: string): Promise<void> {
  */
 export async function linkPortfolio(
   analysisId: string,
-  portfolioId: string
+  portfolioId: string,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -316,7 +319,7 @@ export async function linkPortfolio(
   }
 
   const response = await apiService.api.post<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/link-portfolio`,
+    `/api/v1/personal-financial-analysis/${analysisId}/link-portfolio?accountId=${accountId}`,
     { portfolioId } as LinkPortfolioRequest
   );
   return response.data;
@@ -327,7 +330,8 @@ export async function linkPortfolio(
  */
 export async function unlinkPortfolio(
   analysisId: string,
-  portfolioId: string
+  portfolioId: string,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -353,7 +357,7 @@ export async function unlinkPortfolio(
   }
 
   const response = await apiService.api.delete<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/unlink-portfolio/${portfolioId}`
+    `/api/v1/personal-financial-analysis/${analysisId}/unlink-portfolio/${portfolioId}?accountId=${accountId}`
   );
   return response.data;
 }
@@ -363,7 +367,8 @@ export async function unlinkPortfolio(
  */
 export async function createScenario(
   analysisId: string,
-  scenario: CreateScenarioRequest
+  scenario: CreateScenarioRequest,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -398,7 +403,7 @@ export async function createScenario(
   }
 
   const response = await apiService.api.post<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/scenarios`,
+    `/api/v1/personal-financial-analysis/${analysisId}/scenarios?accountId=${accountId}`,
     scenario
   );
   return response.data;
@@ -410,7 +415,8 @@ export async function createScenario(
 export async function updateScenario(
   analysisId: string,
   scenarioId: string,
-  scenario: UpdateScenarioRequest
+  scenario: UpdateScenarioRequest,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -446,7 +452,7 @@ export async function updateScenario(
   }
 
   const response = await apiService.api.put<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/scenarios/${scenarioId}`,
+    `/api/v1/personal-financial-analysis/${analysisId}/scenarios/${scenarioId}?accountId=${accountId}`,
     scenario
   );
   return response.data;
@@ -457,7 +463,8 @@ export async function updateScenario(
  */
 export async function deleteScenario(
   analysisId: string,
-  scenarioId: string
+  scenarioId: string,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -484,7 +491,7 @@ export async function deleteScenario(
   }
 
   const response = await apiService.api.delete<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/scenarios/${scenarioId}`
+    `/api/v1/personal-financial-analysis/${analysisId}/scenarios/${scenarioId}?accountId=${accountId}`
   );
   return response.data;
 }
@@ -494,7 +501,8 @@ export async function deleteScenario(
  */
 export async function linkPlan(
   analysisId: string,
-  planId: string
+  planId: string,
+  accountId: string
 ): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -517,7 +525,7 @@ export async function linkPlan(
   }
 
   const response = await apiService.api.post<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/link-plan`,
+    `/api/v1/personal-financial-analysis/${analysisId}/link-plan?accountId=${accountId}`,
     { planId } as LinkPlanRequest
   );
   return response.data;
@@ -526,7 +534,7 @@ export async function linkPlan(
 /**
  * Unlink Financial Freedom Plan
  */
-export async function unlinkPlan(analysisId: string): Promise<AnalysisResponse> {
+export async function unlinkPlan(analysisId: string, accountId: string): Promise<AnalysisResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
     if (!analysis) {
@@ -548,7 +556,7 @@ export async function unlinkPlan(analysisId: string): Promise<AnalysisResponse> 
   }
 
   const response = await apiService.api.delete<AnalysisResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/unlink-plan`
+    `/api/v1/personal-financial-analysis/${analysisId}/unlink-plan?accountId=${accountId}`
   );
   return response.data;
 }
@@ -557,7 +565,8 @@ export async function unlinkPlan(analysisId: string): Promise<AnalysisResponse> 
  * Calculate metrics
  */
 export async function calculateMetrics(
-  analysisId: string
+  analysisId: string,
+  accountId: string
 ): Promise<SummaryMetricsResponse> {
   if (USE_MOCK_DATA) {
     const analysis = mockAnalyses.find((a) => a.id === analysisId);
@@ -583,7 +592,7 @@ export async function calculateMetrics(
   }
 
   const response = await apiService.api.get<SummaryMetricsResponse>(
-    `/api/v1/personal-financial-analysis/${analysisId}/calculate-metrics`
+    `/api/v1/personal-financial-analysis/${analysisId}/calculate-metrics?accountId=${accountId}`
   );
   return response.data;
 }

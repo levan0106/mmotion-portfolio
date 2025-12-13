@@ -249,6 +249,7 @@ export interface DebtFormData {
 
 // Component prop types
 export interface Step1CashFlowSurveyProps {
+  onOpenSuggestionModal?: () => void;
   analysis: PersonalFinancialAnalysis;
   onUpdate: (updates: Partial<UpdateAnalysisRequest>) => void;
   onPortfolioLink: (portfolioId: string) => Promise<void>;

@@ -24,14 +24,17 @@ import {
   CreateScenarioRequest,
   UpdateScenarioRequest,
 } from '../types/personalFinancialAnalysis.types';
+import { useAccount } from '../contexts/AccountContext';
 
 /**
  * Hook to get all analyses for current user
  */
 export const useAnalyses = () => {
+  const { accountId } = useAccount();
   return useQuery({
-    queryKey: ['personalFinancialAnalyses'],
-    queryFn: getAllAnalyses,
+    queryKey: ['personalFinancialAnalyses', accountId],
+    queryFn: () => getAllAnalyses(accountId),
+    enabled: !!accountId,
   });
 };
 
@@ -39,10 +42,11 @@ export const useAnalyses = () => {
  * Hook to get single analysis by ID
  */
 export const useAnalysis = (id: string | undefined) => {
+  const { accountId } = useAccount();
   return useQuery({
-    queryKey: ['personalFinancialAnalysis', id],
-    queryFn: () => getAnalysisById(id!),
-    enabled: !!id,
+    queryKey: ['personalFinancialAnalysis', id, accountId],
+    queryFn: () => getAnalysisById(id!, accountId),
+    enabled: !!id && !!accountId,
   });
 };
 
@@ -51,9 +55,10 @@ export const useAnalysis = (id: string | undefined) => {
  */
 export const useCreateAnalysis = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
-    mutationFn: (data: CreateAnalysisRequest) => createAnalysis(data),
+    mutationFn: (data: CreateAnalysisRequest) => createAnalysis(data, accountId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personalFinancialAnalyses'] });
     },
@@ -65,10 +70,11 @@ export const useCreateAnalysis = () => {
  */
 export const useUpdateAnalysis = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateAnalysisRequest }) =>
-      updateAnalysis(id, data),
+      updateAnalysis(id, data, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['personalFinancialAnalyses'] });
       queryClient.invalidateQueries({
@@ -83,9 +89,10 @@ export const useUpdateAnalysis = () => {
  */
 export const useDeleteAnalysis = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
-    mutationFn: (id: string) => deleteAnalysis(id),
+    mutationFn: (id: string) => deleteAnalysis(id, accountId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personalFinancialAnalyses'] });
     },
@@ -97,10 +104,11 @@ export const useDeleteAnalysis = () => {
  */
 export const useLinkPortfolio = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({ analysisId, portfolioId }: { analysisId: string; portfolioId: string }) =>
-      linkPortfolio(analysisId, portfolioId),
+      linkPortfolio(analysisId, portfolioId, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -115,10 +123,11 @@ export const useLinkPortfolio = () => {
  */
 export const useUnlinkPortfolio = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({ analysisId, portfolioId }: { analysisId: string; portfolioId: string }) =>
-      unlinkPortfolio(analysisId, portfolioId),
+      unlinkPortfolio(analysisId, portfolioId, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -133,6 +142,7 @@ export const useUnlinkPortfolio = () => {
  */
 export const useCreateScenario = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({
@@ -141,7 +151,7 @@ export const useCreateScenario = () => {
     }: {
       analysisId: string;
       scenario: CreateScenarioRequest;
-    }) => createScenario(analysisId, scenario),
+    }) => createScenario(analysisId, scenario, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -155,6 +165,7 @@ export const useCreateScenario = () => {
  */
 export const useUpdateScenario = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({
@@ -165,7 +176,7 @@ export const useUpdateScenario = () => {
       analysisId: string;
       scenarioId: string;
       scenario: UpdateScenarioRequest;
-    }) => updateScenario(analysisId, scenarioId, scenario),
+    }) => updateScenario(analysisId, scenarioId, scenario, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -179,6 +190,7 @@ export const useUpdateScenario = () => {
  */
 export const useDeleteScenario = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({
@@ -187,7 +199,7 @@ export const useDeleteScenario = () => {
     }: {
       analysisId: string;
       scenarioId: string;
-    }) => deleteScenario(analysisId, scenarioId),
+    }) => deleteScenario(analysisId, scenarioId, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -201,10 +213,11 @@ export const useDeleteScenario = () => {
  */
 export const useLinkPlan = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
     mutationFn: ({ analysisId, planId }: { analysisId: string; planId: string }) =>
-      linkPlan(analysisId, planId),
+      linkPlan(analysisId, planId, accountId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', variables.analysisId],
@@ -218,9 +231,10 @@ export const useLinkPlan = () => {
  */
 export const useUnlinkPlan = () => {
   const queryClient = useQueryClient();
+  const { accountId } = useAccount();
 
   return useMutation({
-    mutationFn: (analysisId: string) => unlinkPlan(analysisId),
+    mutationFn: (analysisId: string) => unlinkPlan(analysisId, accountId),
     onSuccess: (_, analysisId) => {
       queryClient.invalidateQueries({
         queryKey: ['personalFinancialAnalysis', analysisId],
@@ -233,10 +247,11 @@ export const useUnlinkPlan = () => {
  * Hook to calculate metrics
  */
 export const useCalculateMetrics = (analysisId: string | undefined) => {
+  const { accountId } = useAccount();
   return useQuery({
-    queryKey: ['personalFinancialAnalysisMetrics', analysisId],
-    queryFn: () => calculateMetrics(analysisId!),
-    enabled: !!analysisId,
+    queryKey: ['personalFinancialAnalysisMetrics', analysisId, accountId],
+    queryFn: () => calculateMetrics(analysisId!, accountId),
+    enabled: !!analysisId && !!accountId,
   });
 };
 

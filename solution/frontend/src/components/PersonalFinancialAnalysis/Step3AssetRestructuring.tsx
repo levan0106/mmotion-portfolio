@@ -984,6 +984,16 @@ export const Step3AssetRestructuring: React.FC<Step3AssetRestructuringProps> = (
           icon={<EditIcon />}
           maxWidth="xl"
           fullWidth
+          actions={
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+              <ResponsiveButton
+                variant="contained"
+                onClick={() => setEditDataModalOpen(false)}
+              >
+                {t('common.close')}
+              </ResponsiveButton>
+            </Box>
+          }
         >
           <Box>
             <ResponsiveTypography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

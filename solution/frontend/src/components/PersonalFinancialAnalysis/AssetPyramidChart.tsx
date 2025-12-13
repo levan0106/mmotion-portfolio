@@ -7,8 +7,8 @@
  * - Risk Layer (Top)
  */
 
-import React, { useState } from 'react';
-import { Box, useTheme, Paper, Tooltip, Fade } from '@mui/material';
+import React, { useState, useRef } from 'react';
+import { Box, useTheme, Paper } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { SummaryMetrics } from '../../types/personalFinancialAnalysis.types';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +44,8 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [hoveredLayer, setHoveredLayer] = useState<AssetLayer | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const layerData = [
     {
@@ -102,14 +104,17 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
     );
   }
 
-  // Calculate pyramid widths (base is widest, top is narrowest)
-  // Layer order: RISK (top, narrowest) -> GROWTH -> INCOME_GENERATION -> PROTECTION (bottom, widest)
-  const maxWidth = 100; // Percentage
-  const layerWidths = LAYER_ORDER.map((_, index) => {
-    const layerCount = LAYER_ORDER.length;
-    // index 0 (RISK) = narrowest (25%), index 3 (PROTECTION) = widest (100%)
-    return maxWidth * ((index + 1) / layerCount);
-  });
+  // Calculate equal height for all layers
+  // Each layer will have the same height, but width varies based on value relative to max layer value
+  // Height is always calculated based on 4 layers total, even if not all layers have data
+  // Reserve space for legend (approximately 60px)
+  const legendHeight = 60;
+  const availableHeight = height - legendHeight;
+  const totalLayers = 4; // Always use 4 layers for height calculation
+  const equalLayerHeight = availableHeight / totalLayers;
+  
+  // Find the maximum value among all layers to use as reference for width calculation
+  const maxLayerValue = Math.max(...layerData.map((data) => data.value), 0);
 
   // Calculate summary data for tooltip
   const summaryData = {
@@ -200,96 +205,171 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
     </Paper>
   );
 
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (hoveredLayer) {
+      setMousePosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredLayer(null);
+    setMousePosition(null);
+  };
+
+  const handleLayerMouseEnter = (layer: AssetLayer, event: React.MouseEvent<HTMLDivElement>) => {
+    setHoveredLayer(layer);
+    setMousePosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
+
   return (
-    <Tooltip
-      title={SummaryTooltip}
-      arrow
-      placement="top"
-      TransitionComponent={Fade}
-      TransitionProps={{ timeout: 200 }}
-      componentsProps={{
-        tooltip: {
-          sx: {
-            backgroundColor: 'transparent',
-            padding: 0,
-            maxWidth: 'none',
-          },
-        },
-        arrow: {
-          sx: {
-            color: theme.palette.background.paper,
-            '&::before': {
-              backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}`,
-            },
-          },
-        },
-      }}
-    >
+    <Box>
       <Box
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         sx={{
-          height,
+          height: availableHeight,
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
           alignItems: 'center',
           cursor: 'pointer',
+          width: '100%',
         }}
       >
-        {LAYER_ORDER.map((layer, index) => {
-        const data = layerData.find((d) => d.layer === layer);
-        if (!data || data.value === 0) return null;
+          {(() => {
+          // Filter and sort layers by LAYER_ORDER to maintain correct order
+          const sortedLayers = LAYER_ORDER.filter(layer => {
+            const data = layerData.find((d) => d.layer === layer);
+            return data && data.value > 0;
+          });
 
-        const width = layerWidths[index];
-        const heightPercent = summaryMetrics.totalAssets > 0
-          ? (data.value / summaryMetrics.totalAssets) * 100
-          : 0;
-        const actualHeight = (height * heightPercent) / 100;
+          return sortedLayers.map((layer) => {
+          const data = layerData.find((d) => d.layer === layer);
+          if (!data || data.value === 0) return null;
 
-        return (
-          <Box
-            key={layer}
-            onMouseEnter={() => setHoveredLayer(layer)}
-            onMouseLeave={() => setHoveredLayer(null)}
-            sx={{
-              width: `${width}%`,
-              height: actualHeight,
-              backgroundColor: data.color,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-              border: `2px solid ${theme.palette.background.paper}`,
-              borderTop: index === 0 ? `2px solid ${theme.palette.background.paper}` : 'none',
-              borderBottom: index < LAYER_ORDER.length - 1 ? `2px solid ${theme.palette.background.paper}` : 'none',
-              transition: 'all 0.3s ease',
-              opacity: hoveredLayer && hoveredLayer !== layer ? 0.6 : 1,
-              transform: hoveredLayer === layer ? 'scale(1.02)' : 'scale(1)',
-              zIndex: hoveredLayer === layer ? 10 : 1,
-              boxShadow: hoveredLayer === layer ? theme.shadows[4] : 'none',
-            }}
-          >
-              <ResponsiveTypography
-                variant="caption"
-                sx={{
-                  color: 'white',
-                  fontWeight: 500,
-                  textAlign: 'center',
-                  px: 1,
-                  mt: 0.5,
-                  fontSize: '0.7rem',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                }}
-              >
-                {data.percentage.toFixed(1)}%
-              </ResponsiveTypography>
-            </Box>
-        );
-      })}
+          // Width is based on value relative to the maximum layer value
+          // The layer with the maximum value will have 100% width
+          const widthPercent = maxLayerValue > 0 
+            ? (data.value / maxLayerValue) * 100 
+            : 0;
+          const actualWidth = `${widthPercent}%`;
+          
+          // Height is equal for all layers (always based on 4 layers total)
+          const actualHeight = equalLayerHeight;
+          
+          // Calculate Y position based on LAYER_ORDER index (to maintain correct position even if some layers are missing)
+          const layerOrderIndex = LAYER_ORDER.indexOf(layer);
+          const yPosition = layerOrderIndex * equalLayerHeight;
 
-      {/* Legend */}
+          return (
+            <Box
+              key={layer}
+              onMouseEnter={(e) => handleLayerMouseEnter(layer, e)}
+              onMouseMove={(e) => {
+                if (hoveredLayer === layer) {
+                  setMousePosition({
+                    x: e.clientX,
+                    y: e.clientY,
+                  });
+                }
+              }}
+              onMouseLeave={() => {
+                setHoveredLayer(null);
+                setMousePosition(null);
+              }}
+              sx={{
+                width: actualWidth,
+                height: actualHeight,
+                backgroundColor: data.color,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'absolute',
+                top: yPosition,
+                left: '50%',
+                transform: hoveredLayer === layer 
+                  ? 'translateX(-50%) scale(1.02)' 
+                  : 'translateX(-50%) scale(1)',
+                border: `2px solid ${theme.palette.background.paper}`,
+                borderRadius: 1,
+                transition: 'all 0.3s ease',
+                opacity: hoveredLayer && hoveredLayer !== layer ? 0.6 : 1,
+                zIndex: hoveredLayer === layer ? 10 : totalLayers - layerOrderIndex,
+                boxShadow: hoveredLayer === layer ? theme.shadows[4] : 'none',
+              }}
+            >
+                {/* Background for text readability when layer is small */}
+                <Box
+                  sx={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  {/* <ResponsiveTypography
+                    variant="caption"
+                    sx={{
+                      color: 'white',
+                      fontWeight: 500,
+                      textAlign: 'center',
+                      fontSize: '0.7rem',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    {data.label}
+                  </ResponsiveTypography> */}
+                  <ResponsiveTypography
+                    variant="caption"
+                    sx={{
+                      color: 'white',
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      fontSize: '0.65rem',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    {data.percentage.toFixed(1)}%
+                  </ResponsiveTypography>
+                </Box>
+              </Box>
+          );
+          });
+          })()}
+      </Box>
+
+      {/* Custom Tooltip that follows mouse cursor */}
+      {hoveredLayer !== null && mousePosition && (
+        <Box
+          sx={{
+            position: 'fixed',
+            left: `${mousePosition.x}px`,
+            top: `${mousePosition.y - 10}px`,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 1500,
+            pointerEvents: 'none',
+            mb: 1,
+          }}
+        >
+          {SummaryTooltip}
+        </Box>
+      )}
+
+      {/* Legend - Moved to bottom */}
       <Box
         sx={{
           mt: 2,
@@ -322,8 +402,7 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
           </Box>
         ))}
       </Box>
-      </Box>
-    </Tooltip>
+    </Box>
   );
 };
 

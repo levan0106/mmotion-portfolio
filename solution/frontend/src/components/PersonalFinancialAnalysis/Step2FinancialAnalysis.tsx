@@ -549,46 +549,48 @@ export const Step2FinancialAnalysis: React.FC<Step2FinancialAnalysisProps> = ({
             
             {/* Income Section */}
             <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    backgroundColor: theme.palette.success.main + '15',
-                    color: theme.palette.success.main,
-                    mr: 1.5,
-                  }}
-                >
-                  <IncomeIcon />
-                </Box>
-                <ResponsiveTypography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {t('personalFinancialAnalysis.incomeExpenseBreakdown.income')}
-                </ResponsiveTypography>
-              </Box>
               <TableContainer>
                 <Table size="small" sx={{ tableLayout: 'fixed' }}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '50%', px: 2 }}>
-                        {incomeCategoryData.length > 0 && (
-                          <IconButton
-                            size="small"
-                            onClick={() => setIncomeExpanded(!incomeExpanded)}
-                            sx={{ p: 0.5, ml: -1 }}
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 28,
+                              height: 28,
+                              borderRadius: 1,
+                              backgroundColor: theme.palette.success.main + '15',
+                              color: theme.palette.success.main,
+                              mr: 1,
+                            }}
                           >
-                            {incomeExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                          </IconButton>
-                        )}
+                            <IncomeIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <ResponsiveTypography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {t('personalFinancialAnalysis.incomeExpenseBreakdown.income')}
+                          </ResponsiveTypography>
+                        </Box>
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
                         {t('personalFinancialAnalysis.incomeExpenseBreakdown.monthly')}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
-                        {t('personalFinancialAnalysis.incomeExpenseBreakdown.annual')}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                          {t('personalFinancialAnalysis.incomeExpenseBreakdown.annual')}
+                          {incomeCategoryData.length > 0 && (
+                            <IconButton
+                              size="small"
+                              onClick={() => setIncomeExpanded(!incomeExpanded)}
+                              sx={{ p: 0.5, ml: 0.5 }}
+                            >
+                              {incomeExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                            </IconButton>
+                          )}
+                        </Box>
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -624,46 +626,48 @@ export const Step2FinancialAnalysis: React.FC<Step2FinancialAnalysisProps> = ({
 
             {/* Expenses Section */}
             <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    backgroundColor: theme.palette.error.main + '15',
-                    color: theme.palette.error.main,
-                    mr: 1.5,
-                  }}
-                >
-                  <ExpenseIcon />
-                </Box>
-                <ResponsiveTypography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {t('personalFinancialAnalysis.incomeExpenseBreakdown.expenses')}
-                </ResponsiveTypography>
-              </Box>
               <TableContainer>
                 <Table size="small" sx={{ tableLayout: 'fixed' }}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '50%', px: 2 }}>
-                        {expenseCategoryData.length > 0 && (
-                          <IconButton
-                            size="small"
-                            onClick={() => setExpensesExpanded(!expensesExpanded)}
-                            sx={{ p: 0.5, ml: -1 }}
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 28,
+                              height: 28,
+                              borderRadius: 1,
+                              backgroundColor: theme.palette.error.main + '15',
+                              color: theme.palette.error.main,
+                              mr: 1,
+                            }}
                           >
-                            {expensesExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                          </IconButton>
-                        )}
+                            <ExpenseIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <ResponsiveTypography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {t('personalFinancialAnalysis.incomeExpenseBreakdown.expenses')}
+                          </ResponsiveTypography>
+                        </Box>
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
                         {t('personalFinancialAnalysis.incomeExpenseBreakdown.monthly')}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
-                        {t('personalFinancialAnalysis.incomeExpenseBreakdown.annual')}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                          {t('personalFinancialAnalysis.incomeExpenseBreakdown.annual')}
+                          {expenseCategoryData.length > 0 && (
+                            <IconButton
+                              size="small"
+                              onClick={() => setExpensesExpanded(!expensesExpanded)}
+                              sx={{ p: 0.5, ml: 0.5 }}
+                            >
+                              {expensesExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                            </IconButton>
+                          )}
+                        </Box>
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -733,35 +737,36 @@ export const Step2FinancialAnalysis: React.FC<Step2FinancialAnalysisProps> = ({
 
             {/* Savings Section */}
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    backgroundColor: (incomeExpenseBreakdown.remainingAnnualSavings >= 0 ? theme.palette.success.main : theme.palette.error.main) + '15',
-                    color: incomeExpenseBreakdown.remainingAnnualSavings >= 0 ? theme.palette.success.main : theme.palette.error.main,
-                    mr: 1.5,
-                  }}
-                >
-                  <SavingsIcon />
-                </Box>
-                <ResponsiveTypography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {t('personalFinancialAnalysis.incomeExpenseBreakdown.savings')}
-                </ResponsiveTypography>
-              </Box>
               <TableContainer>
-                <Table size="small">
+                <Table size="small" sx={{ tableLayout: 'fixed' }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '50%' }}></TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%' }}>
+                      <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '50%', px: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 28,
+                              height: 28,
+                              borderRadius: 1,
+                              backgroundColor: (incomeExpenseBreakdown.remainingAnnualSavings >= 0 ? theme.palette.success.main : theme.palette.error.main) + '15',
+                              color: incomeExpenseBreakdown.remainingAnnualSavings >= 0 ? theme.palette.success.main : theme.palette.error.main,
+                              mr: 1,
+                            }}
+                          >
+                            <SavingsIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <ResponsiveTypography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {t('personalFinancialAnalysis.incomeExpenseBreakdown.savings')}
+                          </ResponsiveTypography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
                         {t('personalFinancialAnalysis.incomeExpenseBreakdown.monthly')}
                       </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%' }}>
+                      <TableCell align="right" sx={{ fontWeight: 600, borderBottom: 'none', pb: 0.5, width: '25%', px: 2 }}>
                         {t('personalFinancialAnalysis.incomeExpenseBreakdown.annual')}
                       </TableCell>
                     </TableRow>

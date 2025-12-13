@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { PortfolioPermission, PortfolioPermissionType } from '../entities/portfolio-permission.entity';
 import { Portfolio } from '../entities/portfolio.entity';
 import { Account } from '../../shared/entities/account.entity';
@@ -239,6 +239,25 @@ export class PortfolioPermissionService {
   ): Promise<PortfolioPermission | null> {
     return await this.portfolioPermissionRepository.findOne({
       where: { portfolioId, accountId },
+    });
+  }
+
+  /**
+   * Batch get account's permissions for multiple portfolios
+   * Optimized to query all permissions in a single database call
+   */
+  async getAccountPermissionsForPortfolios(
+    portfolioIds: string[],
+    accountId: string,
+  ): Promise<PortfolioPermission[]> {
+    if (portfolioIds.length === 0) {
+      return [];
+    }
+    return await this.portfolioPermissionRepository.find({
+      where: {
+        portfolioId: In(portfolioIds),
+        accountId,
+      },
     });
   }
 

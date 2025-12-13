@@ -25,11 +25,10 @@ import {
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
-} from '@mui/icons-material';
-import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Link as LinkIcon,
+  Lightbulb as LightbulbIcon,
 } from '@mui/icons-material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
@@ -126,17 +125,25 @@ const AssetRow = memo(({
           size="small"
           variant="standard"
           fullWidth
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: '0.875rem',
+            },
+            '& .MuiInputBase-root': {
+              fontSize: '0.875rem',
+            },
+          }}
         >
-          <MenuItem value={AssetCategory.CONSUMER}>
+          <MenuItem value={AssetCategory.CONSUMER} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assets.categories.consumer')}
           </MenuItem>
-          <MenuItem value={AssetCategory.BUSINESS}>
+          <MenuItem value={AssetCategory.BUSINESS} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assets.categories.business')}
           </MenuItem>
-          <MenuItem value={AssetCategory.FINANCIAL}>
+          <MenuItem value={AssetCategory.FINANCIAL} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assets.categories.financial')}
           </MenuItem>
-          <MenuItem value={AssetCategory.REAL_ESTATE}>
+          <MenuItem value={AssetCategory.REAL_ESTATE} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assets.categories.realEstate')}
           </MenuItem>
         </TextField>
@@ -149,17 +156,25 @@ const AssetRow = memo(({
           size="small"
           variant="standard"
           fullWidth
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: '0.875rem',
+            },
+            '& .MuiInputBase-root': {
+              fontSize: '0.875rem',
+            },
+          }}
         >
-          <MenuItem value={AssetLayer.PROTECTION}>
+          <MenuItem value={AssetLayer.PROTECTION} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assetLayers.protection')}
           </MenuItem>
-          <MenuItem value={AssetLayer.INCOME_GENERATION}>
+          <MenuItem value={AssetLayer.INCOME_GENERATION} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assetLayers.incomeGeneration')}
           </MenuItem>
-          <MenuItem value={AssetLayer.GROWTH}>
+          <MenuItem value={AssetLayer.GROWTH} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assetLayers.growth')}
           </MenuItem>
-          <MenuItem value={AssetLayer.RISK}>
+          <MenuItem value={AssetLayer.RISK} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.assetLayers.risk')}
           </MenuItem>
         </TextField>
@@ -258,14 +273,22 @@ const IncomeRow = memo(({
           size="small"
           variant="standard"
           fullWidth
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: '0.875rem',
+            },
+            '& .MuiInputBase-root': {
+              fontSize: '0.875rem',
+            },
+          }}
         >
-          <MenuItem value={IncomeCategory.FAMILY}>
+          <MenuItem value={IncomeCategory.FAMILY} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.income.categories.family')}
           </MenuItem>
-          <MenuItem value={IncomeCategory.BUSINESS}>
+          <MenuItem value={IncomeCategory.BUSINESS} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.income.categories.business')}
           </MenuItem>
-          <MenuItem value={IncomeCategory.OTHER}>
+          <MenuItem value={IncomeCategory.OTHER} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.income.categories.other')}
           </MenuItem>
         </TextField>
@@ -350,17 +373,25 @@ const ExpenseRow = memo(({
           size="small"
           variant="standard"
           fullWidth
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: '0.875rem',
+            },
+            '& .MuiInputBase-root': {
+              fontSize: '0.875rem',
+            },
+          }}
         >
-          <MenuItem value={ExpenseCategory.LIVING}>
+          <MenuItem value={ExpenseCategory.LIVING} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.expenses.categories.living')}
           </MenuItem>
-          <MenuItem value={ExpenseCategory.EDUCATION}>
+          <MenuItem value={ExpenseCategory.EDUCATION} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.expenses.categories.education')}
           </MenuItem>
-          <MenuItem value={ExpenseCategory.INSURANCE}>
+          <MenuItem value={ExpenseCategory.INSURANCE} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.expenses.categories.insurance')}
           </MenuItem>
-          <MenuItem value={ExpenseCategory.OTHER}>
+          <MenuItem value={ExpenseCategory.OTHER} sx={{ fontSize: '0.875rem' }}>
             {t('personalFinancialAnalysis.expenses.categories.other')}
           </MenuItem>
         </TextField>
@@ -515,6 +546,7 @@ export const Step1CashFlowSurvey: React.FC<Step1CashFlowSurveyProps> = ({
   onPortfolioLink,
   onPortfolioUnlink,
   defaultCollapsed = false,
+  onOpenSuggestionModal,
 }) => {
   const { t } = useTranslation();
   const { baseCurrency, accountId } = useAccount();
@@ -731,7 +763,17 @@ export const Step1CashFlowSurvey: React.FC<Step1CashFlowSurveyProps> = ({
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2, gap: 2 }}>
           {/* <ResponsiveTypography variant="h6">
             {t('personalFinancialAnalysis.portfolioLinking.title')}
-          </ResponsiveTypography> */} 
+          </ResponsiveTypography> */}
+          {onOpenSuggestionModal && (
+            <ResponsiveButton
+              variant="text"
+              icon={<LightbulbIcon />}
+              onClick={onOpenSuggestionModal}
+              sx={{ color: 'primary.main' }}
+            >
+              {t('personalFinancialAnalysis.defaultItems.openSuggestion', 'Gợi ý các mục')}
+            </ResponsiveButton>
+          )}
           <ResponsiveButton
             variant="text"
             icon={<LinkIcon />}

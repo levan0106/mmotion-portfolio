@@ -136,6 +136,33 @@ export class PortfolioService {
    * @param portfolioId - Portfolio ID
    * @returns Promise<Portfolio>
    */
+  /**
+   * Get portfolio accountId only (lightweight query, no calculations)
+   * Used for permission checks to avoid expensive getPortfolioDetails calls
+   */
+  async getPortfolioAccountId(portfolioId: string): Promise<{ portfolioId: string; accountId: string } | null> {
+    const portfolio = await this.portfolioEntityRepository.findOne({
+      where: { portfolioId },
+      select: ['portfolioId', 'accountId'],
+    });
+    return portfolio ? { portfolioId: portfolio.portfolioId, accountId: portfolio.accountId } : null;
+  }
+
+  /**
+   * Batch get portfolio accountIds (lightweight query, no calculations)
+   * Used for permission checks to avoid expensive getPortfolioDetails calls
+   */
+  async getPortfolioAccountIds(portfolioIds: string[]): Promise<Array<{ portfolioId: string; accountId: string }>> {
+    if (portfolioIds.length === 0) {
+      return [];
+    }
+    const portfolios = await this.portfolioEntityRepository.find({
+      where: { portfolioId: In(portfolioIds) },
+      select: ['portfolioId', 'accountId'],
+    });
+    return portfolios.map(p => ({ portfolioId: p.portfolioId, accountId: p.accountId }));
+  }
+
   async getPortfolioDetails(portfolioId: string): Promise<Portfolio> {
     const cacheKey = `portfolio:${portfolioId}`;
     
