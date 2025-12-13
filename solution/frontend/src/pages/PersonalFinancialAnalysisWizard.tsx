@@ -11,7 +11,6 @@ import {
   IconButton,
   Alert,
   CircularProgress,
-  useTheme,
   TextField,
 } from '@mui/material';
 import {
@@ -61,7 +60,6 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 
 const PersonalFinancialAnalysisWizardPage: React.FC = () => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const [activeTab, setActiveTab] = useState(0);
@@ -320,11 +318,11 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
             <Step1CashFlowSurvey
               analysis={currentAnalysis}
               onUpdate={handleDataUpdate}
-              onPortfolioLink={async (portfolioId: string) => {
+              onPortfolioLink={async (_portfolioId: string) => {
                 // Portfolio linking is handled in Step1CashFlowSurvey component
                 // This callback can be used for additional actions if needed
               }}
-              onPortfolioUnlink={async (portfolioId: string) => {
+              onPortfolioUnlink={async (_portfolioId: string) => {
                 // Portfolio unlinking is handled in Step1CashFlowSurvey component
                 // This callback can be used for additional actions if needed
               }}
@@ -399,7 +397,7 @@ const PersonalFinancialAnalysisWizardPage: React.FC = () => {
                   }
                 }
               }}
-              onScenarioSelect={(scenarioId) => {
+              onScenarioSelect={(_scenarioId) => {
                 // Scenario selection is handled internally in Step3 component
               }}
               onDataUpdate={handleDataUpdate}

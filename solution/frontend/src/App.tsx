@@ -205,6 +205,7 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
+          {/* Personal Financial Analysis routes - IMPORTANT: More specific routes must come before parameterized routes */}
           <Route path="/personal-financial-analysis" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
@@ -212,6 +213,7 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
+          {/* Specific route for creating new analysis - must come before /:id route */}
           <Route path="/personal-financial-analysis/new" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>
@@ -219,6 +221,7 @@ const AppContent: React.FC = () => {
               </Box>
             </AppLayout>
           } />
+          {/* Parameterized route for editing existing analysis - must come after /new route */}
           <Route path="/personal-financial-analysis/:id" element={
             <AppLayout>
               <Box sx={{ minHeight: '100vh' }}>

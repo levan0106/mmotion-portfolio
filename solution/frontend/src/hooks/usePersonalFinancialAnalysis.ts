@@ -23,8 +23,6 @@ import {
   UpdateAnalysisRequest,
   CreateScenarioRequest,
   UpdateScenarioRequest,
-  AnalysisResponse,
-  SummaryMetricsResponse,
 } from '../types/personalFinancialAnalysis.types';
 
 /**

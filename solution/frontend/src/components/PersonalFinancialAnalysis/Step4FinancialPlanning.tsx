@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { ResponsiveTypography } from '../Common/ResponsiveTypography';
 import { ResponsiveButton } from '../Common';
 import { Step4FinancialPlanningProps } from '../../types/personalFinancialAnalysis.types';
@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 export const Step4FinancialPlanning: React.FC<Step4FinancialPlanningProps> = ({
   analysis,
   onPlanCreate,
-  onPlanLink,
   onPlanUnlink,
 }) => {
   const { t } = useTranslation();
@@ -41,7 +40,7 @@ export const Step4FinancialPlanning: React.FC<Step4FinancialPlanningProps> = ({
             <ResponsiveButton variant="contained" onClick={onPlanCreate}>
               {t('personalFinancialAnalysis.financialPlanning.createPlan')}
             </ResponsiveButton>
-            <ResponsiveButton variant="outlined" onClick={() => {}}>
+            <ResponsiveButton variant="outlined" onClick={onPlanCreate}>
               {t('personalFinancialAnalysis.financialPlanning.linkExistingPlan')}
             </ResponsiveButton>
           </Box>

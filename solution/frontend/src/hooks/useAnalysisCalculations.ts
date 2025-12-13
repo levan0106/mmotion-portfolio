@@ -6,8 +6,6 @@ import { useMemo } from 'react';
 import {
   PersonalFinancialAnalysis,
   AnalysisScenario,
-  SummaryMetrics,
-  IncomeExpenseBreakdown,
 } from '../types/personalFinancialAnalysis.types';
 import {
   calculateSummaryMetrics,

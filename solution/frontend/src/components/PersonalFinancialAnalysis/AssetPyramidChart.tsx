@@ -271,18 +271,6 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
               boxShadow: hoveredLayer === layer ? theme.shadows[4] : 'none',
             }}
           >
-              {/* <ResponsiveTypography
-                variant="caption"
-                sx={{
-                  color: 'white',
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  px: 1,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                }}
-              >
-                {data.label}
-              </ResponsiveTypography> */}
               <ResponsiveTypography
                 variant="caption"
                 sx={{
@@ -295,10 +283,8 @@ export const AssetPyramidChart: React.FC<AssetPyramidChartProps> = ({
                   textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                 }}
               >
-                {/* {formatCurrency(data.value, baseCurrency)} |  */}
                 {data.percentage.toFixed(1)}%
               </ResponsiveTypography>
-              
             </Box>
         );
       })}

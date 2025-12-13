@@ -254,6 +254,7 @@ export interface Step1CashFlowSurveyProps {
   onPortfolioLink: (portfolioId: string) => Promise<void>;
   onPortfolioUnlink: (portfolioId: string) => Promise<void>;
   isLoading?: boolean;
+  defaultCollapsed?: boolean; // If true, all sections are collapsed by default
 }
 
 export interface Step2FinancialAnalysisProps {

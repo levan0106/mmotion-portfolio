@@ -594,8 +594,13 @@
       "allPortfoliosLinked": "All available portfolios are already linked.",
       "noPortfoliosAvailable": "No portfolios available. Create a portfolio first."
     },
+    "sections": {
+      "expand": "Click to expand section",
+      "collapse": "Click to collapse section"
+    },
     "assets": {
       "title": "Assets",
+      "tooltip": "List all your assets including consumer assets, business assets, financial investments, and real estate investments. You can also specify the asset layer and mark assets as emergency fund.",
       "add": "Add Asset",
       "name": "Asset Name",
       "value": "Value",
@@ -617,6 +622,7 @@
     },
     "income": {
       "title": "Income",
+      "tooltip": "Enter all sources of monthly income including family income, business income, and other income sources. The system will automatically calculate annual values.",
       "add": "Add Income",
       "name": "Income Name",
       "monthlyValue": "Monthly Value",
@@ -632,6 +638,7 @@
     },
     "expenses": {
       "title": "Expenses",
+      "tooltip": "Record all monthly expenses including living expenses, education costs, insurance, and other expenses. The system will automatically calculate annual values.",
       "add": "Add Expense",
       "name": "Expense Name",
       "monthlyValue": "Monthly Value",
@@ -648,6 +655,7 @@
     },
     "debts": {
       "title": "Debts",
+      "tooltip": "List all your debts including loans, mortgages, and credit card debts. Enter the principal amount, interest rate, and monthly payment. The system will calculate annual payments.",
       "add": "Add Debt",
       "name": "Debt Name",
       "principalAmount": "Principal Amount",
@@ -749,6 +757,23 @@
       "education": "Education",
       "insurance": "Insurance",
       "other": "Other Expenses"
+    },
+    "scenarios": {
+      "title": "Scenarios",
+      "create": "Create Scenario",
+      "name": "Scenario Name",
+      "description": "Description",
+      "current": "Current",
+      "currentDescription": "Your current financial situation",
+      "comparison": "Scenario Comparison",
+      "chartsComparison": "Charts Comparison",
+      "selectToCompare": "Select a scenario above to compare with your current situation.",
+      "editData": "Edit Scenario Data",
+      "defaultName": "Restructuring Scenario 1",
+      "defaultDescription": "A scenario for restructuring your assets, income, expenses, and debts.",
+      "editDataDescription": "Edit assets, income, expenses, and debts for this scenario. Changes only apply to the selected scenario.",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
     },
     "financialPlanning": {
       "planLinked": "Financial Freedom Plan is linked",

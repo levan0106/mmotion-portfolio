@@ -445,5 +445,31 @@ export type {
   PlanData,
 } from './financialFreedom.types';
 
-// Export Personal Financial Analysis types
-export * from './personalFinancialAnalysis.types';
+// Export Personal Financial Analysis types (excluding AssetFormData to avoid conflict with asset.types)
+export type {
+  AssetCategory,
+  AssetLayer,
+  IncomeCategory,
+  ExpenseCategory,
+  AnalysisStatus,
+  AnalysisAsset,
+  AnalysisIncome,
+  AnalysisExpense,
+  AnalysisDebt,
+  AnalysisScenario,
+  SummaryMetrics,
+  IncomeExpenseBreakdown,
+  PersonalFinancialAnalysis,
+  CreateAnalysisRequest,
+  UpdateAnalysisRequest,
+  CreateScenarioRequest,
+  UpdateScenarioRequest,
+  LinkPlanRequest,
+  AnalysisResponse,
+  SummaryMetricsResponse,
+  Step1CashFlowSurveyProps,
+  Step2FinancialAnalysisProps,
+  Step3AssetRestructuringProps,
+  Step4FinancialPlanningProps,
+  PortfolioLinkingSectionProps,
+} from './personalFinancialAnalysis.types';

@@ -9,14 +9,9 @@ import {
   Step,
   StepLabel,
   Paper,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-} from '@mui/icons-material';
 import { ResponsiveButton } from '../Common/ResponsiveButton';
-import { PersonalFinancialAnalysis } from '../../types/personalFinancialAnalysis.types';
+import { PersonalFinancialAnalysis, AnalysisStatus } from '../../types/personalFinancialAnalysis.types';
 import { useTranslation } from 'react-i18next';
 import { useCreateAnalysis, useUpdateAnalysis } from '../../hooks/usePersonalFinancialAnalysis';
 import { Step1CashFlowSurvey } from './Step1CashFlowSurvey';
@@ -49,7 +44,7 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
       debts: [],
       linkedPortfolioIds: [],
       scenarios: [],
-      status: 'draft',
+      status: AnalysisStatus.DRAFT,
     }
   );
 
@@ -140,7 +135,7 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
           id: analysis.id,
           data: {
             ...analysisData,
-            status: 'final',
+            status: AnalysisStatus.FINAL,
           },
         });
       } else if (analysisData.id) {
@@ -148,13 +143,16 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
           id: analysisData.id,
           data: {
             ...analysisData,
-            status: 'final',
+            status: AnalysisStatus.FINAL,
           },
         });
       } else {
         await createAnalysisMutation.mutateAsync({
-          ...analysisData,
-          status: 'final',
+          name: analysisData.name,
+          assets: analysisData.assets,
+          income: analysisData.income,
+          expenses: analysisData.expenses,
+          debts: analysisData.debts,
         });
       }
     } catch (error) {
@@ -173,7 +171,7 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
     switch (activeStep) {
       case 0:
         // Step 1: At least some data should be entered
-        return (
+        return !!(
           (analysisData.assets && analysisData.assets.length > 0) ||
           (analysisData.income && analysisData.income.length > 0) ||
           (analysisData.expenses && analysisData.expenses.length > 0)
@@ -193,28 +191,31 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
   };
 
   const renderStepContent = () => {
-    const currentAnalysis = (analysisData.id ? { ...analysisData, id: analysisData.id } : analysis) as PersonalFinancialAnalysis | undefined;
+    const currentAnalysis: PersonalFinancialAnalysis | undefined = analysisData.id && analysis
+      ? { ...analysis, ...analysisData, id: analysisData.id }
+      : analysis || (analysisData.id ? { ...analysisData as PersonalFinancialAnalysis, id: analysisData.id } : undefined);
 
     switch (activeStep) {
       case 0:
+        const defaultAnalysis: PersonalFinancialAnalysis = {
+          id: '',
+          accountId: '',
+          analysisDate: new Date().toISOString().split('T')[0],
+          baseCurrency: 'VND',
+          assets: analysisData.assets || [],
+          income: analysisData.income || [],
+          expenses: analysisData.expenses || [],
+          debts: analysisData.debts || [],
+          linkedPortfolioIds: analysisData.linkedPortfolioIds || [],
+          scenarios: [],
+          status: AnalysisStatus.DRAFT,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
         return (
           <Step1CashFlowSurvey
-            analysis={currentAnalysis || {
-              id: '',
-              accountId: '',
-              analysisDate: new Date().toISOString().split('T')[0],
-              baseCurrency: 'VND',
-              assets: analysisData.assets || [],
-              income: analysisData.income || [],
-              expenses: analysisData.expenses || [],
-              debts: analysisData.debts || [],
-              linkedPortfolioIds: analysisData.linkedPortfolioIds || [],
-              scenarios: [],
-              status: 'draft',
-              isActive: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }}
+            analysis={currentAnalysis || defaultAnalysis}
             onUpdate={handleDataUpdate}
             onPortfolioLink={async (portfolioId: string) => {
               // Will be implemented with API
@@ -306,7 +307,7 @@ export const PersonalFinancialAnalysisWizard: React.FC<PersonalFinancialAnalysis
         <ResponsiveButton
           onClick={handleNext}
           variant="contained"
-          disabled={!canProceedToNext() || createAnalysisMutation.isPending || updateAnalysisMutation.isPending}
+          disabled={!canProceedToNext() || createAnalysisMutation.isLoading || updateAnalysisMutation.isLoading}
         >
           {activeStep === steps.length - 1
             ? t('common.save')

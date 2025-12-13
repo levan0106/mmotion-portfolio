@@ -600,8 +600,13 @@
       "allPortfoliosLinked": "Tất cả các portfolio có sẵn đã được liên kết.",
       "noPortfoliosAvailable": "Không có portfolio nào. Vui lòng tạo portfolio trước."
     },
+    "sections": {
+      "expand": "Nhấn để mở rộng phần này",
+      "collapse": "Nhấn để thu nhỏ phần này"
+    },
     "assets": {
       "title": "Tài sản",
+      "tooltip": "Liệt kê tất cả tài sản của bạn bao gồm tài sản tiêu dùng, tài sản kinh doanh, tài sản đầu tư tài chính và tài sản đầu tư bất động sản. Bạn cũng có thể chỉ định lớp tài sản và đánh dấu tài sản thuộc quỹ khẩn cấp.",
       "add": "Thêm tài sản",
       "name": "Tên tài sản",
       "value": "Giá trị",
@@ -623,6 +628,7 @@
     },
     "income": {
       "title": "Thu nhập",
+      "tooltip": "Nhập tất cả các nguồn thu nhập hàng tháng bao gồm thu nhập gia đình, thu nhập kinh doanh và các nguồn thu nhập khác. Hệ thống sẽ tự động tính toán giá trị hàng năm.",
       "add": "Thêm thu nhập",
       "name": "Tên thu nhập",
       "monthlyValue": "Giá trị hàng tháng",
@@ -638,6 +644,7 @@
     },
     "expenses": {
       "title": "Chi phí",
+      "tooltip": "Ghi lại tất cả các chi phí hàng tháng bao gồm chi phí sinh hoạt, chi phí giáo dục, bảo hiểm và các chi phí khác. Hệ thống sẽ tự động tính toán giá trị hàng năm.",
       "add": "Thêm chi phí",
       "name": "Tên chi phí",
       "monthlyValue": "Giá trị hàng tháng",
@@ -654,6 +661,7 @@
     },
     "debts": {
       "title": "Nợ",
+      "tooltip": "Liệt kê tất cả các khoản nợ của bạn bao gồm vay nợ, thế chấp và nợ thẻ tín dụng. Nhập số tiền gốc, lãi suất và thanh toán hàng tháng. Hệ thống sẽ tính toán thanh toán hàng năm.",
       "add": "Thêm khoản nợ",
       "name": "Tên khoản nợ",
       "principalAmount": "Số tiền gốc",
@@ -760,10 +768,16 @@
       "title": "Kịch bản",
       "create": "Tạo kịch bản",
       "name": "Tên kịch bản",
+      "description": "Mô tả",
       "current": "Hiện tại",
       "currentDescription": "Tình hình tài chính hiện tại của bạn",
       "comparison": "So sánh kịch bản",
+      "chartsComparison": "So sánh biểu đồ",
       "selectToCompare": "Chọn một kịch bản ở trên để so sánh với tình hình hiện tại của bạn.",
+      "editData": "Chỉnh sửa dữ liệu kịch bản",
+      "defaultName": "Kịch bản tái cấu trúc 1",
+      "defaultDescription": "Kịch bản để tái cấu trúc tài sản, thu nhập, chi phí và nợ của bạn.",
+      "editDataDescription": "Chỉnh sửa tài sản, thu nhập, chi phí và nợ cho kịch bản này. Các thay đổi chỉ áp dụng cho kịch bản được chọn.",
       "duplicate": "Sao chép",
       "delete": "Xóa"
     },
